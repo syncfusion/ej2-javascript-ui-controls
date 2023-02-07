@@ -3466,6 +3466,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.grid.columns.length !== this.columnModel.length) {
             this.stackedHeader = true;
         }
+        if (this.stackedHeader && this.enablePersistence && this.allowResizing) {
+            for (let i: number = 0; i < this.columns.length; i++) {
+                if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns)) {
+                    for (let j: number = 0; j < (this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns.length; j++) {
+                        const stackedColumn: Column | ColumnModel | string = (this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns[parseInt(j.toString(), 10)];
+                        const currentColumn: any = this.grid.getColumnByField((stackedColumn as ColumnModel).field);
+                        (stackedColumn as ColumnModel).width = (currentColumn as ColumnModel).width;
+                    }
+                }
+            }
+        }
         if (!this.stackedHeader) {
             merge(this.columns, this.columnModel);
         }
@@ -4163,7 +4174,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             if (isCountRequired(this) && action === 'expand') {
-                this.dataResults.result = this.getCurrentViewRecords() as ReturnOption;
+                const currentData: Object[] = this.getCurrentViewRecords();
+                const visibleRecords: Object[] = currentData.filter((e: ITreeData) => {
+                    return getExpandStatus(this, e, this.parentData);
+                });
+                this.dataResults.result = visibleRecords as ReturnOption;
             }
             if (!isNullOrUndefined(targetEle) && targetEle.closest('.e-treerowcell').classList.contains('e-cellselectionbackground')) {
                 targetEle.closest('.e-treerowcell').classList.remove('e-cellselectionbackground');

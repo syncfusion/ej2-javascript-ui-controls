@@ -6,7 +6,7 @@ import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } fro
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected } from '../../workbook/common/index';
-import { rowFillHandler, hideShow } from '../../workbook/common/event';
+import { getFormattedCellObject, hideShow, NumberFormatArgs } from '../../workbook/common/index';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -574,7 +574,7 @@ export class Resize {
     private resizeOn(e: MouseEvent): void {
         let idx: number; let actualIdx: number; const sheet: SheetModel = this.parent.getActiveSheet();
         const activeCell: number[] = getRangeIndexes(sheet.activeCell);
-        const CellElem: CellModel = getCell(activeCell[0], activeCell[1], sheet);
+        const cell: CellModel = getCell(activeCell[0], activeCell[1], sheet);
         if (this.trgtEle.classList.contains('e-rowresize')) {
             const prevIdx: number = Number(this.trgtEle.parentElement.getAttribute('aria-rowindex')) - 2;
             if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.classList.contains('e-skip-resize') &&
@@ -671,9 +671,9 @@ export class Resize {
             }
             this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (this.parent.enableRtl ? (this.event.clientX - e.clientX) : (e.clientX - this.event.clientX)) + curWidth, curWidth);
         }
-        if (CellElem && CellElem.format && CellElem.format.indexOf('*') > -1) {
-            this.parent.notify(rowFillHandler, { cell: CellElem, value: CellElem.format[CellElem.format.indexOf('*') + 1].toString(),
-                rowIdx: activeCell[0], colIdx: activeCell[1] });
+        if (cell && cell.format && cell.format.includes('*')) {
+            this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
+                formattedText: cell.value, rowIndex: activeCell[0], colIndex: activeCell[1] });
         }
     }
 

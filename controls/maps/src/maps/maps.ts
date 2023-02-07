@@ -637,6 +637,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public baseMapRectBounds: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resizeEvent: any;
     /** @public */
     public translatePoint: Point = new Point(0, 0);
     /** @private */
@@ -1054,7 +1056,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const tileElement1: HTMLElement = document.getElementById(this.element.id + '_tiles');
             const tile: ClientRect = tileElement.getBoundingClientRect();
             let bottom: number; let top: number; let left: number;
-            left = parseFloat(tileElement.style.left) + element.offsetLeft;
+            left = parseFloat(tileElement.style.left);
             const titleTextSize: Size = measureText(
                 this.titleSettings.text,
                 this.titleSettings.textStyle
@@ -1066,23 +1068,23 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.isTileMap && this.isTileMapSubLayer && this.legendSettings.position === 'Bottom' && this.legendSettings.visible) {
                 if (this.legendSettings.mode !== 'Default') {
                     if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
-                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize.height / 2)
+                        top = parseFloat(tileElement.style.top) + (subTitleTextSize.height / 2)
                             - (this.legendModule.legendBorderRect.height / 2);
                     } else {
-                        top = parseFloat(tileElement.style.top) + element.offsetTop - this.mapAreaRect.y;
+                        top = parseFloat(tileElement.style.top)- this.mapAreaRect.y;
                     }
                 } else {
                     left = this.legendModule.legendBorderRect.x;
                     if (titleTextSize.width !== 0 && titleTextSize.height !== 0) {
-                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2)
+                        top = parseFloat(tileElement.style.top) + (subTitleTextSize['height'] / 2)
                             - this.legendModule.legendBorderRect.y;
                     } else {
-                        top = parseFloat(tileElement.style.top) + element.offsetTop + (subTitleTextSize['height'] / 2);
+                        top = parseFloat(tileElement.style.top) + (subTitleTextSize['height'] / 2);
                     }
                 }
             } else {
                 bottom = svg.bottom - tile.bottom - element.offsetTop;
-                top = parseFloat(tileElement.style.top) + element.offsetTop;
+                top = parseFloat(tileElement.style.top);
             }
             top = (bottom <= 11) ? top : (!isNullOrUndefined(this.legendModule) && this.legendSettings.position === 'Bottom') ? this.mapAreaRect.y : (top * 2);
             left = (bottom <= 11) ? left : !isNullOrUndefined(this.legendModule) ? left : (left * 2);
@@ -1104,6 +1106,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.element.style.outline = 'none';
+        this.element.style.position = 'relative';
         for (let i: number = 0; i < document.getElementsByTagName('path').length - 1; i++) {
             if (document.getElementsByTagName('path')[i as number].id.indexOf('shapeIndex') > -1) {
                 document.getElementsByTagName('path')[i as number].style.outline = 'none';
@@ -1293,7 +1296,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const secondaryElement: Element = createElement('div', {
                 id: this.element.id + '_Secondary_Element'
             });
-            (secondaryElement as HTMLElement).style.cssText = 'position: absolute;z-index:2;';
+            (secondaryElement as HTMLElement).style.cssText = 'position: relative;z-index:2;';
             this.element.appendChild(secondaryElement);
         }
     }
@@ -1535,9 +1538,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         //  EventHandler.add(this.element, cancelEvent, this.mouseLeaveOnMap, this);
+        this.resizeEvent = this.mapsOnResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.mapsOnResize.bind(this)
+            this.resizeEvent
         );
 
     }
@@ -1561,7 +1565,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         //EventHandler.remove(this.element, cancelEvent, this.mouseLeaveOnMap);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.mapsOnResize
+            this.resizeEvent
         );
     }
     /**
@@ -2431,6 +2435,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public destroy(): void {
         this.unWireEVents();
+        if (!isNullOrUndefined(this.mapsTooltipModule)) {
+            this.mapsTooltipModule.removeEventListener();
+        }
         super.destroy();
         this.shapeSelectionItem = [];
         this.toggledShapeElementId = [];

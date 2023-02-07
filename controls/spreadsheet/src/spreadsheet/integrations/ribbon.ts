@@ -21,14 +21,14 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
 import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge, unMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
-import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule } from '../../workbook/common/index';
+import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg, insertDesignChart, removeDesignChart, isImported } from '../common/index';
-import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule } from '../../workbook/common/index';
+import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -493,10 +493,28 @@ export class Ribbon {
     private getNumFormatDDB(id: string): Element {
         const numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format', attrs: { 'type': 'button' } });
         numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
+        const customFormatData: string[] = ['General', '0', '0.00', '#,##0', '#,##0.00', '#,##0_);(#,##0)', '#,##0_);[Red](#,##0)',
+            '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', '$#,##0_);($#,##0)', '$#,##0_);[Red]($#,##0)', '$#,##0.00_);($#,##0.00)',
+            '$#,##0.00_);[Red]($#,##0.00)','0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy', 'dd-MMM-yy', 'dd-MMM',
+            'MMM-yy', 'h:mm AM/PM', 'h:mm:ss AM/PM', 'h:mm', 'h:mm:ss', 'dd-MM-yy h:mm', 'mm:ss', 'mm:ss.0', '@', '[h]:mm:ss',
+            '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)', '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)',
+            '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'];
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
             createPopupOnClick: true,
-            select: (args: MenuEventArgs): void => this.numDDBSelect(args),
+            select: (args: MenuEventArgs): void => {
+                const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                if (args.item.text === l10n.getConstant('Custom')) {
+                    this.renderCustomFormatDialog(customFormatData);
+                } else {
+                    const type: NumberFormatType = args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType;
+                    this.applyNumFormat(getFormatFromType(type), args.item.text);
+                    const sheet: SheetModel = this.parent.getActiveSheet();
+                    const cellIndex: number[] = getCellIndexes(sheet.activeCell);
+                    this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
+                    this.numFormatDDB.element.setAttribute('aria-label', type);
+                }
+            },
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
             beforeItemRender: (args: MenuEventArgs): void => this.previewNumFormat(args),
             cssClass: 'e-flat e-numformat-ddb',
@@ -1937,21 +1955,14 @@ export class Ribbon {
             { text: 'Tahoma' }, { text: 'Times New Roman' }, { text: 'Verdana' }];
     }
 
-    private numDDBSelect(args: MenuEventArgs): void {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+    private applyNumFormat(format: string, text: string): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const cellIndex: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
-        const type: string = args.item.id.split(this.parent.element.id + '_')[1];
         const eventArgs: { format: string, range: string, cancel: boolean, requestType: string } = {
-            format: getFormatFromType(<NumberFormatType>type),
-            range: sheet.selectedRange, cancel: false, requestType: 'NumberFormat'
+            format: format, range: sheet.selectedRange, cancel: false, requestType: 'NumberFormat'
         };
-        if (args.item.text === l10n.getConstant('Custom') && cell) {
-            eventArgs.format = cell.format;
-        }
-        const actionArgs: BeforeCellFormatArgs = { range: sheet.name + '!' + eventArgs.range, format: <string>eventArgs.format,
-            requestType: 'NumberFormat' };
+        const actionArgs: BeforeCellFormatArgs = {
+            range: sheet.name + '!' + eventArgs.range, format: eventArgs.format, requestType: 'NumberFormat'
+        };
         this.parent.trigger('beforeCellFormat', eventArgs);
         this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
         if (eventArgs.cancel) {
@@ -1959,20 +1970,12 @@ export class Ribbon {
         }
         this.parent.notify(applyNumberFormatting, eventArgs);
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
-        if (args.item.text === l10n.getConstant('Custom')) {
-            this.renderCustomFormatDialog();
-        } else {
-            this.refreshNumFormatSelection(args.item.text);
-            this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
-            this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
-        }
-        this.numFormatDDB.element.setAttribute('aria-label', type);
+        this.refreshNumFormatSelection(text);
+        this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
     }
 
-    private renderCustomFormatDialog(): void {
+    private renderCustomFormatDialog(formatData: string[]): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
         const dummyDiv: HTMLElement = this.parent.createElement('div');
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
         const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('Apply'), attrs: { 'type': 'button' } });
@@ -1980,15 +1983,6 @@ export class Ribbon {
         const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormatPlaceholder'), 'spellcheck': 'false' }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
         const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        const formatData = [{ text: 'General' }, { text: '0' }, { text: '0.00' }, { text: '#,##0' }, { text: '#,##0.00' },
-            { text: '#,##0_);(#,##0)' }, { text: '#,##0_);[Red](#,##0)' }, { text: '#,##0.00_);(#,##0.00)' },
-            { text: '#,##0.00_);[Red](#,##0.00)' }, { text: '$#,##0_);($#,##0)' }, { text: '$#,##0_);[Red]($#,##0)' },
-            { text: '$#,##0.00_);($#,##0.00)' }, { text: '$#,##0.00_);[Red]($#,##0.00)' },{ text: '0%' }, { text: '0.00%' },
-            { text: '0.00E+00' }, { text: '##0.0E+0' }, { text: '# ?/?' }, { text: '# ??/??' }, { text: 'dd-MM-yy' }, { text: 'dd-MMM-yy' },
-            { text: 'dd-MMM' }, { text: 'MMM-yy' }, { text: 'h:mm AM/PM' }, { text: 'h:mm:ss AM/PM' }, { text: 'h:mm' },
-            { text: 'h:mm:ss' }, { text: 'dd-MM-yy h:mm' }, { text: 'mm:ss' }, { text: 'mm:ss.0' }, { text: '@' }, { text: '[h]:mm:ss' },
-            { text: '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)' }, { text: '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)' },
-            { text: '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)' }, { text: '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)' }];
         const listview: ListView = new ListView({
             dataSource: formatData,
             select: (args: SelectEventArgs) => {
@@ -2000,17 +1994,18 @@ export class Ribbon {
         dialogCont.appendChild(sampleDiv);
         dialogCont.appendChild(listviewCont);
         listview.appendTo(listviewCont);
+        const addCustomNumFormat: (args: { format: string }) => void = (args: { format: string }): void => {
+            if (formatData.indexOf(args.format) === -1) {
+                formatData.push(args.format);
+            }
+        };
+        this.parent.on(addFormatToCustomFormatDlg, addCustomNumFormat, this);
         dialogBtn.addEventListener('click', () => {
             const format: string = (inputElem as HTMLInputElement).value;
-            const actionArgs: BeforeCellFormatArgs = {
-                range: this.parent.getActiveSheet().name + '!' + this.parent.getActiveSheet().selectedRange,
-                format: format, requestType: 'NumberFormat'
-            };
-            this.parent.numberFormat(format, actionArgs.range);
-            this.refreshNumFormatSelection(l10n.getConstant('Custom'));
+            this.applyNumFormat(format, l10n.getConstant('Custom'));
             listview.destroy();
             customFormatDialog.hide();
-            this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
+            addCustomNumFormat({ format: format });
         });
         customFormatDialog.show({
             header: l10n.getConstant('CustomFormat'),
@@ -2022,8 +2017,12 @@ export class Ribbon {
             content: dialogCont,
             footerTemplate: dummyDiv
         });
-        const item: { [key: string]: string } = { text: cell.format };
-        listview.selectItem(item);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const actCell: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(actCell[0], actCell[1], sheet);
+        if (cell && cell.format) {
+            listview.selectItem(cell.format as unknown as Element);
+        }
     }
 
     private tBarDdbBeforeOpen(element: HTMLElement, items: MenuItemModel[], targetLabel?: string, separatorCount: number = 0): void {
@@ -2056,7 +2055,7 @@ export class Ribbon {
     }
 
     private previewNumFormat(args: MenuEventArgs): void {
-        if (args.item.text === 'Custom') {
+        if (args.item.id.includes('_Custom')) {
             return;
         }
         const numElem: HTMLElement = this.parent.createElement(
@@ -2064,23 +2063,16 @@ export class Ribbon {
         args.element.innerHTML = '';
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cellIndex: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
-        const eventArgs: { [key: string]: string | number | boolean } = {
-            type: args.item.text,
-            formattedText: '',
-            value: cell && (cell.value || <unknown>cell.value === 0) ? cell.value : '',
-            format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
-            sheetIndex: this.parent.activeSheetIndex,
-            onLoad: true,
-            skipFormatCheck: isImported(this.parent)
-        };
-        this.parent.notify(getFormattedCellObject, eventArgs);
-        const previewElem: HTMLElement = this.parent.createElement('span', {
-            className: 'e-numformat-preview-text',
-            styles: 'float:right;',
-            innerHTML: eventArgs.formattedText.toString()
-        });
-        numElem.appendChild(previewElem);
+        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, false, true);
+        if (!isNullOrUndefined(cell.value) || cell.value !== '') {
+            const format: string = getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType);
+            const eventArgs: NumberFormatArgs = { type: args.item.text, formattedText: '', value: cell.value, format: format,
+                cell: { value: cell.value, format: format }, skipFormatCheck: isImported(this.parent) };
+            this.parent.notify(getFormattedCellObject, eventArgs);
+            const previewElem: HTMLElement = this.parent.createElement(
+                'span', { className: 'e-numformat-preview-text', styles: 'float:right;', innerHTML: eventArgs.formattedText });
+            numElem.appendChild(previewElem);
+        }
         args.element.appendChild(numElem);
     }
 
@@ -2975,6 +2967,7 @@ export class Ribbon {
             this.parent.off(removeDesignChart, this.removeDesignChart);
             this.parent.on(ribbonFind, this.findToolDlg, this);
             this.parent.off(unMerge, this.unMerge);
+            this.parent.off(addFormatToCustomFormatDlg);
         }
     }
 }

@@ -2111,7 +2111,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
         center = mapObject.zoomSettings.shouldZoomInitially
             && mapObject.markerZoomedState && !mapObject.zoomPersistence ? mapObject.markerZoomCenterPoint :
             mapObject.centerPosition;
-        if ((!isNullOrUndefined(centerLongitude) && !isNullOrUndefined(centerLatitude)) || checkMethodeZoom) {
+        if (((!isNullOrUndefined(centerLongitude) && centerLongitude !== 0) && (!isNullOrUndefined(centerLatitude) && centerLatitude !== 0)) || checkMethodeZoom) {
             const leftPosition: number = (((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) + mapObject.mapAreaRect.x) / factor;
             const topPosition: number = (((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) + mapObject.mapAreaRect.y) / factor;
             const point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
@@ -2280,7 +2280,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     const max: any = mapObject.baseMapRectBounds['max'] as any;
     const factor: number = animate ? 1 : mapObject.mapScaleValue;
     const mapWidth: number = Math.abs(max['x'] - min['x']); const mapHeight: number = Math.abs(min['y'] - max['y']);
-    if ((!isNullOrUndefined(longitude) && !isNullOrUndefined(latitude)) || checkZoomMethod) {
+    if (((!isNullOrUndefined(longitude) && longitude !== 0) && (!isNullOrUndefined(latitude) && latitude !== 0)) || checkZoomMethod) {
         const topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         const leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         const point: Point = checkZoomMethod ? calculateCenterFromPixel(mapObject, layer) :

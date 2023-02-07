@@ -142,6 +142,8 @@
   .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon,
   .e-bigger .e-contextmenu-container.e-rtl ul .e-blankicon,
   .e-bigger.e-contextmenu-container.e-rtl ul .e-blankicon {
-    @include bigger-rtl-blank-icon;
+    @if $skin-name != 'FluentUI' {
+      @include bigger-rtl-blank-icon;
+    }
   }
 }

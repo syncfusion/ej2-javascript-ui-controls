@@ -3,6 +3,7 @@ import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, Clea
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
 import { CFColor, Workbook, PdfPageOrientation } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
+import { Internationalization } from '@syncfusion/ej2-base';
 
 export interface SaveOptions {
     url?: string;
@@ -124,6 +125,7 @@ export interface CellFormatArgs {
     first?: string;
     checkHeight?: boolean;
     outsideViewport?: boolean;
+    formatColor?: string;
 }
 
 /** @hidden */
@@ -493,16 +495,17 @@ export interface NumberFormatArgs {
     result?: string;
     isRightAlign?: boolean;
     isRowFill?: boolean;
-    onLoad?: boolean;
     formattedText?: string;
     curSymbol?: string;
     td?: HTMLElement;
     checkDate?: boolean;
     dateObj?: Date;
-    skipRowFill?: boolean;
+    color?: string;
     dataUpdate?: boolean;
     formatApplied?: boolean;
     skipFormatCheck?: boolean;
+    refresh?: boolean;
+    isEdit?: boolean;
 }
 /** @hidden */
 export interface DateFormatCheckArgs {
@@ -515,6 +518,8 @@ export interface DateFormatCheckArgs {
     isTime?: boolean;
     dateObj?: Date;
     updatedVal?: string;
+    isEdit?: boolean;
+    intl?: Internationalization;
 }
 /** @hidden */
 export interface checkCellValid {

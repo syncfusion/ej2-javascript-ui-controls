@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.49 (2023-02-07)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I429410` - The issue of Select All/Unselect All taking an excessive amount of time and causing browser crashes in a Dropdown Tree with a large data source has been resolved.
+
 ## 20.4.48 (2023-02-01)
 
 ### DropDownList

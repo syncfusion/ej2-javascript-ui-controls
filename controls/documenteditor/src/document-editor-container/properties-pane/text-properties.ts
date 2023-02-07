@@ -404,7 +404,7 @@ export class Text {
         const inputElement: HTMLInputElement = createElement('input', { id: id, attrs: { 'type': 'color' } }) as HTMLInputElement;
         inputElement.style.width = width + 'px';
         divElement.appendChild(inputElement);
-        this.fontColorInputElement = new ColorPicker({ value: '#000000', showButtons: true, enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
+        this.fontColorInputElement = new ColorPicker({ value: '#000000', showButtons: true, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
         this.fontColorInputElement.element.parentElement.setAttribute('title', toolTipText);
         return inputElement;
     }

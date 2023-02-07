@@ -557,7 +557,7 @@ export class Mention extends DropDownBase {
         const isNavigation: boolean = (e.action === 'down' || e.action === 'up' || e.action === 'pageUp' || e.action === 'pageDown'
             || e.action === 'home' || e.action === 'end');
         const isTabAction: boolean = e.action === 'tab' || e.action === 'close';
-        if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape') {
+        if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape' && e.action !== 'space') {
             this.renderList();
         }
         if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
@@ -696,10 +696,10 @@ export class Mention extends DropDownBase {
                 this.lineBreak = false;
             }
         } else if (this.allowSpaces && this.queryString !== '' && currentRange && currentRange.trim() !== '' && currentRange.replace('\u00a0', ' ').lastIndexOf(' ') < currentRange.length - 1 &&
-            e.keyCode !== 38 && e.keyCode !== 40 && e.keyCode !== 8) {
+            e.keyCode !== 38 && e.keyCode !== 40 && e.keyCode !== 8 && this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0)) {
             this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
             this.searchLists(e);
-        } else if (this.queryString === '' && this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40) {
+        } else if (this.queryString === '' && this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40 && this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0)) {
             this.searchLists(e);
             if(!this.isListResetted) {
                 this.resetList(this.dataSource, this.fields);

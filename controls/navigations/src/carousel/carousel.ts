@@ -890,16 +890,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     container.style.transform = `translateX(${-(slideWidth) * (currentIndex)}px)`;
                 }
             }
-            let slideHeight: number;
             if (this.animationEffect === 'Slide') {
                 if (direction === 'Previous') {
                     addClass([args.nextSlide], CLS_PREV_SLIDE);
-                    slideHeight = args.nextSlide.offsetHeight;
+                    args.nextSlide.setAttribute('data-slide-height', args.nextSlide.offsetHeight.toString());
                     addClass([args.currentSlide, args.nextSlide], CLS_TRANSITION_END);
                 } else {
                     addClass([args.nextSlide], CLS_NEXT_SLIDE);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    slideHeight = args.nextSlide.offsetHeight;
+                    args.nextSlide.setAttribute('data-slide-height', args.nextSlide.offsetHeight.toString());
                     addClass([args.currentSlide, args.nextSlide], CLS_TRANSITION_START);
                 }
             } else if (this.animationEffect === 'Fade') {

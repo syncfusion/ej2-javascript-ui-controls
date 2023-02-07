@@ -106,6 +106,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
             this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
         }
+        if (!isNullOrUndefined(jsonObject.allowSpaceOfSameStyleInTable)) {
+            this.documentHelper.allowSpaceOfSameStyleInTable = jsonObject.allowSpaceOfSameStyleInTable;
+        }
         if (!isNullOrUndefined(jsonObject.alignTablesRowByRow)) {
             this.documentHelper.alignTablesRowByRow = jsonObject.alignTablesRowByRow;
         }
@@ -733,10 +736,18 @@ export class SfdtReader {
         if (table.wrapTextAround) {
             table.positioning = new TablePosition();
             table.positioning.allowOverlap = block.positioning.allowOverlap;
-            table.positioning.distanceBottom = HelperMethods.convertPointToPixel(block.positioning.distanceBottom);
-            table.positioning.distanceLeft = HelperMethods.convertPointToPixel(block.positioning.distanceLeft);
-            table.positioning.distanceRight = HelperMethods.convertPointToPixel(block.positioning.distanceRight);
-            table.positioning.distanceTop = HelperMethods.convertPointToPixel(block.positioning.distanceTop);
+            if(!isNullOrUndefined(block.positioning.distanceBottom)) {
+                table.positioning.distanceBottom = HelperMethods.convertPointToPixel(block.positioning.distanceBottom);
+            }
+            if(!isNullOrUndefined(block.positioning.distanceLeft)) {
+                table.positioning.distanceLeft = HelperMethods.convertPointToPixel(block.positioning.distanceLeft);
+            }
+            if(!isNullOrUndefined(block.positioning.distanceRight)) {
+                table.positioning.distanceRight = HelperMethods.convertPointToPixel(block.positioning.distanceRight);
+            }
+            if(!isNullOrUndefined(block.positioning.distanceTop)) {
+                table.positioning.distanceTop = HelperMethods.convertPointToPixel(block.positioning.distanceTop);
+            }
             if (!isNullOrUndefined(block.positioning.verticalAlignment)) {
                 table.positioning.verticalAlignment = block.positioning.verticalAlignment;
             }
@@ -1025,11 +1036,19 @@ export class SfdtReader {
                 image.horizontalAlignment = inline.horizontalAlignment;
                 image.allowOverlap = inline.allowOverlap;
                 image.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'Inline' : inline.textWrappingStyle;
-                image.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
-                image.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
-                image.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);
-                image.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
                 image.textWrappingType = inline.textWrappingType;
+                if(!isNullOrUndefined(inline.distanceBottom)) {
+                    image.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
+                }
+                if(!isNullOrUndefined(inline.distanceLeft)) {
+                    image.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
+                }
+                if(!isNullOrUndefined(inline.distanceRight)) {
+                    image.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);                    
+                }
+                if(!isNullOrUndefined(inline.distanceTop)) {
+                    image.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
+                }
                 image.zOrderPosition = inline.zOrderPosition;
                 image.layoutInCell = inline.layoutInCell;
                 if (!isNullOrUndefined(inline.top) && inline.top !== 0 ||
@@ -1247,10 +1266,18 @@ export class SfdtReader {
                 shape.allowOverlap = inline.allowOverlap;
                 shape.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'InFrontOfText' : inline.textWrappingStyle;
                 shape.textWrappingType = inline.textWrappingType;
-                shape.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
-                shape.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
-                shape.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);
-                shape.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
+                if(!isNullOrUndefined(inline.distanceBottom)) {
+                    shape.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
+                }
+                if(!isNullOrUndefined(inline.distanceLeft)) {
+                    shape.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
+                }
+                if(!isNullOrUndefined(inline.distanceRight)) {
+                    shape.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);
+                }
+                if(!isNullOrUndefined(inline.distanceTop)) {
+                    shape.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
+                }
                 shape.layoutInCell = inline.layoutInCell;
                 shape.lockAnchor = inline.lockAnchor;
                 shape.autoShapeType = inline.autoShapeType;

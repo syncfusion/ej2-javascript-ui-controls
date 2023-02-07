@@ -48,14 +48,6 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
             member: 'formula',
             args: [context]
         });
-        modules.push({
-            member: 'workbookFormula',
-            args: [context]
-        });
-        modules.push({
-            member: 'workbookEdit',
-            args: [context]
-        });
     }
     if (context.allowOpen) {
         modules.push({
@@ -129,6 +121,14 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     });
     modules.push({
         member: 'protectSheet',
+        args: [context]
+    });
+    modules.push({
+        member: 'workbookFormula',
+        args: [context]
+    });
+    modules.push({
+        member: 'workbookEdit',
         args: [context]
     });
     if (context.allowHyperlink) {

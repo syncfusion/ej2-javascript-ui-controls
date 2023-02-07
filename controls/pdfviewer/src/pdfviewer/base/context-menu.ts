@@ -157,7 +157,7 @@ export class ContextMenu implements IContextMenu {
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     // eslint-disable-next-line max-len
-                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage')) {
+                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path')) {
                     this.onOpeningForShape(false, true);
                     // eslint-disable-next-line max-len
                 } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path' && !currentAnnotSettings.isLock) {
@@ -375,16 +375,27 @@ export class ContextMenu implements IContextMenu {
                 this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Comment')]);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Properties')]);
-            } else {
+            } 
+            else if (isNullOrUndefined(isSignature) && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === "Image") {
+                this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste')]);
+                this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+            }
+            else {
                 this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties')]);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
             }
         } else if (isSignature) {
-            // eslint-disable-next-line max-len
-            this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment')]);
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
-            this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+            if ((this.pdfViewer.selectedItems.annotations[0].annotName === "SignatureField" || this.pdfViewer.selectedItems.annotations[0].annotName === "InitialField" || this.pdfViewer.selectedItems.annotations[0].annotName === "SignatureText")) {
+                this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste')]);
+                this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+            }
+            else {
+                this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment')]);
+                this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+            }
         } else {
             this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'),
             // eslint-disable-next-line max-len

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { BeforeOpenEventArgs, ICellRenderer, setCell, SheetModel, Spreadsheet } from '../../../src/index';
+import { BeforeOpenEventArgs, DialogBeforeOpenEventArgs, ICellRenderer, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 
 describe('Open & Save ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -50,6 +50,83 @@ describe('Open & Save ->', () => {
                      done();
             //     });
             // });
+        });
+    });
+
+    describe('Save method ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
+                saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Save dialog opening using keyboard shortcuts->', (done: Function) => {
+            helper.triggerKeyNativeEvent(83,true);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-flat');
+                done();
+            });
+        });
+        it('Providing no name in save as dialog->', (done: Function) => {
+            helper.triggerKeyNativeEvent(83,true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-dialog');
+                (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '';
+                helper.click('.e-dialog .e-primary');
+                var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
+                expect(alertText).toBe('File name cannot be empty.');
+                helper.click('.e-dialog .e-flat');
+                done();
+            });
+        });
+        it('Providing invalid characters in name input in save as dialog->', (done: Function) => {
+            helper.triggerKeyNativeEvent(83,true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-dialog');
+                (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '/Test/';
+                helper.click('.e-dialog .e-primary');
+                var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
+                expect(alertText).not.toBeNull();
+                helper.click('.e-dialog .e-flat');
+                done();
+            });
+        });
+        it('Providing name with length > 218->', (done: Function) => {
+            helper.triggerKeyNativeEvent(83,true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-dialog');
+                (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = 'xcvbnjhgfdwertyuytresdxcvbnbvcxzxcvbnmjuytrewqasxcvbhjuytredscvhjiokjhgfdsxsaqwertyuioooooooooplkjhgfdsazxcvbnmkiuytrewqasdfghjklkmnbvcxzaqwertyujhgfdertyuiuytrewqazxcvbnjkioiuytrewqwertyuiopoiuytrewqasdfghjklkjhgfdszxcvbnm';
+                helper.click('.e-dialog .e-primary');
+                var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
+                expect(alertText).toBe('The name is too long.');
+                helper.click('.e-dialog .e-flat');
+                done();
+            });
+        });
+        it('Save error dialog opening by calling showerrordialog method->', (done: Function) => {
+            helper.getInstance().saveModule.showErrorDialog({content: 'Save not Working'});
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Cancelling the save as dialog opening', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.triggerKeyNativeEvent(83,true);
+            setTimeout(function () {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+                done();
+            });
         });
     });
 });

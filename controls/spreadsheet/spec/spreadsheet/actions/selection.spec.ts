@@ -1,5 +1,7 @@
 import { Spreadsheet, setCellFormat, SheetModel, onContentScroll } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
+import { defaultData } from '../util/datasource.spec';
+import { EventHandler } from "@syncfusion/ej2-base";
 
 export function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
     expect(ele.style.top).toBe(pos[0]);
@@ -175,6 +177,228 @@ describe('Selection ->', () => {
         //         done();
         //     }, 0);
         // });
+    });
+
+    describe('Selection with freezepanes ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Resize the frozen row with active cell in frozen row ', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2,2);
+            setTimeout((): void => {
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+                    const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+                    const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+                    helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 7, offsetY: 7 }, spreadsheet.element, rowHdr);
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 7, offsetY: 7 }, document, rowHdr);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[2].height).toBe(26);
+                        done();
+                    });
+                });
+            });
+        }); 
+        it('Selection with mouse event and ctrl selection', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            setTimeout(() => {
+                const cell: HTMLElement = helper.invoke('getCell', [1, 2]);
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true, ctrlKey: true });
+                cell.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true, ctrlKey: true });
+                cell.dispatchEvent(e);
+                e = new MouseEvent('mousemove', { view: window, bubbles: true, cancelable: true, ctrlKey: true });
+                cell.dispatchEvent(e);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('B2:B2 A1:A1');
+                    done();
+                });
+            });
+        });
+        it('Select all with freeze pane applied', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+            helper.triggerMouseAction('mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null, selectAl);
+            helper.triggerMouseAction('mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document, selectAl);
+            setTimeout((): void => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV100');
+                done();
+            });
+        }); 
+        it('Resize the column by selecting whole column->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unfreezePanes(0);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['C1:C200']);
+                const colHdr: HTMLElement = helper.invoke('getCell', [null, 3, helper.invoke('getColHeaderTable').rows[0]]);
+                const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[2].width).toBe(84);
+                    done();
+                });
+            });
+        });
+        it('Select all with select locked cells as false', (done: Function) => {
+            const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+            helper.triggerMouseAction('mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null, selectAl);
+            helper.triggerMouseAction('mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document, selectAl);
+            setTimeout(() => {
+                helper.switchRibbonTab(4);
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                    helper.click('.e-protect-dlg .e-primary');
+                    setTimeout(() => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV100');
+                        helper.invoke('selectRange', ['C3']);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Selection with select locked cells as false', (done: Function) => {
+            const cell: HTMLElement = helper.invoke('getCell', [1, 3]);
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            cell.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            cell.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            cell.dispatchEvent(e);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV100');
+                done();
+            });
+        });
+        it('Selection with selectunlocked cells as true in protect sheet dialog and select unlocked cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('lockCells', ['B2:B5', false]);
+            helper.invoke('selectRange', ['B2']);
+            setTimeout(() => {
+                const cell: HTMLElement = helper.invoke('getCell', [1, 1]);
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                cell.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                cell.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                cell.dispatchEvent(e);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('B2:B2');
+                    done();
+                });
+            });
+        });
+        it('Navigate to other cell selection with select locked cells as false and select unlocked cells as false checking', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                    (document.getElementsByClassName('e-frame e-icons')[2] as HTMLElement).click();
+                    helper.click('.e-protect-dlg .e-primary');
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1']);
+                        helper.triggerKeyNativeEvent(40);
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Apply autofill using ctrl + selection in mouse event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A1']);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [1, 0]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom, ctrlKey: true });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1, ctrlKey: true  });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Item Name');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Rtl with selection and resize ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'H1:H200' }], enableRtl: true }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply autofit on column with whole column selection', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const colHdr: HTMLElement = helper.invoke('getCell', [null, 6, helper.invoke('getColHeaderTable').rows[0]]);
+            const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[6].width).toBe(58);
+                done();
+            });
+        });
+        it('Mouse selection for chart', (done: Function) => {
+            helper.invoke('selectRange', ['D6:D8']);
+            helper.getInstance().spreadsheetChartModule.insertChartHandler({ action: 'column_chart', id: 'clusteredColumn', isChart: true });
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                chart.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                chart.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                chart.dispatchEvent(e);
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                setTimeout(() => {
+                    expect(chart).not.toBeNull();
+                    done();
+                });
+            }, 1000);
+        });
+        it('Mouse selection for image', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({ options: {src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'D3', isPublic: true});
+            setTimeout(() => {
+                const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay-active');
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                image.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                image.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                image.dispatchEvent(e);
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                setTimeout(() => {
+                    expect(image).not.toBeNull();
+                    done();
+                });
+            });
+        });
     });
 
     describe('CR-Issues ->', () => {

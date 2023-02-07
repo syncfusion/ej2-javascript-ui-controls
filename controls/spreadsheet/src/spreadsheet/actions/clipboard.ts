@@ -2,7 +2,7 @@ import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend, isUndef
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook } from '../../workbook/index';
-import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName } from '../../workbook/index';
+import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells } from '../common/index';
@@ -903,8 +903,8 @@ export class Clipboard {
                         // eslint-disable-next-line
                         data += cell.value.toString().includes('"') ? " cell-value='" + val + "'" : ' cell-value="' + cell.value +
                             '"';
-                        const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: val, value: val,
-                            format: cell.format, onLoad: true, cell: cell, rowIndex: i, colIndex: j };
+                        const eventArgs: NumberFormatArgs = { formattedText: val, value: val, format: cell.format, cell: cell, rowIndex: i,
+                            colIndex: j };
                         this.parent.notify(getFormattedCellObject, eventArgs);
                         val = <string>eventArgs.formattedText;
                     }

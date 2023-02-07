@@ -25,15 +25,15 @@ import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, 
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
-import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs, dataSourceChanged } from './../../workbook/index';
-import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
+import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs, dataSourceChanged, isHiddenRow, isHiddenCol } from './../../workbook/index';
+import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort, getSheet } from './../../workbook/index';
 import { FilterOptions, FilterEventArgs, ProtectSettingsModel, findKeyUp, refreshRibbonIcons, hideShow } from './../../workbook/index';
 import { Workbook } from '../../workbook/base/workbook';
 import { SpreadsheetModel } from './spreadsheet-model';
 import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel, enableToolbarItems } from '../common/index';
 import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs, getDPRValue } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight } from './../../workbook/base/index';
+import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, getCell } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
@@ -42,7 +42,7 @@ import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
-import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel } from './../../workbook/common/index';
+import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
@@ -2145,11 +2145,46 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             value = circularArgs.argValue;
         }
         super.setValueRowCol(sheetId, value, rowIndex, colIndex, formula);
-        this.notify(
-            editOperation, {
-                action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
-                sheetIdx: getSheetIndexFromId(this as Workbook, sheetId)
-            });
+        if (this.allowEditing) {
+            this.notify(
+                editOperation, {
+                    action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
+                    sheetIdx: getSheetIndexFromId(this as Workbook, sheetId)
+                });
+        } else {
+            let sheetIdx: number = getSheetIndexFromId(this as Workbook, sheetId);
+            rowIndex--; colIndex--;
+            if (this.activeSheetIndex === sheetIdx) {
+                const sheet: SheetModel = getSheet(this as Workbook, sheetIdx);
+                let td: HTMLElement;
+                if (!isHiddenRow(sheet, rowIndex) && !isHiddenCol(sheet, colIndex)) {
+                    td = this.getCell(rowIndex, colIndex);
+                }
+                if (td) {
+                    if (td.parentElement) {
+                        const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
+                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIndex) { return; }
+                    }
+                    const cell: CellModel = getCell(rowIndex, colIndex, sheet);
+                    const nodeEventArgs: { [key: string]: string | number | boolean | CellModel } = {
+                        value: cell.value, format: cell.format, onLoad: true,
+                        formattedText: '', isRightAlign: false, type: 'General', cell: cell,
+                        rowIndex: rowIndex, colIndex: colIndex, isRowFill: false
+                    };
+                    this.notify(getFormattedCellObject, nodeEventArgs);
+                    nodeEventArgs.formattedText = this.allowNumberFormatting ? nodeEventArgs.formattedText : nodeEventArgs.value;
+                    const eventArgs: RefreshValueArgs = {
+                        isRightAlign: <boolean>nodeEventArgs.isRightAlign,
+                        result: <string>nodeEventArgs.formattedText,
+                        type: <string>nodeEventArgs.type,
+                        value: <string>nodeEventArgs.value,
+                        curSymbol: <string>nodeEventArgs.curSymbol,
+                        isRowFill: <boolean>nodeEventArgs.isRowFill
+                    };
+                    this.refreshNode(td, eventArgs);
+                }
+            }
+        }
     }
 
     /**
@@ -2186,19 +2221,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 const spanElem: Element = select('#' + this.element.id + '_currency', td);
                 if (spanElem) { detach(spanElem); }
-                if (args.type === 'Accounting' && isNumber(args.value)) {
+                if (args.type === 'Accounting' && isNumber(args.value) && args.result.includes(args.curSymbol)) {
+                    const curSymbol: string = args.result.includes(' ' + args.curSymbol) ? ' ' + args.curSymbol : args.curSymbol;
                     if (td.querySelector('a')) {
-                        td.querySelector('a').textContent = args.result.split(args.curSymbol).join('');
+                        td.querySelector('a').textContent = args.result.split(curSymbol).join('');
                     } else {
                         td.innerHTML = '';
                     }
-                    td.appendChild(this.createElement('span', {
-                        id: this.element.id + '_currency',
-                        innerHTML: `${args.curSymbol}`,
-                        styles: 'float: left'
-                    }));
+                    td.appendChild(
+                        this.createElement('span', { id: this.element.id + '_currency', innerHTML: curSymbol, styles: 'float: left' }));
                     if (!td.querySelector('a')) {
-                        td.innerHTML += args.result.split(args.curSymbol).join('');
+                        td.innerHTML += args.result.split(curSymbol).join('');
                     }
                     td.classList.add('e-right-align');
                     return;

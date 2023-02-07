@@ -10,7 +10,7 @@ import { DateFormatOptions, createElement, isNullOrUndefined } from '@syncfusion
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
 import { Orientation } from '../utils/enum';
-import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation } from '../../common/utils/helper';
+import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, RectOption, withInBounds, rotateTextSize } from '../../common/utils/helper';
 import { subArray, inside, appendChildElement, stringToNumber } from '../../common/utils/helper';
 import { TextAlignment } from '../../common/utils/enum';
 import { Thickness, logBase, createZoomingLabels, getElement } from '../../common/utils/helper';
@@ -57,7 +57,7 @@ export class CartesianAxisLayoutPanel {
     public measureAxis(rect: Rect): void {
 
         const chart: Chart = this.chart;
-
+     
         const chartAreaWidth: number = chart.chartArea.width ? stringToNumber(chart.chartArea.width, chart.availableSize.width) : null;
 
         this.crossAt(chart);
@@ -1309,6 +1309,7 @@ export class CartesianAxisLayoutPanel {
         const scrollBarHeight: number = axis.scrollbarSettings.enable || (!islabelInside && isNullOrUndefined(axis.crossesAt)
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         const newPoints: ChartLocation[][] = []; let isRotatedLabelIntersect: boolean = false;
+        const textPoints: ChartLocation[][] = []
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
         const isLabelUnderAxisLine: boolean = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside));
         const isEndAnchor: boolean = isLabelUnderAxisLine ?
@@ -1490,6 +1491,24 @@ export class CartesianAxisLayoutPanel {
                         }
                     }
                 }
+                if (angle > 0 && angle < 90) {
+                    let textRect: Rect = new Rect(options.x, options.y - (elementSize.height / 2 + padding / 2), label.size.width, height);
+                    let textRectCoordinates: ChartLocation[] = this.getRectanglePoints(textRect);
+                    var rectPoints = [];
+                    rectPoints.push(new ChartLocation(axis.rect.width + axis.rect.x, axis.rect.y));
+                    rectPoints.push(new ChartLocation(axis.rect.width + axis.rect.x, axis.rect.y + axis.maxLabelSize.height));
+                    textPoints.push(getRotatedRectangleCoordinates(textRectCoordinates, rectCenterX, rectCenterY, angle));
+                    let newRect: Rect = new Rect(axis.rect.x, axis.rect.y, axis.rect.width, axis.maxLabelSize.height * 2);
+                    for (let k: number = 0; k < textPoints[i].length; k++) {
+                        if (!axis.opposedPosition && !withInBounds(textPoints[i][k].x, textPoints[i][k].y, newRect) && typeof options.text === 'string') {
+                            let interSectPoint: ChartLocation = this.calculateIntersection(textPoints[i][0], textPoints[i][1], rectPoints[0], rectPoints[1]);
+                            let rectPoint1: number = axis.rect.width + axis.rect.x - pointX;
+                            let rectPoint2: number = interSectPoint.y - axis.rect.y;
+                            let trimValue: number = Math.sqrt((rectPoint1 * rectPoint1) + (rectPoint2 * rectPoint2));
+                            options.text = textTrim(trimValue, label.text as string, label.labelStyle);
+                        }
+                    }
+                }
             }
             // label Rotataion calculation (End)
 
@@ -1506,6 +1525,20 @@ export class CartesianAxisLayoutPanel {
                 this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
             }
         }
+    }
+
+    public calculateIntersection(p1: ChartLocation, p2: ChartLocation, p3: ChartLocation, p4: ChartLocation): ChartLocation {
+        let c2x: number = p3.x - p4.x;
+        let c3x: number = p1.x - p2.x;
+        let c2y: number = p3.y - p4.y;
+        let c3y: number = p1.y - p2.y;
+        let d: number = c3x * c2y - c3y * c2x;
+        let u1: number = p1.x * p2.y - p1.y * p2.x;
+        let u4: number = p3.x * p4.y - p3.y * p4.x;
+        let px: number = (u1 * c2x - c3x * u4) / d;
+        let py: number = (u1 * c2y - c3y * u4) / d;
+        let p: ChartLocation = { x: px, y: py };
+        return p;
     }
     /**
      * To get text anchor value for line break labels.

@@ -256,13 +256,26 @@ export function getCustomColors(): string[] {
 /**
  * @hidden
  */
-export function isCustomDateTime(cell: CellModel, checkTime?: boolean): boolean {
-    if ((cell.format.includes('d') || cell.format.includes('y')) && cell.format.indexOf('#') === -1 && !getColorCode(cell.format)) {
-        return true;
+export function isCustomDateTime(format: string, checkTime?: boolean, option?: { type?: string }, checkBoth?: boolean): boolean {
+    let isCustom: boolean;
+    if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format)) {
+        if (option) {
+            option.type = 'date';
+        }
+        if (checkBoth && format.includes(' ') && format.split(' ').length === 2) {
+            format = format.split(' ')[1];
+        } else {
+            checkTime = false;
+        }
+        isCustom = true;
     }
-    if (checkTime && (cell.format.includes('h') || cell.format.includes('m') || cell.format.includes('s')) && cell.format.indexOf('#')
-        === -1 && !getColorCode(cell.format)) {
-        return true;
+    if (checkTime && (format.includes('h') || format.includes('m') || format.includes('s')) && !format.includes('#') &&
+        !getColorCode(format)) {
+        if (option) {
+            option.type = option.type || '';
+            option.type += 'time';
+        }
+        isCustom = true;
     }
-    return false;
+    return isCustom;
 }

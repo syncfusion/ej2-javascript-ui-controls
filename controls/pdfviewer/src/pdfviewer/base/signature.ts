@@ -1886,7 +1886,7 @@ export class Signature {
             const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_sign');
             const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (annotObject[parseInt(pageIndex.toString(), 10)]) {
+            if (!isNullOrUndefined(pageIndex) && annotObject[parseInt(pageIndex.toString(), 10)]) {
                 (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.push(annotation);
                 index = (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.indexOf(annotation);
             } else {

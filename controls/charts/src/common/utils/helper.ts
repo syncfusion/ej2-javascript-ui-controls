@@ -1875,9 +1875,6 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         stringToNumber(chart.width, containerWidth) || containerWidth || 600,
         stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
-    if (containerWidth && chart.availableSize.width > containerWidth) {
-        chart.availableSize.width = containerWidth;
-    }
     if (chart.getModuleName() === 'chart') {
         let scaleX: number = 1; let scaleY: number = 1;
         if (chart.width === '' || chart.width === null || chart.width === '100%') {

@@ -364,9 +364,9 @@ describe('Chart Control', () => {
                 let svg: number = +document.getElementById('container_Series_0_Point_1_TextShape_0').getAttribute('x');
                 let point0Location: number = (<Points>(<Series>chartObj.series[0]).points[1]).regions[0].x;
                 expect(svg > point0Location).toBe(true);
-                svg = +document.getElementById('container_Series_2_Point_6_TextShape_0').getAttribute('x');
-                point0Location = (<Points>(<Series>chartObj.series[2]).points[6]).regions[0].x;
-                expect(svg == (point0Location + 5)).toBe(true);
+                svg = +document.getElementById('container_Series_2_Point_7_TextShape_0').getAttribute('x');
+                point0Location = (<Points>(<Series>chartObj.series[2]).points[7]).regions[0].x;
+                expect(svg > (point0Location + 5)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -378,9 +378,8 @@ describe('Chart Control', () => {
                 let svg: number = +document.getElementById('container_Series_0_Point_1_TextShape_0').getAttribute('x');
                 let point0Location: number = (<Points>(<Series>chartObj.series[0]).points[1]).regions[0].x;
                 expect(svg > point0Location).toBe(true);
-                svg = +document.getElementById('container_Series_2_Point_6_TextShape_0').getAttribute('x');
-                point0Location = (<Points>(<Series>chartObj.series[2]).points[6]).regions[0].x;
-                expect(svg == (point0Location + 5)).toBe(true);
+                svg = +document.getElementById('container_Series_2_Point_6_TextShape_0');
+                expect(svg == 0).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

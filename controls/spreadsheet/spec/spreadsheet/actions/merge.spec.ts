@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, setColumn, setRow, SheetModel, Spreadsheet } from '../../../src/index';
+import { CellModel, setColumn, setRow, SheetModel, Spreadsheet, DialogBeforeOpenEventArgs  } from '../../../src/index';
 import { checkPosition } from '../actions/selection.spec';
 
 describe('Merge ->', () => {
@@ -288,6 +288,19 @@ describe('Merge ->', () => {
                expect(dialogElem).toBe(0);
                done();
         });
+        it('Cancelling merge dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.invoke('selectRange', ['E2:H2']);
+            helper.click('#' + helper.id + '_merge');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-merge-alert-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                done();
+            });
+        }); 
     });
     describe('Merge action with freeze pane ->', () => {
         beforeAll((done: Function) => {

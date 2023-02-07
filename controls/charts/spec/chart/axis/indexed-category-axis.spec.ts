@@ -36,7 +36,7 @@ describe('Chart Control', () => {
         let element: Element;
         let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

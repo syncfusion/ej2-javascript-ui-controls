@@ -294,7 +294,14 @@ export class Filter implements IAction {
             }
             if (!this.column.isForeignColumn() && isNullOrUndefined(this.value) && (this.operator === 'equal' ||
                 this.operator === 'notequal') && (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
-                this.filterSettings.columns = [];
+                for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
+                    if (this.filterSettings.columns[`${i}`].field === field &&
+                        (this.filterSettings.columns[`${i}`].operator === 'equal' || this.filterSettings.columns[`${i}`].operator === 'notequal')
+                            && isNullOrUndefined(this.filterSettings.columns[`${i}`].value)) {
+                        this.filterSettings.columns.splice(i, 1);
+                        i = i - 1;
+                    }
+                }
                 if (col.type === 'string') {
                     this.filterSettings.columns.push({
                         field: field, ignoreAccent: this.ignoreAccent, matchCase: this.matchCase,

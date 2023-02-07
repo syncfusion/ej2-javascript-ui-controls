@@ -95,7 +95,7 @@ describe('Chart Control', () => {
     describe('Row Definition with spanning', () => {
         let chart: Chart;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'chartContainer' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -281,7 +281,7 @@ describe('Chart Control', () => {
     });
     describe('Checking the Calculating Row Size Method with Axis Crossing', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 800px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(

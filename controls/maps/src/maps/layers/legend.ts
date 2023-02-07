@@ -556,7 +556,7 @@ export class Legend {
                         const leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
                             ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
                         const leftPageOptions: PathOption = new PathOption(
-                            map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', ((page + 1) === 1 ? 0.5 : 1), 1, '', leftPath
+                            map.element.id + '_Left_Page', this.maps.themeStyle.legendTextColor, 0, this.maps.themeStyle.legendTextColor, ((page + 1) === 1 ? 0.5 : 1), 1, '', leftPath
                         );
                         leftPageElement.appendChild(render.drawPath(leftPageOptions));
                         const leftRectPageOptions: RectOption = new RectOption(
@@ -568,7 +568,7 @@ export class Legend {
                         leftPageElement.appendChild(pathEle);
                         this.wireEvents(leftPageElement);
                         const rightPageOptions: PathOption = new PathOption(
-                            map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', ((page + 1) === this.totalPages.length ? 0.5 : 1), 1, '', rightPath
+                            map.element.id + '_Right_Page', this.maps.themeStyle.legendTextColor, 0, this.maps.themeStyle.legendTextColor, ((page + 1) === this.totalPages.length ? 0.5 : 1), 1, '', rightPath
                         );
                         rightPageElement.appendChild(render.drawPath(rightPageOptions));
                         const rightRectPageOptions: RectOption = new RectOption(
@@ -586,7 +586,7 @@ export class Legend {
                             'id': map.element.id + '_Paging_Text',
                             'x': pageTextX,
                             'y': locY + (pagingTextSize.height / 4),
-                            'fill': '#a6a6a6',
+                            'fill': this.maps.themeStyle.legendTextColor,
                             'font-size': '14px',
                             'font-style': pagingFont.fontStyle,
                             'font-family': pagingFont.fontFamily,

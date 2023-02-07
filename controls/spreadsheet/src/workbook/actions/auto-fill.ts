@@ -1,7 +1,7 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
-import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel } from './../common/index';
+import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
 
 /**
@@ -112,7 +112,7 @@ export class WorkbookAutoFill {
         let cells: { rowIndex: number, colIndex: number }[]; let clen: number;
         let cellIdx: { rowIndex: number, colIndex: number }; let cellProps: CellModel = {};
         let i: number = 0;
-        let prevCellData: CellModel;
+        let prevCellData: CellModel; let dateVal: Date; let dateObj: Date;
         const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const dminr: number = options.dataRange[0]; const dminc: number = options.dataRange[1]; const dmaxr: number = options.dataRange[2];
@@ -120,7 +120,7 @@ export class WorkbookAutoFill {
         const fminr: number = options.fillRange[0]; const fminc: number = options.fillRange[1]; const fmaxr: number = options.fillRange[2];
         const fmaxc: number = options.fillRange[3];
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
-        const isRFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
+        const isReverseFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const withFrmt: boolean = options.fillType === 'FillSeries';
         let prop: CellUpdateArgs; let cfRefreshAll: boolean;
         const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
@@ -130,7 +130,7 @@ export class WorkbookAutoFill {
             pRanges = this.updateFillValues(isVFill, dminr, dminc, dmaxr, dmaxc, fminr, fminc, fmaxr, fmaxc, i);
             patrnRange = pRanges.patternRange;
             fillRange = pRanges.fillRange;
-            patterns = this.getPattern(patrnRange, { isRFill: isRFill, isVFill: isVFill });
+            patterns = this.getPattern(patrnRange, { isReverseFill: isReverseFill, isVFill: isVFill });
             data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
             if (!patterns) {
@@ -140,7 +140,7 @@ export class WorkbookAutoFill {
             cells = this.getSelectedRange(sheet, { rowIndex: fillRange[0], colIndex: fillRange[1] }, { rowIndex: fillRange[2],
                 colIndex: fillRange[3] });
             clen = cells.length;
-            if (isRFill) {
+            if (isReverseFill) {
                 cells = cells.reverse();
                 patterns = patterns.reverse();
                 patterns = this.ensurePattern(patterns as PatternInfo[]);
@@ -156,8 +156,22 @@ export class WorkbookAutoFill {
                 l = j % dlen;
                 switch (patrn['type']) {
                 case 'number':
-                    val = (this.round(patrn['regVal'].a + (patrn['regVal'].b * patrn['i']), 5)).toString();
+                case 'date':
                     patrn = patrn as PatternInfo;
+                    if (patrn.isStartWithMonth && dlen === 1) {
+                        dateVal = intToDate(patrn.regVal.a);
+                        dateObj = new Date(dateVal);
+                        dateVal.setMonth(dateVal.getMonth() + (patrn.regVal.b * patrn.i));
+                        if (dateObj.getDate() > 28 && dateObj.getDate() !== dateVal.getDate()) {
+                            dateObj.setDate(1);
+                            dateObj.setMonth(dateObj.getMonth() + (patrn.regVal.b * patrn.i));
+                            dateObj.setDate(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate());
+                            dateVal = dateObj;
+                        }
+                        val = dateToInt(dateVal).toString();
+                    } else {
+                        val = (this.round(patrn['regVal'].a + (patrn['regVal'].b * patrn['i']), 5)).toString();
+                    }
                     if (patrn.dataVal) {
                         if (patrn.copy === undefined) {
                             patrn.copy = (patrn.val as number[]).length > 2;
@@ -172,7 +186,7 @@ export class WorkbookAutoFill {
                         val = patrn.copy ? (data[l as number] && !isNullOrUndefined(data[l as number].value) ? data[l as number].value : '') :
                             (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : patrn.dataVal + Math.abs(Number(val)));
                     }
-                    if (isRFill) {
+                    if (isReverseFill) {
                         patrn['i']--;
                     }
                     else {
@@ -207,7 +221,7 @@ export class WorkbookAutoFill {
                         }
                         k++;
                     }
-                    if (hasRef && isRFill) {
+                    if (hasRef && isReverseFill) {
                         patrn['i']--;
                     }
                     else {
@@ -216,7 +230,7 @@ export class WorkbookAutoFill {
                     break;
                 case 'time':
                     val = (patrn['regVal'].a + (patrn['regVal'].b * patrn['i'])).toString();
-                    if (isRFill) {
+                    if (isReverseFill) {
                         patrn['i']--;
                     }
                     else {
@@ -281,7 +295,7 @@ export class WorkbookAutoFill {
         const fMaxR: number = options.fillRange[2];
         const fMaxC: number = options.fillRange[3];
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
-        const isRFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
+        const isReverseFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dMaxC - dMinC : dMaxR - dMinR;
         const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
@@ -300,7 +314,7 @@ export class WorkbookAutoFill {
                                           { rowIndex: fillRange[2], colIndex: fillRange[3] });
             clen = cells.length;
             j = 0;
-            if (isRFill) {
+            if (isReverseFill) {
                 cells = cells.reverse();
             }
             while (j < clen) {
@@ -356,34 +370,41 @@ export class WorkbookAutoFill {
         return { patternRange: patternRange, fillRange: fillRange };
     }
 
-    private getType(val: string, isTime: boolean): string {
-        let type: string;
-        if (isTime)
-        {type = 'time'; }
-        else if (checkIsFormula(val))
-        {type = 'formula'; }
-        else if (isNumber(val))
-        {type = 'number'; }
-        return type || 'string';
-    }
-
     private getDataPattern(range: number[]): { val: string[] | number[], type: string }[] {
         let val: string[] | string | number;
         let type: string;
         let i: number = 0;
-        let obj: { val: string[] | number[], type: string, dataVal?: string, start?: boolean } = { val: null, type: null };
+        let obj: { val: string[] | number[], type: string, dataVal?: string, start?: boolean, isStartWithMonth?: boolean } = { val: null,
+            type: null };
         const patrn: { val: string[] | number[], type: string }[] = [];
         const data: CellModel[] = this.getRangeData({ range: range, sheetIdx: this.parent.activeSheetIndex });
-        const dlen: number = data.length; let isStartNum: boolean;
+        const dlen: number = data.length; let isStartNum: boolean; let isDateStartsWithMonth: boolean;
         if (dlen) {
-            let count: number; let dataVal: string;
+            let count: number; let dataVal: string; let format: string;
             const minusOperator: Function = (data: string): string => {
                 return !isStartNum && data && data[data.length - 1] === '-' ? data.slice(0, data.length - 1) : data;
             };
             while (i < dlen) {
-                val = data[i as number] ? (data[i as number].formula ? data[i as number].formula :
-                    (isNullOrUndefined(data[i as number].value) ? '' : data[i as number].value)) : '';
-                type = this.getType(val as string, data[i as number] && data[i as number].format === 'h:mm:ss AM/PM');
+                isDateStartsWithMonth = false;
+                if (data[i as number]) {
+                    if (data[i as number].formula && checkIsFormula(data[i as number].formula)) {
+                        val = data[i as number].formula;
+                        type = 'formula';
+                    } else {
+                        val = isNullOrUndefined(data[i as number].value) ? '' : data[i as number].value;
+                        const option: { type?: string } = {};
+                        format = data[i as number].format;
+                        if (format && isCustomDateTime(format, true, option)) {
+                            type = option.type;
+                            isDateStartsWithMonth = type === 'date' && format.toLowerCase().startsWith('mmm');
+                        } else {
+                            type = isNumber(val) ? 'number' : 'string';
+                        }
+                    }
+                } else {
+                    val = '';
+                    type = 'string';
+                }
                 dataVal = '';
                 if (type === 'string') {
                     isStartNum = false;
@@ -410,7 +431,7 @@ export class WorkbookAutoFill {
                     }
                 }
                 if (i === 0) {
-                    obj = { val: [val as string], type: type };
+                    obj = { val: [val as string], type: type, isStartWithMonth: isDateStartsWithMonth };
                     if (dataVal) { obj.dataVal = dataVal; obj.start = isStartNum; }
                 } else if (type === obj.type && (!obj.dataVal || minusOperator(obj.dataVal) === minusOperator(dataVal))) {
                     (obj.val as string[]).push(val as string);
@@ -452,7 +473,7 @@ export class WorkbookAutoFill {
         }
         return { a: a, b: b };
     }
-    private getPattern(range: number[], options: { isRFill: boolean, isVFill: boolean }): PatternInfo[] | number[] {
+    private getPattern(range: number[], options: { isReverseFill: boolean, isVFill: boolean }): PatternInfo[] | number[] {
         let j: number;
         let idx: number;
         let temp: PatternInfo | number[];
@@ -461,23 +482,26 @@ export class WorkbookAutoFill {
         let len: number;
         let i: number = 0;
         const pattern: PatternInfo[] | number[] = [];
-        const patrns: { val?: number[] | string[], type: string, dataVal?: string, start?: boolean }[] = this.getDataPattern(range);
+        const patrns: { val?: number[] | string[], type: string, dataVal?: string, start?: boolean, isStartWithMonth?: boolean }[] =
+            this.getDataPattern(range);
         const plen: number = patrns.length;
-        let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string, start?: boolean };
+        let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string, start?: boolean,
+            isStartWithMonth?: boolean };
         if (patrns) {
             while (i < plen) {
                 patrn = patrns[i as number];
                 switch (patrn.type) {
                 case 'number':
+                case 'date':
                     idx = pattern.length;
                     len = (patrn.val as number[]).length;
-                    diff = options.isRFill ? -1 : len;
+                    diff = options.isReverseFill ? -1 : len;
                     if (len === 1) {
                         const newVal: number = parseFloat(patrn.val[0] as string) + 1;
                         (patrn.val as number[]).push(newVal);
                     }
                     regVal = this.getPredictionValue(patrn.dataVal ? (patrn.val as number[]).slice(0, 2) : patrn.val as number[]);
-                    temp = { regVal: regVal, type: patrn.type, i: diff };
+                    temp = { regVal: regVal, type: patrn.type, i: diff, isStartWithMonth: patrn.isStartWithMonth };
                     if (patrn.dataVal) {
                         temp.dataVal = patrn.dataVal; temp.val = patrn.val; temp.start = patrn.start;
                     }
@@ -502,7 +526,7 @@ export class WorkbookAutoFill {
                 case 'formula':
                     len = (patrn.val as number[]).length;
                     patrn = this.getFormulaPattern(patrn.val as string[], options);
-                    diff = options.isRFill ? -1 : len;
+                    diff = options.isReverseFill ? -1 : len;
                     if (patrn.isInPattern) {
                         idx = pattern.length;
                         temp = { val: patrn.val as string[], type: 'formula', i: diff };
@@ -515,7 +539,7 @@ export class WorkbookAutoFill {
                     }
                     else {
                         j = 0;
-                        diff = options.isRFill ? -1 : 1;
+                        diff = options.isReverseFill ? -1 : 1;
                         while (j < len) {
                             (pattern as PatternInfo[]).push({ val: patrn.val[j as number], type: 'formula', i: diff });
                             j++;
@@ -525,10 +549,10 @@ export class WorkbookAutoFill {
                 case 'time':
                     idx = pattern.length;
                     len = (patrn.val as number[]).length;
-                    diff = options.isRFill ? -1 : 1;
+                    diff = options.isReverseFill ? -1 : 1;
                     if (len === 1) {
                         const oldTimeVal: Date = intToDate(patrn.val[0]);
-                        const newTimeVal: number = dateToInt(new Date(oldTimeVal.getTime() + 60 * 60000), true);
+                        const newTimeVal: number = dateToInt(new Date(oldTimeVal.getTime() + 60 * 60000), true, true);
                         (patrn.val as number[]).push(newTimeVal);
                     }
                     regVal = this.getPredictionValue(patrn.val as number[], true);
@@ -580,7 +604,7 @@ export class WorkbookAutoFill {
         return arr;
     }
 
-    private getFormulaPattern(data: string[], options: { isRFill: boolean, isVFill: boolean }):
+    private getFormulaPattern(data: string[], options: { isReverseFill: boolean, isVFill: boolean }):
     { isInPattern: boolean, val?: number[] | string[] | number | string } {
         let j: number; let temp: string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -629,7 +653,7 @@ export class WorkbookAutoFill {
         return colCount;
     }
 
-    private getCellRefPrediction(text: string, options: { isRFill: boolean, isVFill: boolean }, length: number,
+    private getCellRefPrediction(text: string, options: { isReverseFill: boolean, isVFill: boolean }, length: number,
                                  rfrType: string): number[] | number | object {
         text = text.toUpperCase();
         const eStr: string = '';
@@ -883,5 +907,6 @@ interface PatternInfo {
     val?: string[] | number[] | string | number,
     dataVal?: string,
     copy?: boolean,
-    start?: boolean
+    start?: boolean,
+    isStartWithMonth?: boolean
 }

@@ -1000,7 +1000,9 @@ export class Renderer {
                     this.getScaledValue(top + elementBox.margin.top, 2) > this.documentHelper.visibleBounds.height) {
                     left += elementBox.width + elementBox.margin.left;
                     if (elementBox instanceof TextElementBox) {
-                        elementBox.canTrigger = true;
+                        if (this.documentHelper.owner.isSpellCheck) {
+                            elementBox.canTrigger = true;
+                        }
                         elementBox.isVisible = false;
                         if (!elementBox.isSpellChecked || elementBox.line.paragraph.isChangeDetected) {
                             elementBox.ischangeDetected = true;
@@ -1370,24 +1372,26 @@ export class Renderer {
         } else {
             this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
         }
-        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
-            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading || this.documentHelper.owner.editor.triggerPageSpellCheck))) {
-            elementBox.canTrigger = true;
-            this.leftPosition = this.pageLeft;
-            this.topPosition = this.pageTop;
-            let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
-            if (errorDetails.errorFound && !this.isPrinting) {
-                color = '#FF0000';
-                let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-                for (let i: number = 0; i < errorDetails.elements.length; i++) {
-                    let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                    if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
-                        this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+        if (this.documentHelper.owner.isSpellCheck) {
+            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
+                && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading))) {
+                elementBox.canTrigger = true;
+                this.leftPosition = this.pageLeft;
+                this.topPosition = this.pageTop;
+                let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
+                if (errorDetails.errorFound && !this.isPrinting) {
+                    color = '#FF0000';
+                    let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                    for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                        let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                        if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                            this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                        }
                     }
+                } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+                    elementBox.ischangeDetected = false;
+                    this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
                 }
-            } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
-                elementBox.ischangeDetected = false;
-                this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
         }
         let currentInfo: RevisionInfo = this.getRevisionType(revisionInfo, true);

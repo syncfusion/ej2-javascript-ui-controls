@@ -59,7 +59,7 @@ describe('Chart Control', () => {
         let dataLabel: HTMLElement;
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container',styles: 'width: 800px'  });
+            elem = createElement('div', { id: 'container' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -540,7 +540,7 @@ describe('Chart Control', () => {
         let dataLabel: HTMLElement;
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container',styles: 'width: 800px'  });
+            elem = createElement('div', { id: 'container' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -934,7 +934,7 @@ describe('Chart Control', () => {
         let dataLabel: HTMLElement;
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container',styles: 'width: 800px'  });
+            elem = createElement('div', { id: 'container' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -1145,7 +1145,7 @@ describe('Chart Control', () => {
         let dataLabel: HTMLElement;
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container',styles: 'width: 800px'  });
+            elem = createElement('div', { id: 'container'  });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -1599,7 +1599,7 @@ describe('Chart Control', () => {
         let element: HTMLElement;
         let dataLabelY; let pointY;
         let dataLabelX; let pointX;
-        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

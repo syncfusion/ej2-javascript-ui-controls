@@ -6459,7 +6459,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private adjustToScreen(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: ImageEditor = this;
-        if (!this.element.querySelector('#' + this.element.id + '_contextualToolbar').parentElement.classList.contains('e-hide') ||
+        if ((!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_contextualToolbar')) &&
+            !this.element.querySelector('#' + this.element.id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
             (!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_headWrapper'))
             && !this.element.querySelector('#' + this.element.id + '_headWrapper').parentElement.classList.contains('e-hide'))) {
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');

@@ -368,7 +368,7 @@ export class SpellChecker {
                 replaceText = exactText;
             }
 
-            const pattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s\\’]+', 'g');
+            const pattern: RegExp = new RegExp('^[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s\\’]+', 'g');
             let matches: RegExpExecArray[] = [];
             let matchInfo: RegExpExecArray;
             // eslint-disable  no-cond-assign

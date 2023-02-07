@@ -467,7 +467,28 @@ export let selfReference: Object[] = [
     }
 
 ];
-
+export let customSelfReferenceData: Object[] = [
+    {
+        'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40'
+    },
+    {
+        'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 1
+    },
+    {
+        'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 2
+    },
+    {
+        'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', 'parentID': 1
+    },
+    {
+        'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': new Date('03/14/2017'),
+        'EndDate': new Date('03/18/2017'), 'Progress': '40', 'parentID': 4
+    },
+];
 export let indentOutdentData: object[] = [
     {
         TaskID: 1,

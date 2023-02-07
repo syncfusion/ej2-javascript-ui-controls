@@ -1,7 +1,7 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1 } from './datasource.spec';
-import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
+import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData } from './datasource.spec';
+import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs, ResizeArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
@@ -12,12 +12,13 @@ import { Filter } from '../../src/treegrid/actions/filter';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { projectDatas as data } from './datasource.spec';
 import { DataManager, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';
+import { Resize } from '../../src/treegrid/actions/resize';
 
 /**
  * Grid base spec 
  */
 
-TreeGrid.Inject(ColumnMenu, Toolbar, Page, Filter, Sort);
+TreeGrid.Inject(ColumnMenu, Toolbar, Page, Filter, Sort, Resize);
 
 L10n.load({
   'de-DE': {
@@ -2188,6 +2189,65 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     });
     afterAll(() => {
       destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-68334 - Column width(resizing) not persisted while using Stacked Columns in case of enablePersistence enabled', () => {
+    let TreeGridObj: TreeGrid;
+    let headers: any;
+    let resizeStartevent: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartevent');
+    let resizeStop: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartStop');
+    let resize: EmitType<ResizeArgs> = jasmine.createSpy('resize');
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: stackedData,
+            allowPaging: true,
+            allowResizing: true,
+            enablePersistence: true,
+            resizeStart: resizeStartevent,
+            resizeStop: resizeStop,
+            resizing: resize,
+            childMapping: 'subtasks',
+            height: 350,
+            treeColumnIndex: 1,
+            pageSettings: { pageCount: 5 },
+            columns: [
+                {
+                    headerText: 'Order Details', textAlign: 'Center', columns: [
+                        { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 90 },
+                        { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 150, minWidth: 50, maxWidth: 250 },
+                        { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd'},
+                    ]
+                },
+                {
+                    headerText: 'Shipment Details', textAlign: 'Center', columns: [
+                        { field: 'shipMentCategory', headerText: 'Shipment Category', textAlign: 'Left', width: 150 },
+                        { field: 'shippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 120, format: 'yMd' },
+                        { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+                    ]
+                },
+                {
+                    headerText: 'Price Details', textAlign: 'Center', columns: [
+                        { field: 'unitPrice', headerText: 'Price per unit', format: 'c2', type: 'number', width: 110, textAlign: 'Right' },
+                        { field: 'price', headerText: 'Total Price', width: 110, format: 'c', type: 'number', textAlign: 'Right' }
+                    ]
+                }
+            ],
+        },done);
+    });
+
+    it('Resizing and refreshing the treegrid', () => {
+        TreeGridObj.autoFitColumns('orderName');
+        headers = (<HTMLElement>TreeGridObj.getHeaderTable().querySelectorAll('th')[0]).style.width;
+        TreeGridObj.refresh();
+        expect(headers).toBeFalsy();
+        let columnwidth: string | number = getObject('width', (TreeGridObj.columns[0] as ColumnModel).columns[1]);
+        expect(columnwidth === '165px').toBe(true);
+        TreeGridObj.resizeModule.destroy();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
     });
   });
 

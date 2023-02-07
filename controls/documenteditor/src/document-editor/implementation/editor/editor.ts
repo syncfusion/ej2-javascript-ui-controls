@@ -1133,7 +1133,7 @@ export class Editor {
         if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editor.isUserInsert && !this.documentHelper.owner.isShiftingEnabled) {
             this.documentHelper.owner.fireContentChange();
         }
-        if (!isNullOrUndefined(this.selection.editPosition)) {
+        if (this.owner.isSpellCheck && !isNullOrUndefined(this.selection.editPosition)) {
             this.triggerPageSpellCheck = false;
         }
     }
@@ -1661,9 +1661,13 @@ export class Editor {
                     break;
                 case 13:
                     event.preventDefault();
-                    this.documentHelper.triggerSpellCheck = true;
+                    if (this.owner.isSpellCheck) {
+                        this.documentHelper.triggerSpellCheck = true;
+                    }
                     this.handleEnterKey();
-                    this.documentHelper.triggerSpellCheck = false;
+                    if (this.owner.isSpellCheck) {
+                        this.documentHelper.triggerSpellCheck = false;
+                    }
                     break;
                 case 27:
                     event.preventDefault();
@@ -5847,7 +5851,9 @@ export class Editor {
         for (let i: number = 0; i < element.length; i++) {
             length += element[i].length;
             if (element[i] instanceof TextElementBox && (element[i] as TextElementBox).text.indexOf(' ') >= 0) {
+                if(this.owner.isSpellCheck) {
                 this.documentHelper.triggerSpellCheck = true;
+                }
             }
             let prevRevisionsCount: number = element[i].revisions.length;
             element[i].ischangeDetected = true;
@@ -13616,7 +13622,7 @@ export class Editor {
             return;
         }
         let nextIndex: number = block.containerWidget.childWidgets.indexOf(block) + 1;
-        if (block.containerWidget instanceof BodyWidget) {
+        if (block.containerWidget instanceof BodyWidget && !(block.containerWidget.containerWidget instanceof FootNoteWidget)) {
             // let startSel = this.selection.startOffset.substring(0,1);
             // let endSel = this.selection.endOffset.substring(0,1);
             if ((block.containerWidget as BodyWidget).page.bodyWidgets.length > 1) {
@@ -13682,7 +13688,7 @@ export class Editor {
             }
             //update Row index of all the cell
         } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame
-            || block.containerWidget instanceof FootNoteWidget) {
+            || (!isNullOrUndefined(block.containerWidget) && block.containerWidget.containerWidget instanceof FootNoteWidget)) {
             for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
                 let nextBlock: BlockWidget = block.containerWidget.childWidgets[i] as BlockWidget;
                 this.updateIndex(nextBlock, increaseIndex);
@@ -13804,7 +13810,9 @@ export class Editor {
     public onBackSpace(): void {
         this.removeEditRange = true;
         let selection: Selection = this.documentHelper.selection;
-        this.documentHelper.triggerSpellCheck = true;
+        if (this.owner.isSpellCheck) {
+            this.documentHelper.triggerSpellCheck = true;
+        }
         if (selection.bookmarks.length > 0) {
             this.extendSelectionToBookmarkStart();
         }
@@ -13833,7 +13841,9 @@ export class Editor {
                 this.editorHistory.currentHistoryInfo.endPosition = this.selection.startOffset;
                 this.editorHistory.updateComplexHistory();
             }
-            this.documentHelper.triggerSpellCheck = false;
+            if (this.owner.isSpellCheck) {
+                this.documentHelper.triggerSpellCheck = false;
+            }
         }
         this.removeEditRange = false;
         this.documentHelper.layout.islayoutFootnote = false;
@@ -14355,10 +14365,11 @@ export class Editor {
             inline.ischangeDetected = true;
             if (this.owner.isSpellCheck) {
                 this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                if (!inline.canTrigger) {
+                    this.documentHelper.triggerSpellCheck = false;
+                }
             }
-            if (!inline.canTrigger) {
-                this.documentHelper.triggerSpellCheck = false;
-            }
+
             if (offset === count && inline.length === 1) {
                 if (this.owner.enableTrackChanges && !this.skipTracking()) {
                     this.addRemovedNodes(inline.clone());
@@ -15845,6 +15856,7 @@ export class Editor {
                     if (currentWidth > prevWidth) {
                         element.width = currentWidth;
                     }
+                    this.documentHelper.textHelper.updateTextSize(element, paragraph);
                     if (!isNullOrUndefined(listWholeWidth) && element.width < listWholeWidth) {
                         element.nextElement.width = (listWholeWidth - element.width);
                     }

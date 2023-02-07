@@ -1,7 +1,7 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, isNumber } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
-import { isUndefined } from '@syncfusion/ej2-base';
+import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject } from '@syncfusion/ej2-base';
 
 /**
  * Check whether the text is formula or not.
@@ -682,4 +682,25 @@ export function checkRange(indexes: number[][], range: string): boolean {
         }
     }
     return false;
+}
+
+/** @hidden */
+export function parseLocaleNumber(valArr: string[], locale: string): string[] {
+    let numVal: string; let groupArr: string[];
+    const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
+    const numObj: { decimal: string, group: string } = getNumericObject(locale) as { decimal: string, group: string };
+    for (let idx: number = 0; idx < valArr.length; idx++) {
+        numVal = valArr[idx as number].toString().split(curSymbol).join('');
+        groupArr = numVal.split(numObj.group);
+        if (groupArr.length === 1) {
+            numVal = groupArr.join('');
+        }
+        if (numObj.decimal !== '.' && numVal.includes(numObj.decimal)) {
+            numVal = numVal.replace(numObj.decimal, '.');
+        }
+        if (isNumber(numVal)) {
+            valArr[idx as number] = numVal;
+        }
+    }
+    return valArr;
 }

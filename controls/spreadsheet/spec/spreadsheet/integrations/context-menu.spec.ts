@@ -247,6 +247,130 @@ describe('Spreadsheet context menu module ->', () => {
         });
     });
 
+    describe('Apply context menu for rename sheet, sorting and filtering->', function () {
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: defaultData }] }],
+            created: (): void => {
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                }
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll(function () {
+            helper.invoke('destroy');
+        });
+        it('Apply rename sheet using context menu', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(4)');
+                setTimeout(() => {
+                    let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                    editorElem.click();
+                    editorElem.value = 'Price Details 1';
+                    helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                    expect(helper.getInstance().sheets[0].name).toBe('Price Details 1');
+                    done();
+                });
+            });
+        });
+        it('Apply descending sort using context menu', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7, 2], false, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('T-Shirts');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('Casual Shoes');
+                done();
+            }, 200);
+        });
+        it('Apply custom sort using context menu', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7, 3], false, false);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                    expect(helper.invoke('getCell', [9, 0]).textContent).toBe('Sports Shoes');
+                    expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');             
+                    done();
+                }, 200);
+            });
+        });
+        it('Apply re-apply filter using context menu', (done: Function) => {
+            helper.invoke('selectRange', ['A5']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(4, 0, [6, 4], false, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.openAndClickCMenuItem(4, 0, [6, 2], false, false);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(4, 0, [6, 1], false, false);
+                    helper.click('#' + helper.id + '_sorting');
+                    helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+                    done();
+                });
+            });
+        });
+        it('Apply protect sheet and open hyperlink with hyperlink already applied in cell', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('addHyperlink', ['www.google.com', 'A1']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Sheet1', { selectCells: true });
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                    (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                    helper.invoke('unprotectSheet', ['Sheet1']);
+                    done();
+                });   
+            });
+        });
+        it('Hide column and open context menu in hidden column', (done: Function) => {
+            helper.invoke('hideColumn', [1]);
+            helper.invoke('selectRange', ['A1:C200']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].columns[1].hidden).toBeTruthy();
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                setTimeout(() => {
+                    expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                    (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                    done();
+                });
+            });
+        });
+        it('Hide column and open context menu in hidden column by selection preveious and next column', (done: Function) => {
+            helper.invoke('selectRange', ['A1:C1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                done();
+            });
+        });
+    });
+
     describe('Opening context menu selection mode as none->', function () {
         beforeAll((done: Function) => {
             model = { sheets: [{ ranges: [{ dataSource: defaultData }] }], selectionSettings: { mode: 'None' },
@@ -309,7 +433,7 @@ describe('Spreadsheet context menu module ->', () => {
             });
         });
     });
-
+    
     describe('CR-Issues->', () => {
         describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989', () => {
             beforeAll((done: Function) => {

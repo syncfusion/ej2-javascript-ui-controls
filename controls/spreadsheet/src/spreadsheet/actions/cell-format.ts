@@ -33,6 +33,9 @@ export class CellFormat {
         const cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
             this.updateMergeBorder(args, sheet);
+            if (args.formatColor && cell.style.color === args.formatColor) {
+                delete args.style.color;
+            }
             if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
                 const curStyle: CellStyleModel = {};
                 Object.keys(args.style).forEach((key: string): void => { curStyle[`${key}`] = args.style[`${key}`]; });

@@ -6562,7 +6562,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return;
         }
         if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop &&
-            !(parentsUntil(e.target as Element, 'e-filterbarcell'))) {
+            !(parentsUntil(e.target as Element, 'e-filterbarcell')) && (e.target &&
+            ['A', 'BUTTON', 'INPUT'].indexOf((e.target  as Element).tagName) === -1)) {
             e.preventDefault();
         }
         const args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;

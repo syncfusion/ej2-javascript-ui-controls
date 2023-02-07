@@ -1,5 +1,5 @@
 import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId } from '../base/index';
-import { getSingleSelectedRange, getCell, getSheetIndex } from '../base/index';
+import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs } from '../index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
@@ -831,10 +831,10 @@ export class WorkbookFormula {
         for (i = 0; i < 4; i++) {
             calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i as number])(range));
             if (cell.format) {
-                const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: calcValue, value: calcValue,
-                    format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true, skipRowFill: true };
+                const eventArgs: NumberFormatArgs = { formattedText: calcValue, value: calcValue, format: cell.format,
+                    cell: { value: calcValue, format: cell.format } };
                 this.parent.notify(getFormattedCellObject, eventArgs);
-                calcValue = eventArgs.formattedText as string;
+                calcValue = eventArgs.formattedText;
             }
             formatedValues.push(calcValue);
         }

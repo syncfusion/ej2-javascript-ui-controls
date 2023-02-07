@@ -82,6 +82,15 @@ export class MsWordPaste {
             if (pattern4.test(tempHTMLContent)) {
                 this.addTableBorderClass(elm);
             }
+            // Removing the margin for list items 
+            const liChildren: NodeList = elm.querySelectorAll('li');
+            if (liChildren.length > 0){
+                for (let i: number = 0; i < liChildren.length; i++){
+                    if (!isNOU((liChildren[i] as HTMLElement).style.marginLeft)){
+                        (liChildren[i] as HTMLElement).style.marginLeft = '';
+                    }
+                }
+            }
             e.callBack(elm.innerHTML);
         } else {
             e.callBack(elm.innerHTML);
@@ -469,7 +478,7 @@ export class MsWordPaste {
         let level: number;
         const data: { content: HTMLElement; node: Element }[] = [];
         let collection: { listType: string; content: string[]; nestedLevel: number;
-            class: string, listStyle: string, listStyleTypeName: string }[] = [];
+            class: string, listStyle: string, listStyleTypeName: string, start: number }[] = [];
         let content: string = '';
         let stNode: Element;
         let currentListStyle: string = '';
@@ -493,9 +502,24 @@ export class MsWordPaste {
             this.getListContent(listNodes[i as number]);
             let type: string;
             let listStyleType: string;
+            let startAttr: number;
             if (!isNOU(this.listContents[0])) {
                 type = this.listContents[0].trim().length > 1 ? 'ol' : 'ul';
                 listStyleType = this.getlistStyleType(this.listContents[0], type);
+                if (type === 'ol' && listNodes[i as number - 1] === null) {
+                    const startString: string = this.listContents[0].split('.')[0];
+                    const listTypes: string[] = ['A','a','I','i','α','1'];
+                    if (listTypes.indexOf(startString) === -1){
+                        if (listStyleType === 'decimal') {
+                            // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
+                            if (!isNaN(parseInt(startString))) {
+                                startAttr = parseInt(startString);
+                            }
+                        } else if ( listStyleType === 'upper-alpha' || listStyleType === 'lower-alpha'){
+                            startAttr = parseInt(startString.toLowerCase()) - 96;
+                        }
+                    }
+                }
                 const tempNode: string[] = [];
                 for (let j: number = 1; j < this.listContents.length; j++) {
                     tempNode.push(this.listContents[j as number]);
@@ -512,7 +536,7 @@ export class MsWordPaste {
                     }
                 }
                 collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName,
-                    listStyle: currentListStyle, listStyleTypeName: listStyleType });
+                    listStyle: currentListStyle, listStyleTypeName: listStyleType, start: startAttr });
             }
         }
         stNode = listNodes.shift();
@@ -577,7 +601,7 @@ export class MsWordPaste {
 
     private makeConversion(
         collection: { listType: string; content: string[]; nestedLevel: number; class: string,
-            listStyle: string, listStyleTypeName: string }[]): HTMLElement {
+            listStyle: string, listStyleTypeName: string, start: number }[]): HTMLElement {
         const root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -670,6 +694,9 @@ export class MsWordPaste {
             prevList.setAttribute('style', (!isNOU(currentStyle) ? currentStyle : ''));
             pLevel = collection[index as number].nestedLevel;
             listCount++;
+            if (!isNOU(collection[index as number].start)){
+                temp.setAttribute('start', collection[index as number].start.toString());
+            }
         }
         return root;
     }

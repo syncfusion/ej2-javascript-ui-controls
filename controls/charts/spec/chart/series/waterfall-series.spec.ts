@@ -63,7 +63,7 @@ describe('Waterfall Series', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let animationComplete: EmitType<IAnimationCompleteEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        element = createElement('div', { id: 'container' });
         let chartData: any[] = [
             { x: 'income', y: 4711 }, { x: 'Marketting and Sales', y: -427 },
             { x: 'Research', y: -588 }, { x: 'Development', y: -688 },

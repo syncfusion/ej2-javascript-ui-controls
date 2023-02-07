@@ -4,9 +4,9 @@ import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAd
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, skipDefaultValue } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs } from '../../workbook/index';
-import { beginAction, updateCell, checkCellValid } from '../../workbook/index';
+import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
@@ -868,7 +868,7 @@ export class Edit {
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (this.parent.allowDataValidation && ((cell && cell.validation) || checkColumnValidation(column, cellIndex[0], cellIndex[1])))  {
-            const value: string = newVal ? newVal : this.getEditElement(sheet).innerText;
+            const value: string = parseLocaleNumber([newVal ? newVal : this.getEditElement(sheet).innerText], this.parent.locale)[0];
             const isCell: boolean = true;
             const sheetIdx: number = this.parent.activeSheetIndex;
             let range: number[];
@@ -886,7 +886,7 @@ export class Edit {
                 this.isCellEdit = true;
             }
         }
-        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=NOW()') > -1 || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
@@ -919,7 +919,8 @@ export class Edit {
                         refreshAll: evtArgs.isFormulaDependent, isEdit: true });
             }
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
-            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
+            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(
+                cell, this.editCellData.element, this.editCellData.rowIndex, this.editCellData.colIndex);
             this.editCellData.value = <string>eventArgs.value;
             if (cell && cell.formula) {
                 this.editCellData.formula = cell.formula;
@@ -1048,35 +1049,25 @@ export class Edit {
                     if (actCell[0] === rowIdx && actCell[1] === colIdx) {
                         this.uniqueActCell = cell.value;
                     }
-                    const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, rowIdx, colIdx);
+                    const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, td, rowIdx, colIdx);
                     this.parent.refreshNode(td, eventArgs);
                 }
             }
         }
     }
 
-    private getRefreshNodeArgs(cell: CellModel, rowIdx?: number, colIdx?: number): RefreshValueArgs {
-        cell = cell ? cell : {};
-        const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-            value: cell.value, format: cell.format, onLoad: true,
-            formattedText: '', isRightAlign: false, type: 'General', cell: cell,
-            rowIndex: rowIdx === undefined ? this.editCellData.rowIndex : rowIdx,
-            colIndex: colIdx === undefined ? this.editCellData.colIndex : colIdx, isRowFill: false
-        };
+    private getRefreshNodeArgs(cell: CellModel, tdEle: HTMLElement, rowIdx: number, colIdx: number): RefreshValueArgs {
+        cell = cell || {};
+        const eventArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: '', isRightAlign: false,
+            type: 'General', cell: cell, rowIndex: rowIdx, td: tdEle, colIndex: colIdx, refresh: true, isEdit: true };
         this.parent.notify(getFormattedCellObject, eventArgs);
-        eventArgs.formattedText = this.parent.allowNumberFormatting ? eventArgs.formattedText : eventArgs.value;
-        const args: RefreshValueArgs = {
-            isRightAlign: <boolean>eventArgs.isRightAlign,
-            result: <string>eventArgs.formattedText,
-            type: <string>eventArgs.type,
-            value: <string>eventArgs.value,
-            curSymbol: <string>eventArgs.curSymbol,
-            isRowFill: <boolean>eventArgs.isRowFill
-        };
-        return args;
+        return <RefreshValueArgs>{ isRightAlign: eventArgs.isRightAlign, type: eventArgs.type, value: <string>eventArgs.value,
+            result: this.parent.allowNumberFormatting ? eventArgs.formattedText : <string>eventArgs.value, curSymbol: eventArgs.curSymbol,
+            isRowFill: eventArgs.isRowFill };
     }
 
     public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
+        this.editCellData.element = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex);
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
         const triggerEventArgs: CellEditEventArgs = this.triggerEvent('beforeCellSave');
         if (triggerEventArgs.cancel) {

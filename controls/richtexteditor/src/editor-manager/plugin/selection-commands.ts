@@ -246,6 +246,7 @@ export class SelectionCommands {
         const startText: string = range.startContainer.nodeName === '#text' ?
             range.startContainer.textContent.substring(range.startOffset, range.startContainer.textContent.length) :
             range.startContainer.textContent;
+        const nodeText : string = nodes[index as number].textContent;
         if (!(range.startContainer === range.endContainer && range.startOffset === 0
             && range.endOffset === (range.startContainer as Text).length)) {
             const nodeIndex: number[] = [];
@@ -381,13 +382,53 @@ export class SelectionCommands {
                     parentElement = parentElement.parentElement;
                     liElement = parentElement;
                 }
+                let num: number = index;
+                let liChildContent : string = '';
+                while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && liElement.textContent.replace('/\u200B/g', '').trim().includes(nodes[num as number].textContent.trim())) {
+                    liChildContent = ' ' + nodes[num as number].textContent.trim() + liChildContent ;
+                    num--;
+                }
+                let isNestedList : boolean = false;
+                let nestedListCount : number = 0;
+                let isNestedListItem : boolean = false;
+                if (!isNOU(liElement) && liElement.childNodes) {
+                    for (let num: number = 0; num < liElement.childNodes.length; num++) {
+                        if (liElement.childNodes[num as number].nodeName === ('OL' || 'UL')){
+                            nestedListCount++;
+                            isNestedList = true;
+                        }
+                    }
+                }
                 if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                    liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                    liElement.textContent.split('\u200B').join('').trim() === liChildContent.split('\u200B').join('').trim()) {
                     if (format === 'fontsize') {
                         liElement.style.fontSize = value;
                     } else {
                         liElement.style.color = value;
                         liElement.style.textDecoration = 'inherit';
+                    }
+                }
+                else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && isNestedList) {
+                    if (isNestedList && nestedListCount > 0) {
+                        for (let num : number = 0; num < liElement.childNodes.length; num++) {
+                            if (nodes[index as number].textContent === liElement.childNodes[num as number].textContent && nodes[index as number].textContent === nodeText && liElement.textContent.replace('/\u200B/g', '').trim().includes(liChildContent.split('\u200B').join('').trim())) {
+                                isNestedListItem = true;
+                            }
+                        }
+                    }
+                    if (isNestedListItem) {
+                        for (let num : number = 0; num < liElement.childNodes.length; num++) {
+                            if (liElement.childNodes[num as number].nodeName === ('OL' || 'UL')) {
+                                (liElement.childNodes[num as number] as HTMLElement).style.fontSize = 'initial';
+                            }
+                        }
+                        if (format === 'fontsize') {
+                            liElement.style.fontSize = value;
+                        }
+                        else {
+                            liElement.style.color = value;
+                            liElement.style.textDecoration = 'inherit';
+                        }
                     }
                 }
             }

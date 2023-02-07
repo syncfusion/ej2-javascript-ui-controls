@@ -17,7 +17,7 @@ import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart, insertDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
-import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction } from '../../workbook/index';
+import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction, NumberFormatArgs } from '../../workbook/index';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip, DataLabel);
@@ -143,8 +143,8 @@ export class SpreadsheetChart {
         if (cell) {
             let value: string | number;
             if (cell.format) {
-                const formatObj: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
-                    formattedText: cell.value, isRightAlign: false, cell: cell, rowIndex: rIdx.toString(), colIndex: cIdx.toString() };
+                const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
+                    rowIndex: rIdx, colIndex: cIdx };
                 this.parent.notify(getFormattedCellObject, formatObj);
                 if (typeof (formatObj.value) === 'number') {
                     // eslint-disable-next-line no-useless-escape
@@ -305,8 +305,8 @@ export class SpreadsheetChart {
                 if (isHiddenCol(sheet, minc)) { minc++; continue; }
                 const cell: CellModel = getCell(minr, minc, sheet, false, true);
                 if (cell.format && !isYvalue) {
-                    const forArgs: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
-                        formattedText: cell.value, rowIndex: minr.toString(), colIndex: minc.toString(), isRightAlign: false, cell: cell };
+                    const forArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, rowIndex: minr,
+                        colIndex: minc, cell: cell };
                     this.parent.notify(getFormattedCellObject, forArgs);
                     value = forArgs.formattedText ? forArgs.formattedText.toString() : '';
                 } else {

@@ -936,6 +936,12 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      */
     @Property(false)
     public isMultiline: boolean;
+    
+    /**
+     * Enable or disable the isTransparent state.
+     */
+    @Property(false)
+    private isTransparent: boolean;
 
     /**
      * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
@@ -944,7 +950,7 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      * @default false
      */
     @Property(false)
-    public insertSpaces: boolean;
+    private insertSpaces: boolean;
 
     /**
      * Gets or sets the items to be displayed for drop down/ listbox.

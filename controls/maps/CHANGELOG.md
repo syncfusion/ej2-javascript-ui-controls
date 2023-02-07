@@ -8,6 +8,31 @@
 
 ## [Unreleased]
 
+## 20.4.49 (2023-02-07)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I430846` - Maps will be rendered properly when the `zoomFactor` and `centerPosition` is set to their initial value using `zoomByPosition` method.
+- `#I430070` - Marker templates will now render properly in the Maps when they are contained within an HTML div element with "scroll" overflow CSS style.
+
+## 20.4.48 (2023-02-01)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I430070` - Marker templates will now render properly in the Maps when they are contained within an HTML div element with "scroll" overflow CSS style.
+
+## 20.4.44 (2023-01-18)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I426534` - When the destroy method is invoked, the resize event is now properly removed from the Maps control.
+
 ## 20.4.38 (2022-12-21)
 
 ### Maps

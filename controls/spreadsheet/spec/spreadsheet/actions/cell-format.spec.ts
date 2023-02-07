@@ -211,6 +211,105 @@ describe('Cell Format ->', () => {
         });
     });
 
+    describe('Color Picker ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                actionBegin(args: any) {
+                    if (args.action === 'format') {
+                      args.args.eventArgs.cancel = true;
+                    }
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Switch between color picker to color palatte ->', (done: Function) => {
+            helper.click('_fill_color_picker .e-dropdown-btn');
+            helper.click('.e-colorpicker-popup .e-mode-switch-btn');
+            setTimeout(() => {
+                helper.click('.e-colorpicker-popup .e-mode-switch-btn'); 
+                done();
+            });
+        });
+        it('Cancelling cell fill color ->', (done: Function) => {
+            helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#ffff00ff"]');
+            expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toBe('');
+            done();
+        });
+        it('Cancelling text fill color ->', (done: Function) => {
+            helper.click('_font_color_picker .e-dropdown-btn');
+            helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#ff0000ff"]');
+            expect(helper.invoke('getCell', [0, 0]).style.color).toBe('');
+            done();
+        });
+    });
+
+    describe('Apply border, image and chart with cell formatting->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply cell format with merged cell and small sized row->', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(15, 0);
+            helper.invoke('merge', ['A1:B1']);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].colSpan).toBe(2);
+                spreadsheet.cellFormat({ fontStyle: 'italic'});
+                spreadsheet.cellFormat({ fontWeight: 'bold'});
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].style.fontStyle).toBe('italic');
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].style.fontWeight).toBe('bold');
+                helper.invoke('selectRange', ['A11']);
+                done();
+            });
+        });
+        it('Alt enter', (done: Function) => {
+            helper.triggerKeyNativeEvent(113);
+            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            helper.triggerKeyNativeEvent(13, false, false, null, 'keyup', true);
+            helper.triggerKeyNativeEvent(13);
+            done();
+        });
+        it('Apply all border with alt + enter edited cell->', (done: Function) => {
+            helper.invoke('selectRange', ['A11']);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A11']);
+                helper.getElement('#' + helper.id + '_borders').click();
+                helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
+                expect(helper.getInstance().sheets[0].rows[10].cells[0].style.borderRight).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[0].rows[10].cells[0].style.borderBottom).toBe('1px solid #000000');
+                done();
+            });
+        });
+        it('Apply top border in below merged cell->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Top Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].style.borderTop).toBe('1px solid #000000');
+            done();
+        });
+        it('Delete image with clear all option->', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'C3', isPublic: true });
+            helper.getElement('#' + helper.id + '_clear').click();
+            helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+            expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+            done();
+        });
+        it('Delete chart with clear all option->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_clear').click();
+            helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).toBeNull();
+            done();
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('fb22572, EJ2-62186 ->', () => {
             beforeEach((done: Function) => {

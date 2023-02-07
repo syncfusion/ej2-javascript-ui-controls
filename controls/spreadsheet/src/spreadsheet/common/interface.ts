@@ -424,6 +424,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     sortedCellDetails?: object[];
     cfClearActionArgs?: object;
     cfActionArgs?: { cfModel: ConditionalFormatModel[], sheetIdx: number };
+    isColSelected?: boolean;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -462,18 +463,18 @@ export interface BeforeImageRefreshData {
 }
 
 export interface PreviousCellDetails {
-    rowIndex: number;
+    rowIndex?: number;
     colIndex: number;
-    style: object;
-    format: string;
-    value: string;
-    formula: string;
-    wrap: boolean;
-    rowSpan: number;
-    colSpan: number;
-    hyperlink: string | HyperlinkModel;
-    image: ImageModel[];
-    chart: ChartModel[];
+    style?: object;
+    format?: string;
+    value?: string;
+    formula?: string;
+    wrap?: boolean;
+    rowSpan?: number;
+    colSpan?: number;
+    hyperlink?: string | HyperlinkModel;
+    image?: ImageModel[];
+    chart?: ChartModel[];
     isLocked?: boolean;
     validation?: CellValidationEventArgs
 }

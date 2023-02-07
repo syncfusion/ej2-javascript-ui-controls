@@ -1596,7 +1596,7 @@ export function updateAction(
         break;
     case 'removeValidation':
         if (isRedo !== false) {
-            spreadsheet.notify(removeDataValidation, { range: eventArgs.range });
+            spreadsheet.notify(removeDataValidation, { range: eventArgs.range, isCol: eventArgs.isColSelected });
         }
         break;
     case 'addDefinedName':

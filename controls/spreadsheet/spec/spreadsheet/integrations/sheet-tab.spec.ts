@@ -1,4 +1,4 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule, SheetModel } from '../../../src/index';
+import { SpreadsheetModel, Spreadsheet, BasicModule, SheetModel, DialogBeforeOpenEventArgs } from '../../../src/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 
@@ -96,6 +96,241 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
             expect(sheet.rows[1].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
             done();
+        });
+    });
+
+    describe('List all sheets, rename sheet and hide sheet testing ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }, { }, { }, { }, { }, { }, { }, { },
+            { }, { }, { }, { }, { },  { }, { }, { }, { }, { }, { }, { state: 'VeryHidden' }], activeSheetIndex: 1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Open list all sheet with more than 20 sheets', (done: Function) => {
+            helper.click('.e-sheets-list');
+            setTimeout(() => {
+                let popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
+                expect(popUpElem.firstElementChild.childElementCount).toBe(21);
+                helper.click('.e-sheets-list');
+                done();
+            });
+        });
+        it('Hide sheet', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Click hidden sheet in list all sheet popup with protected workbook', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                helper.click('.e-protectworkbook-dlg .e-primary');
+                helper.click('.e-sheets-list');
+                helper.getElement('.e-dropdown-popup.e-sheets-list .e-hide').click();
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets.length).toBe(21);
+                    expect(helper.getInstance().activeSheetIndex).toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Open context menu with disabled item to check delete item', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('Rename sheet after disabling rename item', (done: Function) => {
+            helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+            expect(helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename')).toBeNull();
+            done();
+        });
+        it('Rename sheet name and mouse down by clicking in spreadsheet', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                editorElem.click();
+                editorElem.value = '123';
+                helper.click('.e-sheets-list');
+                setTimeout(() =>{ 
+                    helper.click('.e-sheets-list');
+                    done();
+                });
+            });
+        });
+        it('Rename sheet name with invalid characters', (done: Function) => {
+            helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = '///';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Rename sheet name with empty characters', (done: Function) => {
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = '  ';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            expect(helper.getInstance().sheets[0].name).toBe('  ');
+            done();
+        });
+        it('Rename sheet name with no name', (done: Function) => {
+            helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = '';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Rename sheet name with empty characters', (done: Function) => {
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = 'Price Details';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            expect(helper.getInstance().sheets[0].name).toBe('Price Details');
+            done();
+        });
+        it('Cancelling rename sheet dialog error', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = '///';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull(); 
+                editorElem.click();
+                editorElem.value = 'Price Details';
+                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                done();
+            });
+        });
+        it('Cancelling delete sheet alert dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-delete-sheet-dlg.e-popup-open')).toBeNull();
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Cancelling hide sheet->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }],
+                actionBegin(args: any) {
+                    if (args.action === 'hideSheet') {
+                      args.args.eventArgs.cancel = true;
+                    }
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cancelling hide sheet in action begin event', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toBe(0);
+                    expect(helper.getInstance().sheets.length).toBe(2);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Delete empty sheet testing ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }, { }], activeSheetIndex: 1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete empty sheet', (done: Function) => {
+            expect(helper.getInstance().activeSheetIndex).toBe(1);
+            expect(helper.getInstance().sheets.length).toBe(3);
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(function () {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toBe(1);
+                    expect(helper.getInstance().sheets.length).toBe(2);
+                    done();
+                });
+            });
+        });
+        it('Destroy the active sheet', (done: Function) => {
+            helper.getInstance().sheetTabsModule.destroySheet();
+            setTimeout(function () {
+                expect(helper.getInstance().activeSheetIndex).toBe(0);
+                expect(helper.getInstance().sheets.length).toBe(1);
+                done();
+            });
+        });
+        it('Delete the single sheet in workbook to check the error', (done: Function) => {
+            helper.getInstance().sheetTabsModule.removeSheetTab(0);
+            setTimeout(function () {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Cancelling the single sheet delete error dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.getInstance().sheetTabsModule.removeSheetTab(0);
+            setTimeout(function () {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+                done();
+            });
         });
     });
 

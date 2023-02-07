@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer } from '../../../src/index';
+import { InventoryList } from '../util/datasource.spec';
 import { L10n, setCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
@@ -9,11 +10,12 @@ describe('Spreadsheet Number Format Module ->', (): void => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
     describe('Custom number format ->', (): void => {
-        let sheet: any;
+        let sheet: any; let cell: any; let cellEle: HTMLElement;
         beforeAll((done: Function) => {
             model = {
                 sheets: [{ rows: [{ cells: [{ value: 'Mar-2020' }, { value: 'Apr-10' }, { value: '2020-May' }, { value: '22-jun' },
-                { value: '13-Jul-2020' }] }] }]
+                { value: '13-Jul-2020' }, { value: '11:34:32 AM' }, { value: '11:34:32' }, { value: '11:34' }, { value: '11:34 AM' },
+                { value: '11 AM' }] }] }]
             };
             helper.initializeSpreadsheet(model, done);
         });
@@ -41,6 +43,72 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle[4].textContent).toBe('13-Jul-20');
             done();
         });
+        it('Automatic custom time format deduction based on cell value checking', (done: Function) => {
+            const cells: CellModel[] = sheet.rows[0].cells;
+            const cellEle: Element[] = helper.invoke('getRow', [0]).cells;
+            expect(cells[5].value).toBe('0.4823148148148148');
+            expect(cells[5].format).toBe('h:mm:ss AM/PM');
+            expect(cellEle[5].textContent).toBe('11:34:32 AM');
+            expect(cells[6].value).toBe('0.4823148148148148');
+            expect(cells[6].format).toBe('h:mm:ss');
+            expect(cellEle[6].textContent).toBe('11:34:32');
+            expect(cells[7].value).toBe('0.48194444444444445');
+            expect(cells[7].format).toBe('h:mm');
+            expect(cellEle[7].textContent).toBe('11:34');
+            expect(cells[8].value).toBe('0.48194444444444445');
+            expect(cells[8].format).toBe('h:mm AM/PM');
+            expect(cellEle[8].textContent).toBe('11:34 AM');
+            expect(cells[9].value).toBe('0.4583333333333333');
+            expect(cells[9].format).toBe('h AM/PM');
+            expect(cellEle[9].textContent).toBe('11 AM');
+            done();
+        });
+        it('Custom short date format checking', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '43891' }, 'B2']);
+            let cells: any[] = sheet.rows[1].cells;
+            expect(cells[1].value).toBe(43891);
+            helper.invoke('numberFormat', ['mmm-yy', 'B2']);
+            let cellElems: Element[] = helper.invoke('getRow', [1]).cells;
+            expect(cellElems[1].textContent).toBe('Mar-20');
+            helper.invoke('updateCell', [{ value: '43952' }, 'B2']);
+            expect(cellElems[1].textContent).toBe('May-20');
+            helper.invoke('updateCell', [{ value: '44661' }, 'C2']);
+            expect(cells[2].value).toBe(44661);
+            helper.invoke('numberFormat', ['dd-mmm', 'C2']);
+            expect(cellElems[2].textContent).toBe('10-Apr');
+            helper.invoke('updateCell', [{ value: '44734' }, 'C2']);
+            expect(cellElems[2].textContent).toBe('22-Jun');
+            helper.invoke('updateCell', [{ value: '44025' }, 'D2']);
+            expect(cells[3].value).toBe(44025);
+            helper.invoke('numberFormat', ['d-mmm-yy', 'D2']);
+            expect(cellElems[3].textContent).toBe('13-Jul-20');
+            helper.invoke('updateCell', [{ value: 'Mar-2020', format: 'mmm-yy' }, 'B3']);
+            cells = sheet.rows[2].cells;
+            expect(cells[1].value).toBe('43891');
+            cellElems = helper.invoke('getRow', [2]).cells;
+            expect(cellElems[1].textContent).toBe('Mar-20');
+            helper.invoke('updateCell', [{ value: '10-Apr', format: 'dd-mmm' }, 'C3']);
+            expect(cells[2].value).toBe('45026');
+            expect(cellElems[2].textContent).toBe('10-Apr');
+            helper.invoke('updateCell', [{ value: '13-Jul-2020', format: 'd-mmm-yy' }, 'D3']);
+            expect(cells[3].value).toBe('44025');
+            expect(cellElems[3].textContent).toBe('13-Jul-20');
+            done();
+        });
+            
+        it('EJ2-63249 -> $#,##0_);[Red]($#,##0) number format', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0_);[Red]($#,##0)', 'H1']);
+            helper.invoke('updateCell', [{ value: '8529.22' }, 'H1']);
+            const cell: any = helper.getInstance().sheets[0].rows[0].cells[7];
+            expect(cell.value).toBe(8529.22);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 7]);
+            expect(cellEle.textContent).toBe('$8,529 ');
+            helper.edit('H1', '-8529.22');
+            expect(cell.value).toBe(-8529.22);
+            expect(cellEle.textContent).toBe('($8,529)');
+            expect(cellEle.style.color).toBe('red');
+            done();
+        });
         it('Custom conditions format checking', (done: Function) => {
             helper.invoke('numberFormat', ['[Red][<=100];[Blue][>101]', 'A2']);
             const cell: CellModel = sheet.rows[1].cells[0];
@@ -52,7 +120,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe('20');
             expect(cellEle.style.color).toBe('red');
             helper.invoke('updateCell', [{ value: '101' }, 'A2']);
-            expect(cellEle.textContent).toBe('#####');
+            expect(cellEle.textContent).toBe('########');
             expect(cellEle.style.color).toBe('');
             helper.invoke('updateCell', [{ value: '120' }, 'A2']);
             expect(cellEle.textContent).toBe('120');
@@ -61,6 +129,233 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(sheet.rows[3].cells[0].value).toBe(111111111111111110000);
             expect(helper.invoke('getCell', [3, 0]).textContent).toBe('1.11111E+20');
             done();
+        });
+        it('Custom number format on different number representation checking', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '12.68' }, 'A2']);
+            cell = getCell(1, 0, helper.invoke('getActiveSheet'));
+            expect(cell.value).toBe(12.68);
+            helper.invoke('numberFormat', ['0', 'A2']);
+            cellEle = helper.invoke('getCell', [1, 0]);
+            expect(cellEle.textContent).toBe('13');
+            helper.invoke('numberFormat', ['0.0', 'A2']);
+            expect(cell.value).toBe(12.68);
+            expect(cellEle.textContent).toBe('12.7');
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            helper.invoke('numberFormat', ['#,##0', 'A2']);
+            expect(cell.value).toBe(4234);
+            cellEle = helper.invoke('getCell', [1, 0]);
+            expect(cellEle.textContent).toBe('4,234');
+            helper.invoke('numberFormat', ['#,##0.00', 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('4,234.00');
+            helper.invoke('numberFormat', ['#,##0_);(#,##0)', 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('4,234 ');
+            helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('(4,234)');
+            helper.invoke('numberFormat', ['#,##0_);[Red](#,##0)', 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('(4,234)');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('4,234 ');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('numberFormat', ['#,##0.00_);(#,##0.00)', 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('4,234.00 ');
+            helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('(4,234.00)');
+            helper.invoke('numberFormat', ['#,##0.00_);[Red](#,##0.00)', 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('(4,234.00)');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('4,234.00 ');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('');
+            done();
+        });
+        it('Custom currency number format checking', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0_);($#,##0)', 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('$4,234 ');
+            helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('($4,234)');
+            helper.invoke('numberFormat', ['$#,##0_);[Red]($#,##0)', 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('($4,234)');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('$4,234 ');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('numberFormat', ['$#,##0.00_);($#,##0.00)', 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('$4,234.00 ');
+            helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('($4,234.00)');
+            helper.invoke('numberFormat', ['$#,##0.00_);[Red]($#,##0.00)', 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe('($4,234.00)');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            expect(cell.value).toBe(4234);
+            expect(cellEle.textContent).toBe('$4,234.00 ');
+            expect(cell.style).toBeUndefined();
+            expect(cellEle.style.color).toBe('');
+            done();
+        });
+        it('Custom percentage number format checking', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '4234.57' }, 'A2']);
+            expect(cell.value).toBe(4234.57);
+            helper.invoke('numberFormat', ['0%', 'A2']);
+            expect(cellEle.textContent).toBe('423457%');
+            helper.invoke('numberFormat', ['0.00%', 'A2']);
+            expect(cell.value).toBe(4234.57);
+            expect(cellEle.textContent).toBe('423457.00%');
+            helper.invoke('updateCell', [{ value: '4234.5768' }, 'A2']);
+            expect(cell.value).toBe(4234.5768);
+            expect(cellEle.textContent).toBe('423457.68%');
+            helper.invoke('numberFormat', ['0.0%', 'A2']);
+            expect(cell.value).toBe(4234.5768);
+            expect(cellEle.textContent).toBe('423457.7%');
+            helper.invoke('numberFormat', ['0%', 'A2']);
+            expect(cell.value).toBe(4234.5768);
+            expect(cellEle.textContent).toBe('423458%');
+            done();
+        });
+        it('Custom accounting number format checking', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
+            expect(cell.value).toBe(4234);
+            helper.invoke('numberFormat', ['_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)', 'A2']);
+            expect(cellEle.textContent).toBe(' $4,234 ');
+            helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
+            expect(cell.value).toBe(-4234);
+            expect(cellEle.textContent).toBe(' $  (4,234)');
+            helper.invoke('updateCell', [{ value: 'Test' }, 'A2']);
+            expect(cell.value).toBe('Test');
+            expect(cellEle.textContent).toBe(' Test ');
+            helper.invoke('updateCell', [{ value: '0' }, 'A2']);
+            expect(cell.value).toBe(0);
+            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left">$</span>- ');
+            helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
+            expect(cell.value).toBe(4234.567);
+            expect(cellEle.textContent).toBe(' $4,235 ');
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'A2']);
+            expect(cell.value).toBe(4234.567);
+            expect(cellEle.textContent).toBe(' $4,234.57 ');
+            helper.invoke('updateCell', [{ value: '-4234.567' }, 'A2']);
+            expect(cell.value).toBe(-4234.567);
+            expect(cellEle.textContent).toBe(' $  (4,234.57)');
+            helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A2']);
+            expect(cell.value).toBe(-4234.567);
+            expect(cellEle.textContent).toBe('   (4,234.57)');
+            helper.invoke('numberFormat', ['_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)', 'A2']);
+            expect(cell.value).toBe(-4234.567);
+            expect(cellEle.textContent).toBe('   (4,235)');
+            helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
+            expect(cell.value).toBe(4234.567);
+            expect(cellEle.textContent).toBe(' 4,235 ');
+            helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A2']);
+            expect(cell.value).toBe(4234.567);
+            expect(cellEle.textContent).toBe(' 4,234.57 ');
+            done();
+        });
+        it('EJ2-63249 -> Fraction custom number format', (done: Function) => {
+            helper.invoke('numberFormat', ['# ?/?', 'G1']);
+            helper.invoke('updateCell', [{ value: '18488.80' }, 'G1']);
+            const cell: any = helper.getInstance().sheets[0].rows[0].cells[6];
+            expect(cell.value).toBe(18488.80);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 6]);
+            //expect(cellEle.textContent).toBe('18488 4/5');
+            helper.invoke('updateCell', [{ value: '8529.22' }, 'G1']);
+            expect(cell.value).toBe(8529.22);
+            //expect(cellEle.textContent).toBe('8529 2/9');
+            helper.invoke('numberFormat', ['# ??/??', 'G1']);
+            //expect(cellEle.textContent).toBe('8529 11/50');
+            helper.invoke('numberFormat', ['# ???/???', 'G1']);
+            helper.invoke('updateCell', [{ value: '9709.49' }, 'G1']);
+            expect(cell.value).toBe(9709.49);
+            expect(cellEle.textContent).toBe('9709 49/100');
+            done();
+        });
+        it('Other custom number formats', (done: Function) => {
+            helper.invoke('numberFormat', ['#, K', 'H1']);
+            helper.invoke('updateCell', [{ value: '10' }, 'H1']);
+            const cell: any = helper.getInstance().sheets[0].rows[0].cells[7];
+            expect(cell.value).toBe(10);
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 7]);
+            expect(cellEle.textContent).toBe(' K');
+            helper.invoke('updateCell', [{ value: '2022' }, 'H1']);
+            expect(cell.value).toBe(2022);
+            expect(cellEle.textContent).toBe('2 K');
+            helper.invoke('updateCell', [{ value: '202245' }, 'H1']);
+            expect(cell.value).toBe(202245);
+            expect(cellEle.textContent).toBe('202 K');
+            helper.invoke('numberFormat', ['#.???', 'H1']);
+            helper.invoke('updateCell', [{ value: '20' }, 'H1']);
+            expect(cell.value).toBe(20);
+            expect(cellEle.textContent).toBe('20.      ');
+            helper.invoke('updateCell', [{ value: '20.2' }, 'H1']);
+            expect(cell.value).toBe(20.2);
+            expect(cellEle.textContent).toBe('20.2    ');
+            helper.invoke('updateCell', [{ value: '20.25' }, 'H1']);
+            expect(cell.value).toBe(20.25);
+            expect(cellEle.textContent).toBe('20.25  ');
+            helper.invoke('updateCell', [{ value: '20.256' }, 'H1']);
+            expect(cell.value).toBe(20.256);
+            expect(cellEle.textContent).toBe('20.256');
+            helper.invoke('numberFormat', ['# kgs', 'H1']);
+            expect(cell.value).toBe(20.256);
+            expect(cellEle.textContent).toBe('20 kgs');
+            helper.invoke('numberFormat', ['#.## kgs', 'H1']);
+            expect(cell.value).toBe(20.256);
+            expect(cellEle.textContent).toBe('20.26 kgs');
+            helper.invoke('numberFormat', ["#.# 'kgs'", 'H1']);
+            expect(cell.value).toBe(20.256);
+            expect(cellEle.textContent).toBe('20.3 kgs');
+            done();
+        });
+    });
+    describe('Number format and dependent support ->', (): void => {
+        let sheet: any; let cell: any; let cellEle: HTMLElement;
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: InventoryList }], selectedRange: 'D1:D17' }] };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('Apply customized number format through custom dialog', (done: Function) => {
+            helper.invoke('numberFormat', ['#,##0.00', 'D1:D17']);
+            
+
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('#' + helper.id + '_applyfilter');
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'D1:D17' }]);
+            sheet = helper.getInstance().sheets[0];
+            expect(sheet.rows[1].cells[3].value).toBe('169.50');
+            cellEle = helper.invoke('getCell', [1, 3]);
+            expect(cellEle.textContent).toBe('169.50');
+            expect((cellEle.querySelectorAll('.e-databar')[1] as HTMLElement).style.width).toBe('85%');
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Descending' } }]).then((): void => {
+                expect(sheet.rows[1].cells[3].value).toBe(201.25);
+                expect(cellEle.textContent).toBe('201.25');
+                expect((cellEle.querySelectorAll('.e-databar')[1] as HTMLElement).style.width).toBe('100%');
+                done();
+            });
         });
     });
     describe('CR Issues ->', (): void => {
@@ -136,7 +431,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 td = helper.invoke('getCell', [4, 0]);
                 expect(td.textContent).toBe('$11,111,233 ');
                 expect(td.classList).toContain('e-right-align');
-                expect(getCell(4, 0, sheet).value).toBe('$11,111,233');
+                expect(getCell(4, 0, sheet).value).toBe('11111233');
 
                 helper.invoke('numberFormat', ['$#,##0.00_);[Red]($#,##0.00)', 'A6']);
                 helper.edit('A6', '$1,1233');
@@ -157,7 +452,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 td = helper.invoke('getCell', [6, 0]);
                 expect(td.textContent).toBe('(10)');
                 expect(td.classList).toContain('e-right-align');
-                expect(getCell(6, 0, sheet).value).toBe('-10.23499');
+                expect(getCell(6, 0, sheet).value as any).toBe(-10.23499);
                 done();
             });
             it('Text align dropdown icon not updated while applying text format for numbers', (done: Function) => {
@@ -191,15 +486,20 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             });
             it('Mistakenly auto detecting as currency format for cell data which contains text with currency number', (done: Function) => {
                 helper.edit('D2', 'Claims greater than $2,500');
-                const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
+                let cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
                 expect(cell.value).toBe('Claims greater than $2,500');
                 const cellEle: HTMLElement = helper.invoke('getCell', [1, 3]);
                 expect(cellEle.textContent).toBe('Claims greater than $2,500');
                 expect(cell.format).toBeUndefined();
                 helper.edit('D2', '$2,500');
                 expect(cell.value).toBe('2500');
+                expect(cell.format).toBe('$#,##0');
+                expect(cellEle.textContent).toBe('$2,500');
+                helper.edit('D3', '$2,500.667');
+                cell = helper.getInstance().sheets[0].rows[2].cells[3];
+                expect(cell.value).toBe('2500.667');
                 expect(cell.format).toBe('$#,##0.00');
-                expect(cellEle.textContent).toBe('$2,500.00');
+                expect(helper.invoke('getCell', [2, 3]).textContent).toBe('$2,500.67');
                 done();
             });
             it('Currency code change checking', (done: Function) => {
@@ -260,24 +560,6 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
                 done();
             });
-            it('SF-418778 -> Percentage format for value 0 and decimal format with # & 0', (done: Function) => {
-                helper.invoke('updateCell', [{ value: 0 }, 'A17']);
-                helper.invoke('numberFormat', ['#,##0%_);(#,##0%);0%_)', 'A17']);
-                const cell: any = helper.getInstance().sheets[0].rows[16].cells[0];
-                expect(cell.value).toBe(0);
-                const cellEle: HTMLElement = helper.invoke('getCell', [16, 0]);
-                expect(cellEle.textContent).toBe('0% ');
-                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
-                helper.invoke('numberFormat', ['#,##0%_);(#,##0%);0.00%_)', 'A17']);
-                expect(cellEle.textContent).toBe('0.00% ');
-                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
-                helper.invoke('updateCell', [{ value: 0.5 }, 'A17']);
-                expect(cell.value).toBe(0.5);
-                helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A17']);
-                expect(cellEle.textContent).toBe(' 0.50 ');
-                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
-                done();
-            });
             it('EJ2-64839 -> String type cell values are right aligned while applying custom date format', (done: Function) => {
                 helper.invoke('updateCell', [{ value: 'Text' }, 'A16']);
                 helper.invoke('numberFormat', ['dd-MMM', 'A16']);
@@ -296,6 +578,40 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(sheet.rows[15].cells[0].value).toBe('37110');
                 expect(cellEle.textContent).toBe('07-Aug');
                 expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+                done();
+            });
+            it('EJ2-63248 - ##0.0E+0  format is not working', (done: Function) => {
+                helper.invoke('updateCell', [{ value: '17866.19' }, 'F1']);
+                const cell: any = helper.getInstance().sheets[0].rows[0].cells[5];
+                expect(cell.value).toBe(17866.19);
+                helper.invoke('numberFormat', ['##0.0E+0', 'F1']);
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 5]);
+                expect(cellEle.textContent).toBe('17.9E+3');
+                helper.invoke('numberFormat', ['#0.0E+0', 'F1']);
+                expect(cellEle.textContent).toBe('1.8E+4');
+                helper.invoke('updateCell', [{ value: '2338.74' }, 'F1']);
+                expect(cell.value).toBe(2338.74);
+                expect(cellEle.textContent).toBe('23.4E+2');
+                helper.invoke('numberFormat', ['##0.0E+0', 'F1']);
+                expect(cellEle.textContent).toBe('2.3E+3');
+                helper.invoke('updateCell', [{ value: '20' }, 'F1']);
+                expect(cell.value).toBe(20);
+                expect(cellEle.textContent).toBe('20.0E+0');
+                helper.invoke('updateCell', [{ value: '9967.74' }, 'F1']);
+                expect(cell.value).toBe(9967.74);
+                expect(cellEle.textContent).toBe('10.0E+3');
+                helper.invoke('updateCell', [{ value: '13853.09' }, 'F1']);
+                expect(cell.value).toBe(13853.09);
+                expect(cellEle.textContent).toBe('13.9E+3');
+                helper.invoke('updateCell', [{ value: '0.02' }, 'F1']);
+                expect(cell.value).toBe(0.02);
+                expect(cellEle.textContent).toBe('20.0E-3');
+                helper.invoke('updateCell', [{ value: '0.11555489' }, 'F1']);
+                expect(cell.value).toBe(0.11555489);
+                expect(cellEle.textContent).toBe('115.6E-3');
+                helper.invoke('updateCell', [{ value: '0.000089' }, 'F1']);
+                expect(cell.value).toBe(0.000089);
+                expect(cellEle.textContent).toBe('89.0E-6');
                 done();
             });
         });

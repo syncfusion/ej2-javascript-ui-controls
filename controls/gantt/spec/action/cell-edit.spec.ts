@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, unscheduledData3, customProgressData,customZoomingdata } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, unscheduledData3, customProgressData,customZoomingdata,customSelfReferenceData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -1848,5 +1848,52 @@ describe('Gantt editing action', () => {
         triggerMouseEvent(row, 'mousedown', 10, 10, false, true);
         triggerMouseEvent(row, 'mousedown', 10, 10, false, true);
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+    });
+});
+describe('Console error in parent ID', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: customSelfReferenceData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    parentID: 'parentID',
+                },
+                resources: resourcesData,
+                projectStartDate: new Date('03/03/2017'),
+                projectEndDate: new Date('04/18/2017'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                splitterSettings: {
+                    columnIndex: 9
+                },
+                allowUnscheduledTasks: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Checking gantt renders', () => {
+        expect(ganttObj.currentViewData.length > 0).toBe(true);
     });
 });

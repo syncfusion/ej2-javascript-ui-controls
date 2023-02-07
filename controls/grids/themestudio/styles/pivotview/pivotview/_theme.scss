@@ -111,10 +111,8 @@
     }
 
     .e-toolbar .e-tbar-btn {
-      background-color: transparent;
-
-      @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
-        border: none !important;
+      @if ($skin-name == 'tailwind') {
+        background-color: transparent;
       }
 
       &:hover {

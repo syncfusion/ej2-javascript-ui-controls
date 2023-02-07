@@ -898,7 +898,7 @@ describe('Chart Control', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
+        let elem: HTMLElement = createElement('div', { id: 'container' });
         let targetElement: HTMLElement;
         let resetElement: HTMLElement;
         let x: number; let y: number;
@@ -1107,7 +1107,7 @@ describe('Chart Control', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

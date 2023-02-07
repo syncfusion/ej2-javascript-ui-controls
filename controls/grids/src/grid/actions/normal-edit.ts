@@ -171,13 +171,11 @@ export class NormalEdit {
         }
         this.renderer.update(editargs);
         this.uid = tr.getAttribute('data-uid');
-        if (!gObj.editSettings.template) {
-            gObj.editModule.applyFormValidation();
-        }
+        gObj.editModule.applyFormValidation();
         editargs.type = 'actionComplete';
         gObj.trigger(events.actionComplete, editargs);
         if (gObj.editSettings.template) {
-            gObj.editModule.applyFormValidation();
+            gObj.editModule.applyFormValidation(undefined, editargs.form.ej2_instances[0].rules);
         }
         this.args = editargs;
         if (this.parent.allowTextWrap) {
@@ -542,14 +540,12 @@ export class NormalEdit {
             gObj.clearSelection();
         }
         this.renderer.addNew(addArgs);
-        if (!gObj.editSettings.template) {
-            gObj.editModule.applyFormValidation();
-        }
+        gObj.editModule.applyFormValidation();
         addArgs.type = events.actionComplete;
         addArgs.row = gObj.element.querySelector('.' + literals.addedRow);
         gObj.trigger(events.actionComplete, addArgs);
         if (gObj.editSettings.template) {
-            gObj.editModule.applyFormValidation();
+            gObj.editModule.applyFormValidation(undefined, addArgs.form.ej2_instances[0].rules);
         }
         this.args = addArgs as EditArgs;
     }

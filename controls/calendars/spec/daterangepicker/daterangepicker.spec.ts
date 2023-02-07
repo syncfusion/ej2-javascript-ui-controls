@@ -9553,8 +9553,9 @@ describe('DateRangePicker', () => {
             <HTMLElement>(daterangepicker.applyButton.element).click();
             daterangepicker.preventBlur = false;
             daterangepicker.inputBlurHandler();
-            expect(+daterangepicker.startDate).toBe(+new Date('01/01/2023'));
-            expect(+daterangepicker.endDate).toBe(+new Date('01/31/2023'));
+            let today = new Date();
+            expect(+daterangepicker.startDate).toBe(+new Date(today.getFullYear(), today.getMonth(), 1));
+            expect(+daterangepicker.endDate).toBe(+new Date(today.getFullYear(), today.getMonth() + 1, 0));
         });
     })
     describe('EJ2-67265', () => {
@@ -9582,12 +9583,13 @@ describe('DateRangePicker', () => {
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
             }
-            daterangepicker.popupObj.element.querySelectorAll('.e-content td')[10].dispatchEvent(clickEvent);
-            daterangepicker.popupObj.element.querySelectorAll('.e-content td')[16].dispatchEvent(clickEvent);
-           
+            let tdElement = daterangepicker.popupObj.element.querySelectorAll('.e-calendar.e-left-calendar td:not(.e-other-month):not(.e-disabled)');
+            tdElement[0].dispatchEvent(clickEvent);
+            tdElement[tdElement.length-1].dispatchEvent(clickEvent);
            (<HTMLElement>document.getElementsByClassName('e-apply')[0]).click();
-            expect(+daterangepicker.startDate).toBe(+(new Date('1/4/2023')));
-            expect(+daterangepicker.endDate).toBe(+(new Date('1/10/2023')));
+           let today = new Date();
+           expect(+daterangepicker.startDate).toBe(+new Date(today.getFullYear(), today.getMonth(), 1));
+           expect(+daterangepicker.endDate).toBe(+new Date(today.getFullYear(), today.getMonth() + 1, 0));
         });
     });
 });

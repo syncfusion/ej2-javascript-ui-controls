@@ -12,7 +12,7 @@ import { ValueFormatter } from '../../../src/grid/services/value-formatter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData, foreigndata, normalData } from '../base/datasource.spec';
+import { filterMenuData, filterData, foreigndata, normalData } from '../base/datasource.spec';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -1165,6 +1165,52 @@ describe('Filtering module => ', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionBegin = dBound = null;
+        });
+    });
+
+    describe('EJ2-68375 - Previous filtering of other columns cleared when filtered with not equal to blank => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        let dBound: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterMenuData,
+                    allowPaging: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    filterSettings: { type: 'Menu',
+                    columns: [
+                        { field: 'OrderID', matchCase: true, operator: 'lessthan', predicate: 'and', value: 10250 },
+                    ]
+                },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: { type: 'dateTime', format: 'M/d/y hh:mm a' }, textAlign: 'Right'},
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                    ],
+                    pageSettings: { pageCount: 5 },
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('filter menu not equal Operator', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('CustomerID', 'notequal', null);
+        });
+        
+        it('filter menu not equal Operator', (done: Function) => {
+            var dataRow = gridObj.getAllDataRows().length;
+            expect(dataRow).toBe(1);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = dBound = null;
         });
     });
 

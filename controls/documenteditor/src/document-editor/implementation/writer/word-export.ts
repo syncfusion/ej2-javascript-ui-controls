@@ -4818,7 +4818,7 @@ export class WordExport {
             writer.writeAttributeString('w', 'val', this.wNamespace, 'nil');
             writer.writeEndElement();
             return;
-        } else if (((borderStyle === 'None' || isNullOrUndefined(borderStyle)) && !border.hasNoneStyle) || sz <= 0) {
+        } else if (((borderStyle === 'None' || isNullOrUndefined(borderStyle)) && !border.hasNoneStyle) || (sz <= 0 && !border.hasNoneStyle)) {
             return;
         }
         writer.writeStartElement(undefined, tagName, this.wNamespace);

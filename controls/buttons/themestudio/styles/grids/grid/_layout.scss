@@ -3719,6 +3719,11 @@
       .e-cc-contentdiv .e-choosercheck {
         white-space: $grid-filter-checkbox-white-space;
       }
+	  
+      .e-filterdiv .e-multiselect.e-input-group:not(.e-rtl),
+      .e-fltrtempdiv .e-multiselect.e-input-group:not(.e-rtl){
+        text-align: left;
+      }
     }
   }
 }

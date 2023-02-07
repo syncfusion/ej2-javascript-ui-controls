@@ -546,8 +546,9 @@ export class ContentRender implements IRenderer {
                         if (!isNullOrUndefined(this.tbody.parentElement)) {
                             remove(this.tbody);
                         }
-                        else {
-                            remove(gObj.getContentTable().querySelector(literals.tbody));
+                        const removedTbody : Element = gObj.getContentTable().querySelector(literals.tbody);
+                        if (!isNullOrUndefined(removedTbody) && removedTbody.parentElement) {
+                            remove(removedTbody);
                         }
                         this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     }
@@ -699,7 +700,7 @@ export class ContentRender implements IRenderer {
             let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.dataRowIndex), 10);
             const first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
             index = parseInt(rows[rows.length - 1].getAttribute(literals.dataRowIndex), 10);
-            const last: number = Math.ceil(index / this.parent.pageSettings.pageSize);
+            const last: number = Math.ceil((index + (rows.length ? 1 : 0)) / this.parent.pageSettings.pageSize);
             if (frozenCols) {
                 const idx: number = isFreeze ? 0 : 1;
                 for (let i: number = first; i <= last; i++) {

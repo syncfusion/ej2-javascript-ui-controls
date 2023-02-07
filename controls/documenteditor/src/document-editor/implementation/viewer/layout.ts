@@ -143,17 +143,18 @@ export class Layout {
             }
         }
         if (isNullOrUndefined(nextOrPrevSibling)) {
-            if (currentParagraph.isInsideTable) {
-                if(currentParagraph.index === 0) {
+            //Need to skip contextual spacing behavior when document is not Word 2013 and paragraph preserved inside the table cell with AllowSpaceOfSameStyleInTable compatiblity options.
+            if (currentParagraph.paragraphFormat.contextualSpacing && (currentParagraph.isInsideTable ? (!this.documentHelper.allowSpaceOfSameStyleInTable || this.documentHelper.compatibilityMode === 'Word2013') : false)) {
+                if (currentParagraph.index === 0) {
                     nextOrPrevSibling = this.updateFirstParagraphSpacingBasedOnContextualSpacing(currentParagraph, isAfterSpacing);
                 } else if (currentParagraph.index === currentParagraph.associatedCell.childWidgets.length - 1) {
                     nextOrPrevSibling = this.updateLastParagraphSpacingBasedOnContextualSpacing(currentParagraph);
-                    if(nextOrPrevSibling === currentParagraph) {
+                    if (nextOrPrevSibling === currentParagraph) {
                         return true;
                     }
                 }
             }
-            if(isNullOrUndefined(nextOrPrevSibling)) {
+            if (isNullOrUndefined(nextOrPrevSibling)) {
                 return false;
             }
         }
@@ -344,9 +345,9 @@ export class Layout {
         setTimeout((): void => {
             if (this.documentHelper) {
                 this.documentHelper.isScrollHandler = true;
-                if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
-                    this.documentHelper.triggerElementsOnLoading = true;
-                }
+                // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
+                //     this.documentHelper.triggerElementsOnLoading = true;
+                // }
                 this.documentHelper.clearContent();
                 this.viewer.updateScrollBars();
                 this.documentHelper.isScrollHandler = false;
@@ -422,7 +423,6 @@ export class Layout {
             this.updateRevisionsToHeaderFooter(header, page);
             viewer.updateHFClientArea(section.sectionFormat, true);
             page.headerWidget = this.layoutHeaderFooterItems(viewer, header);
-            header.parentHeaderFooter = header;
             //this.updateHeaderFooterToParent(header);
             //When the vertical position is related to margin, then it should be adjusted based on the layouted header height. Not default header height.
             if (section.sectionFormat.topMargin < page.boundingRectangle.bottom && page.headerWidget.floatingElements.length > 0)
@@ -1026,7 +1026,14 @@ export class Layout {
             }
             while (line instanceof LineWidget) {
                 if (paragraph !== line.paragraph && line.indexInOwner === 0 && isListLayout) {
-                    this.layoutListItems(line.paragraph);
+                    if (line.previousLine.isEndsWithColumnBreak) {
+                        this.viewer.updateClientAreaForBlock(paragraph, true);
+                        this.layoutListItems(line.paragraph);
+                        this.viewer.updateClientAreaForBlock(paragraph, false);
+                    }
+                    else {
+                        this.layoutListItems(line.paragraph);
+                    }
                 }
                 if (line.isFirstLine() && isNullOrUndefined(this.fieldBegin)) {
                     if (!isNullOrUndefined(paragraph.paragraphFormat)) {
@@ -1072,7 +1079,7 @@ export class Layout {
             const position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
             element.y = position.y;
-            if(element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
+            if(!element.paragraph.isInsideTable && element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
                 this.moveToNextPage(this.viewer, element.line);
             }
             const bodyWidget: BlockContainer = element.paragraph.bodyWidget;
@@ -3575,7 +3582,7 @@ export class Layout {
             if (!isNullOrUndefined(line)) {
                 index = paragraphWidget.childWidgets.indexOf(line);
                 if (index !== 0) {
-                    if (paragraphWidget.paragraphFormat.keepLinesTogether && !isNullOrUndefined(paragraphWidget.previousWidget)) {
+                    if (paragraphWidget.paragraphFormat.keepLinesTogether && !isNullOrUndefined(paragraphWidget.previousWidget) && !line.previousLine.isEndsWithColumnBreak) {
                         index = 0;
                         keepLinesTogether = true;
                     } else if (index == 1 && !line.previousLine.isEndsWithPageBreak && !line.previousLine.isEndsWithColumnBreak && paragraphWidget.paragraphFormat.widowControl &&
@@ -5888,7 +5895,7 @@ export class Layout {
                         splittedWidget.y = tableWidget.y;
                         // let cellspace: number = viewer instanceof PageLayoutViewer ? cellspacing / 2 : cellspacing;
                         let cellspace: number = cellSpacing / 2;
-                        this.updateChildLocationForRow(tableWidget.y - cellspace, splittedWidget);
+                        this.updateChildLocationForRow(tableWidget.y - cellspace, splittedWidget,tableWidget.containerWidget as BodyWidget);
                     }
                     if (removeTable && this.shiftedFloatingItemsFromTable.length > 0) {
                         for (let i: number = 0; i < this.shiftedFloatingItemsFromTable.length; i++) {
@@ -6437,7 +6444,14 @@ export class Layout {
                     height += this.getFootNoteHeight(footNoteCollection[j].bodyWidget);
                 }
             }
-            if (bottom < lineBottom + height + lineWidget.height) {
+            let lineHeight: number = 0;
+            if (lineWidget.children[0] instanceof ShapeBase) {
+                lineHeight = lineWidget.children[0].height;
+            }
+            else {
+                lineHeight = lineWidget.height;
+            }
+            if (bottom < lineBottom + height + lineHeight) {
                 if (paragraphWidget.paragraphFormat.keepLinesTogether && (paragraphWidget.index !== 0 ||
                     (paragraphWidget.index === 0 && !isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)))) {
                     moveEntireBlock = true;
@@ -6625,7 +6639,7 @@ export class Layout {
         }
     }
 
-    public updateChildLocationForRow(top: number, rowWidget: TableRowWidget): void {
+    public updateChildLocationForRow(top: number, rowWidget: TableRowWidget, bodyWidget?:BodyWidget): void {
         let spacing: number = 0;
         if (rowWidget.ownerTable.tableFormat.cellSpacing > 0) {
             spacing = HelperMethods.convertPointToPixel(rowWidget.ownerTable.tableFormat.cellSpacing);
@@ -6635,11 +6649,11 @@ export class Layout {
             //cellWidget.x = cellWidget.x;
             cellWidget.index = cellWidget.cellIndex;
             cellWidget.y = top + cellWidget.margin.top + spacing;
-            this.updateChildLocationForCellOrShape(cellWidget.y, cellWidget);
+            this.updateChildLocationForCellOrShape(cellWidget.y, cellWidget, bodyWidget);
         }
     }
 
-    private updateChildLocationForCellOrShape(top: number, widget: TableCellWidget | ShapeElementBox): void {
+    private updateChildLocationForCellOrShape(top: number, widget: TableCellWidget | ShapeElementBox, bodyWidget?:BodyWidget): void {
         let container: Widget = widget as Widget;
         if (widget instanceof ShapeElementBox) {
             container = widget.textFrame;
@@ -6653,6 +6667,20 @@ export class Layout {
             }
             (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
             (container.childWidgets[i] as Widget).y = top;
+            if (widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
+                let paragraph: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
+                let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[] = widget.ownerTable.bodyWidget.floatingElements;
+                if (paragraph.floatingElements.length > 0) {
+                    for (let j = 0; j < paragraph.floatingElements.length; j++) {
+                        let element: ShapeBase = paragraph.floatingElements[j];
+                        this.layoutShape(element);
+                        if (prevBodyWidgetFloatingElements.indexOf(element) > -1) {
+                            bodyWidget.floatingElements.push(element);
+                            prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1)
+                        }
+                    }
+                }
+            }
             if (container.childWidgets[i] instanceof TableWidget) {
                 this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget));
             }
@@ -8042,7 +8070,9 @@ export class Layout {
                 this.clearTableWidget(block as TableWidget, true, true, true);
             }
             viewer.updateClientAreaForBlock(block, true);
+            this.isRelayout = true;
             this.layoutBlock(block, 0);
+            this.isRelayout = false;
             viewer.updateClientAreaForBlock(block, false);
             isRealyoutList = true;
         } else {

@@ -1539,7 +1539,7 @@ export class DatePicker extends Calendar implements IInput {
         } else {
             let prevent: boolean = true;
             let outOfRange: Date;
-            if (!isNullOrUndefined(this.value) && !(+this.value >= +this.min && +this.value <= +this.max)) {
+            if (!isNullOrUndefined(this.value) && !(+this.value >= +new Date(this.checkValue(this.min)) && +this.value <= +new Date(this.checkValue(this.max)))) {
                 outOfRange = new Date(this.checkValue(this.value));
                 this.setProperties({ 'value': null }, true);
             } else {

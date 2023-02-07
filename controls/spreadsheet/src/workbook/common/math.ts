@@ -102,14 +102,16 @@ export function toDate(
     const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
-    const cellValue: Date | string | number = text;
-    if (typeof text === 'string') {
-        text = text.toUpperCase();
-    }
+    const updateTime: Function = (): void => {
+        if (dObj.type === 'time') {
+            dObj.dateObj = new Date('01/01/1900 ' + dObj.dateObj.toLocaleTimeString());
+        }
+    };
     if (format) {
-        dObj.dateObj = intl.parseDate(cellValue as string, { format: format });
+        dObj.dateObj = intl.parseDate(text as string, { format: format });
         if (dObj.dateObj) {
             dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+            updateTime();
             dObj.isCustom = true;
         }
     }
@@ -148,10 +150,7 @@ export function toDate(
                 }
                 if (dObj.dateObj) {
                     dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
-                    if (dObj.type === 'time') {
-                        const time: string = dObj.dateObj.toLocaleTimeString();
-                        dObj.dateObj = new Date('01/01/1900 ' + time);
-                    }
+                    updateTime();
                     dObj.isCustom = true;
                     break;
                 }
@@ -162,9 +161,8 @@ export function toDate(
                 dObj.dateObj = intl.parseDate(
                     text, { format: (defaultDateFormats as { timeFormats?: object }).timeFormats[`${key}`], skeleton: key });
                 if (dObj.dateObj) {
-                    const time: string = dObj.dateObj.toLocaleTimeString();
-                    dObj.dateObj = new Date('01/01/1900 ' + time);
                     dObj.type = 'time';
+                    updateTime();
                     dObj.isCustom = false;
                     break;
                 }
@@ -184,7 +182,17 @@ export function toDate(
  * @returns { string | number} - ReturnsparseIntValue.
  */
 export function parseIntValue(value: string): string | number {
-    return (value && value !== '.' && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
+    if (value && value !== '.') {
+        let val: string = value.toString();
+        if (val.startsWith('-')) {
+            val = val.slice(1);
+            val = val.includes('-') ? value : val;
+        }
+        if (/^\d*\.?\d*$/.test(val)) {
+            return parseFloat(value);
+        }
+    }
+    return value;
 }
 
 export interface ToDateArgs {

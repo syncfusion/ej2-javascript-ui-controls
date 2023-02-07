@@ -1,10 +1,10 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
 import { renderCFDlg, locale, dialog, focus, getViewportIndexes } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
-import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes } from '../../workbook/index';
+import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange } from '../../workbook/common/index';
-import { extend, getNumberDependable, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { HighlightCell, TopBottom, CFColor, ConditionalFormatModel, ApplyCFArgs, ConditionalFormat } from '../../workbook/common/index';
@@ -101,8 +101,7 @@ export class ConditionalFormatting {
     }
 
     private dlgClickHandler(action: string): void {
-        let value1: string = '';
-        let value2: string = '';
+        const cfValues: string[] = ['', ''];
         const dlgCont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg').
             getElementsByClassName('e-dlg-content')[0].querySelector('.e-cf-dlg') as HTMLElement;
         const mainCont: HTMLElement = dlgCont.querySelector('.e-cfmain');
@@ -110,20 +109,18 @@ export class ConditionalFormatting {
         if (mainCont) {
             inpEle = mainCont.getElementsByTagName('input')[0];
             if (inpEle && inpEle.parentElement.classList.contains('e-cfmain')) {
-                value1 = mainCont.getElementsByTagName('input')[0].value;
+                cfValues[0] = mainCont.getElementsByTagName('input')[0].value;
             }
-            value2 = mainCont.getElementsByTagName('input')[1] ?
+            cfValues[1] = mainCont.getElementsByTagName('input')[1] ?
                 dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[1].value : '';
-            const currencySymbol: string = getNumberDependable(this.parent.locale, '');
-            value1 = value1.split(currencySymbol).join('').split(',').join('');
-            value2 = value2.split(currencySymbol).join('').split(',').join('');
+            parseLocaleNumber(cfValues, this.parent.locale);
         }
         let cf: ConditionalFormatModel = {
             type: action === 'Duplicate Values...' ? <HighlightCell>inpEle.value : this.getType(action),
             cFColor: this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value),
             range: this.parent.getActiveSheet().selectedRange
         };
-        cf.value = value1 !== '' ? (value1 + (value2 !== '' ? ',' + value2 : '')) : value2;
+        cf.value = cfValues[0] !== '' ? (cfValues[0] + (cfValues[1] !== '' ? ',' + cfValues[1] : '')) : cfValues[1];
         this.parent.notify(setCFRule, <CFArgs>{ cfModel: cf, isAction: true });
     }
 
@@ -347,7 +344,7 @@ export class ConditionalFormatting {
         if (isDataBar) {
             updateFn = (): void => {
                 if (isNumber(val)) {
-                    const intVal: number = parseInt(val, 10);
+                    const intVal: number = parseFloat(val);
                     if (intVal >= 0) {
                         if (result[0] === undefined || intVal > result[0]) {
                             result[0] = intVal;
@@ -771,7 +768,7 @@ export class ConditionalFormatting {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const result: number[] = cf.result as number[]; let leftStandardWidth: number = 0;
         let topVal: number;
-        const value: number = parseInt(val, 10);
+        const value: number = parseFloat(val);
         if ((result[0] === undefined && result[1] === undefined) || isNaN(value)) {
             const dataBar: Element = td.getElementsByClassName('e-cf-databar')[0];
             if (dataBar) {

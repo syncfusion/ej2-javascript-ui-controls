@@ -31,7 +31,7 @@ describe('Accumumation Control', () => {
         let element: Element;
         let chartElement: Element;
         let trigger: MouseEvents = new MouseEvents();
-        chartElement = createElement('div', { id: 'container', styles: 'width: 900px' });
+        chartElement = createElement('div', { id: 'container' });
         beforeAll(() => {          
             let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
             document.body.appendChild(template);

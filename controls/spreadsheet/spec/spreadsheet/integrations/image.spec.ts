@@ -94,6 +94,22 @@ describe('Image ->', () => {
             done();
         });
     });
+
+    describe('Set image method testing', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete image with before frozen rows and frozen columns->', (done: Function) => {
+            helper.getInstance().workbookImageModule.setImage({src: 'https://www.w3schools.com/images/w3schools_green.jpg', id: 'spreadsheet_overlay_picture_1', height: 400, width: 400, top: 20, left: 50 });
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                done();
+            });
+        });
+    });
     
     describe('Delete row/column after inserting the image ->', () => {
         beforeAll((done: Function) => {

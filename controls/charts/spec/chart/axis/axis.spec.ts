@@ -455,7 +455,7 @@ describe('Chart Control', () =>{
         it('checcking labelintersect action as rotate45 inside position', (done: Function) => {
             loaded = (args: Object): void => {
                 let firstLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(firstLabel.textContent).toEqual('1customLabels');
+                expect(firstLabel.textContent).toEqual('1c...');
                 expect(firstLabel.getAttribute('transform').indexOf('rotate(45') > -1).toBe(true);
                 done();
             };
@@ -827,7 +827,7 @@ describe('Chart Control', () =>{
         let label: Element;
         let temp: number;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'chartContainer' });
             document.body.appendChild(ele);
             chart = new Chart({
                 primaryXAxis: {
@@ -937,7 +937,7 @@ describe('Chart Control', () =>{
     });
     describe('Checking the Axis Crossing for Numeric Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 800px' });
+        ele = createElement('div', { id: 'chartContainer'});
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1055,7 +1055,7 @@ describe('Chart Control', () =>{
 
     describe('Checking Axis Crossing with Category Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1106,7 +1106,7 @@ describe('Chart Control', () =>{
 
     describe('Checking Axis Crossing with DateTime Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1147,7 +1147,7 @@ describe('Chart Control', () =>{
 
     describe('Checking Axis Crossing with Logarthmic Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1244,7 +1244,7 @@ describe('Chart Control', () =>{
     });
     describe('Checking Axis Crossing with Multiple Y Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1293,7 +1293,7 @@ describe('Chart Control', () =>{
     });
     describe('Checking Axis Crossing with Multiple X Axis', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1339,7 +1339,7 @@ describe('Chart Control', () =>{
     });
     describe('Checking Axis range auto on zooming', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+        ele = createElement('div', { id: 'chartContainer' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(
@@ -1796,7 +1796,7 @@ describe('Chart Control', () =>{
         let element: Element;
         let posX: string;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

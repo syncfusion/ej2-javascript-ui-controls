@@ -810,6 +810,11 @@ export interface PdfFormFieldBaseModel {
     isMultiline?: boolean;
 
     /**
+     * Enable or disable the isTransparent state.
+     */
+    isTransparent?: boolean;
+
+    /**
      * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
      * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
      * 

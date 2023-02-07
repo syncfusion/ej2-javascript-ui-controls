@@ -320,7 +320,7 @@ describe('Column Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let animationCOmplete: EmitType<IAnimationCompleteEventArgs>;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -380,7 +380,7 @@ describe('Column Series', () => {
     describe('DataLabel', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container'  });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -801,7 +801,7 @@ describe('Column Series', () => {
         })
         it('Checking Overlap data', (done: Function) => {            
             chartObj.loaded = (args: Object): void => {
-                expect(document.getElementById('containerShapeGroup2').childNodes.length == 6).toBe(true);
+                expect(document.getElementById('containerShapeGroup2').childNodes.length == 5).toBe(true);
                 expect(document.getElementById('container_Series_2_Point_0_TextShape_0') != null).toBe(true);
                 expect(document.getElementById('container_Series_2_Point_2_TextShape_0') != null).toBe(true); done();
             };
@@ -903,7 +903,7 @@ describe('Column Series', () => {
     describe('Column Series with negative point data label', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container'  });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -1060,7 +1060,7 @@ describe('Column Series', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(
@@ -1359,7 +1359,7 @@ describe('Column Series', () => {
         let chart: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let chartId: string = 'column-chart';
-        let element: HTMLElement = createElement('div', { id: chartId, styles: 'width: 800px' });
+        let element: HTMLElement = createElement('div', { id: chartId });
         let point: Element;
         beforeAll(() => {
             document.body.appendChild(element);

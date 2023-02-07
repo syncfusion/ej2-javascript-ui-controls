@@ -180,7 +180,7 @@ export class FormFields {
                             let fieldProperties: any = {
                                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
                                 value: elementValue,insertSpaces: currentData['InsertSpaces'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
-                                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
+                                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, isTransparent: currentData.IsTransparent
                             };
                               if (!currentData.id && this.pdfViewer.formFieldCollections[i] && !isNullOrUndefined(currentData['ActualFieldName'])) {
                                   fieldProperties.id = this.pdfViewer.formFieldCollections[i].id;
@@ -950,6 +950,7 @@ export class FormFields {
             if (currentTarget.type === 'checkbox') {
                 currentTarget.style.webkitAppearance = '';
             }
+            currentTarget.style.boxShadow = "0 0 5px " +( currentTarget.style.borderColor === 'transparent' ? '#000000': currentTarget.style.borderColor);
         } else if (currentTarget) {
             // eslint-disable-next-line
             if (currentTarget.className === 'e-pdfviewer-signatureformfields' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature  e-pv-signature-focus') {
@@ -978,6 +979,7 @@ export class FormFields {
         // eslint-disable-next-line
         let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0.2 + ')';
         currentTarget.style.backgroundColor = currentColor;
+        currentTarget.style.boxShadow = 'none';
         if ((currentTarget.type === 'checkbox') && !currentTarget.checked) {
             currentTarget.style.webkitAppearance = 'none';
         } else {
@@ -1371,69 +1373,51 @@ export class FormFields {
     private updateFormFieldsValue(event: MouseEvent | KeyboardEvent): void {
         // eslint-disable-next-line
         let currentTarget: any = event.target;
+        let fieldIndex: any;
+        let nextFields: any;
         if (currentTarget.InsertSpaces && !this.isKeyDownCheck) {
             // eslint-disable-next-line
             let font: number = parseInt(currentTarget.style.width) + (parseInt(currentTarget.style.height) / 2);
             currentTarget.style.width = '' + font + 'px';
             this.isKeyDownCheck = true;
         }
-        if (event.which === 9 && currentTarget && currentTarget.className === 'e-pdfviewer-formFields') {
+        if (event.which === 9 && currentTarget && (currentTarget.className === 'e-pdfviewer-formFields' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature')) {
             // eslint-disable-next-line
             let id: any = currentTarget.id.split('input_')[1].split('_')[0];
-            if (this.maintainTabIndex[id] === currentTarget.tabIndex) {
-                // eslint-disable-next-line
-                let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (parseInt(id) + 1));
-                if (textLayer) {
-                    // eslint-disable-next-line
-                    let currentFields: any = textLayer.getElementsByClassName('e-pdfviewer-formFields');
-                    if (currentFields && currentFields.length > 0) {
-                        currentFields[0].focus();
-                        event.preventDefault();
-                    }
-                } else {
-                    const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + 0);
-                    // eslint-disable-next-line
-                    let currentFields: any = textLayer.getElementsByClassName('e-pdfviewer-formFields');
-                    for (let m: number = 0; m < currentFields.length; m++) {
-                        if (currentFields[m].tabIndex === this.maintanMinTabindex['0']) {
-                            currentFields[m].focus();
-                            event.preventDefault();
-                            break;
-                        }
-                    }
-                }
-            } else {
-                // eslint-disable-next-line
-                let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + parseInt(id));
-                // eslint-disable-next-line
-                let currentFields: any = textLayer.getElementsByClassName('e-pdfviewer-formFields');
-                let istabindexed: boolean = true;
-                for (let m: number = 0; m < currentFields.length; m++) {
+            // eslint-disable-next-line
+            let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + parseInt(id));
+            // eslint-disable-next-line
+            let currentFields: any = textLayer.getElementsByClassName('e-pdfviewer-formFields');
+            let istabindexed: boolean = true;
+            fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === currentTarget.id);
+            if ((!event.shiftKey && (event as KeyboardEvent).key === "Tab")) {
+                nextFields = fieldIndex + 1 < this.pdfViewer.formFieldCollections.length ? this.pdfViewer.formFieldCollections[fieldIndex + 1] : this.pdfViewer.formFieldCollections[0];
+            }
+            this.pdfViewer.focusFormField(nextFields);
+            istabindexed = true;
+            event.preventDefault();
+            let tabindex: number = currentTarget.tabIndex + 1;
+            while (!istabindexed) {
+                for (let l: number = 0; l < currentFields.length; l++) {
                     istabindexed = false;
-                    if (currentFields[m].tabIndex === (currentTarget.tabIndex + 1)) {
-                        currentFields[m].focus();
+                    if (currentFields[l].tabIndex === (tabindex)) {
+                        currentFields[l].focus();
                         istabindexed = true;
                         event.preventDefault();
                         break;
                     }
                 }
-                let tabindex: number = currentTarget.tabIndex + 1;
-                while (!istabindexed) {
-                    for (let l: number = 0; l < currentFields.length; l++) {
-                        istabindexed = false;
-                        if (currentFields[l].tabIndex === (tabindex)) {
-                            currentFields[l].focus();
-                            istabindexed = true;
-                            event.preventDefault();
-                            break;
-                        }
-                    }
-                    if (this.maintainTabIndex[id] === tabindex) {
-                        istabindexed = true;
-                    }
-                    tabindex = tabindex + 1;
+                if (this.maintainTabIndex[id] === tabindex) {
+                    istabindexed = true;
                 }
+                tabindex = tabindex + 1;
             }
+        }
+        if ((event.shiftKey && (event as KeyboardEvent).key === "Tab")) {
+            let fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === currentTarget.id);
+            let nextField = fieldIndex > 0 ? this.pdfViewer.formFieldCollections[fieldIndex - 1] : this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
+            this.pdfViewer.focusFormField(nextField);
+            event.preventDefault();
         }
         if ((event.currentTarget as any).classList.contains('e-pdfviewer-signatureformfields') ||
             (event.currentTarget as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
@@ -1704,19 +1688,20 @@ export class FormFields {
                             }
                         }
                     } else if (target.type === 'checkbox') {
-                        for (let l: number = 0; l < FormFieldsData.length; l++) {
+                        let targetCheckBox : any = target.id;
+                        let filterCheckBoxSameName : any = FormFieldsData.filter((sameNameCheckboxField: any) => (sameNameCheckboxField.GroupName === target.name) && sameNameCheckboxField.Name == 'CheckBox')
+                        for (let l: number = 0; l < filterCheckBoxSameName.length; l++) {
                             // eslint-disable-next-line
-                            let currentType: any = FormFieldsData[l];
-                            if (FormFieldsData[l].GroupName === target.name) {
-                                FormFieldsData[l].Selected = false;
-                                // eslint-disable-next-line
-                                let currentTarget: any = document.getElementById(FormFieldsData[l].uniqueID);
-                                if (currentTarget) {
-                                    if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
-                                        currentData.Selected = false;
-                                        currentTarget.checked = false;
-                                        currentTarget.style.webkitAppearance = 'none';
-                                    }
+                            let currentType: any = filterCheckBoxSameName[l];                            
+                            currentType.Selected = false;
+                            currentType.checked = false;
+                            // eslint-disable-next-line
+                            let currentTarget: any = document.getElementById(currentType.uniqueID);
+                            if (currentTarget) {
+                                if (targetCheckBox !== currentTarget.id) {
+                                    currentTarget.Selected = false;
+                                    currentTarget.checked = false;
+                                    currentTarget.style.webkitAppearance = 'none';
                                 }
                             }
                         }

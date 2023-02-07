@@ -980,7 +980,7 @@ export class Filter {
         const col: { type: string, isDateAvail: boolean } = this.getColumnType(sheet, colIndex - 1, range);
         const type: string = col.type;
         let dateColData: { [key: string]: Object }[];
-        const isDateCol: boolean = type.includes('date') || col.isDateAvail;
+        const isDateCol: boolean = type === 'date' || col.isDateAvail;
         if (isDateCol && !totalRange.filteredCol) {
             dateColData = [];
         }
@@ -1013,7 +1013,8 @@ export class Filter {
             }
             const target: HTMLElement = cell.querySelector('.e-filter-btn');
             const options: IFilterArgs = {
-                type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null), displayName: displayName || 'Column ' + field,
+                type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null),
+                displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
                 hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
@@ -1314,7 +1315,7 @@ export class Filter {
                         num++;
                         break;
                     default:
-                        if (isCustomDateTime(cell)) {
+                        if (isCustomDateTime(cell.format)) {
                             date++;
                         } else if (isNumber(cell.value)) {
                             num++;

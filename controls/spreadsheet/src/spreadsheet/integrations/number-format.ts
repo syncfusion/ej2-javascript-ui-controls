@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../index';
 import { refreshCellElement, rowFillHandler, getTextSpace } from '../../workbook/common/event';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { getTextWidth } from '../common/index';
-import { CellModel } from '../../workbook';
+import { getTextWidth, getExcludedColumnWidth } from '../common/index';
+import { CellModel } from '../../workbook/index';
 /**
  * Specifies number format.
  */
@@ -15,7 +15,7 @@ export class NumberFormat {
     }
 
     private refreshCellElement(args: RefreshValueArgs): void {
-        const cell: HTMLElement = this.parent.getCell(args.rowIndex, args.colIndex);
+        const cell: HTMLElement = args.cellEle || this.parent.getCell(args.rowIndex, args.colIndex);
         if (!isNullOrUndefined(cell)) {
             this.parent.refreshNode(cell as Element, args);
         }
@@ -25,35 +25,27 @@ export class NumberFormat {
         args.width = getTextWidth(<string>args.char, (args.cell as CellModel).style, this.parent.cellStyle);
     }
 
-    private rowFillHandler(args: { [key: string]: string | number | boolean | CellModel | HTMLElement  }): void {
-        const cellElem: HTMLElement = args.td ? <HTMLElement>args.td : this.parent.getCell(args.rowIdx as number, args.colIdx as number);
-        let span2: HTMLElement;
-        let span3: HTMLElement;
+    private rowFillHandler(args: { cell: CellModel, cellEle: HTMLElement, rowIdx: number, colIdx: number, beforeFillText: string,
+        repeatChar: string, afterFillText: string }): void {
+        const cellElem: HTMLElement = args.cellEle || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cellElem) {
-            if (args.formatText) {
-                cellElem.innerHTML = args.formatText.toString();
-            }
-            if (args.secText) {
-                span3 = this.parent.createElement('span');
-                span3.classList.add('e-fill-sec');
-                span3.innerHTML = args.secText.toString();
-            }
-            if (cellElem.children.length) {
-                span2 = cellElem.querySelector('.e-fill');
+            const repeatCharWidth: number = getTextWidth(args.repeatChar, args.cell.style, this.parent.cellStyle);
+            let cellWidth: number = getExcludedColumnWidth(this.parent.getActiveSheet(), args.rowIdx, args.colIdx);
+            if (args.beforeFillText) {
+                cellElem.innerHTML = args.beforeFillText;
+                cellWidth -= getTextWidth(args.beforeFillText, args.cell.style, this.parent.cellStyle);
             } else {
-                span2 = this.parent.createElement('span');
-                span2.style.flexGrow = '1';
-                span2.classList.add('e-fill');
-                cellElem.appendChild(span2);
-                if (span3) {
-                    cellElem.appendChild(span3);
-                }
+                cellElem.innerHTML = '';
             }
-            span2.innerHTML = '';
-            const width: number = getTextWidth(args.value.toString(), (args.cell as CellModel).style, this.parent.cellStyle);
-            const count: number = Math.round(span2.offsetWidth / width);
-            args.formatText = (args.value as string).repeat(count);
-            span2.innerHTML = args.formatText;
+            const repeatCharSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill' });
+            cellElem.appendChild(repeatCharSpan);
+            if (args.afterFillText) {
+                const textSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill-sec', innerHTML: args.afterFillText });
+                cellElem.appendChild(textSpan);
+                cellWidth -= getTextWidth(args.afterFillText, args.cell.style, this.parent.cellStyle);
+            }
+            const repeatCount: number = parseInt((cellWidth / repeatCharWidth).toString(), 10);
+            repeatCharSpan.textContent = args.repeatChar.repeat(repeatCount);
         }
     }
 
@@ -116,4 +108,5 @@ export interface RefreshValueArgs {
     curSymbol?: string;
     value?: string;
     isRowFill?: boolean;
+    cellEle?: HTMLElement;
 }

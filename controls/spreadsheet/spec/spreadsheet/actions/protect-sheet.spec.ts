@@ -360,7 +360,7 @@ describe('Protect sheet ->', () => {
         
     });
 
-    describe('ProtectWorkbook - Providing password in 2nd Input Textbox', () => {
+    describe('ProtectWorkbook - Providing password in 2nd input textbox', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -368,7 +368,7 @@ describe('Protect sheet ->', () => {
             helper.invoke('destroy');
         });
 
-        it('ProtectWorkbook - Providing password in 2nd Input Textbox', (done: Function) => {
+        it('ProtectWorkbook - Providing password in 2nd input textbox', (done: Function) => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
@@ -385,6 +385,288 @@ describe('Protect sheet ->', () => {
                 done();
             });
         });
+        it('Protect sheet - Checkbox selection for select locked cells', (done: Function) => {
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                done();
+            });
+        });
+        it('Protect sheet - Providing empty password', (done: Function) => {
+            helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+            (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement));
+            (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '123';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement));
+            helper.click('.e-protect-dlg .e-primary');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-reenterpwd-dlg.e-dialog');
+                (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement).value = '';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement));
+                helper.click('.e-reenterpwd-dlg .e-primary');
+                setTimeout(() => {
+                    var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[0] as HTMLElement).textContent;
+                    expect(btnText).toBe('Unprotect Sheet');
+                    done();
+                });
+            });
+        });
+        it('UnProtect sheet - Providing empty password', (done: Function) => {
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-unprotectworksheet-dlg.e-dialog');
+                (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = '';
+                helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
+                helper.click('.e-unprotectworksheet-dlg .e-primary');
+                setTimeout(() => {
+                    var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[0] as HTMLElement).textContent;
+                    expect(btnText).toBe('Protect Sheet');
+                    done();
+                });
+            }, 10);
+        });
+        it('ProtectWorkbook - Providing empty password', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement));
+                (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
+                setTimeout(() => {
+                    var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[1] as HTMLElement).textContent;
+                    expect(btnText).toBe('Unprotect Workbook');
+                    done();
+                }, 50);
+            });
+        });
+        it('UnprotectWorkbook - Providing empty password', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-unprotectworkbook-dlg.e-dialog');
+                (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement).value = '';
+                helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement));
+                (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement));
+                (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
+                setTimeout(() => {
+                    var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[1] as HTMLElement).textContent;
+                    expect(btnText).toBe('Protect Workbook');
+                    done();
+                }, 50);	
+	        });
+	    });
+        it('Protect sheet - Uncheck all checkboxes', (done: Function) => {
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[2] as HTMLElement).click();
+                (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement));
+                helper.click('.e-protect-dlg .e-primary');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-reenterpwd-dlg.e-dialog');
+                    (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement).value = '123';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement));
+                    helper.click('.e-reenterpwd-dlg .e-primary');
+                    setTimeout(() => {
+                        const autofill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                        expect(autofill.classList).toContain('e-hide');
+                        done();
+                    });
+                });
+            });
+        });
+        it('Unprotect sheet after uncheck all checkboxes', (done: Function) => {
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-unprotectworksheet-dlg.e-dialog');
+                (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
+                helper.click('.e-unprotectworksheet-dlg .e-primary');
+                done();
+            }, 10);
+        });
+    });
+
+    describe('Protect sheet and protect workbook', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.protectSheet('Sheet1', { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false });
+                    spreadsheet.lockCells('Sheet1!B2:B5', false);
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Select unlocked cells in protected sheet', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                helper.click('.e-protect-dlg .e-primary');
+                helper.invoke('selectRange', ['A2']);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
+                    done();
+                });
+            });
+        });
+        it('Unprotect sheet in unlocked cells', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.invoke('selectRange', ['B2']);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
+                done();
+            }, 10);
+        });
+        it('ProtectWorkbook - Providing password in 1st input textbox only and click ok', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
+                helper.click('.e-protectworkbook-dlg .e-primary');
+                var alertText =  (document.getElementsByClassName('e-pwd-alert-span')[0] as HTMLElement).textContent;
+                expect(alertText).toBe('Please enter the confirm password');
+                done();
+            });
+        });
+        it('ProtectWorkbook - Providing password in 2nd input textbox only and click ok', (done: Function) => {
+            helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+            (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = '';
+            (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion';
+            helper.click('.e-protectworkbook-dlg .e-primary');
+            var alertText =  (document.getElementsByClassName('e-pwd-alert-span')[0] as HTMLElement).textContent;
+            expect(alertText).toBe('Please enter the password');
+            helper.click('.e-protectworkbook-dlg .e-flat');
+            done();
+        });
+        it('Cancelling protect sheet dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-protect-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                done();
+            });
+        }); 
+        it('Cancelling protect workbook dialog', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-protect-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                done();
+            });
+        }); 
+    });
+
+    describe('Cancelling dialog open for unprotect sheet and unprotect workbook', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.click('.e-protect-dlg .e-primary');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-reenterpwd-dlg.e-dialog');
+                    (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement).value = '123';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-reenterpwd-dlg input')[0] as HTMLInputElement));
+                    helper.click('.e-reenterpwd-dlg .e-primary');
+                    done();
+                });
+            });
+        }); 
+        it('Appply - Protect workbook', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
+                (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion';
+                helper.click('.e-protectworkbook-dlg .e-primary');
+                done();
+            });
+        });
+        it('Cancelling unprotect sheet dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-unprotectworksheet-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                done();
+            });
+        }); 
+        it('Cancelling unprotect workbook dialog', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-unprotectworkbook-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                done();
+            });
+        }); 
+    });
+
+    describe('Cancelling dialog open re enter password dialog', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cancelling re enter password dialog', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+                };
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '123';
+                helper.click('.e-protect-dlg .e-primary');
+                setTimeout(() => {
+                    var dialog = helper.getElement('.e-reenterpwd-dlg.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    done();
+                });
+            });
+        }); 
     });
 
     describe('CR-Issues ->', () => {

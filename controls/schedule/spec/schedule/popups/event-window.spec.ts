@@ -3251,6 +3251,77 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('EJ2-68537 - Schedule action events checking for resources with allowMultiple property set as true', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: '2023-02-09T09:30:00.000Z',
+            EndTime: '2023-02-09T11:30:00.000Z',
+            ProjectId: 1
+        }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 1, 9),
+                group: {
+                    resources: ['Projects']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId',
+                        title: 'Choose Project',
+                        name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: 2, color: '#56ca85' },
+                            { text: 'PROJECT 3', id: 3, color: '#df5286' },
+                            { text: 'PROJECT 4', id: 4, color: '#df5286' }
+                        ],
+                        textField: 'text',
+                        idField: 'id',
+                        colorField: 'color',
+                        allowMultiple: true
+                    }
+                ]
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('addedRecords, and changedRecords resource id values checking', (done: DoneFn) => {
+            schObj.actionComplete = (args: ActionEventArgs) => {
+                if (args.addedRecords && args.addedRecords.length > 0) {
+                    expect((args.addedRecords[0] as any).ProjectId).toEqual(4);
+                    expect((args.addedRecords[1] as any).ProjectId).toEqual(2);
+                }
+                if (args.changedRecords && args.changedRecords.length > 0) {
+                    expect((args.changedRecords[0] as any).ProjectId).toEqual(1);
+                }
+                done();
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            const resourceElement: MultiSelect =
+            (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            resourceElement.value = [1, 2, 4];
+            resourceElement.dataBind();
+            const subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            subjectElement.value = 'Test';
+            saveButton.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

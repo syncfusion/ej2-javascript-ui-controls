@@ -10,11 +10,16 @@ export function checkIsNumberAndGetNumber(cell: CellModel, locale: string, group
     if (isNumber(cellValue)) {
         return { isNumber: true, value: cellValue };
     }
-    if (currencySymbol && (cell.format.indexOf(currencySymbol) > -1 && cellValue && cellValue.indexOf(currencySymbol) > -1)) {
-        cellValue = cellValue.replace(currencySymbol, '');
-    }
-    if ((cell.format.indexOf(groupSep) > -1 && cellValue && cellValue.indexOf(groupSep) > -1)) {
-        cellValue = parseThousandSeparator(cellValue, locale, groupSep, decimalSep) ? cellValue.split(groupSep).join('') : cellValue;
+    if (cellValue) {
+        if (currencySymbol && cellValue.includes(currencySymbol) && (cell.format.includes(currencySymbol) || cell.format.includes('$'))) {
+            cellValue = cellValue.replace(currencySymbol, '');
+        }
+        if (cellValue.includes(groupSep) && parseThousandSeparator(cellValue, locale, groupSep, decimalSep)) {
+            cellValue = cellValue.split(groupSep).join('');
+        }
+        if (decimalSep !== '.' && cellValue.includes(decimalSep)) {
+            cellValue = cellValue.replace(decimalSep, '.');
+        }
     }
     return { isNumber: isNumber(cellValue), value: cellValue };
 }

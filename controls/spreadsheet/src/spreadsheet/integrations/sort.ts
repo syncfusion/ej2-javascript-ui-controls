@@ -2,7 +2,7 @@ import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilt
 import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange, isImported } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
-import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction } from '../../workbook/index';
+import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction, NumberFormatArgs } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs, getRangeIndexes } from '../../workbook/common/index';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -295,8 +295,8 @@ export class Sort {
             if (cell && cell.value) {
                 text = cell.value;
                 if (cell.format) {
-                    const eventArgs: { [key: string]: string | boolean } = { formattedText: text, value: text, format: cell.format,
-                        onLoad: true };
+                    const eventArgs: NumberFormatArgs = { formattedText: text, value: text, format: cell.format, rowIndex: range[0],
+                        colIndex: range[1] };
                     this.parent.notify(getFormattedCellObject, eventArgs);
                     text = eventArgs.formattedText as string;
                 }

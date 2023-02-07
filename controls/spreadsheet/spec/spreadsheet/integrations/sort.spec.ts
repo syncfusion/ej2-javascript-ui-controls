@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
-import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell } from '../../../src/index';
+import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs } from '../../../src/index';
 import { Dialog } from '../../../src/spreadsheet/services/index';
 import { getComponent } from '@syncfusion/ej2-base';
 
@@ -181,9 +181,33 @@ describe('Spreadsheet sorting module ->', () => {
                 });
             });
         });
+        it('Sort with custom time format testing', (done: Function) => {
+            helper.invoke('numberFormat', ['h:mm AM/PM', 'I1:I5']);
+            const sheet: any = helper.getInstance().getActiveSheet();
+            helper.invoke('updateCell', [{ value: '11:34:32 AM' }, 'I2']);
+            expect(sheet.rows[1].cells[8].value).toEqual('0.4823148148148148');
+            helper.invoke('updateCell', [{ value: '5:56:32 AM' }, 'I3']);
+            expect(sheet.rows[2].cells[8].value).toEqual('0.2475925925925926');
+            helper.invoke('updateCell', [{ value: '3:32:44 AM' }, 'I4']);
+            expect(sheet.rows[3].cells[8].value).toEqual('0.1477314814814815');
+            helper.invoke('updateCell', [{ value: '12:01:44 AM' }, 'I5']);
+            expect(sheet.rows[4].cells[8].value).toEqual('0.0012037037037037038');
+            helper.invoke('selectRange', ['I1:I100']);
+            helper.click(`#${helper.id}_sorting`);
+            helper.click(`#${helper.id}_sorting-popup .e-item`);
+            setTimeout((): void => {
+                setTimeout((): void => {
+                    expect(sheet.rows[1].cells[8].value).toEqual(0.0012037037037037038);
+                    expect(sheet.rows[2].cells[8].value).toEqual(0.1477314814814815);
+                    expect(sheet.rows[3].cells[8].value).toEqual(0.2475925925925926);
+                    expect(sheet.rows[4].cells[8].value).toEqual(0.4823148148148148);
+                    done();
+                });
+            });
+        });
     });
 
-    describe('Custom Sort Dialog', () => {
+    describe('Custom sort dialog', () => {
         beforeAll((done: Function) => {
             model = { sheets: [{ ranges: [{ dataSource: defaultData }] }],
             created: (): void => {
@@ -195,7 +219,7 @@ describe('Spreadsheet sorting module ->', () => {
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('custom Sort Dialog error for Selecting Same Column in dropdown', (done: Function) => {
+        it('Custom sort dialog error for selecting same column in dropdown', (done: Function) => {
             helper.click('#' + helper.id + '_sorting');
             helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
             setTimeout(() => {
@@ -208,7 +232,7 @@ describe('Spreadsheet sorting module ->', () => {
                 }, 20);
             });
         });
-        it('custom Sort Dialog error for not Selecting in dropdown', (done: Function) => {
+        it('Custom sort dialog error for not selecting in dropdown', (done: Function) => {
             helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
             let input: HTMLElement = document.querySelector('.e-ul').children[1].querySelector('.e-sort-field-ddl');
             helper.triggerMouseAction('mousedown', { x: input.getBoundingClientRect().left + 1, y: input.getBoundingClientRect().top + 1 }, input);
@@ -223,7 +247,7 @@ describe('Spreadsheet sorting module ->', () => {
                 }, 20);
             });
         });
-        it('custom Sort Dialog error', (done: Function) => {
+        it('Custom sort with uncheck headerbox', (done: Function) => {
             helper.click('.e-customsort-dlg .e-sort-delete');
             setTimeout(() => {
                 helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
@@ -235,7 +259,37 @@ describe('Spreadsheet sorting module ->', () => {
                 }, 20);
             });
         });
-        it('Apply custom fort with Text Formatting in Header and clicking Sorting Radio Button->', (done: Function) => {
+        it('Add custom field in custom sort with uncheck header box', (done: Function) => {
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+                helper.click('.e-customsort-dlg .e-dlg-content .e-sort-header .e-sort-headercheckbox');
+                setTimeout(() => {
+                    helper.click('.e-customsort-dlg .e-sort-addbtn');
+                    setTimeout(() => {
+                        helper.click('.e-customsort-dlg .e-sort-delete');
+                        done();
+                    });
+                });
+            });
+        });
+        it('Custom sort with check headerbox', (done: Function) => {
+            helper.click('.e-customsort-dlg .e-dlg-content .e-sort-header .e-sort-headercheckbox');
+            let input: HTMLElement = document.querySelector('.e-ul').children[0].querySelector('.e-sort-field-ddl');
+            helper.triggerMouseAction('mousedown', { x: input.getBoundingClientRect().left + 1, y: input.getBoundingClientRect().top + 1 }, input);
+            helper.triggerMouseAction('mouseup', { x: input.getBoundingClientRect().left + 1, y: input.getBoundingClientRect().top + 1 }, input);
+            setTimeout(() => {
+                let listValue = document.querySelector('.e-dropdownbase .e-ul').children[0] as HTMLElement;
+                listValue.click();
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Item Name');
+                    done();
+                }, 20);
+            });
+        });
+        it('Apply custom fort with text formatting in header and clicking sorting radio button->', (done: Function) => {
             helper.invoke('updateCell', [{ value: '' }, 'H1']);
             helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H11' }]);
             helper.invoke('selectRange', ['A1']);
@@ -253,6 +307,95 @@ describe('Spreadsheet sorting module ->', () => {
                     done();
                 }, 20);
             });
+        });
+        it('Apply custom sort for empty cells->', (done: Function) => {
+            helper.invoke('selectRange', ['M1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            }, 10);
+        });
+        it('Cancel opening custom sort dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.invoke('selectRange', ['A1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-customsort-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();    
+                done();
+            });
+        });
+        it('Cancel empty cells dialog opening->', (done: Function) => {
+            helper.invoke('selectRange', ['M1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-customsort-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();    
+                done();
+            }, 10);
+        });
+    });
+
+    describe('Sort method testing', () => {
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: defaultData }] }],
+            created: (): void => {
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                }
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Sort method testing ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.sort({ sortDescriptors: [{ order: 'Ascending' }], containsHeader: true, caseSensitive: true }, 'A1:H11' )
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Cricket Shoes');
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
+                done()
+            }, 200);
+        });
+        it('Apply filter and sort ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.applyFilter([{ 'value': 10, 'field': 'E', 'predicate': 'and', 'operator': 'equal', 'type': 'number', 'matchCase': true, 'ignoreAccent': false }], 'A1:H1');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                    expect(helper.invoke('getCell', [3, 0]).textContent).toBe('Flip- Flops & Slippers');
+                    expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Running Shoes');
+                    expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
+                    done()
+                }, 200);
+            });
+        });
+        it('Cancelling sort', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.beforeSort = (args: BeforeSortEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(2)');
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe('Flip- Flops & Slippers');
+                expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Running Shoes');
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
+                done()
+            }, 200);
         });
     });
     

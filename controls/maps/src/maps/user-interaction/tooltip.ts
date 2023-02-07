@@ -345,21 +345,24 @@ export class MapsTooltip {
         } else {
             this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
         }
-        this.maps.element.addEventListener('contextmenu', this.removeTooltip);
         this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
+        this.maps.element.addEventListener('contextmenu', this.removeTooltip);
     }
     public removeEventListener(): void {
-        if (this.maps.isDestroyed) {
-            return;
+        if (this.maps) {
+            if (this.maps.isDestroyed) {
+                return;
+            }
+            if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+                this.maps.off('dblclick', this.removeTooltip);
+            } else if (this.maps.tooltipDisplayMode === 'Click') {
+                this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
+            } else {
+                this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
+            }
+            this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
+            this.maps.element.removeEventListener('contextmenu', this.removeTooltip);
         }
-        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
-            this.maps.off('dblclick', this.removeTooltip);
-        } else if (this.maps.tooltipDisplayMode === 'Click') {
-            this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
-        } else {
-            this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
-        }
-        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
     }
     /**
      * Get module name.
@@ -380,7 +383,6 @@ export class MapsTooltip {
             this.svgTooltip.destroy();
         }
         this.svgTooltip = null;
-        this.removeEventListener();
         //TODO: Calling the below code throws spec issue.
         //this.maps = null;
     }

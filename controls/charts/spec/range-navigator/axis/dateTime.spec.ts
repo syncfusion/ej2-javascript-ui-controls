@@ -37,7 +37,7 @@ describe('Range navigator', () => {
         let element: Element;
         let range: RangeNavigator;
         let chart: Element;
-        let rangeElement: Element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        let rangeElement: Element = createElement('div', { id: 'container'});
         let axisLabel: Element;
         beforeAll(() => {
             document.body.appendChild(rangeElement);

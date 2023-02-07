@@ -3,10 +3,10 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, isImported } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation } from '../../workbook/index';
-import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, ColumnModel } from '../../workbook/index';
+import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
-import { sortComplete, ConditionalFormatModel, ApplyCFArgs } from '../../workbook/index';
+import { sortComplete, ConditionalFormatModel, ApplyCFArgs, getColumn } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, L10n, select } from '@syncfusion/ej2-base';
@@ -83,7 +83,17 @@ export class UndoRedo {
             address = getRangeIndexes(eventArgs.fillRange);
             break;
         case 'removeValidation':
-            address = getRangeIndexes(eventArgs.range);
+            if (eventArgs.isColSelected) {
+                this.beforeActionData = { cellDetails: [] };
+                const rangeArr: string[] = eventArgs.range.split('!')[1].split(':');
+                for (let start: number = getColIndex(rangeArr[0]), end: number = getColIndex(rangeArr[1]); start <= end; start++) {
+                    if (sheet.columns[start as number] && sheet.columns[start as number].validation) {
+                        this.beforeActionData.cellDetails.push({ colIndex: start, validation: sheet.columns[start as number].validation });
+                    }
+                }
+            } else {
+                address = getRangeIndexes(eventArgs.range);
+            }
             break;
         case 'hyperlink':
         case 'removeHyperlink':
@@ -93,7 +103,7 @@ export class UndoRedo {
         if (args.action === 'beforeSort') {
             this.beforeActionData = { cellDetails: eventArgs.cellDetails };
             this.beforeActionData.sortedCellDetails = eventArgs.sortedCellDetails;
-        } else {
+        } else if (address) {
             cells = this.getCellDetails(address, sheet, args.action);
             this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
         }
@@ -527,15 +537,23 @@ export class UndoRedo {
             address = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace'
                 || args.action === 'cellDelete' || args.action === 'hyperlink' || args.action === 'removeHyperlink') ? eventArgs.address.split('!') : eventArgs.range.split('!');
         }
-        const range: number[] = getSwapRange(getRangeIndexes(address[1]));
-        const indexes: number[] = range;
         const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
+        let range: number[];
+        if (eventArgs.isColSelected) {
+            const rangeArr: string[] = address[1].split(':');
+            range = [0, getColIndex(rangeArr[0]), sheet.rowCount - 1, getColIndex(rangeArr[1])];
+        } else {
+            range = getSwapRange(getRangeIndexes(address[1]));
+        }
+        const indexes: number[] = range;
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isFromUpdateAction: boolean = (args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);
         const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false , uniqueRange: ''};
-        this.parent.notify(checkUniqueRange, uniqueArgs);
+        if (!eventArgs.isColSelected) {
+            this.parent.notify(checkUniqueRange, uniqueArgs);
+        }
         if (this.isUndo) {
             if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
                 const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
@@ -550,7 +568,7 @@ export class UndoRedo {
                     }
                 }
             }
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, preventEvt);
+            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, preventEvt, eventArgs.isColSelected);
             if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
                 const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
                 const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
@@ -679,6 +697,9 @@ export class UndoRedo {
             address[1] = this.isUndo ? args.eventArgs.dataRange : args.eventArgs.selectedRange;
         }
         if (isRefresh && !preventReSelect && !isFromUpdateAction) {
+            if (eventArgs.isColSelected) {
+                address[1] = sheet.selectedRange;
+            }
             this.parent.notify(selectRange, { address: address[1] });
         }
         this.parent.notify(showAggregate, {});
@@ -706,7 +727,7 @@ export class UndoRedo {
 
     private updateCellDetails(
         cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean, args?: CollaborativeEditArgs,
-        preventEvt?: boolean): void {
+        preventEvt?: boolean, isColSelected?: boolean): void {
         const len: number = cells.length;
         const triggerEvt: boolean = args && !preventEvt && (args.action === 'cellSave' || args.action === 'cellDelete' ||
             args.action === 'autofill' || args.action === 'clipboard');
@@ -716,6 +737,10 @@ export class UndoRedo {
         const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
         let evtArgs: { [key: string]: string | boolean | number[] | number };
         for (let i: number = 0; i < len; i++) {
+            if (isColSelected) {
+                setColumn(sheet, cells[i as number].colIndex, { validation: cells[i as number].validation });
+                continue;
+            }
             prevCell = getCell(cells[i as number].rowIndex, cells[i as number].colIndex, sheet, false, true);
             if (prevCell.style && args && (args.action === 'format' || args.action === 'clipboard')) {
                 if (prevCell.style.borderTop && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderTop)) {

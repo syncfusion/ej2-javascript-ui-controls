@@ -2,7 +2,7 @@ import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncf
 import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId, isFilterHidden } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange } from '../common/index';
+import { triggerDataChange, UsedRangeModel } from '../index';
 import { getFormatFromType } from './number-format';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -163,12 +163,16 @@ export class DataBind {
                             totalRows = args.sheet.usedRange.rowIndex;
                         }
                         const totalCols: number = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex : sColIdx + flds.length - 1;
+                        const usedRange: UsedRangeModel = { rowIndex: totalRows, colIndex: totalCols };
                         if (args.isFinite) {
-                            args.sheet.usedRange.rowIndex = totalRows < args.sheet.rowCount ? totalRows : args.sheet.rowCount - 1;
-                            args.sheet.usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
-                        } else {
-                            args.sheet.usedRange.rowIndex = totalRows;
-                            args.sheet.usedRange.colIndex = totalCols;
+                            usedRange.rowIndex = totalRows < args.sheet.rowCount ? totalRows : args.sheet.rowCount - 1;
+                            usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
+                        }
+                        if (args.sheet.usedRange.rowIndex < usedRange.rowIndex) {
+                            args.sheet.usedRange.rowIndex = usedRange.rowIndex;
+                        }
+                        if (args.sheet.usedRange.colIndex < usedRange.colIndex) {
+                            args.sheet.usedRange.colIndex = usedRange.colIndex;
                         }
                         if (insertRowCount) {
                             loadedInfo = this.getLoadedInfo(sRange, eRange, range);

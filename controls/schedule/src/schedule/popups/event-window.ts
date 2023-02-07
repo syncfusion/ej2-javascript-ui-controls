@@ -1544,7 +1544,7 @@ export class EventWindow {
     private resourceSaveEvent(eventObj: Record<string, any>, action?: CurrentAction, currentAction?: CurrentAction): void {
         const lastResourceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
         let resourceData: string[] | number[] = eventObj[lastResourceData.field] as string[] | number[];
-        resourceData = (resourceData instanceof Array) ? resourceData : [resourceData];
+        resourceData = (resourceData instanceof Array) ? resourceData.reverse() : [resourceData].reverse();
         const lastLevel: TdData[] = this.parent.resourceBase.lastResourceLevel;
         const eventList: Record<string, any>[] = [];
         for (let i: number = 0; i < resourceData.length; i++) {

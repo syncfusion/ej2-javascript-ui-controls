@@ -2,9 +2,24 @@
 
 ## [Unreleased]
 
+## 20.4.49 (2023-02-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I430549` - The axis labels getting cut off when rotating the labels has been fixed.
+- `#F180163` - Removed the chart focus element when changing to the next page.
+- `#I432239` - Now, the chartDoubleClick event is triggered when used in conjunction with the chartMouseClick event.
+- `#I431278` - Data label is now rendered properly when using a template.
+
 ## 20.4.48 (2023-02-01)
 
 ### Chart
+
+#### New Features
+
+- `#I423603` - Provided support to remove points with no data from shared tooltip.
 
 #### Bug Fixes
 

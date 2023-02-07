@@ -191,7 +191,7 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
             bounds1 = bBoxText(words[i] as string, text);
-            if (bounds1 > text.width && (words[i] as string).length > 0) {
+            if (bounds1 > text.width && (words[i] as string).length > 0 && text.textWrapping !== 'NoWrap') {
                 if (eachLine.length > 1) {
                     words[i] = words[i] + '\n';
                 }

@@ -136,7 +136,7 @@ describe('Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let animate: EmitType<IAnimationCompleteEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container',styles: 'width: 1200px'  });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart({
@@ -991,7 +991,7 @@ describe('Chart', () => {
     });
     describe('checking for multiple axes', () => {
         let chartObj: Chart;
-        let elem: HTMLElement = createElement('div', { id: 'container',styles: 'width: 1000px'  });
+        let elem: HTMLElement = createElement('div', { id: 'container' });
         let targetElement: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let marker0: HTMLElement;
@@ -1120,7 +1120,7 @@ describe('Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let animate: EmitType<IAnimationCompleteEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        let element2: Element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        let element2: Element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element2);
             chartObj = new Chart({

@@ -61,7 +61,7 @@ describe('Chart Control Series', () => {
         let fillcolor: string;
         let x: number; let y: number;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container',styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -306,7 +306,7 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let animate: EmitType<IAnimationCompleteEventArgs>;
-        let element1: Element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        let element1: Element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element1);
             chartObj = new Chart(
@@ -799,7 +799,7 @@ describe('Chart Control Series', () => {
     describe('Area Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
-        let element1: Element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        let element1: Element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element1);
             chartObj = new Chart(
@@ -1033,7 +1033,7 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
-        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        element = createElement('div', { id: 'container'  });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -1595,7 +1595,7 @@ describe('Chart Control Series', () => {
         })
         it('Changing series Type', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerShapeGroup2').childNodes.length == 6).toBe(true); done();
+                expect(document.getElementById('containerShapeGroup2').childNodes.length == 5).toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[2].type = 'Column';
@@ -1867,7 +1867,7 @@ describe('Chart Control Series', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

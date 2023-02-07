@@ -9,7 +9,7 @@ import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell 
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
-import { checkIsFormula, ApplyCFArgs } from '../../workbook/common/index';
+import { checkIsFormula, ApplyCFArgs, NumberFormatArgs } from '../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *
@@ -156,22 +156,27 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell && args.cell.formula) {
             this.calculateFormula(args);
         }
-        const formatArgs: { [key: string]: string | boolean | number | CellModel | HTMLElement } = { value: args.cell && args.cell.value,
+        const formatArgs: NumberFormatArgs = { value: args.cell && args.cell.value,
             type: args.cell && getTypeFromFormat(args.cell.format), format: args.cell && args.cell.format,
-            formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell, rowIndex: args.rowIdx,
-            colIndex: args.colIdx, isRowFill: false, td: args.td, skipFormatCheck: args.skipFormatCheck };
-        if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
+            formattedText: args.cell && args.cell.value, isRightAlign: false, cell: args.cell, rowIndex: args.rowIdx, colIndex: args.colIdx,
+            td: args.td, skipFormatCheck: args.skipFormatCheck, refresh: true };
+        if (args.cell) {
+            this.parent.notify(getFormattedCellObject, formatArgs);
+        }
         attributes(args.td, { 'aria-label': (formatArgs.formattedText ? formatArgs.formattedText + ' ' : '') + args.address });
         this.parent.refreshNode(
-            args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string, curSymbol:
-                getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign as boolean,
-            value: <string>formatArgs.value || '', isRowFill: <boolean>formatArgs.isRowFill });
+            args.td, { type: formatArgs.type, result: formatArgs.formattedText, curSymbol:
+                formatArgs.curSymbol, isRightAlign: formatArgs.isRightAlign, value:
+                <string>((formatArgs.value || formatArgs.value === 0) ? formatArgs.value : ''), isRowFill: formatArgs.isRowFill });
         let style: CellStyleModel = {};
         if (args.cell) {
             if (args.cell.style) {
                 if ((args.cell.style as CellStyleExtendedModel).properties) {
                     style = skipDefaultValue(args.cell.style, true);
                 } else { style = args.cell.style; }
+            }
+            if (formatArgs.color !== undefined) {
+                style.color = formatArgs.color;
             }
             if (args.cell.chart && args.cell.chart.length > 0) {
                 this.parent.notify(
@@ -270,7 +275,7 @@ export class CellRenderer implements ICellRenderer {
         }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh };
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh};
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :

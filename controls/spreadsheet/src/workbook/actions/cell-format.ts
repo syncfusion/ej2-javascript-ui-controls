@@ -3,7 +3,7 @@ import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, Cle
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel } from '../index';
 import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
-import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs } from '../common/index';
+import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs, getColorCode } from '../index';
 
 /**
  * Workbook Cell format.
@@ -116,7 +116,7 @@ export class WorkbookCellFormat {
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
                 parent.viewport.bottomIndex, parent.viewport.rightIndex];
-            let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean;
+            let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean; let formatColor: string;
             for (i = indexes[0]; i <= indexes[2]; i++) {
                 row = getRow(sheet, i) || {};
                 if (row.isFiltered) {
@@ -155,9 +155,16 @@ export class WorkbookCellFormat {
                         continue;
                     }
                     if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
+                        formatColor = null;
+                        if (eventArgs.style.color && cell.format && cell.format.includes('[')) {
+                            const colorCode: string = getColorCode(cell.format);
+                            if (colorCode) {
+                                formatColor = colorCode.toLowerCase();
+                            }
+                        }
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: eventArgs.style, rowIdx: i, colIdx: j,
-                            lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate
-                        });
+                            lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate,
+                            formatColor: formatColor });
                     } else if (!row.customHeight) {
                         checkHeight = checkHeight || isHeightCheckNeeded(eventArgs.style, args.onActionUpdate);
                         if (checkHeight) {

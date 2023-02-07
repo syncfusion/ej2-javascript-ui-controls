@@ -255,3 +255,5 @@ export const beforeCellUpdate: string = 'beforeCellUpdate';
 export const duplicateSheetFilterHandler: string = 'duplicateSheetFilterHandler';
 /** @hidden */
 export const unMerge: string = 'unMerge';
+/** @hidden */
+export const addFormatToCustomFormatDlg: string = 'addFormatToCustomFormatDlg';

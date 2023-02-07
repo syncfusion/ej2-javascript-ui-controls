@@ -34,7 +34,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -208,7 +208,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -307,7 +307,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -368,7 +368,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -434,7 +434,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -484,7 +484,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -595,7 +595,7 @@ describe('Scrollbar Chart', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let load: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -645,7 +645,7 @@ describe('Scrollbar Chart', () => {
             let loaded: EmitType<ILoadedEventArgs>;
             let load: EmitType<ILoadedEventArgs>;
             beforeAll((): void => {
-                ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+                ele = createElement('div', { id: 'container' });
                 document.body.appendChild(ele);
                 chartObj = new Chart(
                     {

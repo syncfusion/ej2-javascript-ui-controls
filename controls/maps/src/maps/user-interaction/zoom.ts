@@ -722,6 +722,7 @@ export class Zoom {
             const datalabelTemplateElemement: HTMLElement = <HTMLElement>getElementByID(maps.element.id + '_LayerIndex_'
                 + i + '_Label_Template_Group');
             if ((!isNullOrUndefined(markerTemplateElement)) && markerTemplateElement.childElementCount > 0) {
+                markerTemplateElement.style.visibility = "visible";
                 for (let k: number = 0; k < markerTemplateElement.childElementCount; k++) {
                     this.markerTranslate(<HTMLElement>markerTemplateElement.childNodes[k as number], factor, x, y, scale, 'Template');
                 }

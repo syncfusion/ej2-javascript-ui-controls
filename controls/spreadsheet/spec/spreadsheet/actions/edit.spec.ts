@@ -722,7 +722,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I267737, I267730, FB21561, EJ2-56562, EJ2-60404 ->', () => {
+        describe('I267737, I267730, FB21561, EJ2-56562, EJ2-60404, EJ2-68764 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     actionBegin: (args) => {
@@ -740,8 +740,8 @@ describe('Editing ->', () => {
                 setTimeout((): void => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('0.2916666666666667');
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('h:mm:ss AM/PM');
-                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7:00:00 AM');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('h:mm AM/PM');
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7:00 AM');
                     helper.invoke('startEdit', []);
                     setTimeout((): void => {
                         expect(helper.getElement('#' + helper.id + '_edit').textContent).toBe('7:00:00 AM');
@@ -780,6 +780,18 @@ describe('Editing ->', () => {
                 helper.edit('A1', '11');
                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('2');
                 expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe(2);
+                done();
+            });
+            it('When a large cell range is selected for calculation, the formula result is not updated in the cell', (done: Function) => {
+                helper.invoke('selectRange', ['F1']);
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'Test1';
+                helper.getContentElement().parentElement.scrollTop = 1000;
+                helper.getContentElement().parentElement.scrollTop = 0;
+                expect(helper.getInstance().editModule.isEdit).toBeTruthy();
+                helper.triggerKeyNativeEvent(13);
+                expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Test1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toBe('Test1');
                 done();
             });
         });

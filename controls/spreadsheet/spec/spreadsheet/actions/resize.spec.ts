@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { ExtendedRowModel, Spreadsheet } from '../../../src/index';
+import { ExtendedRowModel, Spreadsheet, getRangeAddress  } from '../../../src/index';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 describe('Resize ->', () => {
@@ -39,7 +39,7 @@ describe('Resize ->', () => {
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Apply autofit on hidden Row which is the first Row', (done: Function) => {
+        it('Apply autofit on hidden row which is the first row', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
             const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
@@ -51,7 +51,7 @@ describe('Resize ->', () => {
                 done();
             });
         });
-        it('Apply autofit on hidden Column which is the first Column', (done: Function) => {
+        it('Apply autofit on hidden column which is the first column', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             const colHdr: HTMLElement = helper.invoke('getCell', [null, 1, helper.invoke('getColHeaderTable').rows[0]]);
             const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
@@ -63,7 +63,7 @@ describe('Resize ->', () => {
                 done();
             });
         });
-        it('Apply autofit on Row with Protected Sheet', (done: Function) => {
+        it('Apply autofit on row with protected sheet', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.protectSheet('Price Details',{ selectCells: true, formatRows: true});
             const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
@@ -76,7 +76,7 @@ describe('Resize ->', () => {
                 done();
             });
         });
-        it('Apply autofit on Column with Protected Sheet', (done: Function) => {
+        it('Apply autofit on column with protected sheet', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.unprotectSheet('Price Details');
             setTimeout(() => {
@@ -92,7 +92,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply Mousedown on hidden Row which is the first Row', (done: Function) => {
+        it('Apply mousedown on hidden row which is the first row', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.unprotectSheet('Price Details');
             setTimeout(() => {
@@ -113,7 +113,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply autofit on Column which having Font Style and Font Family', (done: Function) => {
+        it('Apply autofit on column which having font style and font family', (done: Function) => {
             helper.invoke('selectRange', ['E1']);
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'E1');
@@ -123,7 +123,7 @@ describe('Resize ->', () => {
                 done();
             });
         });
-        it('Apply autofit on Row which having Font Family', (done: Function) => {
+        it('Apply autofit on row which having font family', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.cellFormat({ fontFamily: 'Arial Black' }, 'A4');
             spreadsheet.autoFit('4');
@@ -132,7 +132,7 @@ describe('Resize ->', () => {
                 done();
             });
         });
-        it('Apply autofit on Hidden Column', (done: Function) => {
+        it('Apply autofit on hidden column', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('selectRange', ['F1']);
             spreadsheet.hideColumn(5, 5, true);
@@ -148,7 +148,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply autofit on Hidden Column with Copy Indicator', (done: Function) => {
+        it('Apply autofit on hidden column with copy indicator', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('selectRange', ['D1']);
             helper.invoke('copy', ['D1']);
@@ -163,7 +163,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply autofit on Hidden Column by Selecting whole Column', (done: Function) => {
+        it('Apply autofit on hidden column by selecting whole column', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('selectRange', ['F1:F200']);
             spreadsheet.hideColumn(5, 5, true);
@@ -175,7 +175,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply autofit on Hidden Column increasing Width', (done: Function) => {
+        it('Apply autofit on hidden column increasing width', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('selectRange', ['F1:F200']);
             spreadsheet.hideColumn(5, 5, true);
@@ -187,7 +187,7 @@ describe('Resize ->', () => {
                 });
             });
         });
-        it('Apply undo after increasing Width in Hidden Column ', (done: Function) => {
+        it('Apply undo after increasing width in hidden column ', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('selectRange', ['H1']);
             spreadsheet.hideColumn(7, 7, true);
@@ -230,6 +230,174 @@ describe('Resize ->', () => {
             done();
         });
     });
+
+    describe('UI Interaction for resize with protected sheet', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply protect sheet and resize in headers', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Price Details',{ selectCells: true});
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].height).toBeUndefined();
+                done();
+            });
+        }); 
+        it('Apply protect sheet and format rows as true and checking column resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                spreadsheet.protectSheet('Price Details',{ selectCells: true, formatRows: true});
+                const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[9].cells[0];
+                const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+                const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                setTimeout(() => {
+                    const colHdr: HTMLElement = helper.invoke('getCell', [null, 1, helper.invoke('getColHeaderTable').rows[0]]);
+                    const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                    const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                    helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[9].height).toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        }); 
+        it('Apply protect sheet and format columns as true and checking row resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                spreadsheet.protectSheet('Price Details',{ selectCells: true, formatColumns: true});
+                const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+                const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                setTimeout(() => {
+                    const colHdr: HTMLElement = helper.invoke('getCell', [null, 3, helper.invoke('getColHeaderTable').rows[0]]);
+                    const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                    const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                    helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[0].height).toBeUndefined();
+                        expect(spreadsheet.sheets[0].columns[2].width).toBe(84);
+                        done();
+                    });
+                });
+            });
+        }); 
+        it('Reduce column to small size and click the column - I', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+                const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[2];
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top - 1, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousemove', { x: offset.left - 56, y: offset.top - 1, offsetX: 7 }, spreadsheet.element, colHdr);
+                helper.triggerMouseAction('mouseup', { x: offset.left - 56, y: offset.top - 1, offsetX: 7 }, document, colHdr);
+                setTimeout(() => {
+                    const colHdr: HTMLElement = helper.invoke('getCell', [null, 1, helper.invoke('getColHeaderTable').rows[0]]);
+                    let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                    colHdr.dispatchEvent(e);
+                    e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                    colHdr.dispatchEvent(e);
+                    e = new MouseEvent('mousemove', { view: window, bubbles: true, cancelable: true });
+                    colHdr.dispatchEvent(e);
+                    e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                    colHdr.dispatchEvent(e);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                        done();
+                    });
+                });
+            });
+        }); 
+        it('Reduce column to small size and click the column - II', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['C1']);
+            setTimeout(() => {
+                const colHdr: HTMLElement = helper.invoke('getCell', [null, 1, helper.invoke('getColHeaderTable').rows[0]]);
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                colHdr.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                colHdr.dispatchEvent(e);
+                e = new MouseEvent('mousemove', { view: window, bubbles: true, cancelable: true });
+                colHdr.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                colHdr.dispatchEvent(e);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('C1:C1');
+                    done();
+                });
+            });
+        }); 
+        it('Reduce row to small size and click the row - I ', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[2].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top - 0.5, y: offset.left - 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left - 1, y: offset.top - 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 13, offsetY: 7 }, spreadsheet.element, rowHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left - 1, y: offset.top - 13, offsetY: 7 }, document, rowHdr);
+            setTimeout(() => {
+                const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('mousemove', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                    done();
+                });
+            });
+        });  
+        it('Reduce row to small size and click the row - II ', (done: Function) => {
+            helper.invoke('selectRange', ['A8']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[7].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top - 0.5, y: offset.left - 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left - 1, y: offset.top - 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 13, offsetY: 7 }, spreadsheet.element, rowHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left - 1, y: offset.top - 13, offsetY: 7 }, document, rowHdr);
+            setTimeout(() => {
+                const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+                let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('mousemove', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                rowHdr.dispatchEvent(e);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A8:A8');
+                    done();
+                });
+            }); 
+        }); 
+     });
 
     describe('CR-Issues ->', () => {
         describe('I274109 ->', () => {

@@ -2440,3 +2440,1755 @@ console.log('Number Format is cardinalText - export validation');
         done();
     }, 10);
 });
+let left :any = {
+	"sections": [
+		{
+			"blocks": [
+				{
+					"characterFormat": {
+						"bold": true,
+						"fontSize": 11.0,
+						"fontFamily": "Arial",
+						"fontSizeBidi": 11.0,
+						"fontFamilyBidi": "Arial",
+						"fontFamilyAscii": "Arial",
+						"fontFamilyNonFarEast": "Arial"
+					},
+					"paragraphFormat": {
+						"widowControl": true
+					},
+					"inlines": []
+				}
+			],
+			"headersFooters": {
+				"header": {
+					"blocks": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontSize": 11.0,
+								"fontFamily": "Times New Roman",
+								"fontFamilyAscii": "Times New Roman",
+								"fontFamilyNonFarEast": "Times New Roman"
+							},
+							"paragraphFormat": {
+								"textAlignment": "Justify",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": -36.0,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								]
+							},
+							"inlines": [
+								{
+									"text": "«3»",
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"italic": true,
+								"fontSize": 11.0,
+								"fontFamily": "Times New Roman",
+								"fontFamilyAscii": "Times New Roman",
+								"fontFamilyNonFarEast": "Times New Roman"
+							},
+							"paragraphFormat": {
+								"textAlignment": "Justify",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": -36.0,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								]
+							},
+							"inlines": [
+								{
+									"text": "Rapport ",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"hasFieldEnd": true,
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 0
+								},
+								{
+									"text": " MERGEFIELD  titre  \\* MERGEFORMAT ",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 2
+								},
+								{
+									"text": "«",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "titre»",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 1
+								},
+								{
+									"text": "du",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": " commissaire aux comptes sur les comptes annuels",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontSize": 11.0,
+								"fontFamily": "Times New Roman",
+								"fontFamilyAscii": "Times New Roman",
+								"fontFamilyNonFarEast": "Times New Roman"
+							},
+							"paragraphFormat": {
+								"textAlignment": "Justify",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": -36.0,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								]
+							},
+							"inlines": [
+								{
+									"text": "Exercice clos le 30 septembre 2004 - ",
+									"characterFormat": {
+										"bold": true,
+										"italic": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "Page ",
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"hasFieldEnd": true,
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 0
+								},
+								{
+									"text": " PAGE ",
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 2
+								},
+								{
+									"text": "8",
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"characterFormat": {
+										"bold": true,
+										"fontSize": 11.0,
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									},
+									"fieldType": 1
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"underline": "Single",
+								"fontFamily": "Times New Roman",
+								"fontFamilyAscii": "Times New Roman",
+								"fontFamilyNonFarEast": "Times New Roman"
+							},
+							"paragraphFormat": {
+								"textAlignment": "Justify",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": -36.0,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								]
+							},
+							"inlines": [
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								},
+								{
+									"text": "\t",
+									"characterFormat": {
+										"underline": "Single",
+										"fontFamily": "Times New Roman",
+										"fontFamilyAscii": "Times New Roman",
+										"fontFamilyNonFarEast": "Times New Roman"
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"fontFamily": "Times New Roman",
+								"fontFamilyAscii": "Times New Roman",
+								"fontFamilyNonFarEast": "Times New Roman"
+							},
+							"paragraphFormat": {
+								"textAlignment": "Justify",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": -36.0,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								]
+							},
+							"inlines": []
+						}
+					]
+				},
+				"footer": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Footer"
+							},
+							"inlines": []
+						}
+					]
+				},
+				"evenHeader": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Header"
+							},
+							"inlines": []
+						}
+					]
+				},
+				"evenFooter": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Footer"
+							},
+							"inlines": []
+						}
+					]
+				},
+				"firstPageHeader": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Header"
+							},
+							"inlines": []
+						}
+					]
+				},
+				"firstPageFooter": {
+					"blocks": [
+						{
+							"characterFormat": {
+								"italic": true,
+								"fontFamily": "Georgia",
+								"fontSizeBidi": 8.0,
+								"fontFamilyAscii": "Georgia",
+								"fontFamilyNonFarEast": "Georgia"
+							},
+							"paragraphFormat": {
+								"rightIndent": -21.299999237060548,
+								"styleName": "Address",
+								"borders": {
+									"left": {
+										"lineStyle": "None",
+										"lineWidth": 0.0,
+										"shadow": false,
+										"space": 0.0,
+										"hasNoneStyle": true
+									}
+								}
+							},
+							"inlines": []
+						},
+						{
+							"characterFormat": {
+								"italic": true,
+								"fontFamily": "Georgia",
+								"fontSizeBidi": 8.0,
+								"fontFamilyAscii": "Georgia",
+								"fontFamilyNonFarEast": "Georgia"
+							},
+							"paragraphFormat": {
+								"rightIndent": -21.299999237060548,
+								"styleName": "Address",
+								"borders": {
+									"left": {
+										"lineStyle": "None",
+										"lineWidth": 0.0,
+										"shadow": false,
+										"space": 0.0,
+										"hasNoneStyle": true
+									}
+								}
+							},
+							"inlines": [
+								{
+									"text": "«NAME_EJ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": "»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": ",  ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": "«",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": "PWC_ADR1»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": " ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": "«PWC_ADR2»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": " ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								},
+								{
+									"text": "«PWC_ADR3»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia"
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"italic": true,
+								"fontFamily": "Georgia",
+								"fontSizeBidi": 8.0,
+								"fontFamilyAscii": "Georgia",
+								"fontFamilyNonFarEast": "Georgia",
+								"localeId": 1036
+							},
+							"paragraphFormat": {
+								"styleName": "Address",
+								"borders": {
+									"left": {
+										"lineStyle": "None",
+										"lineWidth": 0.0,
+										"shadow": false,
+										"space": 0.0,
+										"hasNoneStyle": true
+									}
+								}
+							},
+							"inlines": [
+								{
+									"text": "Téléphone:",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia",
+										"localeId": 1036
+									}
+								},
+								{
+									"text": " ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia",
+										"localeId": 1036
+									}
+								},
+								{
+									"text": "«PWC_TEL»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia",
+										"localeId": 1036
+									}
+								},
+								{
+									"text": ", ",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia",
+										"localeId": 1036
+									}
+								},
+								{
+									"text": "«PWC_web»",
+									"characterFormat": {
+										"italic": true,
+										"fontFamily": "Georgia",
+										"fontSizeBidi": 8.0,
+										"fontFamilyAscii": "Georgia",
+										"fontFamilyNonFarEast": "Georgia",
+										"localeId": 1036
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"italic": true,
+								"fontSize": 6.0,
+								"fontFamily": "Arial",
+								"fontSizeBidi": 6.0,
+								"fontFamilyBidi": "Arial",
+								"fontFamilyAscii": "Arial",
+								"fontFamilyNonFarEast": "Arial",
+								"localeId": 1036
+							},
+							"paragraphFormat": {
+								"rightIndent": 0.0,
+								"lineSpacing": 7.0,
+								"lineSpacingType": "AtLeast",
+								"styleName": "Address",
+								"tabs": [
+									{
+										"tabJustification": "Left",
+										"position": 453.6000061035156,
+										"tabLeader": "None",
+										"deletePosition": 0.0
+									}
+								],
+								"contextualSpacing": true,
+								"borders": {
+									"left": {
+										"lineStyle": "None",
+										"lineWidth": 0.0,
+										"shadow": false,
+										"space": 0.0,
+										"hasNoneStyle": true
+									}
+								}
+							},
+							"inlines": []
+						},
+						{
+							"characterFormat": {
+								"fontFamily": "Arial",
+								"fontFamilyBidi": "Arial",
+								"fontFamilyAscii": "Arial",
+								"fontFamilyNonFarEast": "Arial"
+							},
+							"paragraphFormat": {
+								"afterSpacing": 0.0,
+								"lineSpacing": 7.0,
+								"lineSpacingType": "AtLeast",
+								"styleName": "Disclaimer",
+								"contextualSpacing": true
+							},
+							"inlines": [
+								{
+									"text": "«BP_EJ»",
+									"characterFormat": {
+										"fontFamily": "Arial",
+										"fontFamilyBidi": "Arial",
+										"fontFamilyAscii": "Arial",
+										"fontFamilyNonFarEast": "Arial"
+									}
+								}
+							]
+						},
+						{
+							"characterFormat": {
+								"fontFamily": "Arial",
+								"fontFamilyBidi": "Arial",
+								"fontFamilyAscii": "Arial",
+								"fontFamilyNonFarEast": "Arial"
+							},
+							"paragraphFormat": {
+								"afterSpacing": 0.0,
+								"lineSpacing": 7.0,
+								"lineSpacingType": "AtLeast",
+								"styleName": "Disclaimer",
+								"contextualSpacing": true
+							},
+							"inlines": []
+						},
+						{
+							"paragraphFormat": {
+								"styleName": "Footer"
+							},
+							"inlines": []
+						}
+					]
+				}
+			},
+			"sectionFormat": {
+				"headerDistance": 72.0,
+				"footerDistance": 72.0,
+				"pageWidth": 595.2999877929688,
+				"pageHeight": 841.9000244140625,
+				"leftMargin": 85.05000305175781,
+				"rightMargin": 72.0,
+				"topMargin": 72.0,
+				"bottomMargin": 70.9000015258789,
+				"differentFirstPage": true,
+				"differentOddAndEvenPages": false,
+				"bidi": false,
+				"restartPageNumbering": true,
+				"pageStartingNumber": 1,
+				"endnoteNumberFormat": "Arabic",
+				"footNoteNumberFormat": "Arabic",
+				"restartIndexForFootnotes": "DoNotRestart",
+				"restartIndexForEndnotes": "DoNotRestart",
+				"pageNumberStyle": "Arabic",
+				"breakCode": "NoBreak"
+			}
+		}
+	],
+	"fontSubstitutionTable": {
+		"CG Times": "Times New Roman"
+	},
+	"characterFormat": {
+		"fontFamily": "Times New Roman",
+		"fontFamilyBidi": "Times New Roman",
+		"fontFamilyAscii": "Times New Roman",
+		"fontFamilyFarEast": "Times New Roman",
+		"fontFamilyNonFarEast": "Times New Roman",
+		"localeId": 1036,
+		"localeIdEastAsia": 1036,
+		"localeIdBidi": 1025
+	},
+	"background": {
+		"color": "#FFFFFFFF"
+	},
+	"styles": [
+		{
+			"type": "Paragraph",
+			"name": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"fontSize": 12.0,
+				"fontFamily": "Courier New",
+				"fontFamilyAscii": "Courier New",
+				"fontFamilyNonFarEast": "Courier New"
+			},
+			"paragraphFormat": {
+				"widowControl": false
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Heading 1",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"fontSize": 10.0,
+				"fontFamily": "Times New Roman",
+				"fontColor": "#FF0000FF",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"outlineLevel": "Level1",
+				"textAlignment": "Justify",
+				"tabs": [
+					{
+						"tabJustification": "Left",
+						"position": -36.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				],
+				"keepWithNext": true
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Heading 2",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"bold": true,
+				"italic": true,
+				"fontFamily": "Times New Roman",
+				"boldBidi": true,
+				"italicBidi": true,
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"beforeSpacing": 6.0,
+				"outlineLevel": "Level2",
+				"textAlignment": "Justify",
+				"keepWithNext": true
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Heading 3",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"underline": "Single",
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"beforeSpacing": 6.0,
+				"outlineLevel": "Level3",
+				"textAlignment": "Justify",
+				"keepWithNext": true
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Default Paragraph Font"
+		},
+		{
+			"type": "Paragraph",
+			"name": "Texte de note de fin",
+			"basedOn": "Normal",
+			"next": "Texte de note de fin"
+		},
+		{
+			"type": "Character",
+			"name": "Référence de note de fin",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"baselineAlignment": "Superscript"
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Texte de note de bas de page",
+			"basedOn": "Normal",
+			"next": "Texte de note de bas de page"
+		},
+		{
+			"type": "Character",
+			"name": "Référence de note de bas de page",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"baselineAlignment": "Superscript"
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 1",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"beforeSpacing": 24.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 2",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 72.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 3",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 108.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 4",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 144.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 5",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 180.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 6",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 7",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"firstLineIndent": -36.0
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 8",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOC 9",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Index 1",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 72.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -72.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Index 2",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"leftIndent": 72.0,
+				"rightIndent": 36.0,
+				"firstLineIndent": -36.0,
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "Dot",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "TOA Heading",
+			"basedOn": "Normal",
+			"next": "Normal",
+			"characterFormat": {
+				"localeId": 1033
+			},
+			"paragraphFormat": {
+				"tabs": [
+					{
+						"tabJustification": "Right",
+						"position": 468.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Caption",
+			"basedOn": "Normal",
+			"next": "Normal"
+		},
+		{
+			"type": "Character",
+			"name": "_Equation Caption",
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"type": "Paragraph",
+			"name": "Header",
+			"basedOn": "Normal",
+			"next": "Header",
+			"paragraphFormat": {
+				"tabs": [
+					{
+						"tabJustification": "Center",
+						"position": 226.8000030517578,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					},
+					{
+						"tabJustification": "Right",
+						"position": 453.6000061035156,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Footer",
+			"basedOn": "Normal",
+			"next": "Footer",
+			"paragraphFormat": {
+				"tabs": [
+					{
+						"tabJustification": "Center",
+						"position": 226.8000030517578,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					},
+					{
+						"tabJustification": "Right",
+						"position": 453.6000061035156,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Page Number",
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"type": "Paragraph",
+			"name": "Body Text Indent",
+			"basedOn": "Normal",
+			"next": "Body Text Indent",
+			"characterFormat": {
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"leftIndent": 28.350000381469728,
+				"textAlignment": "Justify",
+				"tabs": [
+					{
+						"tabJustification": "Left",
+						"position": -36.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Body Text",
+			"basedOn": "Normal",
+			"next": "Body Text",
+			"characterFormat": {
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"textAlignment": "Justify",
+				"tabs": [
+					{
+						"tabJustification": "Left",
+						"position": -36.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Body Text 2",
+			"basedOn": "Normal",
+			"next": "Body Text 2",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"textAlignment": "Justify",
+				"tabs": [
+					{
+						"tabJustification": "Left",
+						"position": -36.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				]
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Disclaimer",
+			"next": "Disclaimer",
+			"link": "Disclaimer Char",
+			"characterFormat": {
+				"fontSize": 6.0,
+				"localeId": 2057,
+				"localeIdEastAsia": 1033
+			},
+			"paragraphFormat": {
+				"afterSpacing": 3.0
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Address",
+			"basedOn": "Normal",
+			"next": "Address",
+			"characterFormat": {
+				"fontSize": 8.0,
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman",
+				"localeId": 2057,
+				"localeIdEastAsia": 1033
+			},
+			"paragraphFormat": {
+				"rightIndent": 14.199999809265137,
+				"lineSpacing": 10.0,
+				"lineSpacingType": "Exactly",
+				"widowControl": true,
+				"borders": {
+					"left": {
+						"lineStyle": "Single",
+						"lineWidth": 0.5,
+						"shadow": false,
+						"space": 9.0,
+						"hasNoneStyle": false,
+						"color": "#000000FF"
+					}
+				}
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Document Map",
+			"basedOn": "Normal",
+			"next": "Document Map",
+			"characterFormat": {
+				"fontFamily": "Tahoma",
+				"fontFamilyAscii": "Tahoma",
+				"fontFamilyNonFarEast": "Tahoma",
+				"localeId": 2057,
+				"localeIdEastAsia": 1033
+			},
+			"paragraphFormat": {
+				"lineSpacing": 14.5,
+				"lineSpacingType": "AtLeast",
+				"widowControl": true
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Body Text 3",
+			"basedOn": "Normal",
+			"next": "Body Text 3",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Times New Roman",
+				"fontColor": "#FF9900FF",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"beforeSpacing": 6.0,
+				"textAlignment": "Justify",
+				"widowControl": true
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Body Text Indent 3",
+			"basedOn": "Normal",
+			"next": "Body Text Indent 3",
+			"characterFormat": {
+				"italic": true,
+				"fontSize": 11.0,
+				"fontFamily": "Arial",
+				"fontSizeBidi": 12.0,
+				"fontFamilyAscii": "Arial",
+				"fontFamilyNonFarEast": "Arial"
+			},
+			"paragraphFormat": {
+				"leftIndent": 18.0,
+				"beforeSpacing": 6.0,
+				"textAlignment": "Justify",
+				"widowControl": true
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Footnote Text",
+			"basedOn": "Normal",
+			"next": "Footnote Text",
+			"link": "Footnote Text Char",
+			"characterFormat": {
+				"fontSize": 10.0,
+				"fontFamily": "Times New Roman",
+				"fontFamilyAscii": "Times New Roman",
+				"fontFamilyNonFarEast": "Times New Roman"
+			},
+			"paragraphFormat": {
+				"widowControl": true
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Footnote Reference",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"baselineAlignment": "Superscript"
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Balloon Text",
+			"basedOn": "Normal",
+			"next": "Balloon Text",
+			"characterFormat": {
+				"fontSize": 8.0,
+				"fontFamily": "Tahoma",
+				"fontSizeBidi": 8.0,
+				"fontFamilyBidi": "Tahoma",
+				"fontFamilyAscii": "Tahoma",
+				"fontFamilyNonFarEast": "Tahoma"
+			}
+		},
+		{
+			"type": "Character",
+			"name": "annotation reference",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"fontSize": 8.0,
+				"fontSizeBidi": 8.0
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "annotation text",
+			"basedOn": "Normal",
+			"next": "annotation text",
+			"link": "Comment Text Char",
+			"characterFormat": {
+				"fontSize": 10.0
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "annotation subject",
+			"basedOn": "annotation text",
+			"next": "annotation text",
+			"characterFormat": {
+				"bold": true,
+				"boldBidi": true
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Disclaimer Char",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"fontSize": 6.0,
+				"localeId": 2057,
+				"localeIdEastAsia": 1033,
+				"localeIdBidi": 1025
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Footnote Text Char",
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"type": "Paragraph",
+			"name": "ParagraphPurple",
+			"next": "ParagraphPurple",
+			"link": "ParagraphPurple Car",
+			"characterFormat": {
+				"fontSize": 12.0,
+				"fontColor": "#800080FF",
+				"fontSizeBidi": 12.0,
+				"fontFamilyFarEast": "minorEastAsia",
+				"localeId": 3084,
+				"localeIdEastAsia": 3084
+			},
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"firstLineIndent": -35.849998474121097,
+				"beforeSpacing": 3.5999999046325685,
+				"afterSpacing": 3.5999999046325685,
+				"tabs": [
+					{
+						"tabJustification": "Left",
+						"position": 36.0,
+						"tabLeader": "None",
+						"deletePosition": 0.0
+					}
+				],
+				"widowControl": false
+			}
+		},
+		{
+			"type": "Character",
+			"name": "ParagraphPurple Car",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"fontSize": 12.0,
+				"fontColor": "#800080FF",
+				"fontSizeBidi": 12.0,
+				"fontFamilyFarEast": "minorEastAsia",
+				"localeId": 3084,
+				"localeIdEastAsia": 3084
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "List Paragraph",
+			"basedOn": "Normal",
+			"next": "List Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 36.0,
+				"contextualSpacing": true
+			}
+		},
+		{
+			"type": "Character",
+			"name": "Comment Text Char",
+			"basedOn": "Default Paragraph Font",
+			"characterFormat": {
+				"fontFamily": "Courier New",
+				"fontFamilyAscii": "Courier New",
+				"fontFamilyNonFarEast": "Courier New"
+			}
+		},
+		{
+			"type": "Paragraph",
+			"name": "Revision",
+			"next": "Revision",
+			"characterFormat": {
+				"fontSize": 12.0,
+				"fontFamily": "Courier New",
+				"fontFamilyAscii": "Courier New",
+				"fontFamilyNonFarEast": "Courier New"
+			}
+		}
+	],
+	"defaultTabWidth": 36.0,
+	"formatting": false,
+	"trackChanges": false,
+	"protectionType": "NoProtection",
+	"enforcement": false,
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"alignTablesRowByRow": false,
+	"formFieldShading": false,
+	"footnotes": {
+		"separator": [
+			{
+				"inlines": [
+					{
+						"text": "\u0003"
+					}
+				]
+			}
+		],
+		"continuationSeparator": [
+			{
+				"inlines": [
+					{
+						"text": "\u0004"
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"inlines": []
+			}
+		]
+	},
+	"endnotes": {
+		"separator": [
+			{
+				"paragraphFormat": {
+					"lineSpacing": 1.0,
+					"lineSpacingType": "Exactly"
+				},
+				"inlines": []
+			}
+		],
+		"continuationSeparator": [
+			{
+				"inlines": [
+					{
+						"text": " "
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"inlines": [
+					{
+						"text": " "
+					}
+				]
+			}
+		]
+	},
+	"compatibilityMode": "Word2010",
+	"themeFontLanguages": {
+		"localeId": 1036
+	},
+	"themes": {
+		"fontScheme": {
+			"fontSchemeName": "Office",
+			"majorFontScheme": {
+				"fontSchemeList": [
+					{
+						"name": "latin",
+						"typeface": "Cambria"
+					},
+					{
+						"name": "ea"
+					},
+					{
+						"name": "cs"
+					}
+				],
+				"fontTypeface": {
+					"Jpan": "ＭＳ ゴシック",
+					"Hang": "맑은 고딕",
+					"Hans": "宋体",
+					"Hant": "新細明體",
+					"Arab": "Times New Roman",
+					"Hebr": "Times New Roman",
+					"Thai": "Angsana New",
+					"Ethi": "Nyala",
+					"Beng": "Vrinda",
+					"Gujr": "Shruti",
+					"Khmr": "MoolBoran",
+					"Knda": "Tunga",
+					"Guru": "Raavi",
+					"Cans": "Euphemia",
+					"Cher": "Plantagenet Cherokee",
+					"Yiii": "Microsoft Yi Baiti",
+					"Tibt": "Microsoft Himalaya",
+					"Thaa": "MV Boli",
+					"Deva": "Mangal",
+					"Telu": "Gautami",
+					"Taml": "Latha",
+					"Syrc": "Estrangelo Edessa",
+					"Orya": "Kalinga",
+					"Mlym": "Kartika",
+					"Laoo": "DokChampa",
+					"Sinh": "Iskoola Pota",
+					"Mong": "Mongolian Baiti",
+					"Viet": "Times New Roman",
+					"Uigh": "Microsoft Uighur"
+				}
+			},
+			"minorFontScheme": {
+				"fontSchemeList": [
+					{
+						"name": "latin",
+						"typeface": "Calibri"
+					},
+					{
+						"name": "ea"
+					},
+					{
+						"name": "cs"
+					}
+				],
+				"fontTypeface": {
+					"Jpan": "ＭＳ 明朝",
+					"Hang": "맑은 고딕",
+					"Hans": "宋体",
+					"Hant": "新細明體",
+					"Arab": "Arial",
+					"Hebr": "Arial",
+					"Thai": "Cordia New",
+					"Ethi": "Nyala",
+					"Beng": "Vrinda",
+					"Gujr": "Shruti",
+					"Khmr": "DaunPenh",
+					"Knda": "Tunga",
+					"Guru": "Raavi",
+					"Cans": "Euphemia",
+					"Cher": "Plantagenet Cherokee",
+					"Yiii": "Microsoft Yi Baiti",
+					"Tibt": "Microsoft Himalaya",
+					"Thaa": "MV Boli",
+					"Deva": "Mangal",
+					"Telu": "Gautami",
+					"Taml": "Latha",
+					"Syrc": "Estrangelo Edessa",
+					"Orya": "Kalinga",
+					"Mlym": "Kartika",
+					"Laoo": "DokChampa",
+					"Sinh": "Iskoola Pota",
+					"Mong": "Mongolian Baiti",
+					"Viet": "Arial",
+					"Uigh": "Microsoft Uighur"
+				}
+			}
+		}
+	}
+};
+describe('Left border is added for paragraph in the exported document', () => {
+    let editor: DocumentEditor = undefined;
+    let json: any;
+    let writer: any = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport, WordExport);
+        editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(left));
+        writer = new XmlWriter();
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Checked left border value in paragraph format  - export validation', () => {
+console.log('Checked left border value in paragraph format - export validation');
+        json = editor.sfdtExportModule.write();
+        (editor.wordExportModule as any).setDocument(json);
+        writer = new XmlWriter();
+        let section: any = (editor.wordExportModule as any).document.sections[0].headersFooters.firstPageFooter;
+		(editor.wordExportModule as any).serializeParagraph(writer, section.blocks[1], true);
+        expect(writer.bufferText.indexOf('<w:left')).not.toBe(-1);
+    });
+});

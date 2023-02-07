@@ -1160,6 +1160,363 @@ describe('Spreadsheet base module ->', () => {
         });          
     });
 
+    describe('Protect Sheet Method, GoTo method, cut method Testing with more than 1 Sheet ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }, { }, { }, { }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect Sheet other than active sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet(4, { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false }, '123');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[4].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('UnProtect Sheet other than active sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet(4);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[4].isProtected).toBeFalsy();
+                done();
+            });
+        });
+        it('Replace API with mode as workbook', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('D2');
+            spreadsheet.replace({ replaceValue: '100', replaceBy: 'One', value: '10', sheetIndex: 0, findOpt: 'previous', mode: 'Workbook', isCSen: true, isEMatch: true, searchBy: 'By Column' });
+            setTimeout((): void => {
+                expect((spreadsheet.getCell(1,3) as any).innerText).toBe('100');
+                done();
+            });
+        });
+        it('Find All API with mode as Workbook', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('A1');
+            spreadsheet.findAll( 'Item Name', 'Workbook', true, true, 0);
+            setTimeout((): void => {
+                expect((spreadsheet.getCell(0,0) as any).innerText).toBe('Item Name');
+                done();
+            });
+        });
+        it('goTo testing in other than active sheet above Frozen Rows and Frozen Columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(3,3,1);
+            setTimeout(() => {
+                spreadsheet.goTo('Sheet2!A1');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                    spreadsheet.goTo('Sheet1!A1');
+                    done();
+                });
+            });
+        });
+        it('goTo testing in other than active sheet below Frozen Rows and Frozen Columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet2!E5');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                expect(spreadsheet.sheets[1].paneTopLeftCell).toBe('E5');
+                done();
+            });
+        });
+        it('goTo testing in other than active sheet with Frozen Columns only', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(0,3,2);
+            setTimeout(() => {
+                spreadsheet.goTo('Sheet3!D1');
+                setTimeout(() => {
+                    spreadsheet.goTo('Sheet3!D1');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[2].topLeftCell).toBe('A1');
+                        expect(spreadsheet.sheets[2].paneTopLeftCell).toBe('D1');
+                        done();
+                    });
+                });
+            });
+        });
+        it('goTo testing in other than active sheet with Frozen Rows only', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(3,0,3);
+            setTimeout(() => {
+                spreadsheet.goTo('Sheet4!A10');
+                setTimeout(() => {
+                    spreadsheet.goTo('Sheet4!A10');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[3].topLeftCell).toBe('A1');
+                        expect(spreadsheet.sheets[3].paneTopLeftCell).toBe('A10');
+                        done();
+                    });
+                });
+            });
+        });
+        it('goTo testing in other than active sheet greater than view port', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet2!E100');
+            setTimeout(() => {
+                spreadsheet.goTo('Sheet2!E100');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                    expect(spreadsheet.sheets[1].paneTopLeftCell).toBe('E100');
+                    done();
+                });
+            });
+        });
+        it('goTo testing in active sheet greater than view port', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet2!E100');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                expect(spreadsheet.sheets[1].paneTopLeftCell).toBe('E100');
+                done();
+            });
+        });
+        it('goTo testing in active sheet above Frozen Rows', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet2!A1');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                expect(spreadsheet.sheets[1].paneTopLeftCell).toBe('E100');
+                expect(spreadsheet.sheets[1].selectedRange).toBe('A1:A1');
+                done();
+            });
+        });
+        it('Cut testing in other than active sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cut('Sheet1!A5');
+            setTimeout(() => {
+                spreadsheet.paste('A1');
+                expect(spreadsheet.sheets[0].rows[4].cells[0]).toBeNull();
+                expect(helper.getInstance().sheets[1].rows[0].cells[0].value).toEqual('Sandals & Floaters');
+                done();
+            });
+        });
+    });
+
+    describe('setColWidth and setRowHeight method with Freeze panes and negative values->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { frozenColumns:3, frozenRows:3 }], activeSheetIndex:1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('setColWidth testing with no arguments', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth();
+            setTimeout(() => {
+                done();
+            });
+        });
+        it('setColWidth testing with other than active sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(50,0,0);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[0].width).toBe(50)
+                done();
+            });
+        });
+        it('setColWidth testing with negative values with Frozen Columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(-64,1,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].columns[1].width).toBe(0)
+                done();
+            });
+        });
+        it('setColWidth testing with Right viewport index > 60', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(100,70,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].columns[70].width).toBe(100)
+                done();
+            });
+        });
+        it('setColWidth testing with negative values with Right viewport index > 60', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(-100,70,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].columns[70].width).toBe(0)
+                done();
+            });
+        });
+        it('setRowHeight testing with no arguments', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight();
+            setTimeout(() => {
+                done();
+            });
+        });
+        it('setRowHeight testing with other than active sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(22,0,0);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(22)
+                done();
+            });
+        });
+        it('setRowHeight testing with negative values with Frozen Rows', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(-22,1,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].rows[1].height).toBe(0)
+                done();
+            });
+        });
+        it('setRowHeight testing with Bottom viewport index > 60', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(40,100,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].rows[100].height).toBe(40)
+                done();
+            });
+        });
+        it('setRowHeight testing with negative values with Bottom viewport index > 60', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(-40,100,1);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].rows[100].height).toBe(0)
+                done();
+            });
+        });
+    });
+
+    describe('Hyperlink, Data Validation and Conditional Format Method with more than 1 Sheet ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {  }], activeSheetIndex:1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add Hyperlink for undefined sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertHyperlink('www.google.com', 'Sheet!A1', 'Sheet', false);
+            setTimeout(() => {
+                done();
+            });
+        });
+        it('Add Hyperlink for other than activesheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertHyperlink('www.google.com', 'Sheet1!A1', 'Item Name', false);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[0].hyperlink).toBe('http://www.google.com');
+                done();
+            });
+        });
+        it('Add Hyperlink for activesheet with providing no cell address', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertHyperlink('www.google.com', '', 'Item Name', false);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].rows[0].cells[0].hyperlink).toBe('http://www.google.com');
+                done();
+            });
+        });
+        it('Apply Highlight invalid Data without selecting Data validation applied cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet1!A1');
+            setTimeout(() => {
+                spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '20' }, 'E2:E11');
+                spreadsheet.addInvalidHighlight();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    done();
+                });
+            });
+        });
+        it('Apply Remove Highlight without selecting Data validation applied cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.removeInvalidHighlight();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                done();
+            });
+        });
+        it('Apply Clear Conditioanl Format with no arguments', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('H2:H5');
+            spreadsheet.conditionalFormat({type: 'BlueDataBar', range: 'H2:H5'});
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('15%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            setTimeout(() => {
+                spreadsheet.clearConditionalFormat();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                done();
+            });
+        });
+    });
+
+    describe('Filter, Image, Context menu, Filemenu methods, Testing ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {  }], activeSheetIndex:1 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Filter Method Testing with no arguments->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.filter();
+            setTimeout(() => {
+                done(); 
+           });
+        });
+        it('Apply Image without using cell Reference', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg", height: 400, width: 400}]);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[1].rows[0].cells[0].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":0,"left":0}]');
+                done();
+            });
+        });
+        it('Delete Image with using cell Reference', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.deleteImage('spreadsheet_overlay_picture_1','A1');
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                done();
+            });
+        });
+        it('Delete Image with using cell Reference', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.actionBegin = (args: any): void => {
+                if (args.action === 'freeze') {  
+                    args.args.eventArgs.cancel = true; }
+            }
+            spreadsheet.selectRange('B2');
+            helper.switchRibbonTab(5);
+            helper.click('#' + helper.id + '_freezepanes');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
+                done();
+            });
+        });
+        it('enable contextmenu items without giving enable value', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.contextMenuBeforeOpen = (args: any) => {
+                helper.invoke('enableContextMenuItems', [['Paste']]);
+            }
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('addMenuItems with InsertAfter->', (done: Function) => {
+            document.getElementsByTagName("span")[0].click();
+            (document.getElementsByClassName("e-menu")[0].firstElementChild as HTMLElement).click();
+           setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.addFileMenuItems([{text: 'Print'}], 'Save As');
+                let menuElemCount:number = document.getElementsByClassName('e-menu-parent e-ul')[0].querySelectorAll('.e-menu-item').length;
+                expect(menuElemCount).toBe(4);
+                (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                done(); 
+           });
+        });
+    });
 
     describe('CR-Issues ->', () => {
         describe('I266607 ->', () => {

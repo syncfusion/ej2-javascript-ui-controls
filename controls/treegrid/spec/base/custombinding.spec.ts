@@ -325,7 +325,7 @@ describe('Custom Binding', () => {
         gridObj.appendTo('#Grid');
         done();
       });
-      it('Collapse and expand first parent record then expand second record', (done: Function) => {
+      it('Collapse and expand first parent record then expand second record - icon check', (done: Function) => {
         dataStateChange = (args: any) => {
           if (args.requestType === 'expand') {
             /////    assigning the child data for the expanded record.
@@ -379,11 +379,14 @@ describe('Custom Binding', () => {
         gridObj.expandRow(rows[0] as HTMLTableRowElement);
         gridObj.expandRow(rows[1] as HTMLTableRowElement);
         expanded = (args?: any) => {
-          expect(gridObj.getCurrentViewRecords().length === 7).toBe(true);
+          expect(args.row.getElementsByClassName('e-treegridexpand').length === 1).toBe(true);
           gridObj.expanded = null;
           done();
       }
       gridObj.expanded = expanded;
+      });
+      it('Collapse and expand first parent record then expand second record - data count check', () => {
+        expect(gridObj.getCurrentViewRecords().length === 7).toBe(true);
       });
       afterAll(() => {
         destroy(gridObj);
@@ -623,6 +626,236 @@ describe('Custom Binding', () => {
       afterAll(() => {
         destroy(gridObj);
       });
+      });
+
+
+      describe('EJ2-68426 - Child record not shown properly issue', () => {
+        let gridObj: TreeGrid;
+        let rows: Element[];
+        let dataStateChange: (args: any) => void;
+        let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+        beforeAll((done: Function) => {
+          document.body.appendChild(elem);
+          gridObj = new TreeGrid(
+            {
+              dataSource: {
+                result: [
+                  {
+                    TaskID: 1,
+                    TaskName: 'Parent Task 1',
+                    StartDate: '1992-06-07T00:00:00Z',
+                    EndDate: '1994-08-25T00:00:00Z',
+                    Progress: 'Open',
+                    Priority: 'Critical',
+                    Duration: 17,
+                    isParent: true,
+                  },
+                  {
+                    TaskID: 2,
+                    TaskName: 'Parent Task 2',
+                    StartDate: '1992-06-07T00:00:00Z',
+                    EndDate: '1994-08-25T00:00:00Z',
+                    Progress: 'In Progress',
+                    Priority: 'Critical',
+                    Duration: 21,
+                    isParent: true,
+                  },
+                  {
+                    TaskID: 3,
+                    TaskName: 'Parent Task 3',
+                    StartDate: '1992-06-07T00:00:00Z',
+                    EndDate: '1994-08-25T00:00:00Z',
+                    Progress: 'In Progress',
+                    Priority: 'Critical',
+                    Duration: 21,
+                    isParent: true,
+                  },
+                  {
+                    TaskID: 4,
+                    TaskName: 'Parent Task 4',
+                    StartDate: '1992-06-07T00:00:00Z',
+                    EndDate: '1994-08-25T00:00:00Z',
+                    Progress: 'In Progress',
+                    Priority: 'Critical',
+                    Duration: 21,
+                    isParent: false,
+                  },
+                ],
+                count: 4,
+              },
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              parentIdMapping: 'ParentItem',
+              height: 400,
+              treeColumnIndex: 1,
+              allowPaging: true,
+              columns: [
+                { field: 'TaskID', headerText: 'Task ID', width: 80, textAlign: 'Right' },
+                {
+                  field: 'TaskName',
+                  headerText: 'Task Name',
+                  width: 200,
+                  textAlign: 'Left',
+                },
+                {
+                  field: 'StartDate',
+                  headerText: 'Start Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd',
+                },
+                {
+                  field: 'EndDate',
+                  headerText: 'End Date',
+                  width: 90,
+                  textAlign: 'Right',
+                  type: 'date',
+                  format: 'yMd',
+                },
+                {
+                  field: 'Duration',
+                  headerText: 'Duration',
+                  width: 90,
+                  textAlign: 'Right',
+                },
+                { field: 'Progress', headerText: 'Progress', width: 90 },
+              ],
+              dataStateChange: dataStateChange,
+
+            }
+          );
+          gridObj.appendTo('#Grid');
+          done();
+        });
+        it('Random expand/collapse and child data check', (done: Function) => {
+          dataStateChange = (state: any) => {
+            if (state.requestType === 'expand') {
+              if (state.data.Children === undefined) {
+                if (state.data.Children !== null || state.data.Children.length === 0) {
+                  let childData: any = [];
+                  if (state.data.TaskID === 1) {
+                    childData = [
+                      {
+                        TaskID: 11,
+                        TaskName: 'Parent Task 11',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'Open',
+                        Priority: 'Critical',
+                        Duration: 17,
+                        isParent: true,
+                        ParentItem: 1,
+                      },
+                      {
+                        TaskID: 12,
+                        TaskName: 'Parent Task 12',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'In Progress',
+                        Priority: 'Critical',
+                        Duration: 21,
+                        isParent: false,
+                        ParentItem: 1,
+                      },
+                    ];
+                  } else if (state.data.TaskID === 2) {
+                    childData = [
+                      {
+                        TaskID: 21,
+                        TaskName: 'Parent Task 21',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'Open',
+                        Priority: 'Critical',
+                        Duration: 17,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                      {
+                        TaskID: 22,
+                        TaskName: 'Parent Task 22',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'In Progress',
+                        Priority: 'Critical',
+                        Duration: 21,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                    ];
+                  } else if (state.data.TaskID === 3) {
+                    childData = [
+                      {
+                        TaskID: 31,
+                        TaskName: 'Parent Task 31',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'Open',
+                        Priority: 'Critical',
+                        Duration: 17,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                      {
+                        TaskID: 32,
+                        TaskName: 'Parent Task 32',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'In Progress',
+                        Priority: 'Critical',
+                        Duration: 21,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                    ];
+                  } else if (state.data.TaskID === 11) {
+                    childData = [
+                      {
+                        TaskID: 111,
+                        TaskName: 'Parent Task 111',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'Open',
+                        Priority: 'Critical',
+                        Duration: 17,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                      {
+                        TaskID: 112,
+                        TaskName: 'Parent Task 112',
+                        StartDate: '1992-06-07T00:00:00Z',
+                        EndDate: '1994-08-25T00:00:00Z',
+                        Progress: 'In Progress',
+                        Priority: 'Critical',
+                        Duration: 21,
+                        isParent: false,
+                        ParentItem: 2,
+                      },
+                    ];
+                  }
+        
+                  state.childData = childData;
+                  state.childDataBind();
+                }
+              } else {
+                state.childData = state.data.childRecords;
+                state.childDataBind();
+              }
+            }     
+          };
+          gridObj.dataStateChange = dataStateChange;
+          rows = gridObj.getRows();
+          gridObj.expandRow(rows[0]  as HTMLTableRowElement);
+          gridObj.collapseRow(rows[0] as HTMLTableRowElement);
+          gridObj.expandRow(rows[3] as HTMLTableRowElement);
+          expect(gridObj.getCurrentViewRecords()[1]['TaskID'] === 2).toBe(true);
+        done();
+        });
+        afterAll(() => {
+          destroy(gridObj);
+        });
       });
   });
   

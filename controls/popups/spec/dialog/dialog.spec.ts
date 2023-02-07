@@ -3969,3 +3969,41 @@ describe('EJ2-67757 Dialog closed when esc key action-', () => {
         destroyDialog(dlgObj);
     });
 });
+describe('EJ2-68574 Multiple Triggers of Ok Button Click Event in Modal Dialog on Enter Key Press ', () => {
+    let dlgObj: any;
+    let eventArgs: any;
+    let count: number;
+    beforeAll(() => {
+        count=0;
+        let ele: HTMLElement = createElement('div', { id: 'modalDialog' });
+        document.body.appendChild(ele);
+        dlgObj = new Dialog({ header: 'Dialog',
+        animationSettings: { effect: 'None' },
+        isModal: true,
+        closeOnEscape: true,
+        content: '<div class="dialogContent">' +
+        '<label class="e-insert-field-label">Name:</label></br><input type="text" id="field_text" class="e-input" placeholder="Type a field to insert eg. FirstName">' +
+        '</div>',
+                buttons: [
+                    {
+                        click: function(){count++;},
+                        buttonModel: { content: 'OK', isPrimary: true },
+                    },
+                ]
+            });
+            dlgObj.appendTo(ele);
+    });
+    it('Multiple Triggers of Ok Button Click Event ', (done) => {
+        let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-dlg-overlay'))[0];
+        ele1.click();
+        eventArgs = { keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false };
+        dlgObj.keyDown(eventArgs);
+        setTimeout(function () {
+            expect(count === 1).toBe(true);
+            done();
+        }); 
+    });
+    afterAll(() => {
+        destroyDialog(dlgObj);
+    });
+});

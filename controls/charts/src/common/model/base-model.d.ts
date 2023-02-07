@@ -571,6 +571,14 @@ export interface TooltipSettingsModel {
     enableTextWrap?: boolean;
 
     /**
+     * By default, the nearest points will be included in the shared tooltip; however, you can set it to false to exclude the nearest value from the tooltip.
+     *
+     * @default true
+     */
+
+    showNearestPoint?: boolean;
+
+    /**
      * Options to customize tooltip borders.
      */
 

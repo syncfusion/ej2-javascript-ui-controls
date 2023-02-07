@@ -807,10 +807,18 @@ export class SfdtExport {
             inline.allowOverlap = element.allowOverlap;
             inline.textWrappingStyle = element.textWrappingStyle;
             inline.textWrappingType = element.textWrappingType;
-            inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
-            inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
-            inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
-            inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+            if(!isNullOrUndefined(inline.distanceBottom)) {
+                inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+            }
+            if(!isNullOrUndefined(inline.distanceLeft)) {
+                inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+            }
+            if(!isNullOrUndefined(inline.distanceRight)) {
+                inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+            }
+            if(!isNullOrUndefined(inline.distanceTop)) {
+                inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+            }
             inline.layoutInCell = element.layoutInCell;
             inline.zOrderPosition = element.zOrderPosition;
         } else if (element instanceof BookmarkElementBox) {
@@ -908,10 +916,18 @@ export class SfdtExport {
         inline.allowOverlap = element.allowOverlap;
         inline.textWrappingStyle = element.textWrappingStyle;
         inline.textWrappingType = element.textWrappingType;
-        inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
-        inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
-        inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
-        inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+        if(!isNullOrUndefined(inline.distanceBottom)) {
+            inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+        }
+        if(!isNullOrUndefined(inline.distanceLeft)) {
+            inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+        }
+        if(!isNullOrUndefined(inline.distanceRight)) {
+            inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+        }
+        if(!isNullOrUndefined(inline.distanceTop)) {
+            inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+        }
         inline.layoutInCell = element.layoutInCell;
         inline.lockAnchor = element.lockAnchor;
         inline.autoShapeType = element.autoShapeType;
@@ -1528,10 +1544,18 @@ export class SfdtExport {
             table.wrapTextAround = tableWidget.wrapTextAround;
             table.positioning = {};
             table.positioning.allowOverlap = tableWidget.positioning.allowOverlap;
-            table.positioning.distanceBottom = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceBottom);
-            table.positioning.distanceLeft = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceLeft);
-            table.positioning.distanceRight = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceRight);
-            table.positioning.distanceTop = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceTop);
+            if(!isNullOrUndefined(table.positioning.distanceBottom)) {
+                table.positioning.distanceBottom = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceBottom);
+            }
+            if(!isNullOrUndefined(table.positioning.distanceLeft)) {
+                table.positioning.distanceLeft = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceLeft);
+            }
+            if(!isNullOrUndefined(table.positioning.distanceRight)) {
+                table.positioning.distanceRight = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceRight);
+            }
+            if(!isNullOrUndefined(table.positioning.distanceTop)) {
+                table.positioning.distanceTop = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceTop);
+            }
             if (!isNullOrUndefined(tableWidget.positioning.verticalAlignment)) {
                 table.positioning.verticalAlignment = tableWidget.positioning.verticalAlignment;
             }

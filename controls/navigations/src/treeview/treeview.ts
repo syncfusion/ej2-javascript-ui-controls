@@ -5439,6 +5439,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.updateText(liEle, txtEle, this.oldText, prevent);
     }
 
+    private getHierarchicalParentId(node: string | Element, data: { [key: string]: Object }[], parentsID?: string[]): string[] {
+        let index: number = data.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === node);
+        if (index == -1) {
+            for (let i: number = 0; i < data.length; i++) {
+                let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), data[i]);
+                if (!isNOU(childItems)) {
+                    index = childItems.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === node);
+                    if (index == -1) {
+                        this.getHierarchicalParentId(node, childItems,parentsID);
+                    }
+                    else {
+                        parentsID.push(data[i][this.fields.id].toString());
+                        this.getHierarchicalParentId(data[i][this.fields.id].toString(), this.treeData,parentsID);
+                        break;
+                    }
+                }
+            }
+        }
+        return parentsID;
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @param  {TreeView} newProp
@@ -5709,13 +5730,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView nodes.
      */
     public ensureVisible(node: string | Element): void {
+        let parentsId: string[] = [];
+            if(this.dataType == 1){
+                let nodeData: {[key: string]: Object}[] = this.getTreeData(node);
+                while(nodeData.length != 0 && !isNOU(nodeData[0][this.fields.parentID])){
+                    parentsId.push(nodeData[0][this.fields.parentID].toString());
+                    nodeData = this.getTreeData(nodeData[0][this.fields.parentID].toString());
+                }
+            }
+            else if(this.dataType == 2){
+                parentsId = this.getHierarchicalParentId(node,this.treeData,parentsId).reverse();
+            }
+        this.expandAll(parentsId);
         let liEle: Element = this.getElement(node);
-        if (isNOU(liEle)) {
-            return;
+        if (!isNOU(liEle)) {
+        if(typeof node == 'object'){
+            let parents: Element[] = this.parents(liEle, '.' + LISTITEM);
+            this.expandAll(parents);
         }
-        let parents: Element[] = this.parents(liEle, '.' + LISTITEM);
-        this.expandAll(parents);
-        setTimeout(() => { liEle.scrollIntoView(true); }, 450);
+        setTimeout(() => { liEle.scrollIntoView({ behavior: "smooth" }); }, 450);
+        }
     }
 
     /**

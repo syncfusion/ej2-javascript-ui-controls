@@ -1830,6 +1830,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let idx: number;
                 let navIdx: number[];
                 let item: MenuItemModel[];
+                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((this as any).isReact && this.template) {
+                    this.clearTemplate(['template']);
+                }
                 if (!Object.keys(oldProp.items).length) {
                     this.updateItem(this.element, this.items);
                     if (this.enableScrolling && this.element.parentElement.classList.contains('e-custom-scroll')) {
@@ -1858,11 +1862,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         }
                         navIdx.length = 0;
                     }
-                }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((this as any).isReact && this.template) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).portals = []
                 }
                 break;
             }

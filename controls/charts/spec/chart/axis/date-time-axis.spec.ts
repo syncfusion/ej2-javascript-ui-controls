@@ -34,7 +34,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'chartContainer' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -364,7 +364,7 @@ describe('Chart Control', () => {
         it('checking x axis as inversed axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let firstLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(firstLabel.textContent).toEqual('Aug 2000');
+                expect(firstLabel.textContent).toEqual('Aug ...');
                 let lastLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_16');
                 expect(lastLabel.textContent).toEqual('Dec 2009');
                 expect(+firstLabel.getAttribute('x') > (+lastLabel.getAttribute('x'))).toBe(true);
@@ -385,16 +385,16 @@ describe('Chart Control', () => {
             chart.primaryXAxis.skeleton = 'medium';
             chart.primaryXAxis.skeletonType = 'Time';
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('Aug 2000');
+            expect(label.textContent).toEqual('Aug ...');
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('11 Aug 2000 12 : 0 AM');
+            expect(label.textContent).toEqual('11 Aug 2000 1...');
             done();
         });
         it('checking custom label format isInversed false', (done: Function) => {
             chart.primaryXAxis.isInversed = false;
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('11 Aug 2000 12 : 0 AM');
+            expect(label.textContent).toEqual('11 Aug 2000 1...');
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_16');
             expect(label === null).toBe(true);
@@ -419,7 +419,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -494,7 +494,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'chartContainer' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

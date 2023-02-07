@@ -339,8 +339,8 @@ export class FormDesigner {
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
                     for (let i: number = 0; i < spanElement.length; i++) {
                         let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject);
-                        (spanElement as any)[i].style.width = (bounds.width - 10) + "px";
-                        (spanElement as any)[i].style.height = (bounds.height - 10) + "px";
+                        (spanElement as any)[i].style.width = (bounds.width / 2) + "px";
+                        (spanElement as any)[i].style.height = (bounds.height / 2) + "px";
                         if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
                             (spanElement as any)[i].style.width = "1px";
                             (spanElement as any)[i].style.height = "1px";
@@ -848,6 +848,19 @@ export class FormDesigner {
                             }
                         }
                     }
+                    if (this.pdfViewerBase.isFocusField && this.pdfViewerBase.focusField) {
+                        var currentField = document.getElementById(this.pdfViewerBase.focusField.id);
+                        if (currentField) {
+                            if ((this.pdfViewerBase.focusField.type === "SignatureField" || this.pdfViewerBase.focusField.type === "InitialField") && this.pdfViewer.formDesignerModule) {
+                                currentField.parentElement.focus();
+                            }
+                            else {
+                                currentField.focus();
+                            }
+                            this.pdfViewerBase.isFocusField = false;
+                            this.pdfViewerBase.focusField = [];
+                        }
+                    }
                 }
             }
         }
@@ -1238,6 +1251,8 @@ export class FormDesigner {
         element.style.position = "absolute";
         element.style.width = "100%";
         element.style.height = "100%";
+        element.addEventListener('focus', this.focusFormFields.bind(this));
+        element.addEventListener('blur', this.blurFormFields.bind(this));
         const divElement: HTMLElement = createElement("div");
         divElement.style.width = "100%";
         divElement.style.height = "100%";
@@ -1437,6 +1452,8 @@ export class FormDesigner {
         element.style.height = "100%";
         let select = document.createElement("select");
         select.addEventListener('change', this.dropdownChange.bind(this));
+        select.addEventListener('focus', this.focusFormFields.bind(this));
+        select.addEventListener('blur', this.blurFormFields.bind(this))
         select.id = drawingObject.id;
         select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + dropdownElement.id;
         select.setAttribute("aria-label","editabledropdown" + this.pdfViewerBase.activeElements.activePageID + dropdownElement.id );
@@ -1474,6 +1491,8 @@ export class FormDesigner {
         element.style.height = "100%";
         let select = document.createElement("select");
         select.addEventListener('click', this.listBoxChange.bind(this));
+        select.addEventListener('focus', this.focusFormFields.bind(this));
+        select.addEventListener('blur', this.blurFormFields.bind(this));
         select.id = drawingObject.id;
         select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + listBoxElement.id;
         select.setAttribute("aria-label","editabledropdown" + this.pdfViewerBase.activeElements.activePageID + listBoxElement.id );
@@ -1536,7 +1555,6 @@ export class FormDesigner {
             }
         } else if (formFieldAnnotationType == "Checkbox") {
             let minCheckboxWidth: number = 20;
-            element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
             element.style.display = "flex";
             element.style.alignItems = "center";
             let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds,isPrint);
@@ -1551,6 +1569,8 @@ export class FormDesigner {
             checkboxDiv = createElement("div", { className: "e-pv-checkbox-div" });
             if (!Browser.isDevice) {
                 checkboxDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+                checkboxDiv.addEventListener('focus', this.focusFormFields.bind(this));
+                checkboxDiv.addEventListener('blur', this.blurFormFields.bind(this))
             }
             (checkboxDiv as HTMLElement).id = drawingObject.id + "_input";
             if (drawingObject.isChecked) {
@@ -1584,7 +1604,7 @@ export class FormDesigner {
                 this.updateCheckBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
                 this.updateCheckboxProperties(drawingObject, checkboxDiv);
             }
-            labelElement.appendChild(inputElement);
+            inputElement.appendChild(labelElement);
             labelElement.appendChild(checkboxDiv);
             checkboxDiv.appendChild(innerSpan);
             if (isPrint) {
@@ -1600,6 +1620,8 @@ export class FormDesigner {
             inputElement.style.height = '100%';
             inputElement.style.borderStyle = "solid"
             inputElement.addEventListener('click', this.inputElementClick.bind(this));
+            inputElement.addEventListener('focus', this.focusFormFields.bind(this));
+            inputElement.addEventListener('blur', this.blurFormFields.bind(this));
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
             this.updatePasswordFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
             this.updatePasswordFieldProperties(drawingObject, inputElement, isPrint);
@@ -1619,6 +1641,7 @@ export class FormDesigner {
             labelElement.style.height = bounds.height + "px";
             labelElement.style.display = "table";
             labelElement.style.verticalAlign = "middle";
+            labelElement.style.borderWidth = drawingObject.thickness + 'px';
             labelElement.style.boxShadow = drawingObject.borderColor + ' 0px 0px 0px ' + drawingObject.thickness + 'px';
             labelElement.style.borderRadius = '50%';
             labelElement.style.visibility = drawingObject.visibility;
@@ -1645,6 +1668,8 @@ export class FormDesigner {
             inputElement.addEventListener('click', function (event) {
                 event.stopPropagation();
             });
+            inputElement.addEventListener('focus', this.focusFormFields.bind(this));
+            inputElement.addEventListener('blur', this.blurFormFields.bind(this));
             inputElement.style.width = bounds.width + "px";
             inputElement.style.height = bounds.height + "px";
             this.updateRadioButtonFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
@@ -1758,8 +1783,8 @@ export class FormDesigner {
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
         this.updateFormFieldSessions();
     }
-
-    private setCheckBoxState(event: Event) {
+       
+    public setCheckBoxState(event: Event) {
         if ((Browser.isDevice) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
             let minCheckboxWidth: number = 20;
             let isChecked: boolean = false;
@@ -1924,6 +1949,33 @@ export class FormDesigner {
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
         }
     }
+    public focusFormFields(event: any): void {
+        // eslint-disable-next-line
+        let currentTarget: any = event.target;
+        if (currentTarget || currentTarget.className === "e-pv-checkbox-outer-div") {
+            let colorBorder: any = (currentTarget.style.borderColor === 'transparent' ? '#000000' : currentTarget.style.borderColor);
+            currentTarget.style.boxShadow = "0 0 5px " + colorBorder;
+        }
+        if (currentTarget && (currentTarget.className === "e-pv-radiobtn-container" || currentTarget.className === "e-pv-radio-btn" || currentTarget.className === "e-pv-radiobtn-span") && currentTarget.style.borderColor === 'transparent') {
+            let colorBorder = (currentTarget.style.borderColor === 'transparent' ? '#000000' : currentTarget.style.borderColor);
+            currentTarget.parentElement.style.boxShadow = '0px 0px 5px ' + colorBorder;
+        }
+        if (currentTarget && (currentTarget.className === "e-pv-radiobtn-container" || currentTarget.className === "e-pv-radio-btn" || currentTarget.className === "e-pv-radiobtn-span")) {
+            currentTarget.parentElement.style.boxShadow = currentTarget.style.borderColor + '0px 0px 5px ' + currentTarget.style.borderWidth;
+        }
+    }
+    public blurFormFields(event: any): void {
+        // eslint-disable-next-line
+        let currentTarget = event.target;
+        currentTarget.style.boxShadow = '';
+        if (currentTarget.type === 'radio' && currentTarget.style.borderColor === 'transparent') {
+            var colorBorder = (currentTarget.style.borderColor === 'transparent' ? '#000000' : currentTarget.style.borderColor);
+            currentTarget.parentElement.style.boxShadow = '0px 0px 0px ' + colorBorder;
+        }
+        if (currentTarget.type === 'radio') {
+            currentTarget.parentElement.style.boxShadow = currentTarget.style.borderColor + '0px 0px 0px ' + currentTarget.style.borderWidth;
+        }
+    }
     private setTextBoxFontStyle(fontStyle: any): any {
         if (fontStyle === 1) {
             return { isBold: true };
@@ -1985,7 +2037,7 @@ export class FormDesigner {
             thickness: 1, bounds: { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height },
             fontFamily: !isNullOrUndefined((options as TextFieldSettings).fontFamily) ? (options as TextFieldSettings).fontFamily : "Helvetica", fontSize: !isNullOrUndefined((options as TextFieldSettings).fontSize) ? (options as TextFieldSettings).fontSize : 10,
             color: !isNullOrUndefined((options as TextFieldSettings).color) ? (options as TextFieldSettings).color : "black", backgroundColor: !isNullOrUndefined((options as TextFieldSettings).backgroundColor) ? (options as TextFieldSettings).backgroundColor : "#daeaf7ff",
-            alignment: !isNullOrUndefined((options as TextFieldSettings).alignment) ? (options as TextFieldSettings).alignment : "left", isReadonly: options.isReadOnly ? options.isReadOnly : false, rotateAngle: (options as any).rotateAngle
+            alignment: !isNullOrUndefined((options as TextFieldSettings).alignment) ? (options as TextFieldSettings).alignment : "left", isReadonly: options.isReadOnly ? options.isReadOnly : false, rotateAngle: (options as any).rotateAngle, isTransparent: (options as any).isTransparent
         };
         (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
         obj.visibility = !isNullOrUndefined(options.visibility) ? options.visibility : "visible";
@@ -3388,8 +3440,14 @@ export class FormDesigner {
     public updateCheckboxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Check Box' + this.setFormFieldIndex();
         (inputElement as IElement).checked = obj.isChecked ? true : false;
-        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
-        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        if (obj.isTransparent && obj.borderColor ==='#ffffffff') {
+            inputElement.style.backgroundColor = 'transparent';
+            inputElement.style.borderColor = 'transparent';
+        }
+        else {
+            inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+            inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        }
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
@@ -3973,6 +4031,8 @@ export class FormDesigner {
         inputElement.style.borderStyle = "solid";
         inputElement.addEventListener('click', this.inputElementClick.bind(this));
         inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+        inputElement.addEventListener('focus', this.focusFormFields.bind(this));
+        inputElement.addEventListener('blur', this.blurFormFields.bind(this));
         return inputElement;
     }
 
@@ -5730,6 +5790,8 @@ export class FormDesigner {
                         this.formFieldListItemCollection.push(dropdownValue);
                         let createLiElement = createElement('li', { className: 'e-pv-formfield-li-element' });
                         createLiElement.addEventListener('click', this.listItemOnClick.bind(this));
+                        createLiElement.addEventListener('focus', this.focusFormFields.bind(this));
+                        createLiElement.addEventListener('blur', this.blurFormFields.bind(this));
                         createLiElement.innerHTML = dropdownValue;
                         ulElement.appendChild(createLiElement);
                     }

@@ -201,7 +201,7 @@ export function getValueFromFormat(
             return '';
         }
         if (cell.format) {
-            const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format, onLoad: true,
+            const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format,
                 checkDate: !getIntValueFromDate, rowIndex: rowIdx, colIndex: colIdx, dataUpdate: true };
             context.notify(getFormattedCellObject, args);
             return args.dateObj && args.dateObj.toString() !== 'Invalid Date' ? args.dateObj : (getIntValueFromDate ? <string>args.value :

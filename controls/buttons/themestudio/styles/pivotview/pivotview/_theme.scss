@@ -113,13 +113,13 @@
     .e-toolbar .e-tbar-btn {
       @if ($skin-name == 'tailwind') {
         background-color: transparent;
-    }
+      }
 
       &:hover {
         @if ($skin-name == 'tailwind') {
           background-color: $pivot-toolbar-icon-hover-color;
-    }
-    }
+        }
+      }
     }
 
 

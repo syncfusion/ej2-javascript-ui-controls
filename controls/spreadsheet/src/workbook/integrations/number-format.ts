@@ -1,46 +1,69 @@
-import { getRangeIndexes, NumberFormatType, getCellAddress, updateCell } from '../common/index';
+import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
-import { setCellFormat, getTextSpace, NumberFormatArgs, isCustomDateTime, SetCellFormatArgs } from './../index';
-import { checkIsNumberAndGetNumber } from '../common/internalization';
+import { getTextSpace, NumberFormatArgs, isCustomDateTime } from './../index';
+import { checkIsNumberAndGetNumber, parseThousandSeparator } from '../common/internalization';
 /**
  * Specifies number format.
  */
 export class WorkbookNumberFormat {
     private parent: Workbook;
-    private localeObj: Object;
+    private localeObj: { decimal: string, group: string, timeSeparator: string, dateSeparator: string, am?: string, pm?: string };
     private decimalSep: string;
     private groupSep: string;
-    private currentRange: string;
-    private isRowFill: boolean;
     constructor(parent: Workbook) {
         this.parent = parent;
-        this.localeObj = getNumericObject(this.parent.locale);
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        this.decimalSep = (<any>this.localeObj).decimal;
-        this.groupSep = (<any>this.localeObj).group;
+        this.localeObj = getNumericObject(this.parent.locale) as { decimal: string, group: string, timeSeparator: string,
+            dateSeparator: string };
+        this.decimalSep = this.localeObj.decimal;
+        this.groupSep = this.localeObj.group;
+        const formats: { dayPeriods?: { format: { wide: { am: string, pm: string } } } } = IntlBase.getDependables(
+            cldrData, this.parent.locale, null).dateObject;
+        if (formats.dayPeriods && formats.dayPeriods && formats.dayPeriods.format && formats.dayPeriods.format.wide) {
+            this.localeObj.am = formats.dayPeriods.format.wide.am || 'AM';
+            this.localeObj.pm = formats.dayPeriods.format.wide.pm || 'PM';
+        } else {
+            this.localeObj.am = 'AM';
+            this.localeObj.pm = 'PM';
+        }
         this.addEventListener();
     }
 
     private numberFormatting(args: { format?: string, range?: string, cancel?: boolean }): void {
-        let activeSheetIndex: number = this.parent.activeSheetIndex;
+        let sheetIdx: number = this.parent.activeSheetIndex;
+        let activeSheet: boolean = true;
         if (args.range && args.range.indexOf('!') > -1) {
-            activeSheetIndex = getSheetIndex(this.parent, args.range.split('!')[0]);
+            sheetIdx = getSheetIndex(this.parent, args.range.split('!')[0]);
+            activeSheet = sheetIdx === this.parent.activeSheetIndex;
         }
-        const sheet: SheetModel = getSheet(this.parent, activeSheetIndex);
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         const formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
             args.range.split('!')[1] : args.range) : sheet.selectedRange;
         const selectedRange: number[] = getRangeIndexes(formatRange);
-        let cell: CellModel;
-        for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
-            for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
-                if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: i, colIdx: j })) {
-                    cell = getCell(i, j, sheet);
-                    this.getFormattedCell(
-                        { value: cell.value, format: cell.format, rowIndex: i, colIndex: j, sheetIndex: activeSheetIndex, cell: cell });
+        let fArgs: NumberFormatArgs; let cell: CellModel; let prevFormat: string;
+        for (let rowIdx: number = selectedRange[0]; rowIdx <= selectedRange[2]; rowIdx++) {
+            for (let colIdx: number = selectedRange[1]; colIdx <= selectedRange[3]; colIdx++) {
+                prevFormat = getCell(rowIdx, colIdx, sheet, false, true).format;
+                if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: rowIdx, colIdx: colIdx })) {
+                    cell = getCell(rowIdx, colIdx, sheet);
+                    fArgs = { value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx, cell: cell,
+                        refresh: activeSheet };
+                    this.getFormattedCell(fArgs);
+                    if (activeSheet) {
+                        this.parent.notify(
+                            refreshCellElement, { isRightAlign: fArgs.isRightAlign, result: fArgs.formattedText, rowIndex: rowIdx,
+                                colIndex: colIdx, sheetIndex: fArgs.sheetIndex, type: fArgs.type, curSymbol: fArgs.curSymbol,
+                                value: fArgs.value || fArgs.value === 0 ? fArgs.value : '', isRowFill: fArgs.isRowFill,
+                                cellEle: fArgs.td });
+                        if (prevFormat && prevFormat !== args.format && prevFormat.includes('[') &&
+                            getCustomColors().indexOf(getColorCode(args.format)) === -1) {
+                            this.removeFormatColor(fArgs, { format: prevFormat, style: cell.style });
+                        }
+                    }
+                    this.parent.setUsedRange(rowIdx, colIdx);
                 }
             }
         }
@@ -54,23 +77,18 @@ export class WorkbookNumberFormat {
      */
     public getFormattedCell(args: NumberFormatArgs): string {
         const fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
-        const sheetIdx: number = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex;
-        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        let range: number[];
-        if (args.rowIndex === undefined) {
-            range = getRangeIndexes(sheet.activeCell);
-        } else {
-            range = [args.rowIndex, args.colIndex];
-        }
-        const cell: CellModel = args.cell || getCell(range[0], range[1], sheet, false, true);
+        args.sheetIndex = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
+        const cell: CellModel = args.cell || getCell(args.rowIndex, args.colIndex, sheet, false, true);
         let rightAlign: boolean = false;
         const option: { currency?: string } = {};
         const intl: Internationalization = new Internationalization();
         intl.getNumberFormat(option);
         const currencySymbol: string = getNumberDependable(this.parent.locale, option.currency);
-        if ((!args.format || args.format === 'General') && !args.skipFormatCheck) {
+        if ((!args.format || args.format === 'General') && !args.skipFormatCheck && (!cell.formula ||
+            !cell.formula.toLowerCase().startsWith('=text('))) {
             args.type = args.format = 'General';
-            const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell };
+            const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell, isEdit: args.isEdit, intl: intl };
             this.checkDateFormat(dateEventArgs);
             if (dateEventArgs.isDate || dateEventArgs.isTime) {
                 rightAlign = true;
@@ -87,70 +105,69 @@ export class WorkbookNumberFormat {
                 args.format = 'General';
             }
         }
-        let result: { fResult: string, rightAlign: boolean };
         if (cell.format && this.isCustomType(cell)) {
             args.type = 'Custom';
             let isCustomText: boolean;
             const orgFormat: string = cell.format;
             cell.format = cell.format.split('\\').join('');
-            this.currentRange = getCellAddress(range[0], range[1]);
             if (cell.format.indexOf(';') > -1) {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
-                    args.result = this.processCustomConditions(cell);
+                    args.result = this.processCustomConditions(cell, args);
                 } else {
-                    args.result = this.processCustomAccounting(cell, range[0], range[1], args.td, currencySymbol, args.skipRowFill);
-                    isCustomText = (!isNumber(cell.value) || cell.format && cell.format.indexOf('@') > -1) ? true : false;
+                    args.result = this.processCustomAccounting(cell, args, currencySymbol);
+                    isCustomText = !isNumber(cell.value) || cell.format === '@';
                 }
                 cell.format = orgFormat;
-            } else if (isCustomDateTime(cell, true)) {
+            } else if (isCustomDateTime(cell.format, true)) {
                 if (fResult !== '') {
-                    args.result = this.processCustomDate(args, cell);
+                    args.result = this.processCustomDateTime(args, cell);
                     isCustomText = !args.formatApplied;
                 }
                 args.result = args.result || cell.value;
-            } else if (cell.format.indexOf('/') > -1) {
-                args.result = this.processCustomFraction(cell);
             } else if (cell.format.indexOf('@') > -1) {
                 isCustomText = true;
-                args.result = this.processCustomText(cell);
-            } else if (cell.format.includes('E+0') && isNumber(fResult)) {
-                if (args.format !== cell.format) {
-                    args.format = cell.format;
-                }
-                args.result = this.scientificFormat(args);
-            } else if (checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).isNumber) {
-                args.result = this.processCustomNumberFormat(cell, range[0], range[1], args.td);
-                isCustomText = !isNumber(cell.value);
+                args.result = this.processCustomText(cell.format, fResult, args);
             } else {
-                isCustomText = args.dataUpdate = true;
+                const numObj: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(
+                    { value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+                if (numObj.isNumber) {
+                    cell.value = args.value = numObj.value;
+                    if (cell.format.includes('E+0')) {
+                        if (args.format !== cell.format) {
+                            args.format = cell.format;
+                        }
+                        this.checkAndSetColor(args);
+                        const numberFormat: string = args.format.split('E')[0];
+                        let formatArr: string[] = numberFormat.split('.');
+                        if (this.decimalSep !== '.' && formatArr.length === 1) {
+                            formatArr = numberFormat.split(this.decimalSep);
+                        }
+                        args.result = formatArr[0].length > 1 ? this.scientificHashFormat(args, formatArr) : this.scientificFormat(args);
+                    } else {
+                        args.result = this.processCustomNumberFormat(cell, args);
+                        isCustomText = !isNumber(cell.value);
+                    }
+                } else {
+                    if (cell.format && cell.format.includes('[')) {
+                        this.removeFormatColor(args, { format: cell.format, style: cell.style });
+                    }
+                    isCustomText = args.dataUpdate = true;
+                }
             }
-            if (!args.dataUpdate) {
+            if (args.dataUpdate) {
+                args.formattedText = args.result || (isNullOrUndefined(args.value) ? '' : args.value.toString());
+            } else {
                 args.value = args.result;
+                args.formattedText = isNullOrUndefined(args.value) ? '' : args.value.toString();
             }
             if (isCustomText) {
                 args.isRightAlign = false;
             } else {
-                args.isRightAlign = isNullOrUndefined(cell.value) ? false : true;
+                args.isRightAlign = !isNullOrUndefined(args.value);
             }
         } else {
-            result = this.processFormats(args, fResult, rightAlign, cell, intl, currencySymbol, option.currency);
-        }
-        args.isRowFill = this.isRowFill;
-        if (!args.onLoad) {
-            if (sheet.id === this.parent.getActiveSheet().id) {
-                this.parent.notify(
-                    refreshCellElement, { isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign,
-                        result: args.type === 'Custom' ? args.value : result.fResult || args.value, rowIndex: args.rowIndex,
-                        colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
-                        value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
-                this.isRowFill = false;
-            }
-            this.parent.setUsedRange(args.rowIndex, args.colIndex);
-        }
-        this.isRowFill = false;
-        if (args.type === 'Custom') {
-            args.formattedText = args.value === undefined || args.value === null ? '' : args.value.toString();
-        } else {
+            let result: { fResult: string, rightAlign: boolean } = this.processFormats(
+                args, fResult, rightAlign, cell, intl, currencySymbol, option.currency, sheet);
             args.formattedText = result.fResult || (args.value === undefined || args.value === null ? '' : args.value.toString());
             args.isRightAlign = result.rightAlign;
         }
@@ -161,52 +178,50 @@ export class WorkbookNumberFormat {
     private isCustomType(cell: CellModel): boolean {
         const format: string = getTypeFromFormat(cell.format);
         const l10n: L10n = this.parent.serviceLocator.getService('spreadsheetLocale');
-        if ((format === l10n.getConstant('General') && cell.format !== l10n.getConstant('General')) ||
-        (format === l10n.getConstant('Time') && this.parent.isEdit)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (format === l10n.getConstant('General') && cell.format !== l10n.getConstant('General')) ||
+            (format === l10n.getConstant('Time') && this.parent.isEdit);
     }
 
-    private processCustomFill(
-        format: string, cell: CellModel, rowIdx: number, colIdx: number, tdElem?: HTMLElement, skipRowFill?: boolean): string {
-        const idx: number = cell.format.indexOf('*');
-        const repeatChar: string = format[idx + 1];
-        const codes: string[] = format.split(format[idx as number] + repeatChar);
-        let formatText: string;
-        let secText: string;
-        if (codes[1] === '') {
-            format = format.split(format[idx as number] + repeatChar).join('');
-            const sampCell: CellModel = {format: format, value: cell.value};
-            formatText = this.processCustomNumberFormat(sampCell);
+    private processCustomFill(format: string, cell: CellModel, args: NumberFormatArgs, formatText?: string): string {
+        const repeatChar: string = format[format.indexOf('*') + 1];
+        const codes: string[] = format.split('*' + repeatChar);
+        if (args.rowIndex === undefined) {
+            formatText = formatText || this.processCustomNumberFormat({ format: codes.join(''), value: cell.value }, args);
         } else {
-            formatText = format.split(format[idx as number] + repeatChar)[0];
-            format = codes[1];
-            const sampCell: CellModel = {format: format, value: cell.value};
-            secText = this.processCustomNumberFormat(sampCell);
-            if (parseFloat(cell.value) === 0) {
-                secText = secText.split('0').join('');
+            let secText: string;
+            if (codes[1]) {
+                const cellVal: number = parseFloat(cell.value);
+                if (cellVal < 0) {
+                    secText = this.processCustomNumberFormat({ format: codes[1], value: Math.abs(cellVal).toString() }, args);
+                    formatText = `-${codes[0]}`;
+                } else {
+                    secText = this.processCustomNumberFormat({ format: codes[1], value: cell.value }, args);
+                    formatText = codes[0];
+                }
+                if (cellVal === 0) {
+                    secText = secText.split('0').join('');
+                }
+            } else {
+                formatText = formatText || this.processCustomNumberFormat({ format: codes[0], value: cell.value }, args);
             }
-        }
-        if (!skipRowFill) {
-            this.isRowFill = true;
+            args.isRowFill = true;
             this.parent.notify(
-                rowFillHandler, { cell: cell, rowIdx: rowIdx, colIdx: colIdx, value: repeatChar, formatText: formatText, secText: secText,
-                    td: tdElem });
+                rowFillHandler, { cell: cell, cellEle: args.td, rowIdx: args.rowIndex, colIdx: args.colIndex, beforeFillText: formatText,
+                    repeatChar: repeatChar, afterFillText: secText });
         }
         return formatText;
     }
 
-    private processCustomDate(args: NumberFormatArgs, cell: CellModel): string {
+    private processCustomDateTime(args: NumberFormatArgs, cell: CellModel): string {
         let isCustomDate: boolean;
         const checkCustomDate: Function = (): boolean => {
-            if (cell.value.toString().includes('/') || cell.value.toString().includes('-') ) {
+            const cellVal: string = cell.value.toString();
+            if (cellVal.includes(this.localeObj.dateSeparator) || cellVal.indexOf('-') > 0 || cellVal.includes(this.localeObj.timeSeparator)) {
                 return true;
             }
             const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
             const months: Object = formats.months['stand-alone'] && formats.months['stand-alone'].abbreviated;
-            return months && !!Object.keys(months).find((key: string) => cell.value.toString().includes(months[`${key}`]));
+            return months && !!Object.keys(months).find((key: string) => cellVal.includes(months[`${key}`]));
         };
         if (!isNumber(cell.value)) {
             isCustomDate = checkCustomDate();
@@ -218,27 +233,50 @@ export class WorkbookNumberFormat {
         let custFormat: string = cell.format;
         const intl: Internationalization = new Internationalization();
         const formatDateTime: Function = (checkDate?: boolean): string => {
-            let isValidDate: boolean; let dateValue: Date;
+            let isValidDate: boolean; let dateArgs: { dateObj: Date, type?: string };
             if (isCustomDate) {
-                dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
-                isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
+                dateArgs = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell);
+                isValidDate = dateArgs.dateObj && dateArgs.dateObj.toString() !== 'Invalid Date';
                 if (isValidDate) {
-                    if (dateValue.getFullYear() < 1900) {
+                    if (dateArgs.dateObj.getFullYear() < 1900) {
                         return '';
                     } else {
-                        cell.value = dateToInt(dateValue).toString();
+                        cell.value = dateToInt(dateArgs.dateObj, cell.value.toString().includes(':'), dateArgs.type === 'time').toString();
                     }
                 }
             } else {
-                dateValue = intToDate(parseFloat(cell.value));
-                isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
+                dateArgs = { dateObj: intToDate(parseFloat(cell.value)) };
+                isValidDate = dateArgs.dateObj && dateArgs.dateObj.toString() !== 'Invalid Date';
             }
             if (isValidDate) {
                 if (checkDate) {
-                    args.dateObj = dateValue;
+                    args.dateObj = dateArgs.dateObj;
                 }
                 args.formatApplied = true;
-                return intl.formatDate(dateValue, { type: type, format: custFormat });
+                let result: string;
+                if (custFormat.startsWith('MM-dd-yyyy ')) { // While auto detect date time value, we will set this format only.
+                    custFormat = custFormat.split(' ').splice(1).join(' ');
+                    result = intl.formatDate(dateArgs.dateObj, { type: 'date', skeleton: 'yMd' }) + (custFormat ? ' ' +
+                        intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat }) : '');
+                } else {
+                    result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                    custFormat = custFormat.toLowerCase();
+                    if (custFormat.startsWith('[h]')) {
+                        const totalHours: number = (Number(cell.value.toString().split('.')[0]) * 24) + dateArgs.dateObj.getHours();
+                        result = totalHours.toString() + result.slice(result.indexOf(']') + 1);
+                    } else if (custFormat.startsWith('[m')) {
+                        const totalMins: number = (Number(cell.value.toString().split('.')[0]) * 1440) + (dateArgs.dateObj.getHours() * 60)
+                            + dateArgs.dateObj.getMinutes();
+                        result = totalMins.toString() + result.slice(result.indexOf(']') + 1);
+                    } else if (custFormat.startsWith('[s')) {
+                        result = ((Number(cell.value.toString().split('.')[0]) * 86400) + (((dateArgs.dateObj.getHours() * 60) +
+                            dateArgs.dateObj.getMinutes()) * 60) + dateArgs.dateObj.getSeconds()).toString();
+                    }
+                }
+                if (isShortMeridian) {
+                    return result.replace(this.localeObj.am, 'A').replace(this.localeObj.pm, 'P');
+                }
+                return result;
             }
             return '';
         };
@@ -249,7 +287,8 @@ export class WorkbookNumberFormat {
         if (cell.format.indexOf('s') > -1) {
             type = 'time';
         }
-        if (cell.format.indexOf('AM/PM') > -1 || cell.format.indexOf('A/P') > -1) {
+        const isShortMeridian: boolean = cell.format.indexOf('A/P') > -1;
+        if (cell.format.indexOf('AM/PM') > -1 || isShortMeridian) {
             custFormat = custFormat.split('H').join('h');
             custFormat = custFormat.split('A/P').join('AM/PM').split('AM/PM').join('a');
             type = 'time';
@@ -270,6 +309,13 @@ export class WorkbookNumberFormat {
         if (cell.format.indexOf('m') > -1) {
             if (cell.format.indexOf('s') > -1 || cell.format.indexOf('h') > -1) {
                 type = 'time';
+                if (cell.format.includes(' ')) {
+                    const formatArr: string[] = custFormat.split(' ');
+                    if (formatArr[0].includes('d') || formatArr[0].includes('y')) {
+                        formatArr[0] = formatArr[0].split('m').join('M');
+                        custFormat = formatArr.join(' ');
+                    }
+                }
             } else {
                 type = 'date';
                 custFormat = custFormat.split('m').join('M');
@@ -284,94 +330,78 @@ export class WorkbookNumberFormat {
         return formatDateTime(args.checkDate);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private processCustomFraction(cell: CellModel): string {
-        // const fracLength: number = cell.format.split('/')[1].length;
-        // const fracValue: string = Number(cell.value).toFixed(fracLength);
-        const suffix: string = '';
-        // let fractionResult: string;
-        // if (cell.value.toString().indexOf(this.decimalSep) > -1 && isNumber(cell.value as string)) {
-        //     suffix = cell.value.toString().split(this.decimalSep)[0];
-        //     fractionResult = toFraction(Number(fracValue));
-        //     return (Number(suffix) === 0) ? ' ' + fractionResult : suffix + ' ' + fractionResult;
-        // }
-        return suffix;
-    }
-
-    private processCustomConditions(cell: CellModel): string {
+    private processCustomConditions(cell: CellModel, args: NumberFormatArgs): string {
         if (isNumber(cell.value)) {
-            const conditions: string[] = cell.format.split(';');
-            const val: number = Number(cell.value); const colorCode: string[] = [];
-            let condition: string; let compareVal: string; let values: string[]; let conditionNotMatch: boolean;
-            for (let i: number = 0; i < conditions.length; i++) {
-                condition = conditions[Number(i)];
-                colorCode.push(getColorCode(condition));
-                if (colorCode[i as number]) {
-                    condition = condition.split(`[${colorCode[i as number]}]`).join('');
+            const formatArr: string[] = cell.format.split(';');
+            const val: number = Number(cell.value);
+            let compareVal: string; let values: string[]; let conditionNotMatch: boolean; let colorCode: string;
+            for (let i: number = 0; i < formatArr.length; i++) {
+                cell.format = formatArr[i as number];
+                colorCode = getColorCode(cell.format);
+                if (colorCode) {
+                    cell.format = cell.format.split(`[${colorCode}]`).join('');
                 }
-                compareVal = condition.split('[')[1].split(']')[0];
-                if (((values = compareVal.split('<=')).length === 2 && val <= Number(values[1])) ||
-                    (values.length === 1 && (values = compareVal.split('>=')).length === 2 && val >= Number(values[1])) ||
-                    (values.length === 1 && (values = compareVal.split('<')).length === 2 && val < Number(values[1])) ||
-                    (values.length === 1 && (values = compareVal.split('>')).length === 2 && val > Number(values[1]))) {
-                    cell.format = conditions[i as number].split(`[${compareVal}]`)[0] + conditions[i as number].split(`[${compareVal}]`)[1];
+                if (cell.format.includes('[')) {
+                    compareVal = cell.format.split('[')[1].split(']')[0];
+                    if (((values = compareVal.split('<=')).length === 2 && val <= Number(values[1])) ||
+                        (values.length === 1 && (values = compareVal.split('>=')).length === 2 && val >= Number(values[1])) ||
+                        (values.length === 1 && (values = compareVal.split('<')).length === 2 && val < Number(values[1])) ||
+                        (values.length === 1 && (values = compareVal.split('>')).length === 2 && val > Number(values[1]))) {
+                        cell.format = formatArr[i as number].split(`[${compareVal}]`).join('');
+                        conditionNotMatch = false;
+                        break;
+                    }
+                    conditionNotMatch = values.length === 2;
+                } else {
+                    cell.format = formatArr[i as number];
                     conditionNotMatch = false;
                     break;
-                } else {
-                    conditionNotMatch = values.length === 2;
                 }
             }
             if (conditionNotMatch) {
-                if (cell.style && cell.style.color && colorCode.indexOf(cell.style.color) > -1) {
-                    this.parent.notify(setCellFormat, <SetCellFormatArgs>{ style: { color: '' }, range: this.currentRange });
-                }
-                return '#####';
+                this.removeFormatColor(args, { format: formatArr.join(''), style: cell.style });
+                return this.processCustomFill('*#', cell, args, '#####');
             }
-            return this.processCustomNumberFormat(cell);
+            return this.processCustomNumberFormat(cell, args);
         } else {
             return cell.value;
         }
     }
 
-    private processCustomAccounting(
-        cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, currencySymbol?: string, skipRowFill?: boolean): string {
+    private processCustomAccounting(cell: CellModel, args: NumberFormatArgs, curSymbol: string): string {
+        const formats: string[] = cell.format.split(';');
+        const numObj: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(
+            cell, this.parent.locale, this.groupSep, this.decimalSep, curSymbol);
         let cellValue: number;
-        const custFormat: string[] = cell.format.split(';');
-        const numberStatusAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(
-            cell, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
-        const orgValue: string = cell.value;
-        if (numberStatusAndValue.isNumber) {
-            cell.value = numberStatusAndValue.value;
-            cellValue = parseFloat(numberStatusAndValue.value);
+        if (numObj.isNumber) {
+            cell.value = numObj.value;
+            cellValue = parseFloat(numObj.value);
         }
+        let format: string;
         if (cellValue > 0) {
-            cell.format = custFormat[0];
+            format = formats[0];
         } else if (cellValue === 0) {
-            if (isNullOrUndefined(custFormat[2])) {
-                cell.format = custFormat[0];
+            if (formats[2]) {
+                format = formats[2].includes(`${curSymbol}0`) ? formats[2].split('0').join('#') : formats[2];
             } else {
-                cell.format = custFormat[2];
-                return this.processCustomNumberFormat(cell, rowIdx, colIdx, td);
+                format = formats[0];
             }
         } else if (isNumber(cellValue)) {
-            cell.format = custFormat[1];
+            format = formats[1];
         } else {
-            cell.format = custFormat[3];
-            return isNullOrUndefined(custFormat[3]) ? cell.value ? cell.value.toString() : '' : this.processCustomText(cell);
+            const cellVal: string = cell.value || <unknown>cell.value === 0 ? cell.value : '';
+            cell.format = '@';
+            return formats[3] ? this.processCustomText(formats[3], cellVal, args) : cellVal.toString();
         }
-        if (cellValue < 0) {
-            cell.value = Math.abs(cellValue).toString();
-            const formattedNumber: string = this.processCustomNumberFormat(cell, rowIdx, colIdx, td);
-            cell.value = orgValue;
-            return formattedNumber;
-        }
-        return this.processCustomNumberFormat(cell, rowIdx, colIdx, td, skipRowFill);
+        return this.processCustomNumberFormat(
+            { format: cell.format, value: cellValue < 0 ? Math.abs(cellValue).toString() : cell.value, style: cell.style }, args, format);
     }
 
-    private processCustomText(cell: CellModel): string {
+    private processCustomText(format: string, cellVal: string, args: NumberFormatArgs): string {
+        cellVal = cellVal.toString();
         const result: string = this.processCustomNumberFormat(
-            { format: cell.format.split('@').join('#'), value: cell.value ? cell.value.split(cell.value).join('0') : '' });
-        return result && result.split('0').join(cell.value);
+            { format: format.split('@').join('#'), value: cellVal.split(cellVal).join('1') }, args);
+        return result && result.split('1').join(cellVal);
     }
 
     private thousandSeparator(count: number, value: number): number {
@@ -393,39 +423,24 @@ export class WorkbookNumberFormat {
         return count;
     }
 
-    private processSeparator(cell: CellModel): string {
-        const count: number = this.getSeparatorCount(cell);
-        let result: number = this.thousandSeparator(count, parseInt(cell.value, 10));
-        if (!(cell.format.indexOf('.') > -1)) {
-            result = Math.round(result);
-        }
-        let formattedText: string = this.getFormattedNumber(cell.format.split(',').join(''), result);
-        formattedText = formattedText.replace(',', '');
-        if (result === 0) {
-            formattedText = formattedText.replace('0', '');
-        }
-        return formattedText;
-    }
-
     private processDigits(cell: CellModel): string {
         const custFormat: string = cell.format.split('?').join('0');
-        const cellValue: string = cell.value;
-        cell.value = this.getFormattedNumber(custFormat, parseFloat(cell.value));
-        if (!isNullOrUndefined(cell.value) && cell.value.includes('.')) {
-            cell.value = cell.value.split('.')[0] + '.' + cell.value.split('.')[1].split('0').join('  ');
+        let cellValue: string = cell.value.toString();
+        cellValue = this.getFormattedNumber(custFormat, parseFloat(cellValue));
+        if (cellValue && cellValue.includes(this.decimalSep)) {
+            const valArr: string[] = cellValue.split(this.decimalSep);
+            cellValue = valArr[0] + this.decimalSep + valArr[1].split('0').join('  ');
         }
-        if (cell.value === '' && cellValue === '0') {
-            cell.value = cellValue;
-        }
-        return cell.value;
+        return cellValue || cell.value;
     }
 
-    private processSpace(format: string, cell: CellModel): string {
+    private processFormatWithSpace(format: string, cell: CellModel, cellValue: number): { format: string, formattedText: string } {
         const space: string = ' ';
         const args: { [key: string]: string | CellModel | number } = { cell: cell, char: space, width: 0 };
         this.parent.notify(getTextSpace, args);
         const spaceWidth: number = <number>args.width;
         let count: number;
+        const result: { format: string, formattedText: string } = { format: format, formattedText: '' };
         for (let i: number = 0; i < format.length; i++) {
             if (format[i as number] === '_') {
                 args.char = format[i + 1];
@@ -435,27 +450,68 @@ export class WorkbookNumberFormat {
                 format = format.replace(format[i as number] + format[i + 1], space.repeat(count));
             }
         }
-        return format;
+        let lastSpaceCount: number = format.length - format.trim().length;
+        if (lastSpaceCount > 0) {
+            result.formattedText = this.getFormattedNumber(format.trim(), cellValue);
+            if (format[0] === ' ') {
+                let frontSpaceCount: number = 1;
+                let idx: number = 1;
+                while (format[idx as number] === ' ') {
+                    frontSpaceCount++; idx++
+                }
+                lastSpaceCount -= frontSpaceCount;
+                result.formattedText = space.repeat(frontSpaceCount) + result.formattedText;
+            }
+            result.formattedText += space.repeat(lastSpaceCount);
+        } else {
+            result.formattedText = this.getFormattedNumber(format, cellValue);
+        }
+        result.format = format;
+        return result;
     }
 
-    private processCustomNumberFormat(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, skipRowFill?: boolean): string {
-        if (cell.format === '') {
+    private removeFormatColor(args: NumberFormatArgs, cell: CellModel): void {
+        if (getCustomColors().indexOf(getColorCode(cell.format)) > -1) {
+            args.color = cell.style && cell.style.color ? cell.style.color : '';
+            this.applyColor(args);
+        }
+    }
+
+    private processCustomNumberFormat(cell: CellModel, args: NumberFormatArgs, format?: string): string {
+        if (!cell.format) {
             return '';
         }
-        let cellValue: number | string = 0;
+        let isFormatted: boolean;
         let formattedText: string = cell.value;
-        let isFormatted: boolean = false;
-        cellValue = checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).value;
-        if (cell && isNumber(cellValue)) {
+        let cellValue: number | string = cell && checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).value;
+        if (isNumber(cellValue)) {
             cell.value = cellValue;
             cellValue = parseFloat(cellValue.toString());
-            let customFormat: string = this.processCustomColor(cell);
-            // if (customFormat === cell.format && cell.style) {
-            //     delete cell.style;
-            // }
-            if (this.getSeparatorCount(cell)) {
+            let customFormat: string = format || cell.format;
+            if (cell.format.indexOf('[') > -1) {
+                const colorCode: string = getColorCode(customFormat);
+                if (colorCode) {
+                    customFormat = customFormat.split(`[${colorCode}]`).join('');
+                    args.color = colorCode.toLowerCase();
+                    this.applyColor(args);
+                } else {
+                    this.removeFormatColor(args, cell);
+                }
+            }
+            if (customFormat.indexOf('"') > -1 || customFormat.indexOf('\\') > -1) {
+                customFormat = this.processText(customFormat);
+            }
+            const separatorCount: number = this.getSeparatorCount(cell);
+            if (separatorCount) {
                 isFormatted = true;
-                formattedText = this.processSeparator(cell);
+                let result: number = this.thousandSeparator(separatorCount, cellValue);
+                if (customFormat.indexOf('.') === -1) {
+                    result = Math.round(result);
+                }
+                formattedText = this.getFormattedNumber(customFormat.split(',').join(''), result);
+                if (result === 0) {
+                    formattedText = formattedText.replace('0', '');
+                }
             }
             if (customFormat.indexOf('?') > -1) {
                 isFormatted = true;
@@ -464,18 +520,16 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('_') > -1) {
                 isFormatted = true;
-                customFormat = cell.format = this.processSpace(customFormat, cell);
-                formattedText = this.getFormattedNumber(customFormat, cellValue);
+                const result: { format: string, formattedText: string } = this.processFormatWithSpace(customFormat, cell, cellValue);
+                customFormat = result.format;
+                formattedText = result.formattedText;
             }
-            if (cell.format.indexOf('"') > -1 || cell.format.indexOf('\\') > -1) {
-                customFormat = this.processText(customFormat);
-            }
-            if (customFormat && formattedText && customFormat.indexOf('?') > -1) {
+            if (formattedText && customFormat.indexOf('?') > -1) {
                 formattedText = formattedText.replace('?', ' ');
             }
             if (customFormat.indexOf('*') > -1) {
                 isFormatted = true;
-                formattedText = this.processCustomFill(customFormat, cell, rowIdx, colIdx, td, skipRowFill);
+                formattedText = this.processCustomFill(customFormat, cell, args);
             }
             if (customFormat === 'General') {
                 isFormatted = true;
@@ -484,8 +538,21 @@ export class WorkbookNumberFormat {
             if (!isFormatted) {
                 formattedText = this.getFormattedNumber(customFormat, cellValue);
             }
-            if (customFormat != null && !customFormat.split('.')[0].includes('0') && cellValue > 0 && cellValue < 1) {
-                formattedText = formattedText.toString().replace(/^0+/, '');
+            // Need to remove this line once this case is handled by core team.
+            if (customFormat[0] === '#' && cellValue >= 0 && cellValue < 1) {
+                const formatArr: string[] = customFormat.split('#').join('').split('.');
+                if (!formatArr[0].includes('0')) {
+                    if (cellValue === 0 && customFormat.includes('.') && (!formatArr[1] || !formatArr[1].includes('0'))) {
+                        formattedText = this.getFormattedNumber(customFormat, 0.1);
+                        formattedText = formattedText.replace('1', '');
+                    }
+                    const textArr: string[] = formattedText.split(this.decimalSep);
+                    textArr[0] = textArr[0].toString().replace(/^0+/, '');
+                    formattedText = textArr.join(this.decimalSep);
+                }
+            }
+            if (formattedText === '-0') { // Need to remove this line once this case is handled by core team.
+                formattedText = '0';
             }
         }
         return formattedText;
@@ -501,89 +568,81 @@ export class WorkbookNumberFormat {
         return custFormat;
     }
 
-    private processCustomColor(cell: CellModel): string {
-        let custFormat: string = cell.format;
-        const colorCode: string = getColorCode(custFormat);
-        if (colorCode) {
-            custFormat = cell.format.split('[' + colorCode + ']')[0] + cell.format.split('[' + colorCode + ']')[1];
-            if (this.currentRange.indexOf('NaN') > -1) {
-                this.currentRange = undefined;
-            }
-            this.parent.notify(setCellFormat, { style: { 'color': colorCode }, range: this.currentRange });
-        } else if (cell.style && getCustomColors().indexOf(cell.style.color) > -1) {
-            this.parent.notify(setCellFormat, { style: { 'color': 'black' } });
-        }
-        return custFormat;
-    }
-
     private processFormats(
         args: NumberFormatArgs, fResult: string, isRightAlign: boolean, cell: CellModel, intl: Internationalization, currencySymbol: string,
-        currencyCode: string): { fResult: string, rightAlign: boolean } {
-        let result: { [key: string]: string | boolean };
+        currencyCode: string, sheet: SheetModel): { fResult: string, rightAlign: boolean } {
+        let options: AutoDetectGeneralFormatArgs;
         if (fResult !== '') {
-            let isNumberAndValue: { isNumber: boolean, value: string };
+            let numArgs: { isNumber: boolean, value: string };
             switch (args.type) {
             case 'General':
-                result = this.autoDetectGeneralFormat({
-                    args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIndex),
-                    colIdx: Number(args.colIndex)
-                });
-                fResult = result.fResult as string;
-                isRightAlign = result.isRightAlign as boolean;
+                options = { args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl, isRightAlign: isRightAlign,
+                    curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIndex), colIdx: Number(args.colIndex), sheet: sheet };
+                this.autoDetectGeneralFormat(options);
+                fResult = options.fResult;
+                isRightAlign = options.isRightAlign;
                 break;
             case 'Number':
-                if (isNumber(fResult)) {
+                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
                     fResult = this.applyNumberFormat(args, intl);
                     isRightAlign = true;
                 }
                 break;
             case 'Currency':
-                isNumberAndValue = checkIsNumberAndGetNumber(
-                    { value: fResult, format: args.format as string }, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
-                if (isNumberAndValue.isNumber) {
-                    args.value = isNumberAndValue.value;
-                    fResult = this.currencyFormat(args, intl, currencyCode);
+                numArgs = checkIsNumberAndGetNumber(
+                    { value: fResult, format: args.format }, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
+                    fResult = this.currencyFormat(args, intl, currencyCode, cell);
                     isRightAlign = true;
                 }
                 break;
             case 'Percentage':
-                if (isNumber(fResult)) {
+                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
                     fResult = this.percentageFormat(args, intl);
                     isRightAlign = true;
                 }
                 break;
             case 'Accounting':
-                if (isNumber(fResult)) {
-                    fResult = this.accountingFormat(args, intl, currencySymbol, currencyCode);
-                    isRightAlign = true;
-                }
+                fResult = this.accountingFormat(args, fResult, intl, currencySymbol, currencyCode, cell);
+                isRightAlign = args.formatApplied;
                 break;
             case 'ShortDate':
                 fResult = this.shortDateFormat(args, intl);
-                isRightAlign = fResult ? true : false;
+                isRightAlign = !!fResult;
                 break;
             case 'LongDate':
                 fResult = this.longDateFormat(args, intl);
-                isRightAlign = fResult ? true : false;
+                isRightAlign = !!fResult;
                 break;
             case 'Time':
                 fResult = this.timeFormat(args, intl);
-                isRightAlign = fResult ? true : false;
+                isRightAlign = !!fResult;
                 break;
             case 'Fraction':
-                if (isNumber(fResult)) {
+                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
                     fResult = this.fractionFormat(args);
                     isRightAlign = true;
                 }
                 break;
             case 'Scientific':
-                if (isNumber(fResult)) {
+                numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
                     fResult = this.scientificFormat(args);
                     isRightAlign = true;
                 }
                 break;
             case 'Text':
+                if (this.decimalSep !== '.' && isNumber(fResult) && fResult.toString().includes('.')) {
+                    fResult = fResult.toString().replace('.', this.decimalSep);
+                }
                 isRightAlign = false;
                 break;
             }
@@ -591,30 +650,65 @@ export class WorkbookNumberFormat {
         return { fResult: fResult, rightAlign: isRightAlign };
     }
 
-    private autoDetectGeneralFormat(options: AutoDetectGeneralFormatArgs): { [key: string]: string | boolean } {
-        let addressFormula: boolean = false; const val: string = options.fResult;
-        if ((options.args.cell as CellModel) && (options.args.cell as CellModel).formula
-        && (options.args.cell as CellModel).formula.indexOf('ADDRESS(') > 0) {
-            addressFormula = true;
+    private autoDetectGeneralFormat(options: AutoDetectGeneralFormatArgs): void {
+        const val: string = options.fResult; let prevVal: string;
+        const addressFormula: boolean = options.args.cell && options.args.cell.formula && options.args.cell.formula.indexOf('ADDRESS(') > 0;
+        if (options.fResult && this.decimalSep !== '.') {
+            let cellVal: string = options.fResult.toString();
+            prevVal = cellVal;
+            if (cellVal.includes(this.decimalSep)) {
+                cellVal = cellVal.replace(this.decimalSep, '.');
+                if (isNumber(cellVal)) {
+                    options.fResult = options.args.value = cellVal = Number(cellVal).toString();
+                    setCell(options.rowIdx, options.colIdx, options.sheet, { value: cellVal }, true);
+                }
+            }
         }
         if (isNumber(options.fResult)) {
-            if (options.args.format && options.args.format !== '') {
-                if (options.args.format.toString().indexOf('%') > -1) {
+            let cellVal: string = Number(options.fResult).toString();
+            if (options.args.format) {
+                if (options.args.format.indexOf('%') > -1) {
                     options.fResult = this.percentageFormat(options.args, options.intl);
-                } else if (options.args.format.toString().indexOf(options.currencySymbol) > -1) {
-                    options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
+                } else if (options.args.format.indexOf(options.currencySymbol) > -1) {
+                    options.fResult = this.currencyFormat(options.args, options.intl, options.curCode, options.args.cell);
                 } else {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            const cellVal: string | number = options.fResult || options.args.value;
-            if (options.args.format === 'General' && cellVal && cellVal.toString().split(this.decimalSep)[0].length > 11) {
-                options.fResult = this.scientificFormat(options.args, 5);
+            if (options.args.format === 'General') {
+                const cellValArr: string[] = cellVal.split('.');
+                if (cellValArr[0].length > 11) {
+                    let idx: number = cellValArr[0].length - 1;
+                    cellVal = cellValArr[0];
+                    while (cellVal[idx as number] === '0') {
+                        cellVal = cellVal.slice(0, -1);
+                        idx--;
+                    }
+                    const digitLen: number = cellVal.length - 1;
+                    if (digitLen > -1) {
+                        options.fResult = this.scientificFormat(options.args, digitLen > 5 ? 5 : digitLen);
+                    }
+                } else if (cellValArr[1]) {
+                    if (cellValArr[1].length > 9) {
+                        options.fResult = options.intl.formatNumber(Number(cellVal), { format: '0.000000000' });
+                    } else if (cellVal.includes('e-')) {
+                        const expVal: string[] = cellVal.split('e-');
+                        const digitLen: number = Number(expVal[1]) + (expVal[0].includes('.') ? expVal[0].split('.')[1].length : 0);
+                        expVal[0] = expVal[0].replace('.', this.decimalSep);
+                        if (expVal[1].length === 1) {
+                            expVal[1] = '0' + expVal[1];
+                        }
+                        setCell(options.rowIdx, options.colIdx, options.sheet, { value: Number(cellVal).toFixed(digitLen) }, true);
+                        options.fResult = expVal.join('E-');
+                    } else if (prevVal) {
+                        options.fResult = prevVal;
+                    }
+                }
             }
             options.isRightAlign = true;
         }
-        if (!isNullOrUndefined(options.fResult)) {
-            const res: string = options.fResult.toString();
+        if (options.fResult) {
+            let res: string = options.fResult.toString();
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
                 Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split('%')[0].split(this.groupSep).join('')) / 100;
@@ -622,15 +716,29 @@ export class WorkbookNumberFormat {
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
-            } else if (res.indexOf(options.currencySymbol) > -1) {
-                const curArr: string[] = res.split(options.currencySymbol);
-                if (curArr[0].trim() === '' && curArr[1] !== '' && isNumber(curArr[1].split(this.groupSep).join(''))) {
-                    options.args.value = Number(curArr[1].split(this.groupSep).join(''));
-                    options.cell.format = options.args.format = getFormatFromType('Currency');
-                    options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
-                    options.cell.value = options.args.value.toString();
-                    setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
-                    options.isRightAlign = true;
+            } else {
+                let format: string = '';
+                if (res.includes(options.currencySymbol)) { // Auto detect 1000 separator format with currency symbol
+                    format = res.includes(this.decimalSep) ? '$#,##0.00' : '$#,##0';
+                    res = res.replace(options.currencySymbol, '');
+                }
+                const isEdit: boolean = this.decimalSep === '.' || options.args.isEdit;
+                if (isEdit && res.includes(this.groupSep) && parseThousandSeparator(res, this.parent.locale, this.groupSep, this.decimalSep)) {
+                    res = res.split(this.groupSep).join('');
+                    if (!format) { // Auto detect 1000 separator format
+                        format = (res.includes(this.decimalSep) ? '#,##0.00' : '#,##0');
+                    }
+                }
+                if (format) {
+                    res = res.replace(this.decimalSep, '.');
+                    if (isNumber(res)) {
+                        options.args.value = res;
+                        setCell(options.rowIdx, options.colIdx, options.sheet, { value: options.args.value, format: format }, true);
+                        options.fResult = this.getFormattedNumber(format, Number(options.args.value));
+                        options.isRightAlign = true;
+                    }
+                } else if (this.decimalSep !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
+                    options.fResult = res.replace('.', this.decimalSep);
                 }
             }
         }
@@ -638,7 +746,6 @@ export class WorkbookNumberFormat {
             options.isRightAlign = false;
             options.fResult = val;
         }
-        return { isRightAlign: options.isRightAlign, fResult: options.fResult };
     }
 
     private getPercentageFormat(value: string): string {
@@ -652,8 +759,8 @@ export class WorkbookNumberFormat {
     }
 
     private applyNumberFormat(args: NumberFormatArgs, intl: Internationalization): string {
-        args.format = this.isCustomFormat(args.format.toString());
-        const formatArr: string[] = args.format.toString().split(';');
+        args.format = this.isCustomFormat(args.format);
+        const formatArr: string[] = args.format.split(';');
         if (Number(args.value) > 0) {
             args.format = formatArr[0];
         } else if (Number(args.value) === 0) {
@@ -690,12 +797,10 @@ export class WorkbookNumberFormat {
         } else {
             args.format = args.format.split('?').join(' ');
         }
-        if (Number(args.value) < 0 && (args.cell as CellModel)) {
-            args.format = (args.cell as CellModel).format;
+        if (Number(args.value) < 0 && args.cell && args.cell.format) {
+            args.format = args.cell.format;
         }
-        return intl.formatNumber(Number(args.value), {
-            format: args.format as string
-        });
+        return intl.formatNumber(Number(args.value), { format: args.format });
     }
 
     private isCustomFormat(format: string): string {
@@ -706,17 +811,39 @@ export class WorkbookNumberFormat {
         format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         return format;
     }
-    private currencyFormat(args: NumberFormatArgs, intl: Internationalization, currencyCode: string): string {
-        args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
-        args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
-        const formatArr: string[] = args.format.toString().split(';');
-        if (Number(args.value) >= 0) {
+    private currencyFormat(args: NumberFormatArgs, intl: Internationalization, currencyCode: string, cell: CellModel): string {
+        args.format = args.format || getFormatFromType('Currency');
+        args.format = args.format.split('_(').join(' ').split('_)').join(' ');
+        const formatArr: string[] = args.format.split(';');
+        const colorCode: string = getColorCode(args.format);
+        let cellVal: number = Number(args.value);
+        if (cellVal >= 0 || isNullOrUndefined(formatArr[1])) {
+            if (colorCode) {
+                args.color = cell.style && cell.style.color ? cell.style.color : '';
+                this.applyColor(args);
+            }
             args.format = formatArr[0];
         } else {
-            args.format = isNullOrUndefined(formatArr[1]) ? formatArr[0] : formatArr[1].split('*').join(' ');
+            cellVal = Math.abs(cellVal);
+            args.format = formatArr[1].split(`[${colorCode}]`).join('').split('*').join(' ');
+            if (colorCode) {
+                args.color = colorCode.toLowerCase();
+                this.applyColor(args);
+            }
         }
         args.format = this.getFormatForOtherCurrency(args.format);
-        return intl.formatNumber(Number(args.value), { format: args.format as string, currency: currencyCode });
+        return intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
+    }
+
+    private applyColor(args: NumberFormatArgs): void {
+        if (args.refresh) {
+            args.td = args.td || this.parent.getCell(args.rowIndex, args.colIndex);
+            if (args.td && args.td.style.color !== args.color) {
+                this.parent.notify(
+                    applyCellFormat, <CellFormatArgs>{ style: { color: args.color }, rowIdx: args.rowIndex, colIdx: args.colIndex,
+                    cell: args.td });
+            }
+        }
     }
 
     private percentageFormat(args: NumberFormatArgs, intl: Internationalization): string {
@@ -726,21 +853,37 @@ export class WorkbookNumberFormat {
         });
     }
 
-    private accountingFormat(args: NumberFormatArgs, intl: Internationalization, currencySymbol: string, currencyCode: string): string {
-        args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
-        args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
+    private accountingFormat(
+        args: NumberFormatArgs, fResult: string, intl: Internationalization, currencySymbol: string, currencyCode: string,
+        cell: CellModel): string {
+        args.format = args.format || getFormatFromType('Accounting');
+        args.format = args.format.split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
         const formatArr: string[] = (args.format as string).split(';');
-        if (Number(args.value) >= 0) {
-            args.format = formatArr[0];
-        } else {
-            args.format = formatArr[1].split('*').join(' ');
+        const numArgs: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(
+            { value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
+        if (numArgs.isNumber) {
+            cell.value = args.value = numArgs.value;
+            let cellVal: number = Number(args.value);
+            if (cellVal >= 0) {
+                args.format = cellVal === 0 && formatArr[2] ? formatArr[2] : formatArr[0];
+            } else {
+                args.format = formatArr[1].split('*').join(' ');
+                cellVal = Math.abs(cellVal);
+            }
+            if (!args.format.includes(currencySymbol) && !args.format.includes('$')) {
+                currencyCode = currencySymbol = '';
+            }
+            args.format = this.getFormatForOtherCurrency(args.format);
+            args.formatApplied = true;
+            if (cellVal === 0) {
+                return currencySymbol + '- ';
+            } else {
+                return intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
+            }
+        } else if (formatArr[3]) {
+            return this.processCustomText(formatArr[3], fResult, args);
         }
-        args.format = this.getFormatForOtherCurrency(args.format);
-        if (Number(args.value) === 0) {
-            return currencySymbol + '- ';
-        } else {
-            return intl.formatNumber(Number(args.value), { format: args.format as string, currency: currencyCode }).split('-').join('');
-        }
+        return fResult;
     }
 
     private getFormatForOtherCurrency(format: string): string {
@@ -766,18 +909,18 @@ export class WorkbookNumberFormat {
         }
         if (args.value) {
             args.value = args.value.toString();
-            if (args.value.includes('/') || args.value.includes('-')) {
+            if ((args.value.includes(this.localeObj.dateSeparator) || args.value.indexOf('-') > 0) && !isNumber(args.value)) {
                 if (format === 'dd-MM-yyyy' || format === 'dd/MM/yyyy') {
                     format = '';
                 }
-                const obj: Date = toDate(args.value, new Internationalization(), this.parent.locale, format, <CellModel>args.cell).dateObj;
+                const obj: Date = toDate(args.value, intl, this.parent.locale, format, args.cell).dateObj;
                 if (obj && obj.toString() !== 'Invalid Date') {
                     if (obj.getFullYear() < 1900) {
-                        return '';
+                        return isNumber(args.value) ? args.value : '';
                     }
                     args.value = dateToInt(obj).toString();
                     if (args.cell) {
-                        (args.cell as CellModel).value = args.value;
+                        args.cell.value = args.value;
                     }
                     if (args.checkDate) {
                         args.dateObj = obj;
@@ -787,6 +930,9 @@ export class WorkbookNumberFormat {
             }
         }
         const shortDate: Date = intToDate(args.value);
+        if (shortDate && shortDate.toString() !== 'Invalid Date' && shortDate.getFullYear() < 1900) {
+            return isNumber(args.value) ? args.value.toString() : '';
+        }
         if (args.checkDate) {
             args.dateObj = shortDate;
         }
@@ -794,7 +940,24 @@ export class WorkbookNumberFormat {
     }
 
     private longDateFormat(args: NumberFormatArgs, intl: Internationalization): string {
-        const longDate: Date = intToDate(args.value);
+        args.value = args.value.toString();
+        let longDate: Date;
+        if ((args.value.includes(this.localeObj.dateSeparator) || args.value.indexOf('-') > 0) && !isNumber(args.value)) {
+            longDate = toDate(args.value, intl, this.parent.locale, '', args.cell).dateObj;
+            if (longDate && longDate.toString() !== 'Invalid Date' && longDate.getFullYear() >= 1900) {
+                args.value = dateToInt(longDate).toString();
+                if (args.cell) {
+                    args.cell.value = args.value;
+                }
+            } else {
+                return isNumber(args.value) ? args.value : '';
+            }
+        } else {
+            longDate = intToDate(args.value);
+            if (longDate && longDate.toString() !== 'Invalid Date' && longDate.getFullYear() < 1900) {
+                return isNumber(args.value) ? args.value : '';
+            }
+        }
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('LongDate')
             : args.format.toString();
         if (code === getFormatFromType('LongDate')) {
@@ -803,68 +966,116 @@ export class WorkbookNumberFormat {
         if (args.checkDate) {
             args.dateObj = longDate;
         }
-        return intl.formatDate(longDate, {
-            type: 'date',
-            format: code
-        });
+        return intl.formatDate(longDate, { type: 'date', format: code });
     }
 
     private timeFormat(args: NumberFormatArgs, intl: Internationalization): string {
         if (isNullOrUndefined(args.value)) {
             return '';
         }
-        const value: string[] | number[] = args.value.toString().split(this.decimalSep);
+        const code: string = (args.format === '' || args.format === 'General') || args.format === getFormatFromType('Time') ? 'h:mm:ss a' :
+            args.format;
+        let cellVal: string = args.value.toString();
+        if (!isNumber(cellVal) && cellVal.includes(this.localeObj.timeSeparator)) {
+            const obj: ToDateArgs = toDate(cellVal, intl, this.parent.locale, code, args.cell);
+            if (obj.dateObj && obj.dateObj.toString() !== 'Invalid Date') {
+                cellVal = args.value = dateToInt(obj.dateObj, true, obj.type && obj.type === 'time').toString();
+                if (args.cell) {
+                    args.cell.value = args.value;
+                }
+            } else {
+                return '';
+            }
+        }
+        const value: string[] = cellVal.split('.');
         if (!isNullOrUndefined(value[1])) {
-            args.value = parseFloat(value[0] + 1 + this.decimalSep + value[1]) || args.value;
+            args.value = parseFloat((value[0] + 1) + '.' + value[1]) || args.value;
         }
-        const time: Date = intToDate(args.value as number);
-        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
-            : args.format.toString();
-        if (code === getFormatFromType('Time')) {
-            code = 'h:mm:ss a';
+        return intl.formatDate(intToDate(args.value), { type: 'time', skeleton: 'medium', format: code });
+    }
+
+    private scientificHashFormat(args: NumberFormatArgs, fArr: string[]): string {
+        const fractionCount: number = this.findDecimalPlaces(args.format);
+        const wholeCount: number = (fArr[0].split('0').length - 1) + (fArr[0].split('#').length - 1);
+        const cellVal: number = Number(args.value.toString().split('.')[0]) || Number(args.value);
+        const formattedVal: string = cellVal.toExponential(fractionCount + wholeCount);
+        let expoSeparator: string;
+        if (formattedVal.includes('e+')) {
+            expoSeparator = 'e+';
+        } else if (formattedVal.includes('e-')) {
+            expoSeparator = 'e-';
+        } else {
+            return formattedVal;
         }
-        return intl.formatDate(time, {
-            type: 'time',
-            skeleton: 'medium',
-            format: code
-        });
+        const exponentArr: string[] = formattedVal.split(expoSeparator);
+        const decimalArr: string[] = exponentArr[0].split('.');
+        const exponent: number = Number(exponentArr[1]);
+        let fractionDiff: number;
+        if (expoSeparator === 'e-') {
+            const expoVal: number = exponent + Math.abs(exponent - (wholeCount * (exponent > wholeCount ? 2 : 1)));
+            fractionDiff = expoVal - exponent;
+            exponentArr[1] = expoVal.toString();
+        } else {
+            fractionDiff = exponent % wholeCount;
+            exponentArr[1] = (exponent - fractionDiff).toString();
+        }
+        if (fractionDiff > 0) {
+            decimalArr[0] += decimalArr[1].substring(0, fractionDiff);
+            decimalArr[1] = decimalArr[1].slice(fractionDiff);
+            exponentArr[0] = decimalArr.join('.');
+        }
+        const base: number = Number('1' + '0'.repeat(fractionCount));
+        return this.getFormattedNumber(fArr.join('.'), Number((Math.round(Number(exponentArr[0]) * base) / base).toFixed(fractionCount))) +
+            expoSeparator.toUpperCase() + this.findSuffix(args.format.split('+')[1], exponentArr[1]);
     }
 
     private scientificFormat(args: NumberFormatArgs, prefix?: number): string {
         args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
         const zeros: string = (args.format as string).split('+')[1] || '00';
-        prefix = prefix || this.findDecimalPlaces(args.format as string, 'Scientific');
+        if (prefix === undefined) {
+            prefix = this.findDecimalPlaces(args.format);
+        }
         let fResult: string = Number(args.value).toExponential(prefix);
         if (fResult.indexOf('e+') > -1) {
             fResult = fResult.split('e+')[0] + 'E+' + this.findSuffix(zeros, fResult.split('e+')[1]);
         } else if (fResult.indexOf('e-') > -1) {
             fResult = fResult.split('e-')[0] + 'E-' + + this.findSuffix(zeros, fResult.split('e-')[1]);
         }
-        return fResult;
+        return fResult.replace('.', this.decimalSep);
     }
 
     private fractionFormat(args: NumberFormatArgs): string {
-        args.format = args.format === '' ? getFormatFromType('Fraction') : args.format;
-        let suffix: string = '';
-        let fractionResult: string;
-        if (args.value.toString().indexOf(this.decimalSep) > -1 && isNumber(args.value as string)) {
-            suffix = args.value.toString().split(this.decimalSep)[0];
-            fractionResult = toFraction(Number(args.value));
-            return (Number(suffix) === 0) ? ' ' + fractionResult : suffix + ' ' + fractionResult;
+        args.format = args.format || getFormatFromType('Fraction');
+        this.checkAndSetColor(args);
+        const valArr: string[] = args.value.toString().split('.');
+        const suffixVal: string = this.getFormattedNumber(args.format.split(' ')[0], Number(valArr[0]));
+        const fractionDigit: number = args.format.split('?').length / 2;
+        if (valArr.length === 2 && !valArr[1].startsWith('0'.repeat(fractionDigit))) {
+            const fractionResult: string = toFraction(Number(args.value));
+            if (fractionResult) {
+                return `${suffixVal} ${fractionResult}`;
+            }
         }
-        return suffix;
+        return suffixVal + ' ' + '  '.repeat(fractionDigit * 2);
     }
 
-    private findDecimalPlaces(code: string, type: string): number {
-        let eIndex: number;
-        let decIndex: number;
-        switch (type) {
-        case 'Scientific':
-            eIndex = code.toUpperCase().indexOf('E');
-            decIndex = code.indexOf(this.decimalSep);
-            if (eIndex > -1) {
-                return code.substring(decIndex + 1, eIndex).length;
+    private checkAndSetColor(args: NumberFormatArgs): void {
+        const colorCode: string = getColorCode(args.format);
+        if (colorCode) {
+            args.format = args.format.split(`[${colorCode}]`).join('');
+            args.color = colorCode.toLowerCase();
+            this.applyColor(args);
+        }
+    }
+
+    private findDecimalPlaces(code: string): number {
+        const eIndex: number = code.toUpperCase().indexOf('E');
+        if (eIndex > -1) {
+            let decIndex: number = code.indexOf(this.decimalSep);
+            if (decIndex === -1 && this.decimalSep !== '.') {
+                decIndex = code.indexOf('.');
             }
+            return decIndex > 0 ? code.substring(decIndex + 1, eIndex).length : 0;
         }
         return 2;
     }
@@ -876,9 +1087,9 @@ export class WorkbookNumberFormat {
         const cell: CellModel = args.cell || getCell(
             args.rowIndex, args.colIndex,
             getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex), false, true);
-        const props: { val: string, format: string } = this.checkCustomDateFormat(args.value.toString(), cell);
+        const props: { val: string, format: string } = this.checkCustomDateFormat(args.value.toString(), cell, args.isEdit);
         if (props.val !== 'Invalid') {
-            const dateObj: ToDateArgs = toDate(props.val, new Internationalization(), this.parent.locale, props.format, cell);
+            const dateObj: ToDateArgs = toDate(props.val, args.intl || new Internationalization(), this.parent.locale, props.format, cell);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date' &&
                 dateObj.dateObj.getFullYear() >= 1900) {
                 props.val = dateToInt(dateObj.dateObj, props.val.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
@@ -897,31 +1108,111 @@ export class WorkbookNumberFormat {
         }
     }
 
-    private checkCustomDateFormat(val: string, cell: CellModel): { val: string, format: string } {
+    private checkCustomTimeFormat(val: string, cell: CellModel): { val: string, format: string } {
+        let format: string[] = [];
+        const am: string = ` ${this.localeObj.am}`; const pm: string = ` ${this.localeObj.pm}`;
+        let isTewlveHr: boolean = val.includes(am) || val.includes(pm);
+        if (!isTewlveHr) {
+            if (val.includes(am.toLowerCase()) || val.includes(pm.toLowerCase())) {
+                val = val.replace(am.toLowerCase(), am).replace(pm.toLowerCase(), pm);
+                isTewlveHr = true;
+            }
+        }
+        const timeArr: string[] = val.split(this.localeObj.timeSeparator);
+        if (timeArr.length === 3 && isTewlveHr) {
+            return { val: val, format: '' };
+        }
+        let twelveHrRep: string;
+        if (timeArr.length <= 3) {
+            let timeProp: number; let valArr: string[];
+            const maxHour: number = isTewlveHr ? 12 : 24;
+            timeArr.forEach((timeVal: string, index: number) => {
+                if (timeVal.includes(am) || timeVal.includes(pm)) {
+                    twelveHrRep = ' AM/PM';
+                    timeVal = timeVal.replace(am, '').replace(pm, '');
+                } else {
+                    twelveHrRep = '';
+                }
+                timeProp = Number(timeVal);
+                if (isNumber(timeProp) && timeProp >= 0) {
+                    if (timeProp <= maxHour && index === 0) {
+                        format.push('h' + twelveHrRep);
+                        if (timeArr.length === 1) {
+                            if (twelveHrRep) {
+                                valArr = val.split(' ');
+                                valArr[0] = valArr[0] + ':00';
+                                val = valArr.join(' ');
+                            } else {
+                                format = [];
+                                val = 'Invalid';
+                            }
+                        }
+                    } else if (timeProp <= 60 && (format.length === 1 || format.length === 2)) {
+                        if (format.length === 1) {
+                            format.push('mm' + twelveHrRep);
+                        } else {
+                            format.push('ss');
+                        }
+                    } else {
+                        format = [];
+                        val = 'Invalid';
+                    }
+                } else {
+                    format = [];
+                    val = 'Invalid';
+                }
+            });
+        }
+        if (format.length && !cell.format) {
+            cell.format = format.join(':');
+            return { val: val, format: cell.format };
+        }
+        return { val: val, format: '' };
+    }
+
+    private checkCustomDateFormat(val: string, cell: CellModel, isEdit: boolean): { val: string, format: string } {
         let separator: string;
-        if (val.includes('/')) {
-            separator = '/';
-        } else if (val.includes('-')) {
+        const cellFormat: string = cell.format; let timeArgs: { val: string, format: string };
+        if (val.includes(this.localeObj.dateSeparator)) {
+            separator = this.localeObj.dateSeparator;
+            if (val.includes(this.localeObj.timeSeparator) && val.includes(' ')) {
+                const valArr: string[] = val.split(' ');
+                val = valArr.shift();
+                timeArgs = this.checkCustomTimeFormat(valArr.join(' '), cell);
+                if (timeArgs.val === 'Invalid') {
+                    return { val: 'Invalid', format: '' };
+                }
+            }
+        } else if (val.indexOf('-') > 0) {
             separator = '-';
         } else {
-            return { val: val.includes(':') ? val : 'Invalid', format: '' };
+            if (val.includes(this.localeObj.timeSeparator) || val.includes(` ${this.localeObj.am}`) ||
+                val.includes(` ${this.localeObj.pm}`)) {
+                return this.checkCustomTimeFormat(val, cell);
+            }
+            return { val: 'Invalid', format: '' };
         }
         const dateArr: string[] = val.split(separator);
         let format: string = ''; const formatArr: string[] = [];
         const updateFormat: Function = (): void => {
             format = formatArr.join(separator);
-            if (!cell.format) {
-                cell.format = format;
+            if (!cellFormat) {
+                cell.format = format + (cell.format ? ' ' + cell.format : '');
             }
         };
         let firstVal: string;
         const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
-        let months: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].wide : {};
-        let abbreviatedMonth: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].abbreviated : {};
-        const isMonth: Function = (monthValue: string, abbrMonthValue: string, dateVal: string, dateLength: number) => {
+        const months: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].wide : {};
+        const abbreviatedMonth: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].abbreviated : { '1': '' };
+        const enUSMonth: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const isMonth: Function = (monthValue: string, monthKey: string, dateVal: string, dateLength: number): void => {
+            if (abbreviatedMonth[`${monthKey}`] && abbreviatedMonth[`${monthKey}`].toLowerCase() === dateVal) {
+                firstVal = abbreviatedMonth[`${monthKey}`];
+                return;
+            }
             let shortMonthValue = monthValue.substring(0, dateLength);
             if (shortMonthValue === dateVal) {
-                firstVal = abbrMonthValue;
+                firstVal = abbreviatedMonth[`${monthKey}`] || enUSMonth[Number(monthKey) - 1];
             }
         }
         if (dateArr.length === 2) {
@@ -930,10 +1221,13 @@ export class WorkbookNumberFormat {
                 formatArr[0] = 'MMM';
                 if (Number(secVal) <= 31) {
                     val = secVal + separator + val;
+                    if (this.localeObj.dateSeparator !== '/' && separator !== '-') {
+                        val += separator + new Date().getFullYear();
+                    }
                     formatArr.splice(0, 0, 'dd');
                     updateFormat();
                 } else if (Number(secVal) >= 1900 && Number(secVal) <= 9999) {
-                    val += (separator + secVal);
+                    val = '1' + separator + val + separator + secVal;
                     formatArr[1] = 'yy';
                     updateFormat();
                     // Changed year format alone when given year value with 4 digits like May-2022
@@ -944,20 +1238,21 @@ export class WorkbookNumberFormat {
                 }
             };
             dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
-            if (!Number(dateArr[0]) && dateArr[0].length >= formats.months['stand-alone'].abbreviated['1'].length) {
+            if (!Number(dateArr[0]) && dateArr[0].length >= abbreviatedMonth['1'].length) {
                 Object.keys(months).find(
-                    (key: string) => isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[0], dateArr[0].length));
+                    (key: string) => isMonth(months[`${key}`].toLowerCase(), key, dateArr[0], dateArr[0].length));
                 if (!isNullOrUndefined(firstVal) && !dateArr[0].includes(',')) { // Added ',' checking to skip updating for the MMM d, yyyy ddd format.
                     updateSecValue(dateArr[1]);
                 }
-            } else if (!Number(dateArr[1]) && dateArr[1].length >= formats.months['stand-alone'].abbreviated['1'].length) {
+            } else if (!Number(dateArr[1]) && dateArr[1].length >= abbreviatedMonth['1'].length) {
                 Object.keys(months).find(
-                    (key: string) => isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[1], dateArr[1].length));
+                    (key: string) => isMonth(months[`${key}`].toLowerCase(), key, dateArr[1], dateArr[1].length));
                 if (!isNullOrUndefined(firstVal)) {
                     updateSecValue(dateArr[0]);
                 }
-            } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1])) {
-                firstVal = months[Number(dateArr[0])];
+            } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1]) && (this.localeObj.dateSeparator === '/' ||
+                separator === '-' || isEdit)) {
+                firstVal = enUSMonth[Number(dateArr[0]) - 1];
                 updateSecValue(dateArr[1]);
             }
             if (!formatArr.length) {
@@ -966,12 +1261,14 @@ export class WorkbookNumberFormat {
         } else if (dateArr.length > 2) {
             for (let i: number = 0; i < dateArr.length; i++) {
                 if (!(Number(dateArr[i as number]) > -1)) {
+                    dateArr[i as number] = dateArr[i as number].trim();
                     Object.keys(months).find((key: string) =>
-                        isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[i as number].toLowerCase(),
+                        isMonth(months[`${key}`].toLowerCase(), key, dateArr[i as number].trim().toLowerCase(),
                                 dateArr[i as number].length));
                     if (!isNullOrUndefined(firstVal)) {
                         if (i === 1) {
                             formatArr[1] = 'MMM';
+                            dateArr[2] = dateArr[2].trim();
                             if (Number(dateArr[0]) < 31 && Number(dateArr[2]) >= 1900 && Number(dateArr[2]) <= 9999) {
                                 val = dateArr[0] + separator + firstVal;
                                 val += (separator + dateArr[2]);
@@ -989,32 +1286,51 @@ export class WorkbookNumberFormat {
                 }
             }
         }
+        if (timeArgs && val !== 'Invalid') {
+            if (!format && !cellFormat) {
+                cell.format = `${getFormatFromType('ShortDate')} ${timeArgs.format || getFormatFromType('Time')}`;
+            } else if (timeArgs.format) {
+                format += ` ${timeArgs.format}`;
+            }
+            val += ` ${timeArgs.val}`;
+        }
         return { val: val, format: format };
     }
 
-    private formattedBarText(args: { [key: string]: CellModel | string }): void {
-        if (args.value === '') {
+    private formattedBarText(args: { cell: CellModel, value: string }): void {
+        if (args.value === '' || isNullOrUndefined(args.value)) {
             return;
         }
-        const type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
+        const option: { type?: string } = {};
+        const format: string = (args.cell && args.cell.format) || '';
+        let type: string = format && isCustomDateTime(format, true, option, true) ? option.type : '';
         const intl: Internationalization = new Internationalization();
-        const beforeText: string = <string>args.value;
-        const date: string = (type === 'ShortDate' && args.cell && (<CellModel>args.cell).format) ?
-            (<CellModel>args.cell).format : getFormatFromType('ShortDate');
+        const beforeText: string = args.value;
+        const date: string = getFormatFromType('ShortDate');
         const time: string = getFormatFromType('Time');
-        switch (type) {
-        case 'ShortDate':
-        case 'LongDate':
-            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date, cell: <CellModel>args.cell }, intl);
-            break;
-        case 'Time':
-            if (beforeText && Number(beforeText) >= 1) {
-                args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
-                        this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
-            } else {
-                args.value = this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
+        const timeFormat: string = format.toLowerCase();
+        if (type === 'time' && timeFormat.includes('m') && !timeFormat.includes(':m') && !timeFormat.includes('m:') &&
+            !timeFormat.includes('[m') && !timeFormat.includes('am')) {
+            type = 'date';
+        }
+        if (type === 'date') {
+            const val: string = args.value.toString();
+            args.value = this.shortDateFormat({ type: type, value: args.value, format: date, cell: <CellModel>args.cell }, intl);
+            if (args.value && val.includes('.')) {
+                args.value += ` ${this.timeFormat({ type: type, value: val, format: time }, intl)}`;
             }
-            break;
+        } else if (type.includes('time')) {
+            if (beforeText && Number(beforeText) >= 1 || type === 'datetime') {
+                args.value = this.shortDateFormat({ type: type, value: args.value, format: date }, intl) + ' ' +
+                        this.timeFormat({ type: type, value: args.value, format: time }, intl);
+            } else {
+                args.value = this.timeFormat({ type: type, value: args.value, format: time }, intl);
+            }
+        } else if (this.decimalSep !== '.' && args.value) {
+            args.value = args.value.toString();
+            if (isNumber(args.value) && args.value.includes('.')) {
+                args.value = args.value.replace('.', this.decimalSep);
+            }
         }
         if (!args.value || (args.value && args.value.toString().indexOf('null') > -1)) {
             args.value = beforeText;
@@ -1128,16 +1444,20 @@ export function getTypeFromFormat(format: string): string {
         code = 'Number';
         break;
     case '$#,##0.00':
+    case '$#,##0':
     case '$#,##0_);[Red]($#,##0)':
     case '$#,##0.00_);($#,##0.00)':
     case '$#,##0_);($#,##0)':
-    // case '$#,##0.00_);[Red]($#,##0.00)':
+    case '$#,##0.00_);[Red]($#,##0.00)':
         code = 'Currency';
         break;
     case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
     case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
     case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
     case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
+    case '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)':
+    case '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)':
+    case '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)':
         code = 'Accounting';
         break;
     case 'mm-dd-yyyy':
@@ -1158,11 +1478,6 @@ export function getTypeFromFormat(format: string): string {
     case '0%':
         code = 'Percentage';
         break;
-    case '# ?/?':
-    case '# ??/??':
-    case '# ???/???':
-        code = 'Fraction';
-        break;
     case '0.00E+00':
         code = 'Scientific';
         break;
@@ -1171,7 +1486,9 @@ export function getTypeFromFormat(format: string): string {
         break;
     default:
         if (format) {
-            if (format.indexOf('[$') > -1) {
+            if (format.includes('?/?')) {
+                code = 'Fraction';
+            } else if (format.indexOf('[$') > -1) {
                 if (format.indexOf('* ') > -1){
                     code = 'Accounting';
                 } else {
@@ -1194,4 +1511,5 @@ interface AutoDetectGeneralFormatArgs {
     cell: CellModel;
     rowIdx: number;
     colIdx: number;
+    sheet: SheetModel;
 }

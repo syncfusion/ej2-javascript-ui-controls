@@ -630,6 +630,15 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enableTextWrap: boolean;
 
     /**
+     * By default, the nearest points will be included in the shared tooltip; however, you can set it to false to exclude the nearest value from the tooltip.
+     *
+     * @default true
+     */
+
+    @Property(true)
+    public showNearestPoint: boolean;
+
+    /**
      * Options to customize tooltip borders.
      */
 

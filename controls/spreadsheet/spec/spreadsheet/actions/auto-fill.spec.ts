@@ -215,8 +215,8 @@ describe('Auto fill ->', () => {
         });
         it('fillType - FillWithoutFormatting', (done: Function) => {
             helper.invoke('autoFill',['B5:A5','C5','Left','FillWithoutFormatting']);
-            expect(helper.invoke('getCell', [4, 0]).textContent).toBe('-1.817');
-            expect(helper.invoke('getCell', [4, 1]).textContent).toBe('12/30/1899');
+            expect(helper.invoke('getCell', [4, 0]).textContent).toBe('0.183263889');
+            expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1/1/1900');
             const spreadsheet: Spreadsheet = helper.getInstance();
             var format=spreadsheet.sheets[0].rows[4].cells[1].format;
             expect(format).toBe('mm-dd-yyyy');
@@ -258,13 +258,27 @@ describe('Auto fill ->', () => {
         });
         it('fillType - FillWithoutFormatting', (done: Function) => {
             helper.invoke('autoFill',['D5:E5','C5','Right','FillWithoutFormatting']);
-            expect(helper.invoke('getCell', [4, 3]).textContent).toBe('1.308263888888889');
-            expect(helper.invoke('getCell', [4, 4]).textContent).toBe('2.349930555555556');
+            expect(helper.invoke('getCell', [4, 3]).textContent).toBe('0.308263889');
+            expect(helper.invoke('getCell', [4, 4]).textContent).toBe('0.349930556');
             const spreadsheet: Spreadsheet = helper.getInstance();
-            var format=spreadsheet.sheets[0].rows[4].cells[3].format;
-            expect(format).toBe(undefined);
-            format=spreadsheet.sheets[0].rows[4].cells[4].format;
-            expect(format).toBe(undefined);
+            const cells: any[] = spreadsheet.sheets[0].rows[4].cells;
+            expect(cells[3].format).toBeUndefined();
+            expect(cells[3].value).toBe(0.3082638888888889);
+            expect(cells[4].format).toBeUndefined();
+            expect(cells[4].value).toBe(0.34993055555555563);
+            done();
+        });
+        it('Fill series right with date and currency cells', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '9/4/2015', format: 'mm-dd-yyyy' }, 'A14']);
+            helper.invoke('updateCell', [{ value: '13853.09', format: '$#,##0.00' }, 'B14']);
+            helper.invoke('autoFill', ['C14:D14', 'A14:B14', 'Right', 'FillSeries']);
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[13].cells[2].format).toBe('mm-dd-yyyy');
+            expect(spreadsheet.sheets[0].rows[13].cells[2].value).toBe(42252);
+            expect(helper.invoke('getCell', [13, 2]).textContent).toBe('9/5/2015');
+            expect(spreadsheet.sheets[0].rows[13].cells[3].format).toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[13].cells[3].value).toBe(13854.09);
+            expect(helper.invoke('getCell', [13, 3]).textContent).toBe('$13,854.09');
             done();
         });
     });

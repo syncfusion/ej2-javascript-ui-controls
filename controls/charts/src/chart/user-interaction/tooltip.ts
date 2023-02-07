@@ -337,7 +337,7 @@ export class Tooltip extends BaseTooltip {
     private renderGroupedTooltip(chart: Chart, isFirst: boolean, tooltipDiv: Element): void {
         let data: PointData;
         const dataCollection: PointData[] = [];
-        let lastData: PointData;
+        let lastData: PointData; 
         const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
         this.removeHighlight();
@@ -372,6 +372,11 @@ export class Tooltip extends BaseTooltip {
             // if (data && this.header !== '' && this.currentPoints.length === 0) {
             //     headerContent = this.findHeader(data);
             // }
+            let showNearest: boolean = true;
+            if (chart.tooltip.showNearestPoint && !data) {
+                data = this.getClosestX(chart, series, this.commonXValue([series]));
+                showNearest = false;
+            }
             if (data) {
                 argument.data.push({ pointX: data.point.x , pointY: data.point.y, seriesIndex: data.series.index,
                     seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text  });
@@ -380,7 +385,9 @@ export class Tooltip extends BaseTooltip {
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 argument.text.push(this.getTooltipText(data));
-                lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
+                if (showNearest) {
+                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
+                }
                 dataCollection.push(data);
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {

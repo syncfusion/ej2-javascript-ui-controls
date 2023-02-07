@@ -2689,6 +2689,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
         this.yAxisElements = null;
+        document.getElementById(this.element.id + 'Keyboard_chart_focus').remove();
         /**
          * To fix react timeout destroy issue.
          */
@@ -3340,9 +3341,19 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public chartOnMouseClick(e:  PointerEvent | TouchEvent): boolean {
         const element: Element = <Element>e.target;
-        this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
+        let chart: Chart = this;
         this.clickCount++;
-        let timeInterval: number = 0;
+        let timeInterval: number = 400;
+        if (this.clickCount === 1) {
+            this.singleClickTimer = +setTimeout(function () {
+                chart.clickCount = 0;
+                chart.trigger(chartMouseClick, { target: element.id, x: chart.mouseX, y: chart.mouseY });
+            }, timeInterval);
+        }
+        else if (this.clickCount === 2) {
+            clearTimeout(this.singleClickTimer);
+            this.clickCount = 0;
+        }
         const isAngular: string = 'isAngular';
         if (this[isAngular as string]) {
             const observers: string = 'observers';

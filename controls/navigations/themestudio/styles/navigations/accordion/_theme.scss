@@ -8,15 +8,15 @@
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
     border-radius: $acrdn-border-radius;
 
-    .e-active {
-      background: $acrdn-active-bg-color;
-    }
-
     .e-acrdn-item {
       border-color: $acrdn-item-border-color;
       border-style: $acrdn-item-border-nav-type;
       border-width: $acrdn-item-border-size;
       border-radius: $acrdn-item-border-radius;
+
+      &.e-active {
+        background: $acrdn-active-bg-color;
+      }
 
       &.e-select:last-child {
         border-bottom: $acrdn-item-select-last-child-border-bottom;

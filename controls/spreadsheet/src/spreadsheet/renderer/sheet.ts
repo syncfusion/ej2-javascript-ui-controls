@@ -7,7 +7,7 @@ import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded,
 import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition, locale } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode, getRowHeight } from '../../workbook/index';
+import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getRowHeight } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -270,10 +270,6 @@ export class SheetRender implements IRenderer {
                     indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' });
             if (frozenCol && indexes[1] === lastFrozenCol) {
                 row = null;
-            }
-            if (value && value.format && (getColorCode(value.format) || value.format.indexOf('*') > -1)) {
-                this.parent.notify(getFormattedCellObject, { cell: value, value: value.value, format: value.format,
-                    rowIndex: indexes[0], colIndex: indexes[1], td: this.parent.getCell(indexes[0], indexes[1]) });
             }
             if (indexes[0] === args.indexes[0]) {
                 if (frozenCol && indexes[1] < frozenCol) {

@@ -44,7 +44,7 @@ describe('Legend checking for the pie series', () => {
     let accumulation: AccumulationChart;
     let trigger: MouseEvents = new MouseEvents();
     beforeAll((): void => {
-        ele = createElement('div', { id: id, styles: 'width: 800px' });
+        ele = createElement('div', { id: id });
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             border: { width: 1, color: 'blue' },
@@ -667,7 +667,7 @@ describe('Legend checking for the pie series', () => {
         let legendId: string = 'container1' + '_chart_legend';
         let legendElement: Element; let legendArgCancel: boolean;
         let trigger: MouseEvents = new MouseEvents();
-        let ele: HTMLElement = createElement('div', { id: 'container1', styles: 'width: 900px' });
+        let ele: HTMLElement = createElement('div', { id: 'container1' });
         document.body.appendChild(ele);
         beforeAll((): void => {
             var data = [{ x: 'English', y: 48.20, text: '18.20%' },
@@ -1077,7 +1077,7 @@ describe('Checking RTL Behaviour for legend', () => {
     let textAnchor: string;
     let loaded: EmitType<IAccLoadedEventArgs>;
     beforeAll((): void => {
-        ele = createElement('div', { id: id, styles: 'width: 600px' });
+        ele = createElement('div', { id: id });
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             border: { width: 1, color: 'blue' },

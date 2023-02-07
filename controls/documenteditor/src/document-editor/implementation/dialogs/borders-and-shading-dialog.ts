@@ -501,12 +501,14 @@ export class BordersAndShadingDialog {
         this.ulelementShading.appendTo(ulelementShading);
         this.borderColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBorderColor,
-            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker'
+            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker',
+            enableOpacity: false
         });
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#FFFFFF', change: this.applyPreviewTableBackgroundColor,
-            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker'
+            enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker',
+            enableOpacity: false
         });
         this.shadingColorPicker.appendTo(shadingColorPickerElement);
         if (isRtl) {

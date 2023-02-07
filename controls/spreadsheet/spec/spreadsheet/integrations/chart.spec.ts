@@ -3,6 +3,7 @@ import { defaultData, GDPData } from '../util/datasource.spec';
 import { CellModel, getFormatFromType, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
+import { Chart } from '@syncfusion/ej2-charts';
 
 /**
  *  Chart test cases
@@ -206,7 +207,15 @@ describe('Chart ->', () => {
                 done();
             });
         });
-        it('Undo after change Chart Type->', (done: Function) => {
+        it('Chartrange handler method testing ->', (done: Function) => {
+            helper.getInstance().spreadsheetChartModule.chartRangeHandler();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Undo after change chart type->', (done: Function) => {
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
@@ -215,7 +224,213 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        it('toIntrnlRange Method testing without providing range->', (done: Function) => {
+            helper.getInstance().spreadsheetChartModule.toIntrnlRange('',0);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('toIntrnlRange Method testing with providing range->', (done: Function) => {
+            helper.getInstance().spreadsheetChartModule.toIntrnlRange('D1:E6',0);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert doughnut chart with isseriesinrows as true and datalabel as outer and legends as right->', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            helper.getInstance().insertChart([{ type: "Doughnut", theme: "Material", isSeriesInRows: true, range: "Sheet1!A1:E5", id: "Chart1",  legendSettings: { visible: true, position: 'Right' }, dataLabelSettings: { visible: true, position: 'Outer' } }]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert doughnut chart with isseriesinrows as true and datalabel as middle->', (done: Function) => {
+            helper.getInstance().insertChart([{ type: "Doughnut", theme: "Material", isSeriesInRows: true, range: "Sheet1!A1:E5", id: "Chart1", dataLabelSettings: { visible: true, position: 'Middle' }}]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert chart with percentage number formatting->', (done: Function) => {
+            helper.invoke('selectRange', ['H1:H11']);
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Percentage').click();
+            helper.getInstance().insertChart([{ type: "Column", range: "H1:H11" }]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert chart without providing range->', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.getInstance().insertChart([{ type: "Column", theme: "Material", }]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Delete chart without providing id->', (done: Function) => {
+            helper.getInstance().deleteChart()
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).toBeNull();
+                done();
+            });
+        });
     });
+
+
+    describe('UI - interaction for copy and paste chart->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy and paste chart->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            setTimeout(() => {
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_copy').click();
+                setTimeout(() => {
+                    helper.invoke('paste');
+                    expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id).classList).toContain('e-chart');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('UI - Interaction ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy and paste the deleted chart->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            setTimeout(() => {
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_copy').click();
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(46);
+                    helper.invoke('paste');
+                    expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id).classList).toContain('e-chart');
+                    helper.triggerKeyNativeEvent(46);
+                    done();
+                });
+            });
+        });
+        it('Edit the formuala refernece cell after applying chart for formula referenced cells ->', (done: Function) => {
+            helper.edit('H2', '=E2+E3');
+            helper.invoke('selectRange', ['G1:H7']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            setTimeout(() => {
+                helper.invoke('selectRange', ['E2']);
+                helper.edit('E2', '25');
+                setTimeout(() => {
+                    const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    expect(chart).not.toBeNull();
+                    done();
+                });
+            });
+        });
+        it('Chart value refreshing by hiding row -I->', (done: Function) => {
+            helper.invoke('hideRow', [2]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Chart value refreshing by hiding row -II->', (done: Function) => {
+            helper.invoke('hideRow', [6]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+    });
+
+    describe('UI - Interaction for chart resize->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply chart->', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            helper.getInstance().insertChart([{ type: "Line", theme: "Material",  range: "Sheet1!G1:H7"}]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Chart size refreshing ->', (done: Function) => {
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            helper.getInstance().workbookChartModule.refreshChartSize({ height: '300', width: '300', overlayEle: chart  });
+            setTimeout(() => {
+                expect(chart.style.width).toBe('480px');
+                expect(chart.style.height).toBe('290px');
+                done();
+            });
+        });
+    });
+
+    describe('UI - Interaction for insert chart with protect sheet and allowchart as false->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ allowChart: false, sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert chart with protect sheet and allowchart as false->', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Sheet1', { selectCells: true });
+            helper.getInstance().insertChart([{ type: "Column", theme: "Material", range: "Sheet1!A1:E5", }]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).toBeNull();
+                done();
+            });
+        });
+    });
+    
     describe('UI - Interaction for Chart Design Tab->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -848,6 +1063,381 @@ describe('Chart ->', () => {
                     helper.triggerKeyNativeEvent(46);
                     done();
                 });
+            });
+        });
+    });
+
+    describe('Chart data refreshing after merge action->', () => {
+        beforeAll((done: Function) => {
+            let model: SheetModel[] = [{ ranges: [{ dataSource: defaultData, startCell: 'C3' }],
+                rows: [{ index: 0, cells: [{ index: 10, chart: [{ type: 'Column', range: 'F3:G13', id: 'e_spreadsheet_chart_1' }] }] }],
+                columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }] },
+                { rows: [{ cells: [{ chart: [{ type: 'Column', theme: 'Material',
+                isSeriesInRows: false, range: 'Sheet1!A1:C3', height: 290, width: 480, top: 5, left: 10 }] }] }] }];
+            helper.initializeSpreadsheet({
+                sheets: model,
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.cellFormat({ backgroundColor: '#e56590', color: '#fff', fontWeight: 'bold', textAlign: 'center' }, 'C3:J3');
+                }
+            },done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Merge with chart applied range - 1', (done: Function) => {
+            helper.invoke('selectRange', ['F3:F4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:0, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 1 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 2', (done: Function) => {
+            helper.invoke('selectRange', ['F3:F4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:0, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 2 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:20, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 3', (done: Function) => {
+            helper.invoke('selectRange', ['F1:F4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 3 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 4', (done: Function) => {
+            helper.invoke('selectRange', ['G3:G4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 4 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 5', (done: Function) => {
+            helper.invoke('selectRange', ['G13:H14'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:10, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 5 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:10, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 6', (done: Function) => {
+            helper.invoke('selectRange', ['F13:G14'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 6 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:10, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 7', (done: Function) => {
+            helper.invoke('selectRange', ['F2:G4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 7 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 8', (done: Function) => {
+            helper.invoke('selectRange', ['E2:F5'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:15, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 8 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 9', (done: Function) => {
+            helper.invoke('selectRange', ['E5:H5'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:0, Quantity');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_1').getAttribute('aria-label')).toBe('2:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 9 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:20, Quantity');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_1').getAttribute('aria-label')).toBe('2:30, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 10', (done: Function) => {
+            helper.invoke('selectRange', ['E5:G5'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:0, Quantity');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_1').getAttribute('aria-label')).toBe('2:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 10 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:20, Quantity');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_1').getAttribute('aria-label')).toBe('2:30, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 11', (done: Function) => {
+            helper.invoke('selectRange', ['E2:G4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 11 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 12', (done: Function) => {
+            helper.invoke('selectRange', ['E2:G4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 12 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 13', (done: Function) => {
+            helper.invoke('selectRange', ['E13:G14'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_9').getAttribute('aria-label')).toBe(':0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 13 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 14', (done: Function) => {
+            helper.invoke('selectRange', ['F2:H4'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 14 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 15', (done: Function) => {
+            helper.invoke('selectRange', ['F13:H14'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 15 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:10, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 16', (done: Function) => {
+            helper.invoke('selectRange', ['G13:H13']);
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 16 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_9').getAttribute('aria-label')).toBe('10:10, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 17', (done: Function) => {
+            helper.invoke('selectRange', ['E3:F13']);
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe(':20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 17 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:10, Quantity');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 18', (done: Function) => {
+            helper.invoke('selectRange', ['G2:G14']);
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:0, ');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 18 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 19', (done: Function) => {
+            helper.invoke('selectRange', ['H3:G13']);
+            helper.click('#spreadsheet_merge');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:0, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 19 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 20', (done: Function) => {
+            helper.invoke('selectRange', ['E5:E9']);
+            helper.click('#spreadsheet_merge');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 20 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 21', (done: Function) => {
+            helper.invoke('selectRange', ['E3:E13']);
+            helper.click('#spreadsheet_merge');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+        it('Merge with chart applied range - 21 undo', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {  
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
             });
         });
     });

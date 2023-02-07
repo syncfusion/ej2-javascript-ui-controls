@@ -111,7 +111,8 @@ export class WorkbookEdit {
             if (cell.formula && cell.formula.indexOf('UNIQUE') > - 1 && value === '') {
                 skipFormula = true;
             }
-            const isNotTextFormat: boolean = getTypeFromFormat(cell.format) !== 'Text';
+            const isNotTextFormat: boolean = getTypeFromFormat(cell.format) !== 'Text' && (!isFormula ||
+                !value.toLowerCase().startsWith('=text('));
             if (!isFormula && !skipFormula) {
                 if (cell.formula) {
                     cell.formula = '';
@@ -134,7 +135,11 @@ export class WorkbookEdit {
                     sheetIndex: sheetIdx,
                     updatedVal: ''
                 };
-                this.parent.notify(checkDateFormat, dateEventArgs);
+                if (!isFormula) {
+                    this.parent.notify(checkDateFormat, dateEventArgs);
+                } else if (value.toLowerCase().includes('unique(')) {
+                    dateEventArgs.updatedVal = value;
+                }
                 if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                     cell.value = <string>dateEventArgs.updatedVal;
                 }
@@ -153,8 +158,11 @@ export class WorkbookEdit {
                 if (isFormula) {
                     cell.formula = <string>eventArgs.value;
                     value = cell.value;
-                    if (cell.formula === '=NOW()' && cell.format !== 'M/d/yyyy h:mm') {
+                    const formula: string = cell.formula.toLowerCase();
+                    if (formula === '=now()' && !cell.format) {
                         cell.format = 'M/d/yyyy h:mm';
+                    } else if (formula.includes('=time(') && !cell.format) {
+                        cell.format = 'h:mm AM/PM';
                     }
                 } else if (cell.value && typeof cell.value === 'string' && (cell.value.indexOf('www.') === 0 ||
                     cell.value.indexOf('https://') === 0 || cell.value.indexOf('http://') === 0 || cell.value.indexOf('ftp://') === 0)) {

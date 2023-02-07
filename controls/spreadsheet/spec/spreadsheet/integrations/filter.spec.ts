@@ -1,7 +1,8 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData } from '../util/datasource.spec';
-import { Spreadsheet, filterByCellValue, refreshCheckbox } from '../../../src/index';
+import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs } from '../../../src/index';
 import { classList, getComponent } from '@syncfusion/ej2-base';
+import { doesImplementInterface } from '@syncfusion/ej2-grids';
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -385,6 +386,422 @@ describe('Filter ->', () => {
             });
         });
     });
+
+    describe('Invalid filter range dialog->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply filter and apply remove filter in other sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '10' }]);
+            spreadsheet.goTo('Sheet2!A1');
+            setTimeout(() => {
+                spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '10' }]);
+                setTimeout(() => {
+                    helper.getInstance().filterModule.removeFilter(1);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                        expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Open invalid filter range dialog', (done: Function) => {
+            helper.invoke('selectRange', ['M1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Open invalid filter range dialog with row and column greater than used range', (done: Function) => {
+            helper.invoke('selectRange', ['M15']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Open invalid filter range dialog using context menu', (done: Function) => {
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 12, [6, 4], false, false);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+        });
+        it('Cancel opening invalid filter range dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            args.cancel = true;
+            };
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull(); 
+                done();
+            });
+        });
+    });
+
+    describe('Filter with insert/delete row, column and sheet->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert column before first column for filtered rows', (done: Function) => {
+            helper.invoke('selectRange', ['E6']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(5, 4, [6, 4], false, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('insertColumn', [0]);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                    helper.invoke('delete', [0, 0, 'Column']);
+                    done();
+                });
+            });
+        });
+        it('Insert column before first column for filtered rows and sorted rows', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            helper.invoke('getCell', [0, 0]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    const sortAsc: HTMLElement = helper.getElement('.e-excelfilter .e-filter-sortasc');
+                    helper.triggerMouseAction('mousedown', { x: sortAsc.getBoundingClientRect().left + 1, y: sortAsc.getBoundingClientRect().top + 1 }, null, sortAsc);
+                    setTimeout(() => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
+                        expect(spreadsheet.sheets[0].rows[5].cells[0].value.toString()).toEqual('Flip- Flops & Slippers');
+                        helper.invoke('insertColumn', [0]);
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                            done();
+                        }, 10);
+                    }, 10);
+                });
+            });
+        });
+        it('Delete the empty column after inserted from sorted and filtered column->', (done: Function) => {
+            helper.invoke('delete', [0, 0, 'Column']);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
+                done();
+            });
+        });
+        it('Delete the sorting applied column ->', (done: Function) => {
+            helper.invoke('delete', [0, 0, 'Column']);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Date');
+                done();
+            });
+        });
+        it('Delete the empty column and filter applied column ->', (done: Function) => {
+            helper.invoke('insertColumn', [0]);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A1:C1'])
+                helper.invoke('delete', [0, 2, 'Column']);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Quantity');
+                    done();
+                });
+            });
+        });
+        it('Delete the filter applied column with with filter collection more than 1 ->', (done: Function) => {
+            helper.invoke('selectRange', ['C8']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(7, 2, [6, 4], false, false);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[2].value.toString()).toEqual('Amount');
+                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filtered')).not.toBeNull();
+                helper.invoke('selectRange', ['C1'])
+                helper.invoke('delete', [2, 2, 'Column']);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[2].value.toString()).toEqual('Discount');
+                    expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filtered')).toBeNull();
+                    done();
+                });
+            });
+        });
+        it('Delete the filter applied column ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].cells[1].value.toString()).toEqual('Price');
+            expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filtered')).not.toBeNull();
+            helper.invoke('delete', [1, 1, 'Column']);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[1].value.toString()).toEqual('Discount');
+                expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filtered')).toBeNull();
+                done()
+            });
+        });
+        it('Insert sheet after apply filter and sort using filter dialog in newly inserted sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet2!A1');
+            setTimeout(() => {
+                helper.invoke('selectRange', ['E6']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(5, 4, [6, 4], false, false);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A1']);
+                    const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                    helper.invoke('getCell', [0, 0]).focus();
+                    helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                    setTimeout(() => {
+                        setTimeout(() => {
+                            const sortAsc: HTMLElement = helper.getElement('.e-excelfilter .e-filter-sortasc');
+                            helper.triggerMouseAction('mousedown', { x: sortAsc.getBoundingClientRect().left + 1, y: sortAsc.getBoundingClientRect().top + 1 }, null, sortAsc);
+                            setTimeout(() => {
+                                helper.invoke('insertSheet', [1]);
+                                setTimeout(() => {
+                                    expect(helper.getInstance().activeSheetIndex).toBe(1);
+                                    done();
+                                });
+                            }, 10);
+                        });
+                    });
+                });
+            }, 50);
+        });
+        it('Delete the non-filter applied sheet', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(function () {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                setTimeout(() => {
+                    expect(helper.getInstance().activeSheetIndex).toBe(1);
+                    expect(helper.getInstance().sheets.length).toBe(2);
+                    done();
+                });
+            });
+        });
+        it('Delete the filter applied sheet', (done: Function) => {
+            var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            var coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(function () {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-dialog');
+                    helper.click('.e-dialog .e-primary');
+                    expect(helper.getInstance().activeSheetIndex).toBe(0);
+                    expect(helper.getInstance().sheets.length).toBe(1);
+                    done();
+                });
+            });
+        });
+    });
+
+	describe('Apply filter and clear filter->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Filterdialogcreatedhandler method testing', (done: Function) => {
+            helper.getInstance().filterModule.filterDialogCreatedHandler();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                done();
+            });
+        });
+        it('Apply filter and apply clear format', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '10' }]);
+            spreadsheet.selectRange('A1:H11');
+            setTimeout(() => {
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
+                setTimeout(() => {
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                        expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('Filter dialog opening and filter with different operators->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Open filter dialog for short date format column ', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 1]);
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    helper.click('.e-excelfilter .e-flat');
+                    done();
+                });
+            });
+        });
+        it('Open filter dialog for time format column ', (done: Function) => {
+            helper.invoke('selectRange', ['C1']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 2]);
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    helper.click('.e-excelfilter .e-flat');
+                    done();
+                });
+            });
+        });
+        it('Apply filter with operator as startwith', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('BeginsWith');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'startswith', value: '1' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as lessthan', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('Less');
+            spreadsheet.applyFilter([{ field: 'D', predicate: 'or', operator: 'lessthan', value: '20' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as endswith', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('EndsWith');
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'endswith', value: 'Shoes' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as equal', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('Equal');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as notequal', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('Notequal');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'Notequal', value: '10' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as greaterthan', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('Greater');
+            spreadsheet.applyFilter([{ field: 'D', predicate: 'or', operator: 'greaterthan', value: '20' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as contains', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('Contains');
+            spreadsheet.applyFilter([{ field: 'F', predicate: 'or', operator: 'contains', value: '200' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as lessthanorequal', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('LessOrEqual');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'lessthanorequal', value: '20' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as greaterthanorequal', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('GreaterOrEqual');
+            spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'greaterthanorequal', value: '20' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I289560, FB22087, FB24231, SF-361036, EJ2-50631, EJ2-55605, SF-361123, SF-367021, EJ2-55527 ->', () => {
             beforeAll((done: Function) => {

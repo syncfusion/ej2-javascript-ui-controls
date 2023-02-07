@@ -2317,9 +2317,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.styles = new WStyles();
             this.documentHelper.cachedPages = [];
             this.clearSpellCheck();
-            if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.documentHelper.triggerElementsOnLoading = true;
-                this.documentHelper.triggerSpellCheck = true;
+            if (this.isSpellCheck) {
+                if (!this.spellChecker.enableOptimizedSpellCheck) {
+                    this.documentHelper.triggerElementsOnLoading = true;
+                    this.documentHelper.triggerSpellCheck = true;
+                }
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 this.documentHelper.setDefaultDocumentFormat();
@@ -2328,9 +2330,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.editorModule.intializeDefaultStyles();
                 }
             }
-            if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.documentHelper.triggerElementsOnLoading = false;
-                this.documentHelper.triggerSpellCheck = false;
+            if (this.isSpellCheck) {
+                if (!this.spellChecker.enableOptimizedSpellCheck) {
+                    this.documentHelper.triggerElementsOnLoading = false;
+                    this.documentHelper.triggerSpellCheck = false;
+                }
             }
         }
     }

@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
+## 20.4.49 (2023-02-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I419211` - Fixed issue where list content copied and pasted from MS Word was not properly aligned.
+
 ## 20.4.48 (2023-02-01)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I425631` - Now, the Code Format feature will now work correctly when you copy and paste the code into the Editor with the paste clean up settings enabled.
+- `#I425631` - The issue of pasted text exceeding the boundaries of the `contenteditable`, when using the Enter Key as a 'BR' or 'DIV' has been resolved.
+
+- `#I430486` - Now, font size applied properly for the numbered lists in Rich Text Editor.
 
 ### RichTextEditor
 

@@ -4238,6 +4238,32 @@ describe('Datepicker', () => {
             datePicker.hide();
         });
     });
+    describe('EJ2-68852 - The selection is retained in other dates rather than the original chosen date', function () {
+        let datePicker: any;
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(element);
+});
+        afterEach(function () {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('The selection is retained in other dates rather than the original chosen date', function () {
+            datePicker = new DatePicker({
+                max: "2023-02-27T00:00:00" as any,
+                min: "2023-02-05T00:00:00" as any,
+                value: "2023-02-10T00:00:00" as any
+            });
+            datePicker.appendTo('#date');
+            datePicker.show();
+            expect(document.querySelector('.e-focused-date').textContent).toBe('10');
+            datePicker.hide();
+            datePicker.show();
+            expect(document.querySelector('.e-focused-date').textContent).toBe('10');
+        });
+    });
 });
 
 

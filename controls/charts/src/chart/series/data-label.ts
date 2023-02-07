@@ -681,7 +681,7 @@ export class DataLabel {
         let isOverLap: boolean = true;
         let position: number = 0;
         const collection: Rect[] = this.chart.dataLabelCollections;
-        const finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
+        const finalPosition: number = series.type == 'Candle' || series.type == 'HiloOpenClose' || series.type == 'Polar' || series.type == 'Radar' ? 4 : 2;
         while (isOverLap && position < finalPosition) {
             let actualPosition: LabelPosition = this.getPosition(position);
             if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {

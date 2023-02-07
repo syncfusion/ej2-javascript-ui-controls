@@ -2197,8 +2197,10 @@ export class TaskProcessor extends DateProcessor {
                     progressValues = this.getParentProgress(childData);
                     totalProgress += getValue('totalProgress', progressValues);
                     if (childData[this.parent.taskFields.duration] < 1) {
-                        totalDuration += getValue('totalDuration', progressValues);
-                        totalDuration = Number(totalDuration.toFixed(4));
+                        if (typeof(getValue('totalDuration', progressValues)) != 'object') {
+                            totalDuration += getValue('totalDuration', progressValues);
+                            totalDuration = Number(totalDuration.toFixed(4));
+                        }
                     } else {
                         totalDuration += getValue('totalDuration', progressValues);
                     }

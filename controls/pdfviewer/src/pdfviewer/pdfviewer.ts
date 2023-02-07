@@ -4142,7 +4142,7 @@ export class FormField extends ChildProperty<FormField> {
      * @default false
      */
     @Property(false)
-    public insertSpaces: boolean;
+    private insertSpaces: boolean;
 
     /**
      * Get the pageIndex of the form field. Default value is -1.
@@ -7672,10 +7672,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns void
      */
     public focusFormField(field: any): void {
-        if (typeof(field) === "string") {
+        if (typeof (field) === "string") {
             let fieldCollections: any = this.retrieveFormFields();
             for (let i: number = 0; i < fieldCollections.length; i++) {
-                if(fieldCollections[i].name === field) {
+                if (fieldCollections[i].name === field) {
                     field = fieldCollections[i];
                 }
             }
@@ -7683,25 +7683,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (field) {
             this.viewerBase.isFocusField = true;
             this.viewerBase.focusField = field;
-            let currentField: any = document.getElementById(field.id);
             if (this.formDesignerModule) {
                 this.navigationModule.goToPage(field.pageIndex + 1);
             } else {
                 let pageIndex: number = parseFloat(field.id.split('_')[1]);
                 this.navigationModule.goToPage(pageIndex + 1);
             }
-            if (currentField) {
-                if ((field.type === "SignatureField" || field.type === "InitialField") && this.formDesignerModule) {
-                    let focusFieldElement = this.formFieldCollection.filter(function(value){return value.id == field.id});
-                    let y: number = focusFieldElement[0].bounds.y;
-                    let height: number = this.viewerBase.pageSize[field.pageIndex].height;
-                    this.bookmark.goToBookmark(field.pageIndex, height - y);
-                } else {
-                    currentField.focus();
+            setTimeout(() => {
+                let currentField: any = document.getElementById(field.id);
+                if (this.formDesignerModule && field.type === "Checkbox") {
+                    currentField = document.getElementById(field.id + "_input");
                 }
-                this.viewerBase.isFocusField = false;
-                this.viewerBase.focusField = [];
-            }
+                if (currentField) {
+                    if (this.formDesignerModule && (field.type === "SignatureField" || field.type === "InitialField")) {
+                        currentField.parentElement.focus();
+                    }
+                    else {
+                        currentField.focus();
+                        this.viewerBase.isFocusField = false;
+                        this.viewerBase.focusField = [];
+                    }
+                }
+            }, 100);
         }
     }
 

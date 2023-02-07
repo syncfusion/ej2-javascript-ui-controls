@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet, SpreadsheetModel, SheetModel } from '../../../src/index';
+import { Spreadsheet, SpreadsheetModel, SheetModel, DialogBeforeOpenEventArgs } from '../../../src/index';
 
 describe('Find & Replace ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -477,6 +477,84 @@ describe('Find & Replace ->', () => {
                     expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Tested');
                     done();
                 }, 10);
+            });
+        });
+    });
+
+    describe('UI - Interaction canceling dialog open->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add and remove values in textbox', (done: Function) => {
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                helper.click('.e-findtool-dlg .e-findRib-more');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    findTxtBox.value = '10';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    setTimeout(() => {
+                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeFalsy();
+                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeFalsy();
+                        findTxtBox.value = '';
+                        helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                        setTimeout(() => {
+                            expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
+                            expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
+                            helper.click('.e-find-dlg .e-dlg-closeicon-btn');
+                            setTimeout(() => {
+                                expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull(); 
+                                done();
+                            }, 20);
+                        });
+                    });
+                });
+            });
+        });
+        it('Remove goto alert', (done: Function) => {
+            helper.triggerKeyNativeEvent(71, true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                helper.click('.e-goto-dlg .e-btn-goto-ok'); // Check this now
+                expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
+                helper.click('.e-goto-dlg .e-btn-goto-ok');
+                expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
+                helper.click('.e-goto-dlg .e-dlg-closeicon-btn');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); 
+                     done();
+                });
+            });
+        });
+        it('Cancel opening find dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.triggerKeyNativeEvent(71, true);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).not.toBeNull(); 
+                done();
+            });
+        });
+        it('Cancel opening find dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                helper.click('.e-findtool-dlg .e-findRib-more');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).not.toBeNull(); 
+                    done();
+                });
             });
         });
     });

@@ -1952,6 +1952,30 @@ describe('Carousel Testing', () => {
         });
     });
 
+    describe('EJ2-68892 - test case for data-height attribute', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+            jasmine.clock().install();
+        });
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+            jasmine.clock().uninstall();
+        });
+        it('test case for checking data-height attribute', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ items: items, animationEffect: 'Slide'}, carouselElement);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
+            expect(carousel.selectedIndex).toEqual(0);
+            (carouselElement.querySelector('.e-next-icon') as HTMLElement).click();
+            expect(carouselElement.querySelector('.e-carousel-items .e-next').getAttribute('data-slide-height')).toBe('18');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

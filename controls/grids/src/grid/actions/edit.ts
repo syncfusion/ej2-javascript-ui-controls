@@ -934,7 +934,7 @@ export class Edit implements IAction {
      * @returns {void}
      * @hidden
      */
-    public applyFormValidation(cols?: Column[]): void {
+    public applyFormValidation(cols?: Column[], newRule?:Object): void {
         const gObj: IGrid = this.parent;
         const frzCols: boolean = gObj.isFrozenGrid();
         const isInline: boolean = this.parent.editSettings.mode === 'Normal';
@@ -953,7 +953,7 @@ export class Edit implements IAction {
                 && gObj.editSettings.mode === 'Dialog'))) {
                 continue;
             }
-            if (cols[parseInt(i.toString(), 10)].validationRules) {
+            if (cols[parseInt(i.toString(), 10)].validationRules && isNullOrUndefined(newRule)) {
                 setValidationRuels(cols[parseInt(i.toString(), 10)], index, rules, mRules, frRules, cols.length);
             }
         }
@@ -966,7 +966,7 @@ export class Edit implements IAction {
         } else {
             rules = extend(rules, mRules, frRules);
         }
-        this.parent.editModule.formObj = this.createFormObj(form, rules);
+        this.parent.editModule.formObj = this.createFormObj(form, newRule ? newRule : rules);
     }
 
     /**

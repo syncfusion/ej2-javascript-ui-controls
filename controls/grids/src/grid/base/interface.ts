@@ -1984,6 +1984,8 @@ export interface AddEventArgs {
      * @hidden
      */
     foreignKeyData?: Object;
+    /** Define the form element */
+    form?: HTMLFormElement;
     /** Defines the record objects.
      *
      * @isGenericType true

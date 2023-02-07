@@ -10,7 +10,7 @@ const RIPPLE_CHECK: string = 'e-ripple-check';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-switch-wrapper';
 const ACTIVE: string = 'e-switch-active';
-const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'aria-label', 'id'];
 
 /**
  * The Switch is a graphical user interface element that allows you to toggle between checked and unchecked states.

@@ -396,6 +396,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private nestedTableUpdate: { flag: boolean, fields: FieldsModel };
     private clearIconWidth: number;
     private isClicked: boolean = false;
+    // Specifies if the checkAll method has been called
+    private isCheckAllCalled: boolean = false;
+
     /**
      * Specifies the template that renders to the popup list content of the
      * Dropdown Tree component when the data fetch request from the remote server fails.
@@ -1862,6 +1865,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             frameSpan.classList.add(CHECK);
             ariaState = 'true';
             if (!this.isReverseUpdate) {
+                this.isCheckAllCalled = true;
                 this.treeObj.checkAll();
                 if (!this.changeOnBlur) {
                     this.triggerChangeEvent(e);
@@ -2642,12 +2646,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li .e-checkbox-wrapper[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-            if (wrap && args.action === 'uncheck') {
+            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0)) {
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
-            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length) {
+            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && this.isCheckAllCalled) {
                 this.isReverseUpdate = true;
+                this.isCheckAllCalled = false;
                 this.changeState(wrap, 'check');
                 this.isReverseUpdate = false;
             }
@@ -3154,7 +3159,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private selectAllItems(state: boolean): void {
         if (this.showCheckBox) {
-            if (state) { this.treeObj.checkAll(); } else { this.treeObj.uncheckAll(); }
+            if (state) {
+                this.isCheckAllCalled = true;
+                this.treeObj.checkAll();
+            }
+            else {
+                this.treeObj.uncheckAll();
+            }
             this.checkSelectAll = true;
         } else if (this.allowMultiSelection) {
             if (!state) {

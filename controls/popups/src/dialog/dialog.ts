@@ -823,6 +823,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (!overlayClickEventArgs.preventFocus) {
                     this.focusContent();
                 }
+                this.bindEvent(this.element);
                 this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
             });
         };
@@ -1603,7 +1604,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.focus();
         }
         node.focus();
-        this.bindEvent(this.element);
     }
 
     private bindEvent(element: HTMLElement): void {

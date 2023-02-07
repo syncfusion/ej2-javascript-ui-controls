@@ -72,7 +72,7 @@ describe('Chart Legend', () => {
         let legendElement: Element;
         let trigger: MouseEvents = new MouseEvents();
         let value: number;
-        let ele: HTMLElement = createElement('div', { id: id, styles: 'width: 800px'});
+        let ele: HTMLElement = createElement('div', { id: id });
         document.body.appendChild(ele);
         let series: SeriesModel[] = [seriesCollection[0], seriesCollection[1], seriesCollection[2], seriesCollection[3], seriesCollection[4]];
         beforeAll((): void => {
@@ -1921,7 +1921,7 @@ describe('Chart Legend', () => {
         let element: Element;
         let posX: string;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

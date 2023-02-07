@@ -941,8 +941,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         }
                         args = customArgs;
                     } else {
-                        // Use to split the arguments when days formula parameters contain comma inside the double quotes like "October 22, 2016"
-                        if (libFormula === 'DAYS' && sFormula.includes('"')) {
+                        // Use to split the arguments when days/day formula parameters contain comma inside the double quotes like "October 22, 2016"
+                        if ((libFormula === 'DAYS' || libFormula === 'DAY') && sFormula.includes('"')) {
                             args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).match(/(".*?"|[^",\s]+)/g);
                         } else {
                             args = sFormula.substring(sFormula.indexOf(
@@ -2209,7 +2209,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {number} -  returns to date.
      */
     public toOADate(dateTime: Date): number {
-        const result: number = (dateTime.getTime() - Date.parse(this.oaDate.toString())) / this.millisecondsOfaDay;
+        const result: number = (dateTime.getTime() - this.oaDate.getTime()) / this.millisecondsOfaDay;
         return result;
     }
 
@@ -2610,7 +2610,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             cellTxt = token + cellTxt;
         }
         const argVal: string = changeArgs.getValue().toUpperCase();
-        if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+        if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
             argVal.indexOf('RANDBETWEEN(') > - 1 || this.randomValues.has(cellTxt)) {
             let randStrVal: string = this.randCollection.toString();
             if (!this.randomValues.has(cellTxt)) {
@@ -2618,7 +2618,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 this.randCollection.push(cellTxt);
                 this.isRandomVal = true;
             } else if (this.randomValues.has(cellTxt)) {
-                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
                     argVal.indexOf('RANDBETWEEN(') > - 1) {
                     this.randomValues.set(cellTxt, changeArgs.getValue());
                 } else if (changeArgs.getValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
@@ -3101,7 +3101,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             sheets[sheetIdx as number].rows[rowIdx as number].cells[colIdx as number];
                         if (cellObj) {
                             (<{ notify: Function }>this.parentObject).notify(
-                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh : true });
+                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh : true});
                         }
                     });
                 }

@@ -119,7 +119,9 @@
   }
 
   &.e-menu-caret-icon {
-    padding-left: $cmenu-caret-li-padding;
+    @if $skin-name != 'FluentUI' {
+      padding-left: $cmenu-caret-li-padding;
+    }
     padding-right: $cmenu-li-right-padding;
   }
 

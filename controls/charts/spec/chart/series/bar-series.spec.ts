@@ -51,7 +51,7 @@ describe('Chart Control', () => {
         let animationComplete: EmitType<IAnimationCompleteEventArgs>;
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container', styles: 'width: 800px'});
+            elem = createElement('div', { id: 'container' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -501,7 +501,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let animationComplete: EmitType<IAnimationCompleteEventArgs>;
         let element: HTMLElement;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             if(document.getElementById('template')) {
               remove(document.getElementById('template'));
@@ -775,7 +775,7 @@ describe('Chart Control', () => {
         let element: HTMLElement;
         let dataLabelX;
         let pointX;
-        element = createElement('div', { id: 'container', styles: 'width: 800px' });
+        element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

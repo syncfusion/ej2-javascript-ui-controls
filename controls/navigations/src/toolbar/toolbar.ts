@@ -2286,7 +2286,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                                 this.destroyMode();
                             }
                             const itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
-                            if ((this as any).isReact) {
+                            if ((this as any).isReact && this.items[parseInt(index.toString(), 10)].template) {
                                 this.clearTemplate();
                             }
                             detach(itemCol[parseInt(index.toString(), 10)]);

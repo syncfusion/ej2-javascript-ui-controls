@@ -961,8 +961,8 @@ export class DialogEdit {
         if (col.editType === 'stringedit') {
             const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
-                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :   // eslint-disable-line
-                    this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+            !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col): // eslint-disable-line
+            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
                 textBox.dataBind();
@@ -1088,6 +1088,9 @@ export class DialogEdit {
         if (taskSettings.duration === columnName) {
             if (!isNullOrUndefined(value) && value !== '') {
                 ganttObj.dataOperation.updateDurationValue(value, ganttProp);
+                this.parent.setRecordValue(taskSettings.duration, value, currentData);
+                this.parent.setRecordValue('taskData.' + taskSettings.duration, ganttProp.duration, currentData);
+
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
                     this.parent.setRecordValue('duration', null, ganttProp, true);

@@ -541,7 +541,7 @@ describe('Chart Control', () => {
         let element: Element;        
         let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'seriesData', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'seriesData' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -654,7 +654,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'seriesData', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'seriesData' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -701,7 +701,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
+            ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

@@ -57,7 +57,7 @@ describe('Chart Control Legend Checking', () => {
     let series: SeriesModel[] = [seriesCollection[0], seriesCollection[1], seriesCollection[2], seriesCollection[3], seriesCollection[4]];
     let trigger: MouseEvents = new MouseEvents();
     let value: number;
-    let ele: HTMLElement = createElement('div', { id: 'cartesianChart', styles: 'width: 800px'  });
+    let ele: HTMLElement = createElement('div', { id: 'cartesianChart'  });
     let seriesElement: HTMLElement;
     let lastLabel: HTMLElement;
     let dataLabel: HTMLElement;

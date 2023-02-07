@@ -622,7 +622,7 @@ export class TableProperties {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
         /* eslint-disable-next-line max-len */
-        const colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
+        const colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         return colorPicker;
     }

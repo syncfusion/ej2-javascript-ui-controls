@@ -173,7 +173,7 @@ export class FontDialog {
         effectsProperties.appendChild(fontEffectSubDiv3);
         this.target.appendChild(effectsProperties);
         this.colorPicker = new ColorPicker({
-            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale
+            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale, enableOpacity: false
         });
         this.colorPicker.appendTo(fontColorElement);
         this.strikethroughBox = new CheckBox({

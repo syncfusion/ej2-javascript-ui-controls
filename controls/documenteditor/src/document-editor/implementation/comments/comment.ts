@@ -129,13 +129,13 @@ export class CommentReviewPane {
             if ((args.comment || args.changes)) {
                 if (this.parentPaneElement.style.display === 'none') {
                     this.parentPaneElement.style.display = 'block';
-                    if (this.owner) {
-                        setTimeout(() => {
-                            if (this.owner) {
-                                this.owner.resize();
-                            }    
-                        }, 10);
-                    }
+                }
+                if (this.owner) {
+                    setTimeout(() => {
+                        if (this.owner) {
+                            this.owner.resize();
+                        }
+                    }, 10);
                 }
             }
             else {

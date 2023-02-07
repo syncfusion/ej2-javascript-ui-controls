@@ -2,7 +2,7 @@ import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel,
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
-import { getRangeAddress } from "../../../src/index";
+import { getRangeAddress, DialogBeforeOpenEventArgs } from "../../../src/index";
 
 /**
  *  Clipboard test cases
@@ -441,6 +441,111 @@ describe('Clipboard ->', () => {
                 done();
             });
         });
+    });
+
+    describe('Apply clipboard and clear format for multi range selection', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy and paste in last used cell with empty cell ->', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('copy', ['A1']).then(() => {
+                helper.invoke('paste', ['H11:I12']);
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[11].cells[7].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[10].cells[8].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[11].cells[8].value).toBe('Item Name');
+                done();
+            });   
+        }); 
+        it('Copy and paste multirange selection with first column cell as empty and ends in index with range cell > 0 ->', (done: Function) => {
+            helper.invoke('insertColumn', [0, 0]);
+            setTimeout(() => {
+                helper.invoke('paste', ['A11:C12']);
+                expect(helper.getInstance().sheets[0].rows[10].cells[0].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[10].cells[1].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[11].cells[1].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[10].cells[2].value).toBe('Item Name');
+                expect(helper.getInstance().sheets[0].rows[11].cells[2].value).toBe('Item Name');
+                done(); 
+            }); 
+        });
+        it('Clear all, when values are selected with  range cell and empty cell ->', (done: Function) => {
+            helper.invoke('selectRange', ['I11:J12'])
+            helper.getElement('#'+helper.id+'_clear').click();
+            helper.getElement('#'+helper.id+'_clear-popup li:nth-child(1)').click();
+            expect(helper.getInstance().sheets[0].rows[10].cells[8].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[11].cells[8].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[10].cells[9].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[11].cells[9].value).toBeUndefined();
+            done();
+        });
+        it('Clear all, when values are selected with range cell and empty cell with first column cell as empty and ends in index with range cell > 0 ->', (done: Function) => {
+            helper.invoke('selectRange', ['A11:C12'])
+            helper.getElement('#'+helper.id+'_clear').click();
+            helper.getElement('#'+helper.id+'_clear-popup li:nth-child(1)').click();
+            expect(helper.getInstance().sheets[0].rows[10].cells[0].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[10].cells[1].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[11].cells[1].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[10].cells[2].value).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[11].cells[2].value).toBeUndefined();
+            done();
+        });
+    });
+
+    describe('Copy/paste with finite rows and columns', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rowCount: 15, colCount: 15, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true } }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Paste alert dialog for invalid paste selection for column in finite mode', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A15']);
+            helper.invoke('copy', ['A1:A15']).then(() => {
+                helper.invoke('paste', ['B2']);
+                setTimeout(() => {
+                    var dialog = helper.getElement('.e-control.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    helper.setAnimationToNone('.e-control.e-dialog');
+                    helper.click('.e-control .e-footer-content button:nth-child(1)');
+                    done();
+                });
+            });   
+        }); 
+        it('Paste alert dialog for invalid paste selection for row in finite mode', (done: Function) => {
+            helper.invoke('selectRange', ['A1:O1']);
+            helper.invoke('copy', ['A1:O1']).then(() => {
+                helper.invoke('paste', ['B2']);
+                setTimeout(() => {
+                    var dialog = helper.getElement('.e-control.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    helper.setAnimationToNone('.e-control.e-dialog');
+                    helper.click('.e-control .e-footer-content button:nth-child(1)');
+                    done();
+                });
+            });   
+        }); 
+        it('Cancelling paste alert dialog for invalid range selection in finite mode', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                args.cancel = true;
+            };
+            helper.invoke('selectRange', ['A1:A15']);
+            helper.invoke('copy', ['A1:A15']).then(() => {
+                helper.invoke('paste', ['B2']);
+                setTimeout(() => {
+                    var dialog = helper.getElement('.e-control.e-dialog');
+                    expect(!!dialog).toBeTruthy();
+                    done();
+                });
+            });   
+        }); 
     });
 
     describe('CR-Issues ->', () => {

@@ -9,7 +9,7 @@ import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs, FileOpenEventArg
 import { read, Download, GetDetails, Delete } from '../common/operations';
 import { createDialog } from '../pop-up/dialog';
 import { updatePath, getPath, getDirectories } from '../common/utility';
-import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule } from '../common/index';
+import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule, getPathId } from '../common/index';
 import { copyFiles, cutFiles, removeActive, pasteHandler, getParentPath, readDropPath } from '../common/index';
 import { hasEditAccess, createDeniedDialog, hasDownloadAccess, getAccessClass } from '../common/index';
 
@@ -252,6 +252,10 @@ export class NavigationPane {
         if (!this.isRightClick) {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }
+        else { 
+            this.parent.pathId = getPathId(args.node);
+            this.parent.visitedItem = args.node;
+        }
         if (previousPath !== this.parent.path) {
             this.expandNodeTarget = null;
             if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
@@ -445,7 +449,6 @@ export class NavigationPane {
                 }
             }
             if (resultData.length > 0) {
-                this.isRenameParent = true;
                 const id: string = getValue(this.treeObj.fields.id, resultData[0]);
                 this.treeObj.selectedNodes = [id];
                 this.treeObj.dataBind();

@@ -15,7 +15,7 @@ import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoE
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress, unMerge } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
-import { DataBind, setRow, setColumn, InsertDeleteEventArgs } from '../index';
+import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-format';
@@ -560,8 +560,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public formulaRefCell: string;
 
-    /** @hidden */
-    public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
+     /** @hidden */
+     public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
 
     /**
      * Constructor for initializing the library.
@@ -692,6 +692,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public numberFormat(format: string, range?: string): void {
         this.notify(events.applyNumberFormatting, { format: format, range: range });
+        this.notify(events.addFormatToCustomFormatDlg, { format: format });
     }
 
     /**
@@ -1615,10 +1616,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public getDisplayText(cell: CellModel): string {
         if (!cell) { return ''; }
         if (cell.format && !isNullOrUndefined(cell.value)) {
-            const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: cell.value, value: cell.value,
-                format: cell.format, onLoad: true, cell: cell, skipRowFill: true, skipFormatCheck: true };
+            const eventArgs: NumberFormatArgs = { formattedText: cell.value, value: cell.value, format: cell.format, cell: cell,
+                skipFormatCheck: true };
             this.notify(events.getFormattedCellObject, eventArgs);
-            return eventArgs.formattedText as string;
+            return eventArgs.formattedText;
         } else if (!cell.value && cell.hyperlink) {
             return typeof cell.hyperlink === 'string' ? cell.hyperlink : cell.hyperlink.address;
         } else { return cell.value || typeof cell.value === 'number' ? cell.value.toString() : ''; }
@@ -1811,6 +1812,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         return updated;
+    }
+
+    /** @hidden */
+    public getCell(rowIndex: number, colIndex: number, row?: HTMLTableRowElement): HTMLElement {
+        return null;
     }
 
     /**

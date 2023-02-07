@@ -305,6 +305,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public allowSpaceOfSameStyleInTable: boolean = false;
+    /**
+     * @private
+     */
     public alignTablesRowByRow: boolean = false;
     /**
      * @private

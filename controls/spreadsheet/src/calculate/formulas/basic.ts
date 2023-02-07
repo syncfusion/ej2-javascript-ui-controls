@@ -409,13 +409,19 @@ export class BasicFormulas {
             const range: string = ranges[k as number];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
-                const startRow: number = this.parent.rowIndex(range.substr(0, i));
-                const endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                let startRow: number = this.parent.rowIndex(range.substr(0, i));
+                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
                 if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                const col1: number = this.parent.colIndex(range.substr(0, i));
-                const col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (startRow > endRow) {
+                    [startRow, endRow] = [endRow, startRow];
+                }
+                let col1: number = this.parent.colIndex(range.substr(0, i));
+                let col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (col1 > col2) {
+                    [col1, col2] = [col2, col1];
+                } 
                 if (mulValues === null) {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];
@@ -697,23 +703,28 @@ export class BasicFormulas {
     public ComputeDAY(...serialNumber: string[]): number | string {
         const date: string[] = serialNumber;
         let result: number | string;
+        let dateVal: string;
         if (isNullOrUndefined(date) || (date.length === 1 && date[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
         if (date.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        const dateVal: string = this.parent.getValueFromArg(date[0].split(this.parent.tic).join(''));
-        if (!isNaN(this.parent.parseFloat(dateVal))) {
-            return this.parent.getErrorStrings()[CommonErrors.name];
+        if (this.parent.isCellReference(date[0])) {
+            dateVal = this.parent.getValueFromArg(date[0].split(this.parent.tic).join(''));
+        } else {
+            dateVal = date[0].split(this.parent.tic).join('');
         }
         // else {
         //     dateVal = dateVal;
         // }
-        result = this.parent.parseDate(dateVal);
+        result = this.parent.isNaN(Number(dateVal)) ? this.parent.parseDate(dateVal) : this.parent.intToDate(dateVal);
         if (Object.prototype.toString.call(result) === '[object Date]') {
             /* eslint-disable-next-line */
             result = (result as any).getDate();
+        }
+        if (result.toString() === 'NaN') {
+            return this.parent.getErrorStrings()[CommonErrors.value];
         }
         return result;
     }
@@ -1750,7 +1761,7 @@ export class BasicFormulas {
 
         const hh: string | number = value.getHours();
         let m: string | number = value.getMinutes();
-        // let s: string | number = value.getSeconds();
+        let s: string | number = value.getSeconds();
         let dd: string = 'AM';
         let h: string | number = hh;
         if (h >= 12) {
@@ -1761,9 +1772,9 @@ export class BasicFormulas {
             h = 12;
         }
         m = m < 10 ? '0' + m : m;
-        // s = s < 10 ? '0' + s : s;
+        s = s < 10 ? '0' + s : s;
         h = h < 10 ? '0' + h : h;
-        return h + ':' + m + ' ' + dd;
+        return h + ':' + m + ':' + s + ' ' + dd;
     }
 
     /**

@@ -667,6 +667,126 @@ describe('Insert & Delete ->', () => {
             });
         });
     });
+
+    describe('Delete conditional formatting applied rows and columns->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }],
+                    conditionalFormats: [{ type: 'BlueDataBar', range: 'E2:H11' }]
+                }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                    spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle', fontSize: '13pt' }, 'A1:H1');
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Delete by selecting cf applied and non cf applied column ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('D1:E1');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 3, [7], false, true);
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("D2:F11");
+                done();
+            },50);
+        });
+        it('Undo after deleting by selecting cf applied and non cf applied column ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.undo(); 
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H11");
+                done();
+            },50);
+        });
+        it('Delete by selecting cf applied and non cf applied column II->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('D1:G1');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 3, [7], false, true);
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("D2:D11");
+                done();
+            },50);
+        });
+        it('Undo after deleting by selecting cf applied and non cf applied column II->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.undo(); 
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H11");
+                done();
+            },50);
+        });
+        it('Delete by selecting cf applied and non cf applied row ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('A1:A2');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7], true, false);
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E1:H9");
+                done();
+            },50);
+        });
+        it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.undo(); 
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H11");
+                done();
+            },50);
+        });
+        it('Delete by selecting cf applied and non cf applied row II->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('A3:A13');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(2, 0, [7], true, false);
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H2");
+                done();
+            },50);
+        });
+        it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.undo(); 
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H11");
+                done();
+            },50);
+        });
+        it('Delete by selecting cf applied and non cf applied row III->', (done: Function) => {
+            helper.edit('A12', '12');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange('A11:A12');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(10, 0, [7], true, false);
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H10");
+                done();
+            },50);
+        });
+        it('Undo after deleting by selecting cf applied and non cf applied row ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.undo(); 
+            setTimeout((): void => {
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E2:H11");
+                done();
+            },50);
+        });
+    });
     
     describe('CR-Issues ->', () => {
         describe('I289560 ->', () => {
