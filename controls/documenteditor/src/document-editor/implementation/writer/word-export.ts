@@ -336,6 +336,7 @@ export class WordExport {
     private formFieldShading: boolean;
     private trackChanges: boolean;
     private compatibilityMode: CompatibilityMode;
+    private allowSpaceOfSameStyleInTable: boolean;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -592,6 +593,7 @@ export class WordExport {
         this.formFieldShading = document.formFieldShading;
         this.trackChanges = document.trackChanges;
         this.compatibilityMode = document.compatibilityMode;
+        this.allowSpaceOfSameStyleInTable = document.allowSpaceOfSameStyleInTable;
     }
     // Clears the document
     private clearDocument(): void {
@@ -6187,6 +6189,9 @@ export class WordExport {
         writer.writeStartElement(undefined, 'compat', this.wNamespace);
         if (this.dontUseHtmlParagraphAutoSpacing) {
             this.serializeBoolProperty(writer, 'doNotUseHTMLParagraphAutoSpacing', this.dontUseHtmlParagraphAutoSpacing);
+        }
+        if (this.allowSpaceOfSameStyleInTable) {
+            this.serializeBoolProperty(writer, 'allowSpaceOfSameStyleInTable', this.allowSpaceOfSameStyleInTable);
         }
         writer.writeStartElement(undefined, 'compatSetting', this.wNamespace);
         writer.writeAttributeString(undefined, 'name', this.wNamespace, 'compatibilityMode');

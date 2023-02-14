@@ -3401,3 +3401,51 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         });
     });
 });
+
+describe('Editing on ForeignKey column is not working in frozen grid when allowEditOnDblClick is false', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData.slice(0, 3),
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, allowEditOnDblClick: false},
+                columns: [
+                { field: 'OrderID', width: 120, headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', freeze: 'Left', validationRules: { required: true, number: true }},
+                { field: 'EmployeeID', foreignKeyField: 'EmployeeID', foreignKeyValue: 'FirstName', dataSource: employeeData, width: 150, headerText: 'Customer Name', validationRules: { required: true }},
+                { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150},
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('select the first row', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });       
+    });
+    it('Edit complete', () => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.getMovableContentTbody().querySelector('td').innerHTML as any).toBe('Andrew');
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0].value = 2;        
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});

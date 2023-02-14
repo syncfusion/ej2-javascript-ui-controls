@@ -11,7 +11,7 @@ import { ICommandExecuteEventArgs, IKeyEventArgs } from '../objects/interface/IE
 import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { Container } from '../core/containers/container';
-import { MarginModel } from '../core/appearance-model';
+import { MarginModel, TextStyleModel } from '../core/appearance-model';
 import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
 import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, FreeHandTool } from './tool';
@@ -2629,7 +2629,9 @@ class ObjectFinder {
                         return target;
                     }
                 }
-                if (element.bounds.containsPoint(position, padding || 0)) {
+                //EJ2-69047 - Node selection is improper while adding annotation for multiple nodes
+                //Checked textOverflow property to avoid the selection of text element with clip and ellipsis;
+                if (element.bounds.containsPoint(position, padding || 0) && (element.style as TextStyleModel).textOverflow !=='Clip' && (element.style as TextStyleModel).textOverflow !=='Ellipsis') {
                     return element;
                 }
             }

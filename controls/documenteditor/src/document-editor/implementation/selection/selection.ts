@@ -4609,7 +4609,7 @@ export class Selection {
             if (offset > 0) {
                 left += size.width;
             }
-            return new Point(left, paragraphWidget.y + topMargin);
+            return new Point(left, paragraphWidget.y + size.topMargin);
         } else {
             let indexInInline: number = 0;
             const inlineObj: ElementInfo = line.getInline(offset, indexInInline, line.paragraph.bidi);
@@ -9168,12 +9168,22 @@ export class Selection {
 
     private copyToClipboard(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
+        //Skip the copy operation Using shadow DOM if it is mobile device or IE browser.
+        let isMobileDeviceOrInternetExplorer: boolean = /Android|Windows Phone|iPhone|Trident|webOS/i.test(navigator.userAgent);
+        let shadowRoot: HTMLDivElement;
         let div: HTMLDivElement = document.createElement('div');
         div.style.left = '-10000px';
         div.style.top = '-10000px';
         div.style.position = 'relative';
         div.innerHTML = htmlContent;
-        document.body.appendChild(div);
+        if (!isMobileDeviceOrInternetExplorer) {
+            shadowRoot = document.createElement('div');
+            let shadowDOM = shadowRoot.attachShadow({ mode: 'open' });
+            shadowDOM.appendChild(div);
+            document.body.appendChild(shadowRoot);
+        } else {
+            document.body.appendChild(div);
+        }
         if (navigator !== undefined && navigator.userAgent.indexOf('Firefox') !== -1) {
             div.contentEditable = 'true';
         }
@@ -9183,11 +9193,16 @@ export class Selection {
         let copySuccess: boolean = false;
         try {
             copySuccess = document.execCommand('copy');
-        } catch (e) {
-            // Copying data to Clipboard can potentially fail - for example, if another application is holding Clipboard open.
-        } finally {
+        }
+        catch (e) {
+            // Copying data to Clipboard can potentially fail - for example, if another application is holding Clipboard open.       
+        }
+        finally {
             window.getSelection().removeAllRanges();
             div.parentNode.removeChild(div);
+            if (!isMobileDeviceOrInternetExplorer) {
+                shadowRoot.parentNode.removeChild(shadowRoot);
+            }
         }
         return copySuccess;
     }

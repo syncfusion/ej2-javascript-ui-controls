@@ -333,7 +333,7 @@ export class FormFields {
             }
         }
     }
-
+    
     private setToolTip(tooltipContent: string, targetElement: any): void {
         //initialize tooltip component
         let tooltip: Tooltip = new Tooltip({
@@ -667,7 +667,10 @@ export class FormFields {
             let backColor: string = 'rgba(' + backgroundColor.R + ',' + backgroundColor.G + ',' + backgroundColor.B + ',' + 1 + ')';
             backColor = this.rgbaToHex(backColor);
             // set default color if field have black color as bg.
-            if (backColor === '#000000ff') {
+            if (currentData.IsTransparent === true) {
+                backColor = "rgba(0,0,0,0)";
+            }
+            else if (backColor === '#000000ff') {
                 backColor = '#daeaf7ff';
             }
             // eslint-disable-next-line
@@ -687,7 +690,7 @@ export class FormFields {
             let fieldProperties: any = {
                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
                 value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
-                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
+                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'],insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
             };
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue']

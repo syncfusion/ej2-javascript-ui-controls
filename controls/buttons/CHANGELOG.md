@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.50 (2023-02-14)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#F40707` - Value change event triggered twice in Radio Button component has been fixed.
+
 ## 20.4.49 (2023-02-07)
 
 ### Switch

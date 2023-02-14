@@ -440,8 +440,8 @@ export namespace Input {
      * @param {any} element - Input element which is need to add.
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
-    export function calculateWidth(element: any, container: HTMLElement): void {
-        let elementWidth: number = element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'));
+    export function calculateWidth(element: any, container: HTMLElement, moduleName?: string): void {
+        let elementWidth: number = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'));
         if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');

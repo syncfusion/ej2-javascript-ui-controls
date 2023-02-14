@@ -8,7 +8,7 @@
 
     @at-root {
       & .e-menu {
-        @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
+        @if $skin-name == 'bootstrap4' {
           background-color: $cmenu-ul-bgcolor;
         }
         @else {

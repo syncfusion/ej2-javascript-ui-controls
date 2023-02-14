@@ -2855,7 +2855,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public bringIntoView(bound: Rect): void {
         const attribute: string[] = this.getZoomingAttribute();
         this.updateBlazorDiagramProperties(attribute);
-        this.scroller.bringIntoView(bound);
+        // EJ2-69238 - add true as an extra parameter to calcuate the horizontal and vertical offset
+        this.scroller.bringIntoView(bound, true);
         this.updateBlazorDiagramProperties(attribute, true);
     }
 
@@ -8109,9 +8110,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     } else {
                         getCenterPoint = null;
                     }
+                    //EJ2-68738 - Overview content not updated properly on zoom out the diagram
+                    // this.mode !=='SVG' is added to avoid the issue in SVG mode
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
-                        (!renderer.isSvgMode && transform) ? transformValue : undefined,
+                        (!renderer.isSvgMode && transform && this.mode !== 'SVG') ? transformValue : undefined,
                         undefined, undefined, status && (!this.diagramActions || isOverView), undefined, undefined, getCenterPoint);
                 }
             }
@@ -9851,7 +9854,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     let children: NodeModel = lane.children[parseInt(j.toString(), 10)];
                                     // EJ2-63939 - Check whether the swimlane children type is BPMN or not.
                                     if(children.shape.type === 'Bpmn') {
-                                        this.bpmnModule.updateTextAnnotationProp(children as Node, { offsetX: (children.offsetX), offsetY: (children.offsetY) } as Node, this, true);
+                                        this.bpmnModule.updateTextAnnotationProp(children as Node, { offsetX: (children.offsetX), offsetY: (children.offsetY) } as Node, this, false);
                                     }
                                 }
                             }

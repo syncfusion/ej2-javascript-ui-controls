@@ -298,6 +298,8 @@ export class OptionsPane {
         for (let i: number = 0; i < lists.length; i++) {
             text += lists[i];
         }
+        let resultsContainerHeight = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
+        this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.clearFocusElement();
         this.resultsListBlock.innerHTML = text;
         for (let i: number = 0; i < this.resultsListBlock.children.length; i++) {

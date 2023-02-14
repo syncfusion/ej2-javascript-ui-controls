@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.50 (2023-02-14)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I434077` - Issue with "after deleting rows beyond the rendered region, the edited cell value is not updated to the expected cell in finite mode" has been resolved.
+
 ## 20.4.49 (2023-02-07)
 
 ### Spreadsheet

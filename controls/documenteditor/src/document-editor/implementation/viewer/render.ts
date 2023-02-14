@@ -1042,7 +1042,7 @@ export class Renderer {
             l10n.setLocale(this.documentHelper.owner.locale);
             this.pageContext.fillStyle = HelperMethods.getColor(currentCharFormat.fontColor);
             if (children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) {
-                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset;
+                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph);
                 //Paragraph with empty linewidgets with mutiple line breaks
                 if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
                     y = top + lineWidget.previousLine.maxBaseLine;

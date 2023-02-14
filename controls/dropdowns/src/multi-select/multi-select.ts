@@ -3586,7 +3586,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-                    if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
+                    if ((wrapperleng + downIconWidth + this.clearIconWidth) >= overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;
                             index = tempIndex + 1;
@@ -3595,7 +3595,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth +
                             parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
-                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
+                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             const textArr: string[] = [];
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
@@ -3604,7 +3604,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
                         break;
-                    } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
+                    } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) < overAllContainer) {
                         tempData = data;
                         tempIndex = index;
                     } else if (index === 0) {
@@ -3802,6 +3802,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.updateValue(event, li, state);
         }
+        this.addValidInputClass();
     }
     private updateValue(event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[], state: boolean): void {
         const length: number = li.length;

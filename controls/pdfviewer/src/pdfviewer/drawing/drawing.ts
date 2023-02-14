@@ -731,8 +731,7 @@ export class Drawing {
         }
         container.children.push(srcDecorator);
         container.children.push(targetDecorator);
-        if (obj.shapeAnnotationType === 'LineWidthArrowHead') 
-        {
+        if (obj.shapeAnnotationType === 'LineWidthArrowHead') {
             container.children[1].width = 12 * obj.thickness;
             container.children[1].height = 12 * obj.thickness;
             container.children[2].width = 12 * obj.thickness;
@@ -784,8 +783,7 @@ export class Drawing {
                 for (let j: number = 0; j < objects.length; j++) {
                     if (objects[parseInt(j.toString(), 10)].id === obj.id) {
                         objects.splice(j, 1);
-                        if (obj.shapeAnnotationType === 'Path' || obj.shapeAnnotationType === 'SignatureImage' || obj.shapeAnnotationType === 'SignatureText')       
-                        {
+                        if (obj.shapeAnnotationType === 'Path' || obj.shapeAnnotationType === 'SignatureImage' || obj.shapeAnnotationType === 'SignatureText') {
                             this.refreshCanvasDiagramLayer(undefined, index, obj.id);
                         }
                         else {
@@ -1776,7 +1774,7 @@ export class Drawing {
         options.id = 'rotateThumb';
         this.svgRenderer.drawCircle(canvas as SVGElement, options, ThumbsConstraints.Rotate, { 'aria-label': 'Thumb to rotate the selected object' });
         let circleHandle = canvas.querySelector('#' + options.id);
-        if(circleHandle){
+        if (circleHandle) {
             circleHandle.setAttribute('role', 'separator');
         }
     }
@@ -2195,7 +2193,7 @@ export class Drawing {
         // eslint-disable-next-line
         let oldValues: any = { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY };
         //bug (EJ2-62649) : fixed an issue with difficulty on moving/ resizing free text annotation that added in edge of viewer
-        let newDiff : any = this.moveInsideViewer(obj,tx,ty);
+        let newDiff: any = this.moveInsideViewer(obj, tx, ty);
         obj.wrapper.offsetX += newDiff.tx;
         obj.wrapper.offsetY += newDiff.ty;
         if (isLineShapes(obj) || obj.shapeAnnotationType === 'Polygon') {
@@ -2698,7 +2696,7 @@ export class Drawing {
                 }
             }
         }
-        if (actualObject&& actualObject.shapeAnnotationType === "SignatureText"&& actualObject.wrapper) {
+        if (actualObject && actualObject.shapeAnnotationType === "SignatureText" && actualObject.wrapper) {
             if (actualObject.wrapper.children && actualObject.wrapper.children.length > 1) {
                 actualObject.wrapper.children[1].isDirt = true;
             }
@@ -2932,35 +2930,35 @@ export class Drawing {
             this.scaleObject(1 / sw, 1 / sh, refPoint, node, element, refObject);
             //bug (EJ2-62649) : fixed an issue with difficulty on moving/ resizing free text annotation that added in edge of viewer 
             // eslint-disable-next-line
-            if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0,9) === 'free_text' || (obj as any).id.slice(0,8) === 'freetext') ){
-                let newDiff : any = this.moveInsideViewer(obj);
+            if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0, 9) === 'free_text' || (obj as any).id.slice(0, 8) === 'freetext')) {
+                let newDiff: any = this.moveInsideViewer(obj);
                 this.nodePropertyChange(obj, {
-                    bounds: { width: obj.wrapper.width, height: obj.wrapper.height, x: obj.wrapper.offsetX + newDiff.tx, y: obj.wrapper.offsetY + newDiff.ty}
-                    });
+                    bounds: { width: obj.wrapper.width, height: obj.wrapper.height, x: obj.wrapper.offsetX + newDiff.tx, y: obj.wrapper.offsetY + newDiff.ty }
+                });
             }
         }
         return constraints;
     }
 
     //bug (EJ2-62649) : Implemnted method for calculating optimal bound for free text annotation that outside viewer container 
-    private moveInsideViewer(obj: PdfAnnotationBaseModel, tx? : number, ty? : number) : any{
-        tx = tx ? tx: 0;
-        ty = ty ? ty: 0;
-        if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0,9) === 'free_text' || (obj as any).id.slice(0,8) === 'freetext') ){
+    private moveInsideViewer(obj: PdfAnnotationBaseModel, tx?: number, ty?: number): any {
+        tx = tx ? tx : 0;
+        ty = ty ? ty : 0;
+        if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0, 9) === 'free_text' || (obj as any).id.slice(0, 8) === 'freetext')) {
             // eslint-disable-next-line
-             let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
-             if(canvas){
-                 let bounds : Rect = obj.wrapper.bounds;
-                 let width : number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
-                 let height : number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
-                 let right : number =  bounds.right;
-                 let left : number = bounds.left;
-                 let top : number =  bounds.top; 
-                 let bottom : number = bounds.bottom;
-                 // eslint-disable-next-line
-                 if (!(right + tx <= width - 3 && left + tx >= 1 && bottom + ty <= height - 3 && top + ty >= 1)) {
-                    let txNew : number  = 0;
-                    let tyNew : number = 0;
+            let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
+            if (canvas) {
+                let bounds: Rect = obj.wrapper.bounds;
+                let width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
+                let height: number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
+                let right: number = bounds.right;
+                let left: number = bounds.left;
+                let top: number = bounds.top;
+                let bottom: number = bounds.bottom;
+                // eslint-disable-next-line
+                if (!(right + tx <= width - 3 && left + tx >= 1 && bottom + ty <= height - 3 && top + ty >= 1)) {
+                    let txNew: number = 0;
+                    let tyNew: number = 0;
                     if (!(right <= width - 3)) {
                         txNew = width - right - 3;
                     }
@@ -2973,16 +2971,16 @@ export class Drawing {
                     if (!(top >= 1)) {
                         tyNew = tyNew - top + 1;
                     }
-                    if(txNew !== 0){
+                    if (txNew !== 0) {
                         tx = txNew;
                     }
-                    if(tyNew !== 0){
+                    if (tyNew !== 0) {
                         ty = tyNew;
                     }
-                 }
-             }
-         }
-         return {tx : tx , ty : ty};
+                }
+            }
+        }
+        return { tx: tx, ty: ty };
     }
 
     /**
@@ -3295,20 +3293,20 @@ export class Drawing {
      * @private
      * @returns {Object} - Returns the object.
      */
-    
+
     public copy(): Object {
-        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0|| this.pdfViewer.selectedItems.annotations.length!==0)) {
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0 || this.pdfViewer.selectedItems.annotations.length !== 0)) {
             this.pdfViewer.clipboardData.pasteIndex = 1;
-            this.pdfViewer.clipboardData.clipObject = this.copyObjects(); 
-        } 
+            this.pdfViewer.clipboardData.clipObject = this.copyObjects();
+        }
         let isSearchboxDialogOpen: boolean;
         let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
         if (searchBoxId) {
             isSearchboxDialogOpen = searchBoxId.style.display !== "none";
         }
         if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen) {
-            this.pdfViewer.clipboardData.clipObject= {};
-        }         
+            this.pdfViewer.clipboardData.clipObject = {};
+        }
         return this.pdfViewer.clipboardData.clipObject;
     }
     /**
@@ -3449,7 +3447,8 @@ export class Drawing {
                     if (addedAnnot.formFieldAnnotationType && addedAnnot.pageIndex === index) {
                         this.pdfViewer.formFieldCollection.push(addedAnnot);
                         // eslint-disable-next-line max-len
-                        const formField: FormFieldModel = {id: addedAnnot.id, name: (addedAnnot as PdfFormFieldBaseModel).name, value: (addedAnnot as PdfFormFieldBaseModel).value, type: addedAnnot.formFieldAnnotationType as FormFieldType,
+                        const formField: FormFieldModel = {
+                            id: addedAnnot.id, name: (addedAnnot as PdfFormFieldBaseModel).name, value: (addedAnnot as PdfFormFieldBaseModel).value, type: addedAnnot.formFieldAnnotationType as FormFieldType,
                             isReadOnly: addedAnnot.isReadonly, fontFamily: addedAnnot.fontFamily,
                             // eslint-disable-next-line max-len
                             fontSize: addedAnnot.fontSize, fontStyle: addedAnnot.fontStyle as unknown as FontStyle, color: (addedAnnot as PdfFormFieldBaseModel).color, backgroundColor: (addedAnnot as PdfFormFieldBaseModel).backgroundColor,
@@ -3463,7 +3462,7 @@ export class Drawing {
                         }
                         this.pdfViewer.formFieldCollections.push(formField);
                         // eslint-disable-next-line max-len
-                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer,fieldId);
+                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer, fieldId);
                     }
                     this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
                     if (!addedAnnot.formFieldAnnotationType) {
@@ -3545,7 +3544,7 @@ export class Drawing {
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.removedAnnotationCollection = [];
         }
-        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.selectedItems.annotations.length>0) &&  (this.pdfViewer.designerMode || this.pdfViewer.selectedItems.annotations.length>0) && (this.pdfViewer.selectedItems.formFields.length !== 0|| this.pdfViewer.selectedItems.annotations.length!==0)) {
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.selectedItems.annotations.length > 0) && (this.pdfViewer.designerMode || this.pdfViewer.selectedItems.annotations.length > 0) && (this.pdfViewer.selectedItems.formFields.length !== 0 || this.pdfViewer.selectedItems.annotations.length !== 0)) {
             this.pdfViewer.clipboardData.pasteIndex = 0;
             this.pdfViewer.clipboardData.clipObject = this.copyObjects();
             this.pdfViewer.renderDrawing(undefined, index);
@@ -3557,8 +3556,8 @@ export class Drawing {
             isSearchboxDialogOpen = searchBoxId.style.display !== "none";
         }
         if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen) {
-            this.pdfViewer.clipboardData.clipObject= {};
-        }  
+            this.pdfViewer.clipboardData.clipObject = {};
+        }
     }
     /**
      * @private

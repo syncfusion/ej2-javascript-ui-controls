@@ -296,7 +296,9 @@ export class EventWindow {
                 [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
             append(tempEle, form);
             this.parent.renderTemplates(() => {
-                this.applyFormValidation();
+                if (this.element) {
+                    this.applyFormValidation();
+                }
             });
         } else {
             form.appendChild(this.getDefaultEventWindowContent());

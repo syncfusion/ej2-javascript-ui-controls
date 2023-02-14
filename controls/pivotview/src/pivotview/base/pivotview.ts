@@ -1,7 +1,7 @@
 import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute } from '@syncfusion/ej2-base';
 import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';
-import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest, select } from '@syncfusion/ej2-base';
+import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, FieldItemInfo } from '../../base/engine';
 import { IGroupSettings, IFieldListOptions } from '../../base/engine';
@@ -3627,7 +3627,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         pageSettings: pivot.pageSettings,
                         enableValueSorting: pivot.enableValueSorting,
                         isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
-                        localeObj: pivot.localeObj
+                        localeObj: pivot.localeObj,
+                        enableVirtualization: this.enableVirtualization
                     };
                     if (isCalcChange || isSorted) {
                         pivot.olapEngineModule.savedFieldList = pivot.olapEngineModule.fieldList;
@@ -4437,7 +4438,24 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     rowFields: rowFields,
                     columnFields: columnFields
                 };
-                this.tooltip.content = this.getTooltipTemplate()(templateObject, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+                if (typeof (this.tooltipTemplate) === 'function' && (<{ isReact?: boolean }>this).isReact) {
+                    let tooltipContent: HTMLElement = document.createElement('div');
+                    this.getTooltipTemplate()(templateObject, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate', null, null, tooltipContent);
+                    this.renderReactTemplates(() => {
+                        if (this.enableHtmlSanitizer) {
+                            this.tooltip.content = SanitizeHtmlHelper.sanitize(tooltipContent.outerHTML);
+                        } else {
+                            this.tooltip.content = tooltipContent.outerHTML;
+                        }
+                    });
+                } else {
+                    let element: string = this.getTooltipTemplate()(templateObject, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        this.tooltip.content = SanitizeHtmlHelper.sanitize(element);
+                    } else {
+                        this.tooltip.content = element;
+                    }
+                }
             } else {
                 this.tooltip.content = '<div class=' + cls.PIVOTTOOLTIP + '><p class=' + cls.TOOLTIP_HEADER + '>' +
                     this.localeObj.getConstant('row') + ':</p><p class=' + cls.TOOLTIP_CONTENT + '>' +

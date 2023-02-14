@@ -167,7 +167,8 @@ export class FilterMenuRenderer {
         }
         this.currentDialogCreatedColumn = column;
         this.renderFilterUI(target, column);
-        if (!column.isForeignColumn()) {
+        if (!(column.isForeignColumn() && !(!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
+            && !isNullOrUndefined(column.filter.ui.create as Function)))) {
             this.afterRenderFilterUI();
         }
     }

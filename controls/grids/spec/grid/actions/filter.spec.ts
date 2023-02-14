@@ -12,7 +12,7 @@ import { ValueFormatter } from '../../../src/grid/services/value-formatter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterMenuData, filterData, foreigndata, normalData } from '../base/datasource.spec';
+import { filterMenuData, filterData, foreigndata, normalData, employeeData } from '../base/datasource.spec';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -3138,6 +3138,71 @@ describe('EJ2-62502 - clear filter testing with ColumnMenu ', ()=>{
         gridObj.actionBegin = dBound;
         gridObj.removeFilteredColsByField('ShipCountry');
     });     
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+describe('EJ2-69040 - Filter Menu dialog is not opening on ForeignKey column when it has filterTemplate', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let dropInstance: DropDownList
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,2),
+                allowFiltering: true,
+                filterSettings: {type: 'Menu'},
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    {
+                        field: 'EmployeeID', headerText: 'Employee Name', width: 150, foreignKeyValue: 'FirstName', dataSource: employeeData,
+                        filter: {
+                            ui: {
+                                create: (args: any) => {
+                                    let flValInput = createElement('input', {
+                                      className: 'flm-input',
+                                    });
+                                    args.target.appendChild(flValInput);
+                                    dropInstance = new DropDownList({
+                                      dataSource: new DataManager(employeeData),
+                                      fields: { text: 'FirstName', value: 'EmployeeID' },
+                                      placeholder: 'Select a value',
+                                      popupHeight: '200px',
+                                    });
+                                    dropInstance.appendTo(flValInput);
+                                  },
+                                  write: (args: any) => {
+                                    dropInstance.text = args.filteredValue || '';
+                                  },
+                                  read: (args: any) => {
+                                    args.fltrObj.filterByColumn(
+                                      args.column.field,
+                                      args.operator,
+                                      dropInstance.text
+                                    );
+                                  },
+                            }
+                        }
+                    }],
+                allowPaging: true,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('Open the foreign key filter template', (done: Function) => {
+        actionComplete = (e:any) => {
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+    });
+    it('Check foreign key filter template is open or not?', () => {
+        expect(gridObj.element.querySelector('.e-popup-open')).toBeTruthy();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;

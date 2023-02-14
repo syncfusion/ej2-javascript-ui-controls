@@ -467,8 +467,10 @@ export class FormDesignerToolbar {
         if (this.toolbar)
             this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
     }
-
-    private applyFormDesignerToolbarSettings(): void {
+    /**
+     * @private
+     */
+    public applyFormDesignerToolbarSettings(): void {
         if (this.pdfViewer.toolbarSettings.formDesignerToolbarItems) {
             if (this.pdfViewer.toolbarSettings.formDesignerToolbarItems.indexOf('TextboxTool') !== -1) {
                 this.showTextboxTool(true);

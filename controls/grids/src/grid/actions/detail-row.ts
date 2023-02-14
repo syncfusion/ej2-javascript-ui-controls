@@ -192,6 +192,14 @@ export class DetailRow {
             gObj.updateVisibleExpandCollapseRows();
             gObj.notify(events.refreshExpandandCollapse, { rows: gObj.getRowsObject() });
         }
+        if (this.parent.allowTextWrap){
+            if (this.parent.getContentTable().scrollHeight > this.parent.getContentTable().clientHeight) {
+                this.parent.scrollModule.setPadding();
+            }
+            else{
+                this.parent.scrollModule.removePadding();
+            }
+        }
     }
 
     /**

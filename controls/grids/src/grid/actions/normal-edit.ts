@@ -438,6 +438,7 @@ export class NormalEdit {
                     if (rowUid !== this.uid) {
                         rowObj = this.parent.getRowObjectFromUID(rowUid);
                         rowObj.changes = data;
+                        refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
                         row.refresh(rowObj, this.parent.getColumns(), true);
                         this.parent.editModule.checkLastRow(tr[parseInt(i.toString(), 10)]);
                     }

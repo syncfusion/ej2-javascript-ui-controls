@@ -186,6 +186,9 @@ export class FreeTextAnnotation {
     private isMaximumWidthReached: boolean = false;
     private padding: string;
     private wordBreak: string;
+    private freeTextPaddingLeft: number = 4;
+    private freeTextPaddingTop: number = 5;
+    private defaultFontSize: number = 16;
     /**
      * @private
      */
@@ -214,7 +217,8 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.borderStyle = this.borderStyle;
         this.inputBoxElement.style.borderWidth = this.borderWidth + 'px';
         this.inputBoxElement.style.padding = this.padding;
-        this.inputBoxElement.style.paddingLeft = '3px';
+        this.inputBoxElement.style.paddingLeft = this.freeTextPaddingLeft + 'px';
+        this.inputBoxElement.style.paddingTop = this.freeTextPaddingTop * (parseFloat(this.inputBoxElement.style.fontSize) / this.defaultFontSize) + 'px';
         this.inputBoxElement.style.borderRadius = '2px';
         this.inputBoxElement.style.verticalAlign = 'middle';
         this.inputBoxElement.style.fontFamily = this.fontFamily;
@@ -890,6 +894,10 @@ export class FreeTextAnnotation {
                 }
                 this.selectedAnnotation.bounds.width = inputEleWidth;
                 this.selectedAnnotation.bounds.height = inputEleHeight;
+                let lineSpace: any = 0;
+                lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
+                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft;
+                this.selectedAnnotation.wrapper.children[1].margin.top = ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
@@ -1221,6 +1229,11 @@ export class FreeTextAnnotation {
         if (this.pdfViewer.freeTextSettings.enableAutoFit) {
             this.autoFitFreeText(currentPosition.x, currentPosition.y);
         }
+        this.inputBoxElement.style.paddingLeft = (this.freeTextPaddingLeft * zoomFactor) + 'px';
+        this.inputBoxElement.style.paddingTop = (this.freeTextPaddingTop * ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / this.defaultFontSize) / zoomFactor) + 'px';
+        let lineSpace: any = 0;
+        lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
+        this.inputBoxElement.style.paddingTop = ((parseFloat(this.inputBoxElement.style.paddingTop)) - lineSpace) + 'px';
         pageDiv.appendChild(this.inputBoxElement);
         // eslint-disable-next-line
         if (!this.pdfViewer.freeTextSettings.enableAutoFit && (this.defaultHeight * zoomFactor) < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {

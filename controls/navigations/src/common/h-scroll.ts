@@ -348,6 +348,9 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.scrollEle.scrollLeft -= scrollVal;
         }
+        if (this.enableRtl && this.scrollEle.scrollLeft > 0) {
+            this.scrollEle.scrollLeft = 0;
+        }
     }
 
     private frameScrollRequest(scrollVal: number, action: string, isContinuous: boolean): void {

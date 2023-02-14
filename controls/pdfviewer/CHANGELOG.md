@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.50 (2023-02-14)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I432820`, `#I432145`, `#F179720` - Now, formFields with same name present in non-rendered pages are download successfully.
+
 ## 20.4.49 (2023-02-07)
 
 ### PDF Viewer
@@ -18,7 +26,9 @@
 - `#I431758` - Now, the checkboxes with the same name are correctly selected.
 - `#I429416` - Checkbox layer is now rendered properly when loading the provided PDF document.
 - `#I431679` - Now, the handwritten signature does not now become empty when a random signature is added.
+- `#I431466` - Now, the toolbar icon is properly visible in mobile mode.
 - `#I431286` - Now, the radio button selector size is proper in the given document.
+- `#I408530`,`#I428623` - Now, free text annotations does not shifted towards left side in edit mode.
 
 ## 20.4.48 (2023-02-01)
 

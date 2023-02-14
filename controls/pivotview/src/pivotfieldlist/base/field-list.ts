@@ -750,7 +750,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: localeObj
+                localeObj: localeObj,
+                enableVirtualization: isVirtualization
             };
         } else {
             customProperties = {

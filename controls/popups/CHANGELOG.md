@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `#I428772` - Fixed alignment issue with Dialog component header content and close icon.
+
+### Dialog
+
+#### Bug Fixes
+
 - `#I430348` - Fixed an issue where pressing the enter key triggered the button click event multiple times.
 
 ## 20.4.48 (2023-02-01)

@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 20.4.49 (2023-02-07)
+## 20.4.50 (2023-02-14)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I432667` - Now, overview updated properly while doing interactions after zoom out.
+- `#I433980` - Now, the nodes selections are proper for nodes with large annotations.
+
+## 20.4.48 (2023-02-01)
 
 ### Diagram
 

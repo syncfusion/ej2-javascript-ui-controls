@@ -1022,7 +1022,7 @@ export class GanttChart {
         const isTab: boolean = (e.action === 'tab') ? true : false;
         const nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
         this.tempNextElement=nextElement;
-        if(!isNullOrUndefined(nextElement['cellIndex'])){
+        if (!isNullOrUndefined(nextElement) && !isNullOrUndefined(nextElement['cellIndex'])) {
             if(this.parent.allowRowDragAndDrop){
             this.childrenIndex=nextElement['cellIndex'];
             this.nextElementIndex=nextElement['cellIndex']-1;

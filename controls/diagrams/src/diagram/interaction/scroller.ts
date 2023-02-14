@@ -631,7 +631,7 @@ export class DiagramScroller {
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -656,7 +656,8 @@ export class DiagramScroller {
 
                 let newOffset: PointModel = transformPointByMatrix(matrix, { x: 0, y: 0 });
                 if (factor === 1) {
-                    newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan);
+                    // EJ2-69238 - add true as an extra parameter to calcuate the horizontal and vertical offset
+                    newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan, isBringIntoView);
                 }
                 if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
                     !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
@@ -768,7 +769,7 @@ export class DiagramScroller {
      *
      * @private
      */
-    public bringIntoView(rect: Rect): void {
+    public bringIntoView(rect: Rect, isBringIntoView?: boolean): void {
     // EJ2-68130-Bringintoview shows the object outside the viewport
         var x = 0;
         var y = 0;
@@ -791,7 +792,7 @@ export class DiagramScroller {
             if (bounds.y < -voffset) {
                 y = bounds.y;
             }
-            this.zoom(1, -this.horizontalOffset - x, -this.verticalOffset - y, null);
+            this.zoom(1, -this.horizontalOffset - x, -this.verticalOffset - y, null, undefined, isBringIntoView);
         }
     }
 
@@ -817,7 +818,7 @@ export class DiagramScroller {
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
-    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean): PointModel {
+    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean, isBringIntoView?: boolean): PointModel {
         /**
          * EJ2-60980- ScrollOffset is not updated properly in runtime.
          * EJ2-62524 - panning is not working properly in diagram.
@@ -844,8 +845,13 @@ export class DiagramScroller {
             hOffset *= -1;
             vOffset *= -1;
             }
+            // EJ2-69238 - Added below code to multiple the horizontal and vertical offset to bring the node in viewport
+            if(isBringIntoView) {
+                hOffset *= -1;
+                vOffset *= -1;
+            }
             const allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
-            if (!(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
+            if (!isBringIntoView && !(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
                 hOffset >= bounds.right - this.viewPortWidth)
                 || hOffset >= bounds.x && (hOffset + this.viewPortWidth <= allowedRight))) {
                 //not allowed case
@@ -859,7 +865,8 @@ export class DiagramScroller {
                 }
             }
             const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
-            if (!(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
+             // EJ2-69238 - Added below code to restrict the min value calculation for vertical offset in bringIntoview scenarion.
+            if (!isBringIntoView && !(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
                 || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
                 //not allowed case
                 if (vOffset >= bounds.y) {

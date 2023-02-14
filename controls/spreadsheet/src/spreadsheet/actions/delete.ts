@@ -43,7 +43,7 @@ export class Delete {
                                 null, 'col');
                             this.parent.renderModule.refreshSheet(false, false, true);
                         } else {
-                            if (args.freezePane) {
+                            if (args.freezePane || (this.parent.scrollSettings.isFinite && this.parent.viewport.bottomIndex >= skipHiddenIdx(sheet, sheet.rowCount - 1, false))) {
                                 this.parent.renderModule.refreshSheet(false, false, true);
                             } else {
                                 const frozenIndexes: number[] = [];

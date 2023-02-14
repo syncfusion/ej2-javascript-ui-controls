@@ -1938,9 +1938,10 @@ private initiateAnnotationMode(id?: string): void {
             this.applyHideToToolbar(false, 15, 15);
         }
     }
-
-
-    private applyToolbarSettings(): void {
+    /**
+     * @private
+     */
+    public applyToolbarSettings(): void {
         const toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItems;
         if (toolbarSettingsItems) {
             if (toolbarSettingsItems.indexOf('OpenOption') !== -1) {
@@ -2011,8 +2012,10 @@ private initiateAnnotationMode(id?: string): void {
             this.showSeparator(toolbarSettingsItems);
         }
     }
-
-    private applyToolbarSettingsForMobile() {
+    /**
+     * @private
+     */
+    public applyToolbarSettingsForMobile() {
         const toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItems;
         if (toolbarSettingsItems) {
             if (toolbarSettingsItems.indexOf('OpenOption') !== -1) {

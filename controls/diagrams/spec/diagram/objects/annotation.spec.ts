@@ -1285,3 +1285,58 @@ describe('Add annotation template at run time', () => {
     });
 
 })
+
+describe('Selection issue with large annotation content', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramAnnotation' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'A second common modern English style is to use no indenting, but add vertical white space to create "block paragraphs." On a typewriter, a double carriage return produces a blank line for this purpose; professional typesetters (or word processing software) may put in an arbitrary vertical space by adjusting leading. This style is very common in electronic formats, such as on the World Wide Web and email. Wikipedia itself employs this format.',style:{textWrapping:'Wrap',textOverflow:'Clip'} }]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 250, annotations: [ { content: 'A second common modern English style is to use no indenting, but add vertical white space to create "block paragraphs." On a typewriter, a double carriage return produces a blank line for this purpose; professional typesetters (or word processing software) may put in an arbitrary vertical space by adjusting leading. This style is very common in electronic formats, such as on the World Wide Web and email. Wikipedia itself employs this format.',style:{textWrapping:'Wrap',textOverflow:'Clip'}}]
+        };
+
+
+        diagram = new Diagram({ mode: 'SVG', width: 800, height: 500, nodes: [node,node2] });
+        diagram.appendTo('#diagramAnnotation');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Selecting first node with large annotation', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 120);
+        mouseEvents.clickEvent(diagramCanvas, 100, 120);
+        expect(diagram.selectedItems.nodes[0].id == "node1").toBe(true);
+        done();
+    });
+    it('Selecting second node with large annotation', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 270);
+        mouseEvents.clickEvent(diagramCanvas, 100, 270);
+        expect(diagram.selectedItems.nodes[0].id == "node2").toBe(true);
+        done();
+    });
+    it('Selecting diagram canvas bwtween the space of two nodes with large annotation', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 180);
+        mouseEvents.clickEvent(diagramCanvas, 100, 180);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true);
+    });
+
+})

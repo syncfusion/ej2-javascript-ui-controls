@@ -531,7 +531,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.resetList(properties.dataSource);
             } else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
-                    && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list) && this.actionCompleteData.list.length > 0) {
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement, this.actionCompleteData.list);
                 }
                 this.resetFocusElement();
@@ -1305,6 +1305,9 @@ export class DropDownList extends DropDownBase implements IInput {
         selectedData?: string | number | boolean | { [key: string]: Object },
         value?: string | number | boolean): void {
         this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
+        if(this.itemData != selectedData){
+            this.previousValue = (!isNullOrUndefined(this.itemData))? typeof this.itemData == "object" ? this.checkFieldValue(this.itemData as any, this.fields.value.split('.')): this.itemData: null;
+        }
         this.item = li as HTMLLIElement;
         this.itemData = selectedData;
         const focusedItem: Element = this.list.querySelector('.' + dropDownBaseClasses.focus);

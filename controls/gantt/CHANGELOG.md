@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.50 (2023-02-14)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I431629`- A script error is thrown while performing tab navigation on the last row.
+
 ## 20.4.49 (2023-02-07)
 
 ### Gantt

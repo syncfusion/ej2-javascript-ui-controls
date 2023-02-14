@@ -362,7 +362,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         this.target = null;
         this.curTarget = null;
         remove(e.helper);
-        (getComponent(this.element, Draggable) as Draggable).intDestroy(e.event);
+        (getComponent(this.element, 'draggable') as Draggable).intDestroy(e.event);
     }
     /**
      * It is used to sort array of elements from source element to destination element.

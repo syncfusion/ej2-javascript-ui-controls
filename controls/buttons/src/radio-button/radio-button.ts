@@ -148,7 +148,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         let value: string = this.element.getAttribute('value');
         value = this.isVue && value ? this.element.value : this.value;
         this.trigger('change', <ChangeArgs>{ value: value, event: event });
-        if (this.tagName === 'EJS-RADIOBUTTON') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this as any).isAngular) {
             event.stopPropagation();
         }
     }

@@ -54,6 +54,16 @@ export class Virtualization {
     }
 
     /**
+     * Checks if the platform is a Vue and its template property is a function type.
+     *
+     * @returns {boolean} indicating the result of the check
+     */
+
+    private isVueFunctionTemplate(): boolean {
+        return this.listViewInstance.isVue && typeof this.listViewInstance.template === 'function';
+    }
+
+    /**
      * For internal use only.
      *
      * @private
@@ -844,9 +854,11 @@ export class Virtualization {
                     this.listViewInstance.template = div.innerHTML;
                 }
             }
+            if (this.isVueFunctionTemplate()) return;
             template.innerHTML = this.listViewInstance.template;
             this.listViewInstance.template = virtualTemplate;
         } else {
+            if (this.isVueFunctionTemplate()) return;
             template.innerHTML = this.listViewInstance.template || commonTemplate;
         }
         // eslint-disable-next-line
@@ -1112,7 +1124,7 @@ export class Virtualization {
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {
         // eslint-disable-next-line @typescript-eslint/ban-types
-        const onChange: Function = this.isNgTemplate() ? this.onNgChange : this.onChange;
+        const onChange: Function = this.isNgTemplate() ? this.onNgChange : (this.isVueFunctionTemplate()) ?  this.onVuechange : this.onChange;
         if (this.listViewInstance.template || this.listViewInstance.groupTemplate) {
             const curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index];
             // eslint-disable-next-line
@@ -1127,6 +1139,24 @@ export class Virtualization {
         if (targetElement) {
             this.listViewInstance.ulElement.insertBefore(element, targetElement);
         }
+    }
+
+    /**
+     * Handles the UI change in vue for the list view.
+     *
+     * @param {DataSource} newData - The new data source for the list view.
+     * @param {ElementContext} listElement - The HTML element context for the list view.
+     * @param {Virtualization} virtualThis - The virtualization context for the list view.
+     */
+    private onVuechange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
+        let liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
+            // eslint-disable-next-line
+            [newData] as any,
+            virtualThis.listViewInstance.listBaseOption, null, null, virtualThis.listViewInstance);
+        while (listElement.lastChild) {
+            listElement.removeChild(listElement.lastChild);
+        }
+        listElement.appendChild(liItem[0].firstChild);
     }
 
     private onNgChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {

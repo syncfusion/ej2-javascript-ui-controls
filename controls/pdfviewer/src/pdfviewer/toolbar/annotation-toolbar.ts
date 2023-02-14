@@ -628,6 +628,7 @@ export class AnnotationToolbar {
 
     private applyProperiesToolSettings(type: string): void {
         switch(type) {
+            case this.pdfViewer.element.id + '_underlineIcon':
             case this.pdfViewer.element.id + '_highlightIcon':
                 this.showTextMarkupPropertiesTool();
                 break;
@@ -707,6 +708,12 @@ export class AnnotationToolbar {
             } else {
                 this.showAnnotationDeleteTool(false, 12, 12);
             }
+            if (annotationToolbarItems.indexOf('FreeTextAnnotationTool') !== -1) {
+                this.showFreeTextAnnotationTool(true, 0, 0);
+            } else {
+                this.showFreeTextAnnotationTool(false, 0, 0);
+                this.applyHideToToolbar(false, 1, 1);
+            }
         }
     }
 
@@ -744,6 +751,13 @@ export class AnnotationToolbar {
             } else {
                 this.showAnnotationDeleteTool(false, 7, 7);
             }
+            if (annotationToolbarItems.indexOf('ShapeTool') !== -1) {
+                this.showShapeAnnotationTool(true, 0, 0);
+            }
+            else {
+                this.showShapeAnnotationTool(false, 0, 0);
+                this.applyHideToToolbar(false, 1, 1);
+            }
         }
     }
 
@@ -765,6 +779,13 @@ export class AnnotationToolbar {
                 this.showAnnotationDeleteTool(true, 4, 4);
             } else {
                 this.showAnnotationDeleteTool(false, 4, 4);
+            }
+            if (annotationToolbarItems.indexOf('StampAnnotationTool') !== -1) {
+                this.showStampAnnotationTool(true, 0, 0);
+            }
+            else {
+                this.showStampAnnotationTool(false, 0, 0);
+                this.applyHideToToolbar(false, 1, 1);
             }
         }
     }
@@ -792,6 +813,13 @@ export class AnnotationToolbar {
                 this.showAnnotationDeleteTool(true, 5, 5);
             } else {
                 this.showAnnotationDeleteTool(false, 5, 5);
+            }
+            if (annotationToolbarItems.includes("HighlightTool") || annotationToolbarItems.includes("UnderlineTool") || annotationToolbarItems.includes("StrikethroughTool")) {
+                this.applyHideToToolbar(true, 0, 0);
+            }
+            else {
+                this.applyHideToToolbar(false, 0, 0);
+                this.applyHideToToolbar(false, 1, 1);
             }
         }
     }
@@ -824,6 +852,13 @@ export class AnnotationToolbar {
                 this.showAnnotationDeleteTool(true, 6, 6);
             } else {
                 this.showAnnotationDeleteTool(false, 6, 6);
+            }
+            if(annotationToolbarItems.indexOf('HandWrittenSignatureTool') !== -1){
+                this.showSignatureTool(true, 0, 0);
+            }
+            else{
+                this.showSignatureTool(false, 0, 0);
+                this.applyHideToToolbar(false, 1, 1);
             }
         }
     }
@@ -3754,7 +3789,10 @@ export class AnnotationToolbar {
         this.updateColorInIcon(this.colorDropDownElement, annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.color);
         this.selectAnnotationDeleteItem(true);
     }
-    private applyAnnotationToolbarSettings(): void {
+    /**
+     * @private
+     */
+    public applyAnnotationToolbarSettings(): void {
         // eslint-disable-next-line
         let annotationToolbarItems: any = this.pdfViewer.toolbarSettings.annotationToolbarItems;
         if (annotationToolbarItems) {
@@ -3857,8 +3895,10 @@ export class AnnotationToolbar {
             this.showSeparator();
         }
     }
-
-    private applyMobileAnnotationToolbarSettings(): void {
+    /**
+     * @private
+     */
+    public applyMobileAnnotationToolbarSettings(): void {
         // eslint-disable-next-line
         let annotationToolbarItems: any = this.pdfViewer.toolbarSettings.annotationToolbarItems;
         if (annotationToolbarItems) {

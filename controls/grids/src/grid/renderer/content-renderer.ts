@@ -136,6 +136,14 @@ export class ContentRender implements IRenderer {
                             this.parent.notify(events.freezeRender, { case: 'textwrap' });
                         }
                     });
+                    if (this.parent.allowTextWrap) {
+                        if (this.parent.getContentTable().scrollHeight > this.parent.getContentTable().clientHeight) {
+                            this.parent.scrollModule.setPadding();
+                        }
+                        else{
+                            this.parent.scrollModule.removePadding();
+                        }
+                    }
                 }
             }
             if (arg) {
@@ -546,11 +554,10 @@ export class ContentRender implements IRenderer {
                         if (!isNullOrUndefined(this.tbody.parentElement)) {
                             remove(this.tbody);
                         }
-                        const removedTbody : Element = gObj.getContentTable().querySelector(literals.tbody);
-                        if (!isNullOrUndefined(removedTbody) && removedTbody.parentElement) {
-                            remove(removedTbody);
-                        }
+                        else {
+                            remove(gObj.getContentTable().querySelector(literals.tbody));
                         this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
+                        }
                     }
                 }
                 if (isFrozenGrid && !isVFTable && !this.parent.enableInfiniteScrolling) {

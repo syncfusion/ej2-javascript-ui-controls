@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.4.49 (2023-02-07)
+## 20.4.50 (2023-02-14)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I436217` - Issue in dynamically change cssClass with "e-vertical" class in DropDownButton has been resolved.
+
+## 20.4.48 (2023-02-01)
 
 ### DropDownButton
 

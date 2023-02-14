@@ -795,12 +795,13 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 break;
             case 'cssClass':
-                if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
+                if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1 || oldProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
                     if (!this.element.querySelector('span.e-caret')) {
                         this.appendArrowSpan();
                     }
                     const arrowSpan: Element = this.element.querySelector('span.e-caret');
-                    classList(arrowSpan, ['e-icon-bottom'], ['e-icon-right']);
+                    newProp.cssClass.indexOf(classNames.VERTICAL) > -1 ? classList(arrowSpan, ['e-icon-bottom'], ['e-icon-right'])
+                     : classList(arrowSpan, ['e-icon-right'], ['e-icon-bottom']);
                 }
                 if (this.isPopupCreated) {
                     if (oldProp.cssClass) {

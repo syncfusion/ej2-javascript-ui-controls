@@ -5403,7 +5403,7 @@ export class Layout {
         let height: number = 0;
         for (let i: number = 0; i < footnoteWidgets.childWidgets.length; i++) {
             height += (footnoteWidgets.childWidgets[i] as BlockWidget).height;
-            if (footnoteWidgets.indexInOwner === 0) {
+            if (footnoteWidgets.indexInOwner === 0 && i === 0) {
                 height += footnoteWidgets.containerWidget.margin.top;
             }
         }
@@ -6309,6 +6309,10 @@ export class Layout {
                     const splittedPara: ParagraphWidget = this.getSplittedWidgetForPara(bottom - cellWidget.margin.bottom, paragraphWidget, footNoteCollection);
                     if (!isNullOrUndefined(splittedPara)) {
                         if (i === 0 && splittedPara === paragraphWidget) {
+                            if (splitMinimalWidget && this.isRelayoutneed) {
+                                splittedWidget = this.createCellWidget(cellWidget);
+                                return splittedWidget;
+                            }
                             //Returns if the whole content of the cell does not fit in current page.
                             return cellWidget;
                         }
@@ -6667,7 +6671,7 @@ export class Layout {
             }
             (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
             (container.childWidgets[i] as Widget).y = top;
-            if (widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
+            if (!isNullOrUndefined(bodyWidget) && widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
                 let paragraph: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
                 let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[] = widget.ownerTable.bodyWidget.floatingElements;
                 if (paragraph.floatingElements.length > 0) {
@@ -7991,7 +7995,7 @@ export class Layout {
             }
             if (currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(this.viewer.clientActiveArea.y, 2)) &&
-                isNullOrUndefined(nextWidget.nextWidget) && (currentWidget.containerWidget as BodyWidget).sectionFormat.columns.length <= 1) {
+                isNullOrUndefined(nextWidget.nextWidget)) {
                 break;
             }
             if (!isNullOrUndefined((currentWidget as ParagraphWidget).floatingElements)) {

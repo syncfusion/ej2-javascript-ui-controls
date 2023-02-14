@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell } from "../../../src/index";
+import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell, onContentScroll } from "../../../src/index";
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
@@ -1731,6 +1731,50 @@ describe('Insert & Delete ->', () => {
                     expect(getCell(0, 5, helper.getInstance().sheets[0]).formula).toBe('=SUM(D1:A1)');
                     expect(helper.invoke('getCell', [0, 5]).textContent).toBe('6');
                     done();
+                });
+            });
+        });
+        describe('EJ2-68796 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rowCount: 50, colCount: 2, ranges: [{ dataSource: defaultData }] }], scrollSettings: {enableVirtualization: true, isFinite: true }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Values are not updated properly to the cell after deleting the row in finite mode', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('getMainContent').parentElement.scrollTop = 700;
+                spreadsheet.notify(onContentScroll, { scrollTop: 700, scrollLeft: 0 });
+                setTimeout((): void => {
+                    helper.invoke('selectRange', ['A45']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[44].cells[0];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                    setTimeout(() => {
+                        helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').click();
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['A40']);
+                            helper.edit('A40', 'Test-Delete');
+                            expect(helper.invoke('getCell', [39, 0]).textContent).toBe('Test-Delete');
+                            helper.invoke('selectRange', ['A47:A48']);
+                            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[46].cells[0];
+                            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                            setTimeout(() => {
+                                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                                setTimeout(() => {
+                                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                                    helper.invoke('selectRange', ['A40']);
+                                    helper.edit('A45', 'Test-Hide');
+                                    expect(helper.invoke('getCell', [44, 0]).textContent).toBe('Test-Hide');
+                                    done();
+                                });
+                            });
+                        }, 50);
+                    });
                 });
             });
         });

@@ -33,6 +33,7 @@ import { PredicateModel } from '../base/grid-model';
 import { RowDragDropRenderer } from './row-drag-drop-renderer';
 import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-render';
 import * as literals from '../base/string-literals';
+import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 
 /**
  * Content module is used to render grid content
@@ -54,6 +55,10 @@ export class Render {
     private emptyGrid: boolean = false;
     private isLayoutRendered: boolean;
     private counter: number = 0;
+    /**
+     * @hidden
+     */
+    public vgenerator: VirtualRowModelGenerator;
 
     /**
      * Constructor for render module
@@ -499,6 +504,9 @@ export class Render {
                 this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
                 gObj.removeMaskRow();
                 this.renderEmptyRow();
+                if (gObj.enableColumnVirtualization && !len) {
+                    this.parent.notify(events.contentReady, { rows: gObj.getRowsObject(), args: {} });
+                }
                 if (args) {
                     const action: string = (args.requestType || '').toLowerCase() + '-complete';
                     this.parent.notify(action, args);

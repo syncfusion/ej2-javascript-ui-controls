@@ -903,24 +903,22 @@ describe('ComboBox', () => {
         it('remove fill selection', (done) => {
             comboBoxObj.inputElement.value = 'h';
             comboBoxObj.showPopup();
+            e.key = 'H';
+            e.keyCode = 72;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            //expect(comboBoxObj.inputElement.value).toBe('hTML');
+            e.keyCode = 13;
+            e.action = 'down';
+            e.type = 'keydown';
+            comboBoxObj.keyActionHandler(e);
+            expect(comboBoxObj.inputElement.value).toBe('PERL');
+            e.action = 'enter';
+            comboBoxObj.keyActionHandler(e);
             setTimeout(() => {
-                e.key = 'H';
-                e.keyCode = 72;
-                comboBoxObj.onInput(e);
-                comboBoxObj.onFilterUp(e);
-                //expect(comboBoxObj.inputElement.value).toBe('hTML');
-                e.keyCode = 13;
-                e.action = 'down';
-                e.type = 'keydown';
-                comboBoxObj.keyActionHandler(e);
-                expect(comboBoxObj.inputElement.value).toBe('PERL');
-                e.action = 'enter';
-                comboBoxObj.keyActionHandler(e);
-                setTimeout(() => {
-                    expect(comboBoxObj.text).toBe('PERL');
-                    done();
-                }, 450);
-            }, 450)
+                expect(comboBoxObj.text).toBe('PERL');
+                done();
+            }, 450);
         });
         it('android mobile: fill a first value in text box', () => {
             let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +

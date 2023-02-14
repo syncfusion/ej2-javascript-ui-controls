@@ -127,9 +127,8 @@ export class FocusStrategy {
         }
         if (gObj.toolbar || gObj.toolbarTemplate) {
             const toolbarElement: Element = gObj.toolbarModule.element;
-            const focusableToolbarItems: NodeListOf<Element> = toolbarElement
-                .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
-            if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
+                const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
+                if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
                 (toolbarElement as HTMLElement).tabIndex = -1;
                 (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).tabIndex = 0;
             } else {
@@ -320,7 +319,7 @@ export class FocusStrategy {
                 const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
                 if (focusableToolbarItems.length > 0) {
                     e.preventDefault();
-                    (focusableToolbarItems[0] as HTMLElement).focus();
+                    (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
                     return;
                 }
                 if (!(e.target as HTMLElement).classList.contains('e-toolbar')) {
@@ -662,8 +661,7 @@ export class FocusStrategy {
         this.removeFocus();
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
             const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
-            const focusableToolbarItems: NodeListOf<Element> = toolbarElement
-                .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+            const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
             e.preventDefault();
             if (focusableToolbarItems.length > 0) {
                 (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();

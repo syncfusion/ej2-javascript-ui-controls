@@ -2829,7 +2829,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             FilterMenuDialogARIA: 'Filter menu dialog',
             ExcelFilterDialogARIA: 'Excel filter dialog',
             DialogEditARIA: 'Edit dialog',
-            ColumnChooserDialogARIA: 'Column chooser dialog',
+            ColumnChooserDialogARIA: 'Column chooser',
             ColumnMenuDialogARIA: 'Column menu dialog',
             CustomFilterDialogARIA: 'Customer filter dialog',
             SortAtoZ: 'Sort A to Z',
@@ -4052,6 +4052,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } else if (totalFrozenCount && !directFrozenCount) {
                 col.freezeTable = 'movable';
             }
+            if (!totalFrozenCount && !directFrozenCount && !isNullOrUndefined(col.freezeTable)) {
+                col.freezeTable = undefined;
+           }
         }
     }
 
@@ -6320,7 +6323,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public freezeRefresh(): void {
         this.isFreezeRefresh = true;
-        if (this.enableVirtualization) {
+        if (this.enableVirtualization || this.enableInfiniteScrolling) {
             this.pageSettings.currentPage = 1;
         }
         this.componentRefresh();

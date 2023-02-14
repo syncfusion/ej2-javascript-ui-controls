@@ -7112,6 +7112,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
                 break;
+            case 'toolbarSettings':
+                if (!Browser.isDevice|| this.enableDesktopMode){
+                    this.toolbar.applyToolbarSettings();
+                    this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();  
+                    this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
+                }
+                else{
+                    this.toolbar.applyToolbarSettingsForMobile();
+                    this.toolbar.annotationToolbarModule.applyMobileAnnotationToolbarSettings();
+                }
+                break;
             case 'enableToolbar':
                 this.notify('', { module: 'toolbar', enable: this.enableToolbar });
                 requireRefresh = true;

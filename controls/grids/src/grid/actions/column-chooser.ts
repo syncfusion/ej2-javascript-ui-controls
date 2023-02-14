@@ -580,11 +580,13 @@ export class ColumnChooser implements IAction {
         btn.disabled = false;
         if (cnt === selected) {
             className = ['e-check'];
+            inputElem.setAttribute('aria-checked', 'true');
         } else if (selected) {
             className = ['e-stop'];
             inputElem.setAttribute('aria-checked', 'mixed');
         } else {
             className = ['e-uncheck'];
+            inputElem.setAttribute('aria-checked', 'false');
             btn.disabled = true;
         }
         btn.dataBind();

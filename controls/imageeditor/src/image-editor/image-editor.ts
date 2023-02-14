@@ -201,6 +201,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private srcWidth: number; // Original image width
     private srcHeight: number; // Original image height
     private currSelectionPoint: SelectionPoint; // To redraw old selection points when navigate to crop tab
+    private currDestinationPoint: ActivePoint; // To redraw old image when navigate to crop tab
     private cropDestPoints: ActivePoint = {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint; // To redraw old image when navigate to crop tab
     private panDown: Point; // To store pan down point
     private panMove: Point; // To store pan move point
@@ -249,10 +250,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private isShapeInserted: boolean = false;
     private isAllowCropPan: boolean = false;
     private tempPannedPoint: Point = {x: 0, y: 0};
-    private cropObj: CroppedObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
-        totalPannedInternalPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [], degree: 0,
-        currFlipState: '', destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
-        srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint };
+    private cropObj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
+        totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [],
+        degree: 0, currFlipState: '', destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
+        srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '' };
     private afterCropActions: string[] = [];
     private isCancelAction: boolean = false;
     private isFreehandPointMoved: boolean = false;
@@ -265,6 +266,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private cancelObjColl: SelectionPoint[] = [];
     private cancelPointColl: Point[] = [];
     private rotatedFlipCropSelection: boolean = false;
+    private freehandDrawSelectedId: string;
+    private panStartObj: CurrentObject;
+    private transformCurrentObj: CurrentObject;
 
     /**
      * Defines class/multiple classes separated by a space for customizing Image Editor UI.
@@ -770,7 +774,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (!this.element.getAttribute('class')) {this.element.removeAttribute('class'); }
         this.destroySubComponents(); this.unwireEvent(); super.destroy();
         this.element.innerHTML = '';
-        this.trigger('destroyed');
     }
 
     public initialize(): void {
@@ -1540,20 +1543,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private cropSelect(args: MenuEventArgs): void {
         this.isCropTab = true;
         this.zoomFactor = this.cropZoomFactor;
-        const activeObj: SelectionPoint = this.activeObj;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const previousObj: CurrentObject = this.getCurrentObj();
+        previousObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        previousObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        previousObj.afterCropActions = this.afterCropActions;
         const text: string = args.item.id;
         this.currentToolbar = 'crop';
         this.currSelectionPoint = null;
         this.select(text);
         this.refreshToolbar('main', true, true);
         this.refreshDropDownBtn(true);
-        this.undoRedoColl.push({operation: 'selectionTransform', value: null,
-            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-            previousObj: extend([], this.objColl, [], true) as SelectionPoint[],
-            previousSelectionObj: extend({}, activeObj, {}, true) as SelectionPoint,
-            currentSelectionObj: extend({}, this.activeObj, {}, true) as SelectionPoint,
-            zoomFactor: this.zoomFactor, sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-        this.undoRedoStep++;
+        this.updateUndoRedoColl('selectionTransform', previousObj, previousObj.objColl, previousObj.pointColl, prevCropObj);
         this.enableDisableToolbarBtn();
     }
 
@@ -1561,13 +1562,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.cropSelectedState();
         this.currentSelectionPoint = null;
         this.performTransformation(args.item.id);
-        this.afterCropActions.push(args.item.id);
     }
 
     private performTransformation(text: string): void {
         const tempZoomFactor: number = this.defaultZoomFactor;
         const isUndoRedo: boolean = this.isUndoRedo;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         if (this.defaultZoomFactor !== 0) {
+            this.transformCurrentObj = this.getCurrentObj();
+            this.transformCurrentObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
+            this.transformCurrentObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
+            this.transformCurrentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.isUndoRedo = true;
             if (this.defaultZoomFactor > 0) {
                 this.zoom(-this.defaultZoomFactor);
@@ -1581,11 +1586,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.isUndoRedo = true;
             this.zoom(tempZoomFactor);
             this.isUndoRedo = isUndoRedo;
+            let state: string = '';
+            if (text === 'rotateleft' || text === 'rotateright') {
+                state = 'rotate';
+            } else if (text === 'horizontalflip' || text === 'verticalflip') {
+                state = 'flip';
+            }
+            this.updateUndoRedoColl(state, this.transformCurrentObj, this.transformCurrentObj.objColl, this.transformCurrentObj.pointColl, prevCropObj);
+            this.transformCurrentObj = null;
         }
     }
 
     private updateTransform(text: string): void {
-        switch (text) {
+        switch (text.toLowerCase()) {
         case 'rotateleft':
             this.rotate(-90);
             break;
@@ -1685,15 +1698,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 showButtons: false, mode: 'Palette', cssClass: 'e-shape-fill-color',
                 change: (args: ColorPickerEventArgs): void => {
                     this.pushActItemIntoObj();
-                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     proxy.activeObj.strokeSettings.fillColor = args.currentValue.hex;
                     proxy.strokeSettings.fillColor = proxy.activeObj.strokeSettings.fillColor;
                     this.objColl.push(this.activeObj);
-                    proxy.undoRedoColl.push({operation: 'shapeTransform', value: null, currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[],
-                        previousObj: objColl, zoomFactor: proxy.zoomFactor, sharpen: proxy.adjustmentLevel.sharpen,
-                        bw: proxy.adjustmentLevel.bw});
-                    proxy.undoRedoStep++;
+                    this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                     proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     if (args.currentValue.rgba === '') {
                         (fillDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
@@ -1727,17 +1741,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 showButtons: false, mode: 'Palette', cssClass: 'e-shape-stroke-color',
                 change: (args: ColorPickerEventArgs): void => {
                     this.pushActItemIntoObj();
-                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
                     proxy.strokeSettings.strokeColor = proxy.activeObj.strokeSettings.strokeColor;
                     if (!proxy.togglePen) {
                         this.objColl.push(this.activeObj);
-                        proxy.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                            currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: proxy.zoomFactor,
-                            sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
-                        proxy.undoRedoStep++;
+                        proxy.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     }
                     (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
@@ -1788,18 +1802,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 },
                 select: (args: MenuEventArgs) => {
                     this.pushActItemIntoObj();
-                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     spanElem.textContent = args.item.text;
                     this.activeObj.strokeSettings.strokeWidth = parseInt(args.item.id, 10);
                     this.activeObj.strokeSettings.strokeWidth *= 2;
                     this.strokeSettings.strokeWidth = this.activeObj.strokeSettings.strokeWidth;
                     this.objColl.push(this.activeObj);
-                    this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                        currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                        previousObj: objColl, zoomFactor: this.zoomFactor,
-                        sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                    this.undoRedoStep++;
+                    this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                     this.redrawShape(this.objColl[this.objColl.length - 1]);
                     if (Browser.isDevice) {
                         if (!isNullOrUndefined(document.getElementById(this.element.id + '_bottomToolbar'))) {
@@ -1929,17 +1943,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 showButtons: false, mode: 'Palette', cssClass: 'e-text-fontt-color',
                 change: (args: ColorPickerEventArgs): void => {
                     this.pushActItemIntoObj();
-                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     if (proxy.textArea.style.display === 'none') {
                         proxy.strokeSettings.strokeColor = proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
                         if (!proxy.togglePen) {
                             this.objColl.push(this.activeObj);
-                            proxy.undoRedoColl.push({operation: 'shapeTransform',
-                                value: null, currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[],
-                                previousObj: objColl, zoomFactor: proxy.zoomFactor,
-                                sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
-                            proxy.undoRedoStep++;
+                            proxy.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                             proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                         }
                     }
@@ -1948,20 +1962,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         const temp: string = proxy.activeObj.strokeSettings.strokeColor;
                         proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
                         this.objColl.push(this.activeObj);
-                        this.undoRedoColl.push({operation: 'textTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: proxy.zoomFactor,
-                            sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('textAreaCustomization', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         this.objColl.pop();
                         proxy.activeObj.strokeSettings.strokeColor = temp;
                     } else if (!proxy.togglePen) {
                         this.objColl.push(this.activeObj);
-                        proxy.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                            currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: proxy.zoomFactor,
-                            sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
-                        proxy.undoRedoStep++;
+                        this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     }
                     (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
@@ -2031,6 +2037,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 select: (args: MenuEventArgs) => {
                     this.pushActItemIntoObj();
                     const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     spanElem.textContent = args.item.text;
                     if (Browser.isDevice) {
@@ -2042,11 +2053,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.activeObj.textSettings.fontFamily = this.toPascalCase(args.item.id);
                         this.redrawText();
                         this.objColl.push(this.activeObj);
-                        this.undoRedoColl.push({operation: 'textTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: this.zoomFactor,
-                            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('textAreaCustomization', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         this.objColl.pop();
                         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                         const width: number = this.activeObj.activePoint.width +
@@ -2060,11 +2067,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.textSettings.fontFamily = this.activeObj.textSettings.fontFamily = this.toPascalCase(args.item.id);
                         this.redrawText();
                         this.objColl.push(this.activeObj);
-                        this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: this.zoomFactor,
-                            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('shapeTransform', prevObj, objColl, extend([], this.pointColl, [], true) as Point[], prevCropObj);
                         this.redrawShape(this.objColl[this.objColl.length - 1]);
                     }
                 }
@@ -2158,7 +2161,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 },
                 select: (args: MenuEventArgs) => {
                     this.pushActItemIntoObj();
-                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.objColl.pop();
                     fontSizeSpanElem.textContent =  args.item.text;
                     if (this.textArea.style.display === 'block') {
@@ -2166,11 +2173,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         const temp: number = this.activeObj.textSettings.fontSize;
                         this.activeObj.textSettings.fontSize = parseInt(this.fontSizeColl[(parseInt(args.item.text, 10) - 1)].text, 10);
                         this.objColl.push(this.activeObj);
-                        this.undoRedoColl.push({operation: 'textTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: this.zoomFactor,
-                            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('textAreaCustomization', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         this.objColl.pop();
                         let textStyle: string = '';
                         if (this.textArea.style.fontWeight === 'bold') {textStyle = 'bold '; }
@@ -2205,11 +2208,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.updateActiveObject(this.activeObj.activePoint, this.activeObj);
                         this.redrawText();
                         this.objColl.push(this.activeObj);
-                        this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: objColl, zoomFactor: this.zoomFactor,
-                            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                         this.redrawShape(this.objColl[this.objColl.length - 1]);
                     }
                 }
@@ -2271,15 +2270,28 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateUndoRedoObj(objColl: SelectionPoint[]): void {
-        this.objColl.push(this.activeObj);
-        this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-            currentObj: extend([], this.objColl, [], true) as SelectionPoint[], previousObj: objColl, zoomFactor: this.zoomFactor,
-            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-        this.undoRedoStep++;
-        this.redrawShape(this.objColl[this.objColl.length - 1]);
+        if (this.allowUndoRedo) {
+            this.objColl.push(this.activeObj);
+            const cropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const obj: CurrentObject = this.getCurrentObj();
+            obj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            obj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            obj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            this.undoRedoColl.push({operation: 'shapeTransform', previousObj: obj, currentObj: obj,
+                previousObjColl: objColl, currentObjColl: obj.objColl,
+                previousPointColl: obj.pointColl, currentPointColl: obj.pointColl,  
+                previousCropObj: cropObj, currentCropObj: cropObj});
+            this.undoRedoStep++;
+            this.redrawShape(this.objColl[this.objColl.length - 1]);
+        }
     }
 
     private updateObjColl(item: string, objColl: SelectionPoint[]): void {
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         const tempBold: boolean = this.activeObj.textSettings.bold;
         const tempItalic: boolean = this.activeObj.textSettings.italic;
         switch (item) {
@@ -2301,10 +2313,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             break;
         }
         this.objColl.push(this.activeObj);
-        this.undoRedoColl.push({operation: 'textTransform', value: null,
-            currentObj: extend([], this.objColl, [], true) as SelectionPoint[], previousObj: objColl, zoomFactor: this.zoomFactor,
-            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-        this.undoRedoStep++;
+        this.updateUndoRedoColl('textAreaCustomization', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
         this.objColl.pop();
         this.activeObj.textSettings.bold = tempBold;
         this.activeObj.textSettings.italic = tempItalic;
@@ -2439,7 +2448,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 isContextualToolbar = true;
             }
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-            
         }
         let zoomIn: HTMLElement;
         const type: string = args.item.id.replace(this.element.id + '_', '').toLowerCase();
@@ -2540,7 +2548,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 break;
             case 'crop':
                 if (!isNullOrUndefined(this.currSelectionPoint)) {
-                    this.select('Custom');
+                    if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
+                    if (!isNullOrUndefined(this.cropObj.activeObj.shape)) {
+                        this.select(this.cropObj.activeObj.shape);
+                    }
                     this.refreshToolbar('main', true, true);
                     (getComponent(this.element.querySelector('#' + this.element.id + '_cropBtn') as HTMLElement, 'dropdown-btn') as DropDownButton).toggle();
                     if (!isNullOrUndefined(this.activeObj.shape)) {
@@ -2552,12 +2563,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 imageEditorObj.reset();
                 this.currentToolbar = 'main';
                 break;
-            case 'undo':
-                this.callUndo();
-                break;
-            case 'redo':
-                this.callRedo();
-                break;
+            // case 'undo':
+            //     this.callUndo();
+            //     break;
+            // case 'redo':
+            //     this.callRedo();
+            //     break;
             case 'adjustment':
                 if (!isDisabledAdjustment) {
                     this.refreshToolbar('adjustment');
@@ -2589,6 +2600,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             case 'sepia':
             case 'invert':
             case 'sharpen':
+                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 this.currObjType.isFiltered = true;
                 this.setFilter(type);
                 break;
@@ -2620,7 +2632,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.currObjType.isFiltered = false;
             this.adjustmentLevel = extend({}, this.tempAdjustmentLevel, {}, true) as Adjustment;
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-            this.undoRedoColl = extend([], this.tempUndoRedoColl, [], true) as Transition[];
             this.undoRedoStep = this.tempUndoRedoStep;
             this.upperCanvas.style.cursor = 'default'; this.currObjType.isCustomCrop = false;
             this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
@@ -2658,7 +2669,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.renderImage();
         this.refreshToolbar('main');
-        this.pointColl[this.freehandDrawSelectedIndex].isSelected = false;
+        if (!isNullOrUndefined(this.pointColl[this.freehandDrawSelectedIndex])) {
+            this.pointColl[this.freehandDrawSelectedIndex].isSelected = false;
+        }
         this.isFreehandDrawEditing = this.isFreehandDrawingPoint = false;
         this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = null;
     }
@@ -2671,8 +2684,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.pointColl[n as number].strokeWidth = this.tempFreeHandDrawEditingStyles.strokeWidth;
         }
         this.pointCounter = 0;
-        this.pointColl[this.freehandDrawSelectedIndex].isSelected = false;
-        this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = null;
+        if (!isNullOrUndefined(this.pointColl[this.freehandDrawSelectedIndex])) {
+            this.pointColl[this.freehandDrawSelectedIndex].isSelected = false;
+        }
+        this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = this.freehandDrawSelectedId = null;
         this.isFreehandDrawEditing = this.isFreehandDrawingPoint = false;
         this.tempFreeHandDrawEditingStyles = {strokeColor: null, strokeWidth: null, fillColor: null};
         this.refreshToolbar('main');
@@ -3162,6 +3177,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             width: Browser.isDevice ? '200px' : '300px',
             cssClass: 'e-slider',
             change: (args: SliderChangeEventArgs): void => {
+                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 this.setCurrAdjustmentValue(type, args.value as number);
                 this.enableDisableToolbarBtn();
             }
@@ -3265,9 +3281,61 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
             this.lowerContext.filter = temp;
         } else {
-            this.setCropObj();
+            if (this.cropObj.cropZoom > 0) {
+                const cropObjColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
+                const cropPointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
+                this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+                this.zoom(this.cropObj.cropZoom);
+                this.objColl = cropObjColl; this.pointColl = cropPointColl; this.freehandCounter = this.pointColl.length;
+                this.currSelectionPoint = extend({}, this.cropObj.activeObj, null, true) as SelectionPoint;
+                if (this.cropObj.currFlipState !== '') {
+                    this.cropObj.totalPannedPoint.x += this.cropObj.tempFlipPanPoint.x;
+                    this.cropObj.totalPannedPoint.y += this.cropObj.tempFlipPanPoint.y;
+                }
+            }
+            const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
+            this.destLeft = this.currSelectionPoint.activePoint.startX; this.destTop = this.currSelectionPoint.activePoint.startY;
+            this.destWidth = this.currSelectionPoint.activePoint.width; this.destHeight = this.currSelectionPoint.activePoint.height;
+            this.zoomObjColl(); this.zoomFreehandDrawColl();
+            this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
+            this.destWidth = destPoints.width; this.destHeight = destPoints.height;
+            this.updatePannedRegion();
+            this.updateObjAndFreeHandDrawColl();
+            const cropObjColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
+            const cropPointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
+            this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+            this.setCurrentObj();
+            const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+            this.refreshActiveObj();
+            this.objColl = cropObjColl; this.pointColl = cropPointColl; this.freehandCounter = this.pointColl.length;
+            this.zoomObjColl(); this.zoomFreehandDrawColl();
+            if (this.degree === 0) {
+                this.drawPannImage({x: 0, y: 0});
+            }
+            this.activeObj = activeObj;
+            this.drawObject('duplicate');
         }
         this.currSelectionPoint = null;
+    }
+
+    private updatePannedRegion(): void {
+        let pannedPoint: Point = this.degree === 0 ? this.cropObj.totalPannedPoint : this.cropObj.totalPannedClientPoint;
+        if (this.currFlipState === this.cropObj.currFlipState) {
+            this.panObjColl(-pannedPoint.x, -pannedPoint.y, '');
+            this.panFreehandDrawColl(-pannedPoint.x, -pannedPoint.y, '');
+        } else {
+            if (this.currFlipState === 'horizontal' && this.cropObj.currFlipState === '' ||
+                this.currFlipState === 'vertical' && this.cropObj.currFlipState === '') {
+                this.panObjColl(-pannedPoint.x, -pannedPoint.y, '');
+                this.panFreehandDrawColl(-pannedPoint.x, -pannedPoint.y, '');
+            } else if (this.currFlipState === '' && this.cropObj.currFlipState === 'horizontal') {
+                this.panObjColl(pannedPoint.x, -pannedPoint.y, '');
+                this.panFreehandDrawColl(pannedPoint.x, -pannedPoint.y, '');
+            } else if (this.currFlipState === '' && this.cropObj.currFlipState === 'vertical') {
+                this.panObjColl(-pannedPoint.x, pannedPoint.y, '');
+                this.panFreehandDrawColl(-pannedPoint.x, pannedPoint.y, '');
+            }
+        }
     }
 
     private updateObjAndFreeHandDrawColl(): void {
@@ -3376,7 +3444,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     const activeObj: SelectionPoint = extend({}, this.activeObj, {}) as SelectionPoint;
                     this.destLeft += (-this.totalPannedPoint.x);
                     this.destTop += (-this.totalPannedPoint.y);
-                    this.drawPannImage({x: -this.totalPannedPoint.x, y: -this.totalPannedPoint.y}, this.getCurrentPanRegion());
+                    this.drawPannImage({x: -this.totalPannedPoint.x, y: -this.totalPannedPoint.y});
                     this.updateFlipPan(activeObj);
                     this.totalPannedPoint = {x: 0, y: 0};
                 } else {
@@ -3394,14 +3462,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 } else {
                     this.zoom(Math.abs(length));
                 }
+                this.cropZoomFactor = this.tempZoomFactor;
             } else {
                 this.isCancelAction = true;
                 this.objColl = []; this.pointColl = [];
                 const freehandCounter: number = this.freehandCounter;
                 this.freehandCounter = 0;
-                const cropObj: CroppedObject = extend({}, this.cropObj, {}) as CroppedObject;
+                const cropObj: CurrentObject = extend({}, this.cropObj, {}) as CurrentObject;
                 const afterCropActions: string[] = extend([], this.afterCropActions, {}, true) as string[];
-                this.setCropObj();
+                this.setCurrentObj();
                 this.cropImg();
                 this.cropObj = cropObj;
                 this.afterCropActions = afterCropActions;
@@ -3449,6 +3518,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         }
         context.closePath();
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.pointColl[this.freehandCounter] = {};
         this.pointColl[this.freehandCounter].points = extend([], this.points);
         this.pointColl[this.freehandCounter].strokeColor = this.activeObj.strokeSettings.strokeColor;
@@ -3459,16 +3533,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.pointCounter = 0;
         this.freehandCounter++; this.currentFreehandDrawIndex++;
         this.isFreehandDrawing = false;
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const currentObj: any = extend([], this.pointColl, [], true);
-        this.pointColl = {};
-        for (let i: number = 0; i < this.freehandCounter - 1; i++) {
-            this.pointColl[i as number] = currentObj[i as number];
-        }
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const previousObj: any = extend([], this.pointColl, [], true);
-        this.updateUndoRedoColl('freehanddraw', null, previousObj, currentObj, this.zoomFactor);
-        this.pointColl = currentObj;
+        this.updateUndoRedoColl('freehanddraw', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
     private freehandMoveHandler(e: MouseEvent & TouchEvent): void {
         this.isFreehandPointMoved = true;
@@ -3917,8 +3982,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                     const temp: any = extend([], this.pointColl, [], true);
                     this.updateFreehandDrawColorChange();
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    const previousObj: any = extend([], this.pointColl, [], true);
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];   
                     this.pointColl = temp;
                     proxy.isFreehandDrawCustomized = true;
                     proxy.activeObj.strokeSettings.strokeColor = proxy.selectedFreehandColor = args.currentValue.hex;
@@ -3926,7 +3994,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                         this.pointColl[this.freehandDrawSelectedIndex].strokeColor = args.currentValue.hex;
                         this.hoverFreehandraw(args.currentValue.hex);
-                        this.updateUndoRedoColl('freehanddrawCustomized', null, previousObj, this.pointColl, this.zoomFactor);
+                        this.updateUndoRedoColl('freehanddrawCustomized', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                     }
                     else if (!proxy.togglePen) {
                         proxy.redrawShape(this.activeObj);
@@ -3989,8 +4057,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                     const temp: any = extend([], this.pointColl, [], true);
                     this.updateFreehandDrawColorChange();
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    const previousObj: any = extend([], this.pointColl, [], true);
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.pointColl = temp;
                     this.isFreehandDrawCustomized = true;
                     spanElem.textContent = args.item.text;
@@ -3999,7 +4070,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                         this.hoverFreehandraw(null, this.penStrokeWidth);
                         this.pointColl[this.freehandDrawSelectedIndex].strokeWidth = this.penStrokeWidth;
-                        this.updateUndoRedoColl('freehanddrawCustomized', null, previousObj, this.pointColl, this.zoomFactor);
+                        this.updateUndoRedoColl('freehanddrawCustomized', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
                     }
                     if (Browser.isDevice) {
                         if (!isNullOrUndefined(document.getElementById(this.element.id + '_bottomToolbar'))) {
@@ -4196,6 +4267,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.destLeft += this.totalPannedInternalPoint.x; this.destTop += this.totalPannedInternalPoint.y;
         const temp: string = this.lowerContext.filter;
+        if (this.degree === 0) {
+            this.setDestPointsForFlipState();
+        }
         this.updateBrightnessFilter();
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth, this.srcHeight,
                                     this.destLeft, this.destTop, this.destWidth, this.destHeight);
@@ -4430,6 +4504,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         context.strokeStyle = '#fff';
         minStrokeWidth = maxStrokeWidth = this.penStrokeWidth = strokeWidth ?
             strokeWidth : this.pointColl[idx as number].strokeWidth;
+        if (len === 1) {
+            controlPoint1 = controlPoint2 = startPoint = endPoint = this.points[0];
+            this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
+        }
         for (let l: number = 0; l < len - 3; l++) {
             if (this.points[l + 1] && this.points[l + 2] && this.points[l + 2]) {
                 controlPoint1 = (this.calcCurveControlPoints(this.points[l + 0], this.points[l + 1],
@@ -4440,52 +4518,62 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 endPoint = this.points[l + 2];
                 this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
             }
-            if (len === 1) {
-                controlPoint1 = controlPoint2 = startPoint = endPoint = this.points[0];
-                this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
-            }
         }
         context.closePath();
     }
 
-    private flipFreehandrawColl(value: string): void {
-        if (value.toLowerCase() === 'horizontal') {
-            for (let n: number = 0; n < this.freehandCounter; n++) {
-                if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
-                    this.points = extend([], this.pointColl[n as number].points, []) as Point[];
-                    this.pointCounter = 0;
-                    const len: number = this.points.length;
-                    for (let l: number = 0; l < len; l++) {
-                        if (this.points[l as number].x <= this.destLeft + (this.destWidth / 2)) {
-                            this.points[l as number].x = (this.destLeft + this.destWidth) - (this.points[l as number].x - this.destLeft);
-                        } else if (this.points[l as number].x >= this.destLeft + (this.destWidth / 2)) {
-                            this.points[l as number].x = this.destLeft + (this.destLeft + this.destWidth - this.points[l as number].x);
-                        }
-                        this.points[l as number].ratioX = (this.points[l as number].x - this.destLeft) / this.destWidth;
-                        this.points[l as number].ratioY = (this.points[l as number].y - this.destTop) / this.destHeight;
+    private pointsHorizontalFlip(): void {
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
+                this.points = extend([], this.pointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.points.length;
+                for (let l: number = 0; l < len; l++) {
+                    if (this.points[l as number].x <= this.destLeft + (this.destWidth / 2)) {
+                        this.points[l as number].x = (this.destLeft + this.destWidth) - (this.points[l as number].x - this.destLeft);
+                    } else if (this.points[l as number].x >= this.destLeft + (this.destWidth / 2)) {
+                        this.points[l as number].x = this.destLeft + (this.destLeft + this.destWidth - this.points[l as number].x);
                     }
-                    this.pointColl[n as number].shapeFlip = this.currFlipState;
+                    this.points[l as number].ratioX = (this.points[l as number].x - this.destLeft) / this.destWidth;
+                    this.points[l as number].ratioY = (this.points[l as number].y - this.destTop) / this.destHeight;
                 }
+                this.pointColl[n as number].shapeFlip = this.currFlipState;
             }
         }
-        else {
-            for (let n: number = 0; n < this.freehandCounter; n++) {
-                if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
-                    this.points = extend([], this.pointColl[n as number].points, []) as Point[];
-                    this.pointCounter = 0;
-                    const len: number = this.points.length;
-                    for (let l: number = 0; l < len; l++) {
-                        if (this.points[l as number].y <= this.destTop + (this.destHeight / 2)) {
-                            this.points[l as number].y = (this.destTop + this.destHeight) - (this.points[l as number].y - this.destTop);
-                        } else if (this.points[l as number].y >= this.destTop + (this.destHeight / 2)) {
-                            this.points[l as number].y = this.destTop + (this.destTop + this.destHeight - this.points[l as number].y);
-                        }
-                        this.points[l as number].ratioX = (this.points[l as number].x - this.destLeft) / this.destWidth;
-                        this.points[l as number].ratioY = (this.points[l as number].y - this.destTop) / this.destHeight;
+    }
+
+    private pointsVerticalFlip(): void {
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
+                this.points = extend([], this.pointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.points.length;
+                for (let l: number = 0; l < len; l++) {
+                    if (this.points[l as number].y <= this.destTop + (this.destHeight / 2)) {
+                        this.points[l as number].y = (this.destTop + this.destHeight) - (this.points[l as number].y - this.destTop);
+                    } else if (this.points[l as number].y >= this.destTop + (this.destHeight / 2)) {
+                        this.points[l as number].y = this.destTop + (this.destTop + this.destHeight - this.points[l as number].y);
                     }
-                    this.pointColl[n as number].shapeFlip = this.currFlipState;
+                    this.points[l as number].ratioX = (this.points[l as number].x - this.destLeft) / this.destWidth;
+                    this.points[l as number].ratioY = (this.points[l as number].y - this.destTop) / this.destHeight;
                 }
+                this.pointColl[n as number].shapeFlip = this.currFlipState;
             }
+        }
+    }
+
+    private flipFreehandrawColl(value: string): void {
+        if (value.toLowerCase() === 'horizontal') {
+            this.pointsHorizontalFlip();
+        }
+        else if (value.toLowerCase() === 'vertical') {
+            this.pointsVerticalFlip();
+        } else {
+            this.pointsHorizontalFlip();
+            for (let i: number = 0; i < this.freehandCounter; i++) {
+                this.pointColl[i as number].shapeFlip = '';
+            }
+            this.pointsVerticalFlip();
         }
     }
 
@@ -4511,7 +4599,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private zoomFreehandDrawColl(): void {
+    private zoomFreehandDrawColl(isPreventApply?: boolean): void {
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4521,7 +4609,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.points[l as number].y = this.zoomY(this.points[l as number].ratioY);
             }
         }
-        this.freehandRedraw(this.lowerContext);
+        if (isNullOrUndefined(isPreventApply)) {
+            this.freehandRedraw(this.lowerContext);
+        }
     }
 
     private zoomX(x: number): number {
@@ -4681,147 +4771,138 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private updateCropObj(): void {
         this.afterCropActions = [];
-        this.cropObj.cropZoom = this.cropZoomFactor; this.cropObj.defaultZoom = this.defaultZoomFactor;
-        this.cropObj.totalPannedPoint = extend({}, this.totalPannedPoint, {}, true) as Point;
-        this.cropObj.totalPannedClientPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
-        this.cropObj.totalPannedInternalPoint = extend({}, this.totalPannedInternalPoint, {}, true) as Point;
-        this.cropObj.activeObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
-        this.cropObj.rotateFlipColl = extend([], this.rotateFlipColl, [], true) as string[] | number[];
-        this.cropObj.degree = this.degree;
-        this.cropObj.currFlipState = this.currFlipState;
-        this.cropObj.destPoints = {startX: this.destLeft, startY: this.destTop, endX: 0, endY: 0,
-            width: this.destWidth, height: this.destHeight};
-        this.cropObj.srcPoints = {startX: this.srcLeft, startY: this.srcTop, endX: 0, endY: 0,
-            width: this.srcWidth, height: this.srcHeight};
+        const obj: CurrentObject = this.getCurrentObj();
+        this.cropObj = extend({}, obj, {}, true) as CurrentObject;
     }
 
-    private setCropObj(): void {
-        this.cropZoomFactor = this.zoomFactor = this.cropObj.cropZoom; this.defaultZoomFactor = this.cropObj.defaultZoom;
-        this.totalPannedPoint = extend({}, this.cropObj.totalPannedPoint, {}, true) as Point;
-        this.totalPannedClientPoint = extend({}, this.cropObj.totalPannedClientPoint, {}, true) as Point;
-        this.totalPannedInternalPoint = extend({}, this.cropObj.totalPannedInternalPoint, {}, true) as Point;
-        this.rotateFlipColl = extend([], this.cropObj.rotateFlipColl, [], true) as string[] | number[];
-        this.degree = this.cropObj.degree;
-        this.currFlipState = this.cropObj.currFlipState;
-        this.destLeft = this.cropObj.destPoints.startX; this.destTop = this.cropObj.destPoints.startY;
-        this.destWidth = this.cropObj.destPoints.width; this.destHeight = this.cropObj.destPoints.height;
-        this.srcLeft = this.cropObj.srcPoints.startX; this.srcTop = this.cropObj.srcPoints.startY;
-        this.srcWidth = this.cropObj.srcPoints.width; this.srcHeight = this.cropObj.srcPoints.height;
-        this.drawCropSelectionImage();
-        if (this.degree !== 0) {
-            this.isCircleCrop = false;
-            if (!isNullOrUndefined(this.currSelectionPoint)) {
-                this.currSelectionPoint.shape = '';
+    private setCurrentObj(obj?: CurrentObject): void {
+        const isObj: boolean = obj ? true : false;
+        obj = obj ? obj : this.cropObj;
+        this.cropZoomFactor = obj.cropZoom; this.defaultZoomFactor = obj.defaultZoom;
+        if (!isObj) {
+            this.zoomFactor = obj.cropZoom;
+        } else {
+            if (!isNullOrUndefined(obj.activeObj.shape) && obj.activeObj.shape.split('-')[0] === 'crop' ) {
+                this.zoomFactor = obj.cropZoom;
+            } else {
+                this.zoomFactor = obj.defaultZoom;
             }
+        }
+        this.totalPannedPoint = extend({}, obj.totalPannedPoint, {}, true) as Point;
+        this.totalPannedClientPoint = extend({}, obj.totalPannedClientPoint, {}, true) as Point;
+        this.totalPannedInternalPoint = extend({}, obj.totalPannedInternalPoint, {}, true) as Point;
+        this.tempFlipPanPoint = extend({}, obj.tempFlipPanPoint, {}, true) as Point;
+        this.rotateFlipColl = extend([], obj.rotateFlipColl, [], true) as string[] | number[];
+        this.degree = obj.degree;
+        this.currFlipState = obj.currFlipState;
+        this.destLeft = obj.destPoints.startX; this.destTop = obj.destPoints.startY;
+        this.destWidth = obj.destPoints.width; this.destHeight = obj.destPoints.height;
+        this.srcLeft = obj.srcPoints.startX; this.srcTop = obj.srcPoints.startY;
+        this.srcWidth = obj.srcPoints.width; this.srcHeight = obj.srcPoints.height;
+        this.lowerContext.filter = obj.filter;
+        if (this.lowerContext.filter.split(' ').length > 1) {
+            if (this.lowerContext.filter.split(' ')[0].split('(')[1].split(')')[0] === '1') {
+                this.isBrightnessAdjusted = false;
+            } else {
+                this.isBrightnessAdjusted = true;
+            }
+        }
+        const isCircleCrop: boolean = this.isCircleCrop;
+        const currSelectionPoint: SelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
+        this.currSelectionPoint = null;
+        this.isCircleCrop = false;
+        this.drawCropSelectionImage(obj, false);
+        if (this.degree !== 0) {
             this.currentPannedPoint = { x: 0, y: 0 };
             this.rotatePan();
         }
-        this.activeObj = extend({}, this.cropObj.activeObj, {}, true) as SelectionPoint;
+        this.activeObj = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-        this.drawObject('duplicate');
-        let activeObj: SelectionPoint = extend({}, this.cropObj.activeObj, {}, true) as SelectionPoint;
+        if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
+            this.drawObject('duplicate');
+        }
+        let activeObj: SelectionPoint = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         let isAfterCropAction: boolean = false;
-        if (this.afterCropActions.length > 0) {
+        this.afterCropActions = this.alignRotateFlipColl(this.afterCropActions) as string[];
+        const afterCropActions: string[] = extend([], this.afterCropActions, [], true) as string[];
+        if (!isObj && afterCropActions.length > 0) {
             isAfterCropAction = true;
-            const objColl: SelectionPoint[] = extend([], this.objColl, {}, true) as SelectionPoint[];
-            const pointColl: Point[] = extend([], this.pointColl, {}, true) as Point[];
-            const freehandCounter: number = this.freehandCounter;
-            this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
-            const isCircleCrop: boolean = this.isCircleCrop;
-            const currSelectionPoint: SelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
-            this.currSelectionPoint = null;
-            this.isCircleCrop = false;
-            let isFlip: boolean = false;
-            for (let i: number = 0; i < this.afterCropActions.length; i++) {
+            for (let i: number = 0; i < afterCropActions.length; i++) {
                 if (this.degree % 90 === 0 && this.degree % 180 !== 0 &&
-                    (this.afterCropActions[i as number] === 'horizontalflip' || this.afterCropActions[i as number] === 'verticalflip')) {
+                    (afterCropActions[i as number] === 'horizontalflip' || afterCropActions[i as number] === 'verticalflip')) {
                     this.rotatedFlipCropSelection = true;
                 }
-                this.updateTransform(this.afterCropActions[i as number]);
-                if (this.afterCropActions[i as number] === 'horizontalflip' || this.afterCropActions[i as number] === 'verticalflip') {
-                    if (this.degree === 0) {
-                        this.destLeft += this.totalPannedPoint.x;
-                        this.destTop += this.totalPannedPoint.y;
+                this.updateTransform(afterCropActions[i as number]);
+                if (afterCropActions[i as number] === 'horizontalflip' || afterCropActions[i as number] === 'verticalflip') {
+                    if (afterCropActions.length === 1) {
+                        this.activeObj = extend({}, this.cropObj.activeObj, {}, true) as SelectionPoint;
+                        this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
+                        this.drawObject('duplicate');
                     }
-                    isFlip = true;
                 }
             }
-            this.isCircleCrop = isCircleCrop;
-            this.currSelectionPoint = currSelectionPoint;
-            const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
             activeObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
-            this.refreshActiveObj();
-            this.objColl = objColl; this.pointColl = pointColl; this.freehandCounter = freehandCounter;
-            if (this.rotateFlipColl.length > 1 && typeof(this.rotateFlipColl[this.rotateFlipColl.length - 1]) === 'string') {
-                this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
-            } else if (this.rotateFlipColl.length > 1 && typeof(this.rotateFlipColl[this.rotateFlipColl.length - 1]) === 'number' ||
-                this.rotateFlipColl.length >= 0) {
-                this.destLeft = activeObj.activePoint.startX; this.destTop = activeObj.activePoint.startY;
-                this.destWidth = activeObj.activePoint.width; this.destHeight = activeObj.activePoint.height;
-                this.zoomObjColl(); this.zoomFreehandDrawColl();
-            }
-            this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
-            this.destWidth = destPoints.width; this.destHeight = destPoints.height;
             this.totalPannedPoint = {x: 0, y: 0};
             this.totalPannedClientPoint = {x: 0, y: 0};
             this.totalPannedInternalPoint = {x: 0, y: 0};
             this.activeObj = activeObj;
             this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-            this.drawObject('duplicate');
-            if (this.cropObj.degree !== this.degree) {
+            if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
+                this.drawObject('duplicate');
+            }
+            if (obj.degree !== this.degree) {
                 this.cropZoomFactor = this.zoomFactor = 0;
             }
             this.updateObjAndFreeHandDrawColl();
-            if (isFlip) {
-                if (this.degree === 0) {
-                    const currSelectionPoint: SelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
-                    this.currSelectionPoint = null;
-                    this.isCircleCrop = false;
-                    this.drawPannImage({x: 0, y: 0}, this.getCurrentPanRegion());
-                    this.updateFlipPan(activeObj);
-                    this.isCircleCrop = isCircleCrop;
-                    this.currSelectionPoint = currSelectionPoint;
-                }
-                this.activeObj = activeObj;
-                this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-                this.drawObject('duplicate');
-            }
             if (this.rotatedFlipCropSelection) {
                 // this.totalPannedInternalPoint = extend({}, this.cropObj.totalPannedInternalPoint, {}, true) as Point;
                 this.rotatedFlipCropSelection = false;
             }
         }
+        this.afterCropActions = afterCropActions;
         if (!this.isCancelAction && !isAfterCropAction) {
-            this.setDestPointsForFlipState();
             this.updateObjAndFreeHandDrawColl();
             this.zoomFreehandDrawColl();
-            this.destLeft = this.cropObj.destPoints.startX; this.destTop = this.cropObj.destPoints.startY;
+            this.destLeft = obj.destPoints.startX; this.destTop = obj.destPoints.startY;
         }
         this.activeObj = activeObj;
+        this.isCircleCrop = isCircleCrop;
+        this.currSelectionPoint = currSelectionPoint;
     }
 
-    private drawCropSelectionImage(): void {
+    private drawCropSelectionImage(obj: CurrentObject, isObj: boolean): void {
         const temp: string = this.lowerContext.filter;
         this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.reverseTransformedState();
-        this.iterateRotateFlipColl(this.lowerContext, 'initial');
+        if (isObj) {
+            this.updateCurrentTransformedState('initial');
+        } else {
+            this.iterateRotateFlipColl(this.lowerContext, 'initial');
+        }
+        this.setDestPointsForFlipState();
         this.updateBrightnessFilter();
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth, this.srcHeight,
                                     this.destLeft, this.destTop, this.destWidth, this.destHeight);
-        this.iterateRotateFlipColl(this.lowerContext, 'reverse');
-        const activeObj: SelectionPoint = extend({}, this.cropObj.activeObj, {}, true) as SelectionPoint;
+        if (isObj) {
+            this.updateCurrentTransformedState('reverse');
+        } else {
+            this.iterateRotateFlipColl(this.lowerContext, 'reverse');
+        }
+        this.destLeft = this.cropObj.destPoints.startX;
+        this.destTop = this.cropObj.destPoints.startY;
+        const activeObj: SelectionPoint = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         this.lowerContext.filter = 'none';
         if (this.isCancelAction) {
             this.zoomObjColl(); this.zoomFreehandDrawColl();
         } else {
-            this.destLeft = this.cropObj.destPoints.startX; this.destTop = this.cropObj.destPoints.startY;
-            this.destWidth = this.cropObj.destPoints.width; this.destHeight = this.cropObj.destPoints.height;
-            this.srcLeft = this.cropObj.srcPoints.startX; this.srcTop = this.cropObj.srcPoints.startY;
-            this.srcWidth = this.cropObj.srcPoints.width; this.srcHeight = this.cropObj.srcPoints.height;
+            this.destLeft = obj.destPoints.startX; this.destTop = obj.destPoints.startY;
+            this.destWidth = obj.destPoints.width; this.destHeight = obj.destPoints.height;
+            this.srcLeft = obj.srcPoints.startX; this.srcTop = obj.srcPoints.startY;
+            this.srcWidth = obj.srcPoints.width; this.srcHeight = obj.srcPoints.height;
             const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
-            this.destLeft = this.cropObj.activeObj.activePoint.startX; this.destTop = this.cropObj.activeObj.activePoint.startY;
-            this.destWidth = this.cropObj.activeObj.activePoint.width; this.destHeight = this.cropObj.activeObj.activePoint.height;
+            this.destLeft = obj.activeObj.activePoint.startX; this.destTop = obj.activeObj.activePoint.startY;
+            this.destWidth = obj.activeObj.activePoint.width; this.destHeight = obj.activeObj.activePoint.height;
             this.zoomObjColl(); this.zoomFreehandDrawColl();
             this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
             this.destWidth = destPoints.width; this.destHeight = destPoints.height;
@@ -4836,9 +4917,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         if (isNullOrUndefined(isRotateCrop) && this.degree !== 0) {
             this.updateCropObj();
+            this.currDestinationPoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
             this.rotateCrop();
         } else if (isNullOrUndefined(isRotateCrop) && this.currFlipState !== '') {
             this.updateCropObj();
+            this.currDestinationPoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
             this.flipCrop();
         } else {
             this.tempZoomFactor = this.zoomFactor;
@@ -4847,6 +4930,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.updateCropObj();
                 this.resetPanPoints();
                 this.updateImageRatioForActObj();
+                this.currDestinationPoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
                 this.currSelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
                 this.cropDestPoints = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
             }
@@ -5013,23 +5097,33 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return panRegion;
     }
 
-    private drawPannImage(point: Point, panRegion: string): void {
+    private drawPannImage(point: Point): void {
+        const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.updateCurrentTransformedState('initial');
+        this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
+        this.destWidth = destPoints.width; this.destHeight = destPoints.height;
+        this.setDestPointsForFlipState();
         this.updateBrightnessFilter();
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth,
                                     this.srcHeight, this.destLeft, this.destTop, this.destWidth, this.destHeight);
         if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
             this.cropCircle(this.lowerContext, null, true);
         }
+        this.updateCurrentTransformedState('reverse');
+        this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
+        this.destWidth = destPoints.width; this.destHeight = destPoints.height;
         this.lowerContext.filter = 'none';
-        this.panObjColl(point.x, point.y, panRegion);
-        this.panFreehandDrawColl(point.x, point.y, panRegion);
+        this.panObjColl(point.x, point.y, '');
+        this.panFreehandDrawColl(point.x, point.y, '');
         if (this.isCircleCrop) {
             this.cropCircle(this.lowerContext, null, true);
         }
     }
 
     private drawPannedImage(xDiff?: number, yDiff?: number): void {
+        const panEventArgs: PanEventArgs = {startPoint: this.panDown, endPoint: this.panMove};
+        this.trigger('panning', panEventArgs);
         let isObjCreated: boolean = false;
         if (isNullOrUndefined(this.activeObj.shape)) {
             isObjCreated = true;
@@ -5045,18 +5139,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.updateActiveObject(this.activeObj.activePoint, this.activeObj);
             this.isCropTab = true;
         }
-        const panRegion: string = this.getCurrentPanRegion();
         if (this.degree === 0) {
             let point: Point;
             if (isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) {
-                point = this.updatePanPoints(panRegion);
+                point = this.updatePanPoints('');
             } else {
                 point = {x: xDiff, y: yDiff};
             }
             this.totalPannedPoint.x += point.x; this.totalPannedPoint.y += point.y;
             const tempSelectionObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
             const temp: string = this.lowerContext.filter;
-            this.drawPannImage(point, panRegion);
+            this.drawPannImage(point);
             this.lowerContext.filter = temp;
             this.tempPanMove = extend({}, this.panMove, {}, true) as Point;
             this.activeObj = extend({}, tempSelectionObj, {}, true) as SelectionPoint;
@@ -5064,12 +5157,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (!isNullOrUndefined(this.activeObj.shape)) {
                 this.drawObject('duplicate', this.activeObj);
             }
-            this.updateFlipPan(tempSelectionObj);
         } else {
             const tempFlipState: string = this.currFlipState;
             this.isCropTab = true;
             if (isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) {
-                this.currentPannedPoint = this.updatePanPoints(panRegion);
+                this.currentPannedPoint = this.updatePanPoints('');
             } else {
                 this.currentPannedPoint = {x: xDiff, y: yDiff};
             }
@@ -5151,42 +5243,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const tempFlipColl: string[] = this.flipColl;
         this.flipColl = [];
         this.updateImageRatioForActObj();
-        this.currSelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+        this.objColl.push(this.activeObj);
+        if (this.zoomFactor > 0) {
+            const zoomFactor: number = this.zoomFactor;
+            const isUndoRedo: boolean = this.isUndoRedo;
+            for (let i: number = 0; i < (zoomFactor * 10); i++) {
+                this.isUndoRedo = true;
+                this.zoom(-0.1);
+            }
+            this.isUndoRedo = isUndoRedo;
+            this.resetPanPoints();
+        }
+        this.currSelectionPoint = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         const temp: string = this.lowerContext.filter;
         this.updateBrightnessFilter();
-        if (!isNullOrUndefined(this.tempPannedPoint) && this.totalPannedPoint.x === 0 && this.totalPannedPoint.y === 0) {
-            this.totalPannedPoint = extend({}, this.tempPannedPoint, {}, true) as Point;
-            this.tempPannedPoint = {x: 0, y: 0};
-        }
-        let isPrevent: boolean = true;
-        if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop' &&
-            this.zoomFactor === 0 && this.cropObj.cropZoom !== 0) {
-                isPrevent = false;
-            }
-        if (this.zoomFactor === 0 && isPrevent) {
-            if (this.totalPannedPoint.x > 0) {
-                this.destLeft -= Math.abs(this.totalPannedPoint.x);
-            } else {
-                this.destLeft += Math.abs(this.totalPannedPoint.x);
-            }
-            if (this.totalPannedPoint.y > 0) {
-                this.destTop -= Math.abs(this.totalPannedPoint.y);
-            } else {
-                this.destTop += Math.abs(this.totalPannedPoint.y);
-            }
-        }
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth,
                                     this.srcHeight, this.destLeft, this.destTop, this.destWidth, this.destHeight);
-        const destLeft: number = this.destLeft; const destTop: number = this.destTop;
-        if (this.currFlipState === 'horizontal' && this.zoomFactor > 0 && this.totalPannedPoint.x !== 0) {
-            this.destLeft = destLeft - this.totalPannedPoint.x;
-        } else if (this.currFlipState === 'vertical' && this.zoomFactor > 0 && this.totalPannedPoint.y !== 0) {
-            this.destTop = destTop - this.totalPannedPoint.y;
-        }
-        this.updateImageRatioForActObj();
-        this.objColl.push(this.activeObj);
         for (let i: number = 0; i < this.objColl.length; i++) {
             this.objColl[i as number].shapeFlip = '';
         }
@@ -5194,35 +5268,22 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.pointColl[i as number].shapeFlip = '';
         }
         this.redrawObj(this.getCurrentPanRegion());
-        this.flipFreehandrawColl(this.currFlipState);
-        if (this.zoomFactor === 0 && isPrevent) {
-            if (this.getCurrentPanRegion() === 'horizontal') {
-                this.panObjColl(this.totalPannedPoint.x, -this.totalPannedPoint.y, this.getCurrentPanRegion());
-                this.panFreehandDrawColl(this.totalPannedPoint.x, -this.totalPannedPoint.y, this.getCurrentPanRegion());
-            } else if (this.getCurrentPanRegion() === 'vertical') {
-                this.panObjColl(-this.totalPannedPoint.x, this.totalPannedPoint.y, this.getCurrentPanRegion());
-                this.panFreehandDrawColl(-this.totalPannedPoint.x, this.totalPannedPoint.y, this.getCurrentPanRegion());
-            } else {
-                this.panObjColl(-this.totalPannedPoint.x, -this.totalPannedPoint.y, this.getCurrentPanRegion());
-                this.panFreehandDrawColl(-this.totalPannedPoint.x, -this.totalPannedPoint.y, this.getCurrentPanRegion());
-            }
-        }
+        this.flipFreehandrawColl(this.getCurrentPanRegion());
         this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
         this.objColl.pop();
+        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.drawObject('duplicate');
-        this.destLeft = destLeft; this.destTop = destTop;
         this.cropImg(true);
-        this.updateCurrentTransformedState('initial');
+        this.isReverseRotate = true;
+        this.reverseTransformedState();
         this.setDestinationPoints();
+        this.currentTransformedState('initial');
         this.updateBrightnessFilter();
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth, this.srcHeight,
                                     this.destLeft, this.destTop, this.destWidth, this.destHeight);
         this.lowerContext.filter = temp;
         this.isRotateZoom = false;
         this.updateCurrentTransformedState('reverse');
-        if (tempCurrFlipState === '' && this.currFlipState !== '') {
-            tempCurrFlipState = this.currFlipState;
-        }
         this.currFlipState = tempCurrFlipState;
         this.flipColl = tempFlipColl;
         this.lowerContext.filter = 'none';
@@ -5233,9 +5294,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.pointColl[i as number].shapeFlip = '';
         }
         this.redrawObj(this.getCurrentPanRegion());
-        this.flipFreehandrawColl(this.currFlipState);
-        this.iterateObjColl();
-        this.freehandRedraw(this.lowerContext);
+        this.flipFreehandrawColl(this.getCurrentPanRegion());
+        this.zoomObjColl(); this.zoomFreehandDrawColl();
         this.lowerContext.filter = temp;
         if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
             this.cropCircle(this.lowerContext);
@@ -5245,6 +5305,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.isReverseFlip = false;
         this.resetPanPoints();
+        this.tempFlipPanPoint = {x: 0, y: 0};
     }
 
     private rotateCrop(): void {
@@ -5283,31 +5344,21 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.rotateObjColl();
             this.rotateFreehandDrawColl();
         }
-        const activeObj: SelectionPoint = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
+        let activeObj: SelectionPoint = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
+        
         if (this.currFlipState !== '') {
-            let flipState: string = '';
             for (let i: number = 0; i < this.objColl.length; i++) {
                 this.objColl[i as number].shapeFlip = '';
-            }
-            if (this.currFlipState === 'horizontal') {
-                flipState = this.degree % 90 === 0 && this.degree % 180 !== 0 ? 'vertical' : 'horizontal';
-                this.redrawObj(flipState);
-            } else if (this.currFlipState === 'vertical') {
-                flipState = this.degree % 90 === 0 && this.degree % 180 !== 0 ? 'horizontal' : 'vertical';
-                this.redrawObj(flipState);
             }
             for (let i: number = 0; i < this.freehandCounter; i++) {
                 this.pointColl[i as number].shapeFlip = '';
             }
-            if (this.currFlipState === 'horizontal') {
-                flipState = this.degree % 90 === 0 && this.degree % 180 !== 0 ? 'vertical' : 'horizontal';
-                this.flipFreehandrawColl(flipState);
-            } else if (this.currFlipState === 'vertical') {
-                flipState = this.degree % 90 === 0 && this.degree % 180 !== 0 ? 'horizontal' : 'vertical';
-                this.flipFreehandrawColl(flipState);
-            }
+            let flipState: string = this.getCurrentCropState('initial');
+            this.redrawObj(flipState);
+            this.flipFreehandrawColl(flipState);
         }
-        this.zoomFreehandDrawColl();
+        this.zoomObjColl(); this.zoomFreehandDrawColl();
+        activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.drawObject('duplicate', activeObj);
         this.objColl.pop();
@@ -5335,23 +5386,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.rotateObjColl();
             this.rotateFreehandDrawColl();
         }
-        if (this.currFlipState !== '') {
+        if (this.getCurrentPanRegion() !== '') {
             for (let i: number = 0; i < this.objColl.length; i++) {
                 this.objColl[i as number].shapeFlip = '';
-            }
-            if (this.currFlipState === 'horizontal') {
-                this.redrawObj('horizontal');
-            } else if (this.currFlipState === 'vertical') {
-                this.redrawObj('vertical');
             }
             for (let i: number = 0; i < this.freehandCounter; i++) {
                 this.pointColl[i as number].shapeFlip = '';
             }
-            if (this.currFlipState === 'horizontal') {
-                this.flipFreehandrawColl('horizontal');
-            } else if (this.currFlipState === 'vertical') {
-                this.flipFreehandrawColl('vertical');
-            }
+            let flipState: string = this.getCurrentCropState('reverse');
+            this.redrawObj(flipState);
+            this.flipFreehandrawColl(flipState);
         }
         this.isReverseRotate = false;
         if (shape === 'crop-circle') {
@@ -5373,29 +5417,114 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.resetPanPoints();
     }
 
-    private updateRotatePanPoints(): void {
-        if (this.degree % 90 === 0 && this.degree % 180 !== 0) {
-            if (this.degree === 90 || this.degree === -270) {
-                this.destLeft += this.currentPannedPoint.y;
-                this.destTop -= this.currentPannedPoint.x;
+    private getCurrentCropState(type: string, isAllowInvert?: boolean): string {
+        let flipState: string = '';
+        let state: string[] = [];
+        if (type === 'initial') {
+            if (this.degree === 180 || this.degree === -180) {
+                flipState = this.flipColl.length > 1 ? this.getCurrentPanRegion() : this.currFlipState;
+            } else {
+                for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
+                    if (typeof(this.rotateFlipColl[i as number]) === 'number') {
+                        state.push('number');
+                    } else if (typeof(this.rotateFlipColl[i as number]) === 'string') {
+                        state.push('string');
+                    }
+                }
+                if (state.length > 1 && state[state.length - 1] === 'string' && state[state.length - 2] === 'number') {
+                    if (this.currFlipState === 'horizontal') {
+                        flipState = 'vertical';
+                    } else if (this.currFlipState === 'vertical') {
+                        flipState = 'horizontal';
+                    }
+                } else if (state.length > 1 && state[state.length - 1] === 'number' && state[state.length - 2] === 'string') {
+                    flipState = this.flipColl.length > 1 ? this.getCurrentPanRegion() : this.currFlipState;
+                }
             }
-            else if (this.degree === 270 || this.degree === -90) {
-                this.destLeft -= this.currentPannedPoint.y;
-                this.destTop += this.currentPannedPoint.x;
+        } else {
+            flipState = this.getCurrentPanRegion();
+            if (isAllowInvert || !this.isInitialRotate()) {
+                if (this.degree === -90 || this.degree === -270) {
+                    if (flipState === 'horizontal') {
+                        flipState = 'vertical';
+                    } else if (flipState === 'vertical') {
+                        flipState = 'horizontal';
+                    }
+                }
+            }
+        }
+        if (flipState === '') {flipState = this.flipColl.length > 1 ? this.getCurrentPanRegion() : this.currFlipState; }
+        return flipState;
+    }
+
+    private isInitialRotate(): boolean {
+        let isRotate: boolean = false;
+        if (this.rotateFlipColl.length > 0 && typeof(this.rotateFlipColl[0]) === 'number') {
+            isRotate = true;
+        }
+        return isRotate;
+    }
+
+    private updateRotatePanPoints(): void {
+        let panRegion: string = '';
+        if (this.isInitialRotate() && this.degree < 0) {
+            panRegion = this.getCurrentCropState('reverse', true);
+        } else {
+            panRegion = this.getCurrentPanRegion();
+        }
+        if (this.degree % 90 === 0 && this.degree % 180 !== 0) {
+            if (this.degree === 90 || (this.degree === -90 && (panRegion === 'horizontal' || panRegion === 'vertical'))
+                || (this.degree === -270 && (panRegion === '' || panRegion === 'verticalHorizontal' || panRegion === 'horizontalVertical'))) {
+                if (panRegion === '') {
+                    this.destLeft += this.currentPannedPoint.y;
+                    this.destTop -= this.currentPannedPoint.x;
+                } else if (panRegion === 'horizontal') {
+                    this.destLeft += this.currentPannedPoint.y;
+                    this.destTop += this.currentPannedPoint.x;
+                } else if (panRegion === 'vertical') {
+                    this.destLeft -= this.currentPannedPoint.y;
+                    this.destTop -= this.currentPannedPoint.x;
+                } else {
+                    this.destLeft -= this.currentPannedPoint.y;
+                    this.destTop += this.currentPannedPoint.x;
+                }
+            }
+            else if (this.degree === 270 || (this.degree === -270 && (panRegion === 'horizontal' || panRegion === 'vertical'))
+                || (this.degree === -90 && (panRegion === '' || panRegion === 'verticalHorizontal' || panRegion === 'horizontalVertical'))) {
+                if (panRegion === '') {
+                    this.destLeft -= this.currentPannedPoint.y;
+                    this.destTop += this.currentPannedPoint.x;
+                } else if (panRegion === 'horizontal') {
+                    this.destLeft -= this.currentPannedPoint.y;
+                    this.destTop -= this.currentPannedPoint.x;
+                } else if (panRegion === 'vertical') {
+                    this.destLeft += this.currentPannedPoint.y;
+                    this.destTop += this.currentPannedPoint.x;
+                } else {
+                    this.destLeft += this.currentPannedPoint.y;
+                    this.destTop -= this.currentPannedPoint.x;
+                }
             }
         } else {
             if (this.degree === 180 || this.degree === -180) {
-                this.destLeft -= this.currentPannedPoint.x;
-                this.destTop -= this.currentPannedPoint.y;
-            }
-            else {
-                this.destLeft += this.currentPannedPoint.x;
-                this.destTop += this.currentPannedPoint.y;
+                if (panRegion === '') {
+                    this.destLeft -= this.currentPannedPoint.x;
+                    this.destTop -= this.currentPannedPoint.y;
+                } else if (panRegion === 'horizontal') {
+                    this.destLeft += this.currentPannedPoint.x;
+                    this.destTop -= this.currentPannedPoint.y;
+                } else if (panRegion === 'vertical') {
+                    this.destLeft -= this.currentPannedPoint.x;
+                    this.destTop += this.currentPannedPoint.y;
+                } else {
+                    this.destLeft += this.currentPannedPoint.x;
+                    this.destTop += this.currentPannedPoint.y;
+                }
             }
         }
     }
 
-    private rotatePan(isCropSelection?: boolean): void {
+    private rotatePan(isCropSelection?: boolean, isDefaultZoom?: boolean): void {
         this.isReverseRotate = true;
         const tempDegree: number = this.degree;
         let rotatePanActiveObj: SelectionPoint;
@@ -5403,7 +5532,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             rotatePanActiveObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
         }
         const tempObjColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
-        this.objColl = []; this.refreshActiveObj();
+        const tempPointColl: Point[] = extend([], this.pointColl, [], true) as Point[];
+        this.objColl = []; this.pointColl = []; this.freehandCounter = 0; this.refreshActiveObj();
         this.isRotateZoom = true;
         this.updateCurrentTransformedState('initial');
         const initialDestLeft: number = this.destLeft;
@@ -5429,16 +5559,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.destLeft += this.currentPannedPoint.x;
         this.destTop += this.currentPannedPoint.y;
         this.totalPannedClientPoint.x = this.destLeft - destLeft; this.totalPannedClientPoint.y = this.destTop - destTop;
-        this.objColl = tempObjColl;
+        this.objColl = tempObjColl; this.pointColl = tempPointColl; this.freehandCounter = this.pointColl.length;
         this.degree = tempDegree;
-        this.objColl = extend([], tempObjColl, [], true) as SelectionPoint[];
         this.lowerContext.filter = 'none';
-        const panRegion: string = this.getCurrentPanRegion();
         if (isCropSelection) {
-            this.currentPannedPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
+            if (isDefaultZoom) {
+                this.totalPannedClientPoint.x = -this.totalPannedClientPoint.x;
+                this.totalPannedClientPoint.y = -this.totalPannedClientPoint.y;
+                this.currentPannedPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
+                this.totalPannedClientPoint = { x: 0, y: 0 };
+                this.destLeft += this.currentPannedPoint.x;
+                this.destTop += this.currentPannedPoint.y;
+            } else {
+                this.currentPannedPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
+            }
         }
-        this.panObjColl(this.currentPannedPoint.x, this.currentPannedPoint.y, panRegion);
-        this.panFreehandDrawColl(this.currentPannedPoint.x, this.currentPannedPoint.y, panRegion);
+        this.panObjColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
+        this.panFreehandDrawColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
         this.lowerContext.filter = temp;
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.activeObj = extend({}, rotatePanActiveObj, {}, true) as SelectionPoint;
@@ -5481,7 +5618,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.zoomFactor = 0;
         } else {this.zoomFactor += value; }
         if (this.isCropTab) {
-            this.cropZoomFactor += value;
+            this.cropZoomFactor = this.zoomFactor;
         } else {
             this.defaultZoomFactor = this.zoomFactor;
         }
@@ -5499,7 +5636,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private cropZoom(value: number, selectionObj?: SelectionPoint): Dimension {
-        const destLeft: number = this.destLeft; const destTop: number = this.destTop;
+        let destLeft: number = this.destLeft; let destTop: number = this.destTop;
         let maxDimension: Dimension = {width: 0, height: 0};
         if (this.srcLeft === 0 || this.srcTop === 0) {
             if (isNullOrUndefined(selectionObj)) {
@@ -5518,18 +5655,31 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.destLeft = destLeft - ((maxDimension.width - this.destWidth) / 2);
         this.destTop = destTop - ((maxDimension.height - this.destHeight) / 2);
+        destLeft = this.destLeft; destTop = this.destTop;
         if (!isNullOrUndefined(selectionObj)) {
             if (this.destLeft > selectionObj.activePoint.startX) {
                 this.destLeft = selectionObj.activePoint.startX;
+                if (this.degree === 0) {
+                    this.totalPannedPoint.x -= (destLeft - this.destLeft);
+                }
             }
             if (this.destTop > selectionObj.activePoint.startY) {
                 this.destTop = selectionObj.activePoint.startY;
+                if (this.degree === 0) {
+                    this.totalPannedPoint.y -= (destTop - this.destTop);
+                }
             }
             if (this.destLeft + maxDimension.width < selectionObj.activePoint.endX) {
                 this.destLeft = selectionObj.activePoint.endX - maxDimension.width;
+                if (this.degree === 0) {
+                    this.totalPannedPoint.x -= (destLeft - this.destLeft);
+                }
             }
             if (this.destTop + maxDimension.height < selectionObj.activePoint.endY) {
                 this.destTop = selectionObj.activePoint.endY - maxDimension.height;
+                if (this.degree === 0) {
+                    this.totalPannedPoint.y -= (destTop - this.destTop);
+                }
             }
         }
         return maxDimension;
@@ -5735,14 +5885,44 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private updateUndoRedoColl(operation: string, value?: string | number | boolean | Dimension | SelectionPoint[],
-                               previousObj?: SelectionPoint[] | Dimension | string | Object,
-                               currentObj?: SelectionPoint[] | string | Object | Dimension,
-                               zoomFactor?: number, sharpen?: boolean, bw?: boolean): void {
-        if (!this.isInitialLoading) {
+    private getCurrentObj(): CurrentObject {
+        const obj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
+            totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
+            rotateFlipColl: [], degree: 0, currFlipState: '',
+            destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
+            srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '' };
+        obj.cropZoom = this.cropZoomFactor; obj.defaultZoom = this.defaultZoomFactor;
+        obj.totalPannedPoint = extend({}, this.totalPannedPoint, {}, true) as Point;
+        obj.totalPannedClientPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
+        obj.totalPannedInternalPoint = extend({}, this.totalPannedInternalPoint, {}, true) as Point;
+        obj.tempFlipPanPoint = extend({}, this.tempFlipPanPoint, {}, true) as Point;
+        obj.activeObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
+        obj.rotateFlipColl = extend([], this.rotateFlipColl, [], true) as string[] | number[];
+        obj.degree = this.degree;
+        obj.currFlipState = this.currFlipState;
+        obj.destPoints = {startX: this.destLeft, startY: this.destTop, endX: 0, endY: 0,
+            width: this.destWidth, height: this.destHeight};
+        obj.srcPoints = {startX: this.srcLeft, startY: this.srcTop, endX: 0, endY: 0,
+            width: this.srcWidth, height: this.srcHeight};
+        obj.filter = this.lowerContext.filter;
+        return obj;
+    }
+
+    private updateUndoRedoColl(operation: string, previousObj: CurrentObject, previousObjColl: SelectionPoint[],
+            previousPointColl: Point[], previousCropObj: CurrentObject, previousText?: string, currentText?: string,
+            previousFilter?: string): void {
+        if (!this.isInitialLoading && this.allowUndoRedo) {
+            if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
             this.undoRedoStep++;
-            this.undoRedoColl.push({operation: operation, value: value, previousObj: previousObj, currentObj: currentObj,
-                zoomFactor: zoomFactor, sharpen: sharpen, bw: bw});
+            const currentObj: CurrentObject = this.getCurrentObj();
+            currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            currentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            this.undoRedoColl.push({operation: operation, previousObj: previousObj, currentObj: currentObj,
+                previousObjColl: previousObjColl, currentObjColl: currentObj.objColl,
+                previousPointColl: previousPointColl, currentPointColl: currentObj.pointColl,
+                previousCropObj: previousCropObj, currentCropObj: extend({}, this.cropObj, {}, true) as CurrentObject,
+                previousText: previousText, currentText: currentText, filter: previousFilter });
             if (this.undoRedoColl.length > 16) {
                 this.undoRedoColl.splice(0, 1);
                 this.undoRedoStep--;
@@ -6001,6 +6181,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.freehandDrawSelectedIndex = this.freehandDrawHoveredIndex;
         this.pointColl[this.freehandDrawSelectedIndex].isSelected = true;
+        this.freehandDrawSelectedId = this.pointColl[this.freehandDrawSelectedIndex].id;
         if (this.pointColl[this.freehandDrawHoveredIndex].strokeColor !== '#42a5f5') {
             this.tempFreeHandDrawEditingStyles.strokeColor = this.pointColl[this.freehandDrawHoveredIndex].strokeColor;
         }
@@ -6262,15 +6443,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         if (e.currentTarget === this.upperCanvas) {
             this.currObjType.shape = this.currObjType.shape.toLowerCase();
-            if (!this.togglePen && !this.dragCanvas) {
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            if (!this.togglePen && !isCropSelection) {
                 if (!isNullOrUndefined(this.tempObjColl) && this.activeObj.activePoint.width !== 0) {
                     this.objColl.push(this.activeObj);
                     if (JSON.stringify(this.activeObj.activePoint) !== JSON.stringify(this.tempActiveObj.activePoint)) {
-                        this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                            currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                            previousObj: this.tempObjColl, zoomFactor: this.zoomFactor,
-                            sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                        this.undoRedoStep++;
+                        this.updateUndoRedoColl('shapeTransform', prevObj, this.tempObjColl,
+                            prevObj.pointColl, prevCropObj);
                     }
                     this.redrawShape(this.objColl[this.objColl.length - 1]);
                     this.tempObjColl = undefined;
@@ -6280,13 +6463,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
             } else if (isCropSelection && !this.togglePen) {
                 if (JSON.stringify(this.activeObj.activePoint) !== JSON.stringify(this.tempActiveObj.activePoint)) {
-                    this.undoRedoColl.push({operation: 'selectionTransform', value: null,
-                        currentObj: extend([], this.objColl, [], true) as SelectionPoint[],
-                        previousObj: this.objColl, zoomFactor: this.zoomFactor,
-                        currentSelectionObj: extend([], this.activeObj, {}, true) as SelectionPoint,
-                        previousSelectionObj: extend([], this.tempActiveObj, {}, true) as SelectionPoint,
-                        sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-                    this.undoRedoStep++;
+                    prevObj.activeObj = extend([], this.tempActiveObj, {}, true) as SelectionPoint;
+                    this.updateUndoRedoColl('selectionTransform', prevObj, prevObj.objColl,
+                        prevObj.pointColl, prevCropObj);
                 }
             }
         }
@@ -6313,26 +6492,33 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             e.preventDefault();
             e.stopImmediatePropagation();
             break;
-        case (e.ctrlKey && 'z'):
-            if (this.allowUndoRedo) {
-                this.callUndo();
-            }
-            break;
-        case (e.ctrlKey && 'y'):
-            if (this.allowUndoRedo) {
-                this.callRedo();
-            }
-            break;
+        // case (e.ctrlKey && 'z'):
+        //     if (this.allowUndoRedo) {
+        //         this.callUndo();
+        //     }
+        //     break;
+        // case (e.ctrlKey && 'y'):
+        //     if (this.allowUndoRedo) {
+        //         this.callRedo();
+        //     }
+        //     break;
         case 'Delete':
             if (this.isFreehandDrawEditing) {
                 this.updateFreehandDrawColorChange();
-                // eslint-disable-next-line
-                const previousObj: any = extend([], this.pointColl, [], true);
-                this.deleteFreehandDraw(this.freehandDrawHoveredIndex);
-                this.updateUndoRedoColl('delete', 'freehanddraw', previousObj, this.pointColl, this.zoomFactor);
+                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                const prevObj: CurrentObject = this.getCurrentObj();
+                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+                this.deleteFreehandDraw(parseInt(this.freehandDrawSelectedId.split('_')[1], 10) - 1, true);
+                this.updateUndoRedoColl('deleteFreehandDrawing', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
             } else if (this.textArea.style.display === 'none') {
                 this.objColl.push(this.activeObj);
-                const previousObj: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                const prevObj: CurrentObject = this.getCurrentObj();
+                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                 this.objColl.pop();
                 previousShapeSettings = this.updatePreviousShapeSettings();
                 shapeChangingArgs = {action: 'delete', previousShapeSettings: previousShapeSettings, currentShapeSettings: null};
@@ -6340,7 +6526,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.clearSelection();
                 this.trigger('shapeChanging', shapeChangingArgs);
                 this.refreshToolbar('main');
-                this.updateUndoRedoColl('delete', 'shape', previousObj, this.objColl, this.zoomFactor);
+                this.updateUndoRedoColl('deleteObj', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
             }
             break;
         case 'Escape':
@@ -6390,6 +6576,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.lastPan = {x: this.destLeft, y: this.destTop};
         if (isNullOrUndefined(this.tempPanMove)) {
             this.tempPanMove = {x: x, y: y};
+            this.panStartObj = this.getCurrentObj();
+            this.panStartObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            this.panStartObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            this.panStartObj.afterCropActions = this.afterCropActions;
         }
     }
 
@@ -6417,8 +6607,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         e.preventDefault();
         if (this.togglePan) {
             if (this.panDown && this.panMove && this.togglePan && this.dragCanvas) {
-                this.panDown = null; this.panMove = null; this.tempPanMove = null;
-                this.updateUndoRedoColl('pan', null, {x: this.lastPan.x, y: this.lastPan.y}, {x: this.destLeft, y: this.destTop});
+                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                this.updateUndoRedoColl('pan', this.panStartObj, this.panStartObj.objColl, this.panStartObj.pointColl, prevCropObj);
+                this.panDown = null; this.panMove = null; this.tempPanMove = null; this.panStartObj = null;
             }
         }
         this.currObjType.isDragging = false;
@@ -6714,8 +6905,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private updateTextFromTextArea(): void {
         if (this.activeObj.keyHistory !== this.textArea.value) {
-            this.updateUndoRedoColl('text', this.objColl, this.activeObj.keyHistory, this.textArea.value,
-                                    this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            this.updateUndoRedoColl('text', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj,
+                this.activeObj.keyHistory, this.textArea.value);
         }
         this.activeObj.keyHistory = this.textArea.value;
         this.textArea.style.display = 'none';
@@ -6974,7 +7170,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.refreshActiveObj();
                 this.lowerContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                 this.redrawImgWithObj();
-                //this.zoomFreehandDrawColl();
                 if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
                     this.cropCircle(this.lowerContext);
                 }
@@ -8016,6 +8211,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private drawObject(canvas: string, obj?: SelectionPoint, isCropRatio?: boolean, points?: ActivePoint,
                        isPreventDrag?: boolean, saveContext?: CanvasRenderingContext2D): void {
+        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         let canvasDraw: CanvasRenderingContext2D;
         if (canvas.toLowerCase() === 'original') {
             canvasDraw = this.lowerContext;
@@ -9309,7 +9505,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const degree: number = this.degree;
         for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
             if (typeof(this.rotateFlipColl[i as number]) === 'number') {
-                this.exportRotate(tempContext, this.rotateFlipColl[i as number]);
+                this.exportRotate(tempContext, this.rotateFlipColl[i as number] as number);
             } else if (this.rotateFlipColl[i as number] === 'horizontal') {
                 this.exportHorizontalFlip(tempContext);
             } else if (this.rotateFlipColl[i as number] === 'vertical') {
@@ -9642,24 +9838,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private setTextFontSize(obj: SelectionPoint): void {
-        if (obj.shape === 'text') {
-            const maxText: string = this.getMaxText(null, obj.keyHistory);
-            let degree: number;
-            if (obj.shapeDegree === 0) {degree = this.degree; }
-            else {degree =  this.degree - obj.shapeDegree; }
-            let multiplier: number = 2;
-            if (maxText.length === 1) {
-                multiplier = 1;
-            }
-            if (degree === 0 || degree === 180 || degree === -180) {
-                obj.textSettings.fontSize = (obj.activePoint.width / maxText.length) * multiplier;
-            } else {
-                obj.textSettings.fontSize = (obj.activePoint.height / maxText.length) * multiplier;
-            }
-        }
-    }
-
     private redrawShape(obj: SelectionPoint): void {
         for (let i: number = 0; i < this.objColl.length; i++) {
             if (JSON.stringify(obj) === JSON.stringify(this.objColl[i as number])) {
@@ -9840,7 +10018,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.togglePen = false;
             this.redrawActObj();
-            const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.keyHistory = '';
             this.refreshActiveObj();
             this.activeObj.shape = 'text';
@@ -9900,10 +10081,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.activeObj.textFlip = this.currFlipState;
             this.updateFontRatio(this.activeObj);
             this.objColl.push(this.activeObj);
-            this.undoRedoColl.push({operation: 'shapeTransform', value: null,
-                currentObj: extend([], this.objColl, [], true) as SelectionPoint[], previousObj: objColl, zoomFactor: this.zoomFactor,
-                sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
-            this.undoRedoStep++;
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
             this.redrawShape(this.objColl[this.objColl.length - 1]);
             this.isShapeInserted = true;
             this.refreshToolbar('text');
@@ -10024,7 +10203,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.rotateDegree(degree);
         if (!this.isReverseRotate) {
             this.updateCurrentTransformedState('reverse');
-            this.rotateFlipColl.push(degree);
+            this.rotateFlipColl.push(degree as number);
         }
         if (this.rotateFlipColl.length === 1) {
             this.setClientTransformedDimension();
@@ -10041,6 +10220,34 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         }
         this.freehandRedraw(this.lowerContext);
+        this.updateCurrSelectionPoint(degree);
+    }
+
+    private updateCurrSelectionPoint(degree: number | string): void {
+        if (!isNullOrUndefined(this.currSelectionPoint) && !isNullOrUndefined(this.currDestinationPoint)) {
+            const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+            const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+            const srcPoints: ActivePoint = {startX: this.srcLeft, startY: this.srcTop, width: this.srcWidth, height: this.srcHeight};
+            const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
+            this.objColl = [];
+            this.objColl.push(extend({}, this.currSelectionPoint, {}, true) as SelectionPoint);
+            this.srcLeft = 0; this.srcTop = 0; this.srcWidth = this.baseImg.width; this.srcHeight = this.baseImg.height;
+            this.destLeft = this.currDestinationPoint.startX; this.destTop = this.currDestinationPoint.startY;
+            this.destWidth = this.currDestinationPoint.width; this.destHeight = this.currDestinationPoint.height;
+            if (typeof(degree) === 'number') {
+                this.setDestinationPoints();
+                this.setClientTransformedDimension();
+            }
+            this.objColl[0].shapeFlip = '';
+            this.redrawObj(degree);
+            this.currSelectionPoint = extend({}, this.objColl[0], {}, true) as SelectionPoint;
+            this.currDestinationPoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
+            this.objColl = objColl; this.activeObj = activeObj;
+            this.srcLeft = srcPoints.startX; this.srcTop = srcPoints.startY;
+            this.srcWidth = srcPoints.width; this.srcHeight = srcPoints.height;
+            this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
+            this.destWidth = destPoints.width; this.destHeight = destPoints.height;
+        }
     }
 
     private setClientTransformedDimension(isPreventDimension?: boolean): void {
@@ -10058,66 +10265,76 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private popForDefaultTransformedState(): void {
+    private popForDefaultTransformedState(collection: number[] | string[]): number[] | string[] {
         let rotateRight: number = 0; let rotateleft: number = 0; let horizontal: number = 0; let vertical: number = 0;
-        for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
-            if (this.rotateFlipColl[i as number] === 90) {
+        for (let i: number = 0; i < collection.length; i++) {
+            if (collection[i as number] === 90 || collection[i as number] === 'rotateRight') {
                 rotateRight++; rotateleft = 0; horizontal = 0; vertical = 0;
                 if (rotateRight === 4) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+                    collection.pop(); collection.pop(); collection.pop(); collection.pop();
                 }
-            } else if (this.rotateFlipColl[i as number] === -90) {
+            } else if (collection[i as number] === -90 || collection[i as number] === 'rotateLeft') {
                 rotateleft++; rotateRight = 0; horizontal = 0; vertical = 0;
                 if (rotateleft === 4) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+                    collection.pop(); collection.pop(); collection.pop(); collection.pop();
                 }
-            } else if (this.rotateFlipColl[i as number] === 'horizontal') {
+            } else if (collection[i as number] === 'horizontal' || collection[i as number] === 'horizontalflip') {
                 horizontal++; rotateleft = 0; rotateRight = 0; vertical = 0;
                 if (horizontal === 2) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+                    collection.pop(); collection.pop();
                 }
-            } else if (this.rotateFlipColl[i as number] === 'vertical') {
+            } else if (collection[i as number] === 'vertical' || collection[i as number] === 'verticalflip') {
                 vertical++; horizontal = 0; rotateleft = 0; rotateRight = 0;
                 if (vertical === 2) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+                    collection.pop(); collection.pop();
                 }
             }
         }
+        return collection;
     }
 
-    private popForDefaultFlipState(): void {
-        for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
-            if (!isNullOrUndefined(this.rotateFlipColl[i + 3])) {
-                if (this.rotateFlipColl[i as number] === 'horizontal' && this.rotateFlipColl[i + 1] === 'vertical' &&
-                this.rotateFlipColl[i + 2] === 'horizontal' && this.rotateFlipColl[i + 3] === 'vertical') {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
-                } else if (this.rotateFlipColl[i as number] === 'vertical' && this.rotateFlipColl[i + 1] === 'horizontal' &&
-                this.rotateFlipColl[i + 2] === 'vertical' && this.rotateFlipColl[i + 3] === 'horizontal') {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+    private popForDefaultFlipState(collection: number[] | string[]): number[] | string[] {
+        for (let i: number = 0; i < collection.length; i++) {
+            if (!isNullOrUndefined(collection[i + 3])) {
+                if ((collection[i as number] === 'horizontal' || collection[i as number] === 'horizontalFlip')
+                    && (collection[i + 1] === 'vertical' || collection[i as number] === 'verticalFlip') &&
+                    (collection[i + 2] === 'horizontal' || collection[i as number] === 'horizontalFlip') &&
+                    (collection[i + 3] === 'vertical' || collection[i as number] === 'verticalFlip')) {
+                    collection.pop(); collection.pop(); collection.pop(); collection.pop();
+                } else if ((collection[i as number] === 'vertical' || collection[i as number] === 'verticalFlip')
+                && (collection[i + 1] === 'horizontal' || collection[i + 1] === 'horizontalFlip') &&
+                (collection[i + 2] === 'vertical' || collection[i as number] === 'verticalFlip') &&
+                (collection[i + 3] === 'horizontal' || collection[i as number] === 'horizontalFlip')) {
+                    collection.pop(); collection.pop(); collection.pop(); collection.pop();
                 }
             }
         }
+        return collection;
     }
 
-    private popForDefaultRotateState(): void {
-        for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
-            if (!isNullOrUndefined(this.rotateFlipColl[i + 1])) {
-                if (this.rotateFlipColl[i as number] === 90 && this.rotateFlipColl[i + 1] === -90) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
-                } else if (this.rotateFlipColl[i as number] === -90 && this.rotateFlipColl[i + 1] === 90) {
-                    this.rotateFlipColl.pop(); this.rotateFlipColl.pop();
+    private popForDefaultRotateState(collection: number[] | string[]): number[] | string[] {
+        for (let i: number = 0; i < collection.length; i++) {
+            if (!isNullOrUndefined(collection[i + 1])) {
+                if ((collection[i as number] === 90 || collection[i as number] === 'rotateRight') &&
+                    (collection[i + 1] === -90 || collection[i as number] === 'rotateLeft')) {
+                    collection.pop(); collection.pop();
+                } else if ((collection[i as number] === -90 || collection[i as number] === 'rotateLeft') &&
+                    (collection[i + 1] === 90 || collection[i as number] === 'rotateRight')) {
+                    collection.pop(); collection.pop();
                 }
             }
         }
+        return collection;
     }
 
-    private alignRotateFlipColl(): void {
-        this.popForDefaultTransformedState();
-        this.popForDefaultFlipState();
-        this.popForDefaultRotateState();
-        if (this.rotateFlipColl.length === 0) {
+    private alignRotateFlipColl(collection: number[] | string[], isRotateFlipCollection?: boolean): number[] | string[] {
+        collection = this.popForDefaultTransformedState(collection);
+        collection = this.popForDefaultFlipState(collection);
+        collection = this.popForDefaultRotateState(collection);
+        if (collection.length === 0 && isRotateFlipCollection) {
             this.degree = 0; this.currFlipState = '';
         }
+        return collection;
     }
 
     private updateFlipColl(direction: string): void {
@@ -10276,28 +10493,40 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.applyPenDraw();
         this.adjustmentLevel.brightness = value;
         value = this.getFilterValue(value);
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('brightness', value);
-        this.updateUndoRedoColl('brightness', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('brightness', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setContrast(value: number): void {
         this.applyPenDraw();
         this.adjustmentLevel.contrast = value;
-        const temp: string = this.lowerContext.filter;
         value = this.getFilterValue(value);
         value *= 100;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('contrast', value);
-        this.updateUndoRedoColl('contrast', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('contrast', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setHue(value: number): void {
         this.applyPenDraw();
         this.adjustmentLevel.hue = value;
         value *= 3;
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('hue', value);
-        this.updateUndoRedoColl('hue', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('hue', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setSaturation(value: number): void {
@@ -10305,9 +10534,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.adjustmentLevel.saturation = value;
         value = this.getSaturationFilterValue(value);
         value *= 100;
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('saturation', value);
-        this.updateUndoRedoColl('saturation', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('saturation', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setOpacity(value: number): void {
@@ -10319,9 +10552,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         else if (value === 20) {value = 0.35; }
         else if (value === 10) {value = 0.30; }
         else if (value === 0) {value = 0.25; }
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('opacity', value);
-        this.updateUndoRedoColl('opacity', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('opacity', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setBlur(value: number): void {
@@ -10330,28 +10567,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         value /= 20;
         // Since 0.5 is not working in blur we consider from 1
         value += 0.5;
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('blur', value);
-        this.updateUndoRedoColl('blur', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('blur', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setExposure(value: number): void {
         this.applyPenDraw();
         this.adjustmentLevel.exposure = value;
         value = this.getFilterValue(value);
-        const temp: string = this.lowerContext.filter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment('exposure', value);
-        this.updateUndoRedoColl('exposure', value, temp, this.lowerContext.filter, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl('exposure', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
     }
 
     private setFilter(type: string): void {
         type = type.toLowerCase();
         this.applyPenDraw();
-        const tempFilter: string = this.lowerContext.filter;
         const prevFilter: string = this.currentFilter;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         this.updateAdjustment(type, null);
-        this.updateUndoRedoColl(type, prevFilter, tempFilter, this.lowerContext.filter,
-                                this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw);
+        this.updateUndoRedoColl(type, prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj, null, null, prevFilter);
     }
 
     private renderImage(): void {
@@ -10389,8 +10637,75 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.textArea.style.width = this.activeObj.activePoint.width + 'px';
     }
 
+    private drawNewSelection(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
+        let points: ActivePoint;
+        const cropShape: string = 'crop-' + type;
+        if (cropShape.toLowerCase() === 'crop-custom') {
+            if (this.currObjType.shape === '') {
+                this.drawCustomSelection('crop-custom');
+            }
+            if (startX && startY) {
+                this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
+                this.currObjType.shape = this.activeObj.shape = cropShape.toLowerCase();
+                this.activeObj.activePoint.startX = startX; this.activeObj.activePoint.startY = startY;
+                this.activeObj.activePoint.endX = this.lowerCanvas.width;
+                this.activeObj.activePoint.endY = this.lowerCanvas.height;
+                this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
+                this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
+                this.drawObject('duplicate');
+            }
+        } else if (cropShape.toLowerCase() === 'crop-canvas') {
+            this.upperCanvas.style.display = 'none';
+            this.dragCanvas = true;
+        } else {
+            this.currObjType.isCustomCrop = false;
+            this.currObjType.shape = cropShape.toLowerCase();
+            if (width && height) {
+                points = {startX : startX, startY : startY, endX : startX + width, endY : startY + height,
+                    width: width, height: height};
+            } else if (width && cropShape === 'crop-circle') {
+                points = {startX : startX, startY : startY, endX : startX + width, endY : startY + width,
+                    width: width, height: width};
+            }
+            this.activeObj.shape = cropShape.toLowerCase();
+            this.drawObject('duplicate', null, true, points);
+        }
+    }
+
+    private setDestPointsForFlipState(isUpdate?: boolean): void {
+        if (this.getCurrentPanRegion() !== '') {
+            if (this.getCurrentPanRegion() === 'horizontal') {
+                this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
+            } else if (this.getCurrentPanRegion() === 'vertical') {
+                this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
+            } else {
+                this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
+                this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
+            }
+        }
+    }
+
+    private performUndoDefaultAction(obj: Transition): void {
+        this.lowerContext.filter = obj.previousObj.filter;
+        this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+        this.setCurrentObj(obj.previousObj);
+        this.destLeft = obj.previousObj.destPoints.startX;
+        this.destTop = obj.previousObj.destPoints.startY;
+        const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+        this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+        this.pointColl = extend([], obj.previousPointColl, [], true) as Point[];
+        this.freehandCounter = this.pointColl.length;
+        this.lowerContext.filter = 'none';
+        this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
+        this.lowerContext.filter = obj.previousObj.filter;
+        this.activeObj = activeObj;
+        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+        if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
+            this.drawObject('duplicate');
+        }
+    }
+
     private setAdjustment(type: string): void {
-        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         const splitWords: string[] = this.lowerContext.filter.split(' ');
         let value: number; let valueArr: string[];
         switch (type) {
@@ -10451,54 +10766,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.adjustmentLevel.exposure = this.setFilterValue(value);
             break;
         }
-        this.callUpdateCurrentTransformedState();
     }
 
-    private updateFilter(obj: Transition): void {
-        const selEle: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
-        if (selEle) {selEle.classList.remove('e-selected'); }
-        const filterCanvas: HTMLElement = document.getElementById(obj.value + 'Canvas');
-        if (filterCanvas) {
-            filterCanvas.parentElement.classList.add('e-selected');
-        }
-        this.currentFilter = obj.value as string;
-        this.lowerContext.filter = this.canvasFilter = obj.previousObj as string;
-        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.isUndoRedo = true; this.redrawImgWithObj();
-    }
-
-    private drawNewSelection(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
-        let points: ActivePoint;
-        const cropShape: string = 'crop-' + type;
-        if (cropShape.toLowerCase() === 'crop-custom') {
-            if (this.currObjType.shape === '') {
-                this.drawCustomSelection('crop-custom');
+    private updateFilter(type: string, previousFilter?: string): void {
+        if (type === 'default' || type === 'chrome' || type === 'cold' ||
+        type === 'warm' || type === 'grayscale' || type === 'blackandwhite' ||
+        type === 'sepia' || type === 'invert' || type === 'sharpen') {
+            const selEle: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
+            if (selEle) {selEle.classList.remove('e-selected'); }
+            const filterCanvas: HTMLElement = document.getElementById(this.element.id + '_' + type + 'Canvas');
+            if (filterCanvas) {
+                filterCanvas.parentElement.classList.add('e-selected');
             }
-            if (startX && startY) {
-                this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-                this.currObjType.shape = this.activeObj.shape = cropShape.toLowerCase();
-                this.activeObj.activePoint.startX = startX; this.activeObj.activePoint.startY = startY;
-                this.activeObj.activePoint.endX = this.lowerCanvas.width;
-                this.activeObj.activePoint.endY = this.lowerCanvas.height;
-                this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
-                this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
-                this.drawObject('duplicate');
+            if (!isNullOrUndefined(previousFilter)) {
+                this.currentFilter = previousFilter;
+            } else {
+                this.currentFilter = this.element.id + '_' + type;
             }
-        } else if (cropShape.toLowerCase() === 'crop-canvas') {
-            this.upperCanvas.style.display = 'none';
-            this.dragCanvas = true;
-        } else {
-            this.currObjType.isCustomCrop = false;
-            this.currObjType.shape = cropShape.toLowerCase();
-            if (width && height) {
-                points = {startX : startX, startY : startY, endX : startX + width, endY : startY + height,
-                    width: width, height: height};
-            } else if (width && cropShape === 'crop-circle') {
-                points = {startX : startX, startY : startY, endX : startX + width, endY : startY + width,
-                    width: width, height: width};
-            }
-            this.activeObj.shape = cropShape.toLowerCase();
-            this.drawObject('duplicate', null, true, points);
         }
     }
 
@@ -10537,11 +10821,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
             if (!this.disabled && this.activeObj.horTopLine !== undefined && (this.currObjType.isCustomCrop || splitWords[0] === 'crop')) {
                 isCrop = true;
-                const shape: string = this.activeObj.shape;
+                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                const prevObj: CurrentObject = this.getCurrentObj();
+                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                 this.cropImg();
                 this.zoomFactor = 0;
                 this.enableDisableToolbarBtn();
-                this.updateUndoRedoColl('crop', shape);
+                this.updateUndoRedoColl('crop', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
             }
         }
         return isCrop;
@@ -10555,9 +10843,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public flip(direction: Direction): void {
         if (!this.disabled && this.isImageLoaded) {
-            const zoomFactor: number = this.zoomFactor;
             const transitionArgs: FlipEventArgs = {direction: direction};
             this.trigger('flipping', transitionArgs);
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            let prevObj: CurrentObject;
+            if (isNullOrUndefined(this.transformCurrentObj)) {
+                prevObj = this.getCurrentObj();
+                prevObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
+                prevObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
+                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            }
+            this.afterCropActions.push(direction.toLowerCase() === 'horizontal' ? 'horizontalflip' : 'verticalflip');
             let splitWords: string[] = [];
             let activeObjShape: string;
             if (!isNullOrUndefined(this.activeObj.activePoint)) {
@@ -10612,7 +10908,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.rotateFlipColl.push(direction.toLowerCase());
             }
             if (this.rotateFlipColl.length === 1) {
-                this.setClientTransformedDimension();
+                if (this.getCurrentPanRegion() === '') {
+                    this.setClientTransformedDimension();
+                } else {
+                    this.setDestPointsForFlipState();
+                }
             }
             if (this.isCircleCrop) {this.cropCircle(this.lowerContext); }
             this.objColl = extend([], tempObjColl, [], true) as SelectionPoint[];
@@ -10645,8 +10945,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.lowerContext.filter = tempFilter;
             this.refreshActiveObj();
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('flip', direction, this.objColl, null, zoomFactor,
-                                                           this.adjustmentLevel.sharpen, this.adjustmentLevel.bw); }
+            this.updateCurrSelectionPoint(direction.toLowerCase());
+            if (!this.isUndoRedo && isNullOrUndefined(this.transformCurrentObj)) {
+                this.updateUndoRedoColl('flip', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+            }
             this.isUndoRedo = false;
             this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
             if (!isNullOrUndefined(activeObjShape)) {
@@ -10661,7 +10963,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (!this.isReverseFlip) {
                 this.refreshToolbar('main', true, true);
             }
-            this.alignRotateFlipColl();
+            this.rotateFlipColl = this.alignRotateFlipColl(this.rotateFlipColl, true);
         }
     }
 
@@ -10798,21 +11100,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.defaultZoomFactor = this.cropZoomFactor = this.zoomFactor = 0;
             this.tempActObj = null; this.lastPan = {x: 0, y: 0};
             this.selectedFreehandColor = '#42a5f5'; this.isFreehandDrawCustomized = false;
-            this.isShapeInserted = false;
-            this.tempActObj = undefined; this.lastPan = {x: 0, y: 0};
+            this.isShapeInserted = false; this.isAllowCropPan = false; this.tempPannedPoint = {x: 0, y: 0};
             this.currObjType = { shape: '', isDragging: false, isActiveObj: false, isText: false, isInitialText: false, isLine: false,
                 isInitialLine: false, isCustomCrop: false, isZoomed: false, isUndoZoom: false,
                 isUndoAction: false, isFiltered: false, isSave: false };
-            this.isAllowCropPan = false;
-            this.tempPannedPoint = {x: 0, y: 0};
             this.cropObj = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
-                totalPannedInternalPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [], degree: 0,
-                currFlipState: '', destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
-                srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint };
+                totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
+                rotateFlipColl: [], degree: 0, currFlipState: '',
+                destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
+                srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '' };
             this.afterCropActions = []; this.isCancelAction = this.preventZoomBtn = this.isFreehandPointMoved = false;
-            this.isTouch = false; this.freehandDownPoint = {x: 0, y: 0}; this.tempFlipPanPoint = {x: 0, y: 0};  
+            this.isTouch = false; this.freehandDownPoint = {x: 0, y: 0}; this.tempFlipPanPoint = {x: 0, y: 0};
             this.currentFreehandDrawIndex = 0; this.tempCurrentFreehandDrawIndex = 0;
-            this.cancelObjColl = []; this.cancelPointColl = [];
+            this.cancelObjColl = []; this.cancelPointColl = []; this.freehandDrawSelectedId = null; this.transformCurrentObj = null;
+            this.rotatedFlipCropSelection = false; this.panStartObj = null; this.currDestinationPoint = null;
             this.updateCanvas(); this.refreshDropDownBtn(false); this.enableDisableToolbarBtn();
         }
     }
@@ -10831,6 +11132,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             isRotate = true;
             const transitionArgs: RotateEventArgs = {degree: degree};
             this.trigger('rotating', transitionArgs);
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            let prevObj: CurrentObject;
+            if (isNullOrUndefined(this.transformCurrentObj)) {
+                prevObj = this.getCurrentObj();
+                prevObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
+                prevObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
+                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            }
+            this.afterCropActions.push(degree === 90 ? 'rotateRight' : 'rotateLeft');
             let splitWords: string[] = [];
             let activeObjShape: string;
             if (!isNullOrUndefined(this.activeObj.activePoint) && !isNullOrUndefined(this.activeObj.shape)) {
@@ -10844,7 +11154,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.redrawActObj();
             this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-            const zoomFactor: number = this.zoomFactor;
             this.drawRotatedImage(degree);
             this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
             if (!isNullOrUndefined(activeObjShape)) {
@@ -10854,7 +11163,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.drawObject('duplicate', this.activeObj);
                 if (!this.isReverseRotate) {this.refreshToolbar('main', true, true); }
             }
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('rotate', degree, this.objColl, null, zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw); }
+            if (!this.isUndoRedo && isNullOrUndefined(this.transformCurrentObj)) {
+                this.updateUndoRedoColl('rotate', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+            }
             this.isUndoRedo = false;
             if (isNullOrUndefined(this.activeObj.shape) && !this.isReverseRotate) {
                 this.refreshToolbar('main');
@@ -10862,7 +11173,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             else if (!this.isReverseRotate) {
                 this.refreshToolbar('main', true, true);
             }
-            this.alignRotateFlipColl();
+            this.rotateFlipColl = this.alignRotateFlipColl(this.rotateFlipColl, true);
         }
         return isRotate;
     }
@@ -10952,6 +11263,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (splitWords !== undefined && splitWords[0] === 'crop'){
                 isPrevent = true;
             }
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.redrawActObj();
             this.refreshActiveObj();
             this.keyHistory = '';
@@ -10963,18 +11279,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (this.defaultZoomFactor > 0) {
                     const zoomFactor: number = this.zoomFactor = this.defaultZoomFactor;
                     this.isCropTab = false;
+                    const isUndoRedo: boolean = this.isUndoRedo;
                     for (let i: number = 0; i < (zoomFactor * 10); i++) {
+                        this.isUndoRedo = true;
                         this.zoom(-0.1);
                     }
+                    this.isUndoRedo = isUndoRedo;
                     this.resetPanPoints();
                 }
                 this.cancelObjColl = extend([], this.objColl, [], true) as SelectionPoint[];
                 this.cancelPointColl = extend([], this.pointColl, [], true) as Point[];
+                this.updateObjAndFreeHandDrawColl();
                 this.isCropTab = true;
                 this.setCurrSelectionPoints(true);
                 this.zoomFactor = this.cropZoomFactor;
                 if (isNullOrUndefined(this.cropObj.activeObj.shape)) {
                     this.drawNewSelection(type, startX, startY, width, height);
+                } else {
+                    this.updateUndoRedoColl('crop-selection', prevObj, prevObj.objColl, prevObj.pointColl ,prevCropObj);
                 }
             } else {
                 if (type === 'custom') {this.currObjType.shape = ''; }
@@ -11049,22 +11371,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private setDestPointsForFlipState(isUpdate?: boolean): void {
-        if (this.getCurrentPanRegion() !== '') {
-            if (this.getCurrentPanRegion() === 'horizontal') {
-                this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
-            } else if (this.getCurrentPanRegion() === 'vertical') {
-                this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
-            } else {
-                this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
-                this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
-            }
-            if (!isNullOrUndefined(isUpdate)) {
-                this.updateObjAndFreeHandDrawColl();
-            }
-        }
-    }
-
     /**
      * Increase / Decrease the magnification of an image.
      *
@@ -11085,6 +11391,22 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (!isNullOrUndefined(this.activeObj.shape) && splitWords[0] !== 'crop') {
                 isShape = true;
             }
+            let zoomPoint: Point; let zoomLevel: number;
+            if (this.isCropTab && !isNullOrUndefined(tempActiveObj)) {
+                zoomLevel = this.cropZoomFactor;
+                zoomPoint = {x: this.activeObj.activePoint.startX + (this.activeObj.activePoint.width / 2),
+                    y: this.activeObj.activePoint.startY + (this.activeObj.activePoint.height / 2) };
+            } else {
+                zoomLevel = this.defaultZoomFactor;
+                zoomPoint = {x: this.lowerCanvas.clientWidth / 2, y: this.lowerCanvas.clientHeight / 2 };
+            }
+            const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, zoomLevel: zoomLevel};
+            this.trigger('zooming', zoomEventArgs);
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.redrawActObj();
             this.refreshActiveObj();
             this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
@@ -11100,9 +11422,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (this.degree !== 0) {
                     this.redrawActObj();
                     this.currentPannedPoint = {x: 0, y: 0};
-                    this.rotatePan();
+                    this.rotatePan(true, true);
                 }
-                this.setDestPointsForFlipState(true);
+                // this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
+                // this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
+                this.updateObjAndFreeHandDrawColl();
             }
             if (this.degree === 0) {
                 this.drawZoomImgToCanvas(value, tempActiveObj);
@@ -11111,13 +11435,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.tempFlipPanPoint.y += this.totalPannedPoint.y;
                     objColl = extend([], this.objColl, [], true) as SelectionPoint[];
                     this.objColl = [];
+                    const destLeft: number = this.destLeft; const destTop: number = this.destTop;
+                    this.setDestPointsForFlipState();
                     this.rotatedFlip();
-                    if (this.totalPannedPoint.x !== 0 || this.totalPannedPoint.y !== 0) {
-                        this.totalPannedPoint = { x: 0, y: 0 };
-                    }
-                    if (this.tempPannedPoint.x !== 0 || this.tempPannedPoint.y !== 0) {
-                        this.tempPannedPoint = { x: 0, y: 0 };
-                    }
+                    this.destLeft = destLeft; this.destTop = destTop;
+                    this.objColl = objColl;
+                    this.zoomObjColl(); this.zoomFreehandDrawColl();
+                    this.updateObjAndFreeHandDrawColl();
+                }
+                if (this.zoomFactor === 0 && !this.isCropTab) {
+                    this.totalPannedPoint = { x: 0, y: 0 };
                 }
             } else {
                 this.updateObjAndFreeHandDrawColl();
@@ -11138,16 +11465,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.zoomObjColl();
                 this.zoomFreehandDrawColl();
                 this.lowerContext.filter = temp;
-            } else if (this.degree === 0) {
-                const temp: string = this.lowerContext.filter;
-                this.lowerContext.filter = 'none';
-                const destLeft: number = this.destLeft; const destTop: number = this.destTop;
-                this.setDestPointsForFlipState();
-                this.objColl = objColl;
-                this.zoomObjColl();
-                this.zoomFreehandDrawColl();
-                this.destLeft = destLeft; this.destTop = destTop;
-                this.lowerContext.filter = temp;
             }
             if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
                 this.cropCircle(this.lowerContext);
@@ -11164,7 +11481,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 if (this.zoomFactor === 0) {this.currSelectionPoint = null; }
             }
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('zoom', zoomState, this.objColl, null, this.zoomFactor, this.adjustmentLevel.sharpen, this.adjustmentLevel.bw); }
+            if (!this.isUndoRedo) {
+                this.updateUndoRedoColl('zoom', prevObj, prevObj.objColl,prevObj.pointColl, prevCropObj);
+            }
             this.isUndoRedo = false;
             const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
             if (!isNullOrUndefined(zoomOut) && this.zoomFactor === 0) {
@@ -11617,166 +11936,133 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 } else {
                     this.refreshToolbar('main');
                 }
-                if (this.activeObj.activePoint.width !== 0) {
+                if (!isNullOrUndefined(this.activeObj.activePoint) && this.activeObj.activePoint.width !== 0) {
                     this.tempActObj = this.activeObj;
                 }
-                //this.refreshActiveObj();
+                this.refreshActiveObj();
                 this.undoRedoStep--;
                 this.enableDisableToolbarBtn();
                 this.isUndoRedo = true;
-                this.lowerContext.filter = this.canvasFilter;
                 const obj: Transition = this.undoRedoColl[this.undoRedoStep];
                 if (this.undoRedoColl.length === this.undoRedoStep) { this.currObjType.isUndoAction = false; }
                 else { this.currObjType.isUndoAction = true; }
-                if (obj.operation !== 'textTransform' && this.textArea.style.display === 'block') {
+                if (obj.operation !== 'textAreaCustomization' && this.textArea.style.display === 'block') {
                     this.textArea.style.display = 'none';
                 }
                 this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-                let xDiff: number; let yDiff: number; let tempUndoRedoColl: Transition[] = []; let prevObj: SelectionPoint; let value: string = '';
+                this.isCancelAction = true; let activeObj: SelectionPoint;
+                this.cropObj = extend({}, obj.previousCropObj, {}, true) as CurrentObject;
+                this.afterCropActions = obj.previousObj.afterCropActions;
+                this.lowerContext.filter = this.canvasFilter = obj.previousObj.filter;
                 switch (obj.operation) {
-                case 'rotate':
-                    if (obj.value === 90) {
-                        value = 'rotateleft';
-                    } else if (obj.value === -90) {
-                        value = 'rotateright';
-                    }
-                    this.performTransformation(value);
-                    break;
-                case 'flip':
-                    if ((obj.value as string).toLowerCase() === 'horizontal') {
-                        value = 'horizontalflip';
-                    } else if ((obj.value as string).toLowerCase() === 'vertical') {
-                        value = 'verticalflip';
-                    }
-                    this.performTransformation(value);
-                    break;
-                case 'zoom':
-                    if (this.zoomFactor === 0 && obj.zoomFactor !== 0) {
-                        this.zoomFactor = obj.zoomFactor;
-                    }
-                    this.zoom(-obj.value as number); this.isUndoRedo = true;
-                    break;
-                case 'pan':
-                    xDiff = this.destLeft; yDiff = this.destTop;
-                    this.destLeft = (obj.previousObj as Dimension).x;
-                    this.destTop = (obj.previousObj as Dimension).y;
-                    xDiff += this.destLeft; yDiff += this.destTop;
-                    this.drawPannedImage(xDiff, yDiff);
-                    break;
-                case 'crop':
-                    if (!isNullOrUndefined(this.currSelectionPoint)) {
-                        tempUndoRedoColl = extend([], this.undoRedoColl, [], true) as Transition[];
-                        this.select('Custom');
-                        this.refreshToolbar('main', true, true);
-                        (getComponent(this.element.querySelector('#' + this.element.id + '_cropBtn') as HTMLElement, 'dropdown-btn') as DropDownButton).toggle();
-                        this.undoRedoColl = tempUndoRedoColl;
-                        this.enableDisableToolbarBtn();
-                    }
+                case 'shapeTransform':
+                    this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                    this.isUndoRedo = true; this.redrawImgWithObj();
+                    this.refreshActiveObj();
                     break;
                 case 'freehanddraw':
-                    this.pointColl = obj.previousObj;
-                    this.freehandCounter--;
+                    this.pointColl = obj.previousPointColl;
+                    this.freehandCounter = this.pointColl.length;
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'freehanddrawCustomized':
-                    this.pointColl = obj.previousObj;
+                    this.pointColl = obj.previousPointColl;
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
-                case 'delete':
-                    if (obj.value === 'freehanddraw') {
-                        this.pointColl = obj.previousObj;
-                        this.freehandCounter++;
-                    } else if (obj.value === 'shape') {
-                        this.objColl = obj.previousObj as SelectionPoint[];
+                case 'deleteFreehandDrawing':
+                case 'deleteObj':
+                    if (obj.operation === 'deleteFreehandDrawing') {
+                        this.pointColl = obj.previousPointColl;
+                        this.freehandCounter = this.pointColl.length;
+                    } else if (obj.operation === 'deleteObj') {
+                        this.objColl = obj.previousObjColl as SelectionPoint[];
                     }
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'selectionTransform':
-                    this.activeObj = extend({}, obj.previousSelectionObj, {}, true) as SelectionPoint;
+                    this.activeObj = extend({}, obj.previousObj.activeObj, {}, true) as SelectionPoint;
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
                         this.drawObject('duplicate', this.activeObj);
                         this.refreshToolbar('main', true, true);
                     } else {
                         this.refreshToolbar('main');
+                        this.performUndoDefaultAction(obj);
                     }
                     this.currObjType.isCustomCrop = false;
                     break;
-                case 'shapeTransform':
-                    this.objColl = extend([], obj.previousObj, [], true) as SelectionPoint[];
-                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.isUndoRedo = true; this.redrawImgWithObj();
-                    this.refreshActiveObj();
-                    break;
-                case 'textTransform':
-                    this.objColl = extend([], obj.previousObj, [], true) as SelectionPoint[];
-                    for (let i: number = 0; i < (obj.previousObj as SelectionPoint[]).length; i++) {
-                        if (this.tempActObj.currIndex === (obj.previousObj as SelectionPoint[])[i as number].currIndex) {
-                            prevObj = extend({}, obj.previousObj[i as number], {}, true) as SelectionPoint;
+                case 'textAreaCustomization':
+                    this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+                    for (let i: number = 0; i < (obj.previousObjColl as SelectionPoint[]).length; i++) {
+                        if (!isNullOrUndefined(this.tempActObj)) {
+                            if (this.tempActObj.currIndex === (obj.previousObjColl as SelectionPoint[])[i as number].currIndex) {
+                                activeObj = extend({}, obj.previousObjColl[i as number], {}, true) as SelectionPoint;
+                                this.objColl.splice(i, 1);
+                                break;
+                            }
+                        } else {
+                            activeObj = extend({}, obj.previousObjColl[obj.previousObjColl.length - 1], {}, true) as SelectionPoint;
                             this.objColl.splice(i, 1);
                             break;
                         }
                     }
-                    if (!isNullOrUndefined(prevObj)) {
-                        this.updateTextBox(prevObj);
+                    if (!isNullOrUndefined(activeObj)) {
+                        this.updateTextBox(activeObj);
                     }
                     break;
                 case 'text':
                     if (!isNullOrUndefined(this.tempActObj)) {
                         this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
                     }
-                    if ((obj.value as SelectionPoint[]).length === 0 && this.objColl.length === 1) {
+                    if (obj.previousObjColl.length === 0 && this.objColl.length === 1) {
                         this.tempActObj = extend({}, this.objColl[0], {}, true) as SelectionPoint;
                     } else {
                         for (let i: number = 0; i < this.objColl.length; i++) {
                             if (!isNullOrUndefined(this.objColl[i as number]) &&
-                            isNullOrUndefined((obj.value as SelectionPoint[])[i as number])) {
-                                this.tempActObj = extend({}, (obj.value as SelectionPoint[])[i as number], {}, true) as SelectionPoint;
+                            isNullOrUndefined(obj.previousObjColl[i as number])) {
+                                this.tempActObj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
                                 break;
                             }
-                            if ((obj.value as SelectionPoint[])[i as number].currIndex !== this.objColl[i as number].currIndex) {
+                            if (obj.previousObjColl[i as number].currIndex !== this.objColl[i as number].currIndex) {
                                 this.tempActObj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
                                 break;
                             }
                         }
                     }
                     this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
-                    this.objColl = extend([], obj.value, [], true) as SelectionPoint[];
+                    this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
-                    this.textArea.style.display = 'block';
-                    this.textArea.value = obj.previousObj as string;
-                    break;
-                case 'brightness':
-                case 'contrast':
-                case 'hue':
-                case 'saturation':
-                case 'opacity':
-                case 'blur':
-                case 'exposure':
-                    this.lowerContext.filter = this.canvasFilter = obj.previousObj as string;
-                    if (this.lowerContext.filter.split(' ').length > 1 &&
-                        this.lowerContext.filter.split(' ')[0].split('(')[1].split(')')[0] === '1') {
-                        this.isBrightnessAdjusted = false;
+                    if (!isNullOrUndefined(this.activeObj) && this.activeObj.activePoint.width !== 0
+                        && this.activeObj.activePoint.height !== 0) {
+                        this.drawObject('duplicate');
+                    } else {
+                        this.textArea.style.display = 'block';
+                        this.textArea.value = obj.previousText;
                     }
-                    this.setAdjustment(obj.operation); this.isUndoRedo = true;
                     break;
-                case 'default':
-                case 'chrome':
-                case 'cold':
-                case 'warm':
-                case 'grayscale':
-                case 'sepia':
-                case 'invert':
-                    this.updateFilter(obj);
+                default:
+                    this.performUndoDefaultAction(obj);
+                    this.setAdjustment(obj.operation);
+                    this.updateFilter(obj.operation, obj.filter);
                     break;
+                }
+                this.clearOuterCanvas(this.lowerContext);
+                if (this.isCircleCrop && obj.operation !== 'crop') {this.cropCircle(this.lowerContext); }
+                if (this.zoomFactor > 0) {this.dragCanvas = true; }
+                this.isCancelAction = false;
+                if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop') {
+                    this.refreshToolbar('main', true, true);
+                } else {
+                    this.refreshToolbar('main');
                 }
             }
         }
@@ -11799,80 +12085,54 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.undoRedoStep++;
                 this.enableDisableToolbarBtn();
                 this.isUndoRedo = true;
-                this.lowerContext.filter = this.canvasFilter;
                 const obj: Transition = this.undoRedoColl[this.undoRedoStep - 1];
                 if (this.undoRedoColl.length === this.undoRedoStep) { this.currObjType.isUndoAction = false; }
                 else { this.currObjType.isUndoAction = true; }
-                if (obj.operation !== 'textTransform' && this.textArea.style.display === 'block') {
+                if (obj.operation !== 'textAreaCustomization' && this.textArea.style.display === 'block') {
                     this.textArea.style.display = 'none';
                 }
                 this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-                const selEle: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
-                let xDiff: number; let yDiff: number; let tempUndoRedoColl: Transition[]; let tempUndoRedoStep: number; let value: string = '';
-                let currObj: SelectionPoint;
+                this.isCancelAction = true;
+                this.cropObj = extend({}, obj.currentCropObj, {}, true) as CurrentObject;
+                this.afterCropActions = obj.currentObj.afterCropActions;
+                this.lowerContext.filter = this.canvasFilter = obj.currentObj.filter;
+                let activeObj: SelectionPoint; let tempUndoRedoColl: Transition[]; let tempUndoRedoStep: number;
                 switch (obj.operation) {
-                case 'rotate':
-                    if (obj.value === 90) {
-                        value = 'rotateright';
-                    } else if (obj.value === -90) {
-                        value = 'rotateleft';
-                    }
-                    this.performTransformation(value);
-                    break;
-                case 'flip':
-                    if ((obj.value as string).toLowerCase() === 'horizontal') {
-                        value = 'horizontalflip';
-                    } else if ((obj.value as string).toLowerCase() === 'vertical') {
-                        value = 'verticalflip';
-                    }
-                    this.performTransformation(value);
-                    break;
-                case 'zoom':
-                    this.zoom(obj.value as number);
-                    break;
-                case 'pan':
-                    xDiff = this.destLeft; yDiff = this.destTop;
-                    this.destLeft = (obj.currentObj as Dimension).x;
-                    this.destTop = (obj.currentObj as Dimension).y;
-                    xDiff += this.destLeft; yDiff += this.destTop;
-                    this.drawPannedImage(xDiff, yDiff);
-                    break;
-                case 'crop':
-                    this.cropImg(); this.refreshToolbar('main');
+                case 'shapeTransform':
+                    this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                    this.isUndoRedo = true; this.redrawImgWithObj();
+                    this.refreshActiveObj();
                     break;
                 case 'freehanddraw':
-                    this.pointColl = obj.currentObj;
-                    this.freehandCounter++;
+                    this.pointColl = obj.currentPointColl;
+                    this.freehandCounter = this.pointColl.length;
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'freehanddrawCustomized':
-                    this.pointColl = obj.currentObj;
+                    this.pointColl = obj.currentPointColl;
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
-                case 'delete':
-                    if (obj.value === 'freehanddraw') {
-                        this.pointColl = obj.currentObj;
-                        this.freehandCounter--;
-                    } else if (obj.value === 'shape') {
-                        this.objColl = obj.currentObj as SelectionPoint[];
+                case 'deleteFreehandDrawing':
+                case 'deleteObj':
+                    if (obj.operation === 'deleteFreehandDrawing') {
+                        this.pointColl = obj.currentPointColl;
+                        this.freehandCounter = this.pointColl.length;
+                    } else if (obj.operation === 'deleteObj') {
+                        this.objColl = obj.currentObjColl as SelectionPoint[];
                     }
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'selectionTransform':
-                    if (this.zoomFactor !== obj.zoomFactor) {
-                        if (this.zoomFactor > 0) {
-                            this.zoom(-this.zoomFactor);
-                        } else {
-                            this.zoom(Math.abs(this.zoomFactor));
-                        }
-                    }
-                    this.activeObj = extend({}, obj.currentSelectionObj, {}, true) as SelectionPoint;
+                    this.activeObj = extend({}, obj.currentObj.activeObj, {}, true) as SelectionPoint;
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
                         this.drawObject('duplicate', this.activeObj);
@@ -11880,36 +12140,54 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     } else {
                         this.refreshToolbar('main');
                     }
+                    this.currObjType.isCustomCrop = false;
                     break;
-                case 'shapeTransform':
-                    this.objColl = extend([], obj.currentObj, [], true) as SelectionPoint[];
-                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.isUndoRedo = true; this.redrawImgWithObj();
-                    this.refreshActiveObj();
-                    break;
-                case 'textTransform':
-                    this.objColl = extend([], obj.currentObj, [], true) as SelectionPoint[];
-                    for (let i: number = 0; i < (obj.previousObj as SelectionPoint[]).length; i++) {
-                        if (this.tempActObj.currIndex === (obj.currentObj as SelectionPoint[])[i as number].currIndex) {
-                            currObj = extend({}, obj.currentObj[i as number], {}, true) as SelectionPoint;
+                case 'textAreaCustomization':
+                    this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    for (let i: number = 0; i < (obj.currentObjColl as SelectionPoint[]).length; i++) {
+                        if (!isNullOrUndefined(this.tempActObj)) {
+                            if (this.tempActObj.currIndex === (obj.currentObjColl as SelectionPoint[])[i as number].currIndex) {
+                                activeObj = extend({}, obj.currentObjColl[i as number], {}, true) as SelectionPoint;
+                                this.objColl.splice(i, 1);
+                                break;
+                            }
+                        } else {
+                            activeObj = extend({}, obj.currentObjColl[obj.currentObjColl.length - 1], {}, true) as SelectionPoint;
                             this.objColl.splice(i, 1);
                             break;
                         }
                     }
-                    if (!isNullOrUndefined(currObj)) {
-                        this.updateTextBox(currObj);
+                    if (!isNullOrUndefined(activeObj)) {
+                        this.updateTextBox(activeObj);
                     }
                     break;
                 case 'text':
                     if (!isNullOrUndefined(this.tempActObj)) {
                         this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
                     }
-                    this.objColl = extend([], obj.value, [], true) as SelectionPoint[];
+                    if (obj.previousObjColl.length === 0 && this.objColl.length === 1) {
+                        this.tempActObj = extend({}, this.objColl[0], {}, true) as SelectionPoint;
+                    } else {
+                        for (let i: number = 0; i < this.objColl.length; i++) {
+                            if (!isNullOrUndefined(this.objColl[i as number]) &&
+                            isNullOrUndefined(obj.previousObjColl[i as number])) {
+                                this.tempActObj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
+                                break;
+                            }
+                            if (obj.previousObjColl[i as number].currIndex !== this.objColl[i as number].currIndex) {
+                                this.tempActObj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
+                                break;
+                            }
+                        }
+                    }
+                    this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
+                    if (!isNullOrUndefined(this.tempActObj)) {
+                        this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
+                    }
                     this.textArea.style.display = 'block';
-                    this.textArea.value = obj.currentObj as string;
+                    this.textArea.value = obj.currentText;
                     tempUndoRedoColl = extend([], this.undoRedoColl, [], true) as Transition[];
                     tempUndoRedoStep = this.undoRedoStep;
                     this.redrawActObj();
@@ -11917,35 +12195,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.undoRedoStep = tempUndoRedoStep;
                     this.textArea.style.display = 'none';
                     this.textArea.value = '';
+                    this.redrawActObj();
                     break;
-                case 'brightness':
-                case 'contrast':
-                case 'hue':
-                case 'saturation':
-                case 'opacity':
-                case 'blur':
-                case 'exposure':
-                    this.lowerContext.filter = this.canvasFilter = obj.currentObj as string;
-                    this.setAdjustment(obj.operation);
-                    break;
-                case 'default':
-                case 'chrome':
-                case 'cold':
-                case 'warm':
-                case 'grayscale':
-                case 'sepia':
-                case 'invert':
-                    if (selEle) {selEle.classList.remove('e-selected'); }
-                    if (document.getElementById(this.element.id + '_' + obj.operation + 'Canvas')) {
-                        document.getElementById(this.element.id + '_' + obj.operation + 'Canvas').parentElement.classList.add('e-selected');
+                default:
+                    this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+                    this.setCurrentObj(obj.currentObj);
+                    this.destLeft = obj.currentObj.destPoints.startX;
+                    this.destTop = obj.currentObj.destPoints.startY;
+                    activeObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
+                    this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    this.pointColl = extend([], obj.currentPointColl, [], true) as Point[];
+                    this.freehandCounter = this.pointColl.length;
+                    this.lowerContext.filter = 'none';
+                    this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
+                    this.lowerContext.filter = obj.currentObj.filter;
+                    this.activeObj = activeObj;
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                    if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
+                        this.drawObject('duplicate');
                     }
-                    this.currentFilter = this.element.id + '_' + obj.operation;
-                    this.lowerContext.filter = this.canvasFilter = obj.currentObj as string;
-                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.redrawImgWithObj();
+                    this.setAdjustment(obj.operation);
+                    this.updateFilter(obj.operation);
                     break;
                 }
+                this.clearOuterCanvas(this.lowerContext);
+                if (this.isCircleCrop) {this.cropCircle(this.lowerContext); }
+                if (this.zoomFactor > 0) {this.dragCanvas = true; }
+                this.isCancelAction = false;
                 if (this.undoRedoStep === this.undoRedoColl.length) {this.isUndoRedo = false; }
+                if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop') {
+                    this.refreshToolbar('main', true, true);
+                } else {
+                    this.refreshToolbar('main');
+                }
             }
         }
     }
@@ -12274,7 +12556,7 @@ export interface FinetuneEventArgs {
  *
  * @private
  */
-interface CroppedObject {
+interface CurrentObject {
     /**
      * Gets or sets the stroke color for the object in imageEditor.
      */
@@ -12295,6 +12577,10 @@ interface CroppedObject {
      * Gets or sets the stroke color for the object in imageEditor.
      */
     totalPannedInternalPoint: Point;
+    /**
+     * Gets or sets the stroke color for the object in imageEditor.
+     */
+    tempFlipPanPoint: Point;
     /**
      * Gets or sets the stroke color for the object in imageEditor.
      */
@@ -12319,6 +12605,22 @@ interface CroppedObject {
      * Gets or sets the stroke color for the object in imageEditor.
      */
     srcPoints: ActivePoint;
+    /**
+     * Gets or sets the filter for the image in imageEditor.
+     */
+    filter: string;
+    /**
+     * Gets or sets the object collection in imageEditor.
+     */
+    objColl?: SelectionPoint[];
+    /**
+     * Gets or sets the point collections for freehand drawing in imageEditor.
+     */
+    pointColl?: Point[];
+    /**
+     * Gets or sets the action collections performed after cropping in imageEditor.
+     */
+    afterCropActions?: string[];
 }
 
 /**
@@ -12388,49 +12690,53 @@ interface TextSettings {
  */
 interface Transition {
     /**
-     * Gets function name called from the canvas.
+     * Gets or sets the operation name for undo / redo in imageEditor.
      */
-    operation?: string;
+    operation: string;
     /**
-     * Gets parameter value of respective function called from the canvas.
+     * Gets or sets all previous object in imageEditor.
      */
-    value?: string | number | FileList | Dimension | ImageData | Object;
+    previousObj: CurrentObject;
     /**
-     * Gets previous object value.
+     * Gets or sets all current object in imageEditor.
      */
-    previousObj?: SelectionPoint[] | Dimension | Object | string;
+    currentObj: CurrentObject;
     /**
-     * Gets current object value.
+     * Gets or sets the previous object collection in imageEditor.
      */
-    currentObj?: SelectionPoint[] | Dimension | Object | string;
+    previousObjColl: SelectionPoint[];
     /**
-     * Gets previous active object value.
+     * Gets or sets the current object collection in imageEditor.
      */
-    previousSelectionObj?: SelectionPoint;
+    currentObjColl: SelectionPoint[];
     /**
-     * Gets current active object value.
+     * Gets or sets the previous point collection in imageEditor.
      */
-    currentSelectionObj?: SelectionPoint;
+    previousPointColl: Point[];
     /**
-     * Gets previous zoom value.
+     * Gets or sets the current point collection in imageEditor.
      */
-    zoomFactor?: number;
+    currentPointColl: Point[];
     /**
-     * Gets previous rotate value.
+     * Gets or sets the previous crop object in imageEditor.
      */
-    degree?: number;
+    previousCropObj: CurrentObject;
     /**
-     * Gets previous flip value.
+     * Gets or sets the current crop object in imageEditor.
      */
-    flipState?: string;
+    currentCropObj: CurrentObject;
     /**
-     * Gets previous sharpness value.
+     * Gets or sets the previous text from the textarea in imageEditor.
      */
-    sharpen?: boolean;
+    previousText?: string;
     /**
-     * Gets previous black and white value.
+     * Gets or sets the current text from the textarea in imageEditor.
      */
-    bw?: boolean;
+    currentText?: string;
+    /**
+     * Gets or sets the current filter in imageEditor.
+     */
+    filter?: string;
 }
 
 /**

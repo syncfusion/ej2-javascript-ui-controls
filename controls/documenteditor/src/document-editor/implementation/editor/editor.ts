@@ -12700,7 +12700,7 @@ export class Editor {
         let lastText: any = undefined;
         for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
             let inline: ElementBox = lineWidget.children[i];
-            if (isNullOrUndefined(editAction) || editAction !== 2) {
+            if (isNullOrUndefined(editAction) || (editAction !== 2 && editAction !== 1)) {
                 for (let k: number = 0; k < lineWidget.children.length; k++) {
                     let elementbox: ElementBox = lineWidget.children[k];
                     if (elementbox instanceof TextElementBox) {
@@ -14286,13 +14286,13 @@ export class Editor {
                 selection.owner.isShiftingEnabled = true;
             }
             let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
-            let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(paragraph, paragraphInfo.offset);
+            let lineWidget: LineWidget = selection.start.currentWidget;
             let removeOffset: number = offset - 1;
             if (removeOffset < 0) {
-                lineInfo.line = lineInfo.line.previousLine as LineWidget;
-                removeOffset = this.documentHelper.selection.getLineLength(lineInfo.line) + removeOffset;
+                lineWidget = lineWidget.previousLine as LineWidget;
+                removeOffset = this.documentHelper.selection.getLineLength(lineWidget) + removeOffset;
             }
-            this.removeAtOffset(lineInfo.line, selection, removeOffset);
+            this.removeAtOffset(lineWidget, selection, removeOffset);
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset - 1, false);
             this.setPositionForHistory();
             if (!isRedoing) {

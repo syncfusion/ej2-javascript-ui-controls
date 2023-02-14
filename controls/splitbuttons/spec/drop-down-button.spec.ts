@@ -760,6 +760,12 @@ describe('DropDownButton', () => {
             drpButton.dataBind();
             expect(element.getAttribute('disabled')).toBeNull();
         });
+        it('EJ2-69116 - Dynamically changeing the dropdown button property using the setProperties', () => {
+            drpButton = new DropDownButton({ items: items });
+            drpButton.appendTo('#drp-button');
+            drpButton.setProperties({cssClass:'e-vertical'});
+            expect(drpButton.dropDown.element.classList.contains('e-vertical')).toBeTruthy();
+        });
     });
 
     it('memory leak', () => {

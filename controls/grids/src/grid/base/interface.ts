@@ -1005,6 +1005,7 @@ export interface NotifyArgs {
     renderFrozenRightContent?: boolean;
     promise?: Promise<Object>;
     isFrozenRowsRender?: boolean;
+    action?: string;
 }
 
 export interface LoadEventArgs {

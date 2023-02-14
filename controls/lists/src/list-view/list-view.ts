@@ -1728,7 +1728,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableVirtualization) {
             if (Object.keys(this.dataSource).length) {
                 if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                    if ((this as any).isReact) {
+                    if ((this as any).isReact || (this as any).isVue) {
                         if (typeof this.template == "string") {
                             this.listBaseOption.template = null;
                         }

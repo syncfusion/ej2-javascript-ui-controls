@@ -6121,8 +6121,7 @@ export class PdfViewerBase {
                 // eslint-disable-next-line
                 (jsonObject as any).document = proxy.jsonDocumentId;
             }
-
-            let formFieldsPageList: any = this.getFormFieldsPageList();
+            let formFieldsPageList: any = this.getFormFieldsPageList(jsonObject["formDesigner"]);
             jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
             jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
             const url: string = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.exportFormFields;
@@ -6395,8 +6394,8 @@ export class PdfViewerBase {
         }
 
         if (this.pdfViewer.formDesignerModule || this.pdfViewer.formFieldsModule) {
-            let formFieldsPageList: any = this.getFormFieldsPageList();
-            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
+            let formFieldsPageList: any = this.getFormFieldsPageList(jsonObject["formDesigner"]);
+            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;        
             jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
         }
         if (this.pdfViewer.annotationCollection) {
@@ -6436,7 +6435,7 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Returns form fields page number list.
      */
-    private getFormFieldsPageList(): any {
+    private getFormFieldsPageList(formDesignerData: string): any {
         // eslint-disable-next-line max-len
         let formFieldsCollection = this.pdfViewer.formFieldCollection.map(function (item) {
             if (!isNullOrUndefined(item.properties)) {
@@ -6449,7 +6448,14 @@ export class PdfViewerBase {
         });
         let annotActionCollection = !isNullOrUndefined(this.pdfViewer.annotationModule) ? this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName == "formFields" || value.annotation.formFieldAnnotationType != undefined).map(a => a.pageIndex) : [];
         let fullPageList = formFieldsCollection.concat(annotActionCollection);
-        return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
+        let designerDataList: any;
+        if (!isNullOrUndefined(formDesignerData)) {
+            designerDataList = JSON.parse(formDesignerData).map(function (item: any) {
+                return item.FormField.pageNumber;
+            })
+        }
+        let totalPageList = fullPageList.concat(designerDataList);
+        return totalPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
     }
     /**
      * @private

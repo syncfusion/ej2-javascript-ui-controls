@@ -9,9 +9,9 @@ import { OverviewModel } from '../../src/overview/overview-model';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
-    RadialTree, DataBinding, DiagramTools
+    RadialTree, DataBinding, DiagramTools, HierarchicalTree, StackPanel, Container, TextElement, TreeInfo, ZoomOptions
 } from '../../src/diagram/index';
-Diagram.Inject(RadialTree, DataBinding);
+Diagram.Inject(RadialTree, DataBinding,HierarchicalTree);
 
 /**
  * Overview Spec
@@ -1454,6 +1454,255 @@ describe('Overview', () => {
             diagram.drag(diagram.nodes[0], 150, 0);
             var position2 = node_element.style.left;
             expect(position2 === "200px" ).toBe(true);
+            done();
+        });
+    });
+
+    describe('Overview not updated properly while zoom out', () => {
+        let diagram: Diagram;
+        let overview: Overview;
+        let ele: HTMLElement;
+        let ove: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram',styles:"width:74%;height: 500px; float:left" });
+            document.body.appendChild(ele);
+            ove = createElement('div', { id: 'overview1' ,styles:"width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;"});
+            document.body.appendChild(ove);
+
+            let data: object[] =  [
+                {
+                    'Id': 'parent', 'Name': 'Maria Anders', 'Designation': 'Managing Director',
+                     'IsExpand': 'true', 'RatingColor': '#C34444'
+                },
+                {
+                    'Id': 1, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager',
+                    'IsExpand': 'false',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 'parent'
+                },
+                {
+                    'Id': 2, 'Name': 'Anto Moreno', 'Designation': 'Project Lead',
+                     'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 1
+                },
+                {
+                    'Id': 3, 'Name': 'Thomas Hardy', 'Designation': 'Senior S/w Engg',
+                     'IsExpand': 'false',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 2
+                },
+                {
+                    'Id': 4, 'Name': 'Christina kaff', 'Designation': 'S/w Engg',
+                    'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 3
+                },
+                {
+                    'Id': 5, 'Name': 'Hanna Moos', 'Designation': 'Project Trainee',
+                    'IsExpand': 'true',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 4
+                },
+                {
+                    'Id': 6, 'Name': 'Peter Citeaux', 'Designation': 'S/w Engg',
+                   'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 5
+                },
+                {
+                    'Id': 7, 'Name': 'Martín Kloss', 'Designation': 'Project Trainee',
+                    'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 6
+                },
+                {
+                    'Id': 8, 'Name': 'Elizabeth Mary', 'Designation': 'Project Trainee',
+                     'IsExpand': 'None',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 6
+                },
+                {
+                    'Id': 9, 'Name': 'Victoria Ash', 'Designation': 'Senior S/w Engg',
+                   'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 5
+                },
+                {
+                    'Id': 10, 'Name': 'Francisco Yang', 'Designation': 'Senior S/w Engg',
+                     'IsExpand': 'None',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 3
+                },
+                {
+                    'Id': 11, 'Name': 'Yang Wang', 'Designation': 'Project Manager',
+                     'IsExpand': 'None',
+                    'RatingColor': '#EBB92E', 'ReportingPerson': 'parent'
+                },
+                {
+                    'Id': 12, 'Name': 'Lino Rodri', 'Designation': 'Project Manager',
+                    'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 11
+                },
+                {
+                    'Id': 13, 'Name': 'Philip Cramer', 'Designation': 'Senior S/w Engg',
+                    'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 24
+                },
+                {
+                    'Id': 14, 'Name': 'Pedro Afonso', 'Designation': 'Project Trainee',
+                    'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 15
+                },
+                {
+                    'Id': 15, 'Name': 'Elizabeth Roel', 'Designation': 'S/w Engg',
+                     'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 13
+                },
+                {
+                    'Id': 16, 'Name': 'Janine Labrune', 'Designation': 'Project Lead',
+                     'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 12
+                },
+                {
+                    'Id': 17, 'Name': 'Ann Devon', 'Designation': 'Project Manager',
+                     'IsExpand': 'false',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 25
+                },
+                {
+                    'Id': 18, 'Name': 'Roland Mendel', 'Designation': 'Project Lead',
+                    'IsExpand': 'true',
+                    'RatingColor': '#68C2DE', 'ReportingPerson': 17
+                },
+                {
+                    'Id': 19, 'Name': 'Aria Cruz', 'Designation': 'Senior S/w Engg',
+                     'IsExpand': 'false',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 18
+                },
+                {
+                    'Id': 20, 'Name': 'Martine Rancé', 'Designation': 'S/w Engg',
+                     'IsExpand': 'None',
+                    'RatingColor': '#93B85A', 'ReportingPerson': 18
+                },
+                {
+                    'Id': 21, 'Name': 'Maria Larsson', 'Designation': 'Project Trainee',
+                     'IsExpand': 'false',
+                    'RatingColor': '#EBB92E', 'ReportingPerson': 19
+                },
+                {
+                    'Id': 22, 'Name': 'Diego Roel', 'Designation': 'Project Trainee',
+                   'IsExpand': 'false',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 21
+                },
+                {
+                    'Id': 23, 'Name': 'Peter Franken', 'Designation': 'Project Trainee',
+                     'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 21
+                },
+                {
+                    'Id': 24, 'Name': 'Howard Snyder', 'Designation': 'Project Lead',
+                    'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 16
+                },
+                {
+                    'Id': 25, 'Name': 'Carine Schmitt', 'Designation': 'Project Manager',
+                    'IsExpand': 'None',
+                    'RatingColor': '#EBB92E', 'ReportingPerson': 'parent'
+                },
+                {
+                    'Id': 26, 'Name': 'Paolo Accorti', 'Designation': 'Project Lead',
+                     'IsExpand': 'None',
+                    'RatingColor': '#D46E89', 'ReportingPerson': 36
+                },
+            ];
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+            
+            diagram = new Diagram({
+                snapSettings: { constraints: 0 },
+                layout: {
+                    type: 'OrganizationalChart', margin: { top: 100 },
+                    getLayoutInfo: (node: Node, tree: TreeInfo) => {
+                        if (!tree.hasSubTree) {
+                            tree.orientation = 'Vertical';
+                            tree.type = 'Alternate';
+                        }
+                    }
+                },
+                dataSourceSettings: {
+                    id: 'Id', parentId: 'ReportingPerson', dataSource: items
+                },
+            
+                getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+            
+                setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                    let content: StackPanel = new StackPanel();
+                    content.id = (obj as NodeModel).id + '_outerstack';
+                    content.style.strokeColor = 'darkgreen';
+                    content.orientation = 'Horizontal';
+                    content.padding = { left: 5, right: 10, top: 5, bottom: 5 };
+                    let innerStack: StackPanel = new StackPanel();
+                    innerStack.style.strokeColor = 'none';
+                    innerStack.margin = { left: 5, right: 0, top: 0, bottom: 0 };
+                    innerStack.id = (obj as NodeModel).id + '_innerstack';
+            
+                    let text: TextElement = new TextElement();
+                    text.content = (obj as NodeModel).data['Name'];
+            
+                    text.style.color = 'blue';
+                    text.style.strokeColor = 'none';
+                    text.style.fill = 'none';
+                    text.id = (obj as NodeModel).id + '_text1';
+            
+                    let desigText: TextElement = new TextElement();
+                    desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                    desigText.content = (obj as NodeModel).data['Designation'];
+                    desigText.style.color = 'blue';
+                    desigText.style.strokeColor = 'none';
+                    desigText.style.fill = 'none';
+                    desigText.style.textWrapping = 'Wrap';
+                    desigText.id = (obj as NodeModel).id + '_desig';
+                    innerStack.children = [text, desigText];
+            
+                    content.children = [ innerStack];
+            
+                    return content;
+                }
+            });
+
+            diagram.appendTo('#diagram');
+
+            let options: OverviewModel = {};
+            options.height = '500';
+            options.width = '250';
+            options.sourceID = 'diagram';
+            overview = new Overview(options);
+            overview.appendTo('#over');
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            diagram.destroy();
+            ele.remove();
+            ove.remove();
+        });
+        it('Zoom-out diagram and doing interactions in diagram', (done: Function) => {
+            let zoomout: ZoomOptions = { type: "ZoomOut", zoomFactor: 0.2 };
+            diagram.zoomTo(zoomout);
+            let preZoom = diagram.scroller.currentZoom; 
+            diagram.select([diagram.nodes[0]]);
+            diagram.drag(diagram.nodes[0], 100, 100);
+            var mouseEvents:MouseEvents = new MouseEvents();
+            let overviewelement:HTMLElement = document.getElementById(overview.element.id);
+            let target:HTMLElement = document.getElementById('overview_canvasbottom');
+            let mouseDown:string = 'mouseDown';
+            let mouseup:string = 'mouseUp';
+            let mouseMove:string = 'mouseMove';
+            overview[mouseDown]({ target: target, type: mouseDown });
+            mouseEvents.mouseDownEvent(overviewelement, 1186, 160);
+            mouseEvents.mouseMoveEvent(overviewelement, 1056, 170);
+            overview[mouseup]({ target: target, type: mouseDown });
+            let curZoom = diagram.scroller.currentZoom;
+            expect(preZoom !==curZoom).toBe(true);
             done();
         });
     });

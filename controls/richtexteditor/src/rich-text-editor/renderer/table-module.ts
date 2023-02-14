@@ -913,7 +913,7 @@ export class Table {
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
                     const currentTableWidth: number =  parseFloat(this.curTable.style.width.split('%')[0]);
-                    const currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow as number].cells[this.colIndex] as HTMLElement).style.width.split('%')[0]);
+                    const currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow as number].cells[this.colIndex >= this.curTable.rows[cellRow as number].cells.length ? this.curTable.rows[cellRow as number].cells.length - 1 : this.colIndex] as HTMLElement).style.width.split('%')[0]);
                     if (this.currentColumnResize === 'first') {
                         mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
                         this.removeResizeElement();

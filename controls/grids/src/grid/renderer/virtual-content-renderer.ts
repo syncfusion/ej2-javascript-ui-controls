@@ -211,6 +211,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             requestType: 'virtualscroll', virtualInfo: viewInfo,
             focusElement: scrollArgs.focusElement
         });
+        if (this.parent.enableColumnVirtualization && !this.parent.getContentTable().querySelector('tr.e-row')) {
+            this.parent.removeMaskRow();
+            this.appendContent(undefined, undefined, {
+                requestType: 'virtualscroll', virtualInfo: viewInfo,
+                focusElement: scrollArgs.focusElement
+            });
+            this.prevInfo = viewInfo;
+        }
     }
 
     private block(blk: number): boolean {
@@ -266,6 +274,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let index: number = info.blockIndexes[info.block]; let mIdx: number;
         const old: number = index; const max: Function = Math.max;
         let indexes: number[] = info.direction === 'down' ? [max(index, 1), ++index, ++index] : [max(index - 1, 1), index, index + 1];
+        this.prevInfo = this.prevInfo || this.vgenerator.getData();
         if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
             // To avoid frozen content white space issue
             if (info.sentinelInfo.axis === 'X' || (info.sentinelInfo.axis === 'Y' && (info.page === this.prevInfo.page))) {
@@ -353,6 +362,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.virtualEle.setMovableWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
         } else {
             this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
+        }
+        if (this.parent.enableColumnVirtualization && isNullOrUndefined(target) && isNullOrUndefined(newChild) ) {
+            return;
         }
         if (!isNullOrUndefined(target) && !isNullOrUndefined(target.parentNode)) {
             remove(target);
@@ -698,6 +710,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 }
             }
             const colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.isFrozenGrid();
+            this.prevInfo = this.prevInfo || this.vgenerator.getData();
             const xAxis: boolean = current.axis === 'X'; const top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
             const height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);

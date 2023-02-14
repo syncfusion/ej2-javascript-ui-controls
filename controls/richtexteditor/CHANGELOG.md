@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.50 (2023-02-14)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I434928` - Fixed the script error raised and the issue with table columns couldn't be resized after cellMerge has been resolved.
+
 ## 20.4.49 (2023-02-07)
 
 ### RichTextEditor

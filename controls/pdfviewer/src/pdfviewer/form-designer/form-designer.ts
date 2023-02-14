@@ -2180,7 +2180,7 @@ export class FormDesigner {
             type: node.formFieldAnnotationType as FormFieldType, isReadOnly: node.isReadonly, fontFamily: node.fontFamily,
             fontSize: node.fontSize, fontStyle: node.fontStyle as unknown as FontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, isMultiline: (node as PdfFormFieldBaseModel).isMultiline,
             alignment: (node as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (node as PdfFormFieldBaseModel).visibility, maxLength: (node as PdfFormFieldBaseModel).maxLength, isRequired: (node as PdfFormFieldBaseModel).isRequired,
-            isPrint: node.isPrint, isSelected: (node as PdfFormFieldBaseModel).isSelected, isChecked: (node as PdfFormFieldBaseModel).isChecked, tooltip: (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, thickness: node.thickness, pageIndex: node.pageIndex, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings
+            isPrint: node.isPrint, isSelected: (node as PdfFormFieldBaseModel).isSelected, insertSpaces: (node as PdfFormFieldBaseModel).insertSpaces, isChecked: (node as PdfFormFieldBaseModel).isChecked, tooltip: (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, thickness: node.thickness, pageIndex: node.pageIndex, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings
         };
         this.pdfViewer.formFieldCollections.push(formField);
     }
@@ -3718,10 +3718,56 @@ export class FormDesigner {
                     }
                 }
             }
+            for (let j = 0; j < this.pdfViewer.formFieldCollection.length; j++) {
+                for (let k = 0; k < this.pdfViewer.formFieldCollections.length; k++) {
+                    let items = this.loadedFormFieldValue(this.pdfViewer.formFieldCollections[k], this.pdfViewer.formFieldCollection[j]);
+                    let nonRenderField: any = formFieldsData.filter(function (value: any) {
+                        if (items.id + '_content' === value.FormField.id || items.id === value.FormField.id) {
+                            return items;
+                        }
+                    })
+                    if (nonRenderField.length === 0) {
+                        formFieldsData.push({ Key: items.id + "_content", FormField: items })
+                    }
+                }
+            }
             return (JSON.stringify(formFieldsData));
         } else {
             return null;
         }
+    }
+    /**
+     * @private
+    */
+    private loadedFormFieldValue(currentData: any, items: any) {
+        let backgroundColor: any = this.hexToRgb(currentData.backgroundColor);
+        let bounds: any = currentData.bounds;
+        let backColor: any = currentData.backgroundColor ? { r: backgroundColor[0], g: backgroundColor[1], b: backgroundColor[2], a: backgroundColor[3] } : { r: 218, g: 234, b: 247, a: 100 };
+        // // eslint-disable-next-line
+        let fontColor: any = this.hexToRgb(currentData.color);
+        let foreColor: any = currentData.color ? { r: fontColor[0], g: fontColor[1], b: fontColor[2], a: 100 } : { r: 0, g: 0, b: 0, a: 100 };
+        let borderColor: any = this.hexToRgb(currentData.borderColor);
+        let borderRGB: any = currentData.borderColor ? { r: borderColor[0], g: borderColor[1], b: borderColor[2], a: 100 } : { r: 48, g: 48, b: 48, a: 100 };
+        let value: string;
+        if ((currentData.name === items.name) && (currentData.type === 'Textbox' || currentData.type === 'PasswordField')) {
+            value = items.value;
+        }
+        let fieldProperties: any = {
+            lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
+            value: value ? value : currentData.value, radiobuttonItem: [], signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, insertSpaces: currentData.insertSpaces ? currentData.insertSpaces : false, isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, isMultiline: currentData.Multiline ? currentData.Multiline : false, rotation: 0,
+            isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1, options: [], maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+        };
+        if (currentData.type === 'RadioButton') {
+            var field = {
+                lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
+                value: currentData.value, signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
+                isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1, maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+            };
+            fieldProperties.radiobuttonItem.push(field);
+        } else {
+            fieldProperties.radiobuttonItem = []
+        }
+        return fieldProperties;
     }
     /**
      * @private
