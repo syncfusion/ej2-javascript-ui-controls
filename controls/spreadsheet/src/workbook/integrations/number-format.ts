@@ -93,7 +93,7 @@ export class WorkbookNumberFormat {
             if (dateEventArgs.isDate || dateEventArgs.isTime) {
                 rightAlign = true;
                 cell.value = args.value = dateEventArgs.updatedVal;
-                if (cell.format) {
+                if (cell.format && cell.format !== 'General') {
                     args.format = cell.format;
                 } else {
                     cell.format = args.format = getFormatFromType(dateEventArgs.isDate ? 'ShortDate' : 'Time');
@@ -245,6 +245,10 @@ export class WorkbookNumberFormat {
                     }
                 }
             } else {
+                if (this.checkAndProcessNegativeValue(args, cell.value)) {
+                    args.formatApplied = true;
+                    return args.formattedText;
+                }
                 dateArgs = { dateObj: intToDate(parseFloat(cell.value)) };
                 isValidDate = dateArgs.dateObj && dateArgs.dateObj.toString() !== 'Invalid Date';
             }
@@ -601,8 +605,10 @@ export class WorkbookNumberFormat {
                 break;
             case 'Percentage':
                 numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
-                if (numArgs.isNumber) {
-                    cell.value = args.value = numArgs.value;
+                if (numArgs.isNumber || (fResult && this.isPercentageValue(fResult.toString(), args, cell))) {
+                    if (numArgs.isNumber) {
+                        cell.value = args.value = numArgs.value;
+                    }
                     fResult = this.percentageFormat(args, intl);
                     isRightAlign = true;
                 }
@@ -612,15 +618,15 @@ export class WorkbookNumberFormat {
                 isRightAlign = args.formatApplied;
                 break;
             case 'ShortDate':
-                fResult = this.shortDateFormat(args, intl);
+                fResult = this.checkAndProcessNegativeValue(args, args.value) ? args.formattedText : this.shortDateFormat(args, intl);
                 isRightAlign = !!fResult;
                 break;
             case 'LongDate':
-                fResult = this.longDateFormat(args, intl);
+                fResult = this.checkAndProcessNegativeValue(args, args.value) ? args.formattedText : this.longDateFormat(args, intl);
                 isRightAlign = !!fResult;
                 break;
             case 'Time':
-                fResult = this.timeFormat(args, intl);
+                fResult = this.checkAndProcessNegativeValue(args, args.value) ? args.formattedText : this.timeFormat(args, intl);
                 isRightAlign = !!fResult;
                 break;
             case 'Fraction':
@@ -691,6 +697,9 @@ export class WorkbookNumberFormat {
                 } else if (cellValArr[1]) {
                     if (cellValArr[1].length > 9) {
                         options.fResult = options.intl.formatNumber(Number(cellVal), { format: '0.000000000' });
+                        if (options.fResult) {
+                            options.fResult = Number(options.fResult).toString();
+                        }
                     } else if (cellVal.includes('e-')) {
                         const expVal: string[] = cellVal.split('e-');
                         const digitLen: number = Number(expVal[1]) + (expVal[0].includes('.') ? expVal[0].split('.')[1].length : 0);
@@ -709,12 +718,9 @@ export class WorkbookNumberFormat {
         }
         if (options.fResult) {
             let res: string = options.fResult.toString();
-            if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
-                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
-                options.args.value = Number(res.split('%')[0].split(this.groupSep).join('')) / 100;
-                options.cell.format = options.args.format = this.getPercentageFormat(res);
+            if (this.isPercentageValue(res, options.args, options.cell)) {
+                options.cell.format = options.args.format = res.includes(this.decimalSep) ? getFormatFromType('Percentage') : '0%';
                 options.fResult = this.percentageFormat(options.args, options.intl);
-                options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
             } else {
                 let format: string = '';
@@ -748,8 +754,16 @@ export class WorkbookNumberFormat {
         }
     }
 
-    private getPercentageFormat(value: string): string {
-        return value.indexOf(this.decimalSep) > -1 ? getFormatFromType('Percentage') : '0%';
+    private isPercentageValue(value: string, args: NumberFormatArgs, cell: CellModel): boolean {
+        if (value.includes('%')) {
+            const valArr: string[] = value.split('%');
+            if (valArr[0] !== '' && valArr[1].trim() === '' && Number(valArr[0].split(this.groupSep).join('')).toString() !== 'NaN') {
+                args.value = Number(valArr[0].split(this.groupSep).join('')) / 100;
+                cell.value = args.value.toString();
+                return true;
+            }
+        }
+        return false;
     }
 
     private findSuffix(zeros: string, resultSuffix: string): string {
@@ -876,7 +890,7 @@ export class WorkbookNumberFormat {
             args.format = this.getFormatForOtherCurrency(args.format);
             args.formatApplied = true;
             if (cellVal === 0) {
-                return currencySymbol + '- ';
+                return (args.format.includes(` ${currencySymbol}`) ? ' ' : '') + currencySymbol + '- ';
             } else {
                 return intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
             }
@@ -896,6 +910,23 @@ export class WorkbookNumberFormat {
             }
         }
         return format;
+    }
+
+    private checkAndProcessNegativeValue(args: NumberFormatArgs, cellValue: string | number): boolean {
+        if (cellValue && isNumber(cellValue) && Number(cellValue) < 0) {
+            if (args.rowIndex === undefined || args.dataUpdate) {
+                args.formattedText = '#'.repeat(args.dataUpdate ? 7 : 10);
+                return true;
+            }
+            args.isRowFill = true;
+            const eventArgs: { cell: CellModel, cellEle: HTMLElement, rowIdx: number, colIdx: number, repeatChar: string,
+                formattedText?: string } = { cell: args.cell, cellEle: args.td, rowIdx: args.rowIndex, colIdx: args.colIndex,
+                repeatChar: '#' };
+            this.parent.notify(rowFillHandler, eventArgs);
+            args.formattedText = eventArgs.formattedText;
+            return true;
+        }
+        return false;
     }
 
     private shortDateFormat(args: NumberFormatArgs, intl: Internationalization): string {
@@ -997,8 +1028,7 @@ export class WorkbookNumberFormat {
     private scientificHashFormat(args: NumberFormatArgs, fArr: string[]): string {
         const fractionCount: number = this.findDecimalPlaces(args.format);
         const wholeCount: number = (fArr[0].split('0').length - 1) + (fArr[0].split('#').length - 1);
-        const cellVal: number = Number(args.value.toString().split('.')[0]) || Number(args.value);
-        const formattedVal: string = cellVal.toExponential(fractionCount + wholeCount);
+        const formattedVal: string = Number(args.value).toExponential(fractionCount + wholeCount);
         let expoSeparator: string;
         if (formattedVal.includes('e+')) {
             expoSeparator = 'e+';
@@ -1039,7 +1069,7 @@ export class WorkbookNumberFormat {
         if (fResult.indexOf('e+') > -1) {
             fResult = fResult.split('e+')[0] + 'E+' + this.findSuffix(zeros, fResult.split('e+')[1]);
         } else if (fResult.indexOf('e-') > -1) {
-            fResult = fResult.split('e-')[0] + 'E-' + + this.findSuffix(zeros, fResult.split('e-')[1]);
+            fResult = fResult.split('e-')[0] + 'E-' + this.findSuffix(zeros, fResult.split('e-')[1]);
         }
         return fResult.replace('.', this.decimalSep);
     }
@@ -1093,7 +1123,7 @@ export class WorkbookNumberFormat {
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date' &&
                 dateObj.dateObj.getFullYear() >= 1900) {
                 props.val = dateToInt(dateObj.dateObj, props.val.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
-                if (!cell.format) {
+                if (!cell.format || cell.format === 'General') {
                     if (dateObj.type === 'time') {
                         cell.format = getFormatFromType('Time');
                     } else {
@@ -1119,9 +1149,7 @@ export class WorkbookNumberFormat {
             }
         }
         const timeArr: string[] = val.split(this.localeObj.timeSeparator);
-        if (timeArr.length === 3 && isTewlveHr) {
-            return { val: val, format: '' };
-        }
+        const isDefaultTime: boolean = timeArr.length === 3 && isTewlveHr;
         let twelveHrRep: string;
         if (timeArr.length <= 3) {
             let timeProp: number; let valArr: string[];
@@ -1140,8 +1168,8 @@ export class WorkbookNumberFormat {
                         if (timeArr.length === 1) {
                             if (twelveHrRep) {
                                 valArr = val.split(' ');
-                                valArr[0] = valArr[0] + ':00';
-                                val = valArr.join(' ');
+                                valArr[0] += `${this.localeObj.timeSeparator}00`;
+                                timeArr[0] = valArr.join(' ');
                             } else {
                                 format = [];
                                 val = 'Invalid';
@@ -1153,6 +1181,9 @@ export class WorkbookNumberFormat {
                         } else {
                             format.push('ss');
                         }
+                        if (timeVal.length === 1) {
+                            timeArr[index as number] = `0${timeArr[index as number]}`;
+                        }
                     } else {
                         format = [];
                         val = 'Invalid';
@@ -1163,9 +1194,12 @@ export class WorkbookNumberFormat {
                 }
             });
         }
-        if (format.length && !cell.format) {
-            cell.format = format.join(':');
-            return { val: val, format: cell.format };
+        if (format.length) {
+            val = timeArr.join(this.localeObj.timeSeparator);
+            if((!cell.format || cell.format === 'General') && !isDefaultTime) {
+                cell.format = format.join(':');
+                return { val: val, format: cell.format };
+            }
         }
         return { val: val, format: '' };
     }
@@ -1196,8 +1230,8 @@ export class WorkbookNumberFormat {
         let format: string = ''; const formatArr: string[] = [];
         const updateFormat: Function = (): void => {
             format = formatArr.join(separator);
-            if (!cellFormat) {
-                cell.format = format + (cell.format ? ' ' + cell.format : '');
+            if (!cellFormat || cellFormat === 'General') {
+                cell.format = format + (cell.format && cell.format !== 'General' ? ` ${cell.format}` : '');
             }
         };
         let firstVal: string;
@@ -1250,7 +1284,7 @@ export class WorkbookNumberFormat {
                 if (!isNullOrUndefined(firstVal)) {
                     updateSecValue(dateArr[0]);
                 }
-            } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1]) && (this.localeObj.dateSeparator === '/' ||
+            } else if (Number(dateArr[0]) && Number(dateArr[0]) <= 12 && Number(dateArr[1]) && (this.localeObj.dateSeparator === '/' ||
                 separator === '-' || isEdit)) {
                 firstVal = enUSMonth[Number(dateArr[0]) - 1];
                 updateSecValue(dateArr[1]);
@@ -1287,7 +1321,7 @@ export class WorkbookNumberFormat {
             }
         }
         if (timeArgs && val !== 'Invalid') {
-            if (!format && !cellFormat) {
+            if (!format && (!cellFormat || cellFormat === 'General')) {
                 cell.format = `${getFormatFromType('ShortDate')} ${timeArgs.format || getFormatFromType('Time')}`;
             } else if (timeArgs.format) {
                 format += ` ${timeArgs.format}`;
@@ -1309,6 +1343,14 @@ export class WorkbookNumberFormat {
         const date: string = getFormatFromType('ShortDate');
         const time: string = getFormatFromType('Time');
         const timeFormat: string = format.toLowerCase();
+        const parseOtherCultureNumber: Function = (): void => {
+            if (this.decimalSep !== '.' && args.value) {
+                args.value = args.value.toString();
+                if (isNumber(args.value) && args.value.includes('.')) {
+                    args.value = args.value.replace('.', this.decimalSep);
+                }
+            }
+        };
         if (type === 'time' && timeFormat.includes('m') && !timeFormat.includes(':m') && !timeFormat.includes('m:') &&
             !timeFormat.includes('[m') && !timeFormat.includes('am')) {
             type = 'date';
@@ -1326,11 +1368,14 @@ export class WorkbookNumberFormat {
             } else {
                 args.value = this.timeFormat({ type: type, value: args.value, format: time }, intl);
             }
-        } else if (this.decimalSep !== '.' && args.value) {
-            args.value = args.value.toString();
-            if (isNumber(args.value) && args.value.includes('.')) {
-                args.value = args.value.replace('.', this.decimalSep);
+        } else if (args.cell.format && args.cell.format.includes('%') && isNumber(args.cell.value)) {
+            args.value = this.parent.getDisplayText(args.cell);
+            if (!args.value.includes('%')) {
+                args.value = beforeText;
+                parseOtherCultureNumber();
             }
+        } else {
+            parseOtherCultureNumber();
         }
         if (!args.value || (args.value && args.value.toString().indexOf('null') > -1)) {
             args.value = beforeText;

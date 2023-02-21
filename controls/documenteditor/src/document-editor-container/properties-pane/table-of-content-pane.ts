@@ -280,6 +280,7 @@ export class TocProperties {
         this.cancelBtn = new Button({
             content: this.localObj.getConstant('Cancel'), cssClass: this.isRtl ? 'e-de-btn-cancel-rtl' : 'e-de-btn-cancel'
         });
+        cancelbuttoncontentStyleElement.setAttribute('aria-label', this.cancelBtn.content);
         this.cancelBtn.appendTo(cancelbuttoncontentStyleElement);
     }
 
@@ -289,6 +290,7 @@ export class TocProperties {
         }
         this.element.style.display = isShow ? 'block' : 'none';
         this.updateBtn.content = this.documentEditor.selection.contextType === 'TableOfContents' ? this.localObj.getConstant('Update') : this.localObj.getConstant('Insert');
+        this.updateBtn.element.setAttribute('aria-label', this.updateBtn.content);
         this.prevContext = this.documentEditor.selection.contextType;
         this.documentEditor.resize();
         if (isShow) {

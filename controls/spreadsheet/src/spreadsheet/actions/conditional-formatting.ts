@@ -1,9 +1,9 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
-import { renderCFDlg, locale, dialog, focus, getViewportIndexes } from '../common/index';
+import { renderCFDlg, locale, dialog, focus } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
-import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange } from '../../workbook/common/index';
+import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -448,7 +448,7 @@ export class ConditionalFormatting {
         let indexes: number[][] = [args.indexes];
         let isEditCellUpdated: boolean = false;
         if (args.refreshAll) {
-            indexes = getViewportIndexes(this.parent);
+            indexes = getViewportIndexes(this.parent, this.parent.viewport);
         }
         for (let i: number = cfRule.length - 1; i >= 0; i--) {
             if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i as number]) :
@@ -571,7 +571,7 @@ export class ConditionalFormatting {
                         address: getCellAddress(rIdx, cIdx) });
                 if (!isApply && args.isEdit && !isEditCellUpdated) {
                     let style: CellStyleModel;
-                    if (args.indexes[0] === rIdx && args.indexes[1] === cIdx) {
+                    if (args.indexes && args.indexes[0] === rIdx && args.indexes[1] === cIdx) {
                         isEditCellUpdated = true;
                     }
                     if (cf.cFColor) {
@@ -596,7 +596,7 @@ export class ConditionalFormatting {
                 }
             }
             if (isApply) {
-                if (args.isEdit && (args.indexes[0] === rIdx && args.indexes[1] === cIdx)) {
+                if (args.isEdit && args.indexes && (args.indexes[0] === rIdx && args.indexes[1] === cIdx)) {
                     isEditCellUpdated = true;
                 }
                 removeClass([td], ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt']);
@@ -908,7 +908,8 @@ export class ConditionalFormatting {
                 this.parent.notify(checkDateFormat, dateEventArgs);
                 if (dateEventArgs.isDate || dateEventArgs.isTime) {
                     cf.value = dateEventArgs.updatedVal.toString();
-                    return cf.type === 'GreaterThan' ? value > dateEventArgs.updatedVal : value < dateEventArgs.updatedVal;
+                    return cf.type === 'GreaterThan' ? Number(value) > Number(dateEventArgs.updatedVal) :
+                        Number(value) < Number(dateEventArgs.updatedVal);
                 } else {
                     return cf.type === 'GreaterThan' ? value.toLowerCase() > input.toLowerCase() : value.toLowerCase() < input.toLowerCase();
                 }
@@ -923,7 +924,11 @@ export class ConditionalFormatting {
         const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
         input1 = input1.replace(txtRegx, ''); input2 = input2.replace(txtRegx, '');
         if (isNumber(input1)) {
-            return parseFloat(value) >= parseFloat(input1) && parseFloat(value) <= parseFloat(input2);
+            let firstVal: number = parseFloat(input1); let secondVal: number = parseFloat(input2);
+            if (firstVal > secondVal) {
+                [firstVal, secondVal] = [secondVal, firstVal];
+            }
+            return parseFloat(value) >= firstVal && parseFloat(value) <= secondVal;
         } else if (input1 && input2) {
             const dateEventArgs1: DateFormatCheckArgs = { value: input1, cell: {}, updatedVal: '' };
             const dateEventArgs2: DateFormatCheckArgs = { value: input2, cell: {}, updatedVal: '' };

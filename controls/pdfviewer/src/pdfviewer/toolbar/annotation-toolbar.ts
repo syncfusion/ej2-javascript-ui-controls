@@ -646,9 +646,35 @@ export class AnnotationToolbar {
             case this.pdfViewer.element.id + '_annotation_inkIcon':
                 this.showInkPropertiesTool();
                 break;
+            case this.pdfViewer.element.id + '_annotation_handwrittenImage':
+                this.showImagePropertyTool();
+                break;
         }
     }
-  
+    private showImagePropertyTool(): void {
+        // eslint-disable-next-line
+        let annotationToolbarItems: any = this.pdfViewer.toolbarSettings.annotationToolbarItems;
+        if (annotationToolbarItems) {
+            if (annotationToolbarItems.indexOf('OpacityEditTool') !== -1) {
+                this.showOpacityEditTool(true, 0, 0);
+            }
+            else {
+                this.showOpacityEditTool(false, 0, 0);
+            }
+            if (annotationToolbarItems.indexOf('CommentPanelTool') !== -1) {
+                this.showCommentPanelTool(true, 1, 1);
+            }
+            else {
+                this.showCommentPanelTool(false, 1, 1);
+            }
+            if (annotationToolbarItems.indexOf('AnnotationDeleteTool') !== -1) {
+                this.showAnnotationDeleteTool(true, 2, 2);
+            }
+            else {
+                this.showAnnotationDeleteTool(false, 2, 2);
+            }
+        }
+    }
     private showFreeTextPropertiesTool(): void {
         // eslint-disable-next-line
         let annotationToolbarItems: any = this.pdfViewer.toolbarSettings.annotationToolbarItems;
@@ -4134,7 +4160,7 @@ export class AnnotationToolbar {
             } else if (Browser.isDevice && propertyToolbarElement && propertyToolbarElement.children && propertyToolbarElement.children.length > 0) {
                 toolbar = this.propertyToolbar;
             }
-            if (toolbar.items[index]) {
+            if (toolbar && toolbar.items[index]) {
                 let className = toolbar.items[index].cssClass;
                 if (className && className !== '') {
                     // Querying the toolbar item

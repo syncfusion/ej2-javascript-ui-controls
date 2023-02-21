@@ -2669,7 +2669,7 @@ describe('RTE base module', () => {
             done();
         });
         it('getHtml method', () => {
-            expect(rteObj.getXhtml()).toBe(`<div><base href="https://www.w3schools.com/" /><p><b>Description: with space</b></p><p><br/></p><p>hello</p><hr/><p>hey</p><p><br/></p><p>Are you fine</p><p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379" class="e-rte-image e-imginline" /></p><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm" /><base href="https://www.w3schools.com/" /><p><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200" /><input type="submit" value="Submit" /></p><link rel="stylesheet" href="styles.css" /><p><object title="Test Object." classid="java.class"><param name="audio" value="music.wav" /><param name="width" value="600" /><param name="height" value="400" /></object><video width="320" height="240" controls=""><source src="forrest_gump.mp4" type="video/mp4" /><source src="forrest_gump.ogg" type="video/ogg" /><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English" /><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian" /></video></p><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr />longwordthatwillbreakatspecific<wbr />placeswhenthebrowserwindowisresized.</p><table><colgroup><col span="2" style="background-color:red" /><col style="background-color:yellow" /></colgroup><tbody><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></tbody></table></div>`);
+            expect(rteObj.getXhtml()).toBe(`<base href="https://www.w3schools.com/" /><p><b>Description: with space</b></p><p><br/></p><p>hello</p><hr/><p>hey</p><p><br/></p><p>Are you fine</p><p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379" class="e-rte-image e-imginline" /></p><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm" /><base href="https://www.w3schools.com/" /><p><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200" /><input type="submit" value="Submit" /></p><link rel="stylesheet" href="styles.css" /><p><object title="Test Object." classid="java.class"><param name="audio" value="music.wav" /><param name="width" value="600" /><param name="height" value="400" /></object><video width="320" height="240" controls=""><source src="forrest_gump.mp4" type="video/mp4" /><source src="forrest_gump.ogg" type="video/ogg" /><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English" /><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian" /></video></p><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr />longwordthatwillbreakatspecific<wbr />placeswhenthebrowserwindowisresized.</p><table><colgroup><col span="2" style="background-color:red" /><col style="background-color:yellow" /></colgroup><tbody><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></tbody></table>`);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -5535,7 +5535,7 @@ describe('Value property when xhtml is enabled', function () {
         expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p><br/></p></div>');
         rteObj.value = '<p>value changeded <br/></p>';
         rteObj.dataBind();
-        expect(rteObj.value).toBe("<div><p>value changeded <br/></p></div>");
+        expect(rteObj.value).toBe("<p>value changeded <br/></p>");
     });
 });
 describe('XHTML validation', function () {
@@ -5559,26 +5559,26 @@ describe('XHTML validation', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe("<div><div><p>adasd</p></div><div><p>adasd</p></div></div>");
+        expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div><div><p>adasd</p></div>");
     });
     it("ImageTags", function () {
         rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p>');
     });
     it("removeTags", function () {
         rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p>');
         rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -5597,21 +5597,21 @@ describe('XHTML validation', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p>');
     });
     it("Underline tag", function () {
         rteObj.value = "<p>Rich<strong>Text</strong> Editor</p><p>Sync<strong>fusion</srong></p>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p>');
     });
     it("v:image", function () {
         rteObj.value = '<p>sync<v:image src="zip.gif"></v:image>sync</p><v:image src="zip.gif"></v:image>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>syncsync</p>');
     });
 });
 describe('XHTML validation -iframe', function () {
@@ -5627,7 +5627,7 @@ describe('XHTML validation -iframe', function () {
         destroy(rteObj);
     });
     it("EJ2-43894 - When value property not set throws console error issue test case", function () {
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><br></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p>');
     });
     it("clean", function () {
         rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
@@ -5641,26 +5641,26 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe("<div><div><p>adasd</p></div><div><p>adasd</p></div></div>");
+        expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div><div><p>adasd</p></div>");
     });
     it("ImageTags", function () {
         rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p> <img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p><p> </p>');
     });
     it("removeTags", function () {
         rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul><p> </p><ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol><p>   </p>');
         rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -5679,27 +5679,27 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p>');
     });
     it("Underline tag", function () {
         rteObj.value = "<p>Rich<strong>Text</strong> Editor</p><p>Sync<strong>fusion</srong></p>";
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p>');
     });
     it("v:image", function () {
         rteObj.value = '<p>sync<v:image src="zip.gif"></v:image>sync</p><v:image src="zip.gif"></v:image>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>syncsync</p>');
     });
     
     it("EJ2-43894 - Empty value throws console error issue test case", function () {
         rteObj.value = '';
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><br></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p>');
     });
 });
 describe('IFrame - Util - setEditFrameFocus method testing', function () {
@@ -6230,5 +6230,27 @@ describe("Toobar item focus testing -", () => {
         ((elem.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
         expect(((elem.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).parentElement.classList.contains('e-active')).toBe(true);
         done();
+    });
+});
+describe('EJ2-69171 - RichTextEditor text area value has missing close tag when enableXhtml is true', function () {
+    let rteObj: any;
+    let keyBoardEvent = { type: 'keydown', preventDefault: function () { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: function () { }, shiftKey: false, which: 8 };
+    beforeAll(function (done) {
+        rteObj = renderRTE({ enableXhtml: true, 
+            value: `<div><p></p></div>`
+        });
+        done();
+    });
+    it("close tag checking when enableXhtml is true", function (done) {
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        (rteObj as any).keyUp(keyboardEventArgs);
+        setTimeout(() => {
+            expect(rteObj.value === `<div><p><br/></p></div>`).toBe(true);
+            done();
+        }, 100); 
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

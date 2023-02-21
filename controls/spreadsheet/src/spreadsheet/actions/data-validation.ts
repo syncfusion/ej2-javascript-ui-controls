@@ -112,7 +112,7 @@ export class DataValidation {
                     isListValidation = modelObj.validation && modelObj.validation.type === 'List';
                 }
             }
-            this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
+            this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
             if (isListValidation && !modelObj.validation) {
                 const td: HTMLElement = this.parent.getCell(actCelIdx[0], actCelIdx[1]);
                 if (td && td.getElementsByClassName('e-validation-list')[0]) {

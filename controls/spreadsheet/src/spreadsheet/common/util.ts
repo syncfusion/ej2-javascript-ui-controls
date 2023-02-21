@@ -2026,38 +2026,6 @@ export function isDiscontinuousRange(range: string): boolean {
 }
 
 /**
- * Returns the viewport indexes.
- *
- * @param {Spreadsheet} parent - Specify the spreadsheet context.
- * @returns {number[][]} - Returns the viewport indexes.
- * @hidden
- */
-export function getViewportIndexes(parent: Spreadsheet): number[][] {
-    const sheet: SheetModel = parent.getActiveSheet();
-    const indexes: number[][] = [[parent.viewport.topIndex + parent.frozenRowCount(sheet), parent.viewport.leftIndex +
-        parent.frozenColCount(sheet), parent.viewport.bottomIndex, parent.viewport.rightIndex]];
-    if (sheet.frozenRows || sheet.frozenColumns) {
-        const froezenRow: number = parent.frozenRowCount(sheet);
-        const froezenCol: number = parent.frozenColCount(sheet);
-        const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-        if (froezenRow && froezenCol) {
-            indexes.push([topLeftCell[0], topLeftCell[1], froezenRow - 1, froezenCol - 1]);
-            const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
-            indexes.push([paneTopLeftCell[0], topLeftCell[1], parent.viewport.bottomIndex, froezenCol - 1]);
-        }
-        if (froezenRow) {
-            indexes.push([topLeftCell[0], parent.viewport.leftIndex + froezenCol, froezenRow - 1,
-                parent.viewport.rightIndex]);
-        }
-        if (froezenCol) {
-            indexes.push([parent.viewport.topIndex + froezenRow, topLeftCell[1], parent.viewport.bottomIndex,
-            froezenCol - 1]);
-        }
-    }
-    return indexes;
-}
-
-/**
  * @hidden
  * @param {Spreadsheet} context - Specifies the context.
  * @param {number[]} range - Specifies the address range.

@@ -599,7 +599,9 @@ export type DataLabelIntersectAction =
     /** Shows all the labels. */
     'None' |
     /** Hide the label when it intersect. It is also applicable for polar radar chart */
-    'Hide';
+    'Hide' |
+    /** Rotate the label to 90 degree when it intersect. */
+    'Rotate90';
 
 /**
  * Defines the Position. They are

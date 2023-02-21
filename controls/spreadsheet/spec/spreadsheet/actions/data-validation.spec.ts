@@ -955,6 +955,22 @@ describe('Data validation ->', () => {
                 done();
             });
         });
+        it('Clear highlight on removing data validation from column', (done: Function) => {
+            helper.invoke('selectRange', ['E1:E100']);
+            helper.invoke('addDataValidation', [{ ignoreBlank: true, type: 'WholeNumber', operator: 'EqualTo', value1: '20', value2: '' }, 'E:E']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(2)');
+            let cellEle: HTMLElement = helper.invoke('getCell', [2, 4]);
+            expect(cellEle.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(cellEle.style.color).toBe('rgb(255, 0, 0)');
+            expect(helper.getInstance().sheets[0].columns[4].validation.isHighlighted).toBeTruthy();
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(4)');
+            expect(helper.getInstance().sheets[0].columns[4].validation).toBeUndefined();
+            expect(cellEle.style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(cellEle.style.color).toBe('rgb(0, 0, 0)');
+            done();
+        });
     });         
 
     describe('CR-Issues ->', () => {

@@ -192,8 +192,8 @@ export class DetailRow {
             gObj.updateVisibleExpandCollapseRows();
             gObj.notify(events.refreshExpandandCollapse, { rows: gObj.getRowsObject() });
         }
-        if (this.parent.allowTextWrap){
-            if (this.parent.getContentTable().scrollHeight > this.parent.getContentTable().clientHeight) {
+        if (this.parent.allowTextWrap && this.parent.height === 'auto'){
+            if (this.parent.getContentTable().scrollHeight > this.parent.getContent().clientHeight) {
                 this.parent.scrollModule.setPadding();
             }
             else{

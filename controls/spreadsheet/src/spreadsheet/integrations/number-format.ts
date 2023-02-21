@@ -26,7 +26,7 @@ export class NumberFormat {
     }
 
     private rowFillHandler(args: { cell: CellModel, cellEle: HTMLElement, rowIdx: number, colIdx: number, beforeFillText: string,
-        repeatChar: string, afterFillText: string }): void {
+        repeatChar: string, afterFillText: string, formattedText?: string }): void {
         const cellElem: HTMLElement = args.cellEle || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cellElem) {
             const repeatCharWidth: number = getTextWidth(args.repeatChar, args.cell.style, this.parent.cellStyle);
@@ -45,7 +45,8 @@ export class NumberFormat {
                 cellWidth -= getTextWidth(args.afterFillText, args.cell.style, this.parent.cellStyle);
             }
             const repeatCount: number = parseInt((cellWidth / repeatCharWidth).toString(), 10);
-            repeatCharSpan.textContent = args.repeatChar.repeat(repeatCount);
+            args.formattedText = repeatCount > 0 ? args.repeatChar.repeat(repeatCount) : '';
+            repeatCharSpan.textContent = args.formattedText;
         }
     }
 

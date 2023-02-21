@@ -1,8 +1,8 @@
 import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell, getSheetIndex, getSheetNameFromAddress } from '../base/index';
-import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn, getRangeFromAddress } from '../common/index';
+import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn, getRangeFromAddress, getViewportIndexes } from '../common/index';
 import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, checkCellValid } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs } from '../common/index';
-import { CellFormatArgs, ValidationType, ValidationOperator, ValidationModel, updateCell, beforeInsert, beforeDelete } from '../common/index';
+import { CellFormatArgs, ValidationModel, updateCell, beforeInsert, beforeDelete } from '../common/index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
@@ -50,76 +50,75 @@ export class WorkbookDataValidation {
     }
 
 
-    private validationHandler(args: { range: string, rules?: ValidationModel, isRemoveValidation?: boolean, cancel?: boolean }): void {
+    private validationHandler(
+        args: { range: string, rules?: ValidationModel, isRemoveValidation?: boolean, cancel?: boolean, viewport: object }): void {
         let onlyRange: string = args.range;
         let sheetName: string = '';
-        let column: ColumnModel;
         if (args.range.indexOf('!') > -1) {
             onlyRange = args.range.split('!')[1];
             sheetName = args.range.split('!')[0];
         }
         const sheet: SheetModel = getSheet(this.parent, sheetName ? getSheetIndex(this.parent, sheetName) : this.parent.activeSheetIndex);
         this.parent.dataValidationRange = (this.parent.dataValidationRange.indexOf('!') > -1 ? '' : sheet.name + '!') + this.parent.dataValidationRange + onlyRange + ',';
-        let isfullCol: boolean = false;
         const rangeInfo: { range: string, isFullCol: boolean }  = this.getRangeWhenColumnSelected(onlyRange, sheet);
         onlyRange = rangeInfo.range;
-        isfullCol = rangeInfo.isFullCol;
         if (!isNullOrUndefined(sheetName)) {
             args.range = sheetName + '!' + onlyRange;
         }
         args.range = args.range || sheet.selectedRange;
         const indexes: number[] = getSwapRange(getRangeIndexes(args.range));
-        if (isfullCol) {
-            for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                column = getColumn(sheet, colIdx);
-                isfullCol = isfullCol && args.isRemoveValidation && column && !column.validation ? false : true;
-            }
+        let cell: CellModel; let column: ColumnModel;
+        let viewportIndexes: number[][];
+        if (args.viewport && rangeInfo.isFullCol) {
+            viewportIndexes = getViewportIndexes(this.parent, args.viewport);
         }
-        if (isfullCol) {
-            for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+        for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+            if (rangeInfo.isFullCol) {
                 column = getColumn(sheet, colIdx);
-                if (args.isRemoveValidation && column && column.validation) {
-                    delete (sheet.columns[colIdx as number].validation);
-                } else {
-                    if (!args.isRemoveValidation) {
-                        if (isNullOrUndefined(column)) {
-                            sheet.columns[colIdx as number] = getColumn(sheet, colIdx);
+                if (args.isRemoveValidation) {
+                    if (column && column.validation) {
+                        delete column.validation;
+                        if (viewportIndexes) {
+                            viewportIndexes.forEach((viewportIndex: number[]) => {
+                                for (let rowIdx: number = viewportIndex[0]; rowIdx <= viewportIndex[2]; rowIdx++) {
+                                    cell = getCell(rowIdx, colIdx, sheet);
+                                    this.parent.notify(
+                                        applyCellFormat, <CellFormatArgs>{ rowIdx: rowIdx, colIdx: colIdx, style:
+                                            this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]) });
+                                }
+                            });
                         }
-                        sheet.columns[colIdx as number].validation = {
-                            operator: args.rules.operator as ValidationOperator,
-                            type: args.rules.type as ValidationType,
-                            value1: args.rules.value1 as string,
-                            value2: args.rules.value2 as string,
-                            inCellDropDown: args.rules.inCellDropDown,
-                            ignoreBlank: args.rules.ignoreBlank
-                        };
+                        continue;
                     }
+                } else {
+                    column = getColumn(sheet, colIdx);
+                    column.validation = { operator: args.rules.operator, type: args.rules.type, value1: args.rules.value1, value2:
+                        args.rules.value2, inCellDropDown: args.rules.inCellDropDown, ignoreBlank: args.rules.ignoreBlank };
+                    continue;
                 }
             }
-        } else {
-            let cell: CellModel;
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
-                for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                    if (args.isRemoveValidation) {
-                        if (rowIdx === indexes[2]) {
-                            column = getColumn(sheet, colIdx);
-                            if (column && column.validation) {
-                                column.validation.address = getSplittedAddressForColumn(
-                                    column.validation.address, [indexes[0], colIdx, indexes[2], colIdx], colIdx);
-                            }
+                if (args.isRemoveValidation) {
+                    if (rowIdx === indexes[2]) {
+                        column = getColumn(sheet, colIdx);
+                        if (column && column.validation) {
+                            column.validation.address = getSplittedAddressForColumn(
+                                column.validation.address, [indexes[0], colIdx, indexes[2], colIdx], colIdx);
                         }
-                        cell = getCell(rowIdx, colIdx, sheet);
-                        if (cell && cell.validation &&
-                            !updateCell(this.parent, sheet, { cell: { validation: {} }, rowIdx: rowIdx, colIdx: colIdx })) {
-                            delete (cell.validation);
-                            this.parent.notify(
-                                applyCellFormat, <CellFormatArgs>{ rowIdx: rowIdx, colIdx: colIdx, style:
-                                    this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]) });
-                        }
-                    } else {
-                        cell = { validation: Object.assign({}, args.rules) };
-                        updateCell(this.parent, sheet, { cell: cell, rowIdx: rowIdx, colIdx: colIdx });
                     }
+                    cell = getCell(rowIdx, colIdx, sheet);
+                    if (cell && cell.validation &&
+                        !updateCell(this.parent, sheet, { cell: { validation: {} }, rowIdx: rowIdx, colIdx: colIdx })) {
+                        delete (cell.validation);
+                        this.parent.notify(
+                            applyCellFormat, <CellFormatArgs>{
+                                rowIdx: rowIdx, colIdx: colIdx, style:
+                                    this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx])
+                            });
+                    }
+                } else {
+                    cell = { validation: Object.assign({}, args.rules) };
+                    updateCell(this.parent, sheet, { cell: cell, rowIdx: rowIdx, colIdx: colIdx });
                 }
             }
         }

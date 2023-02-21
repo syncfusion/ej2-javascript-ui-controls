@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
     private constructResourceViewDataSource(resources: Object[], data: Object[], unassignedTasks: Object[]): void {
         for (let i: number = 0; i < data.length; i++) {
             const tempData: Object = data[i as number];
-            const child: string = this.parent.taskFields.child;
+            var child=this.parent.taskFields.child != null? this.parent.taskFields.child: 'Children';
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
             if ((!tempData[child as string]  || tempData[child as string].length === 0) && resourceData && resourceData.length) {

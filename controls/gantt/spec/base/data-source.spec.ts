@@ -72,6 +72,37 @@ export let crData: Object[] = [
         ],
     }
 ];
+export let resourceviewData: object[]=[
+    {
+        oppgaveId: '6',
+        oppgaveNavn: 'Task1',
+        fraDato: '2023-01-02T07:00:00.000Z',
+        tilDato: '2023-01-02T16:00:00.000Z',
+        varighet: 1,
+        resources: [
+          {
+            brukerId: 9,
+            navn: 'John ',
+            unit: 100,
+          },
+        ],
+      },
+  
+      {
+        oppgaveId: '7',
+        oppgaveNavn: 'Task2',
+        fraDato: '2023-01-03T07:00:00.000Z',
+        tilDato: '2023-01-04T16:00:00.000Z',
+        varighet: 2,
+        resources: [
+          {
+            brukerId: 9,
+            navn: 'John ',
+            unit: 100,
+          },
+        ],
+      },
+];
 
 export let filterdata: object[]=[
     {

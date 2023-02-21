@@ -183,7 +183,11 @@ export class PageSetupDialog {
 
         const orientationDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const orientationLabeldiv: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Orientation') });
-        const orientationPropDiv: HTMLDivElement = createElement('div', { styles: 'display: flex;'}) as HTMLDivElement;
+        const orientationPropDiv: HTMLDivElement = createElement('div', { styles: 'display: flex;' }) as HTMLDivElement;
+        topTextBox.setAttribute('aria-labelledby', locale.getConstant('Top'));
+        bottomTextBox.setAttribute('aria-labelledby', locale.getConstant('Bottom'));
+        leftTextBox.setAttribute('aria-labelledby', locale.getConstant('Left'));
+        rightTextBox.setAttribute('aria-labelledby', locale.getConstant('Right'));
         let portraitDivStyles: string;
         if (isRtl) {
             portraitDivStyles = 'padding-left: 30px;';
@@ -206,6 +210,8 @@ export class PageSetupDialog {
         this.landscape = new RadioButton({ label: locale.getConstant('Landscape'), enableRtl: isRtl, change: this.onLandscape });
         this.portrait.appendTo(portrait); this.landscape.appendTo(landscape);
         element.appendChild(orientationDiv);
+        portrait.setAttribute('aria-label', locale.getConstant('Portrait'));
+        landscape.setAttribute('aria-label', locale.getConstant('Landscape'));
     }
     /**
      * @private
@@ -253,6 +259,8 @@ export class PageSetupDialog {
         this.widthBox.appendTo(widthTextBox);
         this.heightBox = new NumericTextBox({ value: 792, width: 170, decimals: 2,  floatLabelType: 'Always', placeholder:  locale.getConstant('Height') });
         this.heightBox.appendTo(heightTextBox);
+        widthTextBox.setAttribute('arial-label', locale.getConstant('Width'));
+        heightTextBox.setAttribute('arial-label', locale.getConstant('Height'));
         const paperSizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         const paperSize: HTMLElement = createElement('select', {
             styles: 'width:170px;padding-bottom: 20px;',
@@ -271,6 +279,7 @@ export class PageSetupDialog {
         paperSizeDiv.appendChild(paperSize);
         this.paperSize = new DropDownList({ change: this.changeByPaperSize, width: '170px', enableRtl: isRtl });
         this.paperSize.appendTo(paperSize);
+        this.paperSize.htmlAttributes = { 'aria-labelledby': 'PaperSize', 'aria-describedby': 'PaperSize' };
         element.appendChild(paperSizeDiv);
     }
     /**
@@ -291,6 +300,8 @@ export class PageSetupDialog {
         const checkBox2: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }
         });
+        firstPageDiv.setAttribute('aria-label', locale.getConstant('Different first page'));
+        oddOrEvenDiv.setAttribute('aria-label', locale.getConstant('Different odd and even'));
         oddOrEvenDiv.appendChild(checkBox2);
         layoutDiv.appendChild(firstPageDiv); layoutDiv.appendChild(oddOrEvenDiv);
 
@@ -331,6 +342,8 @@ export class PageSetupDialog {
         this.headerBox.appendTo(headerBox);
         this.footerBox = new NumericTextBox({ value: 792, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Footer') });
         this.footerBox.appendTo(footerBox);
+        headerBox.setAttribute('aria-labelledby', locale.getConstant('Header'));
+        footerBox.setAttribute('aria-labelledby', locale.getConstant('Footer'));
     }
     /**
      * @private

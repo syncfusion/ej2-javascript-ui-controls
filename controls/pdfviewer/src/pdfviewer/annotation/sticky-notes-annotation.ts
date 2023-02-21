@@ -1002,12 +1002,20 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     private commentDivFocus(args: any): void {
         // eslint-disable-next-line
-        let proxy: any = this;
-        const pageNumber: number = this.pdfViewerBase.currentPageNumber;
-        setTimeout(
-            () => {
-                proxy.updateScrollPosition(pageNumber);
-            }, 500);
+        if (!this.isNewcommentAdded) {
+            if (args.relatedTarget !== null) {
+                args.preventDefault();
+                args.target.blur();
+            }
+        }
+        else {
+            let proxy: any = this;
+            const pageNumber: number = this.pdfViewerBase.currentPageNumber;
+            setTimeout(
+                () => {
+                    proxy.updateScrollPosition(pageNumber);
+                }, 500);
+        }
     }
     private updateScrollPosition(pageNumber: number): void {
         const accordionDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageNumber);

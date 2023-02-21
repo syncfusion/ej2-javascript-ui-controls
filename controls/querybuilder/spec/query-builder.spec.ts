@@ -2826,6 +2826,10 @@ describe('QueryBuilder', () => {
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-groupheader">${if(notCondition !== undefined)}<input type="checkbox" class="e-not" id="${ruleID}_notoption">${/if}<input type="text" class= "e-custom-group-btn" id="${ruleID}_cndtnbtn"><button id = "${ruleID}_addbtn" class="e-add-btn"></button>${if(ruleID !== "querybuilder_group0")}<button id="dltbtn" class="e-btn e-delete-btn e-small e-round e-icon-btn"><span class = "e-btn-icon e-icons e-delete-icon"></span></button>${/if}</div>';
             document.body.appendChild(template);
+            let ageTemplate: Element = createElement('script', { id: 'ageTemplate' });
+            ageTemplate.setAttribute('type', 'text/x-template');
+            ageTemplate.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-subfilter"><input id = ${ruleID}_subfilterkey class="e-sub-filter-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
+            document.body.appendChild(ageTemplate);
         });
         afterEach(() => {
             remove(queryBuilder.element.nextElementSibling);
@@ -3292,6 +3296,93 @@ describe('QueryBuilder', () => {
             items[0].click();
             queryBuilder.addGroups([{condition: 'and', 'rules': [{}] }], "group0");
             expect(queryBuilder.getValidRules().rules.length).toEqual(1);
+        });
+
+        it('EJ2-68596 - Value template issue with complex data binding of query builder', () => {
+            let customFieldData: ColumnsModel[] = [
+                {field: 'Employee', label: 'Employee', columns: [
+                    { field: 'ID', label: 'ID', type: 'number', ruleTemplate: '#ageTemplate'},
+                    { field: 'DOB', label: 'Date of birth', type: 'date'},
+                    { field: 'HireDate', label: 'Hire Date', type: 'date'},
+                    { field: 'Salary', label: 'Salary', type: 'number'},
+                    { field: 'Age', label: 'Age', type: 'number'},
+                    { field: 'Title', label: 'Title', type: 'string'}
+                ]},
+                {field: 'Name', label: 'Name',operators: [
+                    {
+                      key: 'Equal',
+                      value: 'equal',
+                    },
+                    {
+                      key: 'Not Equal',
+                      value: 'equal',
+                    }], columns: [
+                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'LastName', label: 'Last Name', type: 'string'}
+                ]},
+                {field: 'Country', label: 'Country', columns : [
+                    { field: 'State', label: 'State', columns : [
+                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
+                    { field: 'Region', label: 'Region', type: 'string'},
+                    { field: 'Name', label: 'Name', type: 'string'}
+                ]}
+            ]
+            let valueObj: Slider;
+            queryBuilder = new QueryBuilder({
+                dataSource: complexData,
+                columns: customFieldData,
+                separator: '.',
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'template-create') {
+                        args.rule.operator = 'between';
+                        let defaultNumber: number = 31;    
+                        let fieldObj: DropDownList = new DropDownList({
+                            dataSource: queryBuilder.columns as any, // tslint:disable-line
+                            fields: args.fields,
+                            value: 'Employee',
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'field');
+                            }
+                        });
+                        let fieldObj1: DropDownList = new DropDownList({
+                            dataSource: queryBuilder.columns[0].columns, // eslint-disable-line
+                            fields: args.fields,
+                            value: args.rule.field,
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'field');
+                            }
+                        });
+                        if (args.rule.value === '') {
+                            args.rule.value = defaultNumber;
+                        }
+                        valueObj = new Slider({
+                            value: args.rule.value as number, min: 30, max: 50,
+                            ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                            change: (e: any) => {
+                                let elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                queryBuilder.notifyChange(e.value, elem, 'value');
+                            }
+                        });
+                        fieldObj.appendTo('#' + args.ruleID + '_filterkey');
+                        fieldObj1.appendTo('#' + args.ruleID + '_subfilterkey');
+                        valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                    }
+                }
+            }, '#querybuilder');
+            expect(queryBuilder.rule.rules[0].field).toEqual('');
+            let filter: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            filter.showPopup();
+            let itemCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemCln[0].click();
+            let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
+            slider.value = 40; slider.dataBind();
+            expect(queryBuilder.rule.rules[0].value).toEqual(40);
+            let filter1: DropDownList = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances[0];
+            filter1.showPopup();
+            let itemCln1: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemCln1[1].click();
+            expect(queryBuilder.rule.rules[0].field).toEqual('Name.FirstName');
         });
         
     });

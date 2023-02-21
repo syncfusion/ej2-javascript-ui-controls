@@ -191,6 +191,7 @@ export class Text {
         };
         (hgltSplitObj.element.firstChild as HTMLElement).style.backgroundColor = 'rgb(255, 255, 0)';
         hgltSplitObj.element.parentElement.setAttribute('title', toolTipText);
+        hgltSplitObj.element.parentElement.setAttribute('aria-label', toolTipText);
         return hgltSplitObj;
     }
     private openPopup(): void {
@@ -406,6 +407,7 @@ export class Text {
         divElement.appendChild(inputElement);
         this.fontColorInputElement = new ColorPicker({ value: '#000000', showButtons: true, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
         this.fontColorInputElement.element.parentElement.setAttribute('title', toolTipText);
+        this.fontColorInputElement.element.parentElement.setAttribute('aria-label', toolTipText);
         return inputElement;
     }
 

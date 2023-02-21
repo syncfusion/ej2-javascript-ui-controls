@@ -74,7 +74,8 @@ export class TextFormFieldDialog {
             change: this.changeTypeDropDown.bind(this),
             floatLabelType: 'Always',
             placeholder: localValue.getConstant('Type'),
-            fields: { text: 'Name', value: 'Value' }
+            fields: { text: 'Name', value: 'Value' },
+            htmlAttributes:{'aria-labelledby':localValue.getConstant('Type')}
         });
         // this.defaultTextLabel = createElement('div', {
         //     className: 'e-de-ff-dlg-heading-small',
@@ -87,7 +88,7 @@ export class TextFormFieldDialog {
         //     className: 'e-de-ff-dlg-heading-small',
         //     innerHTML: localValue.getConstant('Maximum length')
         // });
-        let maxLength: HTMLInputElement = createElement('input') as HTMLInputElement;
+        let maxLength: HTMLInputElement = createElement('input',{attrs:{'aria-labelledby':localValue.getConstant('Maximum length')}}) as HTMLInputElement;
         this.maxLengthNumber = new NumericTextBox({
             format: 'n', value: 0, min: 0, max: 32767, width: '100%', enablePersistence: false,
             placeholder: localValue.getConstant('Maximum length'), floatLabelType: 'Always',
@@ -154,7 +155,8 @@ export class TextFormFieldDialog {
         // });
         this.bookmarkTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let fillInEnableDiv: HTMLElement = createElement('div');
-        let fillInEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        let fillInEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' }}) as HTMLInputElement;
+        fillInEnableEle.setAttribute('aria-label',localValue.getConstant('Fillin enabled'));
         this.fillInEnable = new CheckBox({
             cssClass: 'e-de-ff-dlg-check',
             label: localValue.getConstant('Fillin enabled'),
@@ -202,7 +204,10 @@ export class TextFormFieldDialog {
         this.fillInEnable.appendTo(fillInEnableEle);
         this.defaultTextLabel = new TextBox({placeholder: localValue.getConstant('Default text'), floatLabelType: 'Always'}, this.defaultTextInput);
         new TextBox({placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always'}, this.tooltipTextInput);
-        new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always'}, this.bookmarkTextInput);
+        new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always',htmlAttributes:{'aria-labelledby':localValue.getConstant('Name')}}, this.bookmarkTextInput);
+        this.defaultTextInput.setAttribute('aria-labelledby', localValue.getConstant('Default text'));
+        this.tooltipTextInput.setAttribute('aria-labelledby', localValue.getConstant('Tooltip'));
+        this.bookmarkTextInput.setAttribute('aria-labelledby', localValue.getConstant('Name'));
     }
     /**
      * @private

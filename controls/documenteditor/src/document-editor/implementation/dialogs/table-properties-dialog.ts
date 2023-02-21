@@ -487,6 +487,7 @@ export class TablePropertiesDialog {
             //styles: 'width:54px;height:54px;margin:2px'
         }) as HTMLDivElement;
         leftAlignDiv.appendChild(this.left);
+        leftAlignDiv.setAttribute('aria-label',localValue.getConstant('Left'));
         const centerAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         this.center = createElement('div', {
             className: 'e-icons e-de-table-properties-alignment  e-de-table-center-alignment ' + classDivName,
@@ -494,6 +495,7 @@ export class TablePropertiesDialog {
             //styles: 'width:54px;height:54px;margin:2px'
         }) as HTMLDivElement;
         centerAlignDiv.appendChild(this.center);
+        centerAlignDiv.setAttribute('aria-label',localValue.getConstant('Center'));
         this.right = createElement('div', {
             //styles: 'width:54px;height:54px;margin:2px', 
             className: 'e-icons e-de-table-properties-alignment  e-de-table-right-alignment ' + classDivName,
@@ -501,6 +503,7 @@ export class TablePropertiesDialog {
         }) as HTMLDivElement;
         const rightAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         rightAlignDiv.appendChild(this.right);
+        rightAlignDiv.setAttribute('aria-label',localValue.getConstant('Right'));
         const leftlabel: HTMLLabelElement = createElement('label', {
             innerHTML: localValue.getConstant('Left'), className: 'e-de-table-dia-align-label'
         }) as HTMLLabelElement;
@@ -549,12 +552,14 @@ export class TablePropertiesDialog {
             enableRtl: isRtl
         });
         this.rtlButton.appendTo(rtlInputELe);
+        rtlInputELe.setAttribute('aria-label',localValue.getConstant('Right-to-left'));
         this.ltrButton = new RadioButton({
             label: localValue.getConstant('Left-to-right'),
             value: 'ltr', cssClass: 'e-small', change: this.changeBidirectional,
             enableRtl: isRtl
         });
         this.ltrButton.appendTo(ltrInputELe);
+        ltrInputELe.setAttribute('aria-label',localValue.getConstant('Left-to-right'));
         const tableOptionContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-tbl-dlg-border-btn'
         });
@@ -599,7 +604,9 @@ export class TablePropertiesDialog {
             label: localValue.getConstant('Preferred Width'), enableRtl: isRtl
         });
         this.preferCheckBox.appendTo(preferCheckBox);
-        this.tableWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in')});
+        preferCheckBox.setAttribute('aria-label',localValue.getConstant('Preferred Width'));
+        this.leftIndent.setAttribute('aria-labelledby',localValue.getConstant('Indent from left'));
+        this.tableWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in'), htmlAttributes:{'aria-labelledby':localValue.getConstant('Measure in')}});
         this.tableWidthType.appendTo(tableWidthType);
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -896,18 +903,21 @@ export class TablePropertiesDialog {
             enableRtl: isRtl
         });
         this.rowHeightCheckBox.appendTo(rowHeightCheckBox);
-        this.rowHeightType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Row height is')});
+        rowHeightCheckBox.setAttribute('aria-label',localValue.getConstant('Specify height'));
+        this.rowHeightType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Row height is'), htmlAttributes:{'aria-labelledby':localValue.getConstant('Row height is')}});
         this.rowHeightType.appendTo(rowHeightType);
         this.allowRowBreak = new CheckBox({
             label: localValue.getConstant('Allow row to break across pages'),
             enableRtl: isRtl
         });
         this.allowRowBreak.appendTo(allowRowBreak);
+        allowRowBreak.setAttribute('aria-label',localValue.getConstant('Allow row to break across pages'));
         this.repeatHeader = new CheckBox({
             label: localValue.getConstant('Repeat as header row at the top of each page'),
             enableRtl: isRtl
         });
         this.repeatHeader.appendTo(repeatHeader);
+        repeatHeader.setAttribute('aria-label',localValue.getConstant('Repeat as header row at the top of each page'));
         // if (isRtl) {
         //     child3.classList.add('e-de-rtl');
         //     child4.classList.add('e-de-rtl');
@@ -1070,6 +1080,7 @@ export class TablePropertiesDialog {
         //     className: 'e-de-table-measure-lbl'
         // }) as HTMLLabelElement;
         sizeDiv.appendChild(div); element.appendChild(sizeDiv); childdiv1.appendChild(preferredCellWidthCheckBox);
+        preferredCellWidthCheckBox.setAttribute('aria-label',localValue.getConstant('Preferred Width'));
         sizeDiv.appendChild(childdiv1); preferredCellDiv.appendChild(this.preferredCellWidth);
         sizeDiv.appendChild(childdiv2); childdiv2.appendChild(preferredCellDiv); childdiv2.appendChild(controlDiv);
         controlDiv.appendChild(cellWidthType);
@@ -1089,18 +1100,21 @@ export class TablePropertiesDialog {
             className: 'e-icons e-de-tablecell-alignment  e-de-tablecell-top-alignment ' + classDivName
         }) as HTMLDivElement;
         topAlignDiv.appendChild(this.cellTopAlign);
+        topAlignDiv.setAttribute('aria-label',localValue.getConstant('Top'));
         const centerAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-tablecell-dia-align-div' });
         this.cellCenterAlign = createElement('div', {
             id: element.id + '_cell_center-alignment',
             className: 'e-icons e-de-tablecell-alignment  e-de-tablecell-center-alignment ' + classDivName
         }) as HTMLDivElement;
         centerAlignDiv.appendChild(this.cellCenterAlign);
+        centerAlignDiv.setAttribute('aria-label',localValue.getConstant('Center'));
         const bottomAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-tablecell-dia-align-div' });
         this.cellBottomAlign = createElement('div', {
             id: element.id + '_cell_bottom-alignment',
             className: 'e-icons e-de-tablecell-alignment e-de-tablecell-bottom-alignment  ' + classDivName
         }) as HTMLDivElement;
         bottomAlignDiv.appendChild(this.cellBottomAlign);
+        bottomAlignDiv.setAttribute('aria-label',localValue.getConstant('Bottom'));
         const topLabel: HTMLLabelElement = createElement('label', {
             innerHTML: localValue.getConstant('Top'), className: 'e-de-table-dia-align-label'
         }) as HTMLLabelElement;
@@ -1127,7 +1141,8 @@ export class TablePropertiesDialog {
         this.cellWidthBox.appendTo(this.preferredCellWidth);
         this.preferredCellWidthCheckBox = new CheckBox({ label: localValue.getConstant('Preferred Width'), enableRtl: isRtl });
         this.preferredCellWidthCheckBox.appendTo(preferredCellWidthCheckBox);
-        this.cellWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in')});
+        preferredCellWidthCheckBox.setAttribute('aria-label',localValue.getConstant('Preferred Width'));
+        this.cellWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in'),htmlAttributes:{'aria-labelledby':localValue.getConstant('Measure in')}});
         this.cellWidthType.appendTo(cellWidthType);
         // if (isRtl) {
         //     childdiv2.classList.add('e-de-rtl');

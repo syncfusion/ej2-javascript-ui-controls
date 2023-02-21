@@ -97,7 +97,7 @@ export class Paragraph {
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', 'Justify Tooltip');
         let increaseIndentIconCss: string = 'e-de-ctnr-increaseindent e-icons';
         let decreaseIndentIconCss: string = 'e-de-ctnr-decreaseindent e-icons';
-        const incDecIndentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
+        const incDecIndentDiv: HTMLElement = this.createDivElement(element + '_lineindentDiv', indentWholeDiv, 'display:flex;');
         indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
             indentClassName = 'e-rtl ' + indentClassName;
@@ -281,6 +281,7 @@ export class Paragraph {
         };
         this.numberedListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
+        button.parentElement.setAttribute('aria-label', this.localObj.getConstant('Numbering'));
     }
     private updateSelectedBulletListType(listText: string): void {
         switch (listText) {
@@ -409,6 +410,7 @@ export class Paragraph {
         };
         this.bulletListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Bullets'));
+        button.parentElement.setAttribute('aria-label', this.localObj.getConstant('Bullets'));
     }
     private createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string): HTMLElement {
         const liTag: HTMLElement = createElement('li', {

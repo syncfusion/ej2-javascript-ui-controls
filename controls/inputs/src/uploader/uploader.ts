@@ -1243,7 +1243,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             const inputElement: HTMLInputElement = <HTMLInputElement>this.createElement('input', { attrs: { type: 'file' }});
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index as number].nodeName, this.element.attributes[index as number].nodeValue);
+                if (this.element.attributes[index as number].nodeName !== 'id'){
+                    inputElement.setAttribute(this.element.attributes[index as number].nodeName, this.element.attributes[index as number].nodeValue);
+                }
+                else if(this.element.attributes[index as number].nodeName === 'id'){
+                    inputElement.setAttribute(this.element.attributes[index as number].nodeName, getUniqueID('uploader'))
+                }
                 inputElement.innerHTML = this.element.innerHTML;
             }
             if (!inputElement.hasAttribute('name')) {

@@ -179,7 +179,7 @@ export class MarkerExplode extends ChartData {
         const marker: MarkerSettingsModel = point.marker;
         const seriesMarker: MarkerSettingsModel = series.marker;
         const shape: ChartShape = marker.shape || seriesMarker.shape;
-        if (shape === 'None') {
+        if (shape === 'None' || shape === 'Image') {
             return null;
         }
         const element: Element = series.symbolElement || series.seriesElement;

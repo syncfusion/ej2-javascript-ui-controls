@@ -54,6 +54,7 @@ describe('Hyperlink ->', () => {
         it('Hyperlink applied through data range', (done: Function) => {
             helper.invoke('updateRange', [{ dataSource: [{ Link: 'https://www.syncfusion.com' }], startCell: 'A13' }]);
             spreadsheet.dataBind();
+            helper.invoke('selectRange', ['A14:A14']);
             setTimeout(() => {
                 const cell: CellModel = spreadsheet.sheets[0].rows[13].cells[0];
                 expect(cell.hyperlink).toBe('https://www.syncfusion.com');
@@ -61,6 +62,7 @@ describe('Hyperlink ->', () => {
                 expect(cell.style.color).toBe('#00e');
                 const cellEle: HTMLElement = helper.invoke('getCell', [13, 0]);
                 expect(cellEle.querySelector('.e-hyperlink').textContent).toBe('https://www.syncfusion.com');
+                expect(helper.getElement(`#${helper.id}_formula_input`).value).toBe('https://www.syncfusion.com');
                 expect(cellEle.style.textDecoration).toBe('underline');
                 expect(cellEle.style.color).not.toBe('');
                 done();

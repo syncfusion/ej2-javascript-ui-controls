@@ -111,6 +111,7 @@ export class ParagraphDialog {
         }) as HTMLSelectElement;
 
         alignmentDiv.appendChild(alignment);
+        alignmentDiv.setAttribute('aria-labelledby',alignment.innerText);
         let dirLabel: HTMLElement = createElement('div', {
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
@@ -134,12 +135,13 @@ export class ParagraphDialog {
             value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
         });
         this.rtlButton.appendTo(rtlInputELe);
+        rtlInputELe.setAttribute('aria-label',locale.getConstant('Right-to-left'))
         this.ltrButton = new RadioButton({
             label: locale.getConstant('Left-to-right'), enableRtl: isRtl,
             value: 'ltr', cssClass: 'e-small', change: this.changeBidirectional
         });
         this.ltrButton.appendTo(ltrInputELe);
-
+        ltrInputELe.setAttribute('aria-label',locale.getConstant('Left-to-right'))
         let indentionWholeDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         
         let indentLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',
@@ -182,14 +184,14 @@ export class ParagraphDialog {
         }) as HTMLInputElement;
         contextSpacingDiv.appendChild(contextInputEle);
 
-
         let leftIndent: HTMLInputElement = createElement('input', { id: ownerId + '_leftIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
         let rightIndent: HTMLInputElement = createElement('input', { id: ownerId + '_rightIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
         beforeTextDiv.appendChild(leftIndent);
-
+        beforeTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from left'));
         afterTextDiv.appendChild(rightIndent);
+        afterTextDiv.setAttribute('aria-labelledby',locale.getConstant('Indent from right'))
 
         let special: HTMLElement = createElement('select', {
             id: ownerId + '_special',
@@ -200,10 +202,11 @@ export class ParagraphDialog {
 
         let by: HTMLInputElement = createElement('input', { id: ownerId + '_By', attrs: { 'type': 'text' } }) as HTMLInputElement;
 
+        specialDiv.setAttribute('aria-labelledby','Special');
         specialDiv.appendChild(special);
 
         byDiv.appendChild(by);
-
+        byDiv.setAttribute('aria-labelledby','By')
 
         let spaceLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('Spacing')}) as HTMLLabelElement;
         let spacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-container-row'}) as HTMLElement;
@@ -277,9 +280,9 @@ export class ParagraphDialog {
         });
         this.special = new DropDownList({ change: this.changeByValue, enableRtl: isRtl, floatLabelType:'Always', placeholder:locale.getConstant('Special')});
         this.special.appendTo(special);
-        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, enableRtl: isRtl, floatLabelType: 'Always', placeholder: locale.getConstant('Line Spacing')});
+        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, enableRtl: isRtl, floatLabelType: 'Always', placeholder: locale.getConstant('Line Spacing'),htmlAttributes:{'aria-labelledby':locale.getConstant('Line Spacing')}});
         this.lineSpacing.appendTo(lineSpacing);
-        this.alignment = new DropDownList({ change: this.changeByTextAlignment, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('Alignment')});
+        this.alignment = new DropDownList({ change: this.changeByTextAlignment, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('Alignment'),htmlAttributes:{'aria-labelledby':locale.getConstant('Alignment')}});
         this.alignment.appendTo(alignment);
         this.atIn.appendTo(lineSpacingAt);
         this.contextSpacing = new CheckBox({
@@ -288,6 +291,7 @@ export class ParagraphDialog {
             enableRtl: isRtl
         });
         this.contextSpacing.appendTo(contextInputEle);
+        contextInputEle.setAttribute('aria-labelledby',locale.getConstant("Contextual Spacing"));
         indentContainer.addEventListener('keyup', instance.keyUpParagraphSettings);
         if (isRtl) {
             afterSpacingWholeDiv.classList.add('e-de-rtl');
@@ -301,7 +305,7 @@ export class ParagraphDialog {
         paginationDiv.appendChild(paginationLabel);
 
         
-        let widowContorlContainer: HTMLElement = createElement('div', { styles: 'display:block' });
+        let widowContorlContainer: HTMLElement = createElement('div', { styles: 'display:block'});
         paginationDiv.appendChild(widowContorlContainer);
         let keepNextContainer: HTMLElement = createElement('div', { styles: 'display:block' });
         paginationDiv.appendChild(keepNextContainer);
@@ -311,7 +315,6 @@ export class ParagraphDialog {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
         keepNextContainer.appendChild(keepWithNext);
-
         this.keepWithNext = new CheckBox({
             change: this.changeKeepWithNext,
             label: locale.getConstant('Keep With Next'),
@@ -319,7 +322,7 @@ export class ParagraphDialog {
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
         this.keepWithNext.appendTo(keepWithNext);
-
+        keepWithNext.setAttribute('aria-label',locale.getConstant('Keep With Next'));
         let keepLinesTogether: HTMLInputElement = createElement('input', {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
@@ -332,7 +335,7 @@ export class ParagraphDialog {
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
         this.keepLinesTogether.appendTo(keepLinesTogether);
-
+        keepLinesTogether.setAttribute('aria-label',locale.getConstant('Keep Lines Together'));
         let widowControl: HTMLInputElement = createElement('input', {
             attrs: { type: 'checkbox' },
         }) as HTMLInputElement;
@@ -345,7 +348,7 @@ export class ParagraphDialog {
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
         this.widowControlIn.appendTo(widowControl);
-
+        widowControl.setAttribute('aria-label',locale.getConstant('WidowControl'));
         lineBreakContainer.appendChild(paginationDiv);
         const items: TabItemModel[] = [
             { header: { text: locale.getConstant('Indents and Spacing') }, content: indentContainer },
@@ -923,6 +926,7 @@ export class ParagraphDialog {
              let width: number= this.documentHelper.updateDialogTabHeight(dialogElement,this.target);
              this.paginationDiv.style.width = width.toString() + 'px';
         }
+        
     }
     /**
      * @private

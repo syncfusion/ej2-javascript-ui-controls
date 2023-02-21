@@ -3,7 +3,7 @@
  * Schedule keyboard interaction spec
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, SelectEventArgs } from '../../../src/schedule/index';
 import { defaultData, timelineData, timelineResourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -1396,6 +1396,24 @@ describe('Keyboard interaction', () => {
             const lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(lastCell.getAttribute('data-group-index')).toEqual('1');
             schObj.removeSelectedClass();
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+        it('EJ2-69432 - select event not invoked for single cell navigation', (done: DoneFn)  => {
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCells[406], 'click');
+            keyModule.keyActionHandler({ action: 'escape' });
+            schObj.select = (args: SelectEventArgs) => {
+                expect(args.requestType).toBe('cellSelect');
+                expect((args.data as Record<string, any>).RoomId).toBe(1);
+                expect((args.data as Record<string, any>).OwnerId).toBe(1);
+                expect(args.element).toBe(workCells[405]);
+                expect(workCells[406].classList.contains('e-selected-cell')).toBeFalsy();
+                done();
+            };
+            expect(workCells[406].classList).toContain('e-selected-cell');
+            expect(workCells[406].getAttribute('data-group-index')).toEqual('1');
+            keyModule.keyActionHandler({ action: 'leftArrow', target: workCells[406] });
         });
     });
 

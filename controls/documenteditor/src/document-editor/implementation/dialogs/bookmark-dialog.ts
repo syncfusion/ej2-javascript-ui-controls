@@ -56,9 +56,11 @@ export class BookmarkDialog {
 
         this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
+        this.textBoxInput.setAttribute('aria-label',localValue.getConstant('Bookmark name'));
         textBoxDiv.appendChild(this.textBoxInput);
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
+        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1' }});
+        listviewDiv.setAttribute('aria-label',localValue.getConstant('BookMarkList'));
         searchDiv.appendChild(listviewDiv);
         // const arts: string[] = this.documentHelper.bookmarks.keys;
 
@@ -80,6 +82,7 @@ export class BookmarkDialog {
             innerHTML: localValue.getConstant('Add'), id: 'add',
             attrs: { type: 'button' }
         });
+        addButtonElement.setAttribute('aria-label',localValue.getConstant('Add'));
         addbuttonDiv.appendChild(addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
@@ -94,6 +97,7 @@ export class BookmarkDialog {
             innerHTML: localValue.getConstant('Delete'), id: 'delete',
             attrs: { type: 'button' }
         });
+        deleteButtonElement.setAttribute('aria-label',localValue.getConstant('Delete'));
         deleteButtonDiv.appendChild(deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
         this.deleteButton.disabled = hasNoBookmark;
@@ -107,6 +111,7 @@ export class BookmarkDialog {
             innerHTML: localValue.getConstant('Go To'), id: 'goto',
             attrs: { type: 'button' }
         });
+        gotoButtonElement.setAttribute('aria-label',localValue.getConstant('Go To'));
         gotoButtonDiv.appendChild(gotoButtonElement);
         this.gotoButton = new Button({ cssClass: 'e-button-custom' });
         this.gotoButton.disabled = hasNoBookmark;

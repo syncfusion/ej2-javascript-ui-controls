@@ -169,7 +169,7 @@ export class CommentReviewPane {
         const commentHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Comments') });
         const changesHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Changes') });
         this.parentPaneElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-review-pane' });
-        this.element = createElement('div', { className: 'e-de-property-tab' });
+        this.element = createElement('div', { className: 'e-de-property-tab', id:this.owner.element.id + 'Review Tab' });
         const items: TabItemModel[] = [{ header: { text: commentHeader }, content: this.reviewPane }, { header: { text: changesHeader } }] as TabItemModel[];
         this.reviewTab = new Tab({ items: items, selected: this.onTabSelection, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } });
         this.reviewTab.appendTo(this.element);
@@ -228,10 +228,10 @@ export class CommentReviewPane {
                     title: localObj.getConstant('Un-posted comments'),
                     content: localObj.getConstant('Discard Comment'),
                     okButton: {
-                        text: 'Discard', click: this.discardButtonClick.bind(this)
+                        text: localObj.getConstant('Discard'), click: this.discardButtonClick.bind(this)
                     },
                     cancelButton: {
-                        text: 'Cancel', click: this.closeDialogUtils.bind(this)
+                        text: localObj.getConstant('Cancel'), click: this.closeDialogUtils.bind(this)
                     },
                     showCloseIcon: true,
                     closeOnEscape: true,
@@ -917,12 +917,14 @@ export class CommentView {
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
         postButton.title = localObj.getConstant('Post');
+        postButton.setAttribute('aria-label', localObj.getConstant('Post'));
         const cancelButton: HTMLButtonElement = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.title = localObj.getConstant('Cancel');
+        cancelButton.setAttribute('aria-label', localObj.getConstant('Cancel'));
         cancelButton.addEventListener('click', this.cancelEditing.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
@@ -972,6 +974,7 @@ export class CommentView {
             className: 'e-de-cmt-cancel-btn e-btn e-flat',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
+        cancelButton.setAttribute('aria-label', localObj.getConstant('Cancel'));
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
 
         cancelButton.addEventListener('click', this.cancelReply.bind(this));
@@ -989,12 +992,14 @@ export class CommentView {
         const postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
+        postButton.setAttribute('aria-label', localObj.getConstant('Reopen'));
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
         const cancelButton: HTMLButtonElement = createElement('button', {
             className: 'e-de-cmt-cancel-btn e-btn e-flat',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         cancelButton.title = localObj.getConstant('Delete');
+        cancelButton.setAttribute('aria-label', localObj.getConstant('Delete'));
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
         cancelButton.addEventListener('click', this.deleteComment.bind(this));
         editRegionFooter.appendChild(postButton);

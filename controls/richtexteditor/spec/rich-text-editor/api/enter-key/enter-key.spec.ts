@@ -2055,3 +2055,27 @@ describe("EJ2-64561- When press the enter key while the cursor focused before vi
         expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
 });
+describe("EJ2-68925 -The enter key is not working properly with Lists when pasting from MS Word", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            value : `<p><span>Content.</span></p><ul>
+             <li><span>Point 1</span></li>
+             <li><span>point2</span></li>
+            </ul>`
+        });
+    });
+    it(' check for Enter key press end of the list', () => {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        let cursorElem: HTMLElement;
+        cursorElem = rteObj.inputElement.querySelector('ul li:nth-child(2)');
+        const sel: void = new NodeSelection().setCursorPoint(document,cursorElem, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        const corrrectElemString : string = `LI`;
+        expect(rteObj.inputElement.lastChild.childNodes[1].nodeName === corrrectElemString ).toBe(true);
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+});

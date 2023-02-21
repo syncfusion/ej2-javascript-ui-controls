@@ -3371,10 +3371,16 @@ export class FormDesigner {
         else if (obj.font.isUnderline) {
             inputElement.style.textDecoration = "underline";
         }
+        if (obj.isTransparent && obj.borderColor === '#ffffffff') {
+            inputElement.style.backgroundColor = 'transparent';
+            inputElement.style.borderColor = 'transparent';
+        }
+        else {
+            inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+            inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        }
         inputElement.style.color = obj.color ? obj.color : 'black';
-        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
-        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
         inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';

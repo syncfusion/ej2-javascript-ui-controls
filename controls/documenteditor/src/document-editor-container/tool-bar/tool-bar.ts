@@ -407,13 +407,13 @@ export class Toolbar {
                 case 'New':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
-                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className
+                        id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Create a new document')}
                     });
                     break;
                 case 'Open':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
-                        text: locale.getConstant('Open'), cssClass: className
+                        text: locale.getConstant('Open'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Open a document')}
                     });
                     break;
                 case 'Undo':
@@ -439,13 +439,14 @@ export class Toolbar {
                     toolbarItems.push({
                         prefixIcon: 'e-de-cnt-track',
                         tooltipText: locale.getConstant('Track Changes'),
-                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className, htmlAttributes: { 'aria-label': locale.getConstant('Track Changes'), 'aria-pressed': this.container.enableTrackChanges }
+                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className,
+                        htmlAttributes: { 'aria-label': locale.getConstant('TrackChanges'), 'aria-pressed': this.container.enableTrackChanges, role: "button" }
                     });
                     break;
                 case 'Image':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Insert inline picture from a file.') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + INSERT_IMAGE_ID,htmlAttributes:{'aria-label':locale.getConstant('Image'),'aria-haspopup':false}
+                        template: '<button title="' + locale.getConstant('Insert inline picture from a file') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id: id + INSERT_IMAGE_ID,htmlAttributes:{'aria-label':locale.getConstant('Insert inline picture from a file'),'aria-haspopup':false}
                     });
                     break;
                 case 'Table':
@@ -465,7 +466,7 @@ export class Toolbar {
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-bookmark',
                         tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
-                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className
+                        id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Insert a bookmark in a specific place in this document'),'aria-haspopup':true}
                     });
                     break;
                 case 'TableOfContents':
@@ -473,7 +474,7 @@ export class Toolbar {
                         prefixIcon: 'e-de-ctnr-tableofcontent',
                         tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                         id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
-                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Provide an overview of your document by adding a table of contents')}
+                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Table of Contents')}
                     });
                     break;
                 case 'Header':
@@ -492,14 +493,14 @@ export class Toolbar {
                 case 'PageSetup':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Page Setup') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + PAGE_SET_UP_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-pagesetup e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Page Setup')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + PAGE_SET_UP_ID, htmlAttributes:{'aria-label':locale.getConstant('Page Setup'),'aria-haspopup':true}
+                        id: id + PAGE_SET_UP_ID, htmlAttributes:{'aria-label':locale.getConstant('Page Setup')}
                     });
                     break;
                 case 'PageNumber':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                         id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
-                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Add page numbers')}
+                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Page Number')}
                     });
                     break;
                 case 'Break':
@@ -520,7 +521,7 @@ export class Toolbar {
                         tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
                         id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
                         cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Toggle between the internal clipboard and system clipboard'),'aria-pressed':this.container.enableLocalPaste}
+                        htmlAttributes:{'aria-label':locale.getConstant('Local Clipboard'),'aria-pressed':this.container.enableLocalPaste, role:"button"}
                     });
                     break;
                 case 'RestrictEditing':
@@ -548,14 +549,16 @@ export class Toolbar {
                     toolbarItems.push({
                         prefixIcon: 'e-de-footnote', tooltipText: locale.getConstant('Footnote Tooltip'),
                         text: this.onWrapText(locale.getConstant('Insert Footnote')), id: id + FOOTNOTE_ID,
-                        cssClass: className
+                        cssClass: className,
+                        htmlAttributes:{'aria-label':locale.getConstant('Insert Footnote')}
                     });
                     break;
                 case 'InsertEndnote':
                     toolbarItems.push({
                         prefixIcon: 'e-de-endnote', tooltipText: locale.getConstant('Endnote Tooltip'),
                         text: this.onWrapText(locale.getConstant('Insert Endnote')), id: id + ENDNOTE_ID,
-                        cssClass: className
+                        cssClass: className,
+                        htmlAttributes:{'aria-label':locale.getConstant('Insert Endnote')}
                     });
                     break;
                 default:
@@ -564,6 +567,15 @@ export class Toolbar {
                     break;
             }
         }
+        /* eslint-disable */
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            let tabindex: string;
+            if (toolbarItems[i].text !== 'Separator') {
+                tabindex = i.toString();
+                toolbarItems[i].htmlattributes = { 'tabindex': tabindex };
+            }
+        }
+        /* eslint-enable */
         return toolbarItems;
     }
     private clickHandler(args: ClickEventArgs): void {
@@ -726,8 +738,9 @@ export class Toolbar {
             if (formatType === '.sfdt') {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
-                    /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+                    /* eslint-disable */
                     this.container.documentEditor.open(fileReader.result as string);
+                    /* eslint-enable */
                 };
                 fileReader.readAsText(file);
             } else {
@@ -795,9 +808,10 @@ export class Toolbar {
         hideSpinner(this.container.containerTarget);
     }
     private successHandler(result: any): void {
-        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+        /* eslint-disable */
         this.container.documentEditor.open(result.data as string);
         hideSpinner(this.container.containerTarget);
+        /* eslint-enable */
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
     private onImageChange(): void {

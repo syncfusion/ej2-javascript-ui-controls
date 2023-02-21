@@ -311,6 +311,10 @@ export class DateTime extends NiceInterval {
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));
             if (withIn(tempInterval, axis.visibleRange)) {
+                let interval: number = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();
+                if (interval > axis.visibleRange.max) {
+                    axis.endLabel = axis.format(new Date(tempInterval));
+                }
                 triggerLabelRender(chart, tempInterval, axis.format(new Date(tempInterval)), labelStyle, axis);
             }
             tempInterval = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();

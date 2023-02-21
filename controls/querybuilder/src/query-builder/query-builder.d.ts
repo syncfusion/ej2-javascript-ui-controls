@@ -218,6 +218,8 @@ export interface FormatObject {
 }
 /**
  * Specifies the fieldMode as DropDownList or DropDownTree.
+ * Default: To Specifies the fieldMode as DropDownList.
+ * DropdownTree: To Specifies the fieldMode as DropdownTree.
  */
 export declare type FieldMode = 
 /** Display the DropdownList */
@@ -226,6 +228,8 @@ export declare type FieldMode =
 'DropdownTree';
 /**
  * Specifies the displayMode as Horizontal or Vertical.
+ * Horizontal: To Display the Horizontal UI.
+ * Vertical: To Display the Vertical UI.
  */
 export declare type DisplayMode = 
 /**  Display the Horizontal UI */
@@ -234,9 +238,9 @@ export declare type DisplayMode =
 'Vertical';
 /**
  * Specifies the sort direction of the field names. They are
- * * Default
- * * Ascending
- * * Descending
+ * Default: Show the field names in default .
+ * Ascending: Show the field names in Ascending.
+ * Descending: Show the field names in Descending
  */
 export declare type SortDirection = 
 /**  Show the field names in default */
@@ -515,7 +519,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private addGroupSuccess;
     private headerTemplateFn;
     /**
-     * notify the changes to component.
+     * Notify the changes to component.
      *
      * @param {string | number | boolean | Date | string[] | number[] | Date[]} value - 'value' to be passed to update the rule value.
      * @param {Element} element - 'element' to be passed to update the rule.
@@ -541,7 +545,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private destroyControls;
     private templateDestroy;
     /**
-     * return values bound to the column.
+     * Return values bound to the column.
      *
      * @param {string} field - 'field' to be passed to get the field values.
      * @returns {object[]} - Values bound to the column
@@ -674,7 +678,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     deleteGroups(groupIdColl: string[]): void;
     /**
-     * return the Query from current rules collection.
+     * Return the Query from current rules collection.
      *
      * @returns {Promise} - Query from current rules collection
      * @blazorType object
@@ -704,7 +708,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getLocale;
     private getColumn;
     /**
-     * return the operator bound to the column.
+     * Return the operator bound to the column.
      *
      * @returns {[key: string]: Object}[] - Operator bound to the column
      */

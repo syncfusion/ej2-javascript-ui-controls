@@ -1476,9 +1476,23 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.checkPlaceholderSize();
         Input.createSpanElement(this.overAllWrapper, this.createElement);
-        Input.calculateWidth(this.inputElement, this.overAllWrapper);
+        this.calculateWidth();
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
            this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
+        }
+    }
+    private calculateWidth(): void {
+        let elementWidth;
+        if (this.overAllWrapper) {
+            if (!this.showDropDownIcon || this.overAllWrapper.querySelector('.' + 'e-label-top')) {
+                elementWidth = this.overAllWrapper.clientWidth - 2 * (parseInt(getComputedStyle(this.inputElement).paddingRight));
+            }
+            else {
+                var downIconWidth = this.dropIcon.offsetWidth +
+                parseInt(getComputedStyle(this.dropIcon).marginRight)
+                elementWidth = this.overAllWrapper.clientWidth - (downIconWidth + 2 * (parseInt(getComputedStyle(this.inputElement).paddingRight)));
+        }
+            Input.calculateWidth(elementWidth, this.overAllWrapper, this.getModuleName()); 
         }
     }
     private checkPlaceholderSize(): void {
@@ -1617,7 +1631,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.isPopupOpen()) {
                 this.refreshPopup();
             }
-            Input.calculateWidth(this.inputElement, this.overAllWrapper);
+            setTimeout(() => {
+                this.calculateWidth();
+            }, 150);
             return true;
         } else {
             return false;
@@ -4084,7 +4100,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             case 'cssClass':
                 this.updateOldPropCssClass(oldProp.cssClass);
                 this.updateCssClass();
-                Input.calculateWidth(this.inputElement.parentElement.parentElement, this.overAllWrapper);
+                this.calculateWidth();
                 break;
             case 'enableRtl':
                 this.enableRTL(newProp.enableRtl);
@@ -4111,7 +4127,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.setFloatLabelType();
                 this.addValidInputClass();
                 Input.createSpanElement(this.overAllWrapper, this.createElement);
-                Input.calculateWidth(this.inputElement.parentElement.parentElement, this.overAllWrapper);
+                this.calculateWidth();
                 if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
                     this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
                 }
@@ -4466,7 +4482,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.element.setAttribute('data-val', 'false');
         }
         Input.createSpanElement(this.overAllWrapper, this.createElement);
-        Input.calculateWidth(this.inputElement.parentElement.parentElement, this.overAllWrapper);
+        this.calculateWidth();
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
         }

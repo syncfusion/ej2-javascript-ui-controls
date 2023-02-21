@@ -702,7 +702,9 @@ export class UndoRedo {
             }
             this.parent.notify(selectRange, { address: address[1] });
         }
-        this.parent.notify(showAggregate, {});
+        if (this.parent.showAggregate) {
+            this.parent.notify(showAggregate, {});
+        }
         return args;
     }
     private getCellDetails(address: number[], sheet: SheetModel, action: string): PreviousCellDetails[] {

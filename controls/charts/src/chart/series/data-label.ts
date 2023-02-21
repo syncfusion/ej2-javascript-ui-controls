@@ -174,6 +174,8 @@ export class DataLabel {
             const clip: Rect = series.clipRect;
             let shapeRect: HTMLElement;
             isDataLabelOverlap = false;
+            dataLabel.angle = dataLabel.labelIntersectAction === 'Rotate90' ? 90 : dataLabel.angle;
+            dataLabel.enableRotation = dataLabel.labelIntersectAction === 'Rotate90' ? true : dataLabel.enableRotation;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             const argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
@@ -216,7 +218,7 @@ export class DataLabel {
                                 rectCenterX = rect.x + (rect.width / 2);
                                 rectCenterY = (rect.y + (rect.height / 2));
                                 coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
-                                isDataLabelOverlap = this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                isDataLabelOverlap = dataLabel.labelIntersectAction === 'Rotate90' ? false : this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
                                 if (!isDataLabelOverlap) {
                                     this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
                                     const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
@@ -269,12 +271,13 @@ export class DataLabel {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                 }
+                                let textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? 'end' : 'middle';
                                 textElement(
                                     chart.renderer,
                                     new TextOption(
                                         this.commonId + point.index + '_Text_' + i,
                                         xPos, yPos,
-                                        'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
+                                        textAnchor, argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
                                 ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
@@ -681,7 +684,7 @@ export class DataLabel {
         let isOverLap: boolean = true;
         let position: number = 0;
         const collection: Rect[] = this.chart.dataLabelCollections;
-        const finalPosition: number = series.type == 'Candle' || series.type == 'HiloOpenClose' || series.type == 'Polar' || series.type == 'Radar' ? 4 : 2;
+        const finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
             let actualPosition: LabelPosition = this.getPosition(position);
             if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {

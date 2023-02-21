@@ -631,7 +631,7 @@ export class DiagramEventHandler {
                         } 
                         // EJ2-66418 - set tooltip relativeMode as mouse
                         // Updating the tooltip position based on Mouse move
-                        else if(this.hoverElement === obj && this.diagram.tooltipObject != undefined && this.hoverElement.tooltip.relativeMode === "Mouse") {
+                        else if(this.hoverElement === obj && this.hoverElement.tooltip.content && this.diagram.tooltipObject != undefined && this.hoverElement.tooltip.relativeMode === "Mouse") {
                             this.setTooltipOffset(this.currentPosition);
                         }
                         if (sourceElement) { target = this.commandHandler.findTarget(sourceElement, obj); }
@@ -1543,8 +1543,10 @@ export class DiagramEventHandler {
             }
             // EJ2-66418 - set tooltip relativeMode as mouse
             // Calculating offset position for relativeMode Mouse
-            if(this.hoverElement.tooltip.relativeMode === "Mouse"){
-                this.setTooltipOffset(mousePosition);
+            if(this.hoverElement.tooltip.content){
+                if(this.hoverElement.tooltip.relativeMode === "Mouse"){
+                    this.setTooltipOffset(mousePosition);
+                }
             }
             else{
                 this.diagram.tooltipObject.offsetX = 0;

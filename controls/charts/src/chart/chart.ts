@@ -3350,7 +3350,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 chart.trigger(chartMouseClick, { target: element.id, x: chart.mouseX, y: chart.mouseY });
             }, timeInterval);
         }
-        else if (this.clickCount === 2) {
+        else if (this.clickCount === 2 && !this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
             this.clickCount = 0;
         }

@@ -376,7 +376,7 @@ export class ContextMenu implements IContextMenu {
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Properties')]);
             } 
-            else if (isNullOrUndefined(isSignature) && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === "Image") {
+            else if (isNullOrUndefined(isSignature) && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === "Image" &&  this.pdfViewer.selectedItems.annotations[0].id.startsWith("stamp")) {
                 this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste')]);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');

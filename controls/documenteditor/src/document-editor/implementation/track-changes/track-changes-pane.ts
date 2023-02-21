@@ -114,6 +114,7 @@ export class TrackChangesPane {
             }) as HTMLButtonElement;
         }
         this.closeButton.title = this.locale.getConstant('Close');
+        this.closeButton.setAttribute('aria-label', this.locale.getConstant('Close'));
         const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.commentReviewPane.reviewTab.element.appendChild(this.closeButton);
@@ -307,7 +308,7 @@ export class TrackChangesPane {
             this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + revisionType +
                 ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
         }
-        if (this.owner.documentHelper.isDocumentProtected) {
+        if (this.owner.documentHelper.isDocumentProtected || this.owner.isReadOnly) {
             this.menuDropDownButton.disabled = true;
         }
         else {
@@ -380,7 +381,7 @@ export class TrackChangesPane {
             this.removeAllChanges();
             if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.add('e-de-overlay');
-            } else if (this.menuoptionEle.classList.contains('e-de-overlay') && !this.owner.documentHelper.isDocumentProtected) {
+            } else if (this.menuoptionEle.classList.contains('e-de-overlay') && !this.owner.documentHelper.isDocumentProtected && !this.owner.isReadOnly) {
                 this.menuoptionEle.classList.remove('e-de-overlay');
             }
             this.isChangesTabVisible = true;
@@ -757,6 +758,7 @@ export class ChangesSingleView {
         });
         this.acceptButtonElement = createElement('button', { className: 'e-de-track-accept-button' }) as HTMLButtonElement;
         this.acceptButton = new Button({ cssClass: 'e-outline e-success', content: this.locale.getConstant('Accept') });
+        this.acceptButtonElement.setAttribute('aria-label', this.locale.getConstant('Accept'));
         buttonDiv.appendChild(this.acceptButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
         this.acceptButton.appendTo(this.acceptButtonElement);
@@ -770,6 +772,7 @@ export class ChangesSingleView {
         });
         this.rejectButtonElement = createElement('button', { className: 'e-de-track-reject-button' }) as HTMLButtonElement;
         this.rejectButton = new Button({ cssClass: 'e-outline e-danger', content: this.locale.getConstant('Reject') });
+        this.rejectButtonElement.setAttribute('aria-label', this.locale.getConstant('Reject'));
         buttonDiv.appendChild(this.rejectButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
         this.rejectButton.appendTo(this.rejectButtonElement);

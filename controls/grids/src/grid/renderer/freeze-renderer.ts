@@ -624,7 +624,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         }
         const cols: Column[] = <Column[]>this.parent.columns;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (this.parent.isRowDragable() && isNullOrUndefined(cols[parseInt(i.toString(), 10)].columns) &&
+            if ((this.parent.isRowDragable() && !isNullOrUndefined(cols[parseInt(i.toString(), 10)].columns)) &&
                 isNullOrUndefined(this.parent.getFrozenVirtualHeader().querySelector('.e-stackedheadercell'))) {
                 const emptyCellIndex: number = this.frozenHeader.querySelectorAll('.e-columnheader').length - 1;
                 this.frozenHeader.querySelectorAll('.e-columnheader')[parseInt(emptyCellIndex.toString(), 10)].remove();

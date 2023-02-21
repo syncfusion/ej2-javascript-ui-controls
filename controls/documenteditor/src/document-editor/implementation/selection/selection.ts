@@ -9847,6 +9847,18 @@ export class Selection {
         this.shiftBlockOnHeaderFooterEnableDisable();
     }
     //#endregion
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public clear(): void {
+        if (this.editRegionHighlighters) {
+            this.editRegionHighlighters.clear();
+        }
+        this.editRangeCollection = [];
+    }
+
     /**
      * @private
      * @returns {void}

@@ -384,7 +384,7 @@ export class ColumnWidthService {
         const isWidthAuto: boolean = this.parent.getColumns().filter((a: Column) => { return (a.width === 'auto'); }).length >= 1;
         const movableHeader: Element = this.parent.getHeaderContent().querySelector('.' + literals.movableHeader);
         const movableContent: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
-        if (typeof this.parent.width === 'number' && !isColUndefined && !isWidthAuto) {
+        if (typeof this.parent.width === 'number' && !isColUndefined && !isWidthAuto && !this.parent.resizeModule.resizeProcess) {
             movableWidth = formatUnit(this.parent.width - parseInt(this.calcMovableOrFreezeColWidth('freeze').split('px')[0], 10) - 5);
         } else if (!isColUndefined && !isWidthAuto) {
             movableWidth = this.calcMovableOrFreezeColWidth('movable');

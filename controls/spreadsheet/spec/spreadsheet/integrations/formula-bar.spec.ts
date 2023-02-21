@@ -59,7 +59,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
                 nameBoxElem.click();
                 setTimeout(() => {
-                    helper.click('#spreadsheet_name_box_popup .e-item-focus');
+                    helper.click('#spreadsheet_name_box_popup .e-active');
                     expect(helper.getInstance().sheets[0].selectedRange).toEqual('A1:A1');
                     done();
                 }, 20);

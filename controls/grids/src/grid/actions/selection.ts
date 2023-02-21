@@ -2642,7 +2642,7 @@ export class Selection implements IAction {
     }
 
     private setRowSelection(state: boolean): void {
-        if (!this.parent.getDataModule().isRemote()) {
+        if (!(this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result)) {
             if (state) {
                 if (this.isPartialSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                     const rowObj: Row<Column>[] = this.parent.getRowsObject().filter((e: Row<Column>) => e.isSelectable);
@@ -2764,7 +2764,8 @@ export class Selection implements IAction {
             }
         }
         if (this.parent.isPersistSelection && this.isPartialSelection) {
-            if (e.requestType === 'paging' && this.parent.getDataModule().isRemote()) {
+            if (e.requestType === 'paging' && (this.parent.getDataModule().isRemote()
+                || (<{result: object[]}>this.parent.dataSource).result)) {
                 this.selectedRowIndexes = [];
             }
             if (e.requestType === 'filtering' || e.requestType === 'searching') {
@@ -2825,7 +2826,7 @@ export class Selection implements IAction {
                 this.isPrevRowSelection = true;
             }
         }
-        if (this.parent.getDataModule().isRemote() && this.rmtHdrChkbxClicked) {
+        if ((this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result) && this.rmtHdrChkbxClicked) {
             if (this.parent.checkAllRows === 'Intermediate') {
                 this.setRowSelection(true);
             }
@@ -2864,10 +2865,12 @@ export class Selection implements IAction {
             }
             if (this.parent.checkAllRows === 'Uncheck') {
                 this.setRowSelection(false);
-                this.persistSelectedData = this.parent.getDataModule().isRemote() ? this.persistSelectedData : [];
+                this.persistSelectedData = (this.parent.getDataModule().isRemote()
+                    || (<{result: object[]}>this.parent.dataSource).result) ? this.persistSelectedData : [];
             } else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
-                this.persistSelectedData = !this.parent.getDataModule().isRemote() && !this.isPartialSelection ?
+                this.persistSelectedData = !(this.parent.getDataModule().isRemote()
+                    || (<{result: object[]}>this.parent.dataSource).result) && !this.isPartialSelection ?
                     this.parent.groupSettings.columns.length ? (<{ records?: Object[] }>this.getData()).records.slice() :
                         this.getData().slice() : this.persistSelectedData;
             }
@@ -2902,7 +2905,7 @@ export class Selection implements IAction {
         const stateStr: string = this.getCheckAllStatus(checkBox);
         let state: boolean = stateStr === 'Check';
         this.isHeaderCheckboxClicked = true;
-        if (this.parent.getDataModule().isRemote() && stateStr === 'Uncheck') {
+        if ((this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result) && stateStr === 'Uncheck') {
             this.rmtHdrChkbxClicked = true;
         }
         else {
@@ -2988,7 +2991,8 @@ export class Selection implements IAction {
 
     private updateSelectedRowIndexes(): void {
         if (this.parent.isCheckBoxSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) &&
-            this.isPartialSelection && !this.parent.getDataModule().isRemote() && this.parent.selectionSettings.persistSelection) {
+            this.isPartialSelection && !(this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result)
+            && this.parent.selectionSettings.persistSelection) {
             if (this.parent.checkAllRows !== 'Uncheck') {
                 const rowObj: Row<Column>[] = this.parent.getRowsObject().filter((e: Row<Column>) => e.isSelectable);
                 for (const row of rowObj) {
@@ -3000,7 +3004,8 @@ export class Selection implements IAction {
 
     private updateSelectedRowIndex(index?: number): void {
         if (this.parent.isCheckBoxSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
-            && !this.parent.getDataModule().isRemote() && !this.isPartialSelection) {
+            && !(this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result)
+            && !this.isPartialSelection) {
             if (this.parent.checkAllRows === 'Check') {
                 this.selectedRowIndexes = [];
                 const dataLength: number = this.getData().length;
@@ -3065,7 +3070,8 @@ export class Selection implements IAction {
                 checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
-            if (this.parent.isPersistSelection && !this.parent.getDataModule().isRemote() && (this.parent.searchSettings.key.length
+            if (this.parent.isPersistSelection && !(this.parent.getDataModule().isRemote()
+                || (<{result: object[]}>this.parent.dataSource).result) && (this.parent.searchSettings.key.length
                 || this.parent.filterSettings.columns.length)) {
                 isFiltered = true;
                 checkToSelectAll = this.isAllSelected(checkedLen);
@@ -3078,12 +3084,15 @@ export class Selection implements IAction {
                 input.indeterminate = false;
                 if ((checkToSelectAll && isFiltered && this.getData().length) || (!isFiltered
                     && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
-                        && !this.isPartialSelection && (!this.parent.getDataModule().isRemote() || this.parent.allowPaging)) ||
+                        && !this.isPartialSelection && (!(this.parent.getDataModule().isRemote()
+                        || (<{result: object[]}>this.parent.dataSource).result) || this.parent.allowPaging)) ||
                     (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling
                     && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
-                        && !this.parent.allowPaging && ((!this.parent.getDataModule().isRemote() &&
-                        this.getData().length && checkedLen === this.getData().length) || (this.parent.getDataModule().isRemote() &&
+                        && !this.parent.allowPaging && ((!(this.parent.getDataModule().isRemote()
+                        || (<{result: object[]}>this.parent.dataSource).result) &&
+                        this.getData().length && checkedLen === this.getData().length) || ((this.parent.getDataModule().isRemote()
+                        || (<{result: object[]}>this.parent.dataSource).result) &&
                         !this.isPartialSelection && (checkedLen === this.parent.totalDataRecordsCount)) ||
                         (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))))) {
                     addClass([spanEle], ['e-check']);
@@ -3120,7 +3129,8 @@ export class Selection implements IAction {
                     }
                 }
                 if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
-                    && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()) {
+                    && !this.parent.allowPaging && !(this.parent.getDataModule().isRemote()
+                    || (<{result: object[]}>this.parent.dataSource).result)) {
                     this.updateSelectedRowIndex(index);
                 }
             }
@@ -3131,8 +3141,8 @@ export class Selection implements IAction {
         let rowCount: number = 0;
         const rowObj: Row<Column>[] = this.parent.getRowsObject();
         if (this.parent.selectionSettings.persistSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
-            const dataLen: number = this.parent.getDataModule().isRemote() ? this.parent.totalDataRecordsCount : this.getData() &&
-                this.getData().length;
+            const dataLen: number = (this.parent.getDataModule().isRemote() || (<{result: object[]}>this.parent.dataSource).result) ?
+                this.parent.totalDataRecordsCount : this.getData() && this.getData().length;
             if (dataLen === rowObj.length) {
                 rowCount = rowObj.filter((e: Row<Column>) => e.isSelectable).length;
                 return rowCount && count === rowCount;
@@ -3213,6 +3223,9 @@ export class Selection implements IAction {
         this.drawBorders();
         this.updateAutoFillPosition();
         target = parentsUntil(target, literals.rowCell) as HTMLElement;
+        if (this.parent.isReact && (target && !target.parentElement && target.classList.contains('e-rowcell'))) {
+            target = this.parent.getCellFromIndex(parseInt(target.getAttribute('index'), 10), parseInt(target.getAttribute('data-colindex'), 10)) as HTMLElement;
+        }
         if (((target && target.parentElement.classList.contains(literals.row) && !this.parent.selectionSettings.checkboxOnly) || chkSelect)
             && !this.isRowDragSelected) {
             if (this.parent.isCheckBoxSelection) {

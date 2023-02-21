@@ -1932,6 +1932,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 value = this.encode(value);
             } else {
                 value = this.htmlEditorModule.sanitizeHelper(value);
+                value = this.enableXhtml ? this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(value) : value;
             }
         }
         return value;
@@ -3202,8 +3203,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (this.editorMode === 'HTML') {
-            value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
-            this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
+            value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>'
+                     || this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
                     this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             if (getTextArea && getTextArea.style.display === 'block') {
                 value = getTextArea.value;

@@ -52,11 +52,11 @@ export class InsertHtml {
         }
         if (range.startContainer.nodeName === 'BR' && range.startOffset === 0 && range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer) {
-            const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.children).indexOf(
+            const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.childNodes).indexOf(
                 range.startContainer as HTMLElement);
             nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).parentElement, (
                 range.startContainer as HTMLElement).parentElement,
-                                           currentIndex + 1, currentIndex + 1);
+                                           currentIndex, currentIndex);
             range = nodeSelection.getRange(docElement);
         }
         const isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&

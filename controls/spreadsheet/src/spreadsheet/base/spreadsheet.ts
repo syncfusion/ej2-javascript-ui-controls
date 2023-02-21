@@ -47,7 +47,7 @@ import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
-import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress } from './../../workbook/common/index';
+import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
 import { updateScroll, SelectionMode, clearCopy, isImported } from '../common/index';
 /**
  * Represents the Spreadsheet component.
@@ -1758,7 +1758,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used for remove validation.
      */
     public removeDataValidation(range?: string): void {
-        super.removeDataValidation(range);
+        this.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.viewport });
     }
 
     /**

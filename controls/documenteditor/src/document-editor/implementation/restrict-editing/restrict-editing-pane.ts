@@ -87,6 +87,7 @@ export class RestrictEditing {
             className: 'e-de-rp-close-icon e-de-close-icon e-btn e-flat e-icon-btn',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
+        this.closeButton.setAttribute('aria-label', this.localObj.getConstant('Close'));
         headerWholeDiv.appendChild(this.closeButton);
         headerWholeDiv.appendChild(headerDiv1);
         const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
@@ -184,6 +185,7 @@ export class RestrictEditing {
             //styles: 'margin-top: 3px',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
+        this.addUser.setAttribute('aria-label',localObj.getConstant('More users'));
         this.userWholeDiv.appendChild(this.addUser);
 
         this.restrictPaneWholeDiv.appendChild(this.userWholeDiv);
@@ -194,6 +196,7 @@ export class RestrictEditing {
             className: 'e-btn e-de-rp-btn-enforce',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
+        this.enforceProtection.setAttribute('aria-label', localObj.getConstant('Enforcing Protection'));
         lastDiv.appendChild(this.enforceProtection);
         this.restrictPane.appendChild(this.restrictPaneWholeDiv);
         this.stopProtectionDiv = createElement('div', { styles: 'display:none' });

@@ -978,7 +978,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (!this.readonly) {
             const isTabAction: boolean = e.action === 'tab' || e.action === 'close';
-            if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape') {
+            if (isNullOrUndefined(this.list) && !this.isRequested && !isTabAction && e.action !== 'escape') {
                 this.searchKeyEvent = e;
                 this.renderList(e);
             }

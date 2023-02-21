@@ -1516,7 +1516,7 @@ describe("Paste when Xhtml enabled", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
           }
-          expect(rteObj.inputElement.innerHTML === '<div><p>Rich Text Editor content Pasted.</p><p class=\"xhtmlpara\"> ​</p></div>').toBe(true);
+          expect(rteObj.inputElement.innerHTML === '<p>Rich Text Editor content Pasted.</p><p class=\"xhtmlpara\"> ​</p>').toBe(true);
           done();
         }, 50);
     });
@@ -2643,5 +2643,92 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
     });
     afterAll(() => {
       destroy(rteObj);
+    });
+});
+describe("EJ2-68999 - RichTextEditor doesn't adjust to the pasteCleanUp popup's height when using saveInterval - ", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            pasteCleanupSettings : {
+                prompt: true
+            }
+        });
+        done();
+      });
+    it("the pasteCleanUp popup's height when using saveInterval - ", (done) => {
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+            const height = window.getComputedStyle(rteObj.inputElement).height;
+            expect(height).not.toBe('auto');
+          done();
+        }, 50);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe("EJ2-69216 - Pasting from Word doesn't work properly with enterKey 'BR' in RichTextEditor - ", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            pasteCleanupSettings: {
+              prompt: true
+            },
+            enterKey: 'BR'
+          });
+        done();
+      });
+    it("pasting content from MS-Word using enter key configuration as BR - ", (done) => {
+        let localElem: string = `<p><i>This is test 1</i></p>`;
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+              return localElem;
+            },
+            items: []
+          };
+        rteObj.value = '<p><span>This is a test</span></p><p><br><br></p>';
+        rteObj.pasteCleanupSettings.deniedTags = [];
+        rteObj.pasteCleanupSettings.deniedAttrs = [];
+        rteObj.pasteCleanupSettings.allowedStyleProps = [];
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        setCursorPoint((rteObj as any).inputElement.lastElementChild.childNodes[1], 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+          if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+          }
+          expect((rteObj as any).inputElement.innerHTML === `<p><span>This is a test</span></p><p><br></p><p><i>This is test 1</i></p>`).toBe(true)
+          done();
+        }, 50);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

@@ -1124,7 +1124,7 @@ export class Virtualization {
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {
         // eslint-disable-next-line @typescript-eslint/ban-types
-        const onChange: Function = this.isNgTemplate() ? this.onNgChange : (this.isVueFunctionTemplate()) ?  this.onVuechange : this.onChange;
+        const onChange: Function = this.isNgTemplate() ? this.onNgChange : (this.isVueFunctionTemplate()) ?  this.onVueChange : this.onChange;
         if (this.listViewInstance.template || this.listViewInstance.groupTemplate) {
             const curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index];
             // eslint-disable-next-line
@@ -1148,7 +1148,7 @@ export class Virtualization {
      * @param {ElementContext} listElement - The HTML element context for the list view.
      * @param {Virtualization} virtualThis - The virtualization context for the list view.
      */
-    private onVuechange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
+    private onVueChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
         let liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
             // eslint-disable-next-line
             [newData] as any,

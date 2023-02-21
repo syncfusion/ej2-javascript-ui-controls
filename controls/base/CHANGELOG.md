@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.4.50 (2023-02-14)
+## 20.4.51 (2023-02-21)
+
+### Common
+
+#### New Features
+
+- `#I421132` - Provided custom format `#,###,, ; (#,###,,)` support for `Numbers` that used in Microsoft Excel's pivot table.
+
+## 20.4.48 (2023-02-01)
 
 ### Dashboard Layout
 

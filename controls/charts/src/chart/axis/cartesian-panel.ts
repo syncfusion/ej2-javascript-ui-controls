@@ -1044,10 +1044,9 @@ export class CartesianAxisLayoutPanel {
      */
     private drawYAxisTitle(axis: Axis, index: number, parent: Element, rect: Rect): void {
         if (axis.title) {
-            const chart: Chart = this.chart;
+            const chart: Chart = this.chart; let isRotated: boolean = false;
             const isOpposed: boolean = axis.isAxisOpposedPosition;
-            let labelRotation: number = axis.titleRotation == null ? -90 : axis.titleRotation;
-            labelRotation = isOpposed ? -(labelRotation) : labelRotation;
+            let labelRotation: number = (axis.titleRotation == null ? (isOpposed ? 90 : -90) : axis.titleRotation) % 360;
             let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + axis.titlePadding) +
                 (axis.labelPosition === 'Inside' ? 0 :
                     (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
@@ -1055,14 +1054,15 @@ export class CartesianAxisLayoutPanel {
             padding = isOpposed ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
 
             if ((labelRotation !== -90 && !isOpposed) || (labelRotation !== 90 && isOpposed)) {
-                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 : - axis.titleSize.width / 2;
+                padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + axis.labelPadding : -axis.titleSize.width / 2 - axis.labelPadding;
+                isRotated = true
             }
             const x: number =  rect.x + padding;
 
             const y: number = rect.y + rect.height * 0.5;
             const titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
             const options: TextOption = new TextOption(
-                chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle',
+                chart.element.id + '_AxisTitle_' + index, x, y + (isRotated ? - titleSize : - axis.labelPadding - titleSize), 'middle',
                 axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
             );
             const element: Element = textElement(
@@ -1470,7 +1470,7 @@ export class CartesianAxisLayoutPanel {
                     }
                     rect = new Rect(options.x + xAdjustment, options.y - (yAdjustment), label.breakLabelSize.width, height);
                 } else {
-                    height = (pointY) - (options.y - ((label.size.height / 2) + 10));
+                    height = (pointY) - (options.y - ((label.size.height / 2)));
                     rect = new Rect(options.x, options.y - ((label.size.height / 2) - 5), label.size.width, height);
                 }
                 const rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
@@ -1491,22 +1491,21 @@ export class CartesianAxisLayoutPanel {
                         }
                     }
                 }
-                if (angle > 0 && angle < 90) {
-                    let textRect: Rect = new Rect(options.x, options.y - (elementSize.height / 2 + padding / 2), label.size.width, height);
-                    let textRectCoordinates: ChartLocation[] = this.getRectanglePoints(textRect);
-                    var rectPoints = [];
-                    rectPoints.push(new ChartLocation(axis.rect.width + axis.rect.x, axis.rect.y));
-                    rectPoints.push(new ChartLocation(axis.rect.width + axis.rect.x, axis.rect.y + axis.maxLabelSize.height));
-                    textPoints.push(getRotatedRectangleCoordinates(textRectCoordinates, rectCenterX, rectCenterY, angle));
-                    let newRect: Rect = new Rect(axis.rect.x, axis.rect.y, axis.rect.width, axis.maxLabelSize.height * 2);
-                    for (let k: number = 0; k < textPoints[i].length; k++) {
-                        if (!axis.opposedPosition && !withInBounds(textPoints[i][k].x, textPoints[i][k].y, newRect) && typeof options.text === 'string') {
-                            let interSectPoint: ChartLocation = this.calculateIntersection(textPoints[i][0], textPoints[i][1], rectPoints[0], rectPoints[1]);
-                            let rectPoint1: number = axis.rect.width + axis.rect.x - pointX;
-                            let rectPoint2: number = interSectPoint.y - axis.rect.y;
-                            let trimValue: number = Math.sqrt((rectPoint1 * rectPoint1) + (rectPoint2 * rectPoint2));
-                            options.text = textTrim(trimValue, label.text as string, label.labelStyle);
-                        }
+                let rotateAngle: boolean = ((angle > 0 && angle < 90) || (angle > 180 && angle < 270) || (angle < -90 && angle > -180) || (angle < -270 && angle > -360));
+                let textRect: Rect = new Rect(options.x, options.y - (elementSize.height / 2 + padding / 2), label.size.width, height);
+                let textRectCoordinates: ChartLocation[] = this.getRectanglePoints(textRect);
+                var rectPoints = [];
+                rectPoints.push(new ChartLocation(rotateAngle ? axis.rect.width + axis.rect.x : axis.rect.x, axis.rect.y));
+                rectPoints.push(new ChartLocation(rotateAngle ? axis.rect.width + axis.rect.x : axis.rect.x, axis.rect.y + axis.maxLabelSize.height));
+                textPoints.push(getRotatedRectangleCoordinates(textRectCoordinates, rectCenterX, rectCenterY, angle));
+                let newRect: Rect = new Rect(axis.rect.x, axis.rect.y, axis.rect.width, axis.maxLabelSize.height * 2);
+                for (let k: number = 0; k < textPoints[i].length; k++) {
+                    if (!axis.opposedPosition && !withInBounds(textPoints[i][k].x, textPoints[i][k].y, newRect) && typeof options.text === 'string') {
+                        let interSectPoint: ChartLocation = this.calculateIntersection(textPoints[i][0], textPoints[i][1], rectPoints[0], rectPoints[1]);
+                        let rectPoint1: number = rotateAngle ? axis.rect.width + axis.rect.x - pointX : pointX - axis.rect.x;
+                        let rectPoint2: number = interSectPoint.y - axis.rect.y;
+                        let trimValue: number = Math.sqrt((rectPoint1 * rectPoint1) + (rectPoint2 * rectPoint2));
+                        options.text = textTrim(trimValue, label.text as string, label.labelStyle);
                     }
                 }
             }

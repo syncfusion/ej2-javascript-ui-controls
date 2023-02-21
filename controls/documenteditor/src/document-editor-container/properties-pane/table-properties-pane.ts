@@ -612,6 +612,7 @@ export class TableProperties {
         });
         btn.appendTo(buttonElement);
         buttonElement.setAttribute('title', toolTipText);
+        buttonElement.setAttribute('aria-label', toolTipText);
         return btn;
     }
     private createColorPickerTemplate(id: string, divElement: HTMLElement, toolTipText: string, isBorderWidth: boolean): ColorPicker {
@@ -624,6 +625,7 @@ export class TableProperties {
         /* eslint-disable-next-line max-len */
         const colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
+        inputElement.parentElement.setAttribute('aria-label',toolTipText);
         return colorPicker;
     }
     public showTableProperties(isShow: boolean, propertyType: string): void {

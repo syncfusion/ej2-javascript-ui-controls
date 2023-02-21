@@ -295,7 +295,7 @@ export class Layout {
             this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
             let lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             /* eslint-disable-next-line max-len */
-            if (i > 0 && (((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak || ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithColumnBreak) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
+            if (i > 0 && !isNullOrUndefined(sections[i - 1].lastChild) && !((sections[i - 1] as BodyWidget).lastChild instanceof TableWidget) && (((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak || ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithColumnBreak) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
                 this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
                 lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             }
@@ -3287,7 +3287,7 @@ export class Layout {
         let getWidthAndSpace: SubWidthInfo[];
         let textAlignment: TextAlignment = paraFormat.textAlignment;
         let totalSpaceCount: number = 0;
-        
+        let trimmedSpaceWidth : number = 0;
         // calculates the sub width, for text alignments - Center, Right, Justify.
         // if the element is paragraph end and para bidi is true and text alignment is justify
         // we need to calculate subwidth and add it to the left margin of the element.
@@ -3297,6 +3297,7 @@ export class Layout {
             subWidth = getWidthAndSpace[0].subWidth;
             whiteSpaceCount = getWidthAndSpace[0].spaceCount;
             totalSpaceCount = getWidthAndSpace[0].totalSpaceCount;
+            trimmedSpaceWidth = getWidthAndSpace[0].trimmedSpaceWidth;
             skip2013Justification = line.isEndsWithPageBreak || line.isEndsWithColumnBreak || line.isEndsWithLineBreak || line.paragraph.bidi || this.isRTLLayout;
         }
         if (!skip2013Justification && (getWidthAndSpace && getWidthAndSpace.length === 1) && this.viewer.clientActiveArea.width > 0 &&
@@ -3394,9 +3395,13 @@ export class Layout {
                 previousElement instanceof ShapeBase &&  previousElement.textWrappingStyle !== 'Inline')
                 || elementBox.padding.left > 0) {
                 line.height = topMargin + elementBox.height + bottomMargin;
-                if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && isParagraphEnd)) {
+                if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && (isParagraphEnd || trimmedSpaceWidth < 0))) {
                     //Aligns the text as right justified and consider subwidth for bidirectional paragrph with justify.
-                    leftMargin = subWidth;
+                    if(trimmedSpaceWidth < 0) {
+                        leftMargin = trimmedSpaceWidth;
+                    } else {
+                        leftMargin = subWidth;
+                    }
                 } else if (textAlignment === 'Center') {
                     //Aligns the text as center justified.
                     if (subWidth < 0) {
@@ -3922,6 +3927,10 @@ export class Layout {
                 this.viewer.cutFromTop(this.viewer.clientActiveArea.y + startBlock.height);
                 this.viewer.updateClientAreaForBlock(startBlock, false);
             } else if (startBlock instanceof TableWidget) {
+                if (this.documentHelper.compatibilityMode !== 'Word2013' && !startBlock.isInsideTable) {
+                    this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
+                        HelperMethods.convertPointToPixel(((startBlock.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+                }
                 this.addTableWidget(this.viewer.clientActiveArea, [startBlock])
                 let nextRow: TableRowWidget = startBlock.firstChild as TableRowWidget;
                 if (currentBlock instanceof TableRowWidget && startBlock.equals(currentBlock.ownerTable) && !isNullOrUndefined(nextRow)) {
@@ -4158,7 +4167,7 @@ export class Layout {
                 }
             } else if (!(textElement instanceof ListTextElementBox || textElement instanceof FieldElementBox
                 // to skip field code
-                || textElement instanceof TextElementBox && textElement.width === 0)) {
+                || textElement instanceof TextElementBox && textElement.width === 0 || textElement instanceof CommentCharacterElementBox)) {
                 //Handled for inline images/UIelements.
                 lastTextElement = i;
                 isSplitByWord = true;
@@ -4880,6 +4889,7 @@ export class Layout {
         let trimSpace: boolean = true;
         let lineText: string = '';
         let trimmedSpaceWidth: number = 0;
+        let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
         if (this.wrapPosition.length > 0) {
             let subWidths: SubWidthInfo[] = this.getSubWidthBasedOnTextWrap(lineWidget, justify, spaceCount, firstLineIndent, isParagraphEnd);
             if (subWidths.length > 0) {
@@ -4892,6 +4902,14 @@ export class Layout {
             if (element.width > 0 && element instanceof TextElementBox) {
                 let elementText: string = (element as TextElementBox).text;
                 lineText = elementText + lineText;
+                if (justify && isBidi) {
+                    if (elementText === ' ' && i - 1 >= 0 && (renderElementBox[i - 1] as TextElementBox).text === ' ') {
+                        trimSpace = true;
+                    }
+                    else {
+                        trimSpace = false;
+                    }
+                }
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
                     if (HelperMethods.endsWith(elementText)) {
                         let widthExcludeSpace: number = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, element.characterFormat, (element as TextElementBox).scriptType);
@@ -4927,7 +4945,8 @@ export class Layout {
         spaceCount = lineText.length - HelperMethods.removeSpace(lineText).length;
         
         let subWidth: number = (this.viewer.clientArea.width - firstLineIndent - width);
-        if ((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify && !lineWidget.paragraph.paragraphFormat.bidi)) {
+        let totalSubWidth: number = (this.viewer.clientArea.width - firstLineIndent - (width + trimmedSpaceWidth));
+        if (((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify)) && !isBidi) {
             spaceCount = 0;
             subWidth = 0;
         } else if (justify) {
@@ -4942,12 +4961,15 @@ export class Layout {
         ////Generally, trailing space of line should get trimmed, if alignment type is Right or Left.
         ////But, if right-to-left rendering is enabled and it is last line of paragraph than the trailing space should be preserved.
         ////So, subtracted the trimmedSpaceWidth from subWidth.
-        else if (trimmedSpaceWidth > 0 && lineWidget.paragraph.paragraphFormat.bidi && isParagraphEnd) {
+        else if (trimmedSpaceWidth > 0 && isBidi && isParagraphEnd) {
             subWidth -= trimmedSpaceWidth;
+        }
+        if(isBidi && justify && totalSubWidth < 0) {
+            trimmedSpaceWidth = -trimmedSpaceWidth;
         }
         // So set sub width to zero to layout the element in left alignment
         // Need to remove is once after implementing subwidth update separatly
-        return [{ 'subWidth': subWidth, 'spaceCount': spaceCount, 'totalSpaceCount': totalSpaceCount  }];
+        return [{ 'trimmedSpaceWidth':trimmedSpaceWidth, 'subWidth': subWidth, 'spaceCount': spaceCount, 'totalSpaceCount': totalSpaceCount  }];
     }
 
     private getSubWidthBasedOnTextWrap(lineWidget: LineWidget, justify: boolean, spaceCount: number, firstLineIndent: number, isParagraphEnd: boolean): SubWidthInfo[] {
@@ -5033,7 +5055,7 @@ export class Layout {
                     spaceCount = 0;
                 }
             }
-            return { 'subWidth': totalSubWidth, 'spaceCount': spaceCount, 'totalSpaceCount': spaceCount };
+            return { 'trimmedSpaceWidth':0,'subWidth': totalSubWidth, 'spaceCount': spaceCount, 'totalSpaceCount': spaceCount };
         }
         return undefined;
     }
@@ -5632,7 +5654,7 @@ export class Layout {
             }
             if (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footnoteHeight <= viewer.clientArea.bottom)) {
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
-                    || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
+                    || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight) && !(row.ownerTable.isInHeaderFooter)) {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
                 }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, undefined, isInitialLayout, startRowIndex);

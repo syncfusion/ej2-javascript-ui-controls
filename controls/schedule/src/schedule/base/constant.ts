@@ -47,6 +47,8 @@ export const resizing: string = 'resizing';
 export const resizeStop: string = 'resizeStop';
 /** @private */
 export const inlineClick: string = 'inlineClick';
+/** @private */
+export const cellSelect: string = 'cellSelect';
 
 /**
  * Specifies schedule internal events

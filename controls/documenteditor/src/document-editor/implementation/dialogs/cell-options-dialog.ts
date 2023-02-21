@@ -98,6 +98,7 @@ export class CellOptionsDialog {
         const sameAsTableCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_sameAsCheckBox'
         });
+        sameAsTableCheckBox.setAttribute('aria-label',localValue.getConstant('Same as the whole table'));
         td.appendChild(sameAsTableCheckBox);
         tr.appendChild(td); table.appendChild(tr);
         innerDiv.appendChild(table);
@@ -109,6 +110,7 @@ export class CellOptionsDialog {
             change: this.changeSameAsTable,
             enableRtl: isRtl
         });
+        sameAsTableCheckBox.setAttribute('aria-label',localValue.getConstant('Same as the whole table'));
         this.sameAsTableCheckBox.appendTo(sameAsTableCheckBox);
         this.sameAsTableCheckBox.addEventListener('change', this.changeSameAsTable);
     }
@@ -317,12 +319,14 @@ export class CellOptionsDialog {
             const topTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' }, styles: 'width:100%'
             });
+            // topTextBox.setAttribute('aria-label','TopMargin');
             td1.appendChild(topTextBox);
             const td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
 
             const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' }, styles: 'width:100%'
             });
+            // leftTextBox.setAttribute('aria-label','LeftMargin');
             td2.appendChild(leftTextBox);
             tr1.appendChild(td1); tr1.appendChild(td2);
             const tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('div', { className: cellOptions ? 'e-de-dlg-row' : 'e-de-container-row' });
@@ -331,14 +335,14 @@ export class CellOptionsDialog {
             const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-
+            // bottomTextBox.setAttribute('aria-label','BottomMargin');
             td3.appendChild(bottomTextBox);
             const td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
 
             const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
                 attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-
+            // rightTextBox.setAttribute('aria-label','RightMargin');
             td4.appendChild(rightTextBox);
             tr2.appendChild(td3); tr2.appendChild(td4); table.appendChild(tr1);
             table.appendChild(tr2);
@@ -366,6 +370,10 @@ export class CellOptionsDialog {
                 floatLabelType: 'Always'
             });
             dialog.rightMarginBox.appendTo(rightTextBox);
+            rightTextBox.setAttribute('aria-labelledby',locale.getConstant('Right'));
+            leftTextBox.setAttribute('aria-labelledby',locale.getConstant('Left'));
+            bottomTextBox.setAttribute('aria-labelledby',locale.getConstant('Bottom'));
+            topTextBox.setAttribute('aria-labelledby',locale.getConstant('Top'));
         }
     }
 }

@@ -256,6 +256,8 @@ export interface FormatObject {
 }
 /**
  * Specifies the fieldMode as DropDownList or DropDownTree.
+ * Default: To Specifies the fieldMode as DropDownList.
+ * DropdownTree: To Specifies the fieldMode as DropdownTree.
  */
 export type FieldMode =
     /** Display the DropdownList */
@@ -264,6 +266,8 @@ export type FieldMode =
     'DropdownTree';
 /**
  * Specifies the displayMode as Horizontal or Vertical.
+ * Horizontal: To Display the Horizontal UI.
+ * Vertical: To Display the Vertical UI.
  */
 export type DisplayMode =
     /**  Display the Horizontal UI */
@@ -272,9 +276,9 @@ export type DisplayMode =
     'Vertical';
 /**
  * Specifies the sort direction of the field names. They are
- * * Default
- * * Ascending
- * * Descending
+ * Default: Show the field names in default .
+ * Ascending: Show the field names in Ascending.
+ * Descending: Show the field names in Descending
  */
 export type SortDirection =
     /**  Show the field names in default */
@@ -979,7 +983,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!column || (column && !column.ruleTemplate) || !rule.field) {
                 if (this.fieldMode === 'Default'){
                     let ddlField: DropDownListModel;
-                    const ddlValue: string = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
+                    let ddlValue: string;
+                    if (this.separator && rule.field) {
+                        ddlValue = this.GetRootColumnName(rule.field as string);
+                    } else {
+                        ddlValue = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
+                    }
                     ddlField = {
                         dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
                         fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
@@ -990,8 +999,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
                     }
                     dropDownList = new DropDownList(ddlField); dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-                    const ddlVal: string | number | boolean = this.isImportRules ?
-                        this.GetRootColumnName(rule.field as string) : dropDownList.value;
+                    let ddlVal: string | number | boolean;
+                    if (this.separator && rule.field) {
+                        ddlVal = this.GetRootColumnName(rule.field as string);
+                    } else {
+                        ddlVal = this.isImportRules ? this.GetRootColumnName(rule.field as string) : dropDownList.value;
+                    }
                     this.selectedColumn = dropDownList.getDataByValue(ddlVal) as ColumnsModel;
                     if (Object.keys(rule).length) {
                         this.changeRule(rule, {
@@ -1006,7 +1019,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             value: 'field', text: 'label', child: 'columns', expanded: 'expanded'},
                         placeholder: this.l10n.getConstant('SelectField'), showClearButton: false,
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
-                        change: this.changeField.bind(this), value: this.isImportRules ? [ddlValue] : null,
+                        change: this.changeField.bind(this), value: !isNullOrUndefined(ddlValue) ? [ddlValue] : null,
                         open: this.popupOpen.bind(this, false)
                     };
                     if (this.fieldModel) {
@@ -1018,7 +1031,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         (dropdowntree.element as HTMLInputElement).value = value;
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const ddlVal: string | number | boolean | any = this.isImportRules ?
+                    const ddlVal: string | number | boolean | any = !isNullOrUndefined(rule.field) ?
                         this.GetRootColumnName(rule.field as string) : dropdowntree.value;
                     this.selectedColumn = this.getColumn(ddlVal) as ColumnsModel;
                     if (Object.keys(rule).length) {
@@ -1078,7 +1091,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             const parentGroup: HTMLElement = closest(element, '.e-group-container') as HTMLElement;
             const parentId: string = closest(element, '.e-rule-container').id;
-            if (this.previousColumn && this.previousColumn.ruleTemplate ) {
+            if (this.previousColumn && this.previousColumn.ruleTemplate) {
                 detach(element.closest('[id="' + parentId + '"]').querySelector('.e-rule-field'));
                 this.clearQBTemplate([parentId]);
             }
@@ -1093,7 +1106,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
             position: 'BottomCenter', cssClass: 'e-querybuilder-error' });
         tooltip.appendTo(element);
-        // eslint-disable-next-line
         tooltip.open(element);
     }
     /**
@@ -1402,7 +1414,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return groupElem;
     }
     /**
-     * notify the changes to component.
+     * Notify the changes to component.
      *
      * @param {string | number | boolean | Date | string[] | number[] | Date[]} value - 'value' to be passed to update the rule value.
      * @param {Element} element - 'element' to be passed to update the rule.
@@ -1657,6 +1669,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.subFieldElem = null; this.isNotValueChange = true;
             if (column && column.ruleTemplate) {
                 this.templateChange(args.element, column.field as string, 'field');
+            } else if (column && column.columns && column.columns[0].ruleTemplate) {
+                this.templateChange(args.element, column.columns[0].field as string, 'field');
             } else {
                 const groupElem: Element = closest(args.element, '.e-group-container');
                 const rules: RuleModel = this.getParentGroup(groupElem);
@@ -1804,13 +1818,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         const dropDownList: DropDownList = new DropDownList(ddlField);
         dropDownList.appendTo('#' + ruleId + '_subfilterkey' + this.subFilterCounter);
-        if (this.isImportRules) {
+        if (this.isImportRules || (this.previousColumn && this.previousColumn.ruleTemplate &&
+            this.GetRootColumnName(rule.field) === this.GetRootColumnName(this.previousColumn.field))) {
             const subField: ColumnsModel[] = this.selectedColumn.columns;
             for (let i: number = 0; i < subField.length; i++) {
                 if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field) > -1) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
-                    subFieldValue = true
+                    subFieldValue = true;
                     break;
                 }
             }
@@ -1819,12 +1834,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.subFieldElem = subFieldElem as HTMLElement;
         // eslint-disable-next-line
         ddlArgs.itemData = ddlArgs.itemData;
-        if (!this.isImportRules || (!subFieldValue && this.selectedColumn.columns)) {
+        if (!subFieldValue && this.selectedColumn.columns) {
             if (!subFieldValue && this.isImportRules) {
                 dropDownList.value = null;
             }
             this.selectedColumn = this.selectedColumn.columns[0];
         }
+        this.previousColumn = this.selectedColumn;
         if (!this.selectedColumn.columns) {
             this.changeRuleValues(tempElem, rule, tempRule, ddlArgs);
         }
@@ -2026,7 +2042,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     /**
-     * return values bound to the column.
+     * Return values bound to the column.
      *
      * @param {string} field - 'field' to be passed to get the field values.
      * @returns {object[]} - Values bound to the column
@@ -3913,7 +3929,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     /**
-     * return the Query from current rules collection.
+     * Return the Query from current rules collection.
      *
      * @returns {Promise} - Query from current rules collection
      * @blazorType object
@@ -4098,7 +4114,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     /* eslint-disable */
 
     /**
-     * return the operator bound to the column.
+     * Return the operator bound to the column.
      *
      * @returns {[key: string]: Object}[] - Operator bound to the column
      */
@@ -4693,10 +4709,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (/^'((?:[^\\']+?|\\.|'')*)'(?!')/.exec(sqlString)) {
             // eslint-disable-next-line
             matchValue = /^'((?:[^\\']+?|\\.|'')*)'(?!')/.exec(sqlString)[0];
+            if (matchValue[matchValue.length - 2] === '(') {
+                let isClosed: boolean = false;
+                for (let j: number = matchValue.length; j < sqlString.length; j++) {
+                    matchValue += sqlString[j as number];
+                    if (sqlString[j as number] === ')') {
+                        isClosed = true;
+                    }
+                    if (isClosed && sqlString[j] === "'") {
+                        break;
+                    }
+                }
+            }
             this.parser.push(['String', matchValue]);
             return matchValue.length;
         }
-        //Double String
+        // Double String
         // eslint-disable-next-line
         if (/^"([^\\"]*(?:\\.[^\\"]*)*)"/.exec(sqlString)) {
             // eslint-disable-next-line
@@ -4867,7 +4895,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 break;
                             }
                             if (operator.indexOf('like') > -1 && parser[j as number][0] === 'String') {
-                                const val: string = parser[j as number][1] ? parser[j as number][1].replace(/'/g, '').replace(/%/g, '') : parser[j as number][1];
+                                let val: string = parser[j as number][1];
+                                if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                    val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
+                                }
+                                val = val ? val.replace(/%/g, '') : parser[j as number][1];
                                 rule.value = val; rule.type = 'string';
                             } else if (operator.indexOf('between') > -1) {
                                 if (parser[j as number][0] === 'Literal' || parser[j as number][0] === 'Left') {
@@ -4876,13 +4908,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 if (parser[j as number][0] === 'Number') {
                                     numVal.push(Number(parser[j as number][1]));
                                 } else if (parser[j as number][0] === 'String') {
-                                    strVal.push(parser[j as number][1].replace(/'/g, ''));
+                                    let val: string = parser[j as number][1];
+                                    if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                        val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
+                                    }
+                                    strVal.push(val);
                                 }
                             } else {
                                 if (parser[j as number][0] === 'Number') {
                                     numVal.push(Number(parser[j as number][1]));
                                 } else if (parser[j as number][0] === 'String') {
-                                    strVal.push(parser[j as number][1].replace(/'/g, ''));
+                                    let val: string = parser[j as number][1];
+                                    if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                        val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
+                                    }
+                                    strVal.push(val);
                                 }
                             }
                             rule.type = this.getTypeFromColumn(rule);

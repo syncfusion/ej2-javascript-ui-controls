@@ -76,6 +76,7 @@ export class DropDownFormFieldDialog {
         });
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
+        addButtonEle.setAttribute('aria-label',localValue.getConstant('ADD'));
         addButtonEle.addEventListener('click', this.addItemtoList.bind(this));
         let editButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         editButtonDiv.style.display = 'none';
@@ -84,11 +85,13 @@ export class DropDownFormFieldDialog {
             attrs: { type: 'button', style: 'height:36px;width:100%' }
         });
         this.editButton = new Button({ cssClass: 'e-button-custom' });
+        editButtonEle.setAttribute('aria-label','EDIT');
         let removeButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         let removeButtonEle: HTMLElement = createElement('button', {
             innerHTML: localValue.getConstant('REMOVE'),
             attrs: { type: 'button', style: 'height:36px;width:100%' }
         });
+        removeButtonEle.setAttribute('aria-label',localValue.getConstant('REMOVE'));
         this.removeButton = new Button({ cssClass: 'e-button-custom' });
         removeButtonEle.addEventListener('click', this.removeItemFromList.bind(this));
         let moveBtnDiv: HTMLElement = createElement('div', { attrs: { style: 'display:inline-flex' } });
@@ -114,7 +117,7 @@ export class DropDownFormFieldDialog {
         let toolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
         let bookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
         this.tooltipInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-
+        
         this.bookmarkInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let dropDownEnableDiv: HTMLElement = createElement('div');
         let dropDownEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
@@ -129,7 +132,7 @@ export class DropDownFormFieldDialog {
             toolTipDiv.classList.add('e-de-rtl');
             bookmarkDiv.classList.add('e-de-rtl');
         }
-
+        dropDownEnableDiv.setAttribute('aria-label',localValue.getConstant('Dropdown enabled'));
         this.target.appendChild(dialogDiv);
         dialogDiv.appendChild(firstDiv);
         firstDiv.appendChild(this.drpDownItemsInput);
@@ -176,6 +179,9 @@ export class DropDownFormFieldDialog {
         new TextBox({ placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always' }, this.tooltipInput);
         new TextBox({ placeholder: localValue.getConstant('Name'), floatLabelType: 'Always' }, this.bookmarkInput)
         new TextBox({ placeholder: localValue.getConstant('Dropdown items'), floatLabelType: 'Always' }, this.drpDownItemsInput)
+        this.tooltipInput.setAttribute('aria-labelledby',localValue.getConstant('Tooltip'));
+        this.bookmarkInput.setAttribute('aria-labelledby',localValue.getConstant('Name'));
+        this.drpDownItemsInput.setAttribute('aria-labelledby',localValue.getConstant('Dropdown items'));
     }
     /**
      * @private

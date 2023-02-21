@@ -136,8 +136,8 @@ export class ContentRender implements IRenderer {
                             this.parent.notify(events.freezeRender, { case: 'textwrap' });
                         }
                     });
-                    if (this.parent.allowTextWrap) {
-                        if (this.parent.getContentTable().scrollHeight > this.parent.getContentTable().clientHeight) {
+                    if (this.parent.allowTextWrap && this.parent.height === 'auto') {
+                        if (this.parent.getContentTable().scrollHeight > this.parent.getContent().clientHeight) {
                             this.parent.scrollModule.setPadding();
                         }
                         else{

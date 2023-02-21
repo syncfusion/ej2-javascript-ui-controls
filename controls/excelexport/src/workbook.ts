@@ -1574,6 +1574,9 @@ export class Workbook {
             if (value.indexOf('>') !== -1) {
                 value = value.replace(/>/g, '&gt;');
             }
+            if (value.indexOf('\v') !== -1) {
+                value = value.replace('\v', '_x000B_');
+            }
         }
         else if (typeof value == "object") {
             for (var i = 0; i < value.length; i++) {
@@ -1585,6 +1588,9 @@ export class Workbook {
                 }
                 if (value[i].indexOf('>') !== -1) {
                     value[i] = value[i].replace(/>/g, '&gt;');
+                }
+                if (value[i].indexOf('\v') !== -1) {
+                    value[i] = value[i].replace('\v', '_x000B_');
                 }
             }
         }

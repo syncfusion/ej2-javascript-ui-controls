@@ -109,6 +109,7 @@ export class OptionsPane {
             className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
+        this.closeButton.setAttribute('aria-label',localeValue.getConstant('Close'));
         this.findTab.appendChild(this.closeButton);
         let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
@@ -222,12 +223,14 @@ export class OptionsPane {
             attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceButton);
+        this.replaceButton.setAttribute('aria-label', this.localeValue.getConstant(this.replaceButtonText));
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
             innerHTML: this.localeValue.getConstant(this.replaceAllButtonText),
             attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
+        this.replaceAllButton.setAttribute('aria-label', this.localeValue.getConstant(this.replaceAllButtonText));
         this.matchDiv = createElement('div', { styles: 'display:none;padding-top:10px;' });
         this.replaceDiv.appendChild(this.matchDiv);
         let emptyDiv6: HTMLElement = createElement('div', { className: 'e-de-op-search-replacediv' });

@@ -417,12 +417,17 @@ export class Tooltip extends BaseTooltip {
         };
         const borderWidth : number = this.chart.border.width;
         const padding : number = 3;
+        let currentPoints: PointData[] = [];
         const sharedTooltip: Function = (argsData: ISharedTooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 if (point.series.type === 'BoxAndWhisker') {
                     this.removeText();
                     isFirst = true;
                 }
+                for (let i: number = 0; i < argsData.text.length; i++) {
+                    if (argsData.text[i]) { currentPoints.push(this.currentPoints[i] as PointData); }
+                }
+                this.currentPoints = currentPoints;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = argsData.text;
                 this.headerText = argsData.headerText;

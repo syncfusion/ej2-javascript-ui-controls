@@ -652,6 +652,7 @@ describe('Self reference data', () => {
     });
     beforeEach((done) => {
         setTimeout(done, 1500);
+        ganttObj.openAddDialog();
     });
   
     it("EJ2-48512-Add resources using add dialog", (done: Function) => {
@@ -667,7 +668,6 @@ describe('Self reference data', () => {
         }
       };
       ganttObj.dataBind();
-      ganttObj.openAddDialog();
       setTimeout(done, 1500);
       let resourceCheckbox1: HTMLElement = document.querySelector("#" +
           ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
@@ -676,6 +676,75 @@ describe('Self reference data', () => {
           "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
       triggerMouseEvent(saveButton, "click");
     });
+});
+  describe("CR issues", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: [
+            {
+              TaskID: 1,
+              TaskName: "Project Initiation",
+              StartDate: new Date("04/02/2019"),
+              EndDate: new Date("04/21/2019"),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: "Identify Site location",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 6,
+                  resources: [{ resourceId: 1, resourceUnit: 50 }],
+                },
+              ],
+            },
+          ],
+          resources: [
+            { resourceId: 1, resourceName: "Martin Tamer" },
+            { resourceId: 2, resourceName: "Rose Fuller" },
+            { resourceId: 3, resourceName: "Margaret Buchanan" },
+          ],
+          viewType: "ResourceView",
+          enableMultiTaskbar: true,
+          taskFields: {
+            id: "TaskID",
+            name: "TaskName",
+            startDate: "StartDate",
+            endDate: "EndDate",
+            child: "subtasks",
+            duration: "Duration",
+            progress: "Progress",
+            resourceInfo: "resources",
+           },
+           resourceFields: {
+            id: "resourceId",
+            name: "resourceName",
+            unit: "resourceUnit",
+          },
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+          },
+          addDialogFields: [
+              { type: 'Resources' }
+          ],
+          toolbar: [ "Add", "Edit", "Update", "Delete", "Cancel", "ExpandAll", "CollapseAll"],
+          height: "450px",
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        ganttObj.viewType = 'ProjectView';
+        setTimeout(done, 1500);
+    });
     it("EJ2-48512-Issue on editing when view type changed", () => {
         let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(taskName, 'dblclick');
@@ -683,29 +752,96 @@ describe('Self reference data', () => {
         input.value = 'TaskName updated';
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
+        ganttObj.treeGrid.saveCell();
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
-      });
-    it("dynamically changes project to resource view", () => {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType === 'refresh') {
-                ganttObj.viewType = 'ResourceView';
-                ganttObj.dataBind();
-              }
-            };
+      });    
+  });
+  describe("CR issues", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: [
+            {
+              TaskID: 1,
+              TaskName: "Project Initiation",
+              StartDate: new Date("04/02/2019"),
+              EndDate: new Date("04/21/2019"),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: "Identify Site location",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 6,
+                  resources: [{ resourceId: 1, resourceUnit: 50 }],
+                },
+              ],
+            },
+          ],
+          resources: [
+            { resourceId: 1, resourceName: "Martin Tamer" },
+            { resourceId: 2, resourceName: "Rose Fuller" },
+            { resourceId: 3, resourceName: "Margaret Buchanan" },
+          ],
+          viewType: "ResourceView",
+          enableMultiTaskbar: true,
+          taskFields: {
+            id: "TaskID",
+            name: "TaskName",
+            startDate: "StartDate",
+            endDate: "EndDate",
+            child: "subtasks",
+            duration: "Duration",
+            progress: "Progress",
+            resourceInfo: "resources",
+           },
+           resourceFields: {
+            id: "resourceId",
+            name: "resourceName",
+            unit: "resourceUnit",
+          },
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+          },
+          addDialogFields: [
+              { type: 'Resources' }
+          ],
+          toolbar: [ "Add", "Edit", "Update", "Delete", "Cancel", "ExpandAll", "CollapseAll"],
+          height: "450px",
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        ganttObj.viewType = 'ProjectView';
+        setTimeout(done, 1500);
+    });
+  
+    it("dynamically changes project to resource view", (done) => {
+       
         ganttObj.selectionModule.selectRows([1]);
         let deleteToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
         triggerMouseEvent(deleteToolbar, 'click');
         let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog').getElementsByClassName('e-primary')[0] as HTMLElement;
         triggerMouseEvent(okElement, 'click');
         ganttObj.openEditDialog(1);
+        setTimeout(done, 1500);      
         let resource: HTMLElement = document.querySelector('#e-item-' + ganttObj.element.id + '_Tab_1') as HTMLElement;
         triggerMouseEvent(resource, 'click');
         let resourceCheckbox1: HTMLElement = document.querySelector("#" +
-          ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
+            ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
         triggerMouseEvent(resourceCheckbox1, "click");
-        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id +"_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id + "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
         triggerMouseEvent(saveButton, "click");
-        expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("Project Initiation");
+        expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("Project Initiation"); 
     });
   });
   describe("Virtualization in resource view", () => {

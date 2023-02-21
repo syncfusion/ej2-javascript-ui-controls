@@ -1595,7 +1595,7 @@ describe('Chart Control Series', () => {
         })
         it('Changing series Type', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerShapeGroup2').childNodes.length == 5).toBe(true); done();
+                expect(document.getElementById('containerShapeGroup2').childNodes.length == 6).toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[2].type = 'Column';

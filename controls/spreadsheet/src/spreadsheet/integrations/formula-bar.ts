@@ -209,7 +209,7 @@ export class FormulaBar {
                     if (cell) {
                         if (cell.formula) {
                             value = cell.formula;
-                        } else if (!isNullOrUndefined(cell.value)) {
+                        } else if (!isNullOrUndefined(cell.value) && cell.value !== '') {
                             const option: { type?: string } = {};
                             let type: string = cell.format && isCustomDateTime(cell.format, true, option, true) && option.type;
                             if (type === 'date' || type === 'time' || type === 'datetime') {
@@ -247,6 +247,11 @@ export class FormulaBar {
                                         value += intl.formatDate(timeVal, { type: 'dateTime', skeleton: 'hms' });
                                     }
                                 }
+                            } else if (cell.format && cell.format.includes('%') && isNumber(cell.value)) {
+                                value = this.parent.getDisplayText(cell);
+                                if (!value.includes('%')) {
+                                    value = '';
+                                }
                             }
                             if (!value) {
                                 value = cell.value.toString();
@@ -259,6 +264,8 @@ export class FormulaBar {
                                     }
                                 }
                             }
+                        } else if (cell.hyperlink) {
+                            value = typeof cell.hyperlink === 'string' ? cell.hyperlink : (cell.hyperlink.address || '');
                         }
                     }
                     const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
@@ -266,7 +273,7 @@ export class FormulaBar {
                     const formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     formulaInp.value = value;
-                    if (!eventArgs.editedValue || !checkIsFormula(eventArgs.editedValue.toString())) {
+                    if (!eventArgs.editedValue || !checkIsFormula(eventArgs.editedValue.toString(), true)) {
                         this.parent.notify(editOperation, { action: 'refreshEditor', value: value, refreshEditorElem: true });
                     }
                     if (this.parent.isEdit) {
@@ -334,7 +341,14 @@ export class FormulaBar {
             if (target.classList.contains('e-ddl-icon')) {
                 const eventArgs: { action: string, names: string[] } = { action: 'getNames', names: [] };
                 this.parent.notify(formulaOperation, eventArgs);
-                this.comboBoxInstance.dataSource = eventArgs.names;
+                if ((this.comboBoxInstance.dataSource as Object[]).length !== eventArgs.names.length ||
+                this.comboBoxInstance.value === this.comboBoxInstance.text ) {
+                   let searchText: string = this.comboBoxInstance.text;
+                   this.comboBoxInstance.dataSource = eventArgs.names;
+                   let definedName: DefineNameModel = (eventArgs.names as DefineNameModel[]).find((name: DefineNameModel) => name.name == searchText);
+                   this.comboBoxInstance.value = definedName ? definedName.refersTo : this.comboBoxInstance.value;
+                   this.comboBoxInstance.dataBind();
+                }
             } else {
                 this.comboBoxInstance.element.classList.add('e-name-editing');
                 (<HTMLInputElement>this.comboBoxInstance.element).select();

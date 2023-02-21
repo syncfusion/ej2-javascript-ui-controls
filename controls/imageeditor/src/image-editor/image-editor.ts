@@ -1338,7 +1338,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             redo.parentElement.classList.remove('e-overlay');
         }
         const zoomIn: HTMLElement = document.querySelector('#' + this.element.id + '_zoomIn');
-        if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 5) {
+        if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 2) {
             zoomIn.classList.add('e-disabled');
             zoomIn.parentElement.classList.add('e-overlay');
         } else if (!isNullOrUndefined(zoomIn)) {
@@ -2529,7 +2529,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.disablePan = false;
                 }
                 zoomIn = document.querySelector('#' + this.element.id + '_zoomIn');
-                if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 5) {
+                if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 2) {
                     zoomIn.classList.add('e-disabled');
                     zoomIn.parentElement.classList.add('e-overlay');
                 } else if (!isNullOrUndefined(zoomIn)) {
@@ -3280,6 +3280,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.lowerContext.filter = 'none';
             this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
             this.lowerContext.filter = temp;
+            this.currSelectionPoint = null;
         } else {
             if (this.cropObj.cropZoom > 0) {
                 const cropObjColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
@@ -3309,13 +3310,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.refreshActiveObj();
             this.objColl = cropObjColl; this.pointColl = cropPointColl; this.freehandCounter = this.pointColl.length;
             this.zoomObjColl(); this.zoomFreehandDrawColl();
+            this.currSelectionPoint = null;
             if (this.degree === 0) {
                 this.drawPannImage({x: 0, y: 0});
             }
             this.activeObj = activeObj;
             this.drawObject('duplicate');
         }
-        this.currSelectionPoint = null;
     }
 
     private updatePannedRegion(): void {
@@ -11379,7 +11380,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public zoom(value: number): void {
         if (!this.disabled && this.isImageLoaded) {
-            if ((this.zoomFactor === 0 && value < 0) || (this.zoomFactor > 5 && value > 0 ||
+            if ((this.zoomFactor === 0 && value < 0) || (this.zoomFactor > 2 && value > 0 ||
                 (this.zoomFactor > 0 && value < 0 && this.disableZoomOutBtn()))) {
                 return;
             }
@@ -11424,8 +11425,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.currentPannedPoint = {x: 0, y: 0};
                     this.rotatePan(true, true);
                 }
-                // this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
-                // this.destTop = this.lowerCanvas.clientHeight - (this.destHeight + this.destTop);
                 this.updateObjAndFreeHandDrawColl();
             }
             if (this.degree === 0) {
@@ -11474,11 +11473,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (!isNullOrUndefined(tempActiveObj)) {
                 this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
                 this.drawObject('duplicate', this.activeObj);
-                if (this.currentToolbar === 'crop') {
-                    this.refreshToolbar('main', true, true);
-                } else {
-                    this.refreshToolbar(this.currentToolbar, true, true);
-                }
                 if (this.zoomFactor === 0) {this.currSelectionPoint = null; }
             }
             if (!this.isUndoRedo) {
@@ -11493,29 +11487,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 zoomOut.classList.remove('e-disabled');
                 zoomOut.parentElement.classList.remove('e-overlay');
             }
-            if (!this.togglePan) {
-                this.callMainToolbar(false, true);
-            }
             this.autoEnablePan();
             if (!isNullOrUndefined(tempActiveObj)) {
                 this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
             }
             if (this.activeObj.shape === 'crop-custom') {this.currObjType.isCustomCrop = true; }
-            if (isNullOrUndefined(this.activeObj.activePoint) || this.activeObj.activePoint.width === 0) {
-                if (this.currentToolbar === 'crop' || !isNullOrUndefined(tempActiveObj)) {
-                    this.refreshToolbar('main', true, true);
-                } else {
-                    this.refreshToolbar('main');
-                    this.currentToolbar = 'main';
-                }
-            } else {
-                if (this.currentToolbar === 'crop' || !isNullOrUndefined(tempActiveObj)) {
-                    this.refreshToolbar('main', true, true);
-                } else {
-                    this.refreshToolbar('main');
-                    this.currentToolbar = 'main';
-                }
-            }
             const panBtn: HTMLElement = this.element.querySelector('.e-img-pan .e-btn');
             if (!isNullOrUndefined(panBtn) && this.togglePan) {
                 panBtn.classList.add('e-selected-btn');
@@ -11526,11 +11502,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
                 this.objColl.pop();
                 this.drawObject('duplicate', this.activeObj);
-                if (this.activeObj.shape === 'text') {
-                    this.refreshToolbar('text');
-                } else {
-                    this.refreshToolbar('shapes');
-                }
                 this.updateToolbarItems();
             }
         }

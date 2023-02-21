@@ -801,7 +801,7 @@ describe('Column Series', () => {
         })
         it('Checking Overlap data', (done: Function) => {            
             chartObj.loaded = (args: Object): void => {
-                expect(document.getElementById('containerShapeGroup2').childNodes.length == 5).toBe(true);
+                expect(document.getElementById('containerShapeGroup2').childNodes.length == 6).toBe(true);
                 expect(document.getElementById('container_Series_2_Point_0_TextShape_0') != null).toBe(true);
                 expect(document.getElementById('container_Series_2_Point_2_TextShape_0') != null).toBe(true); done();
             };

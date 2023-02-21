@@ -128,7 +128,9 @@ export class AutoFill {
             selectedRange: string
         } = { dataRange: eventArgs.dataRange, fillRange: eventArgs.fillRange, fillType: eventArgs.fillType, direction: eventArgs.direction, selectedRange: sheet.name + '!' + getRangeAddress(currcell) };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
-        this.parent.notify(showAggregate, {});
+        if (this.parent.showAggregate) {
+            this.parent.notify(showAggregate, {});
+        }
         this.autoFillClick();
     }
 
@@ -550,7 +552,9 @@ export class AutoFill {
         } = { dataRange: args.dataRange, fillRange: args.fillRange, fillType: args.fillType, direction: args.direction,
             selectedRange: selRange };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
-        this.parent.notify(showAggregate, {});
+        if (this.parent.showAggregate) {
+            this.parent.notify(showAggregate, {});
+        }
     }
 
     private getRangeData(options: { range: number[], sheetIdx: number }): CellModel[] {

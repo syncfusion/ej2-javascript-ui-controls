@@ -22,6 +22,7 @@ import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportCo
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
+import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 
 /**
  * @hidden
@@ -377,9 +378,52 @@ export class ExcelExport {
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) && !(exportProperties.dataSource instanceof DataManager)) {
             // eslint-disable-next-line max-len
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, exportProperties.dataSource as Object[], excelRows, helper);
-        } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage') {
+        } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage'
+         && (!gObj.groupSettings.enableLazyLoading || gObj.getDataModule().isRemote())) {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, gObj.currentViewData, excelRows, helper);
-        } else {
+        }
+        else if (gObj.groupSettings.enableLazyLoading && !gObj.getDataModule().isRemote()) {
+            let groupData: Object[];
+            if (!isNullOrUndefined(exportProperties) && Object.keys(exportProperties).length) {
+                const isAllPage: boolean = exportProperties.exportType === 'CurrentPage'
+                    ? false : true;
+                const groupQuery: Query = gObj.getDataModule().generateQuery(isAllPage);
+                const lazyloadData: object[] = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                groupQuery.lazyLoad = [];
+                const fName: string = 'fn';
+                if (!isAllPage) {
+                    for (let i: number = 0; i < groupQuery.queries.length; i++) {
+                        if (groupQuery.queries[parseInt(i.toString(), 10)]['' + fName] === 'onPage') {
+                            groupQuery.queries[parseInt(i.toString(), 10)].e.pageSize = lazyloadData.reduce((acc: number, curr: object) => acc + curr['count'], 0);
+                        }
+                    }
+                }
+                if (exportProperties.hierarchyExportMode === 'All') {
+                    groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                }
+                else if (exportProperties.hierarchyExportMode === 'Expanded' || exportProperties.hierarchyExportMode === 'None' ||
+                 isNullOrUndefined(exportProperties.hierarchyExportMode)) {
+                    groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                    const lazQuery: object[] = (this.parent.contentModule as GroupLazyLoadRenderer).lazyLoadQuery;
+                    for (let i: number = 0; i < lazQuery.length; i++) {
+                        const query: object = lazQuery[parseInt(i.toString(), 10)];
+                        const where: object = query[0];
+                        for (let j: number = 0; j < groupData.length; j++) {
+                            const data: object = groupData[parseInt(j.toString(), 10)];
+                            if (data['key'] === where['value']) {
+                                lazyloadData[parseInt(i.toString(), 10)] = groupData[parseInt(j.toString(), 10)];
+                            }
+                        }
+                    }
+                    groupData = lazyloadData;
+                }
+            }
+            else {
+                groupData = gObj.currentViewData;
+            }
+            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, groupData, excelRows, helper);
+        }
+        else {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
         }
         gObj.notify(events.exportDataBound, { excelRows: excelRows, type: 'excel' });
@@ -403,7 +447,7 @@ export class ExcelExport {
             this.processRecordRows(gObj, record, headerRow, 0, 0, exportProperties, excelRow, helper);
         }
         if (!isNullOrUndefined((returnType as ReturnType).aggregates)) {
-            if (!isNullOrUndefined(currentViewRecords)) {
+            if (!isNullOrUndefined(currentViewRecords) && !this.parent.groupSettings.enableLazyLoading) {
                 this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {
                 const result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?

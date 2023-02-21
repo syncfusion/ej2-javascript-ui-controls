@@ -3294,9 +3294,15 @@ export class PdfViewerBase {
                 let pageIndex: number = this.currentPageNumber;
                 if (eventTarget) {
                     // eslint-disable-next-line
-                    let pageString: any = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
+                    let pageString: any = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1] || eventTarget.id.split('_freeText_')[1] || eventTarget.id.split('_')[1];
                     // eslint-disable-next-line
                     pageIndex = parseInt(pageString);
+                    if (isNaN(pageIndex)) {
+                        let formFieldsTargetId : any = this.pdfViewer.formFieldCollection.filter((targetFormField: any) => (targetFormField.id == eventTarget.id) || (targetFormField.id == eventTarget.id.split('_')[0]));
+                        if(formFieldsTargetId.length > 0){
+                            pageIndex = formFieldsTargetId[0].pageIndex;
+                        }
+                    }
                 }
                 const pageDiv: HTMLElement = this.getElement('_pageDiv_' + pageIndex);
                 if (pageDiv) {
@@ -3665,8 +3671,10 @@ export class PdfViewerBase {
         }
     };
     private DeleteKeyPressed(event: KeyboardEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
+        if((event.srcElement as HTMLElement).parentElement.classList && !(event.srcElement as HTMLElement).parentElement.classList.contains("e-input-focus")) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
         let isSearchboxDialogOpen: boolean;
         let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
         if (searchBoxId) {
@@ -3674,7 +3682,7 @@ export class PdfViewerBase {
         }
         if (this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen && this.pdfViewer.designerMode && this.pdfViewer.selectedItems.formFields.length !== 0 && !isSearchboxDialogOpen) {
             this.pdfViewer.formDesignerModule.deleteFormField(this.pdfViewer.selectedItems.formFields[0].id);
-        } else if (this.pdfViewer.annotation && !this.pdfViewer.designerMode) {
+        } else if (this.pdfViewer.annotation && !this.pdfViewer.designerMode && (event.srcElement as HTMLElement).parentElement.classList && !(event.srcElement as HTMLElement).parentElement.classList.contains("e-input-focus")) {
             if (this.isTextMarkupAnnotationModule() && !this.getPopupNoteVisibleStatus() && !isSearchboxDialogOpen) {
                 this.pdfViewer.annotationModule.deleteAnnotation();
             }
@@ -6510,6 +6518,13 @@ export class PdfViewerBase {
         proxy.pdfViewer.fireDownloadStart(proxy.downloadFileName);
         // eslint-disable-next-line
         const jsonObject: any = this.constructJsonDownload();
+        if (proxy.digitalSignaturePages &&  proxy.digitalSignaturePages.length !== 0) {
+            if (proxy.pdfViewer.isDocumentEdited) {
+               jsonObject['digitalSignatureDocumentEdited'] = true;
+            } else {
+               jsonObject['digitalSignatureDocumentEdited'] = false;
+            }
+        }
         this.dowonloadRequestHandler = new AjaxHandler(this.pdfViewer);
         this.dowonloadRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.download;
         this.dowonloadRequestHandler.responseType = 'text';
@@ -6857,6 +6872,87 @@ export class PdfViewerBase {
                 }
             }
         }
+    }
+    
+    /**
+    * @private
+    */
+    public requestForTextExtraction(pageIndex: number, annotationObject?: any) {
+        let jsonObject: any;
+        let proxy: any = this;
+        jsonObject = { pageStartIndex: pageIndex, pageEndIndex: pageIndex + 1, documentId: proxy.getDocumentId(), hashId: proxy.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.documentId };
+        if (this.jsonDocumentId) {
+            (jsonObject as any).documentId = this.jsonDocumentId;
+        }
+        this.textRequestHandler = new AjaxHandler(this.pdfViewer);
+        this.textRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderTexts;
+        this.textRequestHandler.responseType = 'json';
+        this.textRequestHandler.send(jsonObject);
+        this.textrequestLists.push(pageIndex)
+        proxy.textRequestHandler.onSuccess = function (result: any) {
+            // eslint-disable-next-line max-len
+            if ((proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) || !proxy.pageSize[parseInt(pageIndex.toString(), 10)]) {
+                return;
+            }
+            // eslint-disable-next-line
+            let data: any = result.data;
+            if (data) {
+                if (typeof data !== 'object') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (error) {
+                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderTexts);
+                        data = null;
+                    }
+                }
+            }
+            if (data) {
+                while (typeof data !== 'object') {
+                    data = JSON.parse(data);
+                }
+                if (data.documentTextCollection  && data.uniqueId === proxy.documentId) {
+                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderTexts, data);
+                    const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                    proxy.storeWinData(data, pageNumber);
+                    if (!isNullOrUndefined(annotationObject)) {
+                        let markedBounds: any = annotationObject.bounds[0];
+                        let pageCharText: any = data.documentTextCollection[0][pageIndex].PageText.split('');
+                        let characterBounds: any = data.characterBounds;
+                        let textMarkupContent: string = proxy.textMarkUpContent(markedBounds, pageCharText, characterBounds);
+                        annotationObject.textMarkupContent = textMarkupContent;
+                        this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annotationObject, '_annotations_textMarkup')
+                    }
+                    else {
+                        proxy.renderPage(data, pageIndex);
+                    }
+                }
+            }
+        };
+        // eslint-disable-next-line
+        this.textRequestHandler.onFailure = function (result: any) {
+            // eslint-disable-next-line max-len
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderTexts);
+        };
+        // eslint-disable-next-line
+        this.textRequestHandler.onError = function (result: any) {
+            proxy.openNotificationPopup();
+            // eslint-disable-next-line max-len
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderTexts);
+        };
+    }
+
+    /**
+    * @private
+    */
+    public textMarkUpContent(markedBounds: any, pageCharText: any, characterBounds: any) {
+        let textMarkupContent: string = '';
+        for (var j = 0; j < characterBounds.length; j++) {
+            const buffer = 0.5;
+            if (characterBounds[j].Y >= markedBounds.Y - buffer && characterBounds[j].X >= markedBounds.X - buffer && characterBounds[j].Y <= markedBounds.Y + markedBounds.Height + buffer && characterBounds[j].X <= markedBounds.X + markedBounds.Width + buffer) {
+                textMarkupContent += pageCharText[j];
+            }
+        }
+        return textMarkupContent.replace((/(\r\n)/gm), '');
     }
 
     /**

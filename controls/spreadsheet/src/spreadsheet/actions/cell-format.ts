@@ -341,7 +341,7 @@ export class CellFormat {
                 this.parent.notify(clearCFRule, clearCFArgs);
                 (args as { cfClearActionArgs?: object }).cfClearActionArgs = clearCFArgs.cfClearActionArgs;
                 if (options.type === 'Clear All') {
-                    this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
+                    this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
                     if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex  && rangeIdx[3] >= sheet.usedRange.colIndex) {
                         this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
                     }

@@ -4597,7 +4597,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 left++;
             }
             const frIdx: number = left + movable;
-            const td: Element = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
+            let td: Element = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
                 : this.getCellFromIndex(selectedRow[`${rowIdx}`], fieldIdx);
             if (!isNullOrUndefined(td)) {
                 const Idx: number = col.getFreezeTableName() === 'movable' ? left : col.getFreezeTableName() === 'frozen-right' ? frIdx : 0;
@@ -4612,6 +4612,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
                 const sRow: Cell<Column> = selectedRow[`${cells}`][fieldIdx - Idx];
                 cell.refreshTD(td, sRow, selectedRow[`${rowData}`], { index: selectedRow[`${rowIdx}`] });
+                if ((<{ isReact?: boolean }>this).isReact) {
+                    td = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
+                        : this.getCellFromIndex(selectedRow[`${rowIdx}`], fieldIdx);
+                }
                 if (this.aggregates.length > 0) {
                     this.notify(events.refreshFooterRenderer, {});
                     if (this.groupSettings.columns.length > 0) {

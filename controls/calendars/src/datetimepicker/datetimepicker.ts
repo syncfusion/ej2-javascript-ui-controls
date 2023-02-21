@@ -1168,8 +1168,8 @@ export class DateTimePicker extends DatePicker {
         return popupHeight > height ? height : popupHeight;
     }
     protected changeEvent(e: Event): void {
+        super.changeEvent(e);
         if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
-            super.changeEvent(e);
             this.valueWithMinutes = this.value;
             this.setInputValue('date');
             this.previousDateTime = this.value && new Date(+this.value);

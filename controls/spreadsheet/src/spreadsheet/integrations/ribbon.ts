@@ -2114,7 +2114,7 @@ export class Ribbon {
                 type = 'General';
                 this.refreshNumFormatSelection(type);
             } else {
-                if (cell.format && type === 'General') {
+                if (cell.format && type === 'General' && cell.format !== 'General') {
                     type = 'Custom';
                 }
                 this.refreshNumFormatSelection(l10n.getConstant(type));

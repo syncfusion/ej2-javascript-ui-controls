@@ -3688,7 +3688,7 @@ export class Annotation {
                 }
             }
             // eslint-disable-next-line max-len
-        } else if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path' && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+        } else if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && !((this.pdfViewer.selectedItems.annotations[0] as any).propName === 'annotations') && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(true, true);
         }
     }
@@ -3995,6 +3995,12 @@ export class Annotation {
             }
             const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
             if (annotObject[pageIndex]) {
+                (annotObject[pageIndex] as IPageAnnotations).annotations.filter(function (item, index) {
+                    if (item.annotName === annotation.annotName) {
+                        (annotObject[pageIndex] as IPageAnnotations).annotations.splice(index, 1)
+
+                    }
+                });
                 (annotObject[pageIndex] as IPageAnnotations).annotations.push(annotation);
                 index = (annotObject[pageIndex] as IPageAnnotations).annotations.indexOf(annotation);
             } else {

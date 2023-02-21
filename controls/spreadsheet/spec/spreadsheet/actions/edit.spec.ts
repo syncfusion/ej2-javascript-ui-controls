@@ -984,6 +984,38 @@ describe('Editing ->', () => {
                 done();
             });
         });
+        describe('EJ2-69340', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Cell reference functionality gets failed when referring in another cell using = (equal) sign', (done: Function) => {
+                helper.invoke('selectRange', ['J2'])
+                helper.invoke('startEdit');
+                helper.getInstance().editModule.editCellData.value = '=';
+                let td: HTMLElement = helper.invoke('getCell', [1, 7]);
+                let coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td);
+                expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('=H2');
+                helper.triggerKeyNativeEvent(13);
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"10","formula":"=H2"}');
+                helper.invoke('selectRange', ['J3'])
+                helper.invoke('startEdit');
+                helper.getInstance().editModule.editCellData.value = '=';
+                td = helper.invoke('getCell', [2, 7]);
+                coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td);
+                expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('=H3');
+                helper.getElement('.e-spreadsheet-edit').textContent = '=H3+1';
+                helper.triggerKeyNativeEvent(13);
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":"51","formula":"=H3+1"}');
+                done();
+            });
+        });
         describe('EJ2-53885->', () => {
             beforeEach((done: Function) => {
                 model = {

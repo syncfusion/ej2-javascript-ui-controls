@@ -83,7 +83,7 @@ export class ColumnsDialog {
             className: 'e-de-dlg-row'
         });
         let oneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_One_Div_Container',className: 'e-de-preset-container',
+            id: this.target.id + '_One_Div_Container',className: 'e-de-preset-container'
         });
         this.oneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_One_Div',
@@ -143,6 +143,12 @@ export class ColumnsDialog {
         const subcontainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
+      
+        oneDivContainer.setAttribute('aria-label',localeValue.getConstant('One'));
+        twoDivContainer.setAttribute('aria-label',localeValue.getConstant('Two'));
+        threeDivContainer.setAttribute('aria-label',localeValue.getConstant('Three'));
+        leftDivContainer.setAttribute('aria-label',localeValue.getConstant('Left'));
+        rightDivContainer.setAttribute('aria-label',localeValue.getConstant('Right'));
         if (isRtl) {
             this.oneDiv.classList.add('e-de-rtl');
             this.twoDiv.classList.add('e-de-rtl');
@@ -188,6 +194,8 @@ export class ColumnsDialog {
         let lineCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
         subcontainer1.appendChild(lineCheckDiv);
         lineCheckDiv.appendChild(lineCheck);
+         lineCheck.setAttribute('aria-labelledby', localeValue.getConstant('Line between column'));
+         this.columnsCountBox.setAttribute('aria-labelledby', localeValue.getConstant('Number of columns'));
         this.lineCheckbox = new CheckBox({
             label: localeValue.getConstant('Line between column')
         });
@@ -331,11 +339,14 @@ export class ColumnsDialog {
         col.space.appendTo(this.spacingCountBox1); 
         this.columns.push(col);
         col.space.enabled = false;
+        this.widthCountBox1.setAttribute('aria-labelledby','Width');
+        this.spacingCountBox1.setAttribute('aria-labelledby','Space');
         let equalCheckDiv: HTMLDivElement = createElement('div',{
             className: 'e-de-columns-padding-alignment'
         }) as HTMLDivElement;
         let equalCheck: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
         equalCheckDiv.appendChild(equalCheck);
+        equalCheckDiv.setAttribute('aria-label',localeValue.getConstant('Equal column width'));
         this.equalCheckbox = new CheckBox({
             label: localeValue.getConstant('Equal column width'),
             change:this.checkBox,
@@ -886,9 +897,11 @@ export class ColumnsDialog {
         if (this.columnValueTexBox.value === 1) {
             this.columns[0].space.value = 0;
         }
-        for(let i=1;i<this.columnValueTexBox.value;i++){
-            this.createColumn(i+1, sectionFormat.columns[i].width, sectionFormat.columns[i].space);
+        /* eslint-disable */
+        for (let i = 1; i < this.columnValueTexBox.value; i++) {
+            this.createColumn(i + 1, sectionFormat.columns[i].width, sectionFormat.columns[i].space);
         }
+        /* eslint-enable */
     };
     /**
      * @private

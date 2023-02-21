@@ -980,7 +980,6 @@ export class Mention extends DropDownBase {
                 }
                 if (!isNullOrUndefined(this.target)) {
                     popupEle.id = this.inputElement.id + '_popup';
-                    addClass([popupEle], ['e-mention' , 'e-popup',  'e-popup-close']);
                 }
                 this.listHeight = formatUnit(this.popupHeight);
                 if (!isNullOrUndefined(this.list.querySelector('li')) && !this.initRemoteRender) {
@@ -1004,6 +1003,7 @@ export class Mention extends DropDownBase {
                 this.initializePopup(popupEle, offsetValue, left);
                 this.checkCollision(popupEle);
                 popupEle.style.visibility = 'visible';
+                addClass([popupEle], ['e-mention' , 'e-popup',  'e-popup-close']);
                 if (!isNullOrUndefined(this.list)) {
                     this.unWireListEvents(); this.wireListEvents();
                 }

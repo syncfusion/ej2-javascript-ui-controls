@@ -323,7 +323,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
 
                 let tooltip: HTMLElement = document.getElementById('container_Series_0_Point_2_Trackball_1');
-                expect(tooltip != null).toBe(true);
+                expect(tooltip == null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

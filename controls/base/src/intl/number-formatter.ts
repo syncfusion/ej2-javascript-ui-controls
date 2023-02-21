@@ -255,6 +255,7 @@ export class NumberFormat {
                 fValue = fValue.replace('e', dOptions.numberMapper.numberSymbols[mapper[4]]);
             }
             fValue = fValue.replace('.', (<any>dOptions).numberMapper.numberSymbols[mapper[3]]);
+            fValue = curData.format === "#,###,,;(#,###,,)" ? this.customPivotFormat(parseInt(fValue)) : fValue;
             if (curData.useGrouping) {
                 /* eslint-disable  @typescript-eslint/no-explicit-any */
                 fValue = this.groupNumbers(
@@ -363,6 +364,22 @@ export class NumberFormat {
             temp[0] = lead;
         }
         return temp.join('.');
+    }
+
+    /**
+     * Returns custom format for pivot table
+     *
+     * @param {number} value ?
+     */
+    private static customPivotFormat(value: number): string {
+        if (value >= 500000) {
+            value /= 1000000;
+            const [integer, decimal] = value.toString().split(".");
+            return decimal && +decimal.substring(0, 1) >= 5
+            ? Math.ceil(value).toString()
+            : Math.floor(value).toString();
+            }
+            return "";
     }
 
 }

@@ -451,9 +451,9 @@ export class BordersAndShadingDialog {
         widthcontainerDiv.appendChild(widthNumericDiv);
         widthNumericDiv.appendChild(widthNumeric)
         widthcontainerDiv.appendChild(colorDiv);
-        colorDiv.appendChild(colorText)
+        colorDiv.appendChild(colorText);
         colorDiv.appendChild(borderColorPickerElement);
-
+        borderColorPickerElement.setAttribute('aria-label',colorText.innerHTML);
         settingAndPreviewContainer.appendChild(settingsContiner);
         settingAndPreviewContainer.appendChild(previewContiner);
 
@@ -485,18 +485,21 @@ export class BordersAndShadingDialog {
             enablePersistence: false
         });
         this.borderWidth.appendTo(widthNumeric);
+        widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
         this.borderStyle = new DropDownList({
             popupHeight: '150px', index: 1,
             floatLabelType: 'Always', placeholder: localeValue.getConstant('Style'),
             enableRtl: isRtl
         });
         this.borderStyle.appendTo(dropDownList);
+        dropDownList.setAttribute('aria-lablledby', localeValue.getConstant('Style'));
         this.ulelementShading = new DropDownList({
             dataSource: ulelementShadingValue,
             fields: { text: 'Name', value: 'Value' },
             change: this.applyTableCellPreviewBoxes, index: 1,
             floatLabelType: 'Always', placeholder: localeValue.getConstant('Apply To'),
-            enableRtl: isRtl
+            enableRtl: isRtl,
+            htmlAttributes:{'aria-labelledby':localeValue.getConstant('Apply To')}
         });
         this.ulelementShading.appendTo(ulelementShading);
         this.borderColorPicker = new ColorPicker({

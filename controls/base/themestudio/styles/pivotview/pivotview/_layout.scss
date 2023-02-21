@@ -632,6 +632,12 @@
                   background: $pivotgrid-grp-bg-hover-color;
                 }
               }
+
+              &:focus {
+                @if ($skin-name =='bootstrap4') {
+                  background: $pivotgrid-grp-bg-hover-color;
+                }
+              }
             }
           }
         }
@@ -727,19 +733,27 @@
           @if ($pivotgrid-skin == 'bootstrap4') {
             background-color: $gray-600;
             border-radius: $pivotgrid-default-border-radius;
-        }
-
-        .e-menu-icon,
-        .e-icons{
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            color: $white;
           }
 
-          @if ($pivotgrid-skin == 'FluentUI') {
-            color: $pivotgrid-active-color;
+          .e-menu-icon,
+          .e-icons{
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              color: $white;
+            }
+
+            @if ($pivotgrid-skin == 'FluentUI') {
+              color: $pivotgrid-active-color;
+            }
           }
         }
-      }
+
+        ul.e-menu {
+          @if ($pivotgrid-skin == 'fabric') or ($pivotgrid-skin == 'fabric-dark') or
+          ($pivotgrid-skin == 'highcontrast') or ($pivotgrid-skin == 'highcontrast-light') {
+            padding-right: 0 !important;
+            padding-left: 0 !important;
+          }
+        }
       }
 
       .e-tab .e-tab-header .e-toolbar-item.e-active {

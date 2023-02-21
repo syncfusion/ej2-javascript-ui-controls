@@ -839,6 +839,9 @@ export class DocumentHelper {
         if (this.owner.editor) {
             this.owner.editor.clear();
         }
+        if (this.owner.selection) {
+            this.owner.selection.clear();
+        }
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];

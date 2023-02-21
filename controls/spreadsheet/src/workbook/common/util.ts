@@ -1,4 +1,4 @@
-import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
+import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes } from './../index';
 import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, isNumber } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject } from '@syncfusion/ej2-base';
@@ -703,4 +703,37 @@ export function parseLocaleNumber(valArr: string[], locale: string): string[] {
         }
     }
     return valArr;
+}
+
+/**
+ * Returns the overall viewport indexes by including the freeze and movable part.
+ *
+ * @param {Workbook} parent - Specify the Workbook object.
+ * @param {number} viewport - Specifies the top, bottom, left, and right index of the current viewport.
+ * @returns {number[][]} - Returns the viewport indexes.
+ * @hidden
+ */
+export function getViewportIndexes(
+    parent: Workbook, viewport: { topIndex?: number, leftIndex?: number, bottomIndex?: number, rightIndex?: number }): number[][] {
+    const sheet: SheetModel = parent.getActiveSheet();
+    const indexes: number[][] = [[viewport.topIndex + parent.frozenRowCount(sheet), viewport.leftIndex + parent.frozenColCount(sheet),
+        viewport.bottomIndex, viewport.rightIndex]];
+    if (sheet.frozenRows || sheet.frozenColumns) {
+        const froezenRow: number = parent.frozenRowCount(sheet);
+        const froezenCol: number = parent.frozenColCount(sheet);
+        const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
+        if (froezenRow && froezenCol) {
+            indexes.push([topLeftCell[0], topLeftCell[1], froezenRow - 1, froezenCol - 1]);
+            const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
+            indexes.push([paneTopLeftCell[0], topLeftCell[1], viewport.bottomIndex, froezenCol - 1]);
+        }
+        if (froezenRow) {
+            indexes.push([topLeftCell[0], viewport.leftIndex + froezenCol, froezenRow - 1, viewport.rightIndex]);
+        }
+        if (froezenCol) {
+            indexes.push([viewport.topIndex + froezenRow, topLeftCell[1], viewport.bottomIndex,
+            froezenCol - 1]);
+        }
+    }
+    return indexes;
 }

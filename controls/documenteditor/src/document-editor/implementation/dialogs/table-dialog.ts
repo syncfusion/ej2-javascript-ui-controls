@@ -41,6 +41,7 @@ export class TableDialog {
             attrs: { type: 'text' }
         }) as HTMLInputElement;
         columnValue.appendChild(this.columnsCountBox);
+        this.columnsCountBox.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
 
         const rowValue: HTMLElement = createElement('div');
         this.rowsCountBox = createElement('input', {
@@ -62,6 +63,7 @@ export class TableDialog {
             floatLabelType: 'Always'
         });
         this.rowValueTextBox.appendTo(this.rowsCountBox);
+        this.rowsCountBox.setAttribute('aria-labelledby', localValue.getConstant('Number of rows'));
         this.columnValueTexBox = new NumericTextBox({
             format: '#',
             value: 2,
@@ -71,6 +73,9 @@ export class TableDialog {
             placeholder: localValue.getConstant('Number of columns'),
             floatLabelType: 'Always'
         });
+        this.columnsCountBox.setAttribute('aria-labelledby',localValue.getConstant('Number of columns'));
+        parentDiv.setAttribute('aria-labelledby', localValue.getConstant('Insert Table'));
+        parentDiv.setAttribute('aria-describedby', localValue.getConstant('Insert Table'));
         this.columnValueTexBox.appendTo(this.columnsCountBox);
     }
     /**

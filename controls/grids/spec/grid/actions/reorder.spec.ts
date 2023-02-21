@@ -447,6 +447,7 @@ describe('Reorder module', () => {
                         headerText: 'Contact',
                         columns: [
                             { field: 'Extension', headerText: 'Extension', width: 110 },
+                            { field: 'ReportsTo', headerText: 'Reports To', width: 110, visible: false },
                             { field: 'HomePhone', headerText: 'Home phone', width: 110 },
                         ]
                     },
@@ -498,6 +499,30 @@ describe('Reorder module', () => {
                     }
                 ]
             }, done);
+        });
+        
+        it('EJ2-69396-visible false setting column reorder issue', () => {
+            const dropClone: HTMLElement = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('Extension') } });
+            document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('Extension');
+            (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Extension') } });
+            (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('Extension').children[0], event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Extension').children[0] } });
+            (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('Extension'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Extension').children[0] } });
+            (gridObj.headerModule as any).drag({ target: gridObj.getColumnHeaderByField('Title'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('HomePhone').children[0] } });
+            (gridObj.headerModule as any).dragStop({
+                target: gridObj.getColumnHeaderByField('HomePhone'),
+                element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('HomePhone').children[0] }
+            });
+            (gridObj.reorderModule as any).element = gridObj.getColumnHeaderByField('Extension');
+            (gridObj.reorderModule as any).chkDropPosition = () => true;
+            (gridObj.reorderModule as any).chkDropAllCols = () => true;
+            (gridObj.headerModule as any).drop({ target: gridObj.getColumnHeaderByField('HomePhone'), droppedElement: dropClone });
+        });
+
+        it("EJ2-69396-check reorder element dropped index", () => {
+            const stackedHdrElem: NodeListOf<Element> = document.querySelectorAll(".e-headercell.e-firstcell");
+            const reorderElem: Element = gridObj.getColumnHeaderByField('Extension');
+            expect(stackedHdrElem[1]).toBe(reorderElem);
         });
 
         it('hide contact column and simulate reorder action', () => {

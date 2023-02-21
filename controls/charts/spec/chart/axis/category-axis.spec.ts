@@ -570,7 +570,7 @@ describe('Chart Control', () => {
         it('Label count with +45 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 25).toBe(true);
+                expect(labelGroup.childElementCount == 50).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -580,7 +580,7 @@ describe('Chart Control', () => {
         it('Label count with +90 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 25).toBe(true);
+                expect(labelGroup.childElementCount == 50).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -590,7 +590,7 @@ describe('Chart Control', () => {
         it('Label count with +185 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 5).toBe(true);
+                expect(labelGroup.childElementCount == 9).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -600,7 +600,7 @@ describe('Chart Control', () => {
         it('Label count with +350 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 8).toBe(true);
+                expect(labelGroup.childElementCount == 17).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -610,7 +610,7 @@ describe('Chart Control', () => {
         it('Label count with -10 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 8).toBe(true);
+                expect(labelGroup.childElementCount == 17).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -620,7 +620,7 @@ describe('Chart Control', () => {
         it('Label count with -45 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 25).toBe(true);
+                expect(labelGroup.childElementCount == 50).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -630,7 +630,7 @@ describe('Chart Control', () => {
         it('Label count with -90 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 25).toBe(true);
+                expect(labelGroup.childElementCount == 50).toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -640,7 +640,7 @@ describe('Chart Control', () => {
         it('Label count with -280 degree', (done: Function) => {
             loaded = (args: Object): void => {
                 let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
-                expect(labelGroup.childElementCount == 25 || labelGroup.childElementCount == 30).toBe(true);
+                expect(labelGroup.childElementCount == 50 || labelGroup.childElementCount == 60).toBe(true);
                 done();
             };
             chart.loaded = loaded;

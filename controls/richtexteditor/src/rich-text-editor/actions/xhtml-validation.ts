@@ -31,7 +31,6 @@ export class XhtmlValidation {
                 this.currentElement = this.parent.inputElement;
             }
             this.clean(this.currentElement);
-            this.AddRootElement();
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
@@ -79,18 +78,6 @@ export class XhtmlValidation {
             }
         }
         return currentValue;
-    }
-
-    private AddRootElement(): void {
-        if ((this.currentElement.childNodes.length === 1 && this.currentElement.firstChild.nodeName !== 'DIV') ||
-            this.currentElement.childNodes.length > 1) {
-            const parentEle: HTMLElement = this.parent.createElement('div');
-
-            while (this.currentElement.childNodes.length > 0) {
-                parentEle.appendChild(this.currentElement.childNodes[0]);
-            }
-            this.currentElement.appendChild(parentEle);
-        }
     }
 
     private clean(node: HTMLElement): string {

@@ -73,6 +73,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     public ignoreAccent: boolean = this.parent.allowFiltering ? this.parent.filterSettings.ignoreAccent : false;
     /** @hidden */
     public allowCaseSensitive: boolean = false;
+    /** @hidden */
+    public lazyLoadQuery: Object[] = [];
 
     private eventListener(): void {
         this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
@@ -145,6 +147,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 return;
             }
             args.isExpand = false;
+            for (let i: number = 0; i < this.lazyLoadQuery.length; i++) {
+                const query: object = this.lazyLoadQuery[parseInt(i.toString(), 10)];
+                const where: object = query[0];
+                const removeCollapse: object = args.groupInfo.data;
+                if (removeCollapse['key'] === where['value']) {
+                    this.lazyLoadQuery.splice(i, 1);
+                }
+            }
             this.removeRows(captionIndex, rowIdx, uid);
             if (this.parent.enableInfiniteScrolling || this.parent.enableVirtualization) {
                 this.groupCache[this.parent.pageSettings.currentPage] = extend(
@@ -1147,6 +1157,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 query.isCountRequired = true;
             }
             query.lazyLoad.push({ key: 'onDemandGroupInfo', value: lazyLoad });
+            this.lazyLoadQuery.push(lazyLoad['where']);
             if (args.isScroll && this.parent.enableVirtualMaskRow) {
                 this.parent.showMaskRow();
             } else {

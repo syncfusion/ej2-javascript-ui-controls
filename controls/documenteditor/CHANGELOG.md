@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I434382` - Resolved script error thrown while clicking the New button after loading protected document.
+- `#I436256` - Accept All/ Reject All  is now disappear in Read only.
+
 ## 20.4.50 (2023-02-14)
 
 ### Document Editor

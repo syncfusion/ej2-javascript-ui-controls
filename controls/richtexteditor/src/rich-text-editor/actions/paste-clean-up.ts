@@ -568,7 +568,7 @@ export class PasteCleanup {
         this.radioRender();
         /* eslint-disable */
         if (this.parent.element.offsetHeight < parseInt((this.dialogObj.height as string).split('px')[0], null)) {
-            this.parent.height = parseInt((this.dialogObj.height as string).split('px')[0], null) + 40;
+            this.parent.setProperties({height : parseInt((this.dialogObj.height as string).split('px')[0], null) + 40});
             /* eslint-enable */
             isHeight = true;
         }

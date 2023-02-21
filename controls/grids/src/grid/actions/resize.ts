@@ -44,6 +44,8 @@ export class Resize implements IAction {
     private minMove: number;
     private parentElementWidth: number;
     public isFrozenColResized: boolean;
+    /** @hidden */
+    public resizeProcess: boolean = false;
     //Module declarations
     private parent: IGrid;
     private widthService: ColumnWidthService;
@@ -425,6 +427,7 @@ export class Resize implements IAction {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
+                    this.resizeProcess = true;
                     if (this.parent.allowGrouping) {
                         for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
                             this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
@@ -434,6 +437,7 @@ export class Resize implements IAction {
                         this.widthService.setColumnWidth(col);
                     }
                     this.widthService.setWidthToTable();
+                    this.resizeProcess = false;
                 }
                 this.refreshStackedColumnWidth();
                 this.element = e.target as HTMLElement;
@@ -597,9 +601,11 @@ export class Resize implements IAction {
                 columns = this.calulateColumnsWidth(columns, false, mousemove);
                 finalColumns = this.calulateColumnsWidth(columns, true, mousemove);
             }
+            this.resizeProcess = true;
             for (const col of finalColumns) {
                 this.widthService.setColumnWidth(col, null, 'resize');
             }
+            this.resizeProcess = false;
             this.updateHelper();
         }
         this.isDblClk = false;

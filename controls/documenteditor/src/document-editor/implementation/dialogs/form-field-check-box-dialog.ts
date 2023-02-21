@@ -53,8 +53,8 @@ export class CheckBoxFormFieldDialog {
         let sizeParentDiv: HTMLElement = createElement('div', {className: 'e-de-container-row'}) as HTMLDivElement;
         let autoDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
         let exactDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
-        let autoEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
-        let exactEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
+        let autoEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Auto')}});
+        let exactEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Exactly')}});
         this.autoButton = new RadioButton({
             label: localValue.getConstant('Auto'), cssClass: 'e-small', change: this.changeBidirectional, checked: true,
             enableRtl: isRtl
@@ -64,7 +64,7 @@ export class CheckBoxFormFieldDialog {
             enableRtl: isRtl
         });
         this.exactNumberDiv = createElement('div', { className: 'e-de-ff-chck-exact' });
-        let exactNumber: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let exactNumber: HTMLInputElement = createElement('input', { attrs: { 'type': 'text', 'aria-label': localValue.getConstant('Exactly') } }) as HTMLInputElement;
         this.exactlyNumber = new NumericTextBox({
             format: 'n', value: 10, min: 1, max: 1584, enablePersistence: false, enabled: false, cssClass: 'e-de-check-exactnumbr-width',
             enableRtl: isRtl
@@ -76,8 +76,8 @@ export class CheckBoxFormFieldDialog {
         let defaultcheckDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
         let notcheckDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
         let checkDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
-        let notcheckEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
-        let checkEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
+        let notcheckEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Not checked')}});
+        let checkEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div',attrs:{'aria-label':localValue.getConstant('Checked')}});
         this.notCheckedButton = new RadioButton({
             label: localValue.getConstant('Not checked'), enableRtl: isRtl, cssClass: 'e-small', change: this.changeBidirect
         });
@@ -93,11 +93,12 @@ export class CheckBoxFormFieldDialog {
         let totalToolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
         let totalBookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
 
-        this.tooltipInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
+        this.tooltipInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input', attrs:{'aira-label': localValue.getConstant('Tooltip')} }) as HTMLInputElement;
 
-        this.bookmarkInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
+        this.bookmarkInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input', attrs:{'aira-label': localValue.getConstant('Name')} }) as HTMLInputElement;
         let checkBoxEnableDiv: HTMLElement = createElement('div');
         let checBoxEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        checBoxEnableEle.setAttribute('aria-label',localValue.getConstant('Check box enabled'));
         this.checBoxEnableElement = new CheckBox({
             cssClass: 'e-de-ff-dlg-check',
             label: localValue.getConstant('Check box enabled'),

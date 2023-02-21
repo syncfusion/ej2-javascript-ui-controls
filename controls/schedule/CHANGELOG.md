@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I438207` - An issue with `select` event not invoked on cell selection through keyboard navigation has been fixed.
+
 ## 20.4.49 (2023-02-07)
 
 ### Schedule

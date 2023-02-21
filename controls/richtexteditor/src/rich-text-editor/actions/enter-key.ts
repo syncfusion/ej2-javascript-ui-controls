@@ -55,7 +55,7 @@ export class EnterKeyAction {
             isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         if ((e.args as KeyboardEventArgs).which === 13 && (e.args as KeyboardEventArgs).code === 'Enter') {
-            if (isNOU(this.startNode.closest('LI')) && isNOU(this.endNode.closest('LI')) && isTableEnter &&
+            if (isNOU(this.startNode.closest('LI,UL,OL')) && isNOU(this.endNode.closest('LI,UL,OL')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE'))) {
                 const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
                 const actionBeginArgs: ActionBeginEventArgs = {

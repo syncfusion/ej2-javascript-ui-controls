@@ -2,11 +2,25 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F180013` - Resolved issue where pasting from Word with `enterKey` configuration set to `BR` did not work properly in the RichTextEditor.
+
+- `#I431289` - Fixed issue where pasting text from MS Word into the Rich Text Editor and pressing enter caused bullet point text to be removed.
+
 ## 20.4.50 (2023-02-14)
 
 ### RichTextEditor
 
 #### Bug Fixes
+
+- `#I436733` - Resolved issue with missing closing tag when getting the value of the RichTextEditor text area while `enableXhtml` is true.
+
+- `#I433202` - The issue of the Rich Text Editor not adjusting to the `pasteCleanUp` popup's height when using `saveInterval` has been resolved.
 
 - `#I434928` - Fixed the script error raised and the issue with table columns couldn't be resized after cellMerge has been resolved.
 

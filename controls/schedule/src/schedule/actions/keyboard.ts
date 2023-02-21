@@ -7,6 +7,7 @@ import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs, InlineC
 import * as event from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
+import { cellSelect } from '../base/constant';
 
 /**
  * Keyboard interaction
@@ -229,7 +230,7 @@ export class KeyboardInteraction {
         const selectedCells: Element[] = this.parent.getSelectedElements();
         const args: SelectEventArgs = {
             data: cellData, element: this.parent.activeCellsData.element, event: e,
-            requestType: 'cellSelect', showQuickPopup: false
+            requestType: cellSelect, showQuickPopup: false
         };
         this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
             const isPopupShow: boolean = selectArgs.showQuickPopup || this.parent.quickInfoOnSelectionEnd;
@@ -440,9 +441,23 @@ export class KeyboardInteraction {
                 this.parent.addSelectedClass(selectedCells, target);
             });
         } else {
-            this.initialTarget = target;
-            this.selectedCells = [target];
-            this.parent.addSelectedClass([target], target);
+            const args: SelectEventArgs = {
+                element: target, requestType: cellSelect
+            };
+            const cellData: Record<string, any> = {};
+            const cellDetails: CellClickEventArgs = this.parent.getCellDetails(target);
+            if (this.parent.eventWindow && cellDetails) {
+                if (this.parent.activeCellsData.element !== cellDetails.element) {
+                    this.parent.activeCellsData = cellDetails;
+                }
+                this.parent.eventWindow.convertToEventData(this.parent.activeCellsData as unknown as Record<string, any>, cellData);
+                args.data = cellData;
+            }
+            this.parent.trigger(event.select, args, () => {
+                this.initialTarget = target;
+                this.selectedCells = [target];
+                this.parent.addSelectedClass([target], target);
+            });
         }
     }
     private selectAppointment(isReverse: boolean, target: Element): void {

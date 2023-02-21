@@ -240,9 +240,9 @@ export class FontDialog {
         underlineElement.innerHTML = '<option value="None">' + locale.getConstant('None') + '</option><option value="Single">________</option>';
         sizeSubDiv2.appendChild(underlineElement);
         sizeDiv.appendChild(sizeSubDiv2);
-        this.fontSizeText = new ComboBox({ change: this.fontSizeUpdate, allowCustom: true, showClearButton:false, enableRtl: isRtl, floatLabelType: 'Always', placeholder: sizeLabel });
+        this.fontSizeText = new ComboBox({ change: this.fontSizeUpdate, allowCustom: true, showClearButton:false, enableRtl: isRtl, floatLabelType: 'Always', placeholder: sizeLabel,htmlAttributes:{'aria-labelledby':sizeLabel} });
         this.fontSizeText.appendTo(fontSize);
-        this.underlineDrop = new DropDownList({ change: this.underlineUpdate, enableRtl: isRtl, floatLabelType : 'Always', placeholder: html });
+        this.underlineDrop = new DropDownList({ change: this.underlineUpdate, enableRtl: isRtl, floatLabelType : 'Always', placeholder: html,htmlAttributes:{'aria-labelledby':html}  });
         this.underlineDrop.appendTo(underlineElement);
         return sizeDiv;
     }

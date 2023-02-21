@@ -6,11 +6,11 @@ import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPos
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, skipDefaultValue } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs } from '../../workbook/index';
-import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber } from '../../workbook/index';
+import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber, getViewportIndexes } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
-import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, getViewportIndexes } from '../common/index';
+import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
 
 /**
@@ -302,6 +302,7 @@ export class Edit {
                         (keyCode === this.keyCodes.FIREFOXMINUS);
                     const isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
                     const isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
+                    const isMacDelete: boolean = /(Macintosh|MacIntel|MacPPC|Mac68K|Mac|Mac OS|iPod|iPad)/i.test(navigator.userAgent) && isBackSpace;
                     if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
                         (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
                         isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
@@ -317,7 +318,7 @@ export class Edit {
                             this.getEditElement(sheet).focus();
                         }
                     }
-                    if (keyCode === this.keyCodes.DELETE) {
+                    if (keyCode === this.keyCodes.DELETE || isMacDelete) {
                         const islockcell: boolean = sheet.isProtected && isLockedCells(this.parent);
                         if (!islockcell) {
                             this.editingHandler('delete');
@@ -910,7 +911,7 @@ export class Edit {
                 address: this.editCellData.addr, value: this.editCellData.value };
             this.parent.notify(workbookEditOperation, evtArgs);
             if (<boolean>evtArgs.isFormulaDependent) {
-                indexes = getViewportIndexes(this.parent);
+                indexes = getViewportIndexes(this.parent, this.parent.viewport);
             }
             this.parent.notify(refreshChart, {cell: null, rIdx: this.editCellData.rowIndex, cIdx: this.editCellData.colIndex, viewportIndexes: indexes });
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {

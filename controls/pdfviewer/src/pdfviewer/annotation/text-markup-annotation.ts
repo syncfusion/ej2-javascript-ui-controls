@@ -585,6 +585,19 @@ export class TextMarkupAnnotation {
                             annotationObject.textMarkupStartIndex = annotation.textMarkupStartIndex;
                             annotationObject.textMarkupEndIndex = annotation.textMarkupEndIndex;
                         }
+                        if (isNullOrUndefined(annotation.TextMarkupContent) && isNullOrUndefined(annotation.textMarkupContent)) {
+                            let markedBounds : any = annotation.Bounds[0];
+                            let storedData : any = this.pdfViewerBase.getStoredData(pageNumber, true);
+                            if (isNullOrUndefined(storedData)) {
+                                this.pdfViewerBase.requestForTextExtraction(pageNumber, annotationObject);
+                            }
+                            else {
+                                let pageCharText: any = storedData.pageText.split('');
+                                let characterBounds: any = this.pdfViewerBase.textLayer.characterBound[pageNumber];
+                                let textMarkupContent: string = this.pdfViewerBase.textMarkUpContent(markedBounds, pageCharText, characterBounds);
+                                annotationObject.textMarkupContent = textMarkupContent;
+                            }
+                        }
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
                         if(this.isAddAnnotationProgramatically)
                         {

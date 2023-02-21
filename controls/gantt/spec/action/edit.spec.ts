@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Selection, IGanttData, Filter, IActionBeginEventArgs, ContextMenuClickEventArgs, CriticalPath, Toolbar, ColumnMenu } from '../../src/index';
-import { cellEditData, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources } from '../base/data-source.spec';
+import { cellEditData, resourcesData, projectData,normalResourceData, resourceCollection, stringTaskId, StringMultiTaskbarData, StringMultiResources, StringResourceData, StringResourceCollection, StringResourceSelefReferenceData, StringCellEditData, StringResourcesData, StringprojectData1, StringProjectResources, resourceviewData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -2178,6 +2178,86 @@ describe('check datasource  without passing position', () => {
     afterAll(() => {
         destroyGantt(ganttObj);
         
+    });
+});
+describe('add data without resource',() =>{
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourceviewData,
+                taskFields: {
+                    id: 'oppgaveId',
+                    name: 'oppgaveNavn',
+                    startDate: 'fraDato',
+                    endDate: 'tilDato',
+                    duration: 'varighet',
+                    resourceInfo: 'resources',
+                },
+                resourceFields:{
+                    id: 'brukerId',
+                    name: 'navn',
+                },
+                treeColumnIndex:1,
+                viewType:'ResourceView',
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                splitterSettings:{
+                    columnIndex: 2,
+                  },
+                gridLines: "Both",
+            
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'oppgaveNavn',
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/01/2023'),
+                projectEndDate: new Date('01/01/2024'), 
+                toolbar: [ 'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ZoomIn',
+                'ZoomOut',
+                'ZoomToFit',],
+                columns: [
+                    { field: 'oppgaveId', visible: false },
+                    { field: 'oppgaveNavn', headerText: 'Name', width: 250 },
+                    { field: 'fraDato' },
+                    { field: 'tilDato' },
+                    { field: 'varighet' },
+                  ],
+            }, done);
+            beforeEach((done: Function) => {
+                setTimeout(done, 500);
+            });
+            afterAll(() => {
+                if (ganttObj) {
+                    destroyGantt(ganttObj);
+                }
+            });
+            it('add data without resource', () => {
+                ganttObj.openAddDialog();
+                let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+                let treegrid: any =(<EJ2Instance>document.getElementsByClassName('e-gantt')[0]).ej2_instances[0];
+                expect(treegrid.dataSource.length).toBe(1);
+            });
+            it('When we click load button without child shows error',()=>
+            {
+                let loadBtn: HTMLElement = document.getElementById('load');
+                triggerMouseEvent(loadBtn, 'click');
+                let treegrid: any =(<EJ2Instance>document.getElementsByClassName('e-gantt')[0]).ej2_instances[0];
+                expect(treegrid.currentViewData.length).toBe(7);
+            });
     });
 });
 describe('Gantt parent record editing action', () => {

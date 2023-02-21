@@ -88,6 +88,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
             }
         }
+        const attr : [] = [].slice.call(tr.attributes);
+        attr.map((item: {name: string, value: string}) => {
+            node.setAttribute(item['name'], item['value']);
+        });
         node.innerHTML = '';
         for (const cell of cells) {
             node.appendChild(cell);

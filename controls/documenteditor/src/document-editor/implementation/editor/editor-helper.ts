@@ -770,6 +770,7 @@ export interface CollaborativeEditingEventArgs {
  * @private
  */
 export interface SubWidthInfo {
+    trimmedSpaceWidth: number
     subWidth: number
     spaceCount: number
     totalSpaceCount: number

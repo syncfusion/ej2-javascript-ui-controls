@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### Gantt
+
+#### Bug Fixes
+
+-`I432910`- Export Issue with Predecessor Connectivity for Filtered Data.
+-`#I434098`- Script error occurs when updating resources dynamically without child mapping.
+
 ## 20.4.50 (2023-02-14)
 
 ### Gantt

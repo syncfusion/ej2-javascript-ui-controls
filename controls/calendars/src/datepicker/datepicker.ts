@@ -1441,8 +1441,10 @@ export class DatePicker extends Calendar implements IInput {
         this.trigger('navigated', this.navigatedArgs);
     }
     protected changeEvent(event?: MouseEvent | KeyboardEvent | Event): void {
-        if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
+        if (!this.isIconClicked) {
             this.selectCalendar(event);
+        }
+        if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
             this.changedArgs.event = event ? event : null;
             this.changedArgs.element = this.element;
             this.changedArgs.isInteracted = this.isInteracted;
@@ -1455,6 +1457,9 @@ export class DatePicker extends Calendar implements IInput {
             }
             this.previousElementValue = this.inputElement.value;
             this.errorClass();
+        }
+        else if (event) {
+            this.hide(event); 
         }
     }
 

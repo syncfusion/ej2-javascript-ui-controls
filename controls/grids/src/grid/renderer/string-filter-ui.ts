@@ -89,7 +89,20 @@ export class StringFilterUI implements IFilterMUI {
                 sortOrder: 'Ascending',
                 cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 autofill: true,
-                placeholder: args.localizeText.getConstant('EnterValue')
+                placeholder: args.localizeText.getConstant('EnterValue'),
+                actionBegin: function () : void {
+                    if (this.query.queries.length && this.query.queries[0].fn === 'onWhere') {
+                        for (let i : number = 0; i < this.query.queries[0].e.predicates.length; i++) {
+                            if (this.properties.fields.value === this.query.queries[0].e.predicates[`${i}`].field) {
+                                this.query.queries[0].e.predicates.splice(i, 1);
+                                i = i - 1;
+                            }
+                        }
+                        if (!this.query.queries[0].e.predicates.length) {
+                            this.query.queries.splice(0, 1);
+                        }
+                    }
+                }
             },
             args.column.filter.params
         ));

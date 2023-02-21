@@ -1467,6 +1467,8 @@ export class Edit {
             this.addRecordAsBottom(cAddedRecord);
             const parentRecord: IGanttData = this.parent.flatData[this.parent.flatData.length - 1];
             this.addNewRecord(updateRecord, parentRecord);
+            let source:any=this.parent.dataSource;
+            source.push(updateRecord.taskData);
         }
         const updatedData: IGanttData = this.parent.currentViewData.filter((data: IGanttData) => {
                 return (data.ganttProperties.taskId === updateRecord.ganttProperties.taskId &&

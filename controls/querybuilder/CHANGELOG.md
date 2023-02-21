@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I430220` - Issue with Value template issue with complex data binding of query builder has been fixed.
+- `#I428779` - Issue with Providing the single quotes in SQL string support to query builder has been fixed.
+
 ## 20.4.42 (2023-01-04)
 
 ### QueryBuilder

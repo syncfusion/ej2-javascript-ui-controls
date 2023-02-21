@@ -268,7 +268,8 @@ export class WorkbookAutoFill {
             i++;
         }
         if (cfRule.length || cfRefreshAll) {
-            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
+            this.parent.notify(
+                applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true, isEdit: true });
         }
     }
 
@@ -343,7 +344,8 @@ export class WorkbookAutoFill {
             i++;
         }
         if (cfRule.length || cfRefreshAll) {
-            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
+            this.parent.notify(
+                applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true, isEdit: true });
         }
     }
 
@@ -552,7 +554,9 @@ export class WorkbookAutoFill {
                     diff = options.isReverseFill ? -1 : 1;
                     if (len === 1) {
                         const oldTimeVal: Date = intToDate(patrn.val[0]);
-                        const newTimeVal: number = dateToInt(new Date(oldTimeVal.getTime() + 60 * 60000), true, true);
+                        const patrnVal: number = Number(patrn.val[0]);
+                        const isTimeOnly: boolean = patrnVal > 0 && patrnVal < 1;
+                        const newTimeVal: number = dateToInt(new Date(oldTimeVal.getTime() + 60 * 60000), true, isTimeOnly);
                         (patrn.val as number[]).push(newTimeVal);
                     }
                     regVal = this.getPredictionValue(patrn.val as number[], true);

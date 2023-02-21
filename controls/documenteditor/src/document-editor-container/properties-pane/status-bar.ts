@@ -47,7 +47,7 @@ export class StatusBar {
         const label: HTMLElement = createElement('span');
         label.textContent = this.localObj.getConstant('Page') + ' ';
         div.appendChild(label);
-        this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text' }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
+        this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text', 'aria-label' : this.localObj.getConstant('Current Page Number') }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
         this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
         this.editablePageNumber.appendChild(this.pageNumberInput);
         let pageNumberOfLabelStyle = "";

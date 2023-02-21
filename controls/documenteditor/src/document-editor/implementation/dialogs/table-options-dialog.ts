@@ -130,6 +130,8 @@ export class TableOptionsDialog {
             cssClass: 'e-de-tbl-margin-sub-header'
         });
         this.allowSpaceCheckBox.appendTo(allowSpaceCheckBox);
+        allowSpaceCheckBox.setAttribute('aria-label',localValue.getConstant('Allow spacing between cells'));
+        this.cellspacingTextBox.setAttribute('aria-label','cell spacing');
     }
     /**
      * @private

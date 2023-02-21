@@ -36,6 +36,11 @@ export class PdfGanttPredecessor {
         this.parent = parent;
         this.pdfGantt = pdfGantt;
     }
+    public findindex(num: number) {
+        var dataindex: number;
+        this.parent.currentViewData.map((data, index) => { if (data.index == num) { dataindex = index } })
+        return dataindex
+    }
     /**
      * Calculate the predecesor line point and draw the predecessor
      *
@@ -46,8 +51,8 @@ export class PdfGanttPredecessor {
     public drawPredecessor(pdfGantt: PdfGantt): void {
         this.pdfGantt = pdfGantt;
         const pages: PdfPage[] = pdfGantt.result.page.section.getPages() as PdfPage[];
-        const parentTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.parentIndex];
-        const childTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.childIndex];
+        const parentTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.parentIndex)];
+        const childTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.childIndex)];
         let startPage: PdfPage = new PdfPage();
         let endPage: PdfPage = new PdfPage();
         let predecessorType: string = '';
