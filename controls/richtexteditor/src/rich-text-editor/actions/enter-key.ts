@@ -361,7 +361,8 @@ export class EnterKeyAction {
                             this.removeBRElement(currentParent);
                             let isEmptyBrInserted: boolean = false;
                             let currentParentLastChild: Node = currentParent.lastChild;
-                            while (!isNOU(currentParentLastChild) && !(currentParentLastChild.nodeName === '#text' || currentParentLastChild.nodeName === 'BR')) {
+                            while (!isNOU(currentParentLastChild) && !(currentParentLastChild.nodeName === '#text' || currentParentLastChild.nodeName === 'BR'
+                                  || currentParentLastChild.nodeName === 'IMG')) {
                                 currentParentLastChild = currentParentLastChild.lastChild;
                             }
                             const isLastNodeLength : number = this.range.startContainer === currentParentLastChild ?
@@ -369,14 +370,19 @@ export class EnterKeyAction {
                             if (currentParent !== this.parent.inputElement &&
                                 this.parent.formatter.editorManager.domNode.isBlockNode(currentParent) &&
                                 this.range.startOffset === this.range.endOffset &&
-                                this.range.startOffset === isLastNodeLength) {
-                                const focusBRElem: HTMLElement = this.parent.createElement('br');
+                                (this.range.startOffset === isLastNodeLength ||
+                                (currentParent.textContent.trim().length === 0 && currentParent.lastChild.nodeName === 'IMG'))) {
+                                let focusBRElem: HTMLElement = this.parent.createElement('br');
                                 if (this.range.startOffset === 0 && this.range.startContainer.nodeName === 'TABLE') {
                                     this.range.startContainer.parentElement.insertBefore(focusBRElem, this.range.startContainer);
                                 } else {
                                     if (currentParentLastChild.nodeName === 'BR' && currentParent.textContent.length === 0) {
                                         this.parent.formatter.editorManager.domNode.insertAfter(
                                             focusBRElem, (currentParentLastChild as Element));
+                                    } else if (this.range.startOffset === 0 && this.range.endOffset === 0 &&
+                                               currentParent.lastChild && currentParent.lastChild.nodeName === 'IMG') {
+                                        currentParentLastChild.parentElement.insertBefore(focusBRElem, currentParentLastChild);
+                                        focusBRElem = currentParentLastChild as HTMLElement;
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
                                         this.parent.formatter.editorManager.domNode.insertAfter(

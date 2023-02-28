@@ -1679,6 +1679,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.tooltipModule) {
             this.tooltipModule.previousPoints = [];
         }
+        this.element.setAttribute('role', 'chart');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-label', this.description || this.title);
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
@@ -2689,7 +2690,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
         this.yAxisElements = null;
-        document.getElementById(this.element.id + 'Keyboard_chart_focus').remove();
+        let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
+        if (element) { element.remove(); }
         /**
          * To fix react timeout destroy issue.
          */

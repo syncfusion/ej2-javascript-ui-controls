@@ -38,6 +38,7 @@ export class PieSeries extends PieBase {
         point.symbolLocation = degreeToLocation(point.midAngle, (this.radius + this.innerRadius) / 2, this.center);
         if (!redraw) {
             const element: Element = chart.renderer.drawPath(option);
+            element.setAttribute('role', 'data');
             element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
             element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
@@ -45,6 +46,7 @@ export class PieSeries extends PieBase {
             point.start = start;
         } else {
             const element: Element = chart.renderer.drawPath(option);
+            element.setAttribute('role', 'data');
             element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
             element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);

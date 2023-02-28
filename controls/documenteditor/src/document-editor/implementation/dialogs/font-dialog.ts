@@ -431,6 +431,9 @@ export class FontDialog {
         }
         if (!isNullOrUndefined(this.fontFamily)) {
             format.fontFamily = this.fontFamily;
+            format.fontFamilyAscii = this.fontFamily;
+            format.fontFamilyFarEast = this.fontFamily;
+            format.fontFamilyNonFarEast = this.fontFamily;
         }
         if (!isNullOrUndefined(this.allCaps)) {
             format.allCaps = this.allCaps;

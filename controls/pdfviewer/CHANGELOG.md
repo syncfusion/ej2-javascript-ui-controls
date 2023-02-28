@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I436286` - Now, the script error is not occurred the enable shape annotation is set to false.
+- `#I429775` - Now that the problem with some specific document's slow rendering has been resolved.
+
 ## 20.4.51 (2023-02-21)
 
 ### PDF Viewer

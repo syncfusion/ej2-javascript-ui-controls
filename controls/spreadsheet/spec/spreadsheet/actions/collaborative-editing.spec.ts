@@ -15,7 +15,7 @@ describe('Collaborative Editing ->', () => {
                 actionComplete: (args: any) => {
                     if (args.action !== 'gotoSheet') {
                         const copiedArgs: any = JSON.parse(JSON.stringify(args));
-                        if (args.action === 'insertImage' || args.action === 'deleteImage' || args.action === 'imageRefresh' || args.action === 'insertChart' || args.action === 'deleteChart') {
+                        if (args.action === 'insertChart' || args.action === 'deleteChart') {
                             copiedArgs.eventArgs.id = copiedArgs.eventArgs.id.substring(0, copiedArgs.eventArgs.id.lastIndexOf('_') + 1) + '2';
                         }
                         helper2.getInstance().updateAction(copiedArgs);
@@ -771,7 +771,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Image delete', (done: Function) => {
-            helper.getInstance().spreadsheetImageModule.deleteImage({ id: 'spreadsheet_overlay_picture_1' });
+            helper.getInstance().spreadsheetImageModule.deleteImage({ id: getCell(2, 3, sheets2[0]).image[0].id });
             setTimeout(() => {
                 expect(getCell(2, 3, sheets2[0]).image.length).toBe(0);
                 expect(getCell(2, 3, sheets2[1]).image).toBeUndefined();

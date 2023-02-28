@@ -535,15 +535,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const field: string = this.isForeignColumn(col) ? col.foreignKeyValue : fieldName;
         const fColl: PredicateModel[] = [];
         let mPredicate: Predicate;
-        fColl.push({
-            field: field,
-            predicate: predicate,
-            matchCase: matchCase,
-            ignoreAccent: ignoreAccent,
-            operator: firstOperator as string,
-            value: firstValue,
-            type: this.options.type
-        });
         const arg: {
             instance: ExcelFilterBase, handler: Function, cancel: boolean, arg1: string, arg2: string,
             arg3: string, arg4: string, arg5: boolean, arg6: boolean, arg7: string, arg8: string
@@ -555,7 +546,16 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (arg.cancel) {
             return;
         }
-        mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
+        fColl.push({
+            field: field,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: firstOperator as string,
+            value: arg.arg3,
+            type: this.options.type
+        });
+        mPredicate = new Predicate(field, firstOperator.toLowerCase(), arg.arg3, !matchCase, ignoreAccent);
         if (!isNullOrUndefined(secondValue) && !isNullOrUndefined(secondOperator)) {
             fColl.push({
                 field: field,
@@ -563,7 +563,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 matchCase: matchCase,
                 ignoreAccent: ignoreAccent,
                 operator: secondOperator as string,
-                value: secondValue,
+                value: arg.arg8,
                 type: this.options.type
             });
             mPredicate = (mPredicate as Object)[`${predicate}`](field, secondOperator.toLowerCase(), secondValue as string, !matchCase, ignoreAccent);

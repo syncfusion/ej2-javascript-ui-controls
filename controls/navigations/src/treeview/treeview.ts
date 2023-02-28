@@ -694,6 +694,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isNodeDropped: boolean = false;
     private isInteracted: boolean = false;
     private isRightClick: boolean = false;
+    private mouseDownStatus: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -1315,7 +1316,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private initialize(): void {
         this.element.setAttribute('role', 'tree');
-        this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
@@ -1747,6 +1747,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let fields: FieldsMapping = e.fields;
         this.addActionClass(e, fields.selected, SELECTED);
         this.addActionClass(e, fields.expanded, EXPANDED);
+        e.item.setAttribute("tabindex","-1");
+        EventHandler.add(e.item, 'focus', this.focusIn, this);
         if (!isNOU(this.nodeTemplateFn)) {
             let textEle: Element = e.item.querySelector('.' + LISTTEXT);
             let dataId: string = e.item.getAttribute('data-uid');
@@ -2291,7 +2293,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.setMultiSelect(this.allowMultiSelection);
             let firstNode: Element = select('.' + LISTITEM, this.element);
             if (firstNode) {
-                addClass([firstNode], FOCUS);
+                firstNode.setAttribute('tabindex', '0');
                 this.updateIdAttr(null, firstNode);
             }
             if (this.allowTextWrap) {
@@ -2942,7 +2944,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.startNode = li;
             this.addSelect(li);
         }
-        this.setFocusElement(li);
         if (this.isLoaded) {
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
@@ -2977,8 +2978,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let focusedNode: Element = this.getFocusedNode();
             if (focusedNode) {
                 removeClass([focusedNode], FOCUS);
+                focusedNode.setAttribute("tabindex","-1");
             }
             addClass([li], FOCUS);
+            li.setAttribute('tabindex', '0');
+            EventHandler.add(li, 'blur', this.focusOut, this);
             this.updateIdAttr(focusedNode, li);
         }
     }
@@ -3104,13 +3108,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let inpEle: HTMLInputElement = <HTMLInputElement>target;
             if (e.action === 'enter') {
                 inpEle.blur();
-                this.element.focus();
-                addClass([focusedNode], HOVER);
             } else if (e.action === 'escape') {
                 inpEle.value = this.oldText;
                 inpEle.blur();
-                this.element.focus();
-                addClass([focusedNode], HOVER);
             }
             return;
         }
@@ -3495,7 +3495,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private getFocusedNode(): Element {
         let selectedItem : Element;
-        let fNode: Element = select('.' + LISTITEM + '.' + FOCUS, this.element);
+        let fNode: Element = select('.' + LISTITEM + '[tabindex="0"]', this.element);
         if (isNOU(fNode)) { selectedItem = select('.' + LISTITEM, this.element); }
         return isNOU(fNode) ? (isNOU(selectedItem) ? this.element.firstElementChild : selectedItem) : fNode;
     }
@@ -3570,8 +3570,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setFocus(preNode: Element, nextNode: Element): void {
         removeClass([preNode], [HOVER, FOCUS]);
+        preNode.setAttribute("tabindex","-1");
         if (!nextNode.classList.contains('e-disable') && !nextNode.classList.contains(PREVENTSELECT)) {
             addClass([nextNode], [HOVER, FOCUS]);
+            nextNode.setAttribute('tabindex', '0');
+            (<HTMLElement>nextNode).focus();
+            EventHandler.add(nextNode, 'blur', this.focusOut, this);
             this.updateIdAttr(preNode, nextNode);
         }
     }
@@ -3586,14 +3590,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private focusIn(): void {
-        if (!this.mouseDownStatus) {
-            addClass([this.getFocusedNode()], HOVER);
+        if(!this.mouseDownStatus){
+        let focusedElement: Element = this.getFocusedNode();
+        focusedElement.setAttribute("tanindex","0");
+        addClass([focusedElement], [HOVER,FOCUS]);
+        EventHandler.add(focusedElement, 'blur', this.focusOut, this);
         }
         this.mouseDownStatus = false;
     }
 
-    private focusOut(): void {
-        removeClass([this.getFocusedNode()], HOVER);
+    private focusOut(event: Event): void {
+        let focusedElement: Element = this.getFocusedNode();
+        if(event.target==focusedElement){
+        removeClass([focusedElement], [HOVER,FOCUS]);
+        EventHandler.remove(focusedElement, 'blur', this.focusOut);
+        }
     }
 
     private onMouseOver(e: MouseEvent): void {
@@ -3813,7 +3824,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
-                (<HTMLElement>txtEle).focus();
+                (<HTMLElement>liEle).focus();
+                EventHandler.add(liEle, 'blur', this.focusOut, this);
+                addClass([liEle], HOVER);
             }
         if (this.allowTextWrap) { this.calculateWrap(liEle); }
     }
@@ -5058,7 +5071,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
     }
-    private mouseDownStatus: boolean = false;
 
     private mouseDownHandler(e: MouseEvent): void {
         this.mouseDownStatus = true;
@@ -5080,8 +5092,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.expandOnType !== 'None') {
             this.wireExpandOnEvent(true);
         }
-        EventHandler.add(this.element, 'focus', this.focusIn, this);
-        EventHandler.add(this.element, 'blur', this.focusOut, this);
         EventHandler.add(this.element, 'mouseover', this.onMouseOver, this);
         EventHandler.add(this.element, 'mouseout', this.onMouseLeave, this);
         this.keyboardModule = new KeyboardEvents(
@@ -5098,8 +5108,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
         this.wireClickEvent(false);
         this.wireExpandOnEvent(false);
-        EventHandler.remove(this.element, 'focus', this.focusIn);
-        EventHandler.remove(this.element, 'blur', this.focusOut);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         EventHandler.remove(this.element, 'mouseout', this.onMouseLeave);
         if (!this.disabled) {
@@ -5596,7 +5604,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public destroy(): void {
         this.clearTemplate();
         this.element.removeAttribute('aria-activedescendant');
-        this.element.removeAttribute('tabindex');
         this.unWireEvents();
         this.wireEditingEvents(false);
         if (!this.disabled) {

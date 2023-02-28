@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I436133` - When inserting, the endnote order was resolved.
+- `#I434491` - Resolved the Text off the page and outside the margin issue when paste the text.
+
 ## 20.4.51 (2023-02-21)
 
 ### Document Editor

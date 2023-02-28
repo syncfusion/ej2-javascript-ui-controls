@@ -3525,7 +3525,7 @@
         border-top: 0;
       }
 
-      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor {
+      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor :not(.e-laststackcell) {
         border-right: 0;
       }
 
@@ -3718,6 +3718,11 @@
       .e-checkboxlist .e-fltrcheck,
       .e-cc-contentdiv .e-choosercheck {
         white-space: $grid-filter-checkbox-white-space;
+      }
+	  
+      .e-filterdiv .e-multiselect.e-input-group:not(.e-rtl),
+      .e-fltrtempdiv .e-multiselect.e-input-group:not(.e-rtl){
+        text-align: left;
       }
     }
   }

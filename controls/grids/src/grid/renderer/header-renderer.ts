@@ -310,6 +310,12 @@ export class HeaderRender implements IRenderer {
         if (gObj.allowFiltering || gObj.allowSorting || gObj.allowGrouping) {
             table.classList.add('e-sortfilter');
         }
+        if (isFrozen && gObj.allowResizing) {
+            const movableContent: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector('.' + literals.table);
+            if (tableName === 'movable' && !isNullOrUndefined(movableContent)) {
+                (table as HTMLElement).style.width = movableContent.style.width;
+            }
+        }
         this.updateColGroup(colGroup);
         tbody.appendChild(rowBody);
         table.appendChild(this.setColGroup(colGroup));

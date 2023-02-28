@@ -1,7 +1,7 @@
 /**
  * Gantt toolbar spec
  */
-import { Gantt, Edit, Toolbar, Selection, Filter } from '../../src/index';
+import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings } from '../../src/index';
 import { projectData1, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
@@ -649,6 +649,131 @@ describe('Gantt toolbar support', () => {
             let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
             triggerMouseEvent(zoomIn, 'click');
             expect(ganttObj.timelineModule.topTier == 'Week');
+        });
+    });
+    describe('Custom Zooming levels ', () => {
+        let customZoomingLevels: ZoomTimelineSettings[] = [
+            {
+              topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
+              bottomTier: { unit: 'Week', format: 'dd', count: 1 },
+              timelineUnitSize: 33,
+              level: 0,
+              timelineViewMode: 'Month',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+            {
+              topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+              bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 },
+              timelineUnitSize: 66,
+              level: 1,
+              timelineViewMode: 'Month',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+            {
+              topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+              bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 },
+              timelineUnitSize: 99,
+              level: 2,
+              timelineViewMode: 'Month',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+            {
+              topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+              bottomTier: { unit: 'None' },
+              timelineUnitSize: 33,
+              level: 3,
+              timelineViewMode: 'Week',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+            {
+              topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+              bottomTier: { unit: 'None' },
+              timelineUnitSize: 66,
+              level: 4,
+              timelineViewMode: 'Week',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+            {
+              topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+              bottomTier: { unit: 'None' },
+              timelineUnitSize: 99,
+              level: 5,
+              timelineViewMode: 'Week',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+              weekendBackground: null,
+              showTooltip: true,
+            },
+          ];
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: [ 'ZoomIn', 'ZoomOut', 'ZoomToFit'],
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('04/28/2019'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Zoom in', () => {
+            ganttObj.zoomingLevels = customZoomingLevels;
+            let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
+            triggerMouseEvent(zoomIn, 'click');
+            triggerMouseEvent(zoomIn, 'click');
+            triggerMouseEvent(zoomIn, 'click');
+            triggerMouseEvent(zoomIn, 'click');
+            triggerMouseEvent(zoomIn, 'click');
+            expect(document.getElementsByClassName('e-toolbar-item e-overlay')[0]['ariaDisabled']).toBe("true");
         });
     });
     describe('Perform outdent in immutable mode', () => {

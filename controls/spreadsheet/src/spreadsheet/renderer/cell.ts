@@ -124,7 +124,7 @@ export class CellRenderer implements ICellRenderer {
     private update(args: CellRenderArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
-        if (compiledTemplate) {
+        if (compiledTemplate && !args.isRefresh) {
             if (typeof compiledTemplate === 'string') {
                 args.td.innerHTML = compiledTemplate;
             } else {

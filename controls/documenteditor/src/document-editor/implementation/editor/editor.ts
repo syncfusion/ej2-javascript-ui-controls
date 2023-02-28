@@ -502,7 +502,10 @@ export class Editor {
     private alertBox(): void {
         const localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localObj.setLocale(this.owner.locale);
-        DialogUtility.alert(localObj.getConstant('Multiple Comment'));
+        DialogUtility.alert({
+            title: localObj.getConstant('Information'),
+            content: localObj.getConstant('Multiple Comment')
+        });
     }
 
     /**
@@ -5877,6 +5880,10 @@ export class Editor {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
 
+        if(this.isPaste){
+            this.viewer.updateClientAreaForBlock(paragraph, true);
+            paragraph.x = this.viewer.clientActiveArea.x;
+        }
         this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
@@ -6197,7 +6204,9 @@ export class Editor {
      * @returns {void}
      */
     public insertImageInternal(imageString: string, isUiInteracted: boolean, width?: number, height?: number): void {
-        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
+        let formField: FieldElementBox = this.selection.getCurrentFormField();
+        let isFormFillProtectedMode: boolean = this.documentHelper.protectionType === 'FormFieldsOnly' && !isNullOrUndefined(formField) && formField.formFieldData instanceof TextFormField;
+        if ((this.owner.isReadOnlyMode || !this.canEditContentControl) && !isFormFillProtectedMode) {
             return;
         }
         if (isNullOrUndefined(width) && isNullOrUndefined(height)) {
@@ -9188,6 +9197,9 @@ export class Editor {
             format.fontColor = value as string;
         } else if (property === 'fontFamily') {
             format.fontFamily = value as string;
+            format.fontFamilyAscii = value as string;
+            format.fontFamilyFarEast = value as string;
+            format.fontFamilyNonFarEast = value as string;
         } else if (property === 'fontSize') {
             format.fontSize = value as number;
         } else if (property === 'highlightColor') {
@@ -18553,6 +18565,9 @@ export class Editor {
         this.selection.start.setPositionForLineWidget((footPara.childWidgets[0] as LineWidget), footText.line.getOffset(followText, endnote.text.length));
         this.selection.end.setPositionInternal(this.selection.start);
         this.updateEndNoteIndex();
+        this.documentHelper.layout.isLayoutWhole = true;
+        this.layoutWholeDocument();
+        this.documentHelper.layout.isLayoutWhole = false
         this.reLayout(this.selection, false);
         this.separator('endnote');
         this.continuationSeparator('endnote');
@@ -18655,6 +18670,7 @@ export class Editor {
     private updateEndNoteIndex(): void {
         let endNoteCollec: FootnoteElementBox[] = this.documentHelper.endnoteCollection;
         for (let i: number = 0; i < endNoteCollec.length; i++) {
+            endNoteCollec[i].text = this.documentHelper.layout.getFootEndNote(endNoteCollec[i].paragraph.bodyWidget.sectionFormat.endnoteNumberFormat , i + 1);
             if (!isNullOrUndefined(((endNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0])) {
                 (((endNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text = endNoteCollec[i].text;
             }

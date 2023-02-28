@@ -807,8 +807,8 @@ describe('Gantt-Timeline', () => {
                 ganttObj.zoomIn();
                 expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("None");
                 expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Week");
-                expect(ganttObj.timelineModule.customTimelineSettings.timelineUnitSize).toBe(33);
-                expect(ganttObj.currentZoomingLevel.level).toBe(8);
+                expect(ganttObj.timelineModule.customTimelineSettings.timelineUnitSize).toBe(66);
+                expect(ganttObj.currentZoomingLevel.level).toBe(12);
                 done();
             }
             ganttObj.refresh();

@@ -109,10 +109,20 @@ export class StylesDialog {
         this.documentHelper.dialog.show();
     }
     private updateStyleNames(): string[] {
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         const collection: string[] = this.documentHelper.owner.documentHelper.styles.getStyleNames('Paragraph');
         const styleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
         const defaultStyleNames: string[] = this.defaultStyleName(styleNames);
-        const finalList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+        const filteredList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+        let finalList: string[] = [];
+        for (let i: number = 0; i < filteredList.length; i++) {
+            let styleName : string = localValue.getConstant(filteredList[parseInt(i.toString(), 10)]);
+            if(styleName === '') {
+                styleName = filteredList[parseInt(i.toString(), 10)];
+            }
+            finalList.push(styleName);
+        }
         return finalList;
     }
     private defaultStyleName(styleNames: string[]): string[] {
@@ -135,8 +145,31 @@ export class StylesDialog {
      * @returns {void}
      */
     private selectHandler = (args: SelectEventArgs): void => {
-        this.styleName = args.text;
+        this.styleName = this.getStyleName(args.text);
     };
+    /**
+     * @private
+     */
+    public getStyleName(styleName: string): string {
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
+        if (localValue.getConstant('Heading 1') === styleName) {
+            styleName = 'Heading 1';
+        } else if (localValue.getConstant('Heading 2') === styleName) {
+            styleName = 'Heading 2';
+        } else if (localValue.getConstant('Heading 3') === styleName) {
+            styleName = 'Heading 3';
+        } else if (localValue.getConstant('Heading 4') === styleName) {
+            styleName = 'Heading 4';
+        } else if (localValue.getConstant('Heading 5') === styleName) {
+            styleName = 'Heading 5';
+        } else if (localValue.getConstant('Heading 6') === styleName) {
+            styleName = 'Heading 6';
+        } else if (localValue.getConstant('Normal') === styleName) {
+            styleName = 'Normal';
+        }
+        return styleName;
+    }
     /**
      * @private
      * @returns {void}

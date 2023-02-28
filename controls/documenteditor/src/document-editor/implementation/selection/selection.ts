@@ -166,6 +166,10 @@ export class Selection {
     public isFormatUpdated: boolean = false;
     /**
      * @private
+     */
+    public isCellPrevSelected: boolean = false;
+    /**
+     * @private
      * @returns {boolean} - Retuens true if highlighting editing region
      */
     public get isHighlightEditRegion(): boolean {
@@ -4636,8 +4640,10 @@ export class Selection {
     public highlightSelectedContent(start: TextPosition, end: TextPosition): void {
         if (start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
             || (!start.paragraph.associatedCell.equals(end.paragraph.associatedCell))
-            || (!this.documentHelper.isSelectionChangedOnMouseMoved && this.isCellSelected(start.paragraph.associatedCell, start, end)))) {
+            || (!this.documentHelper.isSelectionChangedOnMouseMoved && this.isCellSelected(start.paragraph.associatedCell, start, end))
+            || this.isCellPrevSelected)) {
             this.highlightCell(start.paragraph.associatedCell, this, start, end);
+            this.isCellPrevSelected = true;
         } else {
             let inline: ElementBox = undefined;
             let index: number = 0;
@@ -4686,6 +4692,12 @@ export class Selection {
                     this.documentHelper.touchEnd.style.display = 'none';
                 }
             } else {
+                if(start.paragraph.isInsideTable 
+                    && start.paragraph.associatedCell.equals(end.paragraph.associatedCell)
+                    && end.paragraph.equals(this.getLastParagraph(end.paragraph.associatedCell))
+                    && (this.getParagraphLength(end.paragraph) + 1) == end.offset ){
+                    end.offset--;
+                }
                 this.highlight(start.paragraph, start, end);
                 if (this.isHighlightNext) {
                     this.highlightNextBlock(this.hightLightNextParagraph, start, end);
@@ -9941,6 +9953,7 @@ export class Selection {
         if (!isNullOrUndefined(this.formFieldHighlighters)) {
             this.formFieldHighlighters.destroy();
         }
+        this.isCellPrevSelected = undefined;
     }
     /**
      * Navigates to the specified bookmark.

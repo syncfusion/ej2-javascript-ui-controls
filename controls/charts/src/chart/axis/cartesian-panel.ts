@@ -1392,8 +1392,11 @@ export class CartesianAxisLayoutPanel {
                     }
                     break;
                 case 'Shift':
-                    if ((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) {
-                        intervalLength -= (rect.x - options.x); options.x = pointX = !isHorizontalAngle ? rect.x + padding : rect.x;
+                        if ((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) {
+                            intervalLength -= (rect.x - options.x);
+                            if (!(anchor === 'start' && options.x > 0)) {
+                                options.x = pointX = !isHorizontalAngle ? rect.x + padding : rect.x;
+                            }
                     } else if ((i === len - 1 || (isInverse && i === 0)) && ((options.x + width) > rect.x + rect.width)) {
                         if (elementSize.width > intervalLength && axis.labelIntersectAction === 'Trim') {
                             intervalLength -= (options.x + width - (rect.x + rect.width));

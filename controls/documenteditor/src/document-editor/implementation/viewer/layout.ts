@@ -5546,6 +5546,7 @@ export class Layout {
         let rowIndex: number = tableRowWidget.index;
         this.isRelayoutneed = false;
         let issplit: boolean = false;
+        let maximumCellWidgetHeight: number = 0;
         for (let i: number = 0; i < tableRowWidget.childWidgets.length; i++) {
             let cellWidget: TableCellWidget = tableRowWidget.childWidgets[i] as TableCellWidget;
             let splittedCell: TableCellWidget = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
@@ -5555,12 +5556,15 @@ export class Layout {
                     //Returns if the whole content of the row does not fit in current page.
                     return tableRowWidget;
                 }
+                if (cellWidget.height > maximumCellWidgetHeight) {
+                    maximumCellWidgetHeight = cellWidget.height;
+                }
                 if (tableRowWidget.childWidgets.indexOf(splittedCell) !== -1) {
                     tableRowWidget.childWidgets.splice(tableRowWidget.childWidgets.indexOf(splittedCell), 1);
                 }
                 tableRowWidget.height -= splittedCell.height;
-                if (i === 0 || tableRowWidget.height < cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom) {
-                    tableRowWidget.height = cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom;
+                if (i === 0 || tableRowWidget.height < maximumCellWidgetHeight + cellWidget.margin.top + cellWidget.margin.bottom) {
+                    tableRowWidget.height = maximumCellWidgetHeight + cellWidget.margin.top + cellWidget.margin.bottom;
                 }
                 if (isNullOrUndefined(splittedWidget)) {
                     //Creates new widget, to hold the splitted contents.

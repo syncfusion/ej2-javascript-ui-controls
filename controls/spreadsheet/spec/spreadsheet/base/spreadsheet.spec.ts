@@ -5,7 +5,7 @@ import { SpreadsheetModel, Spreadsheet, BasicModule, CellSaveEventArgs, onConten
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell } from '../../../src/workbook/index';
+import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
 import { EmitType, setCurrencyCode, L10n } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
@@ -1464,15 +1464,22 @@ describe('Spreadsheet base module ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg", height: 400, width: 400}]);
             setTimeout(() => {
-                expect(JSON.stringify(helper.getInstance().sheets[1].rows[0].cells[0].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":0,"left":0}]');
+                const image: ImageModel = spreadsheet.sheets[1].rows[0].cells[0].image[0];
+                expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                expect(image.height).toBe(400);
+                expect(image.width).toBe(400);
+                expect(image.top).toBe(0);
+                expect(image.left).toBe(0);
+                expect(helper.getElement('#' + image.id).style.height).toBe('400px');
                 done();
             });
         });
         it('Delete Image with using cell Reference', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.deleteImage('spreadsheet_overlay_picture_1','A1');
+            const imageId: string = spreadsheet.sheets[1].rows[0].cells[0].image[0].id;
+            spreadsheet.deleteImage(imageId,'A1');
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
                 done();
             });
         });

@@ -78,7 +78,7 @@ export class SpreadsheetHyperlink {
             const dlgElement: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
             const footerEle: HTMLElement = dlgElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
             const insertBut: HTMLElement = footerEle.firstChild as HTMLElement;
-            if (hyperlinkText && hyperlinkText.value) {
+            if (hyperlinkText && !isNullOrUndefined(hyperlinkText.value)) {
                 if (!isCellReference(hyperlinkText.value.toUpperCase())) {
                     this.showDialog();
                     insertBut.setAttribute('disabled', 'true');

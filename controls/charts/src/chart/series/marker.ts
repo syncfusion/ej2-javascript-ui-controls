@@ -141,7 +141,10 @@ export class Marker extends MarkerExplode {
                     imageURL, shapeOption,
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
-                if (markerElement) { markerElement.setAttribute('aria-label', (point.x + ': ' + point.y + ', ' + series.name)); }
+                if (markerElement) {
+                    markerElement.setAttribute('role', 'data');
+                    markerElement.setAttribute('aria-label', (point.x + ': ' + point.y + ', ' + series.name));
+                }
                 appendChildElement(
                     this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration

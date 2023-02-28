@@ -3116,7 +3116,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for ( let selectFileIndex: number =  0 ; selectFileIndex < selectedFiles.length; selectFileIndex++ ) {
             const selectedFileData: FileInfo = selectedFiles[selectFileIndex as number];
             for ( let fileDataIndex: number = 0 ; fileDataIndex < this.filesData.length; fileDataIndex++ ) {
-                if ( this.filesData[fileDataIndex as number].name === selectedFileData.name ) {
+                if ( this.filesData[fileDataIndex as number].name === selectedFileData.name && this.filesData[fileDataIndex as number].status === selectedFileData.status ) {
                     matchFiles[matchFilesIndex as number] = this.filesData[fileDataIndex as number];
                     ++matchFilesIndex;
                 }

@@ -1,4 +1,4 @@
-import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell } from '../../../src/index';
+import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell, ImageModel } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
@@ -371,11 +371,23 @@ describe('Clipboard ->', () => {
         it('Copy Image and Paste->', (done: Function) => {
             helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'D3', isPublic: true });
             setTimeout(() => {
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+                let image: ImageModel = helper.getInstance().sheets[0].rows[2].cells[3].image[0];
+                expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                expect(image.height).toBe(300);
+                expect(image.width).toBe(400);
+                expect(image.top).toBe(40);
+                expect(image.left).toBe(192);
+                expect(helper.getElement('#' + image.id).style.left).toBe('192px');
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                 helper.invoke('copy').then(() => {
                     helper.invoke('paste', ['M1']);
-                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_2","height":300,"width":400,"top":0,"left":768}]');
+                    image = helper.getInstance().sheets[0].rows[0].cells[12].image[0];
+                    expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                    expect(image.height).toBe(300);
+                    expect(image.width).toBe(400);
+                    expect(image.top).toBe(0);
+                    expect(image.left).toBe(768);
+                    expect(helper.getElement('#' + image.id).style.left).toBe('768px');
                     EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                     done();
                 });

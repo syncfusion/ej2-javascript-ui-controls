@@ -602,7 +602,18 @@ export class TaskbarEdit extends DateProcessor {
                 }
 
             });
+            this.parent.flatData.map((data)=>{
+                if((!isNullOrUndefined(this.taskBarEditRecord.parentItem)) && data.ganttProperties.taskId===this.taskBarEditRecord.parentItem.taskId){
+                    data.childRecords.map((s)=>{
+                        if (isNullOrUndefined(s.ganttProperties.startDate) || isNullOrUndefined(s.ganttProperties.endDate) ||
+                        isNullOrUndefined(s.ganttProperties.duration)) {
+                            this.parent.dataOperation.updateGanttData()
+                        } 
+                    })
+                }
+            })
         }
+       
     }
 
     /**
@@ -1137,7 +1148,7 @@ export class TaskbarEdit extends DateProcessor {
     }
     private updateChildDrag(item: ITaskData): void {
         const left: number = this.getRoundOffStartLeft(item, this.roundOffDuration);
-        const projectStartDate: Date = this.getDateByLeft(left);
+        const projectStartDate: Date = this.getDateByLeft(left,item.isMilestone,item);
         let endDate: Date;
         if (this.segmentIndex === 0) {
             this.parent.setRecordValue(
@@ -1396,10 +1407,16 @@ export class TaskbarEdit extends DateProcessor {
      * @returns {Date} .
      * @private
      */
-    public getDateByLeft(left: number): Date {
-        const pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+    public getDateByLeft(left: number,isMilestone?:boolean,property?:any): Date {
+        let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        /* To render the milestone in proper date while editing */
+        if (isMilestone) {
+            pStartDate.setDate(pStartDate.getDate()-1);
+            this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
+            pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)
+        }
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
             this.parent.timelineModule.bottomTier;
         if (tierMode !== 'Hour' && tierMode !== 'Minutes') {

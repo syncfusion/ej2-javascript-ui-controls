@@ -248,7 +248,7 @@ export class Render {
                 } else {
                     const str: string = 'isStringTemplate';
                     const result: Element[] = args.column[`${templateFn}`](
-                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[`${str}`]);
+                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
                     appendChildren(cellElement, result);
                 }
                 delete args.column.template;

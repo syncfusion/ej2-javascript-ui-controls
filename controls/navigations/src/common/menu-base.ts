@@ -1252,6 +1252,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
         if (!blankIconList.length) { return; }
         const iconLi: HTMLElement = menu.querySelector('.e-menu-item:not(.e-blankicon):not(.e-separator)') as HTMLElement;
+        if (!iconLi) { return; }
         const icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
         if (!icon) { return; }
         const cssProp: { padding: string, margin: string } =  this.enableRtl ? { padding: 'paddingRight', margin: 'marginLeft' } :

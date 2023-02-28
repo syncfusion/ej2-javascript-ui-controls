@@ -962,12 +962,14 @@ export class Table {
                             if ((totalwid - actualwid) > 20 && actualwid > 20) {
                                 const leftColumnWidth: number = totalwid - actualwid;
                                 const rightColWidth: number = actualwid;
-                                if (!isNOU(this.curTable.rows[i as number].cells[this.colIndex - 1])) {
-                                    (this.curTable.rows[i as number].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
+                                const index: number = this.curTable.rows[i as number].cells[i as number].hasAttribute('colspan') ?
+                                    parseInt(this.curTable.rows[i as number].cells[i as number].getAttribute('colspan'), 10) - 1 : this.colIndex;
+                                if (!isNOU(this.curTable.rows[i as number].cells[index - 1])) {
+                                    (this.curTable.rows[i as number].cells[index - 1] as HTMLTableDataCellElement).style.width =
                                     this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                 }
-                                if (!isNOU(this.curTable.rows[i as number].cells[this.colIndex])) {
-                                    (this.curTable.rows[i as number].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
+                                if (!isNOU(this.curTable.rows[i as number].cells[index])) {
+                                    (this.curTable.rows[i as number].cells[index] as HTMLTableDataCellElement).style.width =
                                     this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                                 }
                             }

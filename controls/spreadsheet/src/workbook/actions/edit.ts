@@ -76,12 +76,11 @@ export class WorkbookEdit {
             if (checkDec) {
                 if (!formula || formula.includes('RANDBETWEEN')) {
                     value = decIndex < 7 ? value : (parseFloat(value)).toFixed(0);
-                } else {
-                    value = value.toString().length < 11 ? value : (decIndex < 11 ? parseFloat(value).toFixed(9 - decIndex + 2) :
-                        parseFloat(value).toFixed(0));
+                } else if (value.toString().length >= 11) {
+                    value = decIndex < 11 ? Number(parseFloat(value).toFixed(9 - decIndex + 2)).toString() : parseFloat(value).toFixed(0);
                 }
             } else {
-                value = decIndex > 7 ? (parseFloat(value)).toFixed(0) : (parseFloat(value)).toFixed(6 - decIndex + 2);
+                value = decIndex > 7 ? (parseFloat(value)).toFixed(0) : Number((parseFloat(value)).toFixed(6 - decIndex + 2)).toString();
             }
         }
         return value;

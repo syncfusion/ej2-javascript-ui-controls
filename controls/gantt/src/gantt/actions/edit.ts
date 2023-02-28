@@ -1110,7 +1110,7 @@ export class Edit {
             durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);
         }
         for (let i: number = 0; i < childRecords.length; i++) {
-            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
+            if ((!(this.parent.isUnscheduledTask(childRecords[i as number].ganttProperties))) && (childRecords[i as number].ganttProperties.isAutoSchedule)) {
                 if (durationDiff > 0) {
                     const startDate: Date = isScheduledTask(childRecords[i as number].ganttProperties) ?
                         childRecords[i as number].ganttProperties.startDate : childRecords[i as number].ganttProperties.startDate ?
@@ -1149,6 +1149,7 @@ export class Edit {
         }
         if (childRecords.length) {
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
+            this.parent.dataOperation.updateGanttData()
         }
     }
 
@@ -1225,10 +1226,22 @@ export class Edit {
         });
     }
 
-    private dmSuccess(e: ReturnType, args: ITaskbarEditedEventArgs): void {
-        let eLength: any = e['length'];
+    private dmSuccess(e: any, args: ITaskbarEditedEventArgs): void {
+        let eLength: any;
+        let rec: any;
+        if (e.changedRecords) {
+            eLength = e.changedRecords['length'];
+        }
+        else {
+            eLength = e['length'];
+        }
         for (let i = 0; i < eLength; i++) {
-            let rec: any = e[i];
+            if (e.changedRecords) {
+                rec = e.changedRecords[i];
+            }
+            else {
+                rec = e[i];
+            }
             let _aLength: any = Object.keys(rec).length;
             for (let j = 0, _a = Object.keys(rec); j < _aLength; j++) {
                 let key: any = _a[j];
@@ -2866,11 +2879,11 @@ export class Edit {
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                                 if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                                    e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
+                                    e.addedRecords[0][this.parent.taskFields.id].toString() == prevID) {
                                     this.parent.setRecordValue(
                                         'taskId', e.addedRecords[0][this.parent.taskFields.id], (args.data as IGanttData).ganttProperties, true);
                                     this.parent.setRecordValue(
-                                        'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data as IGanttData);
+                                        'taskData', e.addedRecords[0], args.data as IGanttData);
                                     this.parent.setRecordValue(
                                         this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data as IGanttData);
                                     this.parent.setRecordValue(

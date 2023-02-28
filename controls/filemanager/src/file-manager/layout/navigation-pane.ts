@@ -5,7 +5,7 @@ import { KeyboardEvents, KeyboardEventArgs, Touch, closest } from '@syncfusion/e
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs, FileOpenEventArgs } from '../base/interface';
+import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs, FileOpenEventArgs, FileSelectEventArgs } from '../base/interface';
 import { read, Download, GetDetails, Delete } from '../common/operations';
 import { createDialog } from '../pop-up/dialog';
 import { updatePath, getPath, getDirectories } from '../common/utility';
@@ -208,6 +208,8 @@ export class NavigationPane {
             const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
             const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
             this.parent.trigger('fileOpen', eventArgs);
+            const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
+            this.parent.trigger('fileSelect', selecEventArgs);
             args.cancel = eventArgs.cancel;
             if (args.cancel) {
                 this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;

@@ -823,7 +823,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (!overlayClickEventArgs.preventFocus) {
                     this.focusContent();
                 }
-                this.bindEvent(this.element);
                 this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
             });
         };
@@ -1153,6 +1152,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     if (!openEventArgs.preventFocus) {
                         this.focusContent();
                     }
+                    this.bindEvent(this.element);
                 });
             },
             // eslint-disable-next-line

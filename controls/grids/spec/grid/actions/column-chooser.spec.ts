@@ -894,4 +894,35 @@ describe('Column chooser module', () => {
 
     });
 
+    describe('EJ2-69223 => Columns in column chooser is not get focused while clicking or tabbing', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    showColumnChooser: true,
+                        toolbar: ['ColumnChooser'],
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                            { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                            { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                            { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                            { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                        ]
+                }, done);
+        });
+        it('check highlight with mouse click', () => {
+            let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+            cheEle.click();
+            let patentelem: any = cheEle.closest('.e-cclist');
+            expect(patentelem.classList.contains('e-colfocus')).toBeTruthy();
+        });
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

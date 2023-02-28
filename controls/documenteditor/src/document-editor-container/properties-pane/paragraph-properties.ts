@@ -665,22 +665,7 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            if (this.localObj.getConstant('Heading 1') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 1';
-            } else if (this.localObj.getConstant('Heading 2') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 2';
-            } else if (this.localObj.getConstant('Heading 3') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 3';
-            } else if (this.localObj.getConstant('Heading 4') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 4';
-            } else if (this.localObj.getConstant('Heading 5') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 5';
-            } else if (this.localObj.getConstant('Heading 6') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Heading 6';
-            } else if (this.localObj.getConstant('Normal') === args.itemData.StyleName) {
-                args.itemData.StyleName = 'Normal';
-            }
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName,true);
+            this.documentEditor.editor.applyStyle(this.documentEditor.stylesDialogModule.getStyleName(args.itemData.StyleName), true);
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */

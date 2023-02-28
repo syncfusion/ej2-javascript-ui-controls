@@ -407,7 +407,16 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             const row: any = helper.getInstance().sheets[0].rows[2];
             expect(row.cells[4].value).toBe(6.8999999999999995);
             expect(row.cells[4].format).toBeUndefined();
-            expect(helper.invoke('getCell', [2, 4]).textContent).toBe('6.9');
+            const cellEle: HTMLElement = helper.invoke('getCell', [2, 4]);
+            expect(cellEle.textContent).toBe('6.9');
+            helper.invoke('updateCell', [{ value: '17866.19' }, 'A3']);
+            helper.edit('E3', '=MOD(-A3,-2)');
+            expect(row.cells[4].value).toBe('-0.19');
+            expect(row.cells[4].format).toBeUndefined();
+            expect(cellEle.textContent).toBe('-0.19');
+            helper.edit('A2', '=E3');
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('-0.19');
+            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('   (0.19)');
             done();
         });
         it ('Apply date and time formats to cell which contain negative value', (done: Function) => {

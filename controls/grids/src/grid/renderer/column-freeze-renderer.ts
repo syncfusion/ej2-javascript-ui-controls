@@ -249,6 +249,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             const frtblColGroup: Element
                 = (this.getFrozenRightHeader().querySelector(literals.colGroup).cloneNode(true)) as Element;
             frtbl.insertBefore(frtblColGroup, frtbl.querySelector( literals.tbody));
+            this.getFrozenRightHeader().querySelector('table').style.width = (frtbl as HTMLElement).style.width;
         }
         this.widthService.refreshFrozenScrollbar();
         this.initializeHeaderDrag();

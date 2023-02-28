@@ -837,6 +837,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.element.className.indexOf('e-accumulationchart') === -1) {
             this.element.classList.add('e-accumulationchart');
         }
+        this.element.setAttribute('role', 'chart');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-label', this.title);
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-accumulationchart-focused');
@@ -1940,7 +1941,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
             this.element.classList.remove('e-accumulationchart-focused');
-            document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus').remove();
+            let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus');
+            if (element) { element.remove(); }
             this.removeSvg();
             this.svgObject = null;
         }

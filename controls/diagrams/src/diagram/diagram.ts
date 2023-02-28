@@ -6576,7 +6576,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         newList = newList.concat(parentist);
         return newList;
     }
-    private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
+      private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
         let layer: LayerModel;
         let isSourceId: boolean = false;
         let isTargetId: boolean = false;
@@ -6592,56 +6592,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             (obj.shape.type !== 'SwimLane' || ((obj as Node).children && (obj as Node).children.length > 0))) {
             if (obj.parentId) {
                 let zIndex: number = this.swimlaneZIndexTable[obj.parentId];
-                if (zIndex && zIndex !== -1) {
+                //EJ2-69247 - Unable to select node in swimlane after save and load
+                let childzIndex:number = this.swimlaneChildTable[obj.id];
+                if ((zIndex && zIndex !== -1) || ((childzIndex && childzIndex !== -1))) {
                     obj.zIndex = this.swimlaneChildTable[obj.id];
                 }
             }
             if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
-                if (this.findNodeInLane(obj.sourceID) && this.findNodeInLane(obj.targetID)) {
-                    if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
-                        this.activeLayer.objects.indexOf(obj.targetID) !== -1) {
-                        this.setZIndex(layer || this.activeLayer, obj);
-                    }
-                } else {
-                    this.setZIndex(layer || this.activeLayer, obj);
-                }
+                //EJ2-69577 - We have removed findNodeInLane method to improve the performance. 
+                this.setZIndex(layer || this.activeLayer, obj);
+                    
             } else {
                 this.setZIndex(layer || this.activeLayer, obj);
             }
         }
     }
-
-    /** Check whether node is in lane or not */
-    private findNodeInLane(nodeId: string): boolean {
-        let temp: boolean = false;
-        for (let i: number = 0; i < this.nodes.length; i++) {
-            if (this.nodes[parseInt(i.toString(), 10)].shape.type !== 'SwimLane') {
-                if (this.nodes[parseInt(i.toString(), 10)].id === nodeId) {
-                    temp = true;
-                    break;
-                }
-            } else {
-                let node: SwimLaneModel = this.nodes[parseInt(i.toString(), 10)].shape as SwimLaneModel;
-                if (node.lanes && node.lanes.length > 0) {
-                    for (let j: number = 0; j < node.lanes.length; j++) {
-                        if (node.lanes[parseInt(j.toString(), 10)].children && node.lanes[parseInt(j.toString(), 10)].children.length > 0) {
-                            for (let k: number = 0; k < node.lanes[parseInt(j.toString(), 10)].children.length; k++) {
-                                if (node.lanes[parseInt(j.toString(), 10)].children[parseInt(k.toString(), 10)].id === nodeId) {
-                                    temp = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (temp) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    
     private updateLayer(newProp: DiagramModel): void {
         for (const key of Object.keys(newProp.layers)) {
             const layerObject: string[] = this.layers[`${key}`].objects;
@@ -8054,11 +8020,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const renderNode: Node = id ? this.nameTable[id[`${node}`]] : this.nameTable[(layer as Layer).zIndexTable[`${node}`]];
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
                     (!(renderNode.processId) || this.refreshing)) {
-                    const transformValue: TransformFactor = {
-                        tx: this.scroller.transform.tx,
-                        ty: this.scroller.transform.ty,
-                        scale: this.scroller.transform.scale
-                    };
+                     //EJ2-68738 - Overview content not updated properly on zoom out the diagram
+                     let  transformValue:TransformFactor
+                     if(this.scroller.currentZoom < 1){
+                         transformValue = {
+                             tx:(-pageBounds.x)/this.scroller.currentZoom,
+                             ty:(-pageBounds.y)/this.scroller.currentZoom,
+                             scale: this.scroller.transform.scale
+                         }
+                     }
+                     else{
+                         transformValue = {
+                         tx: this.scroller.transform.tx,
+                         ty: this.scroller.transform.ty,
+                         scale: this.scroller.transform.scale
+                         };
+                     }
                     if (canVitualize(this)) {
                         if (this.scroller.currentZoom < 1) {
                             if (pageBounds.x < 0 || this.scroller.horizontalOffset < 0) {
@@ -8081,8 +8058,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         this.diagramLayer.style.left = left;
                         this.diagramLayer.style.top = top;
-                        transformValue.tx = this.scroller.horizontalOffset / transformValue.scale;
-                        transformValue.ty = this.scroller.verticalOffset / transformValue.scale;
+                        //EJ2-69578 - Overview is not updated properly when we enable virtualization.
+                        transformValue.tx = (-pageBounds.x) / transformValue.scale;
+                        transformValue.ty = (-pageBounds.y) / transformValue.scale;
                     }
                     let status: boolean = true;
                     if (fromExport) {
@@ -8110,11 +8088,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     } else {
                         getCenterPoint = null;
                     }
-                    //EJ2-68738 - Overview content not updated properly on zoom out the diagram
-                    // this.mode !=='SVG' is added to avoid the issue in SVG mode
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
-                        (!renderer.isSvgMode && transform && this.mode !== 'SVG') ? transformValue : undefined,
+                        (!renderer.isSvgMode && transform) ? transformValue : undefined,
                         undefined, undefined, status && (!this.diagramActions || isOverView), undefined, undefined, getCenterPoint);
                 }
             }

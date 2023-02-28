@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I434942` - Resolved the `fileSelect` event not triggering when folders are clicked in the File Manager navigation pane.
+
 ## 20.4.48 (2023-02-01)
 
 ### File Manager

@@ -657,7 +657,7 @@ export class CheckBoxFilterBase {
         this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
             // eslint-disable-next-line no-self-assign
             filterargs.operator = filterargs.operator;
-            predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
+            predicte = new Predicate(field, filterargs.operator, args.value, filterargs.matchCase, filterargs.ignoreAccent);
             if (this.options.type === 'date' || this.options.type === 'datetime') {
                 operator = 'equal';
                 const filterObj: Object = {

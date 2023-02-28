@@ -550,14 +550,16 @@ export class ContentRender implements IRenderer {
                         remove(contentModule.getTbody(tableName));
                         tbdy = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     } else {
-                        this.tbody.innerHTML = '';
+                        if (!gObj.isReact) {
+                            this.tbody.innerHTML = '';
+                        }
                         if (!isNullOrUndefined(this.tbody.parentElement)) {
                             remove(this.tbody);
                         }
                         else {
                             remove(gObj.getContentTable().querySelector(literals.tbody));
-                        this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                         }
+                        this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     }
                 }
                 if (isFrozenGrid && !isVFTable && !this.parent.enableInfiniteScrolling) {

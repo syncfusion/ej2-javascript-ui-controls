@@ -4816,6 +4816,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         } else {
                             column.minWidth = calcWidth;
                         }
+                    } else {
+                        this.renderModule.isAutoFitEnabled = true;
                     }
                     this.posCount++;
                     if (column.allowReordering) {

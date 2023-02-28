@@ -107,8 +107,8 @@ export class Toolbar {
             this.toolbar.element.classList.add(cls.GRID_TOOLBAR);
         } else {
             this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
-            this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
         }
+        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
         if (this.parent.chart) {
             this.parent.chart.setProperties(
                 { width: this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString() },

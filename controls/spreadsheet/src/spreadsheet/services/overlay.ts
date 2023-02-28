@@ -325,7 +325,8 @@ export class Overlay {
                 this.resizedReorderTop = this.originalReorderTop;
                 this.resizedReorderLeft = this.originalReorderLeft;
             } else if (this.currenHeight !== this.originalHeight || this.originalWidth !== this.currentWidth) {
-                eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement ? elem.parentElement.id : '';
+                eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement &&
+                    elem.parentElement.classList.contains('e-ss-overlay') ? elem.parentElement.id : overlayEle.id;
                 if (overlayElems && overlayElems[0]) {
                     eventArgs.requestType = 'chartRefresh';
                     this.parent.notify(refreshChartCellObj, eventArgs);
@@ -350,8 +351,6 @@ export class Overlay {
             overlayElem = target.parentElement;
             if (closest(e.target as Element, '.e-datavisualization-chart')) {
                 overlayElem = closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement;
-                this.currentWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
-                this.currenHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
             }
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -364,6 +363,8 @@ export class Overlay {
             overlayElem.style.top = top + 'px'; overlayElem.style.left = left + 'px';
             document.getElementById(this.parent.element.id + '_sheet').appendChild(overlayElem);
         }
+        this.originalWidth = this.currentWidth = parseFloat(overlayElem.style.width);
+        this.originalHeight = this.currenHeight = parseFloat(overlayElem.style.height);
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
         this.resizedReorderLeft = parseInt(overlayElem.style.left, 10); //resized divLeft
@@ -381,8 +382,6 @@ export class Overlay {
         document.getElementById(overlayElem.id).classList.add('e-ss-overlay-active');
         if (target.classList.contains('e-ss-resizer')) {
             this.resizer = target.classList[0];
-            this.originalWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
-            this.originalHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
             this.isResizerClicked = true;
         }
         if (overlayElem.classList.contains('e-datavisualization-chart')) {

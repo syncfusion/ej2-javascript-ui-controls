@@ -1391,7 +1391,7 @@ export class InfiniteScroll implements IAction {
     private setInitialCache(data: Row<Column>[], args?: InfiniteScrollArgs, isEdit?: boolean, isCurrentViewData?: boolean): void {
         const frozenCols: boolean = this.parent.isFrozenGrid();
         const idx: number = args.isFrozen ? 1 : 0;
-        let k: number = !isEdit ? 1 : this.firstBlock;
+        let k: number = !isEdit ? 1 : isNullOrUndefined(this.firstBlock) ? 1 : this.firstBlock;
         for (let i: number = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             const startIndex: number = (i - 1) * this.parent.pageSettings.pageSize;
             const endIndex: number = i * this.parent.pageSettings.pageSize;

@@ -1910,3 +1910,51 @@ describe('EJ2-63081 - Group by fails for 1 record on collapse => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-69299- Cant add row in Grid when enableInfiniteScrolling and enableCatch is set to true => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                infiniteScrollSettings: { initialBlocks: 1, enableCache: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    {field: 'fieldName', defaultValue: 'Demo Text'},
+                ],
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Add row in empty grid', function(done: Function){
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('Update the row in empty grid', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+    it('check the infiniteCache first value not to be empty object', () => {
+        expect((gridObj.infiniteScrollModule as any).infiniteCache[1]).not.toBe({});
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -92,3 +92,27 @@ describe('Shift Enter key support - When `DIV` is configured', () => {
         destroy(rteObj);
     });
 });
+
+describe('Shift Enter key support - When image is rendered', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value:  `<p><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"></p>`
+        });
+        done();
+    });
+
+    it('Press shift enter when image is focused initially', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, nodetext, nodetext, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>');
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

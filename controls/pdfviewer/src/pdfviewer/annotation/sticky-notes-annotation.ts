@@ -566,14 +566,16 @@ export class StickyNotesAnnotation {
             }
         }
         if (pageAnnotations.shapeAnnotation && pageAnnotations.shapeAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.shapeAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
+            if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.shapeAnnotationModule) {
+                for (let i: number = 0; i < pageAnnotations.shapeAnnotation.length; i++) {
+                    if (this.pdfViewer.dateTimeFormat) {
+                        // eslint-disable-next-line max-len
+                        pageAnnotations.shapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.shapeAnnotation[i].ModifiedDate);
+                    }
+                    pageCollections.push(pageAnnotations.shapeAnnotation[i]);
                     // eslint-disable-next-line max-len
-                    pageAnnotations.shapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.shapeAnnotation[i].ModifiedDate);
+                    this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(pageAnnotations.shapeAnnotation[i], pageNumber));
                 }
-                pageCollections.push(pageAnnotations.shapeAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(pageAnnotations.shapeAnnotation[i], pageNumber));
             }
         }
         if (pageAnnotations.measureShapeAnnotation && pageAnnotations.measureShapeAnnotation.length !== 0) {

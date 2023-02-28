@@ -110,7 +110,6 @@ export class ColumnChooser implements IAction {
         this.parent.addEventListener(events.dataBound, this.hideDialogFunction);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.rtlUpdated, this.rtlUpdate, this);
-        this.parent.on(events.keyPressed, this.keyUpHandler, this);
         this.parent.on(events.resetColumns, this.onResetColumns, this);
     }
 
@@ -125,7 +124,6 @@ export class ColumnChooser implements IAction {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.uiUpdate, this.enableAfterRenderEle);
         this.parent.off(events.rtlUpdated, this.rtlUpdate);
-        this.parent.on(events.keyPressed, this.keyUpHandler, this);
         this.parent.off(events.resetColumns, this.onResetColumns);
         this.parent.removeEventListener(events.dataBound, this.hideDialogFunction);
     }
@@ -294,8 +292,19 @@ export class ColumnChooser implements IAction {
     }
 
     private keyUpHandler(e: KeyboardEventArgs): void {
-        if (e.action === 'escape') {
+        if (e.key === 'Escape') {
             this.hideDialog();
+        }
+        this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
+    }
+
+    private setFocus(elem: Element): void {
+        const prevElem: Element = this.dlgDiv.querySelector('.e-colfocus');
+        if (prevElem) {
+            prevElem.classList.remove('e-colfocus');
+        }
+        if (elem) {
+            elem.classList.add('e-colfocus');
         }
     }
 
@@ -520,6 +529,7 @@ export class ColumnChooser implements IAction {
     private wireEvents(): void {
         EventHandler.add(this.dlgObj.element, 'click', this.checkBoxClickHandler, this);
         EventHandler.add(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch, this);
+        EventHandler.add(this.dlgObj.element, 'keyup', this.keyUpHandler, this);
         this.searchBoxObj.wireEvent();
     }
 
@@ -527,6 +537,7 @@ export class ColumnChooser implements IAction {
         if (this.parent.isDestroyed) { return; }
         if (this.dlgObj.element) {
             EventHandler.remove(this.dlgObj.element, 'click', this.checkBoxClickHandler);
+            EventHandler.remove(this.dlgObj.element, 'keyup', this.keyUpHandler);
         }
         EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
         this.searchBoxObj.unWireEvent();
@@ -567,6 +578,7 @@ export class ColumnChooser implements IAction {
                 this.checkstatecolumn(checkstate, columnUid);
             }
             this.refreshCheckboxButton();
+            this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
         }
     }
 

@@ -672,10 +672,10 @@ export class StyleDialog {
             let name: string;
             if (!isNullOrUndefined(style)) {
                 this.style.type = this.getTypeValue();
-                this.style.basedOn = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
+                this.style.basedOn = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleBasedOn.value as string)) as WStyle;
 
                 if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
-                    this.style.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
+                    this.style.next = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
                     (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
                     this.updateList();
@@ -694,12 +694,12 @@ export class StyleDialog {
             } else {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
-                let basedOn: any = this.documentHelper.styles.findByName(this.styleBasedOn.value as string) as WStyle;
+                let basedOn: any = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleBasedOn.value as string)) as WStyle;
                 if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
-                    if (styleName === this.styleParagraph.value) {
+                    if (styleName === this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) {
                         tmpStyle.next = tmpStyle;
                     } else {
-                        tmpStyle.next = this.documentHelper.styles.findByName(this.styleParagraph.value as string) as WStyle;
+                        tmpStyle.next = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) as WStyle;
                     }
                     this.updateList();
                 }
@@ -768,7 +768,13 @@ export class StyleDialog {
         }
         let name: string;
         if (this.isEdit) {
-            this.styleNameElement.value = this.editStyleName;
+            let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+            localValue.setLocale(this.documentHelper.owner.locale);
+            let styleName: string = localValue.getConstant(this.editStyleName);
+            if(styleName === ''){
+                styleName = this.editStyleName;
+            }
+            this.styleNameElement.value = styleName;
             name = this.editStyleName;
         }
 
@@ -890,11 +896,21 @@ export class StyleDialog {
         }
     }
     private updateStyleNames(type: StyleType, name?: string): void {
+        let localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         let styles: string[] = this.documentHelper.styles.getStyleNames(type);
-        this.styleParagraph.dataSource = styles;
+        let finalList: string[] = [];
+        for (let i: number = 0; i < styles.length; i++) {
+            let styleName: string = localValue.getConstant(styles[parseInt(i.toString(), 10)]);
+            if(styleName === '') {
+                styleName = styles[parseInt(i.toString(), 10)];
+            }
+            finalList.push(styleName);
+        }
+        this.styleParagraph.dataSource = finalList;
         this.styleParagraph.index = null;
         if (name) {
-            this.styleBasedOn.dataSource = styles.filter((e: string) => e !== name);
+            this.styleBasedOn.dataSource = finalList.filter((e: string) => e !== name);
             this.styleBasedOn.index = null;
             let style: WStyle = this.getStyle(name);
             if (style.basedOn instanceof String || isNullOrUndefined(style.basedOn)) {
@@ -922,7 +938,7 @@ export class StyleDialog {
                 this.isUserNextParaUpdated = (nxtName === name) ? false : true;
             }
         } else {
-            this.styleBasedOn.dataSource = styles;
+            this.styleBasedOn.dataSource = finalList;
             this.styleBasedOn.index = null;
             let basedOnIndex: number = 0;
             if (this.documentHelper.owner.selectionModule) {

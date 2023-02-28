@@ -580,7 +580,7 @@ export class Dependency {
         const durationUnit: string = predecessor.offsetUnit;
         if (offsetValue < 0) {
             resultDate = this.dateValidateModule.getStartDate(
-                this.dateValidateModule.checkEndDate(date, record), (offsetValue * -1), durationUnit, record);
+                this.dateValidateModule.checkEndDate(date, record), (offsetValue * -1), durationUnit, record,true);
         } else {
             resultDate = this.dateValidateModule.getEndDate(date, offsetValue, durationUnit, record, false);
             if (!record.isMilestone) {

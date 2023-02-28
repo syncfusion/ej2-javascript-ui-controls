@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### Gantt
+
+#### Bug Fixes
+
+-`I435386`- Column template not working in `Vue` platform issue has been fixed.
+-`I426170`- Incorrect Start Date Update for Unscheduled Task When Editing Parent Start Date.
+-`I432910`- zoom in not disabled issue has been fixed.
+-`I431348`- Updating Day Working Time Property Dynamically in UTC Timezone Results in Invalid Dates.
+-`I394676`- Incorrect Date in milestone while on load and editing issue has been fixed.
+-`#I436476`- Gantt Task doesn't get updated after Batch Update issue is fixed.
+
 ## 20.4.51 (2023-02-21)
 
 ### Gantt

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### Heatmap
+
+#### Bug Fixes
+
+- `#I437917` - Legend labels in the bottom and top positions will now be properly rendered.
+
 ## 20.4.38 (2022-12-21)
 
 ### Heatmap

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I435982`, `#I434351` - Issue with "rendered cell template destroyed while updating the cell value using `updateCell` method" has been resolved.
+
 ## 20.4.50 (2023-02-14)
 
 ### Spreadsheet

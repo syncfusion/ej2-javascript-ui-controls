@@ -1560,17 +1560,17 @@ export class PivotChart {
     }
 
     private getChartAutoHeight(): number {
-        let height: number = this.parent.element.offsetHeight;
+        let height: number = this.parent.element.offsetHeight < this.parent.minHeight ? this.parent.minHeight : this.parent.element.offsetHeight;
         if (this.parent.showToolbar && this.parent.showGroupingBar) {
-            height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
+            height = height - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42) -
                 (this.parent.element.querySelector('.e-chart-grouping-bar') ?
                     this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62);
         } else if (this.parent.showToolbar) {
-            height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
+            height = height - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42);
         } else if (this.parent.showGroupingBar) {
-            height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-chart-grouping-bar') ?
+            height = height - (this.parent.element.querySelector('.e-chart-grouping-bar') ?
                 this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62);
         }
         return height;

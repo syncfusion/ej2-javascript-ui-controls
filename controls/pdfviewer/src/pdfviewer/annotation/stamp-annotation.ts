@@ -268,7 +268,7 @@ export class StampAnnotation {
             if (this.pdfViewer.dateTimeFormat) {
                 let dateTime: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // eslint-disable-next-line max-len
-                this.dynamicText = 'By ' + author + ' at ' + dateTime.split(' ')[1] + dateTime.split(' ')[2] + ' , ' + dateTime.split(' ')[0] + ' ';
+                this.dynamicText = 'By ' + author + ' at ' + dateTime + ' ';
             } else {
                 // eslint-disable-next-line
                 let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');

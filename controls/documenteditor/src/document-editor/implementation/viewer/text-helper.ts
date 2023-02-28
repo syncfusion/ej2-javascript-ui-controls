@@ -615,7 +615,7 @@ export class TextHelper {
                     return this.getFontNameEAToRender(scriptType, charFormat);
 
                 else
-                return this.getFontNameAsciiToRender(scriptType, charFormat);
+                    return this.getFontNameAsciiToRender(scriptType, charFormat);
             }
         } else {
             return charFormat.fontFamily;
@@ -644,6 +644,14 @@ export class TextHelper {
             else
                 return fontName;
         }
+        private getFontNameAsciiToRender(scriptType: FontScriptType, charFormat: WCharacterFormat)
+        {
+            let fontName: string = charFormat.fontFamilyAscii;
+            if (HelperMethods.isThemeFont(fontName))
+                return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.Default);
+            else
+                return charFormat.fontFamily;
+        }
     private getFontNameBidiToRender(scriptType: FontScriptType, charFormat: WCharacterFormat)
     
             {
@@ -656,14 +664,6 @@ export class TextHelper {
                     return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.CS);
                 else
                     return fontName;
-            }
-            private getFontNameAsciiToRender(scriptType: FontScriptType, charFormat: WCharacterFormat)
-            {            
-                let fontName: string = charFormat.fontFamilyAscii;
-                if (HelperMethods.isThemeFont(fontName))
-                    return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.Default);
-                else
-                    return charFormat.fontFamily;
             }
         private getFontNameFromTheme(charFormat: WCharacterFormat, fontName:string,  scriptType:FontScriptType, hintType: FontHintType,isAscii?:boolean): string
         {            

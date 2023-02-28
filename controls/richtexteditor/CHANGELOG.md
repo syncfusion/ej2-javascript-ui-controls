@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I434928` - Now, the last column is not resized to the end of the table when the middle column is resized.
+
+- `#I436678` - Now, the image is not duplicated when you press the `shift+enter` key in the Rich Text Editor.
+
+- `#I437138` - Now, the pasted content from word which contains images is inserted into Rich Text Editor.
+
 ## 20.4.51 (2023-02-21)
 
 ### RichTextEditor

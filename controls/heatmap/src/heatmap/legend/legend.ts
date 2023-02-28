@@ -584,7 +584,8 @@ export class Legend {
                                 heatMap.legendSettings.labelDisplayType === 'Edge' &&
                                 heatMap.paletteSettings.type === 'Fixed') ? 'auto' : 'middle';
                 }
-                textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i as number] :
+                textWrapWidth = heatMap.horizontalGradient ? (heatMap.legendSettings.textStyle.textOverflow === 'None' ?
+                    this.segmentCollections[i as number] : this.textWrapCollections[i as number]) :
                     this.width - (this.legendRectScale.width +
                     this.labelPadding + this.legendRectPadding);
                 text = getTitle(this.labelCollections[i as number], heatMap.legendSettings.textStyle, textWrapWidth);

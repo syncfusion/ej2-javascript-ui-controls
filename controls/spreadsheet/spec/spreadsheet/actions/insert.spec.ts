@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell, onContentScroll } from "../../../src/index";
+import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell, onContentScroll, ImageModel } from '../../../src/index';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
@@ -515,13 +515,25 @@ describe('Insert & Delete ->', () => {
 
         it('Delete Column with enable virtualization False->', (done: Function) => {
             helper.invoke('insertImage', [[{src:"https://www.w3schools.com/images/w3schools_green.jpg", height: 400, width: 400}], 'D3']);
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":40,"left":192}]');
+            let image: ImageModel = helper.getInstance().sheets[0].rows[2].cells[3].image[0];
+            expect(image.height).toBe(400);
+            expect(image.width).toBe(400);
+            expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            expect(image.top).toBe(40);
+            expect(image.left).toBe(192);
+            expect(helper.getElement('#' + image.id).style.left).toBe('192px');
             EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
             helper.invoke('selectRange', ['B1']);
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 1, [7], false, true);
             setTimeout(() => {
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[2].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":40,"left":128}]');
+                image = helper.getInstance().sheets[0].rows[2].cells[2].image[0];
+                expect(image.height).toBe(400);
+                expect(image.width).toBe(400);
+                expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                expect(image.top).toBe(40);
+                expect(image.left).toBe(128);
+                expect(helper.getElement('#' + image.id).style.left).toBe('128px');
                 done();
             });
         });

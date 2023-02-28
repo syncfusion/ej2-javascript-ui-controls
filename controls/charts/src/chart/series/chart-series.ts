@@ -2177,8 +2177,8 @@ export class Series extends SeriesBase {
             let markerWidth: number;
             let options: CircleOption | RectOption;
             if (this.type === 'Scatter' || this.drawType === 'Scatter') {
-                markerHeight = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.height + explodeValue) / 2;
-                markerWidth = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.width + explodeValue) / 2;
+                markerHeight = (this.marker.height + explodeValue) / 2;
+                markerWidth = (this.marker.width + explodeValue) / 2;
             } else {
                 markerHeight = 0;
                 markerWidth = 0;
@@ -2208,6 +2208,7 @@ export class Series extends SeriesBase {
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
             if (this.seriesElement) {
+                this.seriesElement.setAttribute('role', 'series');
                 this.seriesElement.setAttribute('aria-label', (this.name + ',' + this.type + ' series with ' + this.points.length + ' data points'));
                 this.seriesElement.setAttribute('aria-hidden', 'false');
             }

@@ -1381,6 +1381,41 @@ export class TaskProcessor extends DateProcessor {
             task.taskData[this.parent.taskFields.durationUnit] = task.ganttProperties.durationUnit;
         }
     }
+    public setDataSource(data: any): any {
+        let createData: any = [];
+        let length = data.length;
+        for (var i = 0; i < length; i++) {
+            let record = data[i];
+            createData.push(record);
+            if (!(isNullOrUndefined(data[i][this.parent.taskFields.child]))) {
+                this.setDataSource(data[i][this.parent.taskFields.child]);
+
+            }
+        }
+
+        return createData;
+    }
+    private setStartDate(task: IGanttData) {
+        let hierarchicalData: any = [];
+        if (!isNullOrUndefined(this.parent.taskFields.parentID) && !isNullOrUndefined(this.parent.taskFields.id)) {
+            hierarchicalData = this.setDataSource(this.parent.dataSource);
+        } else {
+            hierarchicalData = this.parent.dataSource;
+        }
+        this.parent.flatData.map((data) => {
+            hierarchicalData.map((record: any) => {
+                if (data.ganttProperties.taskId === record[this.parent.taskFields.id]) {
+                      if(!isNullOrUndefined( this.parent.taskFields.startDate)){
+                        task[this.parent.taskFields.endDate] = record[this.parent.taskFields.endDate];
+                      }
+                      if(!isNullOrUndefined( this.parent.taskFields.endDate)){
+                        task[this.parent.taskFields.endDate] = record[this.parent.taskFields.endDate];
+                      }
+                    
+                }
+            })
+        })
+    }
     private getWorkInHour(work: number, workUnit: string): number {
         if (workUnit === 'day') {
             return work * (this.parent.secondsPerDay / 3600);
@@ -1664,6 +1699,9 @@ export class TaskProcessor extends DateProcessor {
                 ganttData = this.parent.flatData[index as number];
                 if (!isNullOrUndefined(this.parent.taskFields.duration)) {
                     this.setRecordDuration(ganttData, this.parent.taskFields.duration);
+                }
+                if (this.parent.isLoad) {
+                    this.setStartDate(ganttData)
                 }
                 this.calculateScheduledValues(ganttData, data, false);
             }

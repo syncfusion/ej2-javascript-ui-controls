@@ -113,6 +113,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private popupObj: Popup;
     private popupUl: HTMLElement;
     private delegateClickHanlder: Function;
+    private isPopupCreated: boolean = false;
     /**
      * Defines the Url based on which the Breadcrumb items are generated.
      *
@@ -679,7 +680,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             this.isExpanded = true;
             this.reRenderItems();
         }
-        if ((e.target as Element).classList.contains(MENUCLASS)) {
+        if ((e.target as Element).classList.contains(MENUCLASS) && !this.isPopupCreated) {
             this.renderPopup();
         }
     }
@@ -687,6 +688,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private renderPopup(): void {
         const wrapper: HTMLElement = this.createElement('div', { className: POPUPCLASS + ' ' + this.cssClass + (this.enableRtl ? ' e-rtl' : '') });
         document.body.appendChild(wrapper);
+        this.isPopupCreated = true;
         this.popupObj = new Popup(wrapper, {
             content: this.popupUl,
             relateTo: this.element.querySelector(DOT + MENUCLASS) as HTMLElement,
@@ -705,6 +707,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         if (this.overflowMode === 'Menu' && this.popupObj && this.popupObj.element.classList.contains('e-popup-open') && !closest(e.target as Element, DOT + MENUCLASS)) {
             this.popupObj.hide();
             this.popupObj.destroy();
+            this.isPopupCreated = false;
             detach(this.popupObj.element);
         }
     }

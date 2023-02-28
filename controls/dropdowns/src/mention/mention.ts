@@ -1027,6 +1027,7 @@ export class Mention extends DropDownBase {
                             popupEle.style.cssText = 'top: '.concat(coordinates.top.toString(), 'px;\n left: ').concat(coordinates.left.toString(), 'px;\nposition: absolute;\n display: block;');
                         } else {
                             popupEle.style.left = formatUnit(coordinates.left);
+                            popupEle.style.top = formatUnit(coordinates.top - parseInt(this.popupHeight.toString()));
                             this.isCollided = false;
                         }
                         popupEle.style.width = this.popupWidth !== '100%' && !isNullOrUndefined(this.popupWidth) ? formatUnit(this.popupWidth) : 'auto';
@@ -1054,7 +1055,8 @@ export class Mention extends DropDownBase {
 
     private checkCollision(popupEle: HTMLElement): void {
         if (!Browser.isDevice || (Browser.isDevice && !(this.getModuleName() === 'mention'))) {
-            const collision: string[] = isCollide(popupEle);
+            let coordinates: { [key: string]: number } = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
+            const collision: string[] = isCollide(popupEle, null, coordinates.left, coordinates.top);
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
                 this.isCollided = true;
@@ -1080,7 +1082,7 @@ export class Mention extends DropDownBase {
         this.popupObj = new Popup(element, {
             width: this.setWidth(), targetType: 'relative',
             relateTo: this.inputElement, collision: { X: 'flip', Y: 'flip' }, offsetY: offsetValue,
-            enableRtl: this.enableRtl, offsetX: left, position: { X: 'top', Y: 'left' }, actionOnScroll: 'hide',
+            enableRtl: this.enableRtl, offsetX: left, position: { X: 'left', Y: 'bottom' }, actionOnScroll: 'hide',
             zIndex: this.zIndex,
             close: () => {
                 this.destroyPopup();
@@ -1164,13 +1166,13 @@ export class Mention extends DropDownBase {
         if (!this.isContentEditable(this.inputElement)) {
             coordinates = {
                 top: rect.top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth, 10) +
-                    parseInt(computed.fontSize, 10) + 3 - (element as HTMLInputElement | HTMLTextAreaElement).scrollTop,
+                    parseInt(computed.fontSize, 10) + 3 - (element as HTMLInputElement | HTMLTextAreaElement).scrollTop - (this.isCollided ? 10 : 0),
                 left: rect.left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth, 10)
             };
             document.body.removeChild(div);
         } else {
             coordinates = {
-                top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10),
+                top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
                 left: rect.left + windowLeft
             };
         }

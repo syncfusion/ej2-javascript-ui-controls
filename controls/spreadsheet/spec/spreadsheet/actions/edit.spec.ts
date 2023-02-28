@@ -1,7 +1,7 @@
 import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, SheetModel, getCell } from '../../../src/index';
+import { CellModel, SheetModel, getCell, ImageModel } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { EventHandler } from '@syncfusion/ej2-base';
@@ -262,10 +262,19 @@ describe('Editing ->', () => {
         it('Delete image, apply unique formula ', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg"}],"D3");
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+            const image: ImageModel[] = spreadsheet.sheets[0].rows[2].cells[3].image;
+            expect(image[0].height).toBe(300);
+            expect(image[0].width).toBe(400);
+            expect(image[0].top).toBe(40);
+            expect(image[0].left).toBe(192);
+            expect(image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            const imageId: string = image[0].id;
+            expect(helper.getElement('#' + imageId).style.height).toBe('300px');
             EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
-            helper.invoke('deleteImage', ['spreadsheet_overlay_picture_1']);
+            helper.invoke('deleteImage', [imageId]);
             setTimeout(() => {
+                expect(helper.getElement('#' + imageId)).toBe(null);
+                expect(image.length).toBe(0);
             helper.edit('I3','=UNIQUE(H2:H5)');
             helper.triggerKeyNativeEvent(13);
             setTimeout(() => {
@@ -402,7 +411,14 @@ describe('Editing ->', () => {
         it('Delete Image->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg"}],"D3");
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+            const image: ImageModel[] = spreadsheet.sheets[0].rows[2].cells[3].image;
+            expect(image[0].height).toBe(300);
+            expect(image[0].width).toBe(400);
+            expect(image[0].top).toBe(40);
+            expect(image[0].left).toBe(192);
+            expect(image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            const imageId: string = image[0].id;
+            expect(helper.getElement('#' + imageId).style.height).toBe('300px');
             EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
             setTimeout(() => {
                 const Image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
@@ -410,7 +426,8 @@ describe('Editing ->', () => {
                 helper.triggerMouseAction( 'mouseup', { x: Image.getBoundingClientRect().left, y: Image.getBoundingClientRect().top }, document, Image);
                 helper.triggerKeyNativeEvent(46);
                 setTimeout(() => {
-                    expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                    expect(image.length).toBe(0);
+                    expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
                     done();
                 });
             });
@@ -628,7 +645,7 @@ describe('Editing ->', () => {
                 });
             });
         });
-        describe('I282937 ->', () => {
+        describe('I282937, EJ2-69520 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{
@@ -688,6 +705,13 @@ describe('Editing ->', () => {
                 expect(helper.getInstance().sheets[0].rows[1].cells[0].value.toString()).toBe('false');
                 expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('FALSE');
                 helper.triggerKeyNativeEvent(13);
+                done();
+            });
+            it('Rendered template gets destroyed when updating value to the cell via update cell method', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'Test' }, 'E5']);
+                expect(helper.getInstance().sheets[0].rows[4].cells[4].value).toBe('Test');
+                expect(helper.invoke('getCell', [4, 4]).classList.contains('e-cell-template')).toBeTruthy();
+                expect(helper.invoke('getCell', [4, 4]).querySelector('.e-dropdownlist')).not.toBeNull();
                 done();
             });
         });

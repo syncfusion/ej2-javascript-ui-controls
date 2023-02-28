@@ -427,9 +427,9 @@ export class DateProcessor {
      * @returns {Date} .
      * @private
      */
-    public getStartDate(endDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData): Date {
+    public getStartDate(endDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData,fromValidation?:boolean): Date {
         let tempEnd: Date = new Date(endDate.getTime());
-        const startDate: Date = new Date(endDate.getTime());
+        let startDate: Date = new Date(endDate.getTime());
         let secondDuration: number = this.getDurationAsSeconds(duration, durationUnit);
         let nonWork: number = 0;
         let workHours: number = 0;
@@ -442,6 +442,12 @@ export class DateProcessor {
                 tempEnd = this.checkEndDate(startDate, ganttProp);
             }
             tempEnd = new Date(startDate.getTime());
+        }
+        /* To render the milestone in proper date while loading */
+        if (fromValidation && ganttProp.isMilestone) {
+            startDate.setDate(startDate.getDate()-1);
+            this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,startDate);
+            startDate = this.parent.dateValidationModule.checkStartDate(startDate,ganttProp,true)
         }
         return startDate;
     }
@@ -501,7 +507,21 @@ export class DateProcessor {
                 sDate = new Date(endDate.getTime());
                 this.setTime(this.parent.defaultStartTime, sDate);
             } else if (!isNullOrUndefined(duration)) {
-                sDate = this.getProjectStartDate(ganttProp);
+                this.parent.flatData.map((record) => {
+                    if (record.ganttProperties.taskId == ganttProp.taskId) {
+                        if ((!isNullOrUndefined(record.parentItem)) && (record.parentItem.taskId)) {
+                            this.parent.flatData.map((data) => {
+                                if (data.ganttProperties.taskId === record.parentItem.taskId) {
+                                    if (!isNullOrUndefined(data.ganttProperties.startDate))
+                                        sDate = data.ganttProperties.startDate;
+                                }
+                            })
+                        }
+                        else { sDate = this.getProjectStartDate(ganttProp) }
+
+                    }
+
+                })
             }
         } else {
             sDate = new Date(startDate.getTime());

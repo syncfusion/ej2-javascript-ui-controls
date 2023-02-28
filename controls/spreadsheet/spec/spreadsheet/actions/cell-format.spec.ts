@@ -1,6 +1,6 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet, getCell, goto } from "../../../src/index";
+import { SheetModel, getRangeAddress, Spreadsheet, getCell } from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
@@ -294,9 +294,10 @@ describe('Cell Format ->', () => {
         });
         it('Delete image with clear all option->', (done: Function) => {
             helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'C3', isPublic: true });
+            const imageId: string = helper.getInstance().sheets[0].rows[2].cells[2].image[0].id;
             helper.getElement('#' + helper.id + '_clear').click();
             helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
-            expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+            expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
             done();
         });
         it('Delete chart with clear all option->', (done: Function) => {

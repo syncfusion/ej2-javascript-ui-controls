@@ -32,10 +32,8 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private isBlazor: boolean = false;
     private isResponsive: boolean = false;
     private dotnetRef: BlazorDotnetObject;
-    private panStart: ActivePoint;
-    private scale: number;
-    protected canvasRatio: Dimension;
-    protected imageEditorPointsColl: Point[] = [];
+    private signPointsColl: Point[] = [];
+    private signRatioPointsColl: Point[] = [];
 
     /**
      * Gets or sets the background color of the component.
@@ -167,16 +165,11 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     // eslint-disable-next-line
-    protected mouseDownHandler(e : MouseEvent & TouchEvent, canvas?: HTMLCanvasElement, panStart?: any, zoomState?: number): void {
+    protected mouseDownHandler(e : MouseEvent & TouchEvent): void {
         if (e.buttons === 1 || e.buttons === 2 || e.type === 'touchstart') {
             if (e.type === 'touchstart') {
                 e.preventDefault();
                 e.stopPropagation();
-            }
-            if (canvas) {
-                this.canvasContext = canvas.getContext('2d');
-                this.scale = zoomState;
-                this.panStart = panStart;
             }
             this.beginStroke(e);
             this.wireEvents();
@@ -212,6 +205,11 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.dotnetRef.invokeMethodAsync('TriggerEventAsync', 'mouseUp');
         }
         this.signatureValue = this.snapColl[this.incStep];
+        for (let i: number = 0; i < this.signPointsColl.length; i++) {
+            this.signRatioPointsColl.push({ x: (this.signPointsColl[i as number].x / this.canvasContext.canvas.width),
+            y: (this.signPointsColl[i as number].y / this.canvasContext.canvas.height)});
+        }
+        this.signPointsColl = [];
     }
 
     private keyboardHandler(e : KeyboardEvent): void {
@@ -249,13 +247,23 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.canvasContext.canvas.width = this.element.offsetWidth;
             this.canvasContext.canvas.height = this.element.offsetHeight;
             this.canvasContext.scale(1, 1);
+            this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
+            const pointSize: number = (this.minStrokeWidth + this.maxStrokeWidth) / 2;
+            for (let i: number = 0; i < this.signRatioPointsColl.length; i++) {
+                this.arcDraw((this.signRatioPointsColl[i].x * this.canvasContext.canvas.width),
+                 (this.signRatioPointsColl[i].y * this.canvasContext.canvas.height), pointSize);
+            }
+            this.signPointsColl = [];
+            this.canvasContext.closePath();
+            this.canvasContext.fill();
+        } else {
+            const restoreImg: HTMLImageElement = new Image();
+            restoreImg.src = this.snapColl[this.incStep];
+            restoreImg.onload = () => {
+                proxy.canvasContext.clearRect(0, 0, proxy.element.width, proxy.element.height);
+                proxy.canvasContext.drawImage(restoreImg, 0, 0, proxy.element.width, proxy.element.height);
+            };
         }
-        const restoreImg: HTMLImageElement = new Image();
-        restoreImg.src = this.snapColl[this.incStep];
-        restoreImg.onload = () => {
-            proxy.canvasContext.clearRect(0, 0, proxy.element.width, proxy.element.height);
-            proxy.canvasContext.drawImage(restoreImg, 0, 0, proxy.element.width, proxy.element.height);
-        };
     }
 
     private beginStroke(e : MouseEvent & TouchEvent): void {
@@ -299,38 +307,9 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private createPoint(e: MouseEvent & TouchEvent): Point {
         const rect: DOMRect = this.canvasContext.canvas.getBoundingClientRect() as DOMRect;
         if (e.type === 'mousedown' || e.type === 'mousemove') {
-            // signature
-            if (this.canvasRatio === undefined) {
-                return this.point(e.clientX - rect.left, e.clientY - rect.top, new Date().getTime());
-            }
-            // image editor
-            else if (this.scale === 1) {
-                return this.point(((e.clientX - rect.left) * this.canvasRatio.width) / this.scale,
-                                  ((e.clientY  - rect.top) * this.canvasRatio.height) / this.scale,
-                                  new Date().getTime());
-            } else {
-                return this.point((((e.clientX - rect.left) + ((this.panStart.startX) / this.canvasRatio.width
-                                  * this.scale)) / this.scale) * this.canvasRatio.width,
-                                  (((e.clientY - rect.top)  + ((this.panStart.startY) / this.canvasRatio.height
-                                  * this.scale)) / this.scale) * this.canvasRatio.height,
-                                  new Date().getTime());
-            }
+            return this.point(e.clientX - rect.left, e.clientY - rect.top, new Date().getTime());
         } else {
-            // signature
-            if (this.canvasRatio === undefined) {
-                return this.point(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top, new Date().getTime());
-            }
-            // image editor
-            else if (this.scale === 1) {
-                return this.point(((e.touches[0].clientX - rect.left) * this.canvasRatio.width) / this.scale,
-                                  ((e.touches[0].clientY - rect.top) * this.canvasRatio.height) / this.scale,
-                                  new Date().getTime());
-            } else {
-                return this.point((e.touches[0].clientX - rect.left) + this.panStart.startX / (this.canvasRatio.width
-                                   * this.scale),
-                                  (e.touches[0].clientY - rect.top)  + this.panStart.startY / (this.canvasRatio.height
-                                   * this.scale), new Date().getTime());
-            }
+            return this.point(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top, new Date().getTime());
         }
     }
 
@@ -347,7 +326,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const lastPoint: Point = points.length > 0 && points[points.length - 1];
         const isLastPointTooClose: boolean = lastPoint ? this.distanceTo(lastPoint) <= this.minDistance : false;
         if (!lastPoint || !(lastPoint && isLastPointTooClose)) {
-            points.push(point); this.imageEditorPointsColl.push(point);
+            points.push(point);
             if (points.length > 2) {
                 if (points.length === 3) {
                     points.unshift(points[0]);
@@ -414,6 +393,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     private arcDraw(x: number, y: number, size: number): void {
+        this.signPointsColl.push({x: x, y: y});
         const context: CanvasRenderingContext2D = this.canvasContext;
         context.moveTo(x, y);
         context.arc(x, y, size, 0, 2 * Math.PI, false);
@@ -612,6 +592,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const args: SignatureChangeEventArgs = { actionName: 'clear'};
         this.canvasContext.clearRect( 0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         this.refresh();
+        this.signRatioPointsColl = [];
         this.updateSnapCollection(true);
         this.isSignatureEmpty = true;
         if (!this.isBlazor) {

@@ -68,6 +68,7 @@ export class Toolkit {
         this.elementOpacity = !this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
         childElement.id = this.elementId + '_Zooming_Pan';
+        childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
         childElement.appendChild(render.drawRectangle(
@@ -96,6 +97,7 @@ export class Toolkit {
         direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
         direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
         childElement.id = this.elementId + '_Zooming_Zoom';
+        childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Zoom'));
         this.zoomElements = childElement;
         this.selectedID = this.chart.zoomModule.isPanning ? this.chart.element.id + '_Zooming_Pan_1' : this.elementId + '_Zooming_Zoom_1';
@@ -122,6 +124,7 @@ export class Toolkit {
         direction += '14.628l0,0L1.372,16l4.571-4.572v-0.685l0.228-0.275c1.052,0.868,2.423,1.417,3.885,1.417c3.291,0,5.943-2.651,';
         direction += '5.943-5.943C16,2.651,13.395,0,10.103,0z M10.058,10.058c-2.286,0-4.114-1.828-4.114-4.114c0-2.286,1.828-4.114,';
         childElement.id = this.elementId + '_Zooming_ZoomIn';
+        childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         const polygonDirection: string = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
         childElement.appendChild(render.drawRectangle(
@@ -156,6 +159,7 @@ export class Toolkit {
         direction += '1.422c3.289,0,5.955-2.666,5.955-5.955S13.333,0,10.044,0S4.089,2.667,4.134,5.911c0,1.466,0.533,2.844,';
         direction += '1.422,3.866l-0.266,0.266H4.578L0,14.622L0,14.622z M5.911,5.911c0-2.311,1.822-4.133,4.133-4.133s4.133,1.822,4.133,';
         childElement.id = this.elementId + '_Zooming_ZoomOut';
+        childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
         childElement.appendChild(render.drawRectangle(
             new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.iconRect)
@@ -185,6 +189,7 @@ export class Toolkit {
         direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
         direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
         childElement.id = this.elementId + '_Zooming_Reset';
+        childElement.setAttribute('role', 'button');
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
         //This is for low oppacity to RESET button
         this.elementOpacity = !chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar ? '0.2' : '1';

@@ -393,7 +393,7 @@ export class Render {
         //         (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
         //     }
         // }
-        if (this.parent.grid && this.parent.grid.widthService) {
+        if (!this.isAutoFitEnabled && this.parent.grid && this.parent.grid.widthService) {
             this.parent.grid.widthService.setWidthToTable();
         }
         if (this.parent.notEmpty) {
@@ -1843,20 +1843,19 @@ export class Render {
         } else {
             this.pivotColumns = this.frameEmptyColumns();
         }
-        if (this.pivotColumns.length > 1) {
-            const lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
-            lastColumn.minWidth = lastColumn.width;
-            lastColumn.width = 'auto';
-            if (lastColumn.columns && lastColumn.columns.length > 0) {
-                if (!(this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit)) {
-                    this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
-                }
-            }
-        }
         if (this.parent.toolbarModule && this.parent.showToolbar) {
             this.parent.toolbarModule.isReportChange = false;
         }
         this.parent.triggerColumnRenderEvent(this.pivotColumns);
+        autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
+        if (this.pivotColumns.length > 1 && !autoFitApplied) {
+            const lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
+            lastColumn.minWidth = lastColumn.width;
+            lastColumn.width = 'auto';
+            if (lastColumn.columns && lastColumn.columns.length > 0) {
+                this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
+            }
+        }
         return this.pivotColumns;
     }
 

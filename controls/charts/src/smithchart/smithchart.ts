@@ -488,6 +488,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     private initPrivateVariable(): void {
         this.animateSeries = true;
+        this.element.setAttribute('role', 'chart');
         this.element.setAttribute('aria-label', this.title.description || this.title.text);
         this.element.setAttribute('tabindex', '0');
     }

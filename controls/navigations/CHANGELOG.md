@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 20.4.51 (2023-02-21)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I428766` - Alignment issue in TreeView node without a sub-child in RTL mode has been resolved.
+- `#I428002` - The accessibility related issues in the TreeView has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I439558` - The issue with "When removing all context menu items that contain icons using removeItems method, it thrown null reference error" has been resolved.
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I437629` - Issue with "Breadcrumb overflow mode menu creates a dark point for multiple click " has been resolved.
+
 ## 20.4.49 (2023-02-07)
 
 ### Accordion

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.52 (2023-02-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F180554` - Fixed console error thrown when using the destroy method.
+- `#I437308` - Resolved accessibility issues in chart.
+- `#I436273` - Fixed issue with chart going out when zooming without clip rect in path.
+
 ## 20.4.51 (2023-02-21)
 
 ### Chart

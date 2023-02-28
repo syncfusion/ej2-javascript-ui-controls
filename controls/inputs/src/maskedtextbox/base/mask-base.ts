@@ -695,7 +695,7 @@ function removeMaskInputValues(event: KeyboardEvent): void {
 function maskInputKeyPressHandler(event: KeyboardEvent): void {
     if (this.mask && !this.readonly) {
         const oldValue: string = this.element.value;
-        if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
+        if (!(event.ctrlKey || event.metaKey) || ((event.ctrlKey || event.metaKey) && event.code !== 'KeyA' && event.code !== 'KeyY'
             && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
             this.maskKeyPress = true;
             let key: string = event.key;

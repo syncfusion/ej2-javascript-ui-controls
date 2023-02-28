@@ -2130,17 +2130,20 @@ export class DocumentHelper {
                     } else {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
+                    data.isCanceled = false;
                     this.owner.trigger(beforeFormFieldFillEvent, data);
-                    if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
-                        || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
-                        || formField.formFieldData instanceof DropDownFormField) {
-                        this.formFillPopup.showPopUp(formField);
-                    } else {
-                        this.owner.editor.toggleCheckBoxFormField(formField);
-                        data.value = (formField.formFieldData as CheckBoxFormField).checked;
-                        data.isCanceled = false;
-                        this.owner.trigger(afterFormFieldFillEvent, data);
-                    }
+                    if (!data.isCanceled) {
+                        if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
+                            || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
+                            || formField.formFieldData instanceof DropDownFormField) {
+                            this.formFillPopup.showPopUp(formField);
+                        } else {
+                            this.owner.editor.toggleCheckBoxFormField(formField);
+                            data.value = (formField.formFieldData as CheckBoxFormField).checked;
+                            data.isCanceled = false;
+                            this.owner.trigger(afterFormFieldFillEvent, data);
+                        }
+                    }      
                 }
                 if (!formField && this.isFormFillProtectedMode) {
                     this.selection.navigateToNextFormField();
@@ -2187,6 +2190,7 @@ export class DocumentHelper {
             }
             this.isMouseDownInFooterRegion = false;
         }
+        this.selection.isCellPrevSelected = false;
     }
     private isSelectionInListText(cursorPoint: Point): boolean {
         let widget: LineWidget = this.getLineWidget(cursorPoint);

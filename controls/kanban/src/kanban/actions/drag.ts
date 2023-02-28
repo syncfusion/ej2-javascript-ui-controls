@@ -142,6 +142,10 @@ export class DragAndDrop {
         const contentCell: HTMLElement = closest(target, selector) as HTMLElement;
         let cellDimension : ClientRect;
         let borderElem : HTMLElement;
+        let dropElement : Element;
+        if (target.nextElementSibling && target.nextElementSibling.lastChild) {
+            dropElement = (target.nextElementSibling.lastChild as HTMLElement).previousElementSibling;
+        }
         this.externalDrop(target);
         this.kanbanObj = this.parent.isExternalKanbanDrop ? this.parent.externalDropObj : this.parent;
         this.calculateArgs(e);
@@ -184,7 +188,7 @@ export class DragAndDrop {
                     target.appendChild(this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))
-                    && this.dragObj.targetClone) {
+                    && this.dragObj.targetClone && (!dropElement || !dropElement.classList.contains(cls.DROPPED_CLONE_CLASS))) {
                     target.nextElementSibling.appendChild(this.dragObj.targetClone);
                 }
             } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||

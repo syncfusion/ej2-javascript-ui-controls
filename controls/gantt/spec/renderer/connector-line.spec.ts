@@ -364,9 +364,9 @@ describe('Gantt connector line support', () => {
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[2].ganttProperties.left).toBe(363);
                 expect(ganttObj.flatData[4].ganttProperties.left).toBe(396);
-                expect(ganttObj.flatData[6].ganttProperties.left).toBe(264);
+                expect(ganttObj.flatData[6].ganttProperties.left).toBe(297);
                 expect(ganttObj.flatData[8].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[10].ganttProperties.left).toBe(264);
+                expect(ganttObj.flatData[10].ganttProperties.left).toBe(297);
                 done();
             }
             ganttObj.refresh();
@@ -389,9 +389,9 @@ describe('Gantt connector line support', () => {
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[2].ganttProperties.left).toBe(363);
                 expect(ganttObj.flatData[4].ganttProperties.left).toBe(396);
-                expect(ganttObj.flatData[6].ganttProperties.left).toBe(264);
+                expect(ganttObj.flatData[6].ganttProperties.left).toBe(297);
                 expect(ganttObj.flatData[8].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[10].ganttProperties.left).toBe(264);
+                expect(ganttObj.flatData[10].ganttProperties.left).toBe(297);
                 done();
             }
             ganttObj.refresh();

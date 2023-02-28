@@ -358,13 +358,13 @@ export class DataManipulation {
         if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
             qry.take(this.parent.pageSettings.pageSize);
             const expandDetail: Object[] = [];
-            expandDetail.push('ExpandingAction', rowDetails.record[this.parent.idMapping]);
+            expandDetail.push('ExpandingAction', parseInt(rowDetails.record[this.parent.idMapping], 10).toString());
             qry.expand(expandDetail);
         }
         else if (this.parent.enableVirtualization && rowDetails.action === 'collapse') {
             qry.take(this.parent.grid.pageSettings.pageSize);
             const expandDetail: Object[] = [];
-            expandDetail.push('CollapsingAction', rowDetails.record[this.parent.idMapping]);
+            expandDetail.push('CollapsingAction', parseInt(rowDetails.record[this.parent.idMapping], 10).toString());
             qry.expand(expandDetail);
         }
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);

@@ -132,6 +132,7 @@ export class HiloOpenCloseSeries extends ColumnBase {
         pathAnimation(getElement(options.id), direction, series.chart.redraw);
         const element: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
+        element.setAttribute('role', 'data');
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
         if (!series.chart.enableCanvas) {

@@ -936,8 +936,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MOD Formula with Deciaml values->', (done: Function) => {
             helper.edit('K5', '=MOD(0.75,0.1)');
-            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('0.050000');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"0.050000","formula":"=MOD(0.75,0.1)"}');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('0.05');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"0.05","formula":"=MOD(0.75,0.1)"}');
             done();
         });
         it('MOD Formula with cell Reference->', (done: Function) => {

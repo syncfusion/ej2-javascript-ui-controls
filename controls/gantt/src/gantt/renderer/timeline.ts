@@ -167,6 +167,9 @@ export class Timeline {
      * @private
      */
     private changeTimelineSettings(newTimeline: ZoomTimelineSettings): void {
+        if (!this.isZoomIn) {
+            this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
+        }
         const skipProperty: string = this.isSingleTier ?
             this.customTimelineSettings.topTier.unit === 'None' ?
                 'topTier' : 'bottomTier' : null;
@@ -177,7 +180,9 @@ export class Timeline {
             } else {
                 const value: string = property === 'topTier' ? 'bottomTier' : 'topTier';
                 const assignValue: string = 'bottomTier';
-                this.customTimelineSettings[value as string] = { ...newTimeline[assignValue as string] };
+                if ( newTimeline[assignValue].unit != "None") {
+                    this.customTimelineSettings[value as string] = { ...newTimeline[assignValue as string] };
+                }
             }
         });
         this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
@@ -413,7 +418,9 @@ export class Timeline {
             this.customTimelineSettings.bottomTier.count : this.customTimelineSettings.topTier.count;
         const unit: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
             this.customTimelineSettings.bottomTier.unit : this.customTimelineSettings.topTier.unit;
-        const zoomLevel: number = this.getCurrentZoomingLevel(unit, count);
+        const tier: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
+            "bottomTier" : "topTier";
+        const zoomLevel: number = this.getCurrentZoomingLevel(unit, count,tier);
         if (this.parent.toolbarModule) {
             if (zoomLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                 this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false);
@@ -431,7 +438,7 @@ export class Timeline {
      * @returns {number} .
      * @private
      */
-    private getCurrentZoomingLevel(unit: string, count: number): number {
+    private getCurrentZoomingLevel(unit: string, count: number,tier?:string): number {
         let level: number;
         let currentZoomCollection: ZoomTimelineSettings;
         let checkSameCountLevels: ZoomTimelineSettings[];
@@ -441,16 +448,29 @@ export class Timeline {
             this.parent.zoomingLevels = this.parent.getZoomingLevels();
         }
         let sameUnitLevels: ZoomTimelineSettings[] = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
-            return tempLevel.bottomTier.unit === unit;
+            if (tier === "bottomTier") {
+                return tempLevel.bottomTier.unit === unit;
+            } else {
+                return tempLevel.topTier.unit === unit;
+            }
         });
         if (sameUnitLevels.length === 0) {
             const closestUnit: string = this.getClosestUnit(unit, '', false);
             sameUnitLevels = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                return tempLevel.bottomTier.unit === closestUnit;
+                if (tier === "bottomTier") {
+                    return tempLevel.bottomTier.unit === closestUnit;
+                } else {
+                    return tempLevel.topTier.unit === closestUnit;
+                }
             });
         }
-        const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>
-            (a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
+        const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>  {
+            if (tier === "bottomTier") {
+                return (a.bottomTier.count < b.bottomTier.count) ? 1 : -1;
+            } else {
+                return (a.topTier.count < b.topTier.count) ? 1 : -1;
+            }
+        });
         for (let i: number = 0; i < sortedUnitLevels.length; i++) {
             firstValue = sortedUnitLevels[i as number];
             if (i === sortedUnitLevels.length - 1) {
@@ -460,10 +480,14 @@ export class Timeline {
                 secondValue = sortedUnitLevels[i + 1];
             }
 
-            if (count >= firstValue.bottomTier.count) {
+            if (count >= firstValue[tier].count) {
                 currentZoomCollection = sortedUnitLevels[i as number];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                    return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                    if (tier === "bottomTier") {
+                        return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                    } else {
+                        return tempLevel.topTier.count === currentZoomCollection.topTier.count;
+                    }
                 });
                 if (checkSameCountLevels.length > 1) {
                     level = this.checkCollectionsWidth(checkSameCountLevels);
@@ -471,10 +495,14 @@ export class Timeline {
                     level = checkSameCountLevels[0].level;
                 }
                 break;
-            } else if (count < firstValue.bottomTier.count && count > secondValue.bottomTier.count) {
+            } else if (count < firstValue[tier].count && count > secondValue[tier].count) {
                 currentZoomCollection = sortedUnitLevels[i + 1];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
-                    return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                    if (tier === "bottomTier") {
+                        return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                    } else {
+                        return tempLevel.topTier.count === currentZoomCollection.topTier.count;
+                    }
                 });
                 if (checkSameCountLevels.length > 1) {
                     level = this.checkCollectionsWidth(checkSameCountLevels);

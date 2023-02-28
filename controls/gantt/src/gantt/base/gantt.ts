@@ -2743,6 +2743,7 @@ export class Gantt extends Component<HTMLElement>
             case 'dayWorkingTime':
             case 'allowUnscheduledTasks':
             case 'holidays':
+                this.isLoad=true;
                 if (prop === 'holidays') {
                     this.totalHolidayDates = this.dataOperation.getHolidayDates();
                     this.notify('ui-update', { module: 'day-markers', properties: newProp });
@@ -2751,6 +2752,7 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.refreshColumns();
                 this.chartRowsModule.initiateTemplates();
                 this.chartRowsModule.refreshGanttRows();
+                this.isLoad=false;
                 break;
             case 'addDialogFields':
             case 'editDialogFields':

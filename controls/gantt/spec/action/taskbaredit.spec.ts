@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData, customCRData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -199,7 +199,7 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('11/02/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('11/01/2017 17:00');
                 expect(args.taskBarEditAction).toBe('MilestoneDrag');
             };
             ganttObj.dataBind();
@@ -467,6 +467,48 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragParentElement, 'mousemove', dragParentElement.offsetLeft + 40, 0);
             triggerMouseEvent(dragParentElement, 'mouseup');
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate)).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate));
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('milestone drop date', () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: customCRData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: false,
+                    editSettings: {
+                        allowEditing: true,
+                        allowTaskbarEditing: true
+                    }
+                }, done);
+        });
+        it('Milestone drag action', () => {
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/02/2019 17:00');
+            };
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td >div.e-taskbar-main-container') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
         });
         afterAll(() => {
             if (ganttObj) {

@@ -64,6 +64,7 @@ export class DetailRow {
         const tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
         const uid: string = tr.getAttribute('data-uid');
         const rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
+        let needToRefresh: boolean = false;
         const nextRow: HTMLElement =
             this.parent.getContentTable().querySelector( literals.tbody).children[tr.rowIndex + 1] as HTMLElement;
         if (target.classList.contains('e-detailrowcollapse')) {
@@ -72,6 +73,7 @@ export class DetailRow {
                 nextRow.style.display = '';
                 gObj.notify(events.detailStateChange, {data: data,
                     childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
+                needToRefresh = true;
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 const rowId: string = getUid('grid-row');
                 const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId, role: 'row'} });
@@ -185,10 +187,11 @@ export class DetailRow {
                 this.lastrowcell = false;
             }
             rowObj.isExpand = false;
+            needToRefresh = true;
             this.aria.setExpand(target as HTMLElement, false);
             target.firstElementChild.setAttribute('title', 'collapsed');
         }
-        if (!isNullOrUndefined(gObj.detailTemplate)) {
+        if (!isNullOrUndefined(gObj.detailTemplate) || (gObj.childGrid && needToRefresh)) {
             gObj.updateVisibleExpandCollapseRows();
             gObj.notify(events.refreshExpandandCollapse, { rows: gObj.getRowsObject() });
         }

@@ -268,9 +268,11 @@ export class ColumnBase {
         ) as HTMLElement;
         switch (series.seriesType) {
         case 'XY':
+            element.setAttribute('role', 'data');
             element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
             break;
         case 'HighLow':
+            element.setAttribute('role', 'data');
             element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
             break;
         }

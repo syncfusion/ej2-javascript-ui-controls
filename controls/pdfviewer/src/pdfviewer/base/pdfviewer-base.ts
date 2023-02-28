@@ -3477,8 +3477,8 @@ export class PdfViewerBase {
                                     let formfield = this.pdfViewer.formFieldCollections[i];
                                     if (fieldId === formfield.id && (formfield.type === 'SignatureField' || formfield.type === 'InitialField')) {
                                         this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', this.pdfViewer.formFieldCollections[i]);
+                                        event.preventDefault();
                                     }
-                                    event.preventDefault();
                                 }
                             }
                         }

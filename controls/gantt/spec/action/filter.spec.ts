@@ -395,7 +395,7 @@ describe('Gantt filter support', () => {
         it('Initial Filtering Task Name', (done: Function) => {
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'filtering'){
-                expect(ganttObj.currentViewData.length).toBe(11);
+                expect(ganttObj.currentViewData.length).toBe(3);
                 done();
                 }
               }

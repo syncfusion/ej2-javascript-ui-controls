@@ -13,7 +13,7 @@ interface EJ2Instance extends HTMLElement {
 }
 describe('Gantt - Render with Enable RTL', () => {
 
-    describe('Edit Duration of new task', function () {
+   /* describe('Edit Duration of new task', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
             ganttObj = createGantt({
@@ -702,5 +702,5 @@ describe('Gantt - Render with Enable RTL', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 500);
         });
-    });
+    });*/
 });

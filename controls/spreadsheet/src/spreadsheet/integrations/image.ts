@@ -6,13 +6,12 @@ import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosi
 import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
-import { removeClass, L10n, isUndefined } from '@syncfusion/ej2-base';
+import { removeClass, L10n, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
     private parent: Spreadsheet;
-    private pictureCount: number = 1;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -103,10 +102,10 @@ export class SpreadsheetImage {
         const sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
-        const id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
+        const id: string = args.options.imageId ? args.options.imageId : getUniqueID(this.parent.element.id + '_overlay_picture_');
         const indexes: number[] = getRangeIndexes(range);
         const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex as number];
-        if (document.getElementById(id)) {
+        if (this.parent.element.querySelector(`#${id}`)) {
             return;
         }
         let eventArgs: BeforeImageData = { requestType: 'beforeInsertImage', range: sheet.name + '!' + range, imageData: args.options.src,
@@ -124,7 +123,6 @@ export class SpreadsheetImage {
         if (sheet.frozenRows || sheet.frozenColumns) {
             overlayObj.adjustFreezePaneSize(args.options, element, range);
         }
-        if (!args.options.imageId) { this.pictureCount++; }
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
             width: parseFloat(element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
