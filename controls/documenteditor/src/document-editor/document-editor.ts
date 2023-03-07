@@ -2297,7 +2297,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Line between column': 'Line between column',
         'Width and Spacing': 'Width and Spacing',
         'Equal column width': 'Equal column width',
-        'Column': 'Column'
+        'Column': 'Column',
+        'Discard': 'Discard'
     };
     /* eslint-enable */
     // Public Implementation Starts

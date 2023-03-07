@@ -1061,7 +1061,9 @@ export class ResourceBase {
         if (this.treeViewObj) {
             if ((this.treeViewObj as any).portals && (this.treeViewObj as any).portals.length > 0) {
                 const treeViewTemplates: string[] = (this.treeViewObj as any).portals.map((x: any) => x.propName);
-                this.parent.resetTemplates(treeViewTemplates);
+                if (treeViewTemplates.length > 0) {
+                    this.parent.resetTemplates(treeViewTemplates);
+                }
             }
             this.treeViewObj.destroy();
             this.treeViewObj = null;

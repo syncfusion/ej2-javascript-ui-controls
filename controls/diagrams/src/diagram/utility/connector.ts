@@ -556,7 +556,12 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
         ((target.direction === 'Top' && source.point.y > target.point.y) ||
             (target.direction === 'Bottom' && source.point.y < target.point.y) &&
             ((target.corners.left <= source.point.x && target.corners.right >= source.point.x)))) {
-        point = addPoints(element, source, target);
+        // EJ2-69304 - Return the 2 segment points if allowNodeOverlap is set as true.
+        if (!element.selectedSegmentIndex) {
+            point = addPoints(element, source, target);
+        } else {
+            point = orthoConnection2Segment(source, target);
+        }
     } else {
         if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
             ((source.direction === 'Left' || source.direction === 'Right') &&
@@ -1359,15 +1364,18 @@ function findIntermeditatePoints(
                         seg.points.push(point[parseInt(j.toString(), 10)]);
                     } else {
                         // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
-                        if (j === point.length - 1 && point.length > 2) {
+                        if (j === point.length - 1 && point.length > 2 && ele.segments.length > 2) {
                             let point2: PointModel;
-                            point2 = { x: source.point.x, y: point[parseInt(j.toString(), 10)].y };
+                            // EJ2-69304 - Change the point calculation to work for all port combination
+                            point2 = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
                             // EJ2 - 65063 - Empty the segment points
                             seg.points = [];
-                            seg.points.push(point2);
+                            // EJ2-69304 - Calculate the point for segment and manually push the point in segment point calculation
                             seg.points.push(point[parseInt(j.toString(), 10)]);
+                            seg.points.push(point2);
                             let segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
-                            segment.points[1] = point2;
+                            // EJ2-69304 - Assign the newly calculated point to the previous segment target point
+                            segment.points[1] = seg.points[1];
                         } else {
                             seg.points.push(point[parseInt(j.toString(), 10)]);
                         }

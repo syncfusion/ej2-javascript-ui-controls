@@ -132,6 +132,9 @@ export class Print {
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid.isVue = this.parent.isVue;
         printGrid.appendTo(element as HTMLElement);
+        if (!gObj.isVue3) {
+            printGrid.trigger = gObj.trigger;
+        }
     }
 
     private contentReady(): void {

@@ -2,14 +2,13 @@
 
 ## [Unreleased]
 
-## 20.4.51 (2023-02-21)
+## 20.4.53 (2023-03-07)
 
-### TreeView
+### Sidebar
 
 #### Bug Fixes
 
-- `#I428766` - Alignment issue in TreeView node without a sub-child in RTL mode has been resolved.
-- `#I428002` - The accessibility related issues in the TreeView has been resolved.
+- `#F180770` - While dynamically setting value for showBackdrop property results in creating duplicate DOM elements in Sidebar is resolved.
 
 ### ContextMenu
 
@@ -22,6 +21,23 @@
 #### Bug Fixes
 
 - `#I437629` - Issue with "Breadcrumb overflow mode menu creates a dark point for multiple click " has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I436646`, `#I435360` - Resolved issue, while drag and drop other elements over TreeView component, then "not-allowed" cursor appears.
+
+## 20.4.52 (2023-02-28)
+
+## 20.4.51 (2023-02-21)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I428766` - Alignment issue in TreeView node without a sub-child in RTL mode has been resolved.
+- `#I428002` - The accessibility related issues in the TreeView has been resolved.
 
 ## 20.4.49 (2023-02-07)
 

@@ -5619,7 +5619,7 @@ export class WordExport {
             writer.writeAttributeString('w', 'val', this.wNamespace, characterFormat.styleName);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.fontFamily)) {
+        if (!isNullOrUndefined(characterFormat.fontFamily) || !isNullOrUndefined(characterFormat.fontFamilyBidi)) {
             writer.writeStartElement(undefined, 'rFonts', this.wNamespace);
             if (!isNullOrUndefined(characterFormat.fontFamilyAscii)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyAscii) ? 'asciiTheme' : 'ascii';

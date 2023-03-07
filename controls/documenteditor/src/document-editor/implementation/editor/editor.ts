@@ -1956,6 +1956,9 @@ export class Editor {
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             let inline: FieldElementBox = this.selection.getCurrentFormField();
+            if (!inline.formFieldData.enabled) {
+                return;
+            }
             let resultText: string = this.getFieldResultText(inline);
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
@@ -9200,6 +9203,7 @@ export class Editor {
             format.fontFamilyAscii = value as string;
             format.fontFamilyFarEast = value as string;
             format.fontFamilyNonFarEast = value as string;
+            format.fontFamilyBidi = value as string;
         } else if (property === 'fontSize') {
             format.fontSize = value as number;
         } else if (property === 'highlightColor') {

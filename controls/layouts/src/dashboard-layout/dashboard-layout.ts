@@ -2394,7 +2394,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                             this.updateCloneArrayObject();
                             this.checkForChanges(true);
                             this.dragStopEventArgs = { event: args.event, element: args.element };
-                            this.trigger('dragStop', args);
                             this.resizeEvents();
                             this.rows = this.maxRow(true);
                             this.setHeightWidth();
@@ -2403,12 +2402,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         else {
                             let currentPanel: PanelModel = this.getCellInstance(this.mainElement.id);
                             for (i = 0; i < this.panels.length; i++) {
-                                if (this.panels[i].id === currentPanel.id) {
-                                    args.element.setAttribute('data-col', this.panelsInitialModel[i].col.toString());
-                                    args.element.setAttribute('data-row', this.panelsInitialModel[i].row.toString());
-                                    currentPanel.col = this.panelsInitialModel[i].col;
-                                    currentPanel.row = this.panelsInitialModel[i].row;
-                                    this.setPanelPosition(this.mainElement, this.panelsInitialModel[i].row, this.panelsInitialModel[i].col);
+                                if (this.panels[i as number].id === currentPanel.id) {
+                                    args.element.setAttribute('data-col', this.panelsInitialModel[i as number].col.toString());
+                                    args.element.setAttribute('data-row', this.panelsInitialModel[i as number].row.toString());
+                                    currentPanel.col = this.panelsInitialModel[i as number].col;
+                                    currentPanel.row = this.panelsInitialModel[i as number].row;
+                                    this.setPanelPosition(this.mainElement, this.panelsInitialModel[i as number].row, this.panelsInitialModel[i as number].col);
                                     this.updatePanelLayout(this.mainElement, currentPanel);
                                 }
                             }
@@ -3210,6 +3209,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             for (const key of keys) {
                 if ((typeof getValue(key, this) === 'object' && !isNullOrUndefined(getValue(key, this)))) {
                     if (Array.isArray(getValue(key, this)) && key === 'panels') {
+                        // eslint-disable-next-line
                         this.mergePanels(<Panel[]>dataObj[key], <Panel[]>this[key]);
                     }
                 }

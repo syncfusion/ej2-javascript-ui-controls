@@ -286,10 +286,17 @@ export class QuickToolbar {
 
     private keyUpHandler(e: NotifyArgs): void {
         if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            const args: KeyboardEvent = e.args as KeyboardEvent;
             if (this.parent.inlineMode.onSelection) {
+                if (this.parent.getSelection().length > 0) {
+                    if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
+                        args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
+                        args.keyCode === 39 || args.keyCode === 40))) {
+                        this.showInlineQTBar(this.offsetX, this.offsetY, args.target as HTMLElement);
+                    }
+                }
                 return;
             }
-            const args: KeyboardEvent = e.args as KeyboardEvent;
             this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
         }
     }

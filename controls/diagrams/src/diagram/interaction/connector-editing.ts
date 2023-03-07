@@ -481,10 +481,8 @@ export class ConnectorEditing extends ToolBase {
                 isNextUpdate = this.updatePreviousSegment(tx, ty, obj, index);
             }
             if (obj.segments.length - 1 > index && isNextUpdate) {
-                if (!obj.maxSegmentThumb) {
-                    const nextSegment: OrthogonalSegment = obj.segments[index + 1] as OrthogonalSegment;
-                    this.updateNextSegment(obj, current, nextSegment, tx, ty);
-                }
+                const nextSegment: OrthogonalSegment = obj.segments[index + 1] as OrthogonalSegment;
+                this.updateNextSegment(obj, current, nextSegment, tx, ty);
             }
         }
     }

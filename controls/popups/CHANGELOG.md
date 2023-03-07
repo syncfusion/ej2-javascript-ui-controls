@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I441169` - Now, the Dialog Component `ESC` key works properly.
+
 ## 20.4.52 (2023-02-28)
 
 ### Dialog

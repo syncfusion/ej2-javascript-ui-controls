@@ -116,3 +116,45 @@ describe('Shift Enter key support - When image is rendered', () => {
         destroy(rteObj);
     });
 });
+
+describe('Shift Enter key support - When image is rendered', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value:  `<p><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"></p>`
+        });
+        done();
+    });
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    it("Image is pasted in the editor and press shift enter when image is focused initially", (done) => {
+        keyBoardEvent.clipboardData = {
+            getData: () => { return ``; },
+            types: ['text/html', 'Files'],
+            files: { 0: { lastModified: 1594563447084, name: "image.png", size: 66216, type: "image/png", webkitRelativePath: "", lastModifiedDate: new Date() } },
+            items: []
+        };
+        (<any>rteObj).onPaste(keyBoardEvent);
+        setTimeout(() => {
+            const nodetext: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext, nodetext.textContent.length);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerHTML).toBe(`<p><br><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`);
+            done();
+        }, 100);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

@@ -381,6 +381,29 @@ export class MsWordPaste {
                 }
                 fromClass = false;
             }
+            let listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
+            for (let i: number = 0; i < listClass.length; i++) {
+                if (keys.indexOf('li.' + listClass[i as number]) > -1) {
+                    let olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
+                    for (let j: number = 0; j < olULElems.length; j++) {
+                        const styleProperty: string = olULElems[j as number].getAttribute('style');
+                        if (!isNOU(styleProperty) && styleProperty.trim() !== '' && (olULElems[j as number] as HTMLElement).style.marginLeft !== '') {
+                            const valueSplit = values[keys.indexOf('li.' + listClass[i as number])].split(';');
+                            for (let k: number = 0; k < valueSplit.length; k++) {
+                                if ('margin-left'.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
+                                    if (!isNOU(valueSplit[k as number].split(':')[1]) &&
+                                        valueSplit[k as number].split(':')[1].indexOf('in') >= 0 &&
+                                        (olULElems[j as number] as HTMLElement).style.marginLeft.indexOf('in') >= 0) {
+                                        let classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
+                                        let inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
+                                        (olULElems[j as number] as HTMLElement).style.marginLeft = (inlineStyle - classStyle) + 'in';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -481,7 +504,7 @@ export class MsWordPaste {
         let level: number;
         const data: { content: HTMLElement; node: Element }[] = [];
         let collection: { listType: string; content: string[]; nestedLevel: number;
-            class: string, listStyle: string, listStyleTypeName: string, start: number }[] = [];
+            class: string, listStyle: string, listStyleTypeName: string, start: number, styleMarginLeft: string}[] = [];
         let content: string = '';
         let stNode: Element;
         let currentListStyle: string = '';
@@ -506,21 +529,27 @@ export class MsWordPaste {
             let type: string;
             let listStyleType: string;
             let startAttr: number;
+            let styleMarginLeft: string;
             if (!isNOU(this.listContents[0])) {
                 type = this.listContents[0].trim().length > 1 ? 'ol' : 'ul';
                 listStyleType = this.getlistStyleType(this.listContents[0], type);
-                if (type === 'ol' && listNodes[i as number - 1] === null) {
+                if (type === 'ol' && (i === 0 || listNodes[i as number - 1] === null)) {
                     const startString: string = this.listContents[0].split('.')[0];
-                    const listTypes: string[] = ['A','a','I','i','α','1'];
-                    if (listTypes.indexOf(startString) === -1){
+                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '1-']; // Add '1-' for rare list type. 
+                    if (listTypes.indexOf(startString) === -1) {
                         if (listStyleType === 'decimal') {
                             // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
                             if (!isNaN(parseInt(startString))) {
                                 startAttr = parseInt(startString);
                             }
-                        } else if ( listStyleType === 'upper-alpha' || listStyleType === 'lower-alpha'){
-                            startAttr = parseInt(startString.toLowerCase()) - 96;
+                        } else if (listStyleType === 'upper-alpha') {
+                            startAttr = (startString.split('.')[0].charCodeAt(0) - 64);
+                        } else if (listStyleType === 'lower-alpha') {
+                            startAttr = (startString.split('.')[0].charCodeAt(0) - 96);
                         }
+                    }
+                    if ((listNodes[i as number] as HTMLElement).style.marginLeft !== '') {
+                        styleMarginLeft = (listNodes[i as number] as HTMLElement).style.marginLeft;
                     }
                 }
                 const tempNode: string[] = [];
@@ -539,7 +568,7 @@ export class MsWordPaste {
                     }
                 }
                 collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName,
-                    listStyle: currentListStyle, listStyleTypeName: listStyleType, start: startAttr });
+                    listStyle: currentListStyle, listStyleTypeName: listStyleType, start: startAttr, styleMarginLeft: styleMarginLeft });
             }
         }
         stNode = listNodes.shift();
@@ -565,38 +594,45 @@ export class MsWordPaste {
     }
     private getlistStyleType(listContent: string, type: string): string {
         let currentListClass: string;
+        let upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
+            'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+        let lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
+            'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
+        let lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
+            'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
         if (type === 'ol') {
-            switch (listContent.split('.')[0]) {
-            case 'A':
-                currentListClass = 'upper-alpha';
-                break;
-            case 'a':
-                currentListClass = 'lower-alpha';
-                break;
-            case 'I':
-                currentListClass = 'upper-roman';
-                break;
-            case 'i':
-                currentListClass = 'lower-roman';
-                break;
-            case 'α':
-                currentListClass = 'lower-greek';
-                break;
-            default:
-                currentListClass = 'decimal';
-                break;
+            let charCode: number = listContent.split('.')[0].charCodeAt(0);
+            switch (true) {
+                case upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+                    currentListClass = 'upper-roman';
+                    break;
+                case lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+                    currentListClass = 'lower-roman';
+                    break;
+                case lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
+                    currentListClass = 'lower-greek';
+                    break;
+                case (charCode > 64 && charCode < 91):
+                    currentListClass = 'upper-alpha';
+                    break;
+                case (charCode > 96 && charCode < 123):
+                    currentListClass = 'lower-alpha';
+                    break;
+                default:
+                    currentListClass = 'decimal';
+                    break;
             }
         } else {
             switch (listContent.split('.')[0]) {
-            case 'o':
-                currentListClass = 'circle';
-                break;
-            case '§':
-                currentListClass = 'square';
-                break;
-            default:
-                currentListClass = 'disc';
-                break;
+                case 'o':
+                    currentListClass = 'circle';
+                    break;
+                case '§':
+                    currentListClass = 'square';
+                    break;
+                default:
+                    currentListClass = 'disc';
+                    break;
             }
         }
         return currentListClass;
@@ -604,7 +640,7 @@ export class MsWordPaste {
 
     private makeConversion(
         collection: { listType: string; content: string[]; nestedLevel: number; class: string,
-            listStyle: string, listStyleTypeName: string, start: number }[]): HTMLElement {
+            listStyle: string, listStyleTypeName: string, start: number, styleMarginLeft: string }[]): HTMLElement {
         const root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -615,11 +651,12 @@ export class MsWordPaste {
             const pElement: Element = createElement('p');
             pElement.innerHTML = collection[index as number].content.join(' ');
             if ((collection[index as number].nestedLevel === 1) && listCount === 0 && collection[index as number].content) {
-                root.appendChild(temp = createElement(collection[index as number].listType));
+                root.appendChild(temp = createElement(collection[index as number].listType, { className: collection[index as number].class }));
                 prevList = createElement('li');
                 prevList.appendChild(pElement);
                 temp.appendChild(prevList);
                 temp.setAttribute('level', collection[index as number].nestedLevel.toString());
+                temp.style.marginLeft = collection[index as number].styleMarginLeft;
                 temp.style.listStyleType = collection[index as number].listStyleTypeName;
             } else if (collection[index as number].nestedLevel === pLevel) {
                 if (prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {

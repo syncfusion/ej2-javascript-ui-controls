@@ -3525,7 +3525,7 @@
         border-top: 0;
       }
 
-      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor {
+      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor :not(.e-laststackcell) {
         border-right: 0;
       }
 

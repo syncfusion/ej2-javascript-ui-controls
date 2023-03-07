@@ -1487,4 +1487,354 @@ describe('Resource view with persistence', () => {
             ganttObj.deleteRecord(2);
         });
     });
+     describe('update tasklabel by updating datasource', () => {
+        let ganttObj: Gantt;
+        let multiTaskbarData: Object[] = [
+            {
+              PlanningId: 'aa657d87-4b5f-4f4f-de0f-08daf5585765',
+              ActivityId: 'd82b2a52-b461-4f87-162e-08da0b5543a2',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 AB TESTE',
+              Label: 'AB TESTE',
+              BackgroundColor: '#383c48',
+              obs: '',
+              LabelColor: '#4ce96d',
+              WorkerContract: null,
+              StartDate: '2023-01-23T00:00:00.000Z',
+              EndDate: null,
+              Duration: 12960,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 12960,
+                  StartDate: '2023-01-23T00:00:00.000Z',
+                  EndDate: '2023-02-01T00:00:00.000Z',
+                  Id: 'aa657d87-4b5f-4f4f-de0f-08daf5585765',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+            {
+              PlanningId: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+              ActivityId: 'd987939b-06da-4461-88c4-08daf9444246',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 DuplicateFiles',
+              Label: 'DuplicateFiles',
+              BackgroundColor: null,
+              obs: '',
+              LabelColor: null,
+              WorkerContract: null,
+              StartDate: '2023-01-17T00:00:00.000Z',
+              EndDate: null,
+              Duration: 14399,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 14399,
+                  StartDate: '2023-01-17T00:00:00.000Z',
+                  EndDate: '2023-01-26T23:59:00.000Z',
+                  Id: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+            {
+              PlanningId: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+              ActivityId: 'c58144c0-a966-4742-a79f-08db03876317',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 New Activity',
+              Label: '🛠 New Activity',
+              BackgroundColor: null,
+              obs: '',
+              LabelColor: null,
+              WorkerContract: null,
+              StartDate: '2023-01-31T00:00:00.000Z',
+              EndDate: null,
+              Duration: 8640,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 8640,
+                  StartDate: '2023-01-31T00:00:00.000Z',
+                  EndDate: '2023-02-06T00:00:00.000Z',
+                  Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+            {
+              PlanningId: 'za36c7bd-52b2-490b-2f37-08db03884b34',
+              ActivityId: 'z58144c0-a966-4742-a79f-08db03876317',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 New Activityz',
+              Label: '🛠 New Activity',
+              BackgroundColor: null,
+              obs: '',
+              LabelColor: null,
+              WorkerContract: null,
+              StartDate: '2023-01-31T00:00:00.000Z',
+              EndDate: null,
+              Duration: 8640,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 8640,
+                  StartDate: '2023-01-31T00:00:00.000Z',
+                  EndDate: '2023-02-06T00:00:00.000Z',
+                  Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+          ];
+          
+          let multiTaskbarDataLess: Object[] = [
+            {
+              PlanningId: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+              ActivityId: 'd987939b-06da-4461-88c4-08daf9444246',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 DuplicateFiles',
+              Label: 'DuplicateFiles',
+              BackgroundColor: null,
+              obs: '',
+              LabelColor: null,
+              WorkerContract: null,
+              StartDate: '2023-01-17T00:00:00.000Z',
+              EndDate: null,
+              Duration: 14399,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 14399,
+                  StartDate: '2023-01-17T00:00:00.000Z',
+                  EndDate: '2023-01-26T23:59:00.000Z',
+                  Id: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+            {
+              PlanningId: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+              ActivityId: 'c58144c0-a966-4742-a79f-08db03876317',
+              TaskId: '00000000-0000-0000-0000-000000000000',
+              Name: '🛠 New Activity',
+              Label: '🛠 New Activity',
+              BackgroundColor: null,
+              obs: '',
+              LabelColor: null,
+              WorkerContract: null,
+              StartDate: '2023-01-31T00:00:00.000Z',
+              EndDate: null,
+              Duration: 8640,
+              ParentId: '00000000-0000-0000-0000-000000000000',
+              IsPlanningTask: false,
+              childs: [],
+              SegmentsFields: [
+                {
+                  Duration: 8640,
+                  StartDate: '2023-01-31T00:00:00.000Z',
+                  EndDate: '2023-02-06T00:00:00.000Z',
+                  Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+                  IdSerie: null,
+                  EnumPeriodRecord: 0,
+                },
+              ],
+              Resources: [
+                {
+                  ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+                  ResourceName: '🙂 rsantos@endiprev.com',
+                  ResourceGroup: null,
+                  Department: 'Information Technology',
+                  obs: '',
+                  isExpand: true,
+                  unit: 100,
+                },
+              ],
+              EnumTypeRecords: 1,
+              EnumStatusVacationTimeOff: 0,
+            },
+          ];
+          
+          let resources: object[] = [
+            {
+              ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+              ResourceName: '🙂 rsantos@endiprev.com',
+              Department: 'Information Technology',
+              obs: '',
+              isExpand: true,
+            },
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: multiTaskbarData,
+                resources: resources,
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                showOverAllocation: true,
+                allowReordering: true,
+                allowSorting: true,
+                allowResizing: true,
+                collapseAllParentTasks: true,
+                highlightWeekends: true,
+                durationUnit: 'Minute',
+                treeColumnIndex: 0,
+                gridLines: 'Both',
+                renderBaseline: false,
+                allowExcelExport: true,           
+                taskFields: {
+                  id: 'PlanningId',
+                  name: 'Name',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                  child: 'subelements',
+                  segmentId: 'Id',
+                  segments: 'SegmentsFields',
+                  resourceInfo: 'Resources',
+                },
+                resourceFields: {
+                  id: 'ResourceId',
+                  name: 'ResourceName',
+                },
+              
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                columns: [
+                  { field: 'Name', visible: true },
+                  { field: 'StartDate', headerText: 'StartDate' },
+                  { field: 'EndDate' },
+                  { field: 'Duration', headerText: 'Group' },
+                ],
+                toolbar: [
+                  'Add',
+                  'Edit',
+                  'Update',
+                  'Delete',
+                  'Cancel',
+                  'ExpandAll',
+                  'CollapseAll',
+                ],
+                labelSettings: {
+                  taskLabel: 'Name',
+                },
+                splitterSettings: {
+                  columnIndex: 2,
+                },
+                actionBegin(args) {
+                    if (args.requestType == 'beforeOpenAddDialog') {
+                        args.cancel = true;
+                        ganttObj.clearFiltering();
+                        ganttObj.showSpinner();
+                        ganttObj.dataSource = multiTaskbarDataLess;
+                        ganttObj.projectStartDate = new Date('01/03/2023');
+                        ganttObj.projectEndDate = new Date('02/29/2023');
+                        ganttObj.resources = resources;
+                    }
+                },
+                allowSelection: true,
+                height: '450px',
+                projectStartDate: new Date('01/03/2023'),
+                projectEndDate: new Date('02/29/2023'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it ('update tasklabel by updating datasource', () => {
+            ganttObj.actionComplete = (arg: any): void => {
+                if (arg.requestType == "refresh") {
+                    expect(ganttObj.getRowByIndex(1).getElementsByClassName('e-task-label')[0].innerHTML).toBe('🛠 DuplicateFiles');
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.openAddDialog();
+        });
+    });
 });

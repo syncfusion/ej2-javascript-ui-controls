@@ -169,7 +169,7 @@ export class CandleSeries extends ColumnBase {
         const previousDirection: string = element ? element.getAttribute('d') : null;
         const candleElement: HTMLElement =
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
-        candleElement.setAttribute('role', 'data');
+        candleElement.setAttribute('role', 'img');
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
         if (!series.chart.enableCanvas) {

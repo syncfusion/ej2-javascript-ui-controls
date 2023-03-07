@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.4.52 (2023-02-28)
+## 20.4.53 (2023-03-07)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the file corruption issue due to the multiple vertical tab in Grid to CSV export.
+
+## 20.4.51 (2023-02-21)
 
 ### Excel Export
 

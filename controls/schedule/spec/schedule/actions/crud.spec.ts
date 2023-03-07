@@ -480,14 +480,6 @@ describe('Schedule CRUD', () => {
             schObj.deleteEvent(11);
         });
 
-        it('test normal appointment, delete using string id', (done: DoneFn) => {
-            schObj.dataBound = () => {
-                expect(schObj.eventsData.length).toEqual(4);
-                done();
-            };
-            schObj.deleteEvent('12');
-        });
-
         it('test normal appointment, delete using object', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(3);
@@ -602,6 +594,43 @@ describe('Schedule CRUD', () => {
                 done();
             };
             schObj.deleteEvent(10, 'DeleteSeries');
+        });
+    });
+
+    describe('Delete Actions with string id', () => {
+        let schObj: Schedule;
+        const testData: Record<string, any>[] = [{
+            Id: "1",
+            Subject: 'recurrence event',
+            StartTime: new Date(2017, 9, 19, 10, 0),
+            EndTime: new Date(2017, 9, 19, 11, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 9, 18) };
+            schObj = util.createSchedule(schOptions, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Before delete checking', () => {
+            expect(schObj.eventsData.length).toEqual(1);
+        });
+
+        it('Checking cancel action begin event for delete', () => {
+            schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
+            schObj.deleteEvent("1");
+            expect(schObj.eventsData.length).toEqual(1);
+        });
+
+        it('test normal appointment delete using string id', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(0);
+                done();
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+            schObj.deleteEvent('1');
         });
     });
 

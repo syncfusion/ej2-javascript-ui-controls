@@ -114,7 +114,7 @@ export class FunnelSeries extends TriangularBase {
         point.midAngle = 0;
         options.d = direction;
         const element: Element = chart.renderer.drawPath(options);
-        element.setAttribute('role', 'data');
+        element.setAttribute('role', 'img');
         element.setAttribute('tabindex', point.index === 0 ? '0' : '');
         element.setAttribute('aria-label', (point.x + ':' + point.y + '%. ' + series.name));
         appendChildElement(false, seriesGroup, element, redraw);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I436942` - The issue with "Checkbox checked property is not updated properly at initial rendering" has been resolved.
+
 ## 20.4.50 (2023-02-14)
 
 ### RadioButton

@@ -473,6 +473,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public isFormStorageExceed: boolean = false;
+    /**
+     * @private
+     */
     public isNewStamp: boolean = false;
     /**
      * @private
@@ -1115,7 +1119,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             this.loadRequestHandler.onFailure = function (result: any) {
                 const statusString: string = result.status.toString().split('')[0];
-                if (statusString === '4') {
+                if (statusString === '4' && result.status.toString() !== "404") {
                     proxy.openNotificationPopup('Client error');
                 } else {
                     proxy.openNotificationPopup();
@@ -7164,6 +7168,7 @@ export class PdfViewerBase {
             if (!this.isStorageExceed) {
                 // eslint-disable-next-line
                 let annotationList: any = [];
+                let formFieldsList: any = [];
                 for (let i: number = 0; i < window.sessionStorage.length; i++) {
                     if (window.sessionStorage.key(i) && window.sessionStorage.key(i).split('_')[3]) {
                         if (window.sessionStorage.key(i).split('_')[3] === 'annotations') {
@@ -7171,11 +7176,25 @@ export class PdfViewerBase {
                             this.annotationStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
                             annotationList.push(window.sessionStorage.key(i));
                         }
+                        else if(window.sessionStorage.key(i).split('_')[3] === 'formfields') {
+                            // eslint-disable-next-line max-len
+                            this.formFieldStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
+                            formFieldsList.push(window.sessionStorage.key(i));
+                        }
+                        else if (window.sessionStorage.key(i).split('_')[3] === 'formDesigner') {
+                            this.formFieldStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
+                            formFieldsList.push(window.sessionStorage.key(i));
+                        }
                     }
                 }
                 if (annotationList) {
                     for (let i: number = 0; i < annotationList.length; i++) {
                         window.sessionStorage.removeItem(annotationList[parseInt(i.toString(), 10)]);
+                    }
+                }
+                if (formFieldsList) {
+                    for (let i: number = 0; i < formFieldsList.length; i++) {
+                        window.sessionStorage.removeItem(formFieldsList[parseInt(i.toString(), 10)]);
                     }
                 }
             }
@@ -7695,7 +7714,10 @@ export class PdfViewerBase {
                     }
                 }
             }
-            const ten: number = this.pdfViewer.touchPadding / this.getZoomFactor();
+            let ten: number = this.pdfViewer.touchPadding;
+            if(this.getZoomFactor() <= 1.5){
+                ten = ten / this.getZoomFactor();
+            }
             const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, obj.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
             //check for resizing tool
@@ -7752,7 +7774,12 @@ export class PdfViewerBase {
         diagram: PdfViewer, element: DrawingElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
         const forty: number = 40 / 1;
         let ten: number = this.pdfViewer.touchPadding / 1;
-        if (element.actualSize.width < 40 || element.actualSize.height < 40) {
+        // Resizer cursor adjustment factor for higher zoom values
+        let resizerBuffer: number = 1.9;
+        if (this.getZoomFactor() >= 2.0 && !Browser.isDevice) {
+            ten = ten / (this.getZoomFactor() / resizerBuffer);
+        }
+        if (element.actualSize.width < 40 || element.actualSize.height < 40 && Browser.isDevice) {
             ten = ten / 2 * this.getZoomFactor() / 1;
         }
         const selectedItems: Selector = diagram.selectedItems as Selector;
@@ -8864,14 +8891,25 @@ export class PdfViewerBase {
     public setItemInSessionStorage(formFieldsData: any, type: string): void {
         // eslint-disable-next-line
         const formFieldsSize: any = Math.round(JSON.stringify(formFieldsData).length / 1024);
+        let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
         if (formFieldsSize > 4500) {
             this.isStorageExceed = true;
             if (this.pdfViewer.formFieldsModule) {
-                this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+                if(!(this.isFormStorageExceed)){
+                    this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+                    this.isFormStorageExceed = true;
+                }
             }
         }
 
         if (this.isStorageExceed) {
+            this.formFieldStorage[this.documentId + type] = JSON.stringify(formFieldsData);
+        } 
+        else if((formFieldsSize + sessionSize) > 4500) {
+            this.isStorageExceed = true;
+            this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+            this.isFormStorageExceed = true;
+            this.pdfViewer.annotationModule.clearAnnotationStorage();
             this.formFieldStorage[this.documentId + type] = JSON.stringify(formFieldsData);
         } else {
             window.sessionStorage.setItem(this.documentId + type, JSON.stringify(formFieldsData));

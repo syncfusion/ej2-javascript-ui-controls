@@ -2208,7 +2208,7 @@ export class Series extends SeriesBase {
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
             if (this.seriesElement) {
-                this.seriesElement.setAttribute('role', 'series');
+                this.seriesElement.setAttribute('role', 'region');
                 this.seriesElement.setAttribute('aria-label', (this.name + ',' + this.type + ' series with ' + this.points.length + ' data points'));
                 this.seriesElement.setAttribute('aria-hidden', 'false');
             }

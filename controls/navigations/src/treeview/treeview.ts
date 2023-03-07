@@ -3592,7 +3592,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private focusIn(): void {
         if(!this.mouseDownStatus){
         let focusedElement: Element = this.getFocusedNode();
-        focusedElement.setAttribute("tanindex","0");
+        focusedElement.setAttribute("tabindex","0");
         addClass([focusedElement], [HOVER,FOCUS]);
         EventHandler.add(focusedElement, 'blur', this.focusOut, this);
         }
@@ -4006,7 +4006,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         });
         this.dropObj = new Droppable(this.element, {
             out: (e: { evt: MouseEvent & TouchEvent, target: Element }) => {
-                if (!isNOU(e) && !e.target.classList.contains(SIBLING)) {
+                if (!isNOU(e) && !e.target.classList.contains(SIBLING) && (this.dropObj.dragData.default && this.dropObj.dragData.default.helper.classList.contains(ROOT))) {
                     document.body.style.cursor = 'not-allowed';
                 }
             },
@@ -4702,17 +4702,32 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             if(!refNode && ((this.sortOrder === 'Ascending')||(this.sortOrder ==='Descending')))
             {
-                let cNodes:  NodeListOf<ChildNode> = dropUl.childNodes;
-                for (let i:number = 0; i < li.length; i++) 
-                {
-                    for(let j:number=0; j<cNodes.length;j++)
-                    {        
-                        let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
-                        if (returnValue) {
-                            dropUl.insertBefore(li[i], cNodes[j]);
-                            break;
+                if(dropUl.childNodes.length===0){
+                    for (let i: number = 0; i < li.length; i++) {
+                        dropUl.insertBefore(li[i], refNode);
+                    }
+                    if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
+                        this.preventExpand = false;
+                        let dropIcon: Element = select('div.' + ICON, dropLi);
+                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                            this.expandAction(dropLi, dropIcon, null);
                         }
-                        dropUl.insertBefore(li[i], cNodes[cNodes.length]);  
+                    } 
+                }
+                else
+                {
+                    let cNodes:  NodeListOf<ChildNode> = dropUl.childNodes;
+                    for (let i:number = 0; i < li.length; i++) 
+                    {
+                        for(let j:number=0; j<cNodes.length;j++)
+                        {        
+                            let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
+                            if (returnValue) {
+                                dropUl.insertBefore(li[i], cNodes[j]);
+                                break;
+                            }
+                            dropUl.insertBefore(li[i], cNodes[cNodes.length]);  
+                        }
                     }
                 }
             } 

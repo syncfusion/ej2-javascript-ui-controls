@@ -913,10 +913,11 @@ export class BasicFormulas {
     /**
      * @hidden
      * @param {string[]} args - specify the range.
-     * @returns {number | string} - Compute the unique.
+     * @returns {number | string | number[] | string[]} - Compute the unique.
      */
-    public ComputeUNIQUE(...args: string[]): number | string {
-        const argArr: string[] = args; let result: string;
+    public ComputeUNIQUE(...args: string[]): number | string | number[] | string[] {
+        const argArr: string[] = args; let result: string; let isComputeExp: boolean;
+        if (argArr[argArr.length - 1] === 'isComputeExp') { isComputeExp = true; argArr.pop(); }
         if (isNullOrUndefined(args) || args[0] === '' || argArr.length > 3) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -935,13 +936,15 @@ export class BasicFormulas {
             const rangeSplit: string[] = argArr[0].split(':');
             if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
                 const collection: string[] = this.parent.dependencyCollection;
-                for (let i: number = 0; i < collection.length; i++) {
+                for (let i: number = 0; i < collection.length && !isComputeExp; i++) {
                     if (collection[i as number].split(':')[0] === argArr[0].split(':')[0]) {
                         this.clearDependency(collection[i as number]);
                     }
                 }
                 if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
-                    this.parent.dependencyCollection.push(argArr[0]);
+                    if (!isComputeExp) {
+                        this.parent.dependencyCollection.push(argArr[0]);
+                    }
                 } else { this.clearDependency(argArr[0]); }
                 const j: number = argArr[0].indexOf(':'); let swap: number;
                 let rowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], 0, j));
@@ -1022,6 +1025,18 @@ export class BasicFormulas {
                         }
                     }
                     tmp = exactOne;
+                }
+                if (isComputeExp) {
+                    let computeExpResult: string | number | string[] | number[];
+                    if (colDiff !== 0) {
+                        computeExpResult = [];
+                        (tmp).forEach(function(item) {
+                            computeExpResult = [...(computeExpResult as string[]), ...item.split("+")];
+                        })
+                    } else {
+                        computeExpResult = byCol === 'FALSE' ? tmp : tmp[0].split('+');
+                    }
+                    return computeExpResult;
                 }
                 actCell = actCell.indexOf('!') > - 1 ? actCell.split('!')[1] : actCell;
                 let actRowIdx: number = this.parent.rowIndex(actCell);
@@ -1104,9 +1119,13 @@ export class BasicFormulas {
             }
         } else if (this.parent.isCellReference(argArr[0])) {
             if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
-                this.parent.dependencyCollection.push(argArr[0]);
+                if (!isComputeExp) {
+                    this.parent.dependencyCollection.push(argArr[0]);
+                }
             } else { this.clearDependency(argArr[0]); }
             result = this.parent.getValueFromArg(argArr[0]);
+        } else {
+            return argArr[0].split('"').join('');
         }
         return result;
     }
@@ -1198,11 +1217,10 @@ export class BasicFormulas {
         if (args[0] === '') {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        if (!this.parent.isCellReference(args[0]) && args[0].indexOf(this.parent.tic) === - 1) {
-            return this.parent.getErrorStrings()[CommonErrors.value];
-        }
         let cellVal: string = this.parent.getValueFromArg(args[0]).split(this.parent.tic).join('');
-        cellVal = this.parent.intToTime(cellVal);
+        if(this.parent.isNumber(cellVal)) {
+            cellVal = this.parent.intToTime(cellVal);
+        }
         let date: Date = new Date(Date.parse(cellVal));
         const hValue: number = parseInt(cellVal, 10);
         if (hValue < 0) {
@@ -1233,11 +1251,10 @@ export class BasicFormulas {
         if (argArr[0] === '') {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        if (!this.parent.isCellReference(argArr[0]) && argArr[0].indexOf(this.parent.tic) === - 1) {
-            return this.parent.getErrorStrings()[CommonErrors.value];
-        }
         let cellVal: string = this.parent.getValueFromArg(argArr[0]).split(this.parent.tic).join('');
-        cellVal = this.parent.intToTime(cellVal);
+        if(this.parent.isNumber(cellVal)) {
+            cellVal = this.parent.intToTime(cellVal);
+        }
         let dateVal: Date = new Date(Date.parse(cellVal));
         const MValue: number = parseInt(cellVal, 10);
         if (MValue < 0) {
@@ -1265,14 +1282,13 @@ export class BasicFormulas {
         if (args.length !== 1 || isNullOrUndefined(args)) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
-        if (!this.parent.isCellReference(args[0]) && args[0].indexOf(this.parent.tic) === - 1) {
-            return this.parent.getErrorStrings()[CommonErrors.value];
-        }
         if (args[0] === '') {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
         let cellVal: string = this.parent.getValueFromArg(args[0]).split(this.parent.tic).join('');
-        cellVal = this.parent.intToTime(cellVal);
+        if(this.parent.isNumber(cellVal)) {
+            cellVal = this.parent.intToTime(cellVal);
+        }
         let dateValue: Date = new Date(Date.parse(cellVal));
         const sValue: number = parseInt(cellVal, 10);
         if (sValue < 0) {
@@ -1343,8 +1359,9 @@ export class BasicFormulas {
         }
         const date: Date = new Date(Date.now());
         const intl: Internationalization = new Internationalization();
-        const dFormatter: Function = intl.getDateFormat({ format: 'M/d/yyyy h:mm a' });
-        return dFormatter(date);
+        const dFormatter: Function = intl.getDateFormat({ format: 'M/d/yyyy h:mm:ss a' });
+        const dt: number = (this.parent.parentObject as { dateToInt: Function}).dateToInt(dFormatter(date),true);
+        return dt.toString();
     }
 
     /**

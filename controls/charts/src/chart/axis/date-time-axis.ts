@@ -317,7 +317,11 @@ export class DateTime extends NiceInterval {
                 }
                 triggerLabelRender(chart, tempInterval, axis.format(new Date(tempInterval)), labelStyle, axis);
             }
+            let actualInterval: number = tempInterval;
             tempInterval = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();
+            if (actualInterval === tempInterval) {
+                break;
+            }
         }
         //tooltip and crosshair formats for 'Months' and 'Days' interval types
         if ((axis.actualIntervalType === 'Months' || axis.actualIntervalType === 'Days') && axis.isChart) {

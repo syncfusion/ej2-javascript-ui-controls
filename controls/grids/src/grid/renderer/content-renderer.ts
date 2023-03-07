@@ -74,7 +74,7 @@ export class ContentRender implements IRenderer {
     private rafCallback: Function = (args: NotifyArgs) => {
         const arg: NotifyArgs = args;
         return () => {
-            if (this.parent.isFrozenGrid() && this.parent.enableVirtualization) {
+            if (this.parent.isFrozenGrid() && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                 const tableName: freezeTable = (<{ tableName?: freezeTable }>args).tableName;
                 this.isLoaded = this.parent.getFrozenMode() === literals.leftRight ? tableName === 'frozen-right' : tableName === 'movable';
                 if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && this.isLoaded) {

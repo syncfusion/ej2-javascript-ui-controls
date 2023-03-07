@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I443265` - The issue of the dragStop event being triggered twice has been resolved.
+
 ## 20.4.48 (2023-02-01)
 
 ### Dashboard Layout

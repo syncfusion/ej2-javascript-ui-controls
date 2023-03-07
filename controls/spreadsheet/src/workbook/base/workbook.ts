@@ -974,8 +974,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {string | number} - to compute the specified expression/formula.
      */
     public computeExpression(formula: string): string | number {
-        const args: { action: string, formula: string, calcValue?: string | number } = {
-            action: 'computeExpression', formula: formula
+        const args: { action: string, formula: string, calcValue?: string | number, isFromComputeExpression?: boolean } = {
+            action: 'computeExpression', formula: formula, isFromComputeExpression: true
         };
         this.notify(events.workbookFormulaOperation, args);
         return args.calcValue;
@@ -1822,8 +1822,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Used in calculate to compute integer value of date
      */
-    private dateToInt(date: Date): number {
-        return dateToInt(date);
+    private dateToInt(date: Date, isTime: boolean): number {
+        return dateToInt(date, isTime);
     }
 
     /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I441035` - Fixed issue with page becoming unresponsive when zooming chart too quickly.
+
 ## 20.4.52 (2023-02-28)
 
 ### Chart

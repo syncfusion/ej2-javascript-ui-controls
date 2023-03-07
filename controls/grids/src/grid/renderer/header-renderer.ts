@@ -36,6 +36,7 @@ export class HeaderRender implements IRenderer {
     private lockColsRendered: boolean;
     public freezeReorder: boolean;
     public draggable: Draggable;
+    private droppable: Droppable;
     private isFirstCol: boolean = false;
     private isReplaceDragEle: boolean = true;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -771,15 +772,25 @@ export class HeaderRender implements IRenderer {
             abort: '.e-rhandler',
             isReplaceDragEle: this.isReplaceDragEle
         });
+        this.parent.on(events.destroy, this.droppableDestroy, this);
     }
 
     protected initializeHeaderDrop(): void {
         const gObj: IGrid = this.parent;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const drop: Droppable = new Droppable(gObj.getHeaderContent() as HTMLElement, {
+        this.droppable = new Droppable(gObj.getHeaderContent() as HTMLElement, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
         });
+        this.parent.on(events.destroy, this.droppableDestroy, this);
+    }
+
+    private droppableDestroy(): void {
+        if (this.droppable && !this.droppable.isDestroyed) {
+            this.droppable.destroy();
+        }
+        if (this.draggable && !this.draggable.isDestroyed) {
+            this.draggable.destroy();
+        }
     }
 
     private renderCustomToolbar(): void {

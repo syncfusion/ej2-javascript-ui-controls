@@ -181,6 +181,54 @@ export class Scroll implements IAction {
         this.parent.off(uiUpdate, this.onPropertyChanged);
         this.parent.off(textWrapRefresh, this.wireEvents);
         this.parent.off(headerRefreshed, this.setScrollLeft);
+        this.unwireEvents();
+    }
+
+    private unwireEvents(): void {
+        const frzCols: boolean = this.parent.isFrozenGrid();
+        let mCont: HTMLElement;
+        let mHdr: HTMLElement;
+        if (this.content) {
+            mCont = this.content.querySelector('.' + literals.movableContent) as HTMLElement;
+        }
+        if (this.header) {
+            mHdr = this.header.querySelector('.' + literals.movableHeader) as HTMLElement;
+        }
+        const mScrollBar: HTMLElement = this.parent.getContent() ? this.parent.getContent().querySelector('.e-movablescrollbar') : null;
+        if (this.parent.frozenRows && ((this.header && !frzCols) || (frzCols && mHdr))) {
+            EventHandler.remove(frzCols ? mHdr : this.header, 'touchstart pointerdown', this.setPageXY);
+            EventHandler.remove(frzCols ? mHdr : this.header, 'touchmove pointermove', this.onTouchScroll);
+        }
+        if (this.parent.isFrozenGrid()) {
+            if (mScrollBar) {
+                EventHandler.remove(mScrollBar, 'scroll', this.onCustomScrollbarScroll);
+            }
+            if (mCont) {
+                EventHandler.remove(mCont, 'scroll', this.onCustomScrollbarScroll);
+                EventHandler.remove(mCont, 'touchstart pointerdown', this.setPageXY);
+                if (!((/macintosh|ipad/ as RegExp).test(Browser.userAgent.toLowerCase()) && Browser.isDevice)) {
+                    EventHandler.remove(mCont, 'touchmove pointermove', this.onTouchScroll);
+                }
+            }
+            if (mHdr) {
+                EventHandler.remove(mHdr, 'scroll', this.onCustomScrollbarScroll);
+                EventHandler.remove(mHdr, 'touchstart pointerdown', this.setPageXY);
+                EventHandler.remove(mHdr, 'touchmove pointermove', this.onTouchScroll);
+            }
+            if (this.content) {
+                EventHandler.remove(this.content, 'scroll', this.onFrozenContentScroll);
+            }
+        } else {
+            if (this.content) {
+                EventHandler.remove(this.content, 'scroll', this.onContentScroll);
+            }
+            if (this.header) {
+                EventHandler.remove(this.header, 'scroll', this.onContentScroll);
+            }
+        }
+        if (this.parent.aggregates.length && this.parent.getFooterContent()) {
+            EventHandler.remove(<HTMLDivElement>this.parent.getFooterContent().firstChild, 'scroll', this.onContentScroll);
+        }
     }
 
     private setScrollLeft(): void {

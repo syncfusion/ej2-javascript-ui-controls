@@ -722,7 +722,12 @@ export class DragAndDrop extends ActionBase {
 
     private getDayIndex(event: Record<string, any>): number {
         const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
-        const startTime: number = util.resetTime(eventObj[this.parent.eventFields.startTime] as Date).getTime();
+        const startDate: Date = util.resetTime(eventObj[this.parent.eventFields.startTime] as Date);
+        if (this.parent.activeViewOptions.timeScale.enable && !eventObj[this.parent.eventFields.isAllDay]) {
+            const startHour: Date = this.parent.activeView.getStartHour();
+            startDate.setMilliseconds(startHour.getTime() - util.resetTime(startHour).getTime());
+        }
+        const startTime: number = startDate.getTime();
         let query: string = '';
         let wrapper: string = cls.DAY_WRAPPER_CLASS;
         if (this.parent.activeViewOptions.timeScale.enable && (eventObj[this.parent.eventFields.isAllDay])) {

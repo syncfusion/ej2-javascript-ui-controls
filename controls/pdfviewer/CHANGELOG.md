@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I429508` - Now, the form fields appears properly in mobile mode.
+- `#I433831` - The A4 documents size is now properly set during printing.
+- `#F180764` - Now, if we move arrow/line annotations programmatically, their position won't be changed during export.
+- `#I429549` - Now, the checkbox displays properly during the print preview.
+
 ## 20.4.52 (2023-02-28)
 
 ### PDF Viewer
@@ -10,6 +21,7 @@
 
 - `#I436286` - Now, the script error is not occurred the enable shape annotation is set to false.
 - `#I429775` - Now that the problem with some specific document's slow rendering has been resolved.
+- `#I437396` - Now, when the page's zoom level is higher, the resizer will not enable inside annotation.
 
 ## 20.4.51 (2023-02-21)
 

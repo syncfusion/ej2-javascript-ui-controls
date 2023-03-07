@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType, ToolbarType } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -209,6 +209,53 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
         expect((node as any).textContent.length).toBe(9);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the list issue testing', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the keyboard enter inside the nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p style="text-align:center; margin-bottom: 15px; ">
+            <span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><ol><li><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; " id="firstli">Tes﻿t 1</span></span></span></li><li><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; ">Test 2</span></span></span></li><li><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; " id="lastli">Test 3﻿<br></span></span></span>
+          </li></ol>`,
+        });
+        let startNode: any = (rteObj as any).inputElement.querySelector('#firstli');
+        let endNode: any = (rteObj as any).inputElement.querySelector('#lastli');
+        let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 7);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.querySelectorAll('li').length).toBe(0);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-69674 - Pressing enter key after deleting the list using backspace key', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Pressing enter key after ', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p>`,
+        });
+        let node: any = (rteObj as any).inputElement;
+        setCursorPoint(document, node, 5);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(window.getSelection().anchorOffset !== (rteObj as any).inputElement).toBe(true);
+        expect((rteObj as any).inputElement.innerHTML === `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><p><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; "><br></span></span></span></p>`).toBe(true);
         done();
     });
     afterAll(() => {
@@ -6196,6 +6243,39 @@ describe('EJ2-67372: Toolbar overlaps the condent edit area', () => {
         (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
         expect((document.body.querySelector(".e-toolbar-wrapper") as HTMLElement).style.height ==='144px');
         expect((document.body.querySelector(".e-rte-content") as HTMLElement).style.height ==='256px');
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+
+describe('EJ2-69673 - Expand popup open testing height', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+        value: '<p>testing</p>',
+        toolbarSettings: {
+            items: [
+                'Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', 'LowerCase',
+                'UpperCase', '|', 'Formats', 'Alignments', 'OrderedList', 'UnorderedList', 'Outdent', 'Indent', '|',
+                'CreateLink', '|', 'ClearFormat', 'Print', 'SourceCode', 'FullScreen', '|', 'Undo', 'Redo'
+              ],
+            type: ToolbarType.Expand,
+            },
+            width: '300',
+            height: '400px'
+        });
+    });
+    it('EJ2-69673 - Expand popup open testing height', (done: Function) => {
+        let previousHeight: number = parseInt((document.querySelectorAll(".e-toolbar-extended")[0] as HTMLElement).style.maxHeight.split('px')[0]);
+        (document.body.querySelector(".e-expended-nav")as HTMLElement).classList.add('e-nav-active');
+        (document.body.querySelector(".e-expended-nav")as HTMLElement).click();
+        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
+        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
+        let currentHeight: number = parseInt((document.querySelectorAll(".e-toolbar-extended")[0]as HTMLElement).style.maxHeight.split('px')[0]);
+        expect(currentHeight > previousHeight).toBe(true);
         done();
     });
     afterAll(() => {

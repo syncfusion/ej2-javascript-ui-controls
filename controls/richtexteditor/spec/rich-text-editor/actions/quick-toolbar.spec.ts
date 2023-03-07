@@ -1244,6 +1244,159 @@ describe("Quick Toolbar - Actions Module", () => {
                 }, 2000);
             }, 5000);
         });
+        
+        it('show inline popup on CTRL + A action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 65, ctrlKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + pageUp action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 33, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + pageDown action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 34, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + end action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 35, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + home action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 36, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + leftArrow action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 37, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + upArrow action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 38, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + rightArrow action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 39, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
+
+        it('show inline popup on shift + upArrow action', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                target: trg,
+                x: 10, y: 200,
+                keyCode: 40, shiftKey: true
+            };
+            rteObj.inlineMode.onSelection = true;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 0, 4);
+            rteObj.quickToolbarModule.keyUpHandler({ args: args });
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
+                done();
+            }, 2000);
+        });
 
         it('onSelection - "false" with KeyUp handler testing', (done: Function) => {
             args = {

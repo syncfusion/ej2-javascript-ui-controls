@@ -160,7 +160,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         super(options, <string | HTMLInputElement>element);
     }
 
-    private changeState(state?: string): void {
+    private changeState(state?: string, isInitialize?: boolean ): void {
         let ariaState: string;
         let rippleSpan: Element;
         const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
@@ -176,7 +176,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'true';
             this.element.checked = true;
-            if (this.element.required && this.validCheck) {
+            if (this.element.required && this.validCheck && !isInitialize) {
                 this.element.checked = false;
                 this.validCheck = false;
             } else if (this.element.required) {
@@ -189,7 +189,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'false';
             this.element.checked = false;
-            if (this.element.required && this.validCheck) {
+            if (this.element.required && this.validCheck && !isInitialize) {
                 this.element.checked = true;
                 this.validCheck = false;
             } else if (this.element.required) {
@@ -326,7 +326,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
         }
         if (this.checked) {
-            this.changeState('check');
+            this.changeState('check', true);
         }
         if (this.indeterminate) {
             this.changeState();

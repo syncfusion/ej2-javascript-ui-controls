@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I422049` - Now, calling doLayout after injecting line routing module working fine.
+- `#F180577` - Now, Send to back command is working when there is single node in layer.
+- `#I436649` - Now, connector segment does not get split into multiple segment for top to bottom approach.
+
+## [Unreleased]
+
 ## 20.4.52 (2023-02-28)
 
 ### Diagram

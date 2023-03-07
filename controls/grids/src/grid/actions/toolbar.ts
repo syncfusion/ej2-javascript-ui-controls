@@ -203,6 +203,7 @@ export class Toolbar {
                     appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
                 }
             }
+            this.element.classList.add('e-temp-toolbar');
         } else {
             this.toolbar.appendTo(this.element);
         }

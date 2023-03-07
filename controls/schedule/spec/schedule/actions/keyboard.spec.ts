@@ -3,7 +3,7 @@
  * Schedule keyboard interaction spec
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, SelectEventArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, SelectEventArgs, CellClickEventArgs } from '../../../src/schedule/index';
 import { defaultData, timelineData, timelineResourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -3825,6 +3825,36 @@ describe('Keyboard interaction', () => {
             util.triggerMouseEvent(apps[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_1');
+        });
+    });
+
+    describe('EJ2-69775 - Cell Selection order is wrong in getSelectedElements public method', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: ['Week'],
+                selectedDate: new Date(2023, 3, 1)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Check the order of cell selection', () => {
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCells[149], 'mousedown');
+            util.triggerMouseEvent(workCells[136], 'mousemove');
+            util.triggerMouseEvent(workCells[136], 'mouseup');
+            const selectedCells: Element[] = schObj.getSelectedElements();
+            expect(selectedCells.length).toBe(47);
+            expect(selectedCells[0].getAttribute('data-date')).toEqual('1679999400000');
+            expect(selectedCells[selectedCells.length - 1].getAttribute('data-date')).toEqual('1680082200000');
+            const selectedCellDetails: CellClickEventArgs = schObj.getCellDetails(selectedCells);
+            expect(selectedCellDetails.startTime.getTime()).toEqual(new Date(1679999400000).getTime());
+            expect(selectedCellDetails.endTime.getTime()).toEqual(new Date(1680084000000).getTime());
+            expect((selectedCellDetails.element as HTMLElement[]).length).toBe(47);
         });
     });
 

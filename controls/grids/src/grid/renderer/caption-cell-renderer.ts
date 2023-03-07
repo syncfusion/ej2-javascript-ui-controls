@@ -30,6 +30,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         this.element.id = this.parent.element.id + 'captioncell' + this.cellUid++;
         const node: Element = this.element.cloneNode() as Element;
         const gObj: IGrid = this.parent;
+        const column: Column = cell.column;
+        const domSetter: string = column.getDomSetter ? column.getDomSetter() : 'innerHTML';
         let result: Element[];
         let fKeyValue: string;
         let gTemplateValue: string;
@@ -75,16 +77,16 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             }
         } else {
             if (gObj.groupSettings.enableLazyLoading) {
-                node.innerHTML = cell.column.headerText + ': ' + value + (gTemplateValue ? '   ' + gTemplateValue : '');
+                node[`${domSetter}`] = cell.column.headerText + ': ' + value + (gTemplateValue ? '   ' + gTemplateValue : '');
             } else {
-                node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
+                node[`${domSetter}`] = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
                 (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'))
                 + (gTemplateValue ? '   ' + gTemplateValue : '');
             }
         }
         node.setAttribute('colspan', cell.colSpan.toString());
         node.setAttribute('aria-label', node.innerHTML + this.localizer.getConstant('GroupCaption'));
-        node.setAttribute('title', node.innerHTML);
+        node.setAttribute('title', node.textContent);
         return node;
     }
 }

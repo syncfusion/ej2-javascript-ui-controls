@@ -299,7 +299,7 @@ export class Layout {
                 this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
                 lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             }
-            if (i === 0 || isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (section.sectionFormat.columns.length > 1 || (i - 1 >= 0 && sections[i - 1].sectionFormat.columns.length > 1)) || (lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as ParagraphWidget).isEndsWithPageBreak) {
+            if (i === 0 || isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (section.sectionFormat.columns.length > 1 || (i - 1 >= 0 && sections[i - 1].sectionFormat.columns.length > 1)) || (!isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild) && (lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as ParagraphWidget).isEndsWithPageBreak)) {
                 page = this.viewer.createNewPage(section);
             } else {
                 let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
@@ -4946,7 +4946,15 @@ export class Layout {
         
         let subWidth: number = (this.viewer.clientArea.width - firstLineIndent - width);
         let totalSubWidth: number = (this.viewer.clientArea.width - firstLineIndent - (width + trimmedSpaceWidth));
-        if (((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify)) && !isBidi) {
+        if (isBidi && justify) {
+            if (totalSubWidth < 0) {
+                trimmedSpaceWidth = -trimmedSpaceWidth;
+            }
+            else {
+                subWidth = totalSubWidth;
+            }
+        }
+        if ((subWidth <= 0 && !this.is2013Justification) || (spaceCount === 0 && justify && !isBidi)) {
             spaceCount = 0;
             subWidth = 0;
         } else if (justify) {
@@ -4963,9 +4971,6 @@ export class Layout {
         ////So, subtracted the trimmedSpaceWidth from subWidth.
         else if (trimmedSpaceWidth > 0 && isBidi && isParagraphEnd) {
             subWidth -= trimmedSpaceWidth;
-        }
-        if(isBidi && justify && totalSubWidth < 0) {
-            trimmedSpaceWidth = -trimmedSpaceWidth;
         }
         // So set sub width to zero to layout the element in left alignment
         // Need to remove is once after implementing subwidth update separatly
@@ -7236,6 +7241,10 @@ export class Layout {
                 this.clearFootnoteReference(table, updateClientHeight);
             }
         }
+        table.leftBorderWidth = 0;
+        table.rightBorderWidth = 0;
+        table.topBorderWidth = 0;
+        table.bottomBorderWidth = 0;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             this.clearRowWidget(row, clearPosition, clearHeight, clearGrid);
@@ -7250,6 +7259,8 @@ export class Layout {
             row.y = 0;
             row.x = 0;
         }
+        row.topBorderWidth = 0;
+        row.bottomBorderWidth = 0;
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             this.clearCellWidget(cell, clearPosition, clearHeight, clearGrid);
@@ -7264,6 +7275,8 @@ export class Layout {
             cell.y = 0;
             cell.x = 0;
         }
+        cell.leftBorderWidth = 0;
+        cell.rightBorderWidth = 0;
         this.clearBlockWidget(cell.childWidgets, clearPosition, clearHeight, clearGrid);
     }
     /**

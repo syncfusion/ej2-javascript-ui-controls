@@ -1152,6 +1152,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 location.y = Math.min(symbolLocation.y, boundsY + bounds.height) + clipY
                     - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
             }
+            if ((location.x + width > boundsX + bounds.width) && location.y < boundsY || (this.isNegative)) {
+                location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
+            }
             tipLocation.x = width / 2;
             if (location.x < boundsX) {
                 arrowLocation.x -= (boundsX - location.x);
@@ -1162,6 +1165,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 arrowLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 tipLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 location.x -= ((location.x + width) - (boundsX + bounds.width));
+            }
+            if (location.x < boundsX) {
+                arrowLocation.x -= (boundsX - location.x);
+                tipLocation.x -= (boundsX - location.x);
+                location.x = boundsX;
             }
             if (arrowLocation.x + this.arrowPadding > width - this.rx) {
                 arrowLocation.x = width - this.rx - this.arrowPadding;
@@ -1225,6 +1233,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (location.x < boundsX) {
                 location.x = (symbolLocation.x < 0 ? 0 : symbolLocation.x) + clipX + markerHeight;
+            }
+            if ((location.x + width + this.arrowPadding > boundsX + bounds.width)) {
+                location.x = (symbolLocation.x > bounds.width + bounds.x ? bounds.width : symbolLocation.x)
+                    + clipX - markerHeight - (width + this.arrowPadding);
             }
             if (location.y <= boundsY) {
                 arrowLocation.y -= (boundsY - location.y);

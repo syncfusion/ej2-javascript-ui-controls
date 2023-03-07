@@ -3466,7 +3466,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.grid.columns.length !== this.columnModel.length) {
             this.stackedHeader = true;
         }
-        if (this.stackedHeader && this.enablePersistence && this.allowResizing) {
+        if (this.stackedHeader && this.allowResizing) {
             for (let i: number = 0; i < this.columns.length; i++) {
                 if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns)) {
                     for (let j: number = 0; j < (this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns.length; j++) {
@@ -3474,6 +3474,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         const currentColumn: any = this.grid.getColumnByField((stackedColumn as ColumnModel).field);
                         (stackedColumn as ColumnModel).width = (currentColumn as ColumnModel).width;
                     }
+                }
+                else if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).field)) {
+                    const currentColumn: any = this.grid.getColumnByField((this.columns[parseInt(i.toString(), 10)] as ColumnModel).field);
+                    (this.columns[parseInt(i.toString(), 10)] as ColumnModel).width = (currentColumn as ColumnModel).width;
                 }
             }
         }

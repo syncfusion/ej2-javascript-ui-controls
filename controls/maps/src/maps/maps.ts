@@ -1529,7 +1529,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private wireEVents(): void {
         //let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         EventHandler.add(this.element, 'click', this.mapsOnClick, this);
-        // EventHandler.add(this.element, 'contextmenu', this.mapsOnRightClick, this);
+        EventHandler.add(this.element, 'contextmenu', this.mapsOnRightClick, this);
         EventHandler.add(this.element, 'dblclick', this.mapsOnDoubleClick, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.mouseDownOnMap, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap, this);
@@ -1554,7 +1554,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private unWireEVents(): void {
         //let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         EventHandler.remove(this.element, 'click', this.mapsOnClick);
-        // EventHandler.remove(this.element, 'contextmenu', this.mapsOnRightClick);
+        EventHandler.remove(this.element, 'contextmenu', this.mapsOnRightClick);
         EventHandler.remove(this.element, 'dblclick', this.mapsOnDoubleClick);
         EventHandler.remove(this.element, Browser.touchStartEvent, this.mouseDownOnMap);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap);
@@ -1915,6 +1915,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
             mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
             this.markerModule.sameMarkerData = [];
+        }
+    }
+
+    /**
+     * @param {PointerEvent} e - Specifies the pointer event.
+     * @returns {void}
+     * @private
+     */
+    public mapsOnRightClick(e: PointerEvent): void {
+        const targetEle: Element = <Element>e.target;
+        const targetId: string = targetEle.id;
+        let latitude: number = null;
+        let longitude: number = null;
+        this.mouseClickEvent = this.mouseDownEvent = { x: e.x, y: e.y };
+        if (targetEle.id.indexOf('_ToolBar') === -1) {
+            const latLongValue: GeoPosition = this.getClickLocation(targetId, e.pageX, e.pageY, (targetEle as HTMLElement), e['layerX'], e['layerY']);
+            if (!isNullOrUndefined(latLongValue)) {
+                latitude = latLongValue.latitude;
+                longitude = latLongValue.longitude;
+            }
+            const eventArgs: IMouseEventArgs = {
+                cancel: false, name: rightClick, target: targetId, x: e.clientX, y: e.clientY,
+                latitude: latitude, longitude: longitude,
+                isShapeSelected: false
+            };
+            this.trigger('rightClick', eventArgs);
         }
     }
 

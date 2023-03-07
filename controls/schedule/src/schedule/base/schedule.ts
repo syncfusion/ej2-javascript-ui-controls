@@ -1787,12 +1787,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public removeSelectedClass(): void {
-        const selectedCells: Element[] = this.getSelectedElements();
+        const selectedCells: Element[] = this.getSelectedCells();
         for (const cell of selectedCells) {
             cell.setAttribute('aria-selected', 'false');
             cell.removeAttribute('tabindex');
         }
         removeClass(selectedCells, cls.SELECTED_CELL_CLASS);
+        if (this.keyboardInteractionModule && this.keyboardInteractionModule.selectedCells.length > 0) {
+            this.keyboardInteractionModule.selectedCells = [];
+        }
     }
 
     /**
@@ -2200,6 +2203,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         return undefined;
+    }
+
+    /**
+     * Retrieves the selected cells.
+     *
+     * @returns {Element[]} The elements of currently selected cells will be returned.
+     * @private
+     */
+    public getSelectedCells(): Element[] {
+        return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
     }
 
     /**
@@ -2881,7 +2894,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Element[]} The elements of currently selected cells will be returned.
      */
     public getSelectedElements(): Element[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
+        if (this.keyboardInteractionModule && this.keyboardInteractionModule.selectedCells.length > 0) {
+            return this.keyboardInteractionModule.selectedCells;
+        }
+        return this.getSelectedCells();
     }
 
     /**

@@ -179,7 +179,7 @@ export class ToolbarStatus {
             formatCollection.fontname = this.isFontName(docElement, node, fontName);
         }
         if (!formatCollection.fontsize) {
-            formatCollection.fontsize = this.isFontSize(node, fontSize);
+            formatCollection.fontsize = this.isFontSize(docElement, node, fontSize);
         }
         if (!formatCollection.backgroundcolor) {
             formatCollection.backgroundcolor = this.isBackgroundColor(node);
@@ -240,8 +240,12 @@ export class ToolbarStatus {
         }
     }
 
-    private static isFontSize(node: Node, fontSize?: string[]): string {
-        const size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
+    private static isFontSize(docElement: Document, node: Node, fontSize?: string[]): string {
+        let size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
+        if ((size === null || size === undefined || size === '') && node.nodeType !== 3 &&
+        (node as HTMLElement).parentElement.classList.contains('e-content')) {
+            size = this.getComputedStyle(docElement, (node as HTMLElement), 'font-size');
+        }
         if ((size !== null && size !== '' && size !== undefined)
             && (fontSize === null || fontSize === undefined || (fontSize.indexOf(size) > -1))) {
             return size;

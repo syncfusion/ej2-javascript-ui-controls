@@ -76,7 +76,7 @@ export class FormFields {
         if (this.renderedPageList.indexOf(pageIndex) !== -1 && !isImportFormField) {
             this.data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
             if (!this.data || this.data === '[]') {
-                this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');                
+                this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
             }
         }
         else {
@@ -2653,22 +2653,26 @@ export class FormFields {
         // eslint-disable-next-line
         let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
         const maxSessionSize: number = 4500;
-        if (sessionSize > maxSessionSize) {
+        if (this.pdfViewerBase.isStorageExceed) {
             const storageLength: number = window.sessionStorage.length;
             // eslint-disable-next-line
-            let annotationList: any = [];
+            let formFieldsList: any = [];
             for (let i: number = 0; i < storageLength; i++) {
                 if (window.sessionStorage.key(i) && window.sessionStorage.key(i).split('_')[3]) {
-                    if (window.sessionStorage.key(i).split('_')[3] === 'annotations') {
+                    if (window.sessionStorage.key(i).split('_')[3] === 'formfields') {
                         // eslint-disable-next-line max-len
                         this.pdfViewerBase.formFieldStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
-                        annotationList.push(window.sessionStorage.key(i));
+                        formFieldsList.push(window.sessionStorage.key(i));
+                    }
+                    else if (window.sessionStorage.key(i).split('_')[3] === 'formDesigner') {
+                        this.pdfViewerBase.formFieldStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
+                        formFieldsList.push(window.sessionStorage.key(i));
                     }
                 }
             }
-            if (annotationList) {
-                for (let i: number = 0; i < annotationList.length; i++) {
-                    window.sessionStorage.removeItem(annotationList[i]);
+            if (formFieldsList) {
+                for (let i: number = 0; i < formFieldsList.length; i++) {
+                    window.sessionStorage.removeItem(formFieldsList[i]);
                 }
             }
         }

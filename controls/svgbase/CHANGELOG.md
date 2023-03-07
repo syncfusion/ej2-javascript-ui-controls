@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 20.4.52 (2023-02-28)
+## 20.4.53 (2023-03-07)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I439673` - Resolved an issue where tooltip text was getting cut off when the text was longer.
+- `#I440991` - Fixed an issue where the Donut chart tooltip was being cropped when displayed outside of the area bounds.
+
+## 20.4.42 (2023-01-04)
 
 ### Svg Base
 

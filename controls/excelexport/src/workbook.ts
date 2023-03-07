@@ -1575,7 +1575,7 @@ export class Workbook {
                 value = value.replace(/>/g, '&gt;');
             }
             if (value.indexOf('\v') !== -1) {
-                value = value.replace('\v', '_x000B_');
+                value = value.replace(/\v/g, '_x000B_');
             }
         }
         else if (typeof value == "object") {
@@ -1590,7 +1590,7 @@ export class Workbook {
                     value[i] = value[i].replace(/>/g, '&gt;');
                 }
                 if (value[i].indexOf('\v') !== -1) {
-                    value[i] = value[i].replace('\v', '_x000B_');
+                    value[i] = value[i].replace(/\v/g, '_x000B_');
                 }
             }
         }

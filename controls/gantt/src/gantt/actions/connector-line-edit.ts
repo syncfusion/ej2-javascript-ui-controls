@@ -599,18 +599,40 @@ export class ConnectorLineEdit {
     public applyPredecessorOption(): void {
         const args: IValidateArgs = this.parent.currentEditedArgs;
         const ganttRecord: IGanttData = args.data;
+        let parentData :any;
         if (args.validateMode.respectLink) {
             this.parent.editModule.reUpdatePreviousRecords();
             this.parent.chartRowsModule.refreshRecords([args.data]);
         } else if (args.validateMode.removeLink) {
-            this.removePredecessors(ganttRecord, this.validationPredecessor);
+            this.checkChildRecords(ganttRecord)
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         } else if (args.validateMode.preserveLinkWithEditing) {
             this.calculateOffset(ganttRecord);
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         }
     }
-
+    private checkChildRecords(ganttRecord: IGanttData): void {
+        this.validationPredecessor = ganttRecord.ganttProperties.predecessor;
+        if (!isNullOrUndefined(this.validationPredecessor)) {
+            this.removePredecessors(ganttRecord, this.validationPredecessor);
+        }
+        if (ganttRecord.childRecords.length > 0) {
+            for (let i = 0; i < ganttRecord.childRecords.length; i++) {
+                let childRecord = ganttRecord.childRecords[i]
+                this.validationPredecessor = childRecord.ganttProperties.predecessor;
+                if (!isNullOrUndefined(this.validationPredecessor)) {
+                    this.removePredecessors(childRecord, this.validationPredecessor);
+                }
+                if (childRecord.childRecords.length > 0) {
+                    this.checkChildRecords(childRecord)
+                }
+            }
+        } else if (!isNullOrUndefined(ganttRecord.parentItem)) {
+            let parentRecord = this.parent.getRecordByID(ganttRecord.parentItem.taskId)
+            this.validationPredecessor = parentRecord.ganttProperties.predecessor;
+            this.removePredecessors(parentRecord, this.validationPredecessor);
+        }
+    }
     private calculateOffset(record: IGanttData): void {
         const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
         const validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);
@@ -685,6 +707,9 @@ export class ConnectorLineEdit {
     private removePredecessors(ganttRecord: IGanttData, predecessor: IPredecessor[]): void {
         const prevPredecessor: IPredecessor[] =
             extend([], [], ganttRecord.ganttProperties.predecessor, true) as IPredecessor[];
+        if (isNullOrUndefined(predecessor)) {
+            return;
+        }
         const preLength: number = predecessor.length;
         for (let i: number = 0; i < preLength; i++) {
             const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor[i as number].from as string);
@@ -777,14 +802,19 @@ export class ConnectorLineEdit {
      * @returns {boolean} .
      * @private
      */
-    public validateTypes(ganttRecord: IGanttData): object {
+    public validateTypes(ganttRecord: IGanttData,data?:any): object {
         const predecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
         let parentGanttRecord: IGanttData;
+        let ganttTaskData: ITaskData;
         this.validationPredecessor = [];
         let violatedParent: IGanttData;
         let violateType: string;
         const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor);
-        const ganttTaskData: ITaskData = ganttRecord.ganttProperties;
+        if (data) {
+            ganttTaskData  = data.ganttProperties;
+        } else {
+            ganttTaskData  = ganttRecord.ganttProperties;
+        }
         const endDate: Date = this.parent.allowUnscheduledTasks && isNullOrUndefined(startDate) ?
             ganttTaskData.endDate :
             this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);

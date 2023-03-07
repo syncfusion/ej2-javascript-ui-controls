@@ -4,6 +4,12 @@
 
 ## 20.4.52 (2023-02-28)
 
+### MaskedTextBox
+
+#### Bug Fixes
+
+- `#I435597` - Resolved issue with pasting using keyboard shortcuts not working properly in Safari browser.
+
 ### Signature
 
 #### Bug Fixes

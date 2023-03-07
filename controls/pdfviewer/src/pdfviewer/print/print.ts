@@ -67,6 +67,25 @@ export class Print {
                     for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
                         const pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
                         const pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
+                        // Check if the document is A4 by comparing the A4 standard values with the buffer value
+                        let a4StdWidth: number = 793;
+                        let a4StdHeight: number = 1122;
+                        let bufferWidth: number = 10;
+                        let bufferHeight: number = 10;
+                        //Reduced the A4 standard width and height to prevent blank pages while printing
+                        let a4PrintWidth: number = 783;
+                        let a4PrintHeight: number = 1110;
+                        this.printWidth = 816;
+                        this.printHeight = 1056;
+                        // Check if the A4 document is protrait or landscape 
+                        if (pageWidth > pageHeight) {
+                            a4StdWidth = 1122;
+                            a4StdHeight = 793;
+                        }
+                        if (!(pageWidth >= (a4StdWidth + bufferWidth) || pageWidth <= (a4StdWidth - bufferWidth)) && !(pageHeight >= (a4StdHeight + bufferHeight) || pageHeight <= (a4StdHeight - bufferHeight))) {
+                            this.printWidth = a4PrintWidth;
+                            this.printHeight = a4PrintHeight;
+                        }
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                     }
                     this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);

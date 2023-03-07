@@ -340,3 +340,30 @@ describe('EJ2-61863 - Font-family value property as case-sensitive', () => {
         expect(format.fontcolor).toEqual('rgb(0, 0, 0)');
     });
 });
+
+describe('EJ2-69534 - Font-Size dynamic update using custom class name style tags status not updated properly issue ', () => {
+    var innervalue = '<div id="div1" class="customClass e-content"><p id="paragraph1">Rich Text Editor Content</span>'+'</div>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let style = '.customClass.e-content{ font-size:24px; }';
+    let styleElement: HTMLElement = document.createElement('style');
+    styleElement.innerHTML = style;
+    document.head.appendChild(styleElement);
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Check Font-size value property ', () => {
+        let node: Node = document.getElementById('paragraph1');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], null, ['arial,sans-serif']);
+        expect(format.fontsize).toEqual('24px');
+    });
+});

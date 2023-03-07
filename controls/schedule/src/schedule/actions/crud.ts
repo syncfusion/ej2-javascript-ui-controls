@@ -86,7 +86,9 @@ export class Crud {
                     }
                 }
             }
-            this.parent.resetTemplates(templateNames);
+            if (templateNames.length > 0) {
+                this.parent.resetTemplates(templateNames);
+            }
         }
         if (isVirtualScrollAction) {
             this.parent.notify(events.dataReady, { processedData: this.parent.eventsProcessed });
@@ -157,6 +159,9 @@ export class Crud {
                 return;
             }
             const addEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+            if (addEvents.length === 0) {
+                return;
+            }
             const args: ActionEventArgs = {
                 requestType: 'eventCreate', cancel: false, data: addEvents,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
@@ -194,6 +199,10 @@ export class Crud {
                 this.parent.quickPopup.openValidationError('blockAlert', eventData);
                 return;
             }
+            const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
+            if (updateEvents.length === 0) {
+                return;
+            }
             this.parent.currentAction = action;
             if (action) {
                 switch (action) {
@@ -211,7 +220,6 @@ export class Crud {
                     break;
                 }
             } else {
-                const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
                 const args: ActionEventArgs = {
                     requestType: 'eventChange', cancel: false, data: eventData,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
@@ -253,6 +261,9 @@ export class Crud {
                     eventObj[this.parent.eventFields.id] === eventData) as Record<string, any>[];
             } else {
                 deleteEvents = (eventData instanceof Array ? eventData : [eventData]) as Record<string, any>[];
+            }
+            if (deleteEvents.length === 0) {
+                return;
             }
             if (action) {
                 switch (action) {

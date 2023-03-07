@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData, customCRData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData, customCRData, customCrIssue } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -508,6 +508,54 @@ describe('Gantt taskbar editing', () => {
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td >div.e-taskbar-main-container') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
             triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Validate link CR issue', () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: customCrIssue,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    actionBegin: function (args) {
+                        if (args.requestType == 'validateLinkedTask') {
+                            args.validateMode.removeLink = true;
+                        }
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('07/28/2019'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: false,
+                    editSettings: {
+                        allowEditing: true,
+                        allowTaskbarEditing: true
+                    }
+                }, done);
+        });
+        it('Child drag action', () => {
+            ganttObj.actionComplete = () => {
+                expect(ganttObj.currentViewData[2].ganttProperties.predecessor.length).toBe(0)
+            };
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
             triggerMouseEvent(dragElement, 'mouseup');
         });
         afterAll(() => {

@@ -3967,6 +3967,9 @@ export class Annotation {
         if (sessionSize > 4500) {
             this.clearAnnotationStorage();
             this.pdfViewerBase.isStorageExceed = true;
+            if(!(this.pdfViewerBase.isFormStorageExceed)){
+                this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+            }
         }
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + annotationId);
@@ -5297,8 +5300,8 @@ export class Annotation {
                 if (annotation.bounds) {
                     newAnnotation.bounds = annotation.bounds;
                 }
-                if (annotation.vertexPoint) {
-                newAnnotation.vertexPoints = annotation.vertexPoints;
+                if (annotation.vertexPoints) {
+                    newAnnotation.vertexPoints = annotation.vertexPoints;
                 }
                 newAnnotation.opacity = annotation.opacity;
                 newAnnotation.fillColor = annotation.fillColor;
@@ -5313,7 +5316,7 @@ export class Annotation {
                 if (annotation.bounds) {
                     newAnnotation.bounds = annotation.bounds;
                 }
-                if (annotation.vertexPoint) {
+                if (annotation.vertexPoints) {
                     newAnnotation.vertexPoints = annotation.vertexPoints;
                 }
                 newAnnotation.opacity = annotation.opacity;

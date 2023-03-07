@@ -137,9 +137,19 @@ export class EnterKeyAction {
                                 this.parent.tableModule.removeResizeElement();
                             }
                             if (!(this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE')) {
-                                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                    this.parent.contentModule.getDocument(),
-                                    this.range.startContainer.childNodes[this.range.startOffset] as Element, 0);
+                                if (isNOU(this.range.startContainer.childNodes[this.range.startOffset] as Element)) {
+                                    let currentLastElem: Element = this.range.startContainer.childNodes[this.range.startOffset - 1] as Element;
+                                    while (currentLastElem.lastChild !== null && currentLastElem.nodeName !== '#text') {
+                                        currentLastElem = currentLastElem.lastChild as Element;
+                                    }
+                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                        this.parent.contentModule.getDocument(),
+                                        currentLastElem, (currentLastElem.nodeName === 'BR' ? 0 : currentLastElem.textContent.length));
+                                } else {
+                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                        this.parent.contentModule.getDocument(),
+                                        this.range.startContainer.childNodes[this.range.startOffset] as Element, 0);
+                                }
                             }
                             this.getRangeNode();
                         }
@@ -367,11 +377,13 @@ export class EnterKeyAction {
                             }
                             const isLastNodeLength : number = this.range.startContainer === currentParentLastChild ?
                                 this.range.startContainer.textContent.length : currentParent.textContent.length;
+                            const isImageElement: boolean = (this.range.startContainer.nodeName === 'IMG' || (this.range.startContainer.childNodes.length > 0
+                                && this.range.startContainer.childNodes[this.range.startOffset].nodeName === 'IMG'));
                             if (currentParent !== this.parent.inputElement &&
                                 this.parent.formatter.editorManager.domNode.isBlockNode(currentParent) &&
                                 this.range.startOffset === this.range.endOffset &&
                                 (this.range.startOffset === isLastNodeLength ||
-                                (currentParent.textContent.trim().length === 0 && currentParent.lastChild.nodeName === 'IMG'))) {
+                                (currentParent.textContent.trim().length === 0 && isImageElement))) {
                                 let focusBRElem: HTMLElement = this.parent.createElement('br');
                                 if (this.range.startOffset === 0 && this.range.startContainer.nodeName === 'TABLE') {
                                     this.range.startContainer.parentElement.insertBefore(focusBRElem, this.range.startContainer);
@@ -379,10 +391,11 @@ export class EnterKeyAction {
                                     if (currentParentLastChild.nodeName === 'BR' && currentParent.textContent.length === 0) {
                                         this.parent.formatter.editorManager.domNode.insertAfter(
                                             focusBRElem, (currentParentLastChild as Element));
-                                    } else if (this.range.startOffset === 0 && this.range.endOffset === 0 &&
-                                               currentParent.lastChild && currentParent.lastChild.nodeName === 'IMG') {
-                                        currentParentLastChild.parentElement.insertBefore(focusBRElem, currentParentLastChild);
-                                        focusBRElem = currentParentLastChild as HTMLElement;
+                                    } else if (this.range.startOffset === 0 && this.range.endOffset === 0 && isImageElement) {
+                                        const imageElement: Node = this.range.startContainer.nodeName === 'IMG' ? this.range.startContainer :
+                                            this.range.startContainer.childNodes[this.range.startOffset];
+                                        currentParent.insertBefore(focusBRElem, imageElement);
+                                        focusBRElem = imageElement as HTMLElement;
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
                                         this.parent.formatter.editorManager.domNode.insertAfter(

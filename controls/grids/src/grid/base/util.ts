@@ -244,7 +244,8 @@ export function iterateExtend(array: Object[]): Object[] {
 export function templateCompiler(template: string): Function {
     if (template) {
         try {
-            if (document.querySelectorAll(template).length) {
+            const validSelector: boolean = template[0] !== '<';
+            if (validSelector && document.querySelectorAll(template).length) {
                 return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
             } else {
                 return baseTemplateComplier(template);

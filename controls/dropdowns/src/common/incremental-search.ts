@@ -96,7 +96,7 @@ export function Search(
                 let fieldValue = fields.text.split('.');
                 (dataSource as { [key: string]: Object }[]).filter(function (data: any) {
                 Array.prototype.slice.call(fieldValue).forEach(function (value: string | number) {
-                    if (type === 'object' && checkField.textContent.toString().indexOf(data[value]) !== -1 && checkField.getAttribute('data-value') === data[fields.value]  || type === 'string' && checkField.textContent.toString().indexOf(data) !== -1) {
+                    if (type === 'object' && checkField.textContent.toString().indexOf(data[value]) !== -1 && checkField.getAttribute('data-value') === data[fields.value].toString()  || type === 'string' && checkField.textContent.toString().indexOf(data) !== -1) {
                        filterValue = type === 'object' ? data[value] : data;
                     }
                 });

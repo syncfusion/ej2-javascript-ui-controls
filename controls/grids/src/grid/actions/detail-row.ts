@@ -58,7 +58,8 @@ export class DetailRow {
         const parent: string = 'parentDetails';
         let childGrid: Grid;
         const isExpanded: boolean = target &&  target.classList.contains('e-detailrowcollapse') ;
-        if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
+        if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))
+         || (target && target.classList.contains('e-masked-cell'))) {
             return;
         }
         const tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;

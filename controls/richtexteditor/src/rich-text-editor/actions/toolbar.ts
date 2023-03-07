@@ -600,6 +600,11 @@ export class Toolbar {
     private toolbarClickHandler(e: ClickEventArgs): void {
         const trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
+            let extendedTbar: HTMLElement = this.tbElement.querySelector('.e-toolbar-extended');
+            if (!isNOU(extendedTbar)) {
+                setStyleAttribute(extendedTbar, { maxHeight: '', display: 'block' });
+                setStyleAttribute(extendedTbar, { maxHeight: extendedTbar.offsetHeight + 'px', display: '' });
+            }
             if (!trg.classList.contains('e-nav-active')) {
                 removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
                 this.parent.setContentHeight('toolbar', false);

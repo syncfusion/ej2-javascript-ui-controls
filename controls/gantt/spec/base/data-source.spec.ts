@@ -1857,7 +1857,37 @@ export let baselineData: Object[] = [
         ]
     }
 ];
-
+export let customCrIssue: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Task 1',
+        StartDate: new Date('04/02/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Task 2',
+                StartDate: new Date('04/02/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 3,
+        TaskName: 'Task 3',
+        StartDate: new Date('04/02/2019'),
+        Predecessor: '2FS',
+        subtasks: [
+            {
+                TaskID: 4,
+                TaskName: 'Task 4',
+                StartDate: new Date('04/02/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+        ]
+    },
+];
 export let resourceData: Object[] = [
     { resourceId: 1, resourceName: 'Robert King' },
     { resourceId: 2, resourceName: 'Anne Dodsworth' },

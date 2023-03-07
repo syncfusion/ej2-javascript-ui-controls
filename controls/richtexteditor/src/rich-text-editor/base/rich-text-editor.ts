@@ -1768,15 +1768,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
-        const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
+        let isDetached: boolean = false;
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
             for (let i: number = 0; i < closestLI.childNodes.length; i++) {
                 if (closestLI.childNodes[i as number].nodeName === '#text' && closestLI.childNodes[i as number].textContent.trim().length === 0) {
                     detach(closestLI.childNodes[i as number]);
+                    isDetached = true;
                     i--;
                 }
             }
@@ -1784,12 +1785,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             while (currentLastElem.lastChild !== null && currentLastElem.nodeName !== '#text') {
                 currentLastElem = currentLastElem.lastChild as Element;
             }
-            this.formatter.editorManager.nodeSelection.setSelectionText(
-                this.contentModule.getDocument(),
-                isSameContainer ? currentStartContainer : ( currentLastElem.nodeName === 'BR' && !isNOU( currentLastElem.previousSibling ) ? currentLastElem.previousSibling : currentStartContainer ),
-                currentEndContainer,
-                currentStartOffset,
-                ( currentLastElem.nodeName === 'BR' ? 0 : currentEndOffset ) );
+            if (isDetached) {
+                let currentLast: Node = currentLastElem.nodeName === 'BR' && !isNOU(currentLastElem.previousSibling) ?
+                    currentLastElem.previousSibling : currentLastElem;
+                this.formatter.editorManager.nodeSelection.setSelectionText(
+                    this.contentModule.getDocument(),
+                    isSameContainer ? currentLast : currentStartContainer,
+                    currentLast, currentStartOffset,
+                    (currentLast.nodeName === 'BR' ? 0 : currentLast.textContent.length));
+            }
         }
     }
 
@@ -3140,7 +3144,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private scrollHandler(e: Event): void {
-        this.notify(events.scroll, { args: e });
+        if (this.element) {
+            this.notify(events.scroll, { args: e });
+        }
     }
 
     private contentScrollHandler(e: Event): void {

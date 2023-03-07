@@ -143,6 +143,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
     protected selectedElementID : string;
+    private isEventCancel : boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -2168,6 +2169,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             },
             open: () => {
+                EventHandler.remove(document, 'mousedown', this.onDocumentClick);
                 EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
                 this.isPopupOpen = true;
                 const actionList: HTMLElement = this.actionCompleteData && this.actionCompleteData.ulElement &&
@@ -2352,10 +2354,9 @@ export class DropDownList extends DropDownBase implements IInput {
 
     private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.isTyped = false;
-        if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
+        if (!(this.popupObj && document.body.contains(this.popupObj.element) && (this.beforePopupOpen || this.isEventCancel))) {
             return;
         }
-        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
         this.isDropDownClick = false;
@@ -2404,6 +2405,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const popupInstance: Popup = this.popupObj;
         const eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel , event: e || null};
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
+            this.isEventCancel = eventArgs.cancel;
             if (!isNullOrUndefined(this.popupObj) &&
                 !isNullOrUndefined(this.popupObj.element.querySelector('.e-fixed-head'))) {
                 const fixedHeader: HTMLElement = this.popupObj.element.querySelector('.e-fixed-head');

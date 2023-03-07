@@ -804,7 +804,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '"label="' + REPEATELEMENT.substr(2) + '" />' +
             '</div><div class="' + INPUTWARAPPER + ' ' +
             INTERVALCLASS + ' ' + FORMRIGHT + '"><table  class="' + RECURRENCETABLE + ' ' + REPEATCONTENTWRAPPER + '"><tr>' +
-            '<td><input type="text" tabindex="0" class="' + REPEATINTERVAL +
+            '<td><input type="text" tabindex="0" id="' + this.element.id + '_' + REPEATINTERVAL + '" class="' + REPEATINTERVAL +
             '"title="' + this.localeObj.getConstant('repeatEvery') + '" /></td>' +
             '<td><span class="' + REPEATCONTENT + '"></span></td>' +
             '</tr></table></div><div class="' + INPUTWARAPPERSIDE + ' ' + DAYWRAPPER + ' ' + FORMLEFT + '">' +
@@ -828,7 +828,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<input class="' + MONTHEXPANDERELEMENT + '"title="' + this.localeObj.getConstant('monthExpander') + '" type="radio">' +
             '</div></td>' +
             '<td colspan="2"><div class="' + INPUTWARAPPER + ' ' + MONTHDAYELEMENT + '">' +
-            '<input type="text" tabindex="0" class="' + MONTHDAYWRAPPER + '"title="' +
+            '<input type="text" tabindex="0" id="' + this.element.id + '_' + MONTHDAYWRAPPER + '" class="' + MONTHDAYWRAPPER + '"title="' +
             this.localeObj.getConstant('on') + '" />' +
             '</div></td></tr>' +
             '<tr><td>' +
@@ -851,7 +851,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<input type="text" tabindex="0" class="' + UNTILDATE + '"title="' + this.localeObj.getConstant(UNTIL) + '" />' +
             '</div>' +
             '<div class="' + INPUTWARAPPER + ' ' + ENDONCOUNTWRAPPER + '">' +
-            '<input type="text" tabindex="0" class="' + ENDONCOUNT + '"title="' + this.localeObj.getConstant(COUNT) + '" />' +
+            '<input type="text" tabindex="0" id="' + this.element.id + '_' + ENDONCOUNT + '" class="' + ENDONCOUNT + '"title="' + this.localeObj.getConstant(COUNT) + '" />' +
             '</div></div>' +
             '</div></div>';
     }

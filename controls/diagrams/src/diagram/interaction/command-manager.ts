@@ -2494,8 +2494,11 @@ export class CommandHandler {
                         }
                         // EJ2-46656 - CR issue fix
                         target = this.resetTargetNode(objectId, target, i, zIndexTable);
-                        target = this.diagram.nameTable[`${target}`].parentId ? this.checkParentExist(target) : target;
-                        this.moveSvgNode(objectId, target);
+                        //EJ2-69654 - Send to back command not working when there is single node in layer
+                        if(target){
+                            target = this.diagram.nameTable[`${target}`].parentId ? this.checkParentExist(target) : target;
+                            this.moveSvgNode(objectId, target);
+                        }
                         this.updateNativeNodeIndex(objectId);
                     } else {
                         this.diagram.refreshCanvasLayers();
@@ -5693,8 +5696,9 @@ Remove terinal segment in initial
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }
                     // EJ2-65876 - Exception occurs on line routing injection module
-                    if(connector.sourceID != connector.targetID ){
-                    this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                    if(connector.sourceID != connector.targetID && connector.segments.length>1){
+                        //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
+                         this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                     }
                     if (isBlazor()) {
                         updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));

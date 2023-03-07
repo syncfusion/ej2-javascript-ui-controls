@@ -2251,6 +2251,67 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     });
   });
 
+  describe('EJ2-69752 - Resizing not works when persistence enable while resizing in combination of both individual and Stacked column', () => {
+    let TreeGridObj: TreeGrid;
+    let headers: any;
+    let resizeStartevent: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartevent');
+    let resizeStop: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartStop');
+    let resize: EmitType<ResizeArgs> = jasmine.createSpy('resize');
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: stackedData,
+            allowPaging: true,
+            allowResizing: true,
+            enablePersistence: true,
+            resizeStart: resizeStartevent,
+            resizeStop: resizeStop,
+            resizing: resize,
+            childMapping: 'subtasks',
+            height: 350,
+            treeColumnIndex: 1,
+            pageSettings: { pageCount: 5 },
+            columns: [
+                { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 150, minWidth: 50, maxWidth: 250 },
+                {
+                    headerText: 'Order Details', textAlign: 'Center', columns: [
+                        { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 150, minWidth: 50, maxWidth: 250 },
+                        { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd'},
+                    ]
+                },
+                {
+                    headerText: 'Shipment Details', textAlign: 'Center', columns: [
+                        { field: 'shipMentCategory', headerText: 'Shipment Category', textAlign: 'Left', width: 150 },
+                        { field: 'shippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 120, format: 'yMd' },
+                        { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+                    ]
+                },
+                {
+                    headerText: 'Price Details', textAlign: 'Center', columns: [
+                        { field: 'unitPrice', headerText: 'Price per unit', format: 'c2', type: 'number', width: 110, textAlign: 'Right' },
+                        { field: 'price', headerText: 'Total Price', width: 110, format: 'c', type: 'number', textAlign: 'Right' }
+                    ]
+                }
+            ],
+        },done);
+    });
+
+    it('Resizing both individual and Stacked column and refreshing the treegrid', () => {
+        TreeGridObj.autoFitColumns(['orderID', 'orderName']);
+        headers = (<HTMLElement>TreeGridObj.getHeaderTable().querySelectorAll('th')[0]).style.width;
+        TreeGridObj.refresh();
+        expect(headers).toBeFalsy();
+        let normalColumnWidth: string | number = getObject('width', TreeGridObj.columns[0] as ColumnModel);
+        expect(normalColumnWidth === '71px').toBe(true);
+        let columnWidth: string | number = getObject('width', (TreeGridObj.columns[1] as ColumnModel).columns[0]);
+        expect(columnWidth === '165px').toBe(true);
+        TreeGridObj.resizeModule.destroy();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
   afterAll(() => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       gridObj.destroy();

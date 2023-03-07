@@ -288,7 +288,7 @@ export class ColumnWidthService {
     private getHeightFromDirection(element: HTMLElement, direction: string): number {
         let sibling: HTMLElement = element[direction + 'ElementSibling'];
         let result: number = 0;
-        const classList: string[] = [literals.gridHeader, literals.gridFooter, 'e-groupdroparea', 'e-gridpager', 'e-toolbar'];
+        const classList: string[] = [literals.gridHeader, literals.gridFooter, 'e-groupdroparea', 'e-gridpager', 'e-toolbar', 'e-temp-toolbar'];
 
         while (sibling) {
             if (classList.some((value: string) => sibling.classList.contains(value))) {

@@ -1510,7 +1510,11 @@ export function deserialize(model: string, diagram: Diagram): Object {
     for (let i: number = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]] as Diagram;
         diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
-        component.refresh();
+        // EJ2-69580 - When we load the diagram, we can refresh diagram component alone, does not need to refresh overview seperately. 
+        // While refresh diagram, nodes added in both the diagram and overview.
+        if (component instanceof Diagram) {
+            component.refresh();
+        }
         diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
         if (component instanceof Diagram) {
             diagram.element.classList.add('e-diagram');

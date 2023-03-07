@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I441823, F180833` - An issue with a script error while customizing the recurrence editor repeat type option in the Schedule editor has been fixed.
+
 ## 20.4.52 (2023-02-28)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I440832` - An issue with drag clone event were hidden, when dragging multiple appointments with `startHour` and `endHour` has been fixed.
+- `#I441311` - An issue with `getSelectedElements` public method return the selected cells in wrong order has been fixed.
+
+## 20.4.51 (2023-02-21)
 
 ### Schedule
 

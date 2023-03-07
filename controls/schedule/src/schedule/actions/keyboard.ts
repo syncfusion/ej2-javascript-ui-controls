@@ -18,7 +18,7 @@ export class KeyboardInteraction {
      */
     private parent: Schedule;
     private initialTarget: HTMLTableCellElement;
-    private selectedCells: HTMLTableCellElement[] = [];
+    public selectedCells: HTMLTableCellElement[] = [];
     private keyConfigs: { [key: string]: string } = {
         downArrow: 'downarrow',
         upArrow: 'uparrow',
@@ -227,7 +227,7 @@ export class KeyboardInteraction {
         if (this.parent.eventWindow) {
             this.parent.eventWindow.convertToEventData(this.parent.activeCellsData as unknown as Record<string, any>, cellData);
         }
-        const selectedCells: Element[] = this.parent.getSelectedElements();
+        const selectedCells: Element[] = this.parent.getSelectedCells();
         const args: SelectEventArgs = {
             data: cellData, element: this.parent.activeCellsData.element, event: e,
             requestType: cellSelect, showQuickPopup: false
@@ -566,7 +566,7 @@ export class KeyboardInteraction {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
-        const selectedElements: Element[] = this.parent.getSelectedElements();
+        const selectedElements: Element[] = this.parent.getSelectedCells();
         const selectedEventElements: Element[] = this.parent.eventBase.getSelectedAppointments();
         const moreEventWrapper: HTMLElement = <HTMLElement>this.parent.element.querySelector('.' + cls.MORE_POPUP_WRAPPER_CLASS);
         const quickPopupWrapper: HTMLElement = this.getQuickPopupElement();
@@ -609,7 +609,7 @@ export class KeyboardInteraction {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
-        const selectedCells: Element[] = this.parent.getSelectedElements();
+        const selectedCells: Element[] = this.parent.getSelectedCells();
         const selectedElements: Element[] = this.parent.eventBase.getSelectedAppointments();
         const moreEventWrapper: HTMLElement = <HTMLElement>this.parent.element.querySelector('.' + cls.MORE_POPUP_WRAPPER_CLASS);
         const quickPopupWrapper: HTMLElement = this.getQuickPopupElement();
@@ -713,7 +713,7 @@ export class KeyboardInteraction {
         if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear)) {
             return;
         }
-        const selectedCells: Element[] = this.parent.getSelectedElements();
+        const selectedCells: Element[] = this.parent.getSelectedCells();
         let targetCell: HTMLTableCellElement;
         const selectedAppointments: Element[] = this.parent.eventBase.getSelectedAppointments();
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -780,7 +780,7 @@ export class KeyboardInteraction {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
-        const selectedCells: Element[] = this.parent.getSelectedElements();
+        const selectedCells: Element[] = this.parent.getSelectedCells();
         let targetCell: HTMLTableCellElement;
         if (selectedCells.length > 0 && !target.classList.contains(cls.WORK_CELLS_CLASS) &&
             !target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
@@ -997,7 +997,7 @@ export class KeyboardInteraction {
             }
             return;
         }
-        const selectedCells: Element[] = this.parent.getSelectedElements();
+        const selectedCells: Element[] = this.parent.getSelectedCells();
         if (selectedCells.length > 0 && !target.classList.contains(cls.APPOINTMENT_CLASS)) {
             target = selectedCells[selectedCells.length - 1] as Element;
             this.selectAppointmentElementFromWorkCell(isReverse, target);
@@ -1115,6 +1115,7 @@ export class KeyboardInteraction {
      */
     public destroy(): void {
         this.removeEventListener();
+        this.selectedCells = [];
         this.keyboardModule.destroy();
     }
 

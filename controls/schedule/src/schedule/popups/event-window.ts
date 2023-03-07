@@ -362,7 +362,7 @@ export class EventWindow {
     }
 
     private createRecurrenceEditor(parentDiv: HTMLElement): void {
-        const recurrenceEditor: HTMLElement = this.createDivElement();
+        const recurrenceEditor: HTMLElement = createElement('div', { id: this.parent.element.id + '_recurrence_editor' });
         parentDiv.appendChild(recurrenceEditor);
         this.recurrenceEditor = this.renderRecurrenceEditor();
         this.recurrenceEditor.appendTo(recurrenceEditor);

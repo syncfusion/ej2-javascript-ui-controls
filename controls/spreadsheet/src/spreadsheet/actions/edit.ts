@@ -9,7 +9,7 @@ import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHi
 import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber, getViewportIndexes } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
-import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
+import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
 
@@ -1023,7 +1023,7 @@ export class Edit {
                 formula = formula.replace(sheets[i as number].name, '!' + i);
             }
         }
-        this.parent.computeExpression(formula);
+        this.parent.notify(workbookFormulaOperation, { action: 'computeExpression', formula: formula });
         this.uniqueCell = false;
         if (this.uniqueActCell !== '') {
             this.editCellData.value = this.uniqueActCell;

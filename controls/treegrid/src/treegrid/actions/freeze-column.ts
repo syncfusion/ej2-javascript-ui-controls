@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeContentRender, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
+import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../models/column';
 import { Grid, Freeze as FreezeColumn  } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';
@@ -53,9 +53,6 @@ export class Freeze {
             if (this.parent.enableVirtualization) {
                 getValue('addRenderer', renderer)
                     .apply(renderer, [RenderType.Content, new VirtualTreeFreezeRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
-            } else {
-                getValue('addRenderer', renderer)
-                    .apply(renderer, [RenderType.Content, new FreezeContentRender(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
             }
         }
         if (this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenRightColumnsCount()) {

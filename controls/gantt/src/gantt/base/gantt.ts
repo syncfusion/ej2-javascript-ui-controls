@@ -97,6 +97,8 @@ export class Gantt extends Component<HTMLElement>
     public isVirtualScroll: boolean;
     public scrollLeftValue: any;
     public isToolBarClick: any;
+    public isLocaleChanged: boolean = false;
+    public previousGanttColumns: ColumnModel[];
     /** @hidden */
     public topBottomHeader: any;
     /** @hidden */
@@ -2831,6 +2833,9 @@ export class Gantt extends Component<HTMLElement>
             case 'enableRtl':
             case 'readOnly':
             case 'viewType':
+                if (prop === 'locale') {
+                   this.isLocaleChanged = true;
+                }
                 isRefresh = true;
                 break;
             case 'validateManualTasksOnLinking':

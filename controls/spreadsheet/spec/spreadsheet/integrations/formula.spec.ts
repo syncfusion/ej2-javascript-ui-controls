@@ -572,10 +572,10 @@ describe('Spreadsheet formula module ->', () => {
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":"invalid arguments","formula":"=HOUR(C3,C4);"}');
             done();
         });
-        it('Hour formula with input having no hour value->', (done: Function) => {
-            helper.edit('J4', '=HOUR(6:45 PM);');
+        it('Hour formula without ""->', (done: Function) => {
+            helper.edit('J4', '=HOUR(02/03/2023 6:45 PM);');
             expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":"#VALUE!","formula":"=HOUR(6:45 PM);"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":"#VALUE!","formula":"=HOUR(02/03/2023 6:45 PM);"}');
             done();
         });
         it('Hour formula with input having only Date Value->', (done: Function) => {
@@ -590,10 +590,75 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('3');
             done();
         });
-        it('Hour formula with invalid input Value->', (done: Function) => {
-            helper.edit('J7', '=HOUR("3:32:44 AM");');
-            expect(helper.getInstance().sheets[0].rows[6].cells[9].formula).toBe('=HOUR("3:32:44 AM");');
-            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+        it('Hour formula with input having both Date and Time Value->', (done: Function) => {
+            helper.edit('J7', '=HOUR("01/12/2023 3:32:44 PM");');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('15');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
+            helper.edit('J8', '=HOUR("01/12/2023 4:32 AM");');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('4');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
+            helper.edit('J9', '=HOUR("01/12/2023 4:32 PM");');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('16');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value as 24 hour format->', (done: Function) => {
+            helper.edit('J10', '=HOUR("01/12/2023 21:23:44");');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('21');
+            done();
+        });
+        it('Hour formula with nested Today formula as input->', (done: Function) => {
+            helper.edit('J11', '=HOUR(TODAY());');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
+            done();
+        });
+        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('J12', '=HOUR("7:32:44 AM");');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('7');
+            done();
+        });
+        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('J13', '=HOUR("7:32:44 PM");');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('19');
+            done();
+        });
+        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('J14', '=HOUR("05:30:44");');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('5');
+            done();
+        });
+        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('J15', '=HOUR("15:32:44");');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('15');
+            done();
+        });
+        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
+            helper.edit('J16', '=HOUR("04:32 AM");');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('4');
+            done();
+        }); 
+        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
+            helper.edit('J17', '=HOUR("04:32 PM");');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('16');
+            done();
+        }); 
+        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
+            helper.edit('J18', '=HOUR("02:33");');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('2');
+            done();
+        });
+        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
+            helper.edit('J19', '=HOUR("21:33");');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('21');
+            done();
+        });
+        it('Hour formula without ""->', (done: Function) => {
+            helper.edit('J20', '=HOUR(6:45 PM);');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[9])).toBe('{"value":0,"formula":"=HOUR(6:45 PM);"}');
             done();
         });
     });
@@ -637,8 +702,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MINUTE formula with input having minute value as 90->', (done: Function) => {
             helper.edit('C4', '3:90:44 AM');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(C4)"}');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=MINUTE(C4)"}');
             done();
         });
         it('MINUTE formula with cell having no value->', (done: Function) => {
@@ -663,6 +728,36 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('I9', '=MINUTE(7/1/2022 7:23:34 AM)');
             expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(7/1/2022 7:23:34 AM)"}');
+            done();
+        });
+        it('MINUTE formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('I10', '=MINUTE("3:32:44 AM");');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('32');
+            done();
+        });
+        it('MINUTE formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('I11', '=MINUTE("15:54:44");');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('54');
+            done();
+        });
+        it('MINUTE formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('I12', '=MINUTE("09:12 AM");');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('12');
+            done();
+        });
+        it('MINUTE formula without Seconds HH:MM format Time value as input->', (done: Function) => {
+            helper.edit('I13', '=MINUTE("09:12");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('12');
+            done();
+        });
+        it('MINUTE formula with date as input->', (done: Function) => {
+            helper.edit('I14', '=MINUTE("01/12/2023");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('0');
+            done();
+        });
+        it('MINUTE formula with nested TODAY formula as input->', (done: Function) => {
+            helper.edit('I15', '=MINUTE(TODAY());');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('0');
             done();
         });
         it('SECOND formula->', (done: Function) => {
@@ -712,6 +807,36 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J9', '=SECOND("7/1/2022 7:23:34 AM")');
             expect(helper.invoke('getCell', [8, 9]).textContent).toBe('34');
             done(); 
+        });
+        it('SECOND formula with Date as input->', (done: Function) => {
+            helper.edit('J10', '=SECOND("01/12/2023")');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('0');
+            done(); 
+        });
+        it('SECOND formula with nested TODAY Formula as input->', (done: Function) => {
+            helper.edit('J11', '=SECOND(TODAY())');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
+            done(); 
+        });
+        it('SECOND formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('J12', '=SECOND("3:32:44 AM");');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('44');
+            done();
+        });
+        it('SECOND formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('J13', '=SECOND("15:54:54");');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('54');
+            done();
+        });
+        it('SECOND formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('J14', '=SECOND("09:12 AM");');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('0');
+            done();
+        });
+        it('SECOND formula without Seconds HH:MM format Time value as input->', (done: Function) => {
+            helper.edit('J15', '=SECOND("09:12");');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('0');
+            done();
         });
         it('MONTH formula->', (done: Function) => {
             helper.edit('K1', '=MONTH(B5)');
@@ -3539,7 +3664,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-66373 ->', () => {
+        describe('EJ2-66373, EJ2-69543 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{
@@ -3596,6 +3721,22 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.getInstance().sheets[1].rows[7].cells[3].value).toBe(3);
                     done();
                 });
+            });
+            it('Returns as #SPILL! when pass =UNIQUE formula as a parameter to computeExpression method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(B1:B5)'))).toBe('["1","2","3","4"]');
+                expect(spreadsheet.computeExpression('=UNIQUE(B1)')).toBe('1');
+                expect(spreadsheet.computeExpression('=UNIQUE(11)')).toBe('11');
+                expect(spreadsheet.computeExpression('=UNIQUE("11")')).toBe('11');
+                expect(spreadsheet.computeExpression('=UNIQUE(true)')).toBe('TRUE');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(B1:C8)'))).toBe('["1","0","2","Text","3","1","4","2","4","3","Text","4","0","5","3","3"]');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:B8,C1:D8)'))).toBe('["1","2","3","Text","4","0","5","3","1","2","3","4","4","Text","0","3"]');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:A8,B1:C8)'))).toBe('["1","2","3","Text","4","0","5","3"]');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(A1:A3)'))).toBe('["1","2","3"]');
+                expect(spreadsheet.computeExpression('=UNIQUE(A4)')).toBe('Text');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(Sheet2!E1:E6)'))).toBe('["1","2","2.5","3","3.5","4"]');
+                expect(JSON.stringify(spreadsheet.computeExpression('=UNIQUE(Sheet1!D1:D8)'))).toBe('["1","0","2","Text","3","4","5"]');
+                done();
             });
         });
         describe('I296802, F162534 ->', () => {

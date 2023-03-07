@@ -204,3 +204,53 @@ describe('EJ2-62873 - customAttribute - Row height is not set properly in the gr
         destroy(gridObj);
     });
 });
+
+describe("EJ2-68510 - Styling issue in first row when using textWrap with InfiniteScrolling Grid", () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: data,
+          frozenRows: 2,
+          height: 400,
+          allowTextWrap: true,
+          enableInfiniteScrolling: true,
+          columns: [
+            {
+              headerText: "OrderID",
+              field: "OrderID",
+              width: 120,
+              freeze: "Right",
+            },
+            {
+              headerText: "CustomerID",
+              field: "CustomerID",
+              width: 130,
+              freeze: "Left",
+            },
+            { headerText: "EmployeeID", field: "EmployeeID", width: 100 },
+            { headerText: "ShipCountry", field: "ShipCountry", width: 150 },
+            {
+              headerText: "ShipCity",
+              field: "ShipCity",
+              freeze: "Right",
+              width: 160,
+            },
+          ],
+        },
+        done
+      );
+    });
+    it("timeout to complete infinite scroll grid render", (done: Function) => {
+      setTimeout(done, 400);
+    });
+    it("Ensure first movable row height with next movable row in frozen infinite scroll grid with wrapText on", () => {
+      expect((gridObj.getMovableRows()[2] as HTMLElement).offsetHeight + 1).toBe(
+        (gridObj.getMovableRows()[3] as HTMLElement).offsetHeight
+      );
+    });
+    afterAll(() => {
+      gridObj["freezeModule"].destroy();
+      destroy(gridObj as any);
+    });
+});

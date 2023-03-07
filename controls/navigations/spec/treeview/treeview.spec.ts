@@ -5033,8 +5033,19 @@ describe('TreeView control', () => {
             });
             it('code coverage', () => {
                 expect(document.body.style.cursor).toBe('');
-                treeObj.dropObj.out({target:document.body});
+                const li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                const mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                treeObj.dropObj.out({target: document.body});
                 expect(document.body.style.cursor).toBe('not-allowed');
+                const mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, document.body);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
         });
         describe('Drag and drop with different TreeView functionality testing', () => {
@@ -9445,8 +9456,19 @@ describe('TreeView control', () => {
             });
             it('code coverage', () => {
                 expect(document.body.style.cursor).toBe('');
-                treeObj.dropObj.out({target:document.body});
+                const li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                const mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                treeObj.dropObj.out({target: document.body});
                 expect(document.body.style.cursor).toBe('not-allowed');
+                const mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, document.body);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
         });
         describe('Drag and drop with different TreeView functionality testing', () => {
@@ -11935,8 +11957,19 @@ describe('TreeView control', () => {
             });
             it('code coverage', () => {
                 expect(document.body.style.cursor).toBe('');
-                treeObj.dropObj.out({target:document.body});
+                const li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                const mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                treeObj.dropObj.out({target: document.body});
                 expect(document.body.style.cursor).toBe('not-allowed');
+                const mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, document.body);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
         });
     });

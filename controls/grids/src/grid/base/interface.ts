@@ -607,6 +607,7 @@ export interface IGrid extends Component<HTMLElement> {
     requireTemplateRef?: boolean;
     tableIndex?: number;
     isVue?: boolean;
+    isVue3?: boolean;
     isAngular?: boolean;
     adaptiveDlgTarget?: HTMLElement;
     parentDetails?: ParentDetails;

@@ -1554,14 +1554,15 @@ export class FormDesigner {
                 this.updateTextboxProperties(drawingObject, inputElement,isPrint);
             }
         } else if (formFieldAnnotationType == "Checkbox") {
+            let zoomLevel: number = isPrint? this.defaultZoomValue : this.pdfViewerBase.getZoomFactor();
             let minCheckboxWidth: number = 20;
             element.style.display = "flex";
             element.style.alignItems = "center";
             let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds,isPrint);
             element.style.display = bounds.display;
             labelElement = createElement("label", { className: "e-pv-checkbox-container" });
-            labelElement.style.width = bounds.width + "px";
-            labelElement.style.height = bounds.height + "px";
+            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomLevel) + "px" : bounds.width + "px";
+            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomLevel) + "px" : bounds.height + "px";
             if (this.isDrawHelper)
                 labelElement.style.cursor = 'crosshair';
             else
@@ -1594,16 +1595,39 @@ export class FormDesigner {
                     innerSpan.style.borderWidth = "2px";
                 }
             }
+            if (isPrint) {
+                checkboxDiv.style.backgroundColor = "rgb(218, 234, 247)";
+                checkboxDiv.style.border = "1px solid #303030";
+                checkboxDiv.style.visibility = "visible";
+                checkboxDiv.style.height = "100%";
+                checkboxDiv.style.width = "100%";
+                checkboxDiv.style.position = "absolute";
+                if (innerSpan.className.indexOf("e-pv-cb-checked") !== -1) {
+                    innerSpan.style.border = "solid #303030";
+                    innerSpan.style.position = "absolute";
+                    innerSpan.style.borderLeft = "transparent";
+                    innerSpan.style.borderTop = "transparent";
+                    innerSpan.style.transform = "rotate(45deg)";
+                    var checkboxWidth = parseInt(labelElement.style.width, 10);
+                    if (checkboxWidth > minCheckboxWidth) {
+                        innerSpan.style.borderWidth = "3px";
+                    }
+                    else if (checkboxWidth <= 15) {
+                        innerSpan.style.borderWidth = "1px";
+                    }
+                    else {
+                        innerSpan.style.borderWidth = "2px";
+                    }
+                }
+            }
             (inputElement as IElement).type = "checkbox";
             inputElement.style.margin = "0px";
             inputElement.style.width = bounds.width + "px";
             inputElement.style.height = bounds.height + "px";
-            if (isPrint) {
-                this.updateCheckboxProperties(drawingObject, inputElement);
-            } else {
+            if (!isPrint) {
                 this.updateCheckBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
-                this.updateCheckboxProperties(drawingObject, checkboxDiv);
             }
+            this.updateCheckboxProperties(drawingObject, checkboxDiv);
             inputElement.appendChild(labelElement);
             labelElement.appendChild(checkboxDiv);
             checkboxDiv.appendChild(innerSpan);
@@ -1688,7 +1712,10 @@ export class FormDesigner {
         }
         if ((formFieldAnnotationType === "Checkbox" || formFieldAnnotationType === "RadioButton") && !isPrint) {
             element.appendChild(labelElement);
-        } else {
+        } else if (formFieldAnnotationType === "Checkbox" && isPrint) {
+            element.appendChild(labelElement)
+        }
+        else {
             if (drawingObject.isMultiline) {
                 element.appendChild(textArea);
             } else {

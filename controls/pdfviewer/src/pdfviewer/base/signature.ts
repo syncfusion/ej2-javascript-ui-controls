@@ -1863,6 +1863,9 @@ export class Signature {
         if ((sessionSize + currentAnnotation) > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
             this.pdfViewer.annotationModule.clearAnnotationStorage();
+            if(!(this.pdfViewerBase.isFormStorageExceed)){
+                this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+            }
         }
 
         // eslint-disable-next-line

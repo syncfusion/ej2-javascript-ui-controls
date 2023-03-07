@@ -1391,7 +1391,7 @@ export class ChartRows extends DateProcessor {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 const tempTemplateData: IGanttData = this.parent.currentViewData[i as number];
                 if (this.parent.viewType === 'ResourceView') {
-                    if (this.parent.editModule && this.parent.editModule.isResourceTaskDeleted) {
+                    if (this.parent.editModule && this.parent.editModule.isResourceTaskDeleted || this.parent.isFromOnPropertyChange) {
                         this.parent.initialChartRowElements = this.parent.ganttChartModule.getChartRows();
                         this.parent.editModule.isResourceTaskDeleted = false;
                     }
@@ -1912,7 +1912,10 @@ export class ChartRows extends DateProcessor {
                 addClass([cloneElement], 'collpse-parent-border');
                 const id: string = chartRows[i as number].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
                 const ganttData: IGanttData = this.parent.getRecordByID(id);
-                const zIndex: string = (ganttData.ganttProperties.eOverlapIndex).toString();
+                let zIndex: string = "";
+                if (ganttData && ganttData.ganttProperties.eOverlapIndex) {
+                   zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
+                }
                 const cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
                 cloneChildElement.style.zIndex = zIndex;
                 parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);

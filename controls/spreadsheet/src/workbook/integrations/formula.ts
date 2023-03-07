@@ -236,7 +236,7 @@ export class WorkbookFormula {
             this.addCustomFunction(<string | Function>args.functionHandler, <string>args.functionName, <string>args.formulaDescription );
             break;
         case 'computeExpression':
-            args.calcValue = this.calculateInstance.computeExpression(<string>args.formula);
+            args.calcValue = this.calculateInstance.computeExpression(<string>args.formula, <boolean>args.isFromComputeExpression);
             break;
         case 'registerGridInCalc':
             this.calculateInstance.grid = <string>args.sheetID;

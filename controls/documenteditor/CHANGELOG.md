@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I443034` - Resolved the font applying issue for Arabic content.
+- `#I439255` - Resolved issue in "Allow spacing between the cells" check box.
+- `#I438742` - Restricted editing in form field when it is disabled.
+
 ## 20.4.52 (2023-02-28)
 
 ### Document Editor

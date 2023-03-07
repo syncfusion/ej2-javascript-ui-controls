@@ -142,7 +142,7 @@ export class Marker extends MarkerExplode {
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
                 if (markerElement) {
-                    markerElement.setAttribute('role', 'data');
+                    markerElement.setAttribute('role', 'img');
                     markerElement.setAttribute('aria-label', (point.x + ': ' + point.y + ', ' + series.name));
                 }
                 appendChildElement(

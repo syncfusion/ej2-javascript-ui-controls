@@ -837,7 +837,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.element.className.indexOf('e-accumulationchart') === -1) {
             this.element.classList.add('e-accumulationchart');
         }
-        this.element.setAttribute('role', 'chart');
+        this.element.setAttribute('role', 'region');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-label', this.title);
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-accumulationchart-focused');

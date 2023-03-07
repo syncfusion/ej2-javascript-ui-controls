@@ -2172,6 +2172,21 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 const cntTrg: HTEle =
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
                 if (!isNOU(cntTrg)) {
+                    const registeredTemplate = (this as any).registeredTemplate;
+                    if (registeredTemplate && registeredTemplate.content) {
+                        var templateToClear = [];
+                        for (let i = 0; i < registeredTemplate.content.length; i++) {
+                            let registeredItem = registeredTemplate.content[i].rootNodes[0];
+                            let closestItem = closest(registeredItem, '.' + CLS_ITEM);
+                            if (!isNullOrUndefined(registeredItem) && closestItem === cntTrg) {
+                                templateToClear.push(registeredTemplate.content[i]);
+                                break;
+                            }
+                        }
+                        if (templateToClear.length > 0) {
+                            this.clearTemplate(['content'], templateToClear);
+                        }
+                    }
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);

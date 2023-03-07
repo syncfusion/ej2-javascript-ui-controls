@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.53 (2023-03-07)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I439470` - Resolved the files and folders in the navigation pane disappear when using the `sortOrder` setting in the `navigationPaneSettings` property in the File Manager component.
+
 ## 20.4.51 (2023-02-21)
 
 ### File Manager

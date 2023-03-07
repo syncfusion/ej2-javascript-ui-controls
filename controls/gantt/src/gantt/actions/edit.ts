@@ -752,7 +752,28 @@ export class Edit {
      * @private
      */
     public initiateUpdateAction(args: ITaskbarEditedEventArgs): void {
-        const isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
+        let isValidatePredecessor: boolean = this.isCheckPredecessor(args.data);
+        let parentData:any;
+        let childRecordIndex:any;
+        if (!isNullOrUndefined(args.data.parentItem) && !isValidatePredecessor) {
+            parentData = this.parent.getRecordByID(args.data.parentItem.taskId)
+            if (this.isTaskbarMoved(args.data) && this.parent.predecessorModule.getValidPredecessor(parentData).length > 0
+            && this.parent.isInPredecessorValidation) {
+                isValidatePredecessor  = true;
+            } else {
+                isValidatePredecessor  = false;
+            }
+        } else if (args.data.childRecords.length > 0 && !isValidatePredecessor) {
+            isValidatePredecessor = this.isCheckPredecessor(args.data);
+            if (!isValidatePredecessor && this.isTaskbarMoved(args.data) ) {
+                for (var i = 0; i<args.data.childRecords.length; i++) {
+                    if ( this.parent.predecessorModule.getValidPredecessor(args.data.childRecords[i]).length > 0) {
+                        childRecordIndex = i;
+                        isValidatePredecessor  = true;
+                    }
+                }
+            }
+        }
         this.taskbarMoved = this.isTaskbarMoved(args.data);
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
@@ -761,7 +782,13 @@ export class Edit {
         }
         let validateObject: object = {};
         if (isValidatePredecessor) {
-            validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
+            if (!isNullOrUndefined(parentData)) {
+                validateObject = this.parent.connectorLineEditModule.validateTypes(parentData,args.data);
+            } else if (!isNullOrUndefined(childRecordIndex)) {
+                validateObject = this.parent.connectorLineEditModule.validateTypes(args.data.childRecords[childRecordIndex],args.data);
+            } else {
+                validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
+            }
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
                 const newArgs: IValidateArgs = this.validateTaskEvent(args);

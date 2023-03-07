@@ -80,7 +80,7 @@ export class CommentReviewPane {
             this.updateTabHeaderWidth();
             if (show) {
                 this.parentPaneElement.style.display = 'block';
-                if (tab === 'Changes') {
+                if (tab === 'Changes' && this.owner.showRevisions) {
                     this.isCommentTabVisible = false;
                     this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: true });
                     this.reviewTab.select(1);
@@ -89,11 +89,16 @@ export class CommentReviewPane {
                     this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible, isUserClosed: false });
                     this.reviewTab.select(0);
                 }
-                this.owner.trackChangesPane.updateTrackChanges(show);
+                this.owner.trackChangesPane.updateTrackChanges(this.owner.showRevisions);
                 this.commentPane.updateCommentStatus();
             }
             else {
                 this.parentPaneElement.style.display = 'none';
+            }
+            if(!this.owner.showRevisions) {
+                this.owner.trackChangesPane.isChangesTabVisible = false;
+                this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: this.owner.trackChangesPane.isChangesTabVisible });
+                this.reviewTab.hideTab(1, true);
             }
         }
         if (show) {
@@ -102,7 +107,9 @@ export class CommentReviewPane {
         }
         if (this.owner) {
             this.owner.resize();
+            this.owner.documentHelper.updateFocus();
         }
+        
     }
 
     public reviewPaneHelper(args: any): void {

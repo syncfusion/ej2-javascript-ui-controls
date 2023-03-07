@@ -6,7 +6,7 @@ import { getModules, ModuleLoader } from '../common/index';
 import { CommonErrors, FormulasErrorsStrings } from '../common/enum';
 import { IFormulaColl, FailureEventArgs, StoredCellInfo } from '../common/interface';
 import { Parser } from './parser';
-import { getRangeIndexes, getCellIndexes, getCellAddress, isNumber } from '../../workbook/index';
+import { getRangeIndexes, getCellIndexes, getCellAddress, isNumber, isDateTime } from '../../workbook/index';
 
 /**
  * Represents the calculate library.
@@ -419,8 +419,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (dateVal > 60) {
             dateVal -= 1; // Due to leap year issue of 1900 in MSExcel.
         }
-
-        return new Date(((dateVal - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
+        const startDate: Date = new Date('01/01/1900');
+        const startDateUTC: number = Date.UTC(
+            startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
+            startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
+        return new Date(new Date(((dateVal - 1) * (1000 * 3600 * 24)) + startDateUTC).toUTCString().replace(' GMT', ''));
     }
 
     public getFormulaInfoTable(): Map<string, FormulaInfo> {
@@ -882,13 +885,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * Compute the given formula.
      *
      * @param {string} formulaText - Specifies to compute the given formula.
+     * @param {boolean} isFromComputeExpression - Specifies to confirm it was called from the ComputeExpression function.
      * @returns {string | number} - compute the given formula
      */
-    public computeFormula(formulaText: string): string | number {
-        return this.calculateFormula(formulaText, false);
+    public computeFormula(formulaText: string, isFromComputeExpression?: boolean): string | number {
+        return this.calculateFormula(formulaText, false, isFromComputeExpression);
     }
 
-    private calculateFormula(formulaText: string, refresh: boolean): string | number {
+    private calculateFormula(formulaText: string, refresh: boolean, isFromComputeExpression?: boolean): string | number {
         let parsedText: string;
         let lastIndexOfq: number;
         let formulatResult: string | number;
@@ -964,6 +968,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             }
                         }
                         if (nestedFormula && libFormula && libFormula === 'IF') { args.push('nestedFormulaTrue'); }
+                        if (isFromComputeExpression && libFormula === 'UNIQUE') { args.push('isComputeExp'); }
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
@@ -2124,13 +2129,27 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {string} val - Specifies the value.
+     * @returns {boolean} - Returns boolean value.
+     */
+    public isNumber(val: string | number): boolean {
+        return val as number - parseFloat(val as string) >= 0;
+    }
+
+    /**
+     * @hidden
      * @param {number} doubleNumber - To specify the double number
      * @returns {Date} - Returns date.
      */
     public fromOADate(doubleNumber: number): Date {
-        const result: Date = new Date();
-        result.setTime((doubleNumber * this.millisecondsOfaDay) + Date.parse(this.oaDate.toString()));
-        return result;
+        doubleNumber = (doubleNumber > 0 && doubleNumber < 1) ? (1 + doubleNumber) : (doubleNumber === 0) ? 1 : doubleNumber;
+        if (doubleNumber > 60) {
+            doubleNumber -= 1; // Due to leap year issue of 1900 in MSExcel.
+        }
+        const result: Date = new Date('01/01/1900');
+        const resultDateUTC: number = Date.UTC(result.getFullYear(), result.getMonth(), result.getDate(), result.getHours(), 
+        result.getMinutes(), result.getSeconds(), result.getMilliseconds());
+        return new Date(new Date(((doubleNumber - 1) * (this.millisecondsOfaDay)) + resultDateUTC).toUTCString().replace(' GMT', ''));
     }
 
     /**
@@ -2206,11 +2225,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /**
      * @hidden
      * @param {Date} dateTime - Specify the date Time
+     * @param {boolean} isTime - Specify the boolean value.
+     * @param {boolean} isTimeOnly - Specify the value is only a time without date.
      * @returns {number} -  returns to date.
      */
-    public toOADate(dateTime: Date): number {
-        const result: number = (dateTime.getTime() - this.oaDate.getTime()) / this.millisecondsOfaDay;
-        return result;
+    public toOADate(dateTime: Date, isTime?: boolean, isTimeOnly?: boolean): number {
+        const startDate: Date = new Date('01/01/1900');
+        const date: Date = isDateTime(dateTime) ? dateTime : new Date(dateTime);
+        const startDateUTC: number = Date.UTC( startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
+        const dateUTC: number = Date.UTC( date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+        const diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
+        return (isTime ? diffDays : parseInt(diffDays.toString(), 10)) + (isTimeOnly ? 0 : (diffDays > 60 ? 2 : 1));
     }
 
     /**
@@ -2271,7 +2296,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             dateTime = this.isDate(arg.split(this.tic).join(''));
             if (this.isNaN(this.parseFloat(arg.split(this.tic).join(''))) && !isNullOrUndefined(dateTime) &&
                 !this.isNaN(dateTime.getDate()) && this.dateTime1900 <= dateTime) {
-                return this.toOADate(dateTime).toString();
+                return this.toOADate(dateTime, true).toString();
             }
             return arg;
         } else {
@@ -2933,12 +2958,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
-     * @param {string} formula - Specify the formula
+     * @param {string} formula - Specify the formula.
+     * @param {boolean} isFromComputeExpression - Specifies to confirm it was called from the ComputeExpression function.
      * @returns {string | number} - To compute the expression.
      */
-    public computeExpression(formula: string): string | number {
+    public computeExpression(formula: string, isFromComputeExpression?: boolean): string | number {
         const parsedFormula: string = this.parser.parseFormula(formula);
-        const calcValue: string | number = this.computeFormula(parsedFormula);
+        const calcValue: string | number = this.computeFormula(parsedFormula, isFromComputeExpression);
         return calcValue;
     }
 

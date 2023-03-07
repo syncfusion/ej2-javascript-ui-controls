@@ -549,7 +549,8 @@
       }
     }
 
-    .e-ftrchk.e-chkfocus {
+    .e-ftrchk.e-chkfocus,
+    li.e-cclist.e-colfocus {
       background-color: $grid-hover-bg-color;
     }
   }

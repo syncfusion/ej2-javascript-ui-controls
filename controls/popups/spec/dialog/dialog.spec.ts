@@ -1860,6 +1860,42 @@ describe('Isprimary Button Action while focus on form element', () => {
             destroyDialog(events);
         });
     });
+    
+    describe('modal dialog focused', () => {
+        let events: any;
+        let eventArgs: any;
+        let target: HTMLElement;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+            target = createElement('div', { id: 'block' });
+            document.body.appendChild(target);
+            events = new Dialog({
+                isModal: true,
+                target: target,
+                animationSettings: { effect: 'None' },
+                buttons: [
+                    {
+                        buttonModel: { content: 'OK', isPrimary: true }
+                    },
+                ]
+            });
+            events.appendTo(ele);
+        });
+
+        it('Esc key press to hide testing ', (done) => {
+            eventArgs = { keyCode: 27, altKey: false, ctrlKey: false, shiftKey: false };
+            events.keyDown(eventArgs);
+            setTimeout(() => {
+                expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
+                done();
+            });
+        });
+
+        afterAll((): void => {
+            destroyDialog(events);
+        });
+    });
 
     describe('EJ2-51744 - Styles are not properly removed from the body when open and close the fullscreen modal dialog', () => {
         let events: any;

@@ -10073,7 +10073,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (this.constraints & DiagramConstraints.LineRouting) && !(this.diagramActions & DiagramAction.ToolAction)) {
                 this.lineRoutingModule.renderVirtualRegion(this, true);
                 // EJ2-65876 - Exception occurs on line routing injection module
-                if (actualObject.sourceID !== actualObject.targetID ){
+                if (actualObject.sourceID !== actualObject.targetID && actualObject.segments.length>1){
+                    //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
                     this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
                 }
             }

@@ -222,9 +222,7 @@ export class TableOptionsDialog {
         tableFormat.topMargin = this.topMarginBox.value;
         tableFormat.bottomMargin = this.bottomMarginBox.value;
         tableFormat.rightMargin = this.rightMarginBox.value;
-        if (this.allowSpaceCheckBox.checked) {
-            tableFormat.cellSpacing = this.cellSpaceTextBox.value;
-        }
+        tableFormat.cellSpacing = this.cellSpaceTextBox.value;
     }
     /**
      * @private
@@ -276,6 +274,7 @@ export class TableOptionsDialog {
             this.cellSpaceTextBox.enabled = true;
         } else {
             this.cellSpaceTextBox.enabled = false;
+            this.cellSpaceTextBox.value = 0;
         }
     };
     /**

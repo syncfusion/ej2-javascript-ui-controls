@@ -136,7 +136,7 @@ export class VirtualScroll {
             }
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
                 this.parent.showSpinner();
-                const selectedEle: Element[] = this.parent.getSelectedElements();
+                const selectedEle: Element[] = this.parent.getSelectedCells();
                 this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
                 this.updateContent(resWrap, conWrap, eventWrap, resCollection);
                 this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
@@ -329,7 +329,7 @@ export class VirtualScroll {
 
     private updateHorizontalContent(conWrap: HTMLElement, resCollection: TdData[]): void {
         this.parent.resourceBase.expandedResources = resCollection;
-        const selectedEle: Element[] = this.parent.getSelectedElements();
+        const selectedEle: Element[] = this.parent.getSelectedCells();
         this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
         const renderedLength: number = conWrap.querySelectorAll('tbody tr').length;
         for (let i: number = 0; i < renderedLength; i++) {

@@ -536,7 +536,7 @@ export class EventBase {
             return;
         }
         const activeEle: Element = document.activeElement;
-        const selectedCell: Element[] = this.parent.getSelectedElements();
+        const selectedCell: Element[] = this.parent.getSelectedCells();
         if (selectedCell.length > 0 && ((activeEle && (this.parent.element.contains(activeEle) ||
             selectedCell.indexOf(activeEle) !== -1)) || isFocused)) {
             if (this.parent.keyboardInteractionModule) {

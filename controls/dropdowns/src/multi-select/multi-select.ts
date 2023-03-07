@@ -4384,6 +4384,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public render(): void {
         this.setDynValue = this.initStatus = false;
         this.isSelectAll = false;
+        this.selectAllEventEle = [];
         this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '')});
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
         this.overAllClear = this.createElement('span', {

@@ -1152,7 +1152,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     if (!openEventArgs.preventFocus) {
                         this.focusContent();
                     }
-                    this.bindEvent(this.element);
                 });
             },
             // eslint-disable-next-line
@@ -1604,6 +1603,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.focus();
         }
         node.focus();
+        this.unBindEvent(this.element);
+        this.bindEvent(this.element);
     }
 
     private bindEvent(element: HTMLElement): void {
