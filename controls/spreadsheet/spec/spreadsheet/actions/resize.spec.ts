@@ -726,4 +726,186 @@ describe('Resize ->', () => {
             });
         });
     });
+    describe('EJ2-70281 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ width: 150 }, { width: 150 }, { width: 150 }] }] }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Spreadsheet misbehaves when increasing the font size to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('14pt');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size and font family to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].style.fontSize).toBe('14pt');
+                expect(spreadsheet.sheets[0].rows[30].cells[0].style.fontFamily).toBe('Arial Black');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('28px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(28);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply bold to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ fontWeight: 'bold', fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('14pt');
+                expect(spreadsheet.sheets[0].rows[50].cells[0].style.fontWeight).toBe('bold');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply font style italic to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ fontStyle: 'italic', fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].style.fontSize).toBe('14pt');
+                expect(spreadsheet.sheets[0].rows[30].cells[0].style.fontStyle).toBe('italic');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply font decoration underline to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ textDecoration: 'underline', fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].style.fontSize).toBe('14pt');
+                expect(spreadsheet.sheets[0].rows[30].cells[0].style.textDecoration).toBe('underline');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply font decoration strike through to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ textDecoration: 'underline line-through', fontSize: '14pt' }, 'A1:A200');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].style.fontSize).toBe('14pt');
+                expect(spreadsheet.sheets[0].rows[30].cells[0].style.textDecoration).toBe('underline line-through');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply conditional formatting through to entire column', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'F1:F100' }]);
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'G1:G100' }]);
+            helper.invoke('conditionalFormat', [{ type: 'ThreeArrows', range: 'D2:D11' }]);
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [2, 6]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            const cell: HTMLElement = helper.invoke('getCell', [2, 5]);
+            expect(cell.style.fontSize).toBe('');
+            helper.invoke('cellFormat', [{ fontSize: '14pt' }, 'Sheet1!F1:F100']);
+            helper.invoke('cellFormat', [{ fontSize: '14pt' }, 'Sheet1!G1:G100']);
+            helper.invoke('cellFormat', [{ fontSize: '14pt' }, 'Sheet1!H1:H100']);
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('100%');
+            expect(helper.invoke('getCell', [2, 6]).getElementsByClassName('e-databar')[1].style.height).toBe('100%');
+            expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+            expect(cell.style.fontSize).toBe('14pt');
+            done();
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the row heigth using setRowsHeight method', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowsHeight(40, ['1:50'])
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('40px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(40);
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply wrap text to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1:A100']);
+            helper.click('#spreadsheet_wrap');
+            setTimeout((): void => {
+                spreadsheet.cellFormat({ fontSize: '14pt' }, 'A1:A200');
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                let td: Element = helper.invoke('getCell', [3, 0]);
+                expect(td.classList).toContain('e-wraptext');
+                expect(td.parentElement.style.height).toBe('25px');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('14pt');
+                let secondtd: Element = helper.invoke('getCell', [15, 0]);
+                expect(secondtd.classList).toContain('e-wraptext');
+                expect(secondtd.parentElement.style.height).toBe('20px');
+                expect(spreadsheet.sheets[0].rows[15].cells[0].style.fontSize).toBe('14pt');
+                let thirdTd: Element = helper.invoke('getCell', [4, 0]);
+                expect(thirdTd.classList).toContain('e-wraptext');
+                expect(thirdTd.parentElement.style.height).toBe('25px');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].style.fontSize).toBe('14pt');
+                done();
+            });
+        });
+        it('Ensure the spreadsheet misbehaves when increasing the font size with apply borders to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setBorder({ borderLeft: '3px solid #e0e0e0' }, 'A1:A50');
+            spreadsheet.setBorder({ borderRight: '3px solid #e0e0e0' }, 'A1:A50');
+            spreadsheet.setBorder({ borderTop: '3px solid #e0e0e0' }, 'A1:A50');
+            spreadsheet.setBorder({ borderBottom: '3px solid #e0e0e0' }, 'A1:A50');
+            helper.invoke('selectRange', ['A1:A100']);
+            setTimeout((): void => {
+                spreadsheet.cellFormat({ fontSize: '14pt' }, 'A1:A100');
+                expect(spreadsheet.sheets[0].rows[3].cells[0].style.borderLeft).toBe('3px solid #e0e0e0');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].style.borderLeft).toBe('3px solid #e0e0e0');
+                expect(spreadsheet.sheets[0].rows[4].cells[0].style.fontSize).toBe('14pt');
+                done();
+            });
+        });
+        it('In freeze pane ensure the spreadsheet misbehaves when increasing the font size to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('freezePanes', [3, 3]);
+            setTimeout((): void => {
+                spreadsheet.cellFormat({ fontSize: '14pt' }, 'A1:A100');
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('14pt');
+                expect(helper.invoke('getRow', [0]).style.height).toBe('25px');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].style.fontSize).toBe('14pt');
+                expect(helper.invoke('getRow', [10]).style.height).toBe('25px');
+                done();
+            });
+        });
+    });
+    describe('EJ2-70281 => Increase the font size in finite mode', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rowCount: 150, colCount: 15, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true } }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Spreadsheet misbehaves when increasing the font size to entire column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.selectRange("A1:A200");
+            spreadsheet.cellFormat({ fontSize: '14pt' }, 'A1:A100');
+            setTimeout((): void => {
+                expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.fontSize).toBe('14pt');
+                expect(helper.invoke('getRow', [2]).style.height).toBe('25px');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(25);
+                done();
+            });
+        });
+    });
 });

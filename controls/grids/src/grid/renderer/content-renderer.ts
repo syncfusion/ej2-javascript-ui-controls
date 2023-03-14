@@ -136,13 +136,13 @@ export class ContentRender implements IRenderer {
                             this.parent.notify(events.freezeRender, { case: 'textwrap' });
                         }
                     });
-                    if (this.parent.allowTextWrap && this.parent.height === 'auto') {
-                        if (this.parent.getContentTable().scrollHeight > this.parent.getContent().clientHeight) {
-                            this.parent.scrollModule.setPadding();
-                        }
-                        else{
-                            this.parent.scrollModule.removePadding();
-                        }
+                }
+                if (this.parent.allowTextWrap && this.parent.height === 'auto') {
+                    if (this.parent.getContentTable().scrollHeight > this.parent.getContent().clientHeight) {
+                        this.parent.scrollModule.setPadding();
+                    }
+                    else{
+                        this.parent.scrollModule.removePadding();
                     }
                 }
             }
@@ -288,6 +288,12 @@ export class ContentRender implements IRenderer {
             this.initialPageRecords = extend([], dataSource);
         }
         const hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
+        let refFrag: DocumentFragment | HTMLElement;
+        let refHdrfrag: DocumentFragment;
+        if (gObj.isReact && gObj.rowTemplate) {
+            refFrag = frag;
+            refHdrfrag = hdrfrag;
+        }
         const columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; const frzCols: number = gObj.getFrozenColumns();
         const isFrozenGrid: boolean = this.parent.isFrozenGrid();
@@ -463,7 +469,29 @@ export class ContentRender implements IRenderer {
                     const copied: Object = extend({ index: i }, dataSource[parseInt(i.toString(), 10)]);
                     gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
                     if (gObj.requireTemplateRef) {
-                        gObj.renderTemplates();
+                        // eslint-disable-next-line @typescript-eslint/no-this-alias
+                        const thisRef: ContentRender = this;
+                        thisRef.parent.renderTemplates(function (): void {
+                            if (gObj.frozenRows && i < gObj.frozenRows) {
+                                tr = refHdrfrag.childNodes[parseInt(i.toString(), 10)] as Element;
+                            } else {
+                                trElement = refFrag.childNodes[parseInt(i.toString(), 10)] as Element;
+                            }
+                            const arg: RowDataBoundEventArgs = { data: modelData[parseInt(i.toString(), 10)].data,
+                                row: trElement ? trElement : tr };
+                            thisRef.parent.trigger(events.rowDataBound, arg);
+                            if (modelData[parseInt(i.toString(), 10)].isDataRow || (thisRef.parent.enableVirtualization &&
+                                thisRef.parent.groupSettings.enableLazyLoading)) {
+                                thisRef.rowElements.push(tr);
+                            }
+                            thisRef.ariaService.setOptions(thisRef.getTable() as HTMLElement, {
+                                colcount: gObj.getColumns().length.toString() });
+                            if (i === modelData.length - 1) {
+                                refFrag = null;
+                                refHdrfrag = null;
+                            }
+                        });
+                        continue;
                     }
                 } else {
                     elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[parseInt(i.toString(), 10)]), gObj, 'rowTemplate', rowTemplateID,

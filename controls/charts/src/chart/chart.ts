@@ -1663,7 +1663,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             this.animateSeries = false;
         }
-
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
     }
 
@@ -4161,6 +4160,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
+                        }
+                        if (this.availableSize && this.element) {
+                            this.element.style.height = (!this.element.style.height || this.element.style.height == 'inherit') ? (this.availableSize.height + 'px') : this.element.style.height;
                         }
                         if (seriesRefresh) {
                             this.calculateVisibleSeries();

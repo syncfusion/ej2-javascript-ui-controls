@@ -214,7 +214,7 @@ export class EditorManager {
                 { subCommand: value, event: event, callBack: callBack, value: text, selector: selector, enterAction: enterAction });
             break;
         case 'inserthtml':
-            this.observer.notify(CONSTANT.INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
+            this.observer.notify(CONSTANT.INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text, enterAction: enterAction});
             break;
         case 'inserttext':
             this.observer.notify(CONSTANT.INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });

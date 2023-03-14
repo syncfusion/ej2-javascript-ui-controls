@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings } from './engine';
+import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IField, IMembers } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -6,7 +6,7 @@ import { PivotView, PivotViewModel } from '../pivotview';
 import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SummaryTypes } from './types';
-import { IOlapField } from './olap/engine';
+import { IOlapField, IOlapFieldListOptions } from './olap/engine';
 import { HeadersSortEventArgs } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
@@ -144,6 +144,129 @@ export class PivotUtil {
         return clonesDataSource;
     }
 
+    public static getClonedFieldList(fieldListObj: IFieldListOptions | IOlapFieldListOptions): IFieldListOptions | IOlapFieldListOptions {
+        const keys: string[] = Object.keys(fieldListObj);
+        const clonedfieldlistObj: IOlapFieldListOptions = {};
+        for (let i: number = 0, keysLength = keys.length; i < keysLength; i++) {
+            let fieldlistObj: IOlapField = fieldListObj[keys[i]];
+            if (fieldListObj[keys[i as number]]) {
+                clonedfieldlistObj[keys[i as number]] = {
+                    type: fieldlistObj.type,
+                    caption: fieldlistObj.caption,
+                    id: fieldlistObj.id,
+                    isSelected: fieldlistObj.isSelected,
+                    sort: fieldlistObj.sort,
+                    filterType: fieldlistObj.filterType,
+                    index: fieldlistObj.index,
+                    filter: fieldlistObj.filter,
+                    isCustomField: fieldlistObj.isCustomField,
+                    showRemoveIcon: fieldlistObj.showRemoveIcon,
+                    showFilterIcon: fieldlistObj.showFilterIcon,
+                    showSortIcon: fieldlistObj.showSortIcon,
+                    showNoDataItems: fieldlistObj.showNoDataItems,
+                    isCalculatedField: fieldlistObj.isCalculatedField,
+                    showEditIcon: fieldlistObj.showEditIcon,
+                    showValueTypeIcon: fieldlistObj.showValueTypeIcon,
+                    allowDragAndDrop: fieldlistObj.allowDragAndDrop,
+                    showSubTotals: fieldlistObj.showSubTotals,
+                    expandAll: fieldlistObj.expandAll,
+                    pid: fieldlistObj.pid,
+                    aggregateType: fieldlistObj.aggregateType,
+                    baseField: fieldlistObj.baseField,
+                    baseItem: fieldlistObj.baseItem,
+                    dateMember: this.cloneDateMembers(fieldlistObj.dateMember),
+                    formattedMembers: this.cloneFormatMembers(fieldlistObj.formattedMembers),
+                    members: this.cloneFormatMembers(fieldlistObj.members),
+                    formatString: fieldlistObj.formatString,
+                    format: fieldlistObj.format,
+                    formula: fieldlistObj.formula,
+                    isExcelFilter: fieldlistObj.isExcelFilter,
+                    membersOrder: (fieldlistObj.membersOrder ? [...fieldlistObj.membersOrder] : fieldlistObj.membersOrder) as string[] | number[],
+                    isAlphanumeric: fieldlistObj.isAlphanumeric,
+                    tag: fieldlistObj.tag,
+                    expanded: fieldlistObj.expanded,
+                    spriteCssClass: fieldlistObj.spriteCssClass,
+                    name: fieldlistObj.name,
+                    defaultHierarchy: fieldlistObj.defaultHierarchy,
+                    hasAllMember: fieldlistObj.hasAllMember,
+                    allMember: fieldlistObj.allMember,
+                    isChecked: fieldlistObj.isChecked,
+                    filterMembers: this.cloneFieldMembers(fieldlistObj.filterMembers),
+                    childMembers: this.cloneFieldMembers(fieldlistObj.childMembers),
+                    searchMembers: this.cloneFieldMembers(fieldlistObj.searchMembers),
+                    htmlAttributes: this.getDefinedObj(fieldlistObj.htmlAttributes),
+                    currrentMembers: this.cloneFormatMembers(fieldlistObj.currrentMembers),
+                    isHierarchy: fieldlistObj.isHierarchy,
+                    isNamedSets: fieldlistObj.isNamedSets,
+                    actualFilter: fieldlistObj.actualFilter ? [...fieldlistObj.actualFilter] : fieldlistObj.actualFilter,
+                    levels: this.cloneFieldMembers(fieldlistObj.levels),
+                    levelCount: fieldlistObj.levelCount,
+                    fieldType: fieldlistObj.fieldType,
+                    memberType: fieldlistObj.memberType,
+                    parentHierarchy: fieldlistObj.parentHierarchy
+                };
+            }
+        }
+        return clonedfieldlistObj;
+    }
+
+    public static cloneDateMembers(collection: IAxisSet[]): IAxisSet[] {
+        if (collection) {
+            const clonedCollection: IAxisSet[] = [];
+            for (const set of collection) {
+                clonedCollection.push({
+                    formattedText: set.formattedText,
+                    actualText: set.actualText,
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    public static cloneFormatMembers(collection: IMembers): IMembers {
+        if (collection) {
+            const keys: string[] = Object.keys(collection);
+            const clonedFormatMembers: any = {}; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+            for (let i: number = 0, keysLength = keys.length; i < keysLength; i++) {
+                let cloneFormatMembersObj: IMembers = collection[keys[i]] as IMembers;
+                clonedFormatMembers[keys[i as number]] = {
+                    index: cloneFormatMembersObj.index ? [...(cloneFormatMembersObj.index as number[])] : cloneFormatMembersObj.index,
+                    isDrilled: cloneFormatMembersObj.isDrilled,
+                    ordinal: cloneFormatMembersObj.ordinal
+                }
+            }
+            return clonedFormatMembers;
+        } else {
+            return collection;
+        }
+    }
+
+    public static cloneFieldMembers(collection: IOlapField[]): IOlapField[] {
+        if (collection) {
+            const clonedCollection: IOlapField[] = [];
+            for (const set of collection) {
+                clonedCollection.push({
+                    caption: set.caption,
+                    hasChildren: set.hasChildren,
+                    id: set.id,
+                    isSelected: set.isSelected,
+                    name: set.name,
+                    tag: set.tag,
+                    htmlAttributes: this.getDefinedObj(set.htmlAttributes),
+                    type: set.type,
+                    spriteCssClass: set.spriteCssClass,
+                    pid: set.pid,
+                    isChecked: set.isChecked
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
     public static updateDataSourceSettings(control: PivotView | PivotFieldList, dataSourceSettings: IDataOptions): void {
         if (control) {
             this.setPivotProperties(control, {
@@ -246,7 +369,7 @@ export class PivotUtil {
                     filterMembers: set.filterMembers,
                     childMembers: set.childMembers,
                     searchMembers: set.searchMembers,
-                    htmlAttributes: set.htmlAttributes,
+                    htmlAttributes: this.getDefinedObj(set.htmlAttributes),
                     currrentMembers: set.currrentMembers,
                     isHierarchy: set.isHierarchy,
                     isNamedSets: set.isNamedSets,

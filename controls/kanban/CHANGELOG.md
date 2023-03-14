@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I432638` - Now, when using the kanban `sortSettings` the cards are dropped and sorted properly.
+
 ## 20.4.44 (2023-01-18)
 
 ### Kanban

@@ -1469,4 +1469,45 @@ describe('Batch Edit module', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
   });
+
+  describe('EJ2-70058 -When rowdd is enabled with batch edit mode, the expand/collapse icon is not shown for the edited cell', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
+          allowFiltering: true,
+          allowRowDragAndDrop: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Batch edit with rowDragandDrop', (done: Function) => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = "plannings";
+      gridObj.grid.keyboardModule.keyAction({ action: 'enter',preventDefault: preventDefault,  target: (<any>gridObj.getContent().querySelector('.e-row')).cells[2] } as any);
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true);
+      done()
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

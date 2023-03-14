@@ -616,10 +616,15 @@ export class VirtualScroll {
     }
 
     private updateVTrackHeight(args: { rowIdx: number, threshold: number }): void {
+        const frozenRow: number = this.parent.frozenRowCount(this.parent.getActiveSheet());
         if (args.rowIdx < this.scroll[this.parent.activeSheetIndex].rowCount) {
             this.updateVTrack(this.rowHeader, this.getVTrackHeight('height') + args.threshold, 'height');
         }
-        if (args.rowIdx < this.parent.viewport.topIndex || args.rowIdx > this.parent.viewport.bottomIndex) {
+        if (args.rowIdx >= frozenRow && args.rowIdx < this.parent.viewport.topIndex + frozenRow) {
+            const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
+            this.parent.scrollModule.prevScroll.scrollTop= mainPanel.scrollTop+args.threshold;
+            this.parent.scrollModule.offset.top.size += args.threshold;
+            mainPanel.scrollTop += args.threshold;
             this.translateY += args.threshold;
             this.translate({ refresh: 'Row' });
         }

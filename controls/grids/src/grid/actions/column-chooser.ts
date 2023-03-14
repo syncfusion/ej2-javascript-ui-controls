@@ -753,10 +753,12 @@ export class ColumnChooser implements IAction {
 
     private addcancelIcon(): void {
         this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
+        this.dlgDiv.querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
     }
 
     private removeCancelIcon(): void {
         this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
+        this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
     }
 
     private mOpenDlg(): void {

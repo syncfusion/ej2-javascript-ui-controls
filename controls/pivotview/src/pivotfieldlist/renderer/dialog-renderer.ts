@@ -136,8 +136,7 @@ export class DialogRenderer {
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
-        this.deferUpdateCancelButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.cancelButtonClick.bind(this) :
-            this.onCloseFieldList.bind(this);
+        this.deferUpdateCancelButton.element.onclick = this.onCloseFieldList.bind(this);
     }
 
     private createDeferUpdateButtons(): HTMLElement {
@@ -194,7 +193,7 @@ export class DialogRenderer {
                 this.deferUpdateCancelButton.isPrimary = true;
             }
         }
-        this.cancelButtonClick();
+        this.onCloseFieldList(null, true);
     }
     private applyButtonClick(): void {
         if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
@@ -209,22 +208,47 @@ export class DialogRenderer {
         }
         parent.clonedFieldList = extend({}, parent.pivotFieldList, null, true) as IFieldListOptions;
     }
-    private cancelButtonClick(): void {
-        this.parent.
-            setProperties({
-                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
-            }, true);
-        if (this.parent.dataType === 'olap') {
-            this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
-            for (const name of Object.keys(this.parent.clonedFieldList)) {
-                const item: IOlapField = this.parent.clonedFieldList[name as string];
-                this.parent.olapEngineModule.updateFieldlistData(item.id, item.isSelected);
+    private onCloseFieldList(args?: MouseEventArgs, isDeferLayoutEnabled?: boolean): void {
+        if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView ||
+            (this.parent.pivotGridModule && this.parent.pivotGridModule.actionObj.actionName !== '') || this.parent.actionObj.actionName !== '')) {
+            this.parent.
+                setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                }, true);
+            if (this.parent.dataType === 'olap') {
+                this.parent.olapEngineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
+                if (!this.parent.isPopupView) {
+                    for (const name of Object.keys(this.parent.clonedFieldList)) {
+                        const item: IOlapField = this.parent.clonedFieldList[name as string];
+                        this.parent.olapEngineModule.updateFieldlistData(item.id, item.isSelected);
+                    }
+                } else if (this.parent.isPopupView && this.parent.clonedFieldListData && Object.keys(this.parent.clonedFieldListData).length > 0) {
+                    this.parent.olapEngineModule.fieldListData = this.parent.clonedFieldListData as IOlapField[];
+                }
+            } else {
+                this.parent.engineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
             }
-        } else {
-            this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
+            this.parent.updateDataSource(false, true);
         }
-        this.parent.updateDataSource(false, true);
-    }
+        if (this.parent.allowDeferLayoutUpdate && this.parent.isPopupView && this.parent.pivotGridModule && !this.parent.isAdaptive) {
+            this.parent.pivotGridModule.actionObj.actionName = '';
+            this.parent.pivotGridModule.engineModule = this.parent.engineModule;
+            this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
+            this.parent.pivotGridModule.
+                setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                }, true);
+        }
+        if (this.parent.renderMode === 'Popup' && !isDeferLayoutEnabled) {
+            this.parent.dialogRenderer.fieldListDialog.hide();
+            this.parent.actionObj.actionName = events.closeFieldlist;
+        } else {
+            this.parent.actionObj.actionName = events.actionDropped;
+        }
+        if (this.parent.actionObj.actionName) {
+            this.parent.actionCompleteMethod();
+        }
+    };
     private renderFieldListDialog(fieldListWrappper: HTMLElement): void {
         const toggleFieldList: HTMLElement = createElement('div', {
             className: cls.TOGGLE_FIELD_LIST_CLASS + ' ' + cls.ICON + ' ' + cls.TOGGLE_SELECT_CLASS,
@@ -545,43 +569,6 @@ export class DialogRenderer {
                     '0px' : this.parent.dialogRenderer.fieldListDialog.element.style.top;
         } catch (execption) {
             this.parent.actionFailureMethod(execption);
-        }
-    }
-
-    private onCloseFieldList(args: MouseEventArgs): void {
-        if (this.parent.allowDeferLayoutUpdate) {
-            this.parent.dataSourceSettings =
-                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
-            if (this.parent.isPopupView && this.parent.pivotGridModule) {
-                this.parent.pivotGridModule.engineModule = this.parent.engineModule;
-                this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
-                this.parent.pivotGridModule.
-                    setProperties({
-                        dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
-                    }, true);
-            }
-            if (Object.keys(this.parent.clonedFieldList).length > 0) {
-                if (this.parent.dataType === 'olap' && this.parent.clonedFieldListData && Object.keys(this.parent.clonedFieldListData).length > 0) {
-                    this.parent.olapEngineModule.fieldListData = this.parent.clonedFieldListData as IOlapField[];
-                    this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
-                }
-                else {
-                    this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
-                }
-            }
-            if (this.parent.isPopupView && this.parent.pivotGridModule) {
-                this.parent.pivotGridModule.notify(events.uiUpdate, this);
-                if (!(args.currentTarget as Element).classList.contains('e-defer-cancel-button')) {
-                    this.parent.pivotGridModule.notify(events.contentReady, this);
-                }
-            } else {
-                this.cancelButtonClick();
-            }
-        }
-        this.parent.dialogRenderer.fieldListDialog.hide();
-        this.parent.actionObj.actionName = events.closeFieldlist;
-        if (this.parent.actionObj.actionName) {
-            this.parent.actionCompleteMethod();
         }
     }
 

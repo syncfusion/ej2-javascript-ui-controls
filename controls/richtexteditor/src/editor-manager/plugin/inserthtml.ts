@@ -25,7 +25,9 @@ export class InsertHtml {
         'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
         'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
     public static contentsDeleted: boolean = false;
-    public static Insert(docElement: Document, insertNode: Node | string, editNode?: Element, isExternal?: boolean): void {
+    public static Insert(
+        docElement: Document, insertNode: Node | string,
+        editNode?: Element, isExternal?: boolean, enterAction?: string): void {
         let node: Node;
         if (typeof insertNode === 'string') {
             const divNode: HTMLElement = document.createElement('div');
@@ -45,7 +47,8 @@ export class InsertHtml {
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
         if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
-            range.startOffset === range.endOffset && editNode.textContent.length === 0 && editNode.children[0].tagName === 'P') {
+            range.startOffset === range.endOffset && editNode.textContent.length === 0 &&
+            (editNode.children[0].tagName === 'P' || (editNode.children[0].tagName === 'BR'))) {
             nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0],
                                            (range.startContainer as HTMLElement).children[0], 0, 0);
             range = nodeSelection.getRange(docElement);
@@ -67,7 +70,7 @@ export class InsertHtml {
         if (isExternal || (!isNOU(node) && !isNOU((node as HTMLElement).classList) &&
         (node as HTMLElement).classList.contains('pasteContent'))) {
             this.pasteInsertHTML(
-                nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode);
+                nodes, node, range, nodeSelection, nodeCutter, docElement, isCollapsed, closestParentNode, editNode, enterAction);
             return;
         }
         if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
@@ -171,7 +174,7 @@ export class InsertHtml {
     private static pasteInsertHTML(
         nodes: Node[], node: Node, range: Range,
         nodeSelection: NodeSelection, nodeCutter: NodeCutter,
-        docElement: Document, isCollapsed: boolean, closestParentNode: Node, editNode?: Element): void {
+        docElement: Document, isCollapsed: boolean, closestParentNode: Node, editNode?: Element, enterAction?: string): void {
         const isCursor: boolean = range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer;
         if (isCursor && range.startContainer === editNode && editNode.textContent === '') {
@@ -265,7 +268,11 @@ export class InsertHtml {
                             const firstParaElm: HTMLElement = createElement('p');
                             (node as HTMLElement).parentElement.insertBefore(firstParaElm, node);
                         }
-                        (node as HTMLElement).previousElementSibling.appendChild(node.firstChild);
+                        if ((node as HTMLElement).previousElementSibling.nodeName === 'BR') {
+                            (node as HTMLElement).parentElement.insertBefore(node.firstChild, node);
+                        } else {
+                            (node as HTMLElement).previousElementSibling.appendChild(node.firstChild);
+                        }
                     } else {
                         lastSelectionNode = node.firstChild;
                         if (node.firstChild.nodeName === '#text' ||
@@ -290,7 +297,7 @@ export class InsertHtml {
         if (lastSelectionNode.nodeName === '#text') {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
         } else {
-            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
+            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }
     }
     private static placeCursorEnd(
@@ -401,9 +408,10 @@ export class InsertHtml {
         }
     }
     private static cursorPos(
-        lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
+        lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document,
+        editNode?: Element, enterAction?: string): void {
         (lastSelectionNode as HTMLElement).classList.add('lastNode');
-        editNode.innerHTML = updateTextNode(editNode.innerHTML);
+        editNode.innerHTML = updateTextNode(editNode.innerHTML, enterAction);
         lastSelectionNode = (editNode as HTMLElement).querySelector('.lastNode');
         if (!isNOU(lastSelectionNode)) {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);

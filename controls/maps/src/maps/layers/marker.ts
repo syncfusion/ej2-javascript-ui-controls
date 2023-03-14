@@ -235,7 +235,7 @@ export class Marker {
                     }
                     let markerFactor: number;
                     if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
-                        zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
+                        zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps, false);
                         if (this.maps.isTileMap) {
                             markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
                                 zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?

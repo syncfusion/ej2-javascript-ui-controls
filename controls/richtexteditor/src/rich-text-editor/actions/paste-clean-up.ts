@@ -674,7 +674,7 @@ export class PasteCleanup {
                     extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                     this.parent.formatter.onSuccess(this.parent, args);
                 },
-                clipBoardElem
+                clipBoardElem, null, null, this.parent.enterKey
             );
             this.removeTempClass();
             this.parent.notify(events.toolbarRefresh, {});
@@ -752,7 +752,7 @@ export class PasteCleanup {
                     extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                     this.parent.formatter.onSuccess(this.parent, args);
                 },
-                clipBoardElem
+                clipBoardElem, null, null, this.parent.enterKey
             );
             this.removeTempClass();
         } else {

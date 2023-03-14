@@ -110,7 +110,7 @@ export class SelectionCharacterFormat {
         if (value === this.fontFamilyIn) {
             return;
         }
-        this.fontFamilyIn = value;
+        this.fontFamilyIn = this.renderedFontFamilyIn = value;
         this.notifyPropertyChanged('fontFamily');
     }
     /**

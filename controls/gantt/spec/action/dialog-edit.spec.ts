@@ -2507,6 +2507,119 @@
 	it('EJ2-48816 - Adding new task with empty string', () => {
             ganttObj.openEditDialog(3);
         });
-    }); 
+    });
+    describe('edit Date in dialog edit', () => {
+         let ganttObj: Gantt;
+         let editingData = [
+             {
+                 TaskID: 1,
+                 TaskName: 'Project initiation',
+                 StartDate: new Date('04/03/2019'),
+                 EndDate: new Date('04/21/2019'),
+                 Duration: 1,
+             },
+             {
+                 TaskID: 2,
+                 TaskName: 'Identify site location',
+                 StartDate: new Date('04/04/2019'),
+                 Duration: 1,
+                 Predecessor: '1FS',
+             },
+         ];
+         beforeAll(function (done) {
+             ganttObj = createGantt({
+                 dataSource: editingData,
+                 allowSorting: true,
+                 allowReordering: true,
+                 enableContextMenu: true,
+                 taskFields: {
+                     id: 'TaskID',
+                     name: 'TaskName',
+                     startDate: 'StartDate',
+                     duration: 'Duration',
+                     progress: 'Progress',
+                     dependency: 'Predecessor',
+                     baselineStartDate: "BaselineStartDate",
+                     baselineEndDate: "BaselineEndDate",
+                     child: 'subtasks',
+                     indicators: 'Indicators'
+                 },
+                 renderBaseline: true,
+                 baselineColor: 'red',
+                 editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     allowTaskbarEditing: true,
+                     showDeleteConfirmDialog: true
+                 },
+                 columns: [
+                     { field: 'TaskID', headerText: 'Task ID' },
+                     { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                     { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                     { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                     { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                     { field: 'CustomColumn', headerText: 'CustomColumn' }
+                 ],
+                 sortSettings: {
+                     columns: [{ field: 'TaskID', direction: 'Ascending' },
+                     { field: 'TaskName', direction: 'Ascending' }]
+                 },
+                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                     'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                 allowExcelExport: true,
+                 allowPdfExport: true,
+                 allowSelection: false,
+                 enableVirtualization: false,
+                 allowRowDragAndDrop: true,
+                 splitterSettings: {
+                     position: "50%",
+                 },
+                 tooltipSettings: {
+                     showTooltip: true
+                 },
+                 filterSettings: {
+                     type: 'Menu'
+                 },
+                 allowFiltering: true,
+                 gridLines: "Both",
+                 showColumnMenu: true,
+                 highlightWeekends: true,
+                 allowResizing: true,
+                 readOnly: false,
+                 taskbarHeight: 20,
+                 rowHeight: 40,
+                 height: '550px',
+                 allowUnscheduledTasks: true,
+                 projectStartDate: new Date('03/25/2019'),
+                 projectEndDate: new Date('05/30/2019'),
+             }, done);
+         });
+         afterAll(() => {
+             if (ganttObj) {
+                 destroyGantt(ganttObj);
+             }
+         });
+         beforeEach((done) => {
+             setTimeout(done, 1000);
+             ganttObj.openEditDialog(1);
+         });
+         it('Change dates of predecessor record', () => {
+             ganttObj.actionComplete = function (args: any): void {
+                 if (args.action === "DialogEditng") {
+                     expect(ganttObj.getFormatedDate(args.modifiedRecords[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/2/2019')
+                 }
+             };
+             ganttObj.dataBind();
+             let startDateField: any = document.querySelector('#' + ganttObj.element.id + 'StartDate') as HTMLInputElement;
+             if (startDateField) {
+                 let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+                 textObj.value = new Date('04/02/2019');
+                 textObj.dataBind();
+                 let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+                 triggerMouseEvent(saveRecord, 'click');
+             }
+         });
+     });	 
  });
  

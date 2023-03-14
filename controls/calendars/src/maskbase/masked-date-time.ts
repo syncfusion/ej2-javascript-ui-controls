@@ -97,7 +97,7 @@ export class MaskedDateTime {
         this.parent.off('clearHandler', this.clearHandler);
     }
 
-    private createMask(dateformat : string): void {
+    private createMask(navigated: boolean = false): void {
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = false;
         this.dateformat = this.getCulturedFormat();
         
@@ -137,6 +137,7 @@ export class MaskedDateTime {
         this.mask = this.previousValue = inputValue;
         this.parent.maskedDateValue = this.mask;
         if (this.parent.value) {
+            this.navigated = navigated;
             this.setDynamicValue();
         }
     }
@@ -168,7 +169,7 @@ export class MaskedDateTime {
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true
         this.updateValue();
         // this.parent.inputElement.selectionStart = start;
-        // this.validCharacterCheck();
+        this.validCharacterCheck();
     }
     private setSelection(validChar : string): void {
         let start: number = -1;

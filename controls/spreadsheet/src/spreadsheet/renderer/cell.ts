@@ -6,10 +6,10 @@ import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, g
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol} from '../../workbook/base/index';
 import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
-import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { addClass, attributes, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
-import { checkIsFormula, ApplyCFArgs, NumberFormatArgs } from '../../workbook/common/index';
+import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel } from '../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *
@@ -124,7 +124,8 @@ export class CellRenderer implements ICellRenderer {
     private update(args: CellRenderArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
-        if (compiledTemplate && !args.isRefresh) {
+        // In SF-425413 ticket, we suggested to add the template property in the cell model to render the template using updateCell method.
+        if (compiledTemplate && (!args.isRefresh || (args.cell && (args.cell as ExtendedCellModel).template))) {
             if (typeof compiledTemplate === 'string') {
                 args.td.innerHTML = compiledTemplate;
             } else {

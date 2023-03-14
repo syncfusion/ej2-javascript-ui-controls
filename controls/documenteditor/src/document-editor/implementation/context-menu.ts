@@ -858,9 +858,11 @@ export class ContextMenu {
                     hyperlink.classList.remove('e-disabled');
                 }
             }
-            if (field instanceof FieldElementBox && !selection.isImageField() && !isCrossRefField) {
+            if (field instanceof FieldElementBox && !isCrossRefField) {
                 openHyperlink.style.display = 'block';
-                copyHyperlink.style.display = 'block';
+                if(!selection.isImageField()){
+                    copyHyperlink.style.display = 'block';
+                }
                 if (owner.hyperlinkDialogModule) {
                     editHyperlink.style.display = 'block';
                 }

@@ -2160,7 +2160,7 @@ export class TaskProcessor extends DateProcessor {
 
         if (childGanttRecord.hasChildRecords) {
             setValue('totalProgress', childGanttRecord.ganttProperties.totalProgress, progressValues);
-            setValue('totalDuration', childGanttRecord.ganttProperties.totalDuration, progressValues);
+            setValue('totalDuration', childGanttRecord.ganttProperties.totalDuration ? childGanttRecord.ganttProperties.totalDuration : 0, progressValues);
         } else {
             setValue('totalProgress', childGanttRecord.ganttProperties.progress * durationInDay, progressValues);
             setValue('totalDuration', durationInDay, progressValues);
@@ -2235,10 +2235,8 @@ export class TaskProcessor extends DateProcessor {
                     progressValues = this.getParentProgress(childData);
                     totalProgress += getValue('totalProgress', progressValues);
                     if (childData[this.parent.taskFields.duration] < 1) {
-                        if (typeof(getValue('totalDuration', progressValues)) != 'object') {
                             totalDuration += getValue('totalDuration', progressValues);
                             totalDuration = Number(totalDuration.toFixed(4));
-                        }
                     } else {
                         totalDuration += getValue('totalDuration', progressValues);
                     }

@@ -45,6 +45,7 @@ export class ExcelExport {
     private includeHiddenColumn: boolean = false;
     private isCsvExport: boolean = false;
     private isBlob: boolean;
+    private isChild: boolean = false;
     private blobPromise: Promise<{ blobData: Blob }>;
     private exportValueFormatter: ExportValueFormatter;
     private isElementIdChanged: boolean = false;
@@ -117,6 +118,7 @@ export class ExcelExport {
         const gObj: IGrid = grid;
         const cancel: string = 'cancel';
         const isBlb: string = 'isBlob';
+        const Child: string = 'isChild';
         const csv: string = 'isCsv';
         const workbk: string = 'workbook';
         const isMultiEx: string = 'isMultipleExport';
@@ -126,7 +128,7 @@ export class ExcelExport {
         }
         const args: Object = {
             requestType: 'beforeExcelExport', gridObject: gObj, cancel: false,
-            isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob
+            isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob, isChild: this.isChild
         };
         gObj.trigger(events.beforeExcelExport, args);
         if (args[`${cancel}`]) {
@@ -138,6 +140,7 @@ export class ExcelExport {
         this.data = new Data(gObj);
         this.isExporting = true;
         this.isBlob = args[`${isBlb}`];
+        this.isChild = args[`${Child}`];
         if (args[`${csv}`]) {
             this.isCsvExport = args[`${csv}`];
         } else {
@@ -158,8 +161,9 @@ export class ExcelExport {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
-            exportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
+            exportProperties.dataSource = exportProperties.dataSource instanceof DataManager ?
+                exportProperties.dataSource : new DataManager (exportProperties.dataSource);
             const query: Query = exportProperties.query ? exportProperties.query : new Query();
             if (isNullOrUndefined(query.isCountRequired) || gObj.aggregates) {
                 query.isCountRequired = true;
@@ -374,54 +378,56 @@ export class ExcelExport {
         const headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
         const groupIndent: number = gObj.groupSettings.columns.length ? gObj.groupSettings.columns.length - 1 : 0;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
-        // eslint-disable-next-line max-len
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) && !(exportProperties.dataSource instanceof DataManager)) {
-            // eslint-disable-next-line max-len
-            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, exportProperties.dataSource as Object[], excelRows, helper);
-        } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage'
-         && (!gObj.groupSettings.enableLazyLoading || gObj.getDataModule().isRemote())) {
-            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, gObj.currentViewData, excelRows, helper);
-        }
-        else if (gObj.groupSettings.enableLazyLoading && !gObj.getDataModule().isRemote()) {
-            let groupData: Object[];
-            if (!isNullOrUndefined(exportProperties) && Object.keys(exportProperties).length) {
-                const isAllPage: boolean = exportProperties.exportType === 'CurrentPage'
-                    ? false : true;
-                const groupQuery: Query = gObj.getDataModule().generateQuery(isAllPage);
-                const lazyloadData: object[] = gObj.getDataModule().dataManager.executeLocal(groupQuery);
-                groupQuery.lazyLoad = [];
-                const fName: string = 'fn';
-                if (!isAllPage) {
-                    for (let i: number = 0; i < groupQuery.queries.length; i++) {
-                        if (groupQuery.queries[parseInt(i.toString(), 10)]['' + fName] === 'onPage') {
-                            groupQuery.queries[parseInt(i.toString(), 10)].e.pageSize = lazyloadData.reduce((acc: number, curr: object) => acc + curr['count'], 0);
-                        }
-                    }
-                }
-                if (exportProperties.hierarchyExportMode === 'All') {
-                    groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
-                }
-                else if (exportProperties.hierarchyExportMode === 'Expanded' || exportProperties.hierarchyExportMode === 'None' ||
-                 isNullOrUndefined(exportProperties.hierarchyExportMode)) {
-                    groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
-                    const lazQuery: object[] = (this.parent.contentModule as GroupLazyLoadRenderer).lazyLoadQuery;
-                    for (let i: number = 0; i < lazQuery.length; i++) {
-                        const query: object = lazQuery[parseInt(i.toString(), 10)];
-                        const where: object = query[0];
-                        for (let j: number = 0; j < groupData.length; j++) {
-                            const data: object = groupData[parseInt(j.toString(), 10)];
-                            if (data['key'] === where['value']) {
-                                lazyloadData[parseInt(i.toString(), 10)] = groupData[parseInt(j.toString(), 10)];
+        if (!isNullOrUndefined(exportProperties) && Object.keys(exportProperties).length &&
+         isNullOrUndefined(exportProperties.dataSource)) {
+            if (exportProperties.exportType === 'CurrentPage' && (!gObj.groupSettings.enableLazyLoading
+                || gObj.getDataModule().isRemote())) {
+                excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, gObj.currentViewData, excelRows, helper);
+            }
+            else if ( gObj.groupSettings.enableLazyLoading && !gObj.getDataModule().isRemote()) {
+                let groupData: Object[];
+                if (!isNullOrUndefined(exportProperties) && Object.keys(exportProperties).length) {
+                    const isAllPage: boolean = exportProperties.exportType === 'CurrentPage'
+                        ? false : true;
+                    const groupQuery: Query = gObj.getDataModule().generateQuery(isAllPage);
+                    const lazyloadData: object[] = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                    groupQuery.lazyLoad = [];
+                    const fName: string = 'fn';
+                    if (!isAllPage) {
+                        for (let i: number = 0; i < groupQuery.queries.length; i++) {
+                            if (groupQuery.queries[parseInt(i.toString(), 10)]['' + fName] === 'onPage') {
+                                groupQuery.queries[parseInt(i.toString(), 10)].e.pageSize = lazyloadData.reduce((acc: number, curr: object) => acc + curr['count'], 0);
                             }
                         }
                     }
-                    groupData = lazyloadData;
+                    if (exportProperties.hierarchyExportMode === 'All') {
+                        groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                    }
+                    else if (exportProperties.hierarchyExportMode === 'Expanded' || exportProperties.hierarchyExportMode === 'None' ||
+                    isNullOrUndefined(exportProperties.hierarchyExportMode)) {
+                        groupData = gObj.getDataModule().dataManager.executeLocal(groupQuery);
+                        const lazQuery: object[] = (this.parent.contentModule as GroupLazyLoadRenderer).lazyLoadQuery;
+                        for (let i: number = 0; i < lazQuery.length; i++) {
+                            const query: object = lazQuery[parseInt(i.toString(), 10)];
+                            const where: object = query[0];
+                            for (let j: number = 0; j < groupData.length; j++) {
+                                const data: object = groupData[parseInt(j.toString(), 10)];
+                                if (data['key'] === where['value']) {
+                                    lazyloadData[parseInt(i.toString(), 10)] = groupData[parseInt(j.toString(), 10)];
+                                }
+                            }
+                        }
+                        groupData = lazyloadData;
+                    }
                 }
+                else {
+                    groupData = gObj.currentViewData;
+                }
+                excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, groupData, excelRows, helper);
             }
             else {
-                groupData = gObj.currentViewData;
+                excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
             }
-            excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, groupData, excelRows, helper);
         }
         else {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
@@ -446,7 +452,7 @@ export class ExcelExport {
         } else {
             this.processRecordRows(gObj, record, headerRow, 0, 0, exportProperties, excelRow, helper);
         }
-        if (!isNullOrUndefined((returnType as ReturnType).aggregates)) {
+        if (!isNullOrUndefined((returnType as ReturnType).aggregates) && Object.keys((returnType as ReturnType).aggregates).length > 0) {
             if (!isNullOrUndefined(currentViewRecords) && !this.parent.groupSettings.enableLazyLoading) {
                 this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {
@@ -630,7 +636,7 @@ export class ExcelExport {
             } else {
                 excelRows.push(excelRow);
             }
-            if (row.isExpand && !isNullOrUndefined(gObj.childGrid)) {
+            if ((row.isExpand || this.isChild) && !isNullOrUndefined(gObj.childGrid)) {
                 gObj.isPrinting = true;
                 const exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
                     excelExportProperties.exportType : 'AllPages';

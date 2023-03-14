@@ -459,6 +459,12 @@ export class ExportHelper {
         cell.style.padding.bottom = padding - style.fontSize;
         cell.style.padding.left = 10;
         cell.style.padding.right = 10;
+        if (style.padding) {
+            cell.style.padding = style.padding;
+        }
+        if (style.borders) {
+            cell.style.borders = style.borders;
+        }
     }
 
     /**

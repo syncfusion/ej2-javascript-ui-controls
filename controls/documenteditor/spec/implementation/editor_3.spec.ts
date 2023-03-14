@@ -1297,3 +1297,40 @@ console.log('paste dropdown on opening document');
         expect(editor.selection.isViewPasteOptions).toBe(false);
     });
 });
+describe('Combine the next paragraph while removing the paragraph mark', () => {
+    let editor: DocumentEditor;
+    let event: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Combine the next paragraph', () => {
+console.log('Combine the next paragraph');
+        editor.openBlank();
+        editor.editorModule.insertText('Hello world');
+        editor.selection.select('0;0;6','0;0;6');
+        editor.editorModule.onEnter();
+        editor.editorModule.onEnter();
+        editor.editorModule.onEnter();
+        editor.selection.select('0;3;0','0;0;5');
+        editor.editorModule.onBackSpace();
+        var textelement: any = editor.selection.start.currentWidget.children[1];
+        expect(textelement.text).toBe("world");
+    });
+});

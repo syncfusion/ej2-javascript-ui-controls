@@ -291,6 +291,47 @@ describe('Gantt virtual scroll', () => {
             ganttObj.ganttChartModule.scrollObject.setScrollLeft(2000);
         });
     });
+    describe('Virtual Scrolling  with critical path', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: virtualData,
+                    enableVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    enableCriticalPath: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Critical path with virtualization', () => {
+            expect(ganttObj.criticalPathModule.criticalTasks.length).toBe(450);
+            
+        });
+    });
     describe('Virtual scroll shimmer with RTL', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {

@@ -84,7 +84,7 @@ export class Reorder implements IAction {
         return false;
     }
 
-    private getColumnsModel(cols: Column[]): Column[] {
+    private getColumnsModel(cols: Column[], isNotStackedHeader?: boolean): Column[] {
         let columnModel: Column[] = [];
         let subCols: Column[] = [];
         if (!this.parent.getFrozenColumns() && this.parent.isFrozenGrid()) {
@@ -92,6 +92,9 @@ export class Reorder implements IAction {
         } else {
             for (let i: number = 0, len: number = cols.length; i < len; i++) {
                 if (cols[parseInt(i.toString(), 10)].visible) {
+                    columnModel.push(cols[parseInt(i.toString(), 10)]);
+                }
+                else if (isNotStackedHeader) {
                     columnModel.push(cols[parseInt(i.toString(), 10)]);
                 }
                 if (cols[parseInt(i.toString(), 10)].columns) {
@@ -224,7 +227,7 @@ export class Reorder implements IAction {
             stackedCols = this.getAllStackedheaderParentColumns(headers);
         }
         const flatColumns: Column[] = stackedHdrColumn.length && stackedCols.length ?
-            this.getColumnsModel(stackedCols) : this.getColumnsModel(cols);
+            this.getColumnsModel(stackedCols) : this.getColumnsModel(cols, true);
         const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
         cols = parent ? parent.columns as Column[] : cols;
         return inArray(flatColumns[getElementIndex(destElem, headers)], cols);

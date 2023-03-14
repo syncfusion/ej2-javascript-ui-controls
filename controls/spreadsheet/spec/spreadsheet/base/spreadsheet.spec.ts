@@ -1815,7 +1815,7 @@ describe('Spreadsheet base module ->', () => {
                 }, 20);
             });
         });
-        describe('SF-352381 ->', () => {
+        describe('SF-352381, SF-425413 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ width: 180 }, { width: 130 }, { width: 130 },
@@ -1859,6 +1859,20 @@ describe('Spreadsheet base module ->', () => {
                             done();
                         }, 20);
                     }, 20);
+                });
+            });
+            it('Templates not added properly while using updateCell method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const topLeftCell: string = spreadsheet.sheets[0].topLeftCell;
+                helper.invoke('updateRange', [{ address: 'A1:' + topLeftCell, template: '<div class="container">Button</div>' }]);
+                helper.invoke('resize');
+                setTimeout((): void => {
+                    const index: number[] = getRangeIndexes(topLeftCell);
+                    const cellEle: HTMLElement = helper.invoke('getCell', [index[0], index[1]]);
+                    const container: HTMLElement = cellEle.querySelector('.container');
+                    helper.invoke('updateCell', [{ template: 'button' }, topLeftCell]);
+                    expect(container !== cellEle.querySelector('.container')).toBeTruthy();
+                    done();
                 });
             });
         });

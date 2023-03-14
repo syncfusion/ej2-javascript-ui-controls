@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F180863` - Resolved the issue where the page was reloading automatically.
+
 ## 20.4.53 (2023-03-07)
 
 ### Chart

@@ -5,7 +5,7 @@ import { Browser } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Clipboard } from '../../../src/grid/actions/clipboard';
-import { employeeData } from '../base/datasource.spec';
+import { employeeData, filterData } from '../base/datasource.spec';
 import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -153,6 +153,36 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
     afterAll(() => {
        destroy(gridObj);
        gridObj = gridBeforeCopy = null;
+    });
+});
+
+describe('Clipboard copy testing while Freezing columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                selectionSettings: { type: 'Multiple' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', freeze : 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ],
+                pageSettings: { pageCount: 5 }
+            }, done);
+    });
+
+    it('Check the copy value', () => {
+        gridObj.selectRows([1]);
+        gridObj.copy(true);
+        expect((document.querySelector('.e-clipboard') as HTMLInputElement).value
+            === 'Customer Name\tOrder Date\tFreight\tOrder ID\nTOMSP\t7/12/1996\t$11.61\t10249').toBeTruthy();
+    });
+
+    afterAll(() => {
+       destroy(gridObj);
     });
 });
 

@@ -856,24 +856,6 @@ export class PivotButton implements IAction {
                         (this.parent as PivotFieldList).pivotGridModule !== undefined &&
                         (this.parent as PivotFieldList).pivotGridModule.enableVirtualization) ||
                         (this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableVirtualization)))) {
-                    if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
-                        (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
-                            (this.parent as PivotFieldList).pivotGridModule.enableValueSorting))) {
-                        if ((this.parent as PivotView).enableValueSorting ||
-                            (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {
-                            if ((args.target as HTMLElement).classList.contains('e-pivot-button')) {
-                                if ((args.target as HTMLElement).parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({
-                                        dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
-                                }
-                            } else {
-                                if ((args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({
-                                        dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
-                                }
-                            }
-                        }
-                    }
                     this.parent.pivotCommon.eventBase.updateSorting(args);
                     if ((this.parent as PivotFieldList).staticPivotGridModule) {
                         (this.parent as PivotFieldList).staticPivotGridModule.actionObj = this.parent.actionObj;

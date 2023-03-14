@@ -3136,8 +3136,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         setValue('selectedNodes', [], this.treeObj);
         this.hiddenElement.innerHTML = '';
         if (this.showCheckBox) {
-            this.treeObj.checkedNodes = [];
-            this.treeObj.dataBind();    
+            this.treeObj.uncheckAll();
             this.setMultiSelect();
             this.clearCheckAll();
         }

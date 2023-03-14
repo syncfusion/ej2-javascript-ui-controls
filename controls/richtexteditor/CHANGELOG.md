@@ -16,6 +16,8 @@
 
 - `#I439501` - Now, when pasting the list content from MS Word, the subset formats and alignment are maintained properly.
 
+- `#I439501` - Now, pasting the content from MS Word with the `enterKey` configured as `BR` works properly.
+
 ## 20.4.52 (2023-02-28)
 
 ### RichTextEditor

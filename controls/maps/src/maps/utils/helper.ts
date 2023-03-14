@@ -3378,7 +3378,7 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
  * @returns {number} - Returns the scale factor
  */
 export function calculateZoomLevel(minLat: number, maxLat: number, minLong: number, maxLong: number,
-                                   mapWidth: number, mapHeight: number, maps: Maps): number {
+                                   mapWidth: number, mapHeight: number, maps: Maps, isZoomToCoordinates: boolean): number {
     let scaleFactor: number;
     const maxZoomFact: number = maps.zoomSettings.maxZoom;
     let applyMethodeZoom: number;
@@ -3392,11 +3392,7 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
     if (maps.zoomNotApplied && !maps.isTileMap) {
         const latiRatio: number = Math.abs((maps.baseMapBounds.latitude.max - maps.baseMapBounds.latitude.min) / (maxLat - minLat));
         const longiRatio: number = Math.abs((maps.baseMapBounds.longitude.max - maps.baseMapBounds.longitude.min) / (maxLong - minLong));
-        applyMethodeZoom = Math.min(latiRatio, longiRatio);
-
-
-        const minLocation: Point = convertGeoToPoint(minLat, minLong, 1, maps.layersCollection[0], maps);
-        const maxLocation: Point = convertGeoToPoint(maxLat, maxLong, 1, maps.layersCollection[0], maps);
+        applyMethodeZoom = isZoomToCoordinates ? (latiRatio + longiRatio) / 2 : Math.min(latiRatio, longiRatio);
     }
 
     const latRatio: number = (maxLatValue - minLatValue) / Math.PI;
@@ -3406,7 +3402,8 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
     const WORLD_PX_WIDTH: number = 256;
     const latZoom: number = (Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
     const lngZoom: number = (Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
-    const result: number = (maps.zoomNotApplied && !maps.isTileMap) ? applyMethodeZoom : Math.min(latZoom, lngZoom);
+    const result: number = (maps.zoomNotApplied && !maps.isTileMap) ? applyMethodeZoom :
+        isZoomToCoordinates && !maps.isTileMap ? (latZoom + lngZoom) / 2 : Math.min(latZoom, lngZoom);
     scaleFactor = Math.min(result, maxZoomFact);
     scaleFactor = maps.isTileMap || !maps.zoomNotApplied ? Math.floor(scaleFactor) : scaleFactor;
     if (!maps.isTileMap) {

@@ -2850,7 +2850,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             ClipBoard: 'clipboard',
             AscendingText: 'Ascending',
             DescendingText: 'Descending',
-            NoneText: 'None'
+            NoneText: 'None',
+            Expanded: 'Expanded',
+            Collapsed: 'Collapsed'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -6192,6 +6194,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.cssClass) {
             this.element.classList.add(this.cssClass);
         }
+        // If the below if statement is removed, then drag and drop between grids will not work in firefox browser.
+        if (this.allowRowDragAndDrop && this.rowDropSettings.targetID && Browser.info.name === 'mozilla') {
+            this.element.classList.add('e-disableuserselect');
+        }
         classList(this.element, ['e-responsive', 'e-default'], []);
         const rendererFactory: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
         this.headerModule = rendererFactory.getRenderer(RenderType.Header);
@@ -7539,7 +7545,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (columns[parseInt(i.toString(), 10)].format) {
                 columns[parseInt(i.toString(), 10)].format = getNumberFormat(
                     this.getFormat(columns[parseInt(i.toString(), 10)].format),
-                    columns[parseInt(i.toString(), 10)].type, this.isExcel);
+                    columns[parseInt(i.toString(), 10)].type, this.isExcel, this.currencyCode);
             }
             if (columns[parseInt(i.toString(), 10)].columns) {
                 this.setHeaderText(columns[parseInt(i.toString(), 10)].columns as Column[], include);

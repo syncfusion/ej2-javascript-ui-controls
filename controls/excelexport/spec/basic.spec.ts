@@ -482,7 +482,7 @@ describe('ExcelCreation', () => {
            worksheets: [
                 {
                     rows: [
-                        { index: 1, cells: [{ index: 1, value: 'etrefd%%% 0thethe'}]},
+                        { index: 1, cells: [{ index: 1, value: 'etrefd%%% 0thethe 0thethe'}]},
                         { index: 2, cells: [{index: 1,  value: 'etrefd%%% 0the\vthe'}]},
                     ]
                 }

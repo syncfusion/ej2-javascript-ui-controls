@@ -443,7 +443,7 @@ describe('ShowHide module testing', () => {
             setTimeout(() => {
                 expect(grid.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(2);
                 expect(grid.getHeaderContent().querySelectorAll('.e-filterbarcell.e-hide').length).toBe(2);
-                expect(grid.getContent().querySelectorAll('.e-rowcell.e-hide').length).toBe(grid.currentViewData.length);
+                expect(grid.getContent().querySelectorAll('.e-rowcell.e-hide.e-gridchkbox-cell').length).toBe(grid.currentViewData.length);
                 expect((grid.getContent().querySelectorAll('.e-rowcell')[1] as HTMLElement).style.display).toBe('none');
                 done();
             }, 1000);
@@ -825,5 +825,36 @@ describe('ShowHide module testing', () => {
         afterAll(() => {
             destroy(gridObj);
         });
+    });    
+        
+    describe('EJ2-69504 - Copy not working properly when using hideColumns property', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right'}
+                    ],
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+
+        it('Hide a Columns and check the copy value', () => {
+            gridObj.hideColumns(['Customer Name', 'Order Date']);
+            gridObj.selectRows([1]);
+            gridObj.copy(true);
+            expect((document.querySelector('.e-clipboard') as HTMLInputElement).value
+                === 'Order ID\tFreight\n10249\t$11.61').toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
     });
 });
+

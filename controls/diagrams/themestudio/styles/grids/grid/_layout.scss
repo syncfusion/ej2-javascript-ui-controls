@@ -1913,7 +1913,7 @@
     }
 
     &.e-wrap .e-columnmenu {
-      margin: $grid-textwrap-column-menu-margin;
+      line-height: $grid-wrap-line-height;
     }
 
     &.e-rtl .e-columnmenu {
@@ -1927,7 +1927,7 @@
 
     &.e-wrap {
       &.e-rtl  .e-columnmenu {
-        margin: $grid-rtl-textwrap-column-menu-margin;
+        line-height: $grid-wrap-line-height;
       }
     }
 
@@ -3109,6 +3109,13 @@
         margin: $grid-rtl-headercelldiv-rightalign-fltricon-margin;
       }
 
+      &.e-wrap .e-columnheader .e-rightalign.e-fltr-icon .e-headercelldiv,
+      & .e-columnheader.e-wrap .e-rightalign.e-fltr-icon .e-headercelldiv {
+        height: auto;
+        margin-bottom: $grid-wrap-margin-bottom;
+        margin-top: $grid-wrap-margin-top;
+      }
+
       & .e-gridheader .e-sortfilter .e-fltr-icon .e-headercelldiv {
         margin: $grid-rtl-headercelldiv-fltricon-margin;
       }
@@ -3427,7 +3434,8 @@
     &.e-wrap {
       & .e-rowcell,
       & .e-columnheader .e-stackedheadercelldiv,
-      & .e-columnheader .e-headercelldiv {
+      & .e-columnheader .e-headercelldiv,
+      & .e-columnheader .e-headercell.e-fltr-icon .e-headercelldiv {
         height: Auto;
         line-height: $grid-rowcell-wrap-height;
         overflow-wrap: break-word;
@@ -3443,25 +3451,30 @@
     }
 
     &.e-wrap .e-columnheader .e-headercelldiv,
-    & .e-columnheader.e-wrap .e-headercelldiv {
+    &.e-wrap .e-columnheader .e-headercell.e-fltr-icon .e-headercelldiv,
+    & .e-columnheader.e-wrap .e-headercelldiv,
+    & .e-columnheader.e-wrap .e-headercell.e-fltr-icon .e-headercelldiv {
       margin-bottom: $grid-wrap-margin-bottom;
       margin-top: $grid-wrap-margin-top;
     }
 
-    &.e-wrap .e-columnheader .e-filtermenudiv {
+    &.e-wrap .e-columnheader .e-filtermenudiv,
+    &.e-wrap .e-columnheader .e-sortfilterdiv .e-filtermenudiv {
       line-height: $grid-wrap-line-height;
     }
 
-    & .e-columnheader.e-wrap .e-filtermenudiv {
+    & .e-columnheader.e-wrap .e-filtermenudiv,
+    & .e-columnheader.e-wrap .e-sortfilterdiv.e-filtermenudiv {
       line-height: $grid-wrap-line-height;
     }
 
     & .e-columnheader.e-wrap .e-headercelldiv,
+    & .e-columnheader.e-wrap .e-headercell.e-fltr-icon .e-headercelldiv,
     & .e-columnheader.e-wrap .e-stackedheadercelldiv,
     & .e-gridcontent.e-wrap .e-rowcell,
     & .e-frozenhdrcont.e-wrap .e-rowcell {
       height: Auto;
-      line-height: $grid-wrap-line-height;
+      line-height: $grid-rowcell-wrap-height;
       overflow-wrap: break-word;
       text-overflow: clip;
       white-space: normal;

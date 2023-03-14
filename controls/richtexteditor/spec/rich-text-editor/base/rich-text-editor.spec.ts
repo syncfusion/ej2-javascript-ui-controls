@@ -2722,6 +2722,22 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
+    
+    describe('RTE - getHtml Public Methods', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                enableXhtml: true
+            });
+            done();
+        });
+        it('getHtml method when xhtml is enabled and RTE is empty', () => {
+            expect(rteObj.getHtml()).toBe(null);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 
     describe("enable/disable ToolbarItem public method testing", () => {
         let rteEle: HTMLElement;

@@ -27,7 +27,7 @@ export class InsertHtmlExec {
     private applyHtml(e: IHtmlSubCommands): void {
         InsertHtml.Insert(
             this.parent.currentDocument,
-            e.value as Node, this.parent.editableElement, true);
+            e.value as Node, this.parent.editableElement, true, e.enterAction);
         if (e.subCommand === 'pasteCleanup') {
             const pastedElements: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('.pasteContent_RTE');
             const allPastedElements: Element[] = [].slice.call(pastedElements);

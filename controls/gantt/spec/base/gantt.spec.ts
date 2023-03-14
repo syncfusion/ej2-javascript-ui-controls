@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2  } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData  } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -245,6 +245,36 @@ describe('Gantt - Base', () => {
         });
         beforeEach((done: Function) => {
             setTimeout(done, 2000);
+        });
+    });
+    describe('Render gantt with parentID property', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: totalDurationData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        parentID: 'ParentID',
+                        manual: 'IsManual',
+                        resourceInfo: 'Resources',
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    },
+                }, done);
+        });
+        it('EJ2-69723-render gantt with parentID prop', () => {
+            expect(ganttObj.currentViewData.length > 0).toBe(true);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
         });
     });
     describe('Remote save adaptor', () => {
@@ -1038,6 +1068,64 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
+    describe( 'update task fields and the data source',()=>{
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [
+                        {
+                            TaskID: 1,
+                            TaskName: 'Receive vehicle and create job card',
+                            BaselineStartDate: new Date('03/05/2018 00:00:00 AM'),
+                            BaselineEndDate: new Date('03/03/2018 00:00:00 AM'),
+                            Duration: 1,
+                            StartDate: new Date('03/05/2018 00:00:00 AM'),
+                            EndDate: new Date('03/10/2018 00:00:00 AM'),
+                        },
+                    ],
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    durationUnit: 'Day',
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                }, done);
+                it('update task fields', () => {
+                    ganttObj.taskFields={
+                        id: 'id',
+                        name: '01GGVQD5H2R7GP0TQ515WB4YBB',
+                        startDate: '01GGVQD5H2FGQF927YK7T6FM0V',
+                        child: 'subtasks',
+                        progress: '01GGVQD5H21F43NAWPYGY7HNTB',
+                        duration: '01GGVQD5H25KW37QDTSCDD0MCC',
+                        baselineStartDate:null,
+                        baselineEndDate:null
+                    }
+                    expect(ganttObj.currentViewData.length).toBe(1);
+
+                });
+
+            })
+        });
     describe('Baseline render', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {

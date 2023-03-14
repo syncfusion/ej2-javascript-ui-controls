@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I443513` - Zoom factor calculation in the `zoomToCoordinates` method is now improved.
+
 ## 20.4.49 (2023-02-07)
 
 ### Maps

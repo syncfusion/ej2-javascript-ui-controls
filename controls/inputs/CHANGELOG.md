@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#F178267` - Fixed issue unable to upload the same file again after using the remove method.
+
 ## 20.4.52 (2023-02-28)
 
 ### MaskedTextBox

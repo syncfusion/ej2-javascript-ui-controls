@@ -1933,7 +1933,10 @@ export class Editor {
      * @param {string} text Specify the text to insert.
      */
     public insertText(text: string): void {
-        if (isNullOrUndefined(text) || text === '') {
+        if (isNullOrUndefined(text) || text === ''
+            || this.owner.isReadOnly
+            || this.documentHelper.protectionType === 'ReadOnly' && !this.selection.isSelectionInEditRegion()
+            || this.documentHelper.protectionType === 'CommentsOnly') {
             return;
         }
         this.insertTextInternal(text, false);
@@ -10474,7 +10477,7 @@ export class Editor {
             startPosition = this.documentHelper.selection.end;
             endPosition = this.documentHelper.selection.start;
         }
-        if (this.documentHelper.selection.isinEndnote || this.documentHelper.selection.isinFootnote) {
+        if (this.owner.layoutType == 'Continuous' && (this.documentHelper.selection.isinEndnote || this.documentHelper.selection.isinFootnote)) {
             this.documentHelper.selection.footnoteReferenceElement(startPosition, endPosition);
             startPosition = endPosition;
         }
@@ -11396,14 +11399,14 @@ export class Editor {
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
-        if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
-            startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
+        if (startOffset > paragraphStart && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
             start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
+            isCombineLastBlock = true;
         }
         let paraEnd: TextPosition = end.clone();
         paraEnd.offset = paraEnd.offset - 1;
@@ -18571,8 +18574,9 @@ export class Editor {
         this.updateEndNoteIndex();
         this.documentHelper.layout.isLayoutWhole = true;
         this.layoutWholeDocument();
-        this.documentHelper.layout.isLayoutWhole = false
+        this.documentHelper.layout.isLayoutWhole = false;
         this.reLayout(this.selection, false);
+        this.owner.documentHelper.blockToShift = undefined;
         this.separator('endnote');
         this.continuationSeparator('endnote');
         this.documentHelper.layout.isEndnoteContentChanged = false;

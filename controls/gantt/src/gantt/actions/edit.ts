@@ -854,7 +854,7 @@ export class Edit {
             }
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             /** validating predecessor for current edited records */
-            if (ganttRecord.ganttProperties.predecessorsName) {
+            if (ganttRecord.ganttProperties.predecessor) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
                 if (this.taskbarMoved) {
                     this.parent.editedTaskBarItem = ganttRecord;
@@ -2854,7 +2854,7 @@ export class Edit {
         let tempTaskID:string = this.parent.taskFields.id
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
             this.parent.isDynamicData = true;
-            const cAddedRecord: IGanttData[] = [];
+            let cAddedRecord: IGanttData[] = [];
             if (isNullOrUndefined(data)) {
                 this.validateTaskPosition(data, rowPosition, rowIndex, cAddedRecord);
             }
@@ -2931,7 +2931,6 @@ export class Edit {
                             const addedRecords: string = 'addedRecords';
                             const insertCrud: Promise<Object> = data.insert(updatedData[addedRecords as string], null, query) as Promise<Object>;
                             insertCrud.then((e: ReturnType) => {
-                                const changedRecords: string = 'changedRecords';
                                 let addedRecords: Object;
                                 if (!isNullOrUndefined(e[0])) {
                                     addedRecords = e[0];
@@ -2939,33 +2938,7 @@ export class Edit {
                                 else {
                                     addedRecords = updatedData['addedRecords'][0];
                                 }
-                                /* tslint:disable-next-line */
-                                const updateCrud: Promise<Object> =
-                                    data.update(this.parent.taskFields.id, updatedData[changedRecords as string], null, query) as Promise<Object>;
-                                updateCrud.then(() => {
-                                    if (this.parent.taskFields.id && !isNullOrUndefined(addedRecords[this.parent.taskFields.id]) &&
-                                        addedRecords[this.parent.taskFields.id].toString() !== prevID) {
-                                        this.parent.setRecordValue(
-                                            'taskId', addedRecords[this.parent.taskFields.id], (args.data as IGanttData).ganttProperties, true);
-                                        this.parent.setRecordValue(
-                                            'taskData.' + this.parent.taskFields.id, addedRecords[this.parent.taskFields.id],
-                                            (args.data as IGanttData));
-                                        this.parent.setRecordValue(
-                                            this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], (args.data as IGanttData));
-                                        this.parent.setRecordValue(
-                                            'rowUniqueID', addedRecords[this.parent.taskFields.id].toString(),
-                                            (args.data as IGanttData).ganttProperties, true);
-                                        const idIndex: number = this.parent.ids.indexOf(prevID);
-                                        if (idIndex !== -1) {
-                                            this.parent.ids[idIndex as number] = addedRecords[this.parent.taskFields.id].toString();
-                                        }
-                                    }
-                                    this.updateNewRecord(cAddedRecord, args);
-                                }).catch((e: { result: Object[] }) => {
-                                    this.removeAddedRecord();
-                                    this.dmFailure(e as { result: Object[] }, args as ITaskbarEditedEventArgs);
-                                    this._resetProperties();
-                                });
+                                this.updateNewRecord(cAddedRecord, args);
                             }).catch((e: { result: Object[] }) => {
                                 this.removeAddedRecord();
                                 this.dmFailure(e as { result: Object[] }, args as ITaskbarEditedEventArgs);

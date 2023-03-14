@@ -1007,7 +1007,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (!isNullOrUndefined(this.dataLabelModule)) {
             this.dataLabelModule.dataLabelCollections = [];
-            this.dataLabelShape = [];
         }
         this.mapLayerPanel.measureLayerPanel();
         if (!isNullOrUndefined(this.svgObject)) {
@@ -2390,7 +2389,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.maxLongOfGivenLocation = maxLongitude;
             this.zoomNotApplied = true;
             this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
-                                                           this.mapAreaRect.width, this.mapAreaRect.height, this);
+                                                           this.mapAreaRect.width, this.mapAreaRect.height, this, true);
             const zoomArgs: IMapZoomEventArgs = {
                 cancel: false, name: 'zoom', type: zoomIn, maps: this,
                 tileTranslatePoint: {}, translatePoint: {},

@@ -2637,7 +2637,7 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<p>insertedText</p><div><h1>Heading</h1></div>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `insertedText<div><h1>Heading</h1></div>`).toBe(true)
         done();
       }, 100);
     });
@@ -2645,6 +2645,121 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
       destroy(rteObj);
     });
 });
+
+describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    let innerHTML: string = `This is a test<br /><br />
+    Paste below:<br /><br /><br />`;
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'BR',
+        value: innerHTML
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting content when enterKey is configured as BR and Div not working issue test case", (done) => {
+      let localElem: string = `<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="CA" style="font-size:26.0pt;line-height:107%;">This\nis a test</span></b></p>\n\n<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><i><u><span lang="CA">This is a test</span></u></i></p>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement, 6);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+            plainFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `This is a test<br><br>\n    Paste below:<br><br><span>This\nis a test</span><p>This is a test</p><br>`).toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
+describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    let innerHTML: string = `This is a test<br><br>
+    Paste below:<br><br><br><span><br></span><br>`;
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'BR',
+        value: innerHTML
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting content when enterKey is configured as BR and Div not working issue test case", (done) => {
+      let localElem: string = `<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="CA" style="font-size:26.0pt;line-height:107%;">This\nis a test</span></b></p>\n\n<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><i><u><span lang="CA">This is a test</span></u></i></p>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.childNodes[6], 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `This is a test<br><br>\n    Paste below:<br><br><p><b><span lang="CA">This\nis a test</span></b></p><p><i><u><span lang="CA">This is a test</span></u></i></p><br><span><br></span><br>`).toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
 describe("EJ2-68999 - RichTextEditor doesn't adjust to the pasteCleanUp popup's height when using saveInterval - ", () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = {

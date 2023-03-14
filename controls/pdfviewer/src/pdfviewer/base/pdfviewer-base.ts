@@ -7610,12 +7610,17 @@ export class PdfViewerBase {
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
                 // eslint-disable-next-line
-            } else if (e.target && currentTarget && currentTarget.classList.contains('foreign-object')) {
+            } else if (e.target && currentTarget && currentTarget.classList.contains('foreign-object') || ((e.target as any).classList.contains('e-pv-checkbox-div'))) {
                 // eslint-disable-next-line
-                const targetParentRect: ClientRect = (e.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+                let targetParentRect: ClientRect;
+                if (((e.target as any).classList.contains('e-pv-checkbox-div'))) {
+                    targetParentRect = (e.target as any).offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+                }
+                else {
+                    targetParentRect = (e.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+                }
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
-                // eslint-disable-next-line
             }
             else {
                 offsetX = (e as PointerEvent).offsetX;
@@ -9156,6 +9161,8 @@ export class PdfViewerBase {
      */
     public convertUTCDateTimeToLocalDateTime(date: any) {
         let dateTime: Date;
+        // We have globalized the date and time based on the given locale.
+        this.globalize = new Internationalization(this.pdfViewer.locale);
         if (date !== null && date !== undefined && date !== '') {
             dateTime = new Date(Date.parse(date + ' ' + 'UTC'));
         }
@@ -9166,17 +9173,7 @@ export class PdfViewerBase {
                 now.getUTCMinutes(), now.getUTCSeconds());
             dateTime = new Date(now_utc) as Date;
         }
-        this.globalize = new Internationalization(this.pdfViewer.locale);
-        let timeValue: string = dateTime.toLocaleTimeString(this.globalize.culture);
-        let newTime: string;
-        if (!isNullOrUndefined(timeValue.split(' ')[1])) {
-            newTime = timeValue.split(' ')[0] + ' ' + timeValue.split(' ')[1];
-        }
-        else {
-            newTime = timeValue.split(' ')[0];
-        }
-        let newDate: string = dateTime.toLocaleDateString(this.globalize.culture);
-        let dateTimeValue: string = newDate + ',' + ' ' + newTime;
+        let dateTimeValue: string = this.globalize.formatDate(dateTime, { format: this.pdfViewer.dateTimeFormat, type: 'dateTime'})
         return dateTimeValue;
     }
 

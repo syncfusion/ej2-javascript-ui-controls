@@ -1151,7 +1151,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.submitBtn = undefined;
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelBtnClick);
+            EventHandler.remove(this.cancelBtn.element, 'mouseup', this.cancelBtnClick);
             EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
@@ -1289,10 +1289,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 rules: this.validationRules,
                 validationBegin: (e: ValidArgs) => {
                     if (this.type ==='RTE') {
-                        let ele : HTMLElement =document.createElement('div');                          
+                        let ele : HTMLElement =document.createElement('div');
                         ele.innerHTML = e.value;
                         e.value = ele.innerText;
-                    }                                           
+                    }
                 },
                 validationComplete: (e: FormEventArgs) => {
                     count = count + 1;
@@ -1432,7 +1432,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelBtnClick, this);
+            EventHandler.add(this.cancelBtn.element, 'mouseup', this.cancelBtnClick, this);
             EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
     }
@@ -1730,52 +1730,56 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     public onPropertyChanged(newProp: InPlaceEditorModel, oldProp: InPlaceEditorModel): void {
-        if (this.isEditorOpen()) {
-            const editModeChanged: boolean = 'enableEditMode' in newProp;
-            if ((editModeChanged && oldProp.enableEditMode && !newProp.enableEditMode) || (!editModeChanged && this.enableEditMode)) {
-                this.triggerEndEdit('cancel');
-            } else { this.removeEditor(); }
-        }
-        for (const prop of Object.keys(newProp)) {
-            switch (prop) {
-            case 'showButtons':
-                // eslint-disable-next-line
-                (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
-                break;
-            case 'value':
-                this.updateValue();
-                // eslint-disable-next-line
-                this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
-                : this.renderInitialValue();
-                break;
-            case 'emptyText':
-                // eslint-disable-next-line
-                this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
-                : this.renderInitialValue();
-                break;
-            case 'template':
-                this.checkIsTemplate();
-                break;
-            case 'disabled':
-                this.disable(newProp.disabled);
-                break;
-            case 'enableRtl':
-                this.setRtl(newProp.enableRtl);
-                break;
-            case 'cssClass':
-                this.setClass('remove', oldProp.cssClass);
-                this.setClass('add', newProp.cssClass);
-                break;
-            case 'mode':
-                this.enableEditor(this.enableEditMode);
-                break;
-            case 'enableEditMode':
-                this.enableEditor(newProp.enableEditMode);
-                break;
-            case 'editableOn':
-                this.unWireEditEvent(oldProp.editableOn);
-                if (newProp.editableOn !== 'EditIconClick') { this.wireEditEvent(newProp.editableOn); }
-                break;
+        let checkValidation: boolean = this.validationRules ? !isNOU(this.element.querySelectorAll('.' + classes.ERROR)) &&
+            this.element.querySelectorAll('.' + classes.ERROR).length > 0 ? false : true : true;
+        if (checkValidation) {
+            if (this.isEditorOpen()) {
+                const editModeChanged: boolean = 'enableEditMode' in newProp;
+                if ((editModeChanged && oldProp.enableEditMode && !newProp.enableEditMode) || (!editModeChanged && this.enableEditMode)) {
+                    this.triggerEndEdit('cancel');
+                } else { this.removeEditor(); }
+            }
+            for (const prop of Object.keys(newProp)) {
+                switch (prop) {
+                case 'showButtons':
+                    // eslint-disable-next-line
+                    (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
+                    break;
+                case 'value':
+                    this.updateValue();
+                    // eslint-disable-next-line
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                    : this.renderInitialValue();
+                    break;
+                case 'emptyText':
+                    // eslint-disable-next-line
+                    this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
+                    : this.renderInitialValue();
+                    break;
+                case 'template':
+                    this.checkIsTemplate();
+                    break;
+                case 'disabled':
+                    this.disable(newProp.disabled);
+                    break;
+                case 'enableRtl':
+                    this.setRtl(newProp.enableRtl);
+                    break;
+                case 'cssClass':
+                    this.setClass('remove', oldProp.cssClass);
+                    this.setClass('add', newProp.cssClass);
+                    break;
+                case 'mode':
+                    this.enableEditor(this.enableEditMode);
+                    break;
+                case 'enableEditMode':
+                    this.enableEditor(newProp.enableEditMode);
+                    break;
+                case 'editableOn':
+                    this.unWireEditEvent(oldProp.editableOn);
+                    if (newProp.editableOn !== 'EditIconClick') { this.wireEditEvent(newProp.editableOn); }
+                    break;
+                }
             }
         }
     }

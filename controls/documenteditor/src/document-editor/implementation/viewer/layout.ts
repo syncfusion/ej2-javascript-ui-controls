@@ -3392,7 +3392,7 @@ export class Layout {
             bottomMargin += afterSpacing;
             let previousElement: ElementBox = i > 0 ? children[i - 1] as ElementBox: undefined;
             if (i === 0 || (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') &&
-                previousElement instanceof ShapeBase &&  previousElement.textWrappingStyle !== 'Inline')
+                previousElement instanceof ShapeBase &&  previousElement.textWrappingStyle !== 'Inline' && previousElement.indexInOwner < elementBox.indexInOwner)
                 || elementBox.padding.left > 0) {
                 line.height = topMargin + elementBox.height + bottomMargin;
                 if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && (isParagraphEnd || trimmedSpaceWidth < 0))) {

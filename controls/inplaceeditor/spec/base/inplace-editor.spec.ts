@@ -1825,7 +1825,7 @@ describe('InPlace-Editor Control', () => {
             editorObj.validate();
             expect(select('.' + classes.FORM, this.element).classList.contains(classes.ERROR)).toEqual(true);
             expect(select('.e-input-group', this.element).classList.contains(classes.ERROR)).toEqual(true);
-            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mousedown');
+            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mouseup');
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
             valueEle.click();
             expect(editorObj.model.value === editorObj.value).toBe(true);
@@ -2106,7 +2106,7 @@ describe('InPlace-Editor Control', () => {
             expect(selectAll('.' + classes.BUTTONS, ele).length === 1).toEqual(true);
         });
         it('Close with editor element availability testing', () => {
-            (<HTMLElement>select('.' + classes.BTN_CANCEL, ele)).dispatchEvent(new MouseEvent('mousedown'));
+            (<HTMLElement>select('.' + classes.BTN_CANCEL, ele)).dispatchEvent(new MouseEvent('mouseup'));
             expect(selectAll('.' + classes.INLINE, ele).length === 1).toEqual(false);
         });
     });
@@ -2178,7 +2178,7 @@ describe('InPlace-Editor Control', () => {
             expect(selectAll('.' + classes.BUTTONS, tipEle).length === 1).toEqual(true);
         });
         it('Close with editor element availability testing', () => {
-            (<HTMLElement>select('.' + classes.BTN_CANCEL, tipEle)).dispatchEvent(new MouseEvent('mousedown'));
+            (<HTMLElement>select('.' + classes.BTN_CANCEL, tipEle)).dispatchEvent(new MouseEvent('mouseup'));
             expect(selectAll('.' + classes.ROOT_TIP, document.body).length === 1).toEqual(false);
         });
         it('Page scroll with testing', (done: Function) => {
@@ -3023,7 +3023,7 @@ describe('InPlace-Editor Control', () => {
             ele = editorObj.element;
             let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
-            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mousedown');
+            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mouseup');
             setTimeout(() => {
                 expect(closeType).toBe('cancel');
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);

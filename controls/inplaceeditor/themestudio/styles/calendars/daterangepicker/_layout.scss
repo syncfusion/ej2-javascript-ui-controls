@@ -218,6 +218,7 @@
           overflow: $range-visibility-hidden;
           padding: $range-list-item-padding;
           white-space: $range-text-nowrap;
+          text-overflow: $range-text-overflow;
         }
         #{if(&, '&', '*')} .e-list-parent {
           margin: $range-value-zero;

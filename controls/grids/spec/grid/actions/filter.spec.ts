@@ -19,7 +19,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import * as events from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { DataManager, ODataV4Adaptor, DataUtil, UrlAdaptor } from "@syncfusion/ej2-data";
+import { DataManager, ODataV4Adaptor, DataUtil } from "@syncfusion/ej2-data";
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { createElement } from '@syncfusion/ej2-base';
 
@@ -3211,16 +3211,12 @@ describe('EJ2-69040 - Filter Menu dialog is not opening on ForeignKey column whe
 
 describe('EJ2-68692 - Grid Component menu filtering behaves incorrectly ', ()=>{
     let gridObj: Grid;
-    let remoteData: DataManager = new DataManager({
-        url: 'https://ej2services.syncfusion.com/production/web-services/api/UrlDataSource',
-        adaptor: new UrlAdaptor,
-    });
     let actionBegin: (args: any) => void;
     let actionComplete: (args: any) => void;
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: remoteData,
+                dataSource: filterData,
                 showColumnChooser: true,
                 allowSorting: true,
                 allowPaging: true,
@@ -3230,10 +3226,10 @@ describe('EJ2-68692 - Grid Component menu filtering behaves incorrectly ', ()=>{
                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
                 height: 180,
                 columns: [
-                    { field: 'EmployeeID', headerText: 'Employee ID', width: 130,  textAlign: 'Right' },
-                    { field: 'Employees', headerText: 'Employee Name', width: 150 },
-                    { field: 'Designation', headerText: 'Designation', width: 130 },
-                    { field: 'CurrentSalary', headerText: 'Current Salary', format: "C2", textAlign: 'Right', width: 140 }
+                    { field: 'OrderID', type: 'number' },
+                    { field: 'EmployeeID', type: 'number' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'ShipName' }, 
                 ],
                 actionComplete: actionComplete
             }, done);
@@ -3243,10 +3239,10 @@ describe('EJ2-68692 - Grid Component menu filtering behaves incorrectly ', ()=>{
             done();
         };
         gridObj.actionComplete = actionComplete;
-        gridObj.filterByColumn('Employees', 'startswith', 'Kathryn Fuller');
+        gridObj.filterByColumn('ShipName', 'startswith', 'Hanari Carnes');
     });
     it('Filter bar clicking', () => {
-        (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[3] as HTMLElement).click();
     });    
     it('Query checking', ()  => {
         const autoComplete = (document.getElementsByClassName("e-autocomplete")[0] as any).ej2_instances[0];

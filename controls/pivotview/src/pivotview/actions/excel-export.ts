@@ -48,16 +48,19 @@ export class ExcelExport {
             this.actualrCnt = (type === 'footer') ? this.actualrCnt + rowCount - (excelExportProperties.rows[0].cells.length) : this.actualrCnt;
             const row: ExcelRow[] = excelExportProperties.rows;
             for (let i: number = 0; i < row.length; i++) {
-                for (let j: number = 0; j < row[i as number].cells.length; j++) {
-                    cells = [];
+                let spanCount: number = 0;
+                cells = [];
+                let currentRow: ExcelRow = row[i];
+                for (let j: number = 0; j < currentRow.cells.length; j++) {
                     cells.push({
-                        index: i + 1, value: row[i as number].cells[j as number].value,
-                        colSpan: row[i as number].cells[j as number].colSpan, rowSpan: row[i as number].cells[j as number].rowSpan,
-                        style: row[i as number].cells[j as number].style
+                        index: spanCount + 1, value: currentRow.cells[j].value,
+                        colSpan: currentRow.cells[j].colSpan, rowSpan: currentRow.cells[j].rowSpan,
+                        style: currentRow.cells[j].style
                     });
-                    this.actualrCnt++;
-                    this.rows.push({ index: this.actualrCnt, cells: cells });
+                    spanCount = spanCount + cells[j].colSpan;
                 }
+                this.actualrCnt++;
+                this.rows.push({ index: this.actualrCnt, cells: cells });
             }
             this.actualrCnt = (type === 'header') ? rowCount : this.actualrCnt;
         }

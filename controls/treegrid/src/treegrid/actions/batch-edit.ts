@@ -124,7 +124,7 @@ export class BatchEdit {
         this.batchAddedRecords = this.batchRecords = this.batchAddRowRecord = this.batchDeletedRecords = this.currentViewRecords = [];
     }
     private cellSaved(args: CellSaveArgs): void {
-        let actualCellIndex: number = (<HTMLTableCellElement>args.cell).cellIndex;
+        let actualCellIndex: number = args.column.index;
         const frozenCols: number = this.parent.frozenColumns || this.parent.getFrozenColumns();
         if (frozenCols && args.columnObject.index > frozenCols) {
             actualCellIndex = actualCellIndex + frozenCols;
@@ -135,13 +135,13 @@ export class BatchEdit {
             const colCount: number = this.parent.getFrozenLeftColumnsCount() + actualCellIndex;
             if (colCount === this.parent.treeColumnIndex) {
                 this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
-                    column: this.parent.grid.getColumnByIndex((<HTMLTableCellElement>args.cell).cellIndex)
+                    column: this.parent.grid.getColumnByIndex(args.column.index)
                 });
             }
         }
         else if (actualCellIndex === this.parent.treeColumnIndex) {
             this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
-                column: this.parent.grid.getColumnByIndex((<HTMLTableCellElement>args.cell).cellIndex)
+                column: this.parent.grid.getColumnByIndex(args.column.index)
             });
         }
         if (this.isAdd && this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.newRowPosition !== 'Bottom') {

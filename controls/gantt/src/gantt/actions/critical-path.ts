@@ -697,10 +697,10 @@ export class CriticalPath {
         for (let i: number = 0; i < criticalPathIds.length; i++) {
             let criticalData: IGanttData;
             if (this.parent.viewType === 'ProjectView') {
-                criticalData = this.parent.currentViewData[this.parent.ids.indexOf(criticalPathIds[i as number].toString())];
+                criticalData = this.parent.flatData[this.parent.ids.indexOf(criticalPathIds[i as number].toString())];
             }
             else {
-                let currentRecords: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
+                let currentRecords: IGanttData[] = this.parent.flatData.filter((data: IGanttData) => {
                     return (data.ganttProperties.taskId).toString() === criticalPathIds[i as number].toString();
                 });
                 for (let i: number = 0; i < currentRecords.length; i++) {
@@ -713,16 +713,18 @@ export class CriticalPath {
             const element: HTMLElement = this.parent.getRowByIndex(index);
             let taskClass: string;
             const columnFields: TaskFieldsModel = this.parent.taskFields;
-            if (criticalData.parentItem) {
+            if (criticalData && criticalData.parentItem) {
                 const parentRecord: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
                     return criticalData.parentItem.uniqueID === data.uniqueID;
                 })
-                const parentIndex: number = this.parent.currentViewData.indexOf(parentRecord[0]);
+                const parentIndex: number = this.parent.flatData.indexOf(parentRecord[0]);
                 const parentElement: HTMLElement = this.parent.getRowByIndex(parentIndex);
-                let parentTaskbarElement = parentElement.querySelectorAll('.e-taskbar-main-container')
-                for (let i: number = 0; i < parentTaskbarElement.length; i++) {
-                    if (parentTaskbarElement[i as number].getAttribute('rowuniqueid') === criticalData['rowUniqueID']) {
-                        addClass(parentTaskbarElement[i as number].querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
+                if (parentElement) {
+                    let parentTaskbarElement = parentElement.querySelectorAll('.e-taskbar-main-container');
+                    for (let i: number = 0; i < parentTaskbarElement.length; i++) {
+                        if (parentTaskbarElement[i as number].getAttribute('rowuniqueid') === criticalData['rowUniqueID']) {
+                            addClass(parentTaskbarElement[i as number].querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
+                        }
                     }
                 }
             }

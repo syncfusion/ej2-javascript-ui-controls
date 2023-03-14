@@ -6599,9 +6599,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
-                //EJ2-69577 - We have removed findNodeInLane method to improve the performance. 
-                this.setZIndex(layer || this.activeLayer, obj);
-                    
+                //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
+                if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
+                    this.activeLayer.objects.indexOf(obj.targetID) !== -1) { 
+                        this.setZIndex(layer || this.activeLayer, obj);
+                    } 
             } else {
                 this.setZIndex(layer || this.activeLayer, obj);
             }

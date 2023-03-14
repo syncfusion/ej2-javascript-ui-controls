@@ -1369,7 +1369,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         customProperties.enableValueSorting = false;
                     }
                     customProperties.savedFieldList = pivot.pivotFieldList;
-                    if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                    if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange) && !pivot.allowDeferLayoutUpdate) {
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             if (control.dataSourceSettings.mode === 'Server') {

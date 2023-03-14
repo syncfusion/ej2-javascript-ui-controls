@@ -91,6 +91,7 @@ export class FieldList implements IAction {
     }
 
     private updateControl(): void {
+        this.parent.actionObj.actionName = 'Field list refreshed';
         if (this.element) {
             this.element.style.display = 'block';
             prepend([this.element], this.parent.element);

@@ -1720,15 +1720,16 @@ export function setRowsInTbody(
  * @param {string} numberFormat - Format
  * @param {string} type - Value type
  * @param {boolean} isExcel - Boolean property
+ * @param {string} currencyCode - Currency code property from grid instance.
  * @returns {string} returns formated value
  * @hidden
  */
-export function getNumberFormat(numberFormat: string, type: string, isExcel: boolean): string {
+export function getNumberFormat(numberFormat: string, type: string, isExcel: boolean, currencyCode?: string): string {
     let format: string;
     const intl: Internationalization = new Internationalization();
     if (type === 'number') {
         try {
-            format = intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+            format = intl.getNumberPattern({ format: numberFormat, currency: currencyCode, useGrouping: true }, true);
         } catch (error) {
             format = numberFormat;
         }
@@ -1817,6 +1818,9 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;
+                if (rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible === false) {
+                   tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
+                }
             }
         }
     }

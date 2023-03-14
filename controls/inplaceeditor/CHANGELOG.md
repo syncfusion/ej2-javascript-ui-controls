@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#I440965` - Now, the validation works properly when using two way binding for the `value` property.
+
+- `#I443357` - Now, when you click the cancel button in the In-place Editor, the Rich Text Editor will no longer be focused.
+
 ## 20.4.48 (2023-02-01)
 
 ### In-place Editor

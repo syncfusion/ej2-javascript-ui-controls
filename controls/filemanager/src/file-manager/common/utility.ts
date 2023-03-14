@@ -698,6 +698,7 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
             updateLayout(parent, 'Details');
         } else {
             parent.notify(events.sortColumn, { module: 'detailsview' });
+            parent.isSortByClicked=false;
         }
     }
     if (parent.view === 'LargeIcons') {

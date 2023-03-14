@@ -453,6 +453,12 @@ export class DetailsView {
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
+            else if (!this.parent.showFileExtension && node.includes('.')){
+                const Str2: string = node.split('.').slice(0, -1).join('.');
+                if (nodes.indexOf(Str2) !== -1) {
+                    sRecords.push(i);
+                }
+            }
         }
         if (sRecords.length !== 0) {
             this.gridObj.selectRows(sRecords);

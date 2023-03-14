@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I445343` - The issue "Connectors are hidden in swimlane at initial rendering" has been fixed.
+
 ## 20.4.53 (2023-03-07)
 
 ### Diagram

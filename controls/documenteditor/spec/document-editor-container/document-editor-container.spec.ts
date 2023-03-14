@@ -828,3 +828,30 @@ describe('Show/Hide properties pane tooltip validation', () => {
         expect(element.title).toBe('Show properties pane');
     });
 });
+
+describe("insertText API validation when restrictEditing is enabled", () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        container.destroy();
+        document.body.removeChild(element);
+        document.body.innerHTML = '';
+        element = undefined;
+        container = undefined;
+    });
+    it("insertText API validation when restrictEditing is enabled", () => {
+        console.log("insertText API validation when restrictEditing is enabled");
+        container.restrictEditing = true;
+        setTimeout(function () {
+            container.documentEditor.editor.insertText("Hello");
+            expect(container.documentEditor.selection.start.currentWidget.children.length).toBe(0);
+        });
+    });
+});

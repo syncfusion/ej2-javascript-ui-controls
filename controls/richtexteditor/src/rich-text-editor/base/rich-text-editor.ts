@@ -2953,7 +2953,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getHtml(): string {
-        return this.serializeValue(this.contentModule.getEditPanel().innerHTML);
+        const htmlValue: string = this.contentModule.getEditPanel().innerHTML;
+        return (this.enableXhtml && (htmlValue === '<p><br></p>' || htmlValue === '<div><br></div>' ||
+        htmlValue === '<br>') ? null : this.serializeValue(htmlValue));
     }
 
     /**

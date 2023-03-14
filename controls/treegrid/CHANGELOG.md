@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I427734` - Resolved the issue where resizing did not work when persistence was enabled for both individual and stacked columns.
+- `#I439120`, `#I441663` - Resolved script error when using frozen columns with batch editing.
+- `#I442974` - Resolved expand/collapse icon not shown after editing when row drag and drop enabled with batch editing.
+
 ## 20.4.49 (2023-02-07)
 
 ### Tree Grid

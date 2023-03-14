@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, removeClass, addClass, extend } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, removeClass, addClass, extend, L10n } from '@syncfusion/ej2-base';
 import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
@@ -25,6 +25,8 @@ export class DetailRow {
     private parent: IGrid;
     private focus: FocusStrategy;
     private lastrowcell: boolean;
+    private l10n: L10n;
+    private serviceLocator: ServiceLocator;
     private childRefs: Grid[] = [];
 
     /**
@@ -45,6 +47,7 @@ export class DetailRow {
         this.parent.on(events.columnVisibilityChanged, this.refreshColSpan, this);
         this.parent.on(events.destroy, this.destroyChildGrids, this);
         this.parent.on(events.destroyChildGrid, this.destroyChildGrids, this);
+        this.serviceLocator = locator;
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -52,6 +55,7 @@ export class DetailRow {
     }
 
     private toogleExpandcollapse(target: Element): void {
+        this.l10n = this.serviceLocator.getService<L10n>('localization');
         const gObj: IGrid = this.parent;
         const table: Element = this.parent.getContentTable();
         const lastrowIdx: number = this.parent.getCurrentViewRecords().length - 1;
@@ -174,7 +178,7 @@ export class DetailRow {
                 this.lastrowcell = true;
             }
             this.aria.setExpand(target as HTMLElement, true);
-            target.firstElementChild.setAttribute('title', 'expanded');
+            target.firstElementChild.setAttribute('title', this.l10n.getConstant('Expanded'));
         } else {
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = 'none';
@@ -190,7 +194,7 @@ export class DetailRow {
             rowObj.isExpand = false;
             needToRefresh = true;
             this.aria.setExpand(target as HTMLElement, false);
-            target.firstElementChild.setAttribute('title', 'collapsed');
+            target.firstElementChild.setAttribute('title', this.l10n.getConstant('Collapsed'));
         }
         if (!isNullOrUndefined(gObj.detailTemplate) || (gObj.childGrid && needToRefresh)) {
             gObj.updateVisibleExpandCollapseRows();

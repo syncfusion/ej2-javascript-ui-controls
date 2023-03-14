@@ -1,4 +1,4 @@
-import { isNullOrUndefined  } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ICellRenderer } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { Column } from '../models/column';
@@ -30,12 +30,12 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
             node.className = '';
             node.className = attributes['class'];
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonaldown e-icon-gdownarrow', attrs: {
-                href: 'javascript:void(0);', 'title': 'expanded'
+                href: 'javascript:void(0);', 'title': this.localizer.getConstant('Expanded')
             } }));
         } else {
 
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonalright e-icon-grightarrow', attrs: {
-                href: 'javascript:void(0);', 'title': 'collapsed'
+                href: 'javascript:void(0);', 'title': this.localizer.getConstant('Collapsed')
             } }));
         }
 

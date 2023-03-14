@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I440329` - Resolved the issue of folders disappearing from the navigation pane when the `directoryUpload` setting is enabled in the File Manager component.
+
 ## 20.4.53 (2023-03-07)
 
 ### File Manager

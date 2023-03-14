@@ -3683,11 +3683,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         else {
                             pivot.getEngine('onDrop', null, null, null, null, null, null);
                         }
-                        pivot.lastSortInfo = {};
-                        pivot.lastAggregationInfo = {};
-                        pivot.lastCalcFieldInfo = {};
-                        pivot.lastFilterInfo = {};
                     } else {
+                        if (isSorted && pivot.dataSourceSettings.valueSortSettings.headerText !== '') {
+                            pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                        }
                         pivot.engineModule.renderEngine(
                             pivot.dataSourceSettings as IDataOptions, customProperties, pivot.aggregateCellInfo ?
                                 pivot.getValueCellInfo.bind(pivot) : undefined, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot)
@@ -3699,6 +3698,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         pivot.allowServerDataBinding = true;
                         pivot.enginePopulatedEventMethod('updateDataSource');
                     }
+                    pivot.lastSortInfo = {};
+                    pivot.lastAggregationInfo = {};
+                    pivot.lastCalcFieldInfo = {};
+                    pivot.lastFilterInfo = {};
                 }
             }
         });

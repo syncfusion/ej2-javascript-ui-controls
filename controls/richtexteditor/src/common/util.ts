@@ -42,7 +42,7 @@ export function setEditFrameFocus(editableElement: Element, selector: string): v
  * @returns {void}
  * @hidden
  */
-export function updateTextNode(value: string): string {
+export function updateTextNode(value: string, enterAction?: string): string {
     const tempNode: HTMLElement = document.createElement('div');
     tempNode.innerHTML = value;
     tempNode.setAttribute('class', 'tempDiv');
@@ -57,14 +57,21 @@ export function updateTextNode(value: string): string {
             (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
             inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0 ) {
                 if (!isPreviousInlineElem) {
-                    paraElm = createElement('p');
-                    resultElm.appendChild(paraElm);
-                    paraElm.appendChild(tempNode.firstChild);
+                    if (enterAction === 'BR') {
+                        resultElm.appendChild(tempNode.firstChild);
+                        previousParent = resultElm;
+                    } else {
+                        paraElm = createElement('p');
+                        resultElm.appendChild(paraElm);
+                        paraElm.appendChild(tempNode.firstChild);
+                        previousParent = paraElm;
+                        isPreviousInlineElem = true;
+                    }
                 } else {
                     previousParent.appendChild(tempNode.firstChild);
+                    previousParent = paraElm;
+                    isPreviousInlineElem = true;
                 }
-                previousParent = paraElm;
-                isPreviousInlineElem = true;
             } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
             (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
                 detach(tempNode.firstChild);

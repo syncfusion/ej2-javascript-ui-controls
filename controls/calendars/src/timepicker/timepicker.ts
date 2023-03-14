@@ -1548,8 +1548,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.checkValue(li.getAttribute('data-value'));
             if(this.enableMask)
             {
-            this.notify("setMaskSelection", {
-                module: "MaskedDateTime"
+                this.notify('createMask', {
+                    module: 'MaskedDateTime', navigated: true
                 });
             }
             this.selectedElement = li;

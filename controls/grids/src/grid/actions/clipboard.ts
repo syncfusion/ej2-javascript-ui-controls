@@ -210,7 +210,7 @@ export class Clipboard implements IAction {
             const rows: Element[] = this.parent.getRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
-                if (this.parent.getFrozenMode() === literals.leftRight) {
+                if (this.parent.getFrozenMode() === literals.leftRight || this.parent.getFrozenMode() === 'Right') {
                     frRows = this.parent.getFrozenRightRows();
                 }
             }
@@ -229,14 +229,25 @@ export class Clipboard implements IAction {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].
-                        querySelectorAll('.e-rowcell:not(.e-hide)'));
+                    const leftCols: HTMLElement[] = []; const rightCols: HTMLElement[] = []; const movableCols: HTMLElement[] = [];
                     if (isFrozen) {
-                        cells.push(...[].slice.call(mRows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
-                        if (frRows) {
-                            cells.push(...[].slice.call(frRows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
+                        movableCols.push(...[].slice.call(mRows[selectedIndexes[parseInt(i.toString(), 10)] as number].
+                            querySelectorAll('.e-rowcell:not(.e-hide)')));
+                        if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === literals.leftRight) {
+                            rightCols.push(...[].slice.call(frRows[selectedIndexes[parseInt(i.toString(), 10)] as number].
+                                querySelectorAll('.e-rowcell:not(.e-hide)')));
+                        }
+                        if (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenMode() === literals.leftRight ||
+                            (this.parent.isFrozenGrid() && !this.parent.getFrozenMode())) {
+                            leftCols.push(...[].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].
+                                querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
+                    else {
+                        leftCols.push(...[].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].
+                            querySelectorAll('.e-rowcell:not(.e-hide)')));
+                    }
+                    const cells: HTMLElement[] = leftCols.concat(movableCols).concat(rightCols);
                     this.getCopyData(cells, false, '\t', withHeader);
                 }
             } else {

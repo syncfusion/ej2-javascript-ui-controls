@@ -2833,6 +2833,7 @@ export class Gantt extends Component<HTMLElement>
             case 'enableRtl':
             case 'readOnly':
             case 'viewType':
+            case 'taskFields':
                 if (prop === 'locale') {
                    this.isLocaleChanged = true;
                 }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I423348` - The "autoFit" property in the pivot table will now work properly.
+- `#I442142` - Headers are now properly exported when exporting a Pivot Table to an Excel sheet.
+- `#I441872` - The performance issue has now been fixed with the defer layout update, when the popup field list closes with a "Cancel" button click.
+
 ## 20.4.48 (2023-02-01)
 
 ### Pivot Table

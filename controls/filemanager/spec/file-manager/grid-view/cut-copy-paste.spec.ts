@@ -1223,6 +1223,7 @@ describe('FileManager control Details view', () => {
             document.body.appendChild(ele);
             feObj = new FileManager({
                 view: 'Details',
+                showFileExtension: false,
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
@@ -2437,6 +2438,30 @@ describe('FileManager control Details view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
             expect(flag).toBe(true);
+        });
+
+        it('drag and drop with showFileExtension as false', () => {
+            let flag: boolean = false;
+            feObj.allowDragAndDrop = false;
+            feObj.dataBind();
+            feObj.allowDragAndDrop = true;
+            feObj.dataBind();
+            feObj.fileDragStop = (args: FileDragEventArgs) => { args.cancel = true; flag = true; }
+            let gridObj: any = feObj.detailsviewModule.gridObj;
+            feObj.detailsviewModule.gridObj.selectRows([2])
+            let li: Element[] = gridObj.getRows();
+            let rect: any = li[4].querySelector('.e-fe-grid-name').getClientRects();
+            expect(document.querySelector('.e-fe-clone')).toBe(null);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 4, rect[0].y + 4);
+            EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let cloneElementName=document.querySelector('.e-fe-clone').querySelector('.e-fe-name').innerHTML.split('.').slice(0, -1).join('.');
+            let selectedGridRow=feObj.detailsviewModule.gridObj.getSelectedRows()[0].querySelector('.e-fe-text').innerHTML;
+            expect(cloneElementName === selectedGridRow).toBe(true);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
 
         it('Folder copy paste using context menu', (done) => {

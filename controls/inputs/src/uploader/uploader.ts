@@ -1877,7 +1877,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         } else if (!closest(args.target as Element, '.' + SPINNER_PANE)) {
             this.remove(fileData, false, false, true, args);
         }
-        this.element.value = '';
         this.checkActionButtonStatus();
     }
 
@@ -1894,6 +1893,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (isNullOrUndefined(selectedElement)) {
             return;
         }
+        this.element.value = '';
         detach(selectedElement);
         index = this.fileList.indexOf(selectedElement);
         this.fileList.splice(index, 1);

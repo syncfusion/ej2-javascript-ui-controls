@@ -453,6 +453,11 @@ export interface ExtendedRowModel extends RowModel {
     isFiltered?: boolean;
 }
 
+/** @hidden */
+export interface ExtendedCellModel extends CellModel {
+    template?: string;
+}
+
 /**
  * Before cell update event properties
  */

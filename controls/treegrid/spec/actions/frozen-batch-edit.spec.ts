@@ -1311,3 +1311,51 @@ describe('Frozen Columns With Editing', () => {
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
   });
 });
+
+describe('While add the record showing script error', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch" },
+        allowSorting: true,
+        allowFiltering: true,
+        frozenColumns: 3,
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+        columns: [
+          {
+              field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+              validationRules: { required: true, number: true}, width: 90
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, },
+          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+            format: 'yMd' },
+          { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
+            type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
+          { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
+        ]
+      },
+      done
+    );
+  });  
+ it('Add and delete- Batch Editing', () => {
+    let addedRecords = 'addedRecords';
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.selectRow(6);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 37;
+    expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true); 
+  });
+
+   afterAll(() => {
+    destroy(gridObj);
+  });
+}); 

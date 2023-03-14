@@ -354,7 +354,7 @@ describe('MultiSelect module', () => {
             select('.e-chips-collection .e-chips .e-chips-close', ele).dispatchEvent(new MouseEvent('mousedown'));
             expect(selectAll('.e-chips-collection .e-chips', ele).length === 2).toEqual(true);
             let buttonEle: HTMLElement = <HTMLElement>select('.' + classes.BTN_CANCEL, ele);
-            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            buttonEle.dispatchEvent(new MouseEvent('mouseup'));
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
@@ -362,7 +362,7 @@ describe('MultiSelect module', () => {
             select('.e-chips-collection .e-chips .e-chips-close', ele).dispatchEvent(new MouseEvent('mousedown'));
             expect(selectAll('.e-chips-collection .e-chips', ele).length === 2).toEqual(true);
             buttonEle = <HTMLElement>select('.' + classes.BTN_CANCEL, ele);
-            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            buttonEle.dispatchEvent(new MouseEvent('mouseup'));
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);

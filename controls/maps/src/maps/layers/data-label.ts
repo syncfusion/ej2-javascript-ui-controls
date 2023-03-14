@@ -157,6 +157,9 @@ export class DataLabel {
         if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !== '' && layer.dataSource['length'] === 0)) {
             text = shapeData['properties'][layer.shapePropertyPath as string];
         }
+        if (isNullOrUndefined(text) && layer.dataSource['length'] > 0) {
+            text = '';
+        }
         const dataLabelText : string = text;
         const projectionType : string = this.maps.projectionType;
         if (isPoint) {
@@ -208,9 +211,9 @@ export class DataLabel {
                 }
                 let position: MapLocation[] = [];
                 let width: number = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
-                    && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index as number]['width'] :
+                    && this.maps.zoomShapeCollection.length > index ? (this.maps.dataLabelShape[index as number]) * scale :
                     (location['rightMax']['x'] - location['leftMax']['x']) * scale;
-                if (!isNullOrUndefined(this.maps.dataLabelShape)){
+                if (!isNullOrUndefined(this.maps.dataLabelShape) && !this.maps.isReset){
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
                 }
@@ -236,8 +239,9 @@ export class DataLabel {
                     locationX = location1['x'];
                     location['x'] = location1['x'];
                     width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
-                        && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index as number]['width'] :
-                        (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
+                        && this.maps.zoomShapeCollection.length > index ? (this.maps.dataLabelShape[index as number]) * scale :
+                        ((location1['rightMax']['x'] - location1['leftMax']['x']) * scale) > 0 ?
+                        ((location1['rightMax']['x'] - location1['leftMax']['x']) * scale) : width;
                 }
                 const xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
                 const xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;

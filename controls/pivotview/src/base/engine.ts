@@ -2138,7 +2138,7 @@ export class PivotEngine {
             rowFilteredData = (rowFilteredData.length > 0 ? rowFilteredData : rowHeaders);
             columnFilteredData = (columnFilteredData.length > 0 ? columnFilteredData : columnHeaders);
             this.isEmptyDataAvail(rowFilteredData, columnFilteredData);
-            const savedFieldList: IFieldListOptions = extend({}, this.fieldList, null, true) as IFieldListOptions;
+            const savedFieldList: IFieldListOptions = PivotUtil.getClonedFieldList(this.fieldList);
             this.indexMatrix = []; const fields: IDataSet = (this.data as IDataSet[])[0];
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.fillFieldMembers((this.data as IDataSet[]), this.indexMatrix);
