@@ -1,8 +1,7 @@
+/* eslint-disable jsdoc/valid-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, NotifyPropertyChanges, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { EventHandler, remove, ModuleDeclaration, Internationalization } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
@@ -1144,7 +1143,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         if ((this as any).isReact) { this.clearTemplate(); }
         this.rangeSlider.destroy();
         super.destroy();
-        this.element.innerHTML = '';
+        this.element.innerText = '';
         this.element.classList.remove('e-rangenavigator');
     }
 }

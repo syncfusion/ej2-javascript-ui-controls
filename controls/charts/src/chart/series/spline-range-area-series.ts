@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
@@ -14,7 +13,7 @@ import { Axis } from '../axis/axis';
 
 export class SplineRangeAreaSeries extends SplineBase {
 
-    public borderDirection : string ='';
+    public borderDirection : string = '';
     /**
      * Render SplineRangeArea Series.
      *
@@ -140,7 +139,7 @@ export class SplineRangeAreaSeries extends SplineBase {
         /**
          * To draw border for the path directions of area
          */
-         if (series.border.width !== 0) {
+        if (series.border.width !== 0) {
             this.appendLinePath(
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',

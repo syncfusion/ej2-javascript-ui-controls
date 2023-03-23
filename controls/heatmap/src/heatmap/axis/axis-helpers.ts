@@ -24,7 +24,7 @@ export class AxisHelper {
     /**
      * To render the x and y axis.
      *
-     *  @private
+     * @private
      */
 
     public renderAxes(): void {

@@ -1,0 +1,28 @@
+@include export-module('excel-filter-theme') {
+
+  /*! Excel-Filter theme */
+  #{&}.e-excelfilter {
+    .e-footer-content {
+      border-color: $grid-columnchooser-footer-border-color;
+      opacity: $grid-columnchooser-footer-border-opacity;
+    }
+
+    .e-filtered::before {
+      color: $grid-filtered-color;
+    }
+
+    .e-dlg-content {
+      padding-bottom: $grid-excel-filter-bottom-padding;
+    }
+  }
+
+  li.e-separator.e-menu-item.e-excel-separator {
+    margin-bottom: $grid-excel-filter-separator;
+    margin-top: $grid-excel-filter-separator;
+  }
+
+  .e-xlsel {
+    background-color: $grid-autofill-color;
+    border-color: $grid-autofill-color;
+  }
+}

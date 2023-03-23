@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Axis } from '../axis/axis';
 import { Category } from '../axis/category-axis';
 import { triggerLabelRender } from '../../common/utils/helper';

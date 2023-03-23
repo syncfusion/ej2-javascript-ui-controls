@@ -1,7 +1,7 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule, DialogBeforeOpenEventArgs } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, BasicModule, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel } from '../../../src/index';
+import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -354,22 +354,6 @@ describe('Spreadsheet formula module ->', () => {
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":66.5,"formula":"=SUMPRODUCT(D1:D5);"}');
             done();
         });
-         it('SUMPRODUCT formula with row and column range is entered in reverse order', (done: Function) => {
-            const cellEle: HTMLElement = helper.invoke('getCell', [4, 9]);
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:D5,E5:E2)' }, 'J5']);
-            expect(cellEle.textContent).toBe('1430');
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E2:E5)' }, 'J5']);
-            expect(cellEle.textContent).toBe('1430');
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E5:E2)' }, 'J5']);
-            expect(cellEle.textContent).toBe('1430');
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:F2,F3:D3)' }, 'J5']);
-            expect(cellEle.textContent).toBe('120830');
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,D3:F3)' }, 'J5']);
-            expect(cellEle.textContent).toBe('120830');
-            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,F3:D3)' }, 'J5']);
-            expect(cellEle.textContent).toBe('120830');
-            done();
-        });
         it('ROUNDUP formula with more than 2 inputs', (done: Function) => {
             helper.edit('J5', '=ROUNDUP(C2,C3,C4);');
             expect(helper.invoke('getCell', [4, 9]).textContent).toBe('invalid arguments');
@@ -653,12 +637,6 @@ describe('Spreadsheet formula module ->', () => {
         it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
             helper.edit('J19', '=HOUR("21:33");');
             expect(helper.invoke('getCell', [18, 9]).textContent).toBe('21');
-            done();
-        });
-        it('Hour formula without ""->', (done: Function) => {
-            helper.edit('J20', '=HOUR(6:45 PM);');
-            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[9])).toBe('{"value":0,"formula":"=HOUR(6:45 PM);"}');
             done();
         });
     });
@@ -1337,32 +1315,100 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EDATE Formula with cell Reference->', (done: Function) => {
             helper.edit('I1', '=EDATE(B5,3)');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('2/21/2015');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"42056","formula":"=EDATE(B5,3)","format":"mm-dd-yyyy"}');
+            const cellModel: CellModel = helper.getInstance().sheets[0].rows[0].cells[8];
+            expect(cellModel.value).toBe('42056');
+            expect(cellModel.formula).toBe('=EDATE(B5,3)');
+            expect(cellModel.format).toBeUndefined();
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 8]);
+            expect(cellEle.textContent).toBe('42056');
+            helper.invoke('numberFormat', [getFormatFromType('ShortDate'), 'I1']);
+            expect(cellModel.format).toBe('mm-dd-yyyy');
+            expect(cellEle.textContent).toBe('2/21/2015');
+            helper.invoke('updateCell', [{ value: '10/28/2014' }, 'B5']);
+            expect(cellModel.value).toBe('42032');
+            expect(cellEle.textContent).toBe('1/28/2015');
+            helper.edit('I1', '=EDATE("02/04/2014",1)');
+            expect(cellModel.value).toBe('41702');
+            expect(cellEle.textContent).toBe('3/4/2014');
+            helper.invoke('numberFormat', [getFormatFromType('Number'), 'I1']);
+            expect(cellModel.format).toBe('0.00');
+            expect(cellEle.textContent).toBe('41702.00');
+            helper.invoke('numberFormat', [getFormatFromType('General'), 'I1']);
+            expect(cellModel.format).toBe('General');
+            expect(cellEle.textContent).toBe('41702');
+            helper.edit('I1', '=EDATE("8/27/1994",0)-5');
+            expect(cellModel.value).toBe('34568');
+            expect(cellEle.textContent).toBe('34568');
+            helper.edit('I1', '=EDATE("2/21/1996",-5)');
+            expect(cellModel.value).toBe('34963');
+            expect(cellEle.textContent).toBe('34963');
+            helper.edit('I1', '=EDATE(A13,0)');
+            expect(cellModel.value).toBe('0');
+            expect(cellEle.textContent).toBe('0');
+            helper.edit('I1', '=EDATE(A13,3)');
+            expect(cellModel.value).toBe('91');
+            expect(cellEle.textContent).toBe('91');
+            helper.edit('I1', '=EDATE(B10,B13)');
+            expect(cellModel.value).toBe('41829');
+            expect(cellEle.textContent).toBe('41829');
+            helper.edit('I1', '=EDATE("2345",-2)');
+            expect(cellModel.value).toBe('2284');
+            expect(cellEle.textContent).toBe('2284');
+            helper.edit('I1', '=EDATE(10,3)');
+            expect(cellModel.value).toBe('101');
+            expect(cellEle.textContent).toBe('101');
+            helper.edit('I1', '=EDATE(DATE(2020,3,10),2)');
+            expect(cellModel.value).toBe('43961');
+            expect(cellEle.textContent).toBe('43961');
             done();
         });
-        it('EDATE Formula with no input->', (done: Function) => {
+        it('EDATE Formula error cases->', (done: Function) => {
+            // No input
             helper.edit('I3', '=EDATE()');
             expect(helper.invoke('getCell', [2, 8]).textContent).toBe('invalid arguments');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"invalid arguments","formula":"=EDATE()"}');
-            done();
-        });
-        it('EDATE Formula with number as string->', (done: Function) => {
+            // With secnd argument (number) as string value
             helper.edit('I4', '=EDATE(B5,A6)');
-            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#NUM!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#NUM!","formula":"=EDATE(B5,A6)"}');
-            done();
-        });
-        it('EDATE Formula with date as string->', (done: Function) => {
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#VALUE!","formula":"=EDATE(B5,A6)"}');
+            // With first argument (date) as string value
             helper.edit('I5', '=EDATE(A6,1)');
             expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#VALUE!","formula":"=EDATE(A6,1)"}');
-            done();
-        });
-        it('EDATE Formula with no Date value->', (done: Function) => {
+            // Without first argument (date)
             helper.edit('I6', '=EDATE(,1)');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#VALUE!","formula":"=EDATE(,1)"}');
+            const cellEle: HTMLElement = helper.invoke('getCell', [5, 8]);
+            expect(cellEle.textContent).toBe('#N/A');
+            const cellModel: CellModel = helper.getInstance().sheets[0].rows[5].cells[8];
+            expect(JSON.stringify(cellModel)).toBe('{"value":"#N/A","formula":"=EDATE(,1)"}');
+            // With first argument (date) as empty value
+            helper.edit('I6', '=EDATE("",2)');
+            expect(cellEle.textContent).toBe('#VALUE!');
+            expect(cellModel.value).toBe('#VALUE!');
+            // Without second argument (number)
+            helper.edit('I6', '=EDATE(B4,)');
+            expect(cellEle.textContent).toBe('#N/A');
+            expect(cellModel.value).toBe('#N/A');
+            // With second argument (number) as empty value
+            helper.edit('I6', '=EDATE(B7,"")');
+            expect(cellEle.textContent).toBe('#VALUE!');
+            expect(cellModel.value).toBe('#VALUE!');
+            // Without both arguments
+            helper.edit('I6', '=EDATE(,)');
+            expect(cellEle.textContent).toBe('#N/A');
+            expect(cellModel.value).toBe('#N/A');
+            // First argument (date) as string value
+            helper.edit('I6', '=EDATE("Test",1)');
+            expect(cellEle.textContent).toBe('#VALUE!');
+            expect(cellModel.value).toBe('#VALUE!');
+            // Second argument (number) as string value
+            helper.edit('I6', '=EDATE("3/18/1994","Test")');
+            expect(cellEle.textContent).toBe('#VALUE!');
+            expect(cellModel.value).toBe('#VALUE!');
+            // Invalid date syntax
+            helper.edit('I6', '=EDATE(2/2/2020,0)');
+            expect(cellEle.textContent).toBe('0');
+            expect(cellModel.value).toBe('0');
             done();
         });
         it('DATEVALUE Formula with dd-mm-yyyy format ->', (done: Function) => {
@@ -4073,7 +4119,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-58254, EJ2-59388, EJ2-60324 ->', () => {
+        describe('EJ2-58254, EJ2-59388, EJ2-60324, EJ2-70132 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     {
@@ -4124,6 +4170,15 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('J3', '=SUM(J1:J2)');
                 expect(helper.invoke('getCell', [2, 9]).textContent).toBe('3.003');
                 expect(getCell(2, 9, helper.getInstance().sheets[0]).value).toBe('3.003');
+                done();
+            });
+            it('Spreadsheet supported formulas are not working as expected', (done: Function) => {
+                helper.edit('K1', '=AVERAGEIF(D2:D4, ">10", E2:E4)');
+                helper.edit('K2', '=SUMIF(D2:D4, ">10", E2:E4)');
+                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('22.5');
+                expect(parseFloat(getCell(0, 10, helper.getInstance().sheets[0]).value)).toEqual(22.5);
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('45');
+                expect(parseFloat(getCell(1, 10, helper.getInstance().sheets[0]).value)).toEqual(45);
                 done();
             });
         });
@@ -5278,6 +5333,51 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(A1:A5)');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(15);
             done();
+        });
+        it('Invalid formula range alert dialog check->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('A7');
+            spreadsheet.editModule.startEdit();
+            spreadsheet.editModule.editCellData.value = '=SUMIFS(1A:2A,3A:A4,">"&1B)';
+            spreadsheet.editModule.endEdit();
+            const cellSave: Function = spreadsheet.cellSave;
+            spreadsheet.cellSave = (args: CellSaveEventArgs): void => {
+                expect(args.value).toBe('=SUMIFS(A1:A2,A3:A4,">"&B1)');
+                expect(args.displayText).toBe('3');
+                spreadsheet.cellSave = cellSave;
+            };
+            setTimeout((): void => {
+                expect(helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content').textContent).toBe(
+                    'We found a typo in your cell reference. Do you want to correct this reference as follows?=SUMIFS(A1:A2,A3:A4,">"&B1)');
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-footer-content .e-btn:not(.e-primary)');
+                expect(spreadsheet.isEdit).toBeTruthy();
+                spreadsheet.editModule.editCellData.value = '=SUMIFS(1A:2A,3A:A4,">"&1B)';
+                spreadsheet.editModule.endEdit();
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                    helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].formula).toEqual('=SUMIFS(A1:A2,A3:A4,">"&B1)');
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].value).toEqual(3);
+                    done();
+                });
+            });
+        });
+        it('Simple invalid formula range alert dialog check->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('A7');
+            spreadsheet.editModule.startEdit();
+            spreadsheet.editModule.editCellData.value = '=SUM(A1,2A,3A,4A)';
+            spreadsheet.editModule.endEdit();
+            setTimeout((): void => {
+                expect(helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content').innerHTML).toBe(
+                    'We found a typo in your cell reference. Do you want to correct this reference as follows?<br>=SUM(A1,A2,A3,A4)');
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+                expect(spreadsheet.sheets[0].rows[6].cells[0].formula).toEqual('=SUM(A1,A2,A3,A4)');
+                expect(spreadsheet.sheets[0].rows[6].cells[0].value).toEqual(10);
+                done();
+            });
         });
     });
     describe('EJ2-65615-> Column wise ->', () => {

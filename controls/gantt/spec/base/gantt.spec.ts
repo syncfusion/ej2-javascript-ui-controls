@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData  } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -381,7 +381,7 @@ describe('Gantt - Base', () => {
             setValue('mutableData', true, ganttObj.treeGrid.grid.contentModule)
             ganttObj.dataSource = selfReference.slice(0, 15);
             ganttObj.dataBound = function (args: any): void {
-               // expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-row')[0])).toBe('pink');
+                // expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-row')[0])).toBe('pink');
                 expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-chart-row')[0])).toBe('pink');
             };
             ganttObj.dataBind();

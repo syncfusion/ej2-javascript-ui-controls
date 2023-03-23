@@ -310,6 +310,7 @@ export class TocProperties {
             tocSettings.tabLeader = 'Dot';
         }
         this.documentEditor.editor.insertTableOfContents(tocSettings);
+        this.documentEditor.focusIn();
     }
 
     public destroy(): void {

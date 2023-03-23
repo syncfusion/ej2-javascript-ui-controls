@@ -68,11 +68,11 @@ export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
      */
     axis: Axis;
     /**
-     * Specifies the text for the axis label.
+     * Specifies the text of the axis label.
      */
     text: string;
     /**
-     * Specifies the value for the axis label.
+     * Specifies the axis value of the axis label.
      */
     value: number;
 }
@@ -82,7 +82,7 @@ export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
  */
 export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
     /**
-     * Specifies the instance of linear gauge component.
+     * Specifies the instance of linear gauge.
      */
     gauge: LinearGauge;
     /**
@@ -161,7 +161,7 @@ export interface IPointerDragEventArgs {
      */
     axis?: Axis;
     /**
-     * Specifies the pointers instance in linear gauge
+     * Specifies the pointer instance in linear gauge.
      */
     pointer?: Pointer;
     /**
@@ -220,7 +220,7 @@ export interface IValueChangeEventArgs {
      */
     element: Element;
     /**
-     * specifies the index value of the current axis.
+     * specifies the index value of the current axis in which the pointer value is changed.
      */
     axisIndex: number;
     /**
@@ -228,11 +228,11 @@ export interface IValueChangeEventArgs {
      */
     axis?: Axis;
     /**
-     * Specifies the current pointer index in linear gauge.
+     * Specifies the current index of the pointer in which the pointer value is changed.
      */
     pointerIndex: number;
     /**
-     * Specifies the pointer instance of linear gauge.
+     * Specifies the pointer instance of linear gauge in which the pointer value is changed.
      */
     pointer?: Pointer;
     /**

@@ -3,6 +3,7 @@ import { CreateElementArgs } from '@syncfusion/ej2-buttons';
 
 const globalTimeOut: { [key: string]: GlobalTimeOut } = {};
 const DEFT_MAT_WIDTH: number = 30;
+const DEFT_MAT3_WIDTH: number = 30;
 const DEFT_FAB_WIDTH: number = 30;
 const DEFT_FLUENT_WIDTH: number = 30;
 const DEFT_BOOT_WIDTH: number = 30;
@@ -11,6 +12,7 @@ const DEFT_BOOT5_WIDTH: number = 36;
 const CLS_SHOWSPIN: string = 'e-spin-show';
 const CLS_HIDESPIN: string = 'e-spin-hide';
 const CLS_MATERIALSPIN: string = 'e-spin-material';
+const CLS_MATERIAL3SPIN: string = 'e-spin-material3';
 const CLS_FABRICSPIN: string = 'e-spin-fabric';
 const CLS_FLUENTSPIN: string = 'e-spin-fluent';
 const CLS_TAILWINDSPIN: string = 'e-spin-tailwind';
@@ -36,7 +38,7 @@ export type createElementParams = (
 /**
   * Defines the type of spinner.
   */
-export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind' | 'Bootstrap5' | 'Fluent';
+export type SpinnerType = 'Material' | 'Material3' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind' | 'Bootstrap5' | 'Fluent';
 
 // eslint-disable-next-line
 /**
@@ -142,6 +144,20 @@ function createMaterialSpinner(container: HTMLElement, radius: number, makeEleme
     globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Material', radius: radius };
     create_material_element (container, uniqueID, makeElement, CLS_MATERIALSPIN);
     mat_calculate_attributes(radius, container, 'Material', CLS_MATERIALSPIN);
+}
+
+/**
+ *
+ * @param {HTMLElement} container - specifies the element
+ * @param {number} radius - specifies the radius
+ * @param {createElementParams} makeElement - specifies the element
+ * @returns {void}
+ */
+function createMaterial3Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = random_generator();
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Material3', radius: radius };
+    create_material_element (container, uniqueID, makeElement, CLS_MATERIAL3SPIN);
+    mat_calculate_attributes(radius, container, 'Material3', CLS_MATERIAL3SPIN);
 }
 
 /**
@@ -269,6 +285,9 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
     switch (theme) {
     case 'Material':
         createMaterialSpinner(innerContainer, radius, makeElement);
+        break;
+    case 'Material3':
+        createMaterial3Spinner(innerContainer, radius, makeElement);
         break;
     case 'Fabric':
         createFabricSpinner(innerContainer, radius, makeElement);
@@ -466,6 +485,9 @@ function calculateRadius(width: string | number, theme: string): number {
     case 'Material':
         defaultSize = DEFT_MAT_WIDTH;
         break;
+    case 'Material3':
+        defaultSize = DEFT_MAT3_WIDTH;
+        break;
     case 'Fabric':
         defaultSize = DEFT_FAB_WIDTH;
         break;
@@ -626,12 +648,19 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
      * @returns {void}
      */
     function updatePath (value: number, container: HTMLElement): void {
-        if ((!isNullOrUndefined(container.querySelector('svg.e-spin-material')))
-            && (!isNullOrUndefined(container.querySelector('svg.e-spin-material').querySelector('path.e-path-circle')))) {
-            const svg: SVGSVGElement = container.querySelector('svg.e-spin-material') as SVGSVGElement;
-            const path: SVGPathElement = svg.querySelector('path.e-path-circle') as SVGPathElement;
-            path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, value, max) + '');
-            path.setAttribute('transform', 'rotate(' + (rotate) + ' ' + diameter / 2 + ' ' + diameter / 2 + ')');
+        if (!isNullOrUndefined(container.querySelector('svg.e-spin-material')) || !isNullOrUndefined(container.querySelector('svg.e-spin-material3'))) {
+            let svg: SVGSVGElement;
+            if (!isNullOrUndefined(container.querySelector('svg.e-spin-material')) && !isNullOrUndefined(container.querySelector('svg.e-spin-material').querySelector('path.e-path-circle'))) {
+                svg = container.querySelector('svg.e-spin-material') as SVGSVGElement;
+            }
+            else if (!isNullOrUndefined(container.querySelector('svg.e-spin-material3')) && !isNullOrUndefined(container.querySelector('svg.e-spin-material3').querySelector('path.e-path-circle'))) {
+                svg = container.querySelector('svg.e-spin-material3') as SVGSVGElement;
+            }
+            if (!isNullOrUndefined(svg)){
+                const path: SVGPathElement = svg.querySelector('path.e-path-circle') as SVGPathElement;
+                path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, value, max) + '');
+                path.setAttribute('transform', 'rotate(' + (rotate) + ' ' + diameter / 2 + ' ' + diameter / 2 + ')');
+            }
         }
     }
 }
@@ -654,7 +683,7 @@ function mat_calculate_attributes (radius: number , container: HTMLElement, type
     svg.style.width = svg.style.height = diameter + 'px';
     svg.style.transformOrigin = transformOrigin + ' ' + transformOrigin + ' ' + transformOrigin;
     path.setAttribute('d', drawArc(diameter, strokeSize));
-    if (type === 'Material') {
+    if (type === 'Material' || type === 'Material3') {
         path.setAttribute('stroke-width', strokeSize + '');
         path.setAttribute('stroke-dasharray', ((diameter - strokeSize) * Math.PI * 0.75) + '');
         path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, 1, 75) + '');
@@ -825,6 +854,7 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
             globalTimeOut[`${id}`].isAnimate = !isHide;
             switch (globalTimeOut[`${id}`].type) {
             case 'Material':
+            case 'Material3':
                 // eslint-disable-next-line
                 isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
                 break;

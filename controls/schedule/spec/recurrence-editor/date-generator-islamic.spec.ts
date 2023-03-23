@@ -15,7 +15,8 @@ import { CallbackFunction } from '../../src';
 export function getHijriDates(dates: number[]): Record<string, any>[] {
     const hijriDates: Record<string, any>[] = [];
     for (let i: number = 0; i < dates.length; i++) {
-        const hijriObject: Record<string, any> = HijriParser.getHijriDate(new Date(dates[i])) as Record<string, any>;
+        const hijriObject: Record<string, any> =
+            HijriParser.getHijriDate(new Date(dates[parseInt(i.toString(), 10)])) as Record<string, any>;
         hijriDates.push(hijriObject);
     }
     return hijriDates;

@@ -71,7 +71,7 @@ export namespace Input {
         }
         if (!isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
             for (let i: number = 0; i < args.buttons.length; i++) {
-                inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
+                inputObject.buttons.push(appendSpan(args.buttons[i as number], inputObject.container, makeElement));
             }
         }
         if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
@@ -264,8 +264,8 @@ export namespace Input {
                 removeClass([label], CLASSNAMES.LABELBOTTOM);
             }
         } else {
-            const isNotFocused =  element != null ? element !== document.activeElement : true;
-            if(isNotFocused) {
+            const isNotFocused : boolean =  element != null ? element !== document.activeElement : true;
+            if (isNotFocused) {
                 if (label.classList.contains(CLASSNAMES.LABELTOP)) {
                     removeClass([label], CLASSNAMES.LABELTOP);
                 }
@@ -310,7 +310,7 @@ export namespace Input {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
-        if (isBindClearAction == undefined || isBindClearAction)
+        if (isBindClearAction === undefined || isBindClearAction)
         {
             button.addEventListener('click', (event: MouseEvent) => {
                 if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
@@ -338,7 +338,7 @@ export namespace Input {
             }, 200);
         });
     }
-    export function destroy(){
+    export function destroy(): void {
         privateInputObj = null;
     }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {
@@ -430,7 +430,6 @@ export namespace Input {
             addClass(elements, cssClass.split(' '));
         }
     }
-    
     /**
      * Set the width to the placeholder when it overflows on the button such as spinbutton, clearbutton, icon etc
      * ```
@@ -441,7 +440,7 @@ export namespace Input {
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
     export function calculateWidth(element: any, container: HTMLElement, moduleName?: string): void {
-        let elementWidth: number = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'));
+        const elementWidth : number = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
         if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
@@ -629,9 +628,9 @@ export namespace Input {
                 parentElement.classList.add(CLASSNAMES.DISABLE);
             }
             if (key === 'placeholder' && parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
-                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = attrs[key];
+                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = attrs[`${key}`];
             } else {
-                element.setAttribute(key, attrs[key]);
+                element.setAttribute(key, attrs[`${key}`]);
             }
         }
     }
@@ -729,7 +728,7 @@ export namespace Input {
      */
     export function setRipple (isRipple: boolean, inputObj: InputObject[]): void {
         for (let i: number = 0 ; i < inputObj.length ; i++ ) {
-            _internalRipple(isRipple, inputObj[i].container);
+            _internalRipple(isRipple, inputObj[parseInt(i.toString())].container);
         }
     }
 
@@ -740,13 +739,13 @@ export namespace Input {
         <NodeListOf<Element> & Element[]>container.querySelectorAll('.e-input-group-icon') : argsButton;
         if ( isRipple && buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[index].addEventListener('mousedown', _onMouseDownRipple , false);
-                buttons[index].addEventListener('mouseup', _onMouseUpRipple , false);
+                buttons[parseInt(index.toString())].addEventListener('mousedown', _onMouseDownRipple , false);
+                buttons[parseInt(index.toString())].addEventListener('mouseup', _onMouseUpRipple , false);
             }
         } else if (buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[index].removeEventListener('mousedown', _onMouseDownRipple, this);
-                buttons[index].removeEventListener('mouseup', _onMouseUpRipple, this);
+                buttons[parseInt(index.toString())].removeEventListener('mousedown', _onMouseDownRipple, this);
+                buttons[parseInt(index.toString())].removeEventListener('mouseup', _onMouseUpRipple, this);
             }
         }
     }
@@ -839,7 +838,7 @@ export namespace Input {
             const result: NodeListOf<Element> = container.querySelectorAll(inputElement.tagName + ' ~ *');
             innerWrapper.appendChild(inputElement);
             for (let i: number = 0; i < result.length; i++) {
-                innerWrapper.appendChild(result[i]);
+                innerWrapper.appendChild(result[parseInt(i.toString())]);
             }
         }
         innerWrapper.parentNode.insertBefore(button, innerWrapper);

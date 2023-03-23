@@ -1,7 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
@@ -124,7 +123,7 @@ export class DataLabel {
     }
 
     private isRectSeries(series: Series): boolean {
-        return series.isRectSeries || series.type === 'RangeArea' || series.type === 'SplineRangeArea';
+        return series.isRectSeries || series.type === 'RangeArea' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea';
     }
 
     /**
@@ -218,7 +217,7 @@ export class DataLabel {
                                 rectCenterX = rect.x + (rect.width / 2);
                                 rectCenterY = (rect.y + (rect.height / 2));
                                 coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
-                                isDataLabelOverlap = dataLabel.labelIntersectAction === 'Rotate90' ? false : this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                isDataLabelOverlap = (dataLabel.labelIntersectAction === 'Rotate90' || angle == -90) ? false : this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
                                 if (!isDataLabelOverlap) {
                                     this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
                                     const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
@@ -256,7 +255,12 @@ export class DataLabel {
                                 const backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme === 'HighContrast') ? 'black' : 'white') : this.fontBackground;
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
+                                if (dataLabel.position == 'Outer') {
+                                    xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
+                                }
+                                else {
+                                    xPos = ((dataLabel.angle === 90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left + textSize.width) + labelLocation.x : (dataLabel.angle === -90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left) + labelLocation.x : (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x);
+                                }
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
@@ -271,7 +275,7 @@ export class DataLabel {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                 }
-                                let textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? 'end' : 'middle';
+                                const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? 'end' : (angle == -90 && dataLabel.position == 'Outer') ? 'start' : 'middle';
                                 textElement(
                                     chart.renderer,
                                     new TextOption(
@@ -643,7 +647,7 @@ export class DataLabel {
         point: Points, size: Size, labelIndex: number
     ): number {
         const padding: number = 5;
-        if ((series.type.indexOf('Area') > -1 && series.type !== 'RangeArea' && series.type !== 'SplineRangeArea')
+        if ((series.type.indexOf('Area') > -1 && series.type !== 'RangeArea' && series.type !== 'SplineRangeArea' && series.type !== 'RangeStepArea')
             && this.yAxisInversed && series.marker.dataLabel.position !== 'Auto') {
             position = position === 'Top' ? 'Bottom' : position === 'Bottom' ? 'Top' : position;
         }
@@ -729,6 +733,7 @@ export class DataLabel {
         switch (series.type) {
         case 'RangeColumn':
         case 'RangeArea':
+        case 'RangeStepArea':
         case 'SplineRangeArea':
         case 'Hilo':
             top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);

@@ -8,7 +8,7 @@ import { AnnotationBase } from './annotation';
 import { ProgressAnimation } from '../utils/progress-animation';
 
 /**
- * Class for progress annotation.
+ * Class for progress annotation
  */
 export class ProgressAnnotation extends AnnotationBase {
     private progress: ProgressBar;
@@ -16,7 +16,7 @@ export class ProgressAnnotation extends AnnotationBase {
     public parentElement: HTMLElement;
     private animation: ProgressAnimation = new ProgressAnimation();
     /**
-     * Constructor for ProgressBar annotation.
+     * Constructor for ProgressBar annotation
      *
      * @private
      * @param {ProgressBar} control Passed the control
@@ -28,7 +28,7 @@ export class ProgressAnnotation extends AnnotationBase {
         this.annotations = annotations;
     }
     /**
-     * Method to render the annotation for ProgressBar.
+     * Method to render the annotation for ProgressBar
      *
      * @param {Element} element Annotation element.
      * @private
@@ -63,6 +63,6 @@ export class ProgressAnnotation extends AnnotationBase {
      * @private
      */
     public destroy(): void {
-        // Destroy method performed here.
+        // Destroy method performed here
     }
 }

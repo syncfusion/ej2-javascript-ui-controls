@@ -128,10 +128,8 @@ export class Save {
                             const l10n: L10n = this.parent.serviceLocator.getService(locale);
                             const error: string = name.length === 0 ? l10n.getConstant('EmptyFileName') :
                                 (name.length > 218 ? l10n.getConstant('LargeName') : l10n.getConstant('FileNameError'));
-                            const fileSpan: Element = this.parent.createElement('span', {
-                                className: 'e-file-alert-span',
-                                innerHTML: error
-                            });
+                            const fileSpan: HTMLElement = this.parent.createElement('span', { className: 'e-file-alert-span' });
+                            fileSpan.innerText = error;
                             if (this.parent.element.querySelector('.e-file-alert-span')) {
                                 this.parent.element.querySelector('.e-file-alert-span').remove();
                             }
@@ -165,7 +163,8 @@ export class Save {
         const header: string = l10n.getConstant('FileName');
         const id: string = `${this.parent.element.id}_filename`;
         const openTextH: HTMLElement = this.parent.createElement(
-            'p', { className: 'e-header', id: id, innerHTML: header, attrs: { 'aria-label': `${l10n.getConstant('SaveAs')} ${header}` } });
+            'p', { className: 'e-header', id: id, attrs: { 'aria-label': `${l10n.getConstant('SaveAs')} ${header}` } });
+        openTextH.innerText = header;
         const openTextIp: HTMLElement = this.parent.createElement(
             'input', { className: 'e-input e-text-open', attrs: { 'type': 'Text', 'aria-labelledby': id }});
         const openTextSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});

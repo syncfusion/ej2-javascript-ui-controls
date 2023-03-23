@@ -1,4 +1,4 @@
-/*! component's theme wise override tailwind-definitions and variables */
+/*! component's theme wise override material 3 definitions and variables */
 
 // Generic
 $icon-zero: 0 !default;
@@ -34,10 +34,10 @@ $panel-bigger-header-font-weight: $font-weight-medium !default;
 
 // Panel styles
 $panel-border: 1px solid $border-light !default;
-$panel-border-radius: 4px !default;
+$panel-border-radius: 8px !default;
 $panel-full-height: 100% !default;
 $panel-full-width: 100% !default;
-$panel-hover-border: 1px solid $border-dark !default;
+$panel-hover-border: 1px solid $border-light !default;
 $panel-active-border: 1px solid $primary-border-color !default;
 
 // icons styles
@@ -73,7 +73,7 @@ $panel-north-west-icon-left: 2px !default;
 $panel-north-west-icon-top: 2px !default;
 
 // droppable area border
-$panel-drop-border-radius: 4px !default;
+$panel-drop-border-radius: 8px !default;
 
 // dragging element style
 $panel-dragging-cursor: move !default;
@@ -92,10 +92,10 @@ $element-width-complete: 100% !important !default;
 // colors
 
 // Panel styles
-$panel-active-background: $flyout-bg-color !default;
-$panel-hover-box-shadow: $shadow !default;
+$panel-active-background: $content-bg-color-alt1 !default;
+$panel-hover-box-shadow: $shadow-md !default;
 $panel-active-drag-box-shadow: $shadow !default;
-$panel-background: $flyout-bg-color !default;
+$panel-background: $content-bg-color-alt1 !default;
 $panel-box-shadow: $shadow-sm;
 
 // droppable area border
@@ -104,5 +104,5 @@ $panel-drop-border: 1px $primary-border-color dashed !default;
 
 //gridlines
 $gridline-background: $content-bg-color-alt1 !default;
-$gridline-border: $border-dark !default;
-$gridline-border-radius: 6px !default;
+$gridline-border: $primary !default;
+$gridline-border-radius: 8px !default;

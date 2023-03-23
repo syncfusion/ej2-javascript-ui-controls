@@ -25,6 +25,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
 
 export class ConnectorEditing extends ToolBase {
     private endPoint: string;
+    private oldValue:Object = null;
     private selectedSegment: OrthogonalSegment | StraightSegment | BezierSegment;
     private segmentIndex: number;
 
@@ -89,20 +90,58 @@ export class ConnectorEditing extends ToolBase {
             const diffX: number = this.currentPosition.x - this.prevPosition.x;
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
             let connector: ConnectorModel;
+            let newValue;
+            let isSame = false;
             if (args.source && (args.source as SelectorModel).connectors) {
                 connector = (args.source as SelectorModel).connectors[0];
             }
-            if ((this.inAction && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0)) {
+            if(Point.equals(this.startPosition, this.prevPosition)){
+                isSame = true;
+            }
+            if(this.oldValue === null){
+                this.oldValue = cloneObject(this.selectedSegment);
+            }
+            let arg = {
+                source: connector, state: 'Start', oldValue: this.oldValue, newValue: this.oldValue,
+                segment:this.selectedSegment, cancel: false
+            };
+            //EJ2-66217 - Support to add event for segment points editing in connector.
+            arg = {
+                source: cloneBlazorObject(connector), state: 'Start', oldValue:cloneBlazorObject(this.oldValue),
+                newValue: cloneBlazorObject(this.oldValue),
+                segment:cloneBlazorObject(this.selectedSegment) as StraightSegment | OrthogonalSegment | BezierSegment, cancel:false
+            }
+            if(isSame && !isBlazor()){
+            this.commandHandler.triggerEvent(DiagramEvent.segmentChange, arg);
+            }
+            // When cancel is set to true at state Start, the segment change will be prevented.
+            if(arg.cancel){
+                this.commandHandler.diagram.resetTool();
+            }
+            if ((this.inAction && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0) && !arg.cancel) {
                 if (this.endPoint === 'OrthoThumb') {
                     this.blocked = !this.dragOrthogonalSegment(
                         connector, this.selectedSegment as OrthogonalSegment, this.currentPosition, this.segmentIndex);
+                        if((this.oldValue as OrthogonalSegment).length === null && (this.oldValue as OrthogonalSegment).direction === null){
+                            this.oldValue = cloneObject(this.selectedSegment);
+                        }
+                        newValue = cloneObject(this.selectedSegment);
                 } else {
                     const tx: number = this.currentPosition.x - (this.selectedSegment as StraightSegment | BezierSegment).point.x;
                     const ty: number = this.currentPosition.y - (this.selectedSegment as StraightSegment | BezierSegment).point.y;
                     const index: number = connector.segments.indexOf(this.selectedSegment);
                     this.blocked = !this.commandHandler.dragControlPoint(connector, tx, ty, false, index);
+                    newValue = cloneObject(this.selectedSegment);
                 }
                 this.commandHandler.updateSelector();
+
+                this.currentPosition = args.position;
+                let arg1 = {
+                    source: cloneBlazorObject(connector), state: 'Progress', oldValue:cloneBlazorObject(this.oldValue),
+                    newValue: cloneBlazorObject(newValue),
+                   segment:cloneBlazorObject(this.selectedSegment), cancel: false,
+                }
+                this.commandHandler.triggerEvent(DiagramEvent.segmentChange, arg1);
             }
         }
         this.prevPosition = this.currentPosition;
@@ -161,6 +200,13 @@ export class ConnectorEditing extends ToolBase {
         }
         if ((connector as Connector).isBezierEditing) {
             (connector as Connector).isBezierEditing = false;
+        }
+        if(this.prevPosition !== this.startPosition){
+            let arg = {
+                source: cloneBlazorObject(connector), state: 'Completed', oldValue:cloneBlazorObject(this.oldValue),
+                newValue: cloneObject(this.selectedSegment),cancel:false,segment:cloneBlazorObject(this.selectedSegment)
+            }
+            this.commandHandler.triggerEvent(DiagramEvent.segmentChange, arg);
         }
         super.mouseUp(args);
     }

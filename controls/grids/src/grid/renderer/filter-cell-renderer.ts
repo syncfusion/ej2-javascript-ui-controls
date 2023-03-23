@@ -202,7 +202,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     }
                 }
             },
-            cssClass: this.parent.cssClass ? this.parent.cssClass : null
+            cssClass: this.parent.cssClass ? 'e-popup-flbar' + ' ' + this.parent.cssClass : 'e-popup-flbar'
         });
         this.dropOptr.appendTo(fbicon);
         const spanElmt: Element = closest(this.dropOptr.element, 'span');

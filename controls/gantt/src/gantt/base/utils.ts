@@ -151,7 +151,7 @@ export function updateDates(record: IGanttData, parent: Gantt): void {
 export function formatString(str: string, args: string[]): string {
     let regx: RegExp;
     for (let i: number = 0; i < args.length; i++) {
-        // eslint-disable-next-line detect-non-literal-regexp
+        // eslint-disable-next-line security/detect-non-literal-regexp
         regx = new RegExp('\\{' + (i) + '\\}', 'gm');
         str = str.replace(regx, args[i as number].toString());
     }

@@ -44,7 +44,7 @@ export class Code39 extends OneDimension {
     private checkSum(char: string, characters: string): number {
         let checksum: number = 0;
         for (let i: number = 0; i < char.length; i++) {
-            const codeNumber: number = characters.indexOf(char[i]);
+            const codeNumber: number = characters.indexOf(char[parseInt(i.toString(), 10)]);
             checksum += codeNumber;
         }
         checksum = checksum % 43;
@@ -73,7 +73,7 @@ export class Code39 extends OneDimension {
         const codes: string[] = this.getCodeValue();
         for (let i: number = 0; i < givenChar.length; i++) {
             codeNumber = characters.indexOf(givenChar.charAt(i));
-            code.push(codes[codeNumber]);
+            code.push(codes[parseInt(codeNumber.toString(), 10)]);
         }
         return code;
     }

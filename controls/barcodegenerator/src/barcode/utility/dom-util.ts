@@ -35,7 +35,7 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
     let collection: SVGElement[] | HTMLCollection = [];
     if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
         for (let i: number = 0; i < node.childNodes.length; i++) {
-            child = node.childNodes[i] as SVGElement;
+            child = node.childNodes[parseInt(i.toString(), 10)] as SVGElement;
             if (child.nodeType === 1) {
                 collection.push(child);
             }
@@ -54,8 +54,8 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
  */
 export function measureText(textContent: BaseAttributes): Size {
     const measureElement: string = 'barcodeMeasureElement';
-    window[measureElement].style.visibility = 'visible';
-    const svg: SVGElement = window[measureElement].children[1];
+    window[`${measureElement}`].style.visibility = 'visible';
+    const svg: SVGElement = window[`${measureElement}`].children[1];
     const text: SVGTextElement = getChildNode(svg)[0] as SVGTextElement;
     text.textContent = textContent.string;
     text.setAttribute('style', 'font-size:' + textContent.stringSize + 'px; font-family:'
@@ -63,7 +63,7 @@ export function measureText(textContent: BaseAttributes): Size {
     const bBox: Size = new Size(0, 0);
     bBox.width = text.getBBox().width;
     bBox.height = text.getBBox().height;
-    window[measureElement].style.visibility = 'hidden';
+    window[`${measureElement}`].style.visibility = 'hidden';
     return bBox;
 }
 
@@ -80,7 +80,7 @@ export function measureText(textContent: BaseAttributes): Size {
 export function setAttribute(element: HTMLElement | SVGElement, attributes: Object): void {
     const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[i], attributes[keys[i]]);
+        element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
     }
 }
 
@@ -106,7 +106,7 @@ export function createSvgElement(elementType: string, attribute: Object): HTMLEl
  */
 export function createMeasureElements(): void {
     const measureElement: string = 'barcodeMeasureElement';
-    if (!window[measureElement]) {
+    if (!window[`${measureElement}`]) {
         const divElement: HTMLElement = createHtmlElement('div', {
             id: 'barcodeMeasureElement', class: 'barcodeMeasureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
@@ -119,10 +119,10 @@ export function createMeasureElements(): void {
         const tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
-        window[measureElement] = divElement;
-        window[measureElement].usageCount = 1;
+        window[`${measureElement}`] = divElement;
+        window[`${measureElement}`].usageCount = 1;
         document.body.appendChild(divElement);
     } else {
-        window[measureElement].usageCount += 1;
+        window[`${measureElement}`].usageCount += 1;
     }
 }

@@ -20,7 +20,6 @@ import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHa
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs  } from '@syncfusion/ej2-grids';
-
 /**
  * DetailsView module
  */
@@ -300,7 +299,17 @@ export class DetailsView {
             } else {
                 const sizeValue: number = getValue('size', args.data);
                 const intl: Internationalization = new Internationalization(this.parent.locale);
-                const value: string = intl.formatNumber((sizeValue / 1024), { format: 'n' });
+                let sizeFormat: string;
+                const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
+                for (let i: number = 0; i < columns.length; i++) {
+                    if (columns[i as number].field === 'size') {
+                            sizeFormat = columns[i as number].format.toString();
+                        break;
+                    }
+                }
+                let value: string = intl.formatNumber((sizeValue / 1024), { format: sizeFormat });
+                let num = Number(value.replace(/,/g, ''));
+                value = num.toLocaleString(intl.culture);
                 modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;

@@ -156,13 +156,12 @@ export class SvgRenderer implements IRenderer {
             attr['role'] = 'img';
             attr['aria-label'] = ariaLabel;
         }
-        // EJ2-63581-Lockissue - After Lock the CSS class disabled added to the locked object
         let classval = options.class || '';
         if (!enableSelector) {
-            if(classval.includes('e-diagram-resize-handle') ||classval.includes('e-diagram-endpoint-handle')){
+            if(classval.includes('e-diagram-resize-handle') ||classval.includes('e-diagram-endpoint-handle') || classval.includes('e-diagram-bezier-control-handle')){
                 classval += ' e-disabled';
             }
-         }
+        }
         if (options.class) {
             attr['class'] = classval;
         }

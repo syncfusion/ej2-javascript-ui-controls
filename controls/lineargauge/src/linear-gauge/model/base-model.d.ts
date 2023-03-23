@@ -12,6 +12,8 @@ export interface FontModel {
 
     /**
      * Sets and gets the font color for text.
+     * 
+     * @default ''
      */
     color?: string;
 
@@ -22,17 +24,22 @@ export interface FontModel {
 
     /**
      * Sets and gets the font weight of the text.
+     * 
+     * @default 'Regular'
      */
     fontWeight?: string;
 
     /**
-     * Sets and gets the style for text.
+     * Sets and gets the font style for the text.
+     * 
+     * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
      * Sets and gets the opacity of the text.
      *
+     * @default 1
      */
     opacity?: number;
 
@@ -103,17 +110,22 @@ export interface BorderModel {
 export interface AnnotationModel {
 
     /**
-     * Sets and gets the content for the annotations.
+     * Sets and gets the content for the annotation.
+     * @default ''
      */
     content?: string;
 
     /**
      * Sets and gets the x position for the annotation in linear gauge.
+     * 
+     * @default 0
      */
     x?: number;
 
     /**
      * Sets and gets the y position for the annotation in linear gauge.
+     * 
+     * @default 0
      */
     y?: number;
 
@@ -145,16 +157,18 @@ export interface AnnotationModel {
     font?: FontModel;
 
     /**
-     * Sets and gets the axis index of the linear gauge
+     * Sets and gets the axis index which places the annotation in the specified axis in the linear gauge.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     axisIndex?: number;
 
     /**
-     * Sets and gets the value of axis in linear gauge.
+     * Sets and gets the value of axis which places the annotation near the specified axis value.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     axisValue?: number;
 
@@ -195,6 +209,8 @@ export interface ContainerModel {
 
     /**
      * Sets and gets the background color of the container in linear gauge.
+     * 
+     * @default 'transparent'
      */
     backgroundColor?: string;
 
@@ -204,8 +220,9 @@ export interface ContainerModel {
     border?: BorderModel;
 
     /**
-     * Sets and gets the value to place the container in the linear gauge component.
+     * Sets and gets the offset value from where the container must be placed in the linear gauge.
      *
+     * @default 0
      */
     offset?: number;
 
@@ -231,7 +248,8 @@ export interface RangeTooltipModel {
     textStyle?: FontModel;
 
     /**
-     * Sets and gets the format for the tooltip content in range.
+     * Sets and gets the format for the tooltip content of the range. Use "{start}" and "{end}" as a placeholder
+     * text to display the corresponding start and end value of the range in the tooltip.
      *
      * @default null
      */
@@ -239,8 +257,7 @@ export interface RangeTooltipModel {
     format?: string;
 
     /**
-     * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y} as a
-     * placeholder text to display the corresponding data point.
+     * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
      */
@@ -267,7 +284,7 @@ export interface RangeTooltipModel {
     position?: TooltipPosition;
 
     /**
-     * Enables or disables the options to show the tooltip position on range.
+     * Enables and disables to show the tooltip of the range at mouse position. When set as false which is the default value, the tooltip will be displayed over the axis line.
      *
      * @default false
      */
@@ -301,7 +318,8 @@ export interface TooltipSettingsModel {
     textStyle?: FontModel;
 
     /**
-     * Sets and gets the format of the tooltip content in linear gauge.
+     * Sets and gets the format of the tooltip content in linear gauge. Use "{value}" as a placeholder
+     * text to display the corresponding pointer value of in the tooltip.
      *
      * @default null
      */
@@ -309,14 +327,14 @@ export interface TooltipSettingsModel {
     format?: string;
 
     /**
-     * Enables or disables the options to show the tooltip position on mouse pointer.
+     * Enables and disables to show the tooltip of the pointer at mouse position. When set as false which is the default value, the tooltip will be displayed over the axis line.
      *
      * @default false
      */
     showAtMousePosition?: boolean;
 
     /**
-     * Sets and gets the options to customize the range tooltip property.
+     * Sets and gets the options to customize the range tooltip.
      */
     rangeSettings?: RangeTooltipModel;
 
@@ -328,8 +346,7 @@ export interface TooltipSettingsModel {
     position?: TooltipPosition;
 
     /**
-     * Sets and gets the custom template to format the tooltip content. Use ${x} and ${y} as a
-     * placeholder text to display the corresponding data point.
+     * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
      */
@@ -349,7 +366,7 @@ export interface TooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * Sets and gets the option to display the tooltip for range, annotation, pointer.
+     * Sets and gets the option to display the tooltip for range and pointer.
      *
      * @default Pointer
      */

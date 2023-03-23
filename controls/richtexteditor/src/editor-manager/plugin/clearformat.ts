@@ -36,12 +36,18 @@ export class ClearFormat {
         const nodeSelection: NodeSelection = new NodeSelection();
         const nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
-        const isCollapsed: boolean = range.collapsed;
-        const nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
+        const nodes: Node[] = range.collapsed ? nodeSelection.getSelectionNodeCollection(range) :
+            nodeSelection.getSelectionNodeCollectionBr(range);
         const save: NodeSelection =  nodeSelection.save(range, docElement);
+        let cursorRange: boolean = false;
+        if (range.collapsed) {
+            cursorRange = true;
+            range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
+        }
+        const isCollapsed: boolean = range.collapsed;
         if (!isCollapsed) {
             let preNode: Node;
-            if (nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
+            if (nodes.length > 0 && nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
                 preNode = nodeCutter.GetSpliceNode(range, closest(nodes[0], 'table') as HTMLElement);
             } else {
                 preNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length > 1 && nodes[0].nodeName === 'IMG' ? 1 : 0]  as HTMLElement);
@@ -49,7 +55,7 @@ export class ClearFormat {
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
-            } else {
+            } else if (nodes.length > 1) {
                 let i: number = 1;
                 let lastText: Node = nodes[nodes.length - i];
                 while (nodes.length <= i && nodes[nodes.length - i].nodeName === 'BR') {
@@ -78,6 +84,9 @@ export class ClearFormat {
                 setEditFrameFocus(endNode as Element, selector);
             }
             this.reSelection(docElement, save, exactNodes);
+        }
+        if (cursorRange) {
+            nodeSelection.setCursorPoint(docElement, range.endContainer as Element, range.endOffset);
         }
     }
 

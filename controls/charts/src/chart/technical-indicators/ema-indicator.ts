@@ -1,12 +1,10 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
-import { Chart } from '../chart';
 
 /**
  * `EmaIndicator` module is used to render EMA indicator.
@@ -17,7 +15,7 @@ export class EmaIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         const field: string = firstToLowerCase(indicator.field);
         const xField: string = 'x';
         const emaPoints: Points[] = [];

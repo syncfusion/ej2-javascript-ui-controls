@@ -12,7 +12,6 @@ import { LabelPosition, LabelAlignment } from '../utils/enum';
 import { BorderModel, FontModel, ColorMappingModel, LevelSettingsModel, LeafItemSettingsModel } from '../model/base-model';
 import { IItemRenderingEventArgs } from '../model/interface';
 import { itemRendering } from '../model/constants';
-import { LevelsData } from './../treemap';
 
 /**
  * To calculate and render the shape layer
@@ -34,12 +33,12 @@ export class LayoutPanel {
     public processLayoutPanel(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any[] | any; let totalRect: Rect;
-        if (LevelsData.levelsData && LevelsData.levelsData.length > 0) {
+        if (this.treemap.treemapLevelData.levelsData && this.treemap.treemapLevelData.levelsData.length > 0) {
             data = (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
                 !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) &&
                 (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
                     : this.treemap.drilledItems.length === 0) ?
-                this.getDrilldownData(LevelsData.levelsData[0], [])[0] : LevelsData.levelsData[0];
+                this.getDrilldownData(this.treemap.treemapLevelData.levelsData[0], [])[0] : this.treemap.treemapLevelData.levelsData[0];
             totalRect = extend({}, this.treemap.areaRect, totalRect, false) as Rect;
             if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
                 if (this.treemap.legendSettings.position !== 'Float') {
@@ -58,7 +57,7 @@ export class LayoutPanel {
                 if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) && !this.treemap.enableBreadcrumb) {
                     this.treemap.currentLevel = this.treemap.drilledItems[count as number]['data']['groupIndex'];
                 }
-                this.calculateLayoutItems(y || LevelsData.levelsData[0], totalRect);
+                this.calculateLayoutItems(y || this.treemap.treemapLevelData.levelsData[0], totalRect);
                 this.renderLayoutItems();
             } else {
                 if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
@@ -66,7 +65,7 @@ export class LayoutPanel {
                         : this.treemap.drilledItems.length === 0)) {
                     this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
                 }
-                this.calculateLayoutItems(data || LevelsData.levelsData[0], totalRect);
+                this.calculateLayoutItems(data || this.treemap.treemapLevelData.levelsData[0], totalRect);
                 this.renderLayoutItems();
             }
         }
@@ -625,20 +624,20 @@ export class LayoutPanel {
         const treemap: TreeMap = this.treemap;
         let itemFill: string = isLeafItem ? treemap.leafItemSettings.fill : treemap.levels[item['groupIndex']].fill;
         let itemOpacity: number = isLeafItem ? treemap.leafItemSettings.opacity : treemap.levels[item['groupIndex']].opacity;
-        if (!isNullOrUndefined(LevelsData.defaultLevelsData)) {
-            if (LevelsData.defaultLevelsData.length > 0) {
-                LevelsData.levelsData = LevelsData.defaultLevelsData;
+        if (!isNullOrUndefined(treemap.treemapLevelData.defaultLevelsData)) {
+            if (treemap.treemapLevelData.defaultLevelsData.length > 0) {
+                treemap.treemapLevelData.levelsData = treemap.treemapLevelData.defaultLevelsData;
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const parentData: any[] = findChildren(LevelsData.levelsData[0])['values'];
+        const parentData: any[] = findChildren(treemap.treemapLevelData.levelsData[0])['values'];
         const colorMapping: ColorMappingModel[] = isLeafItem ? treemap.leafItemSettings.colorMapping :
             treemap.levels[item['groupIndex']].colorMapping;
         if (colorMapping.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const option: any = colorMap(
-                colorMapping, item['data'][this.treemap.equalColorValuePath],
-                item['data'][this.treemap.rangeColorValuePath]);
+                colorMapping, item['data'][treemap.equalColorValuePath],
+                item['data'][treemap.rangeColorValuePath]);
             itemFill = !isNullOrUndefined(option['fill']) ? option['fill'] : treemap.leafItemSettings.fill;
             itemOpacity = option['opacity'];
         } else {

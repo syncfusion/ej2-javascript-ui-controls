@@ -172,7 +172,7 @@
       .e-gantt-child-progressbar-inner-div {
         background-color: $gantt-child-progress-bar;
         border: $gantt-child-progress-bar-border;
-        border-radius: $gantt-child-progress-bar-border-radious;
+        border-radius: $gantt-child-progress-bar-border-radius;
         //margin-left: $gantt-child-progress-margin-left;
       }
 
@@ -187,7 +187,7 @@
 
       .e-gantt-child-manualprogressbar {
         background-color: $gantt-manualchild-progress-bar;
-        border: $gantt-manualchild-progress-bar-border;
+        outline: $gantt-manualchild-progress-bar-border;
       }
 
       .e-gantt-critical-child-manualprogressbar {
@@ -270,6 +270,22 @@
         border-color: $connector-line-color;
       }
 
+      .e-connector-line {
+        stroke: $connector-line-color;
+      }
+
+      .e-critical-line {
+        stroke: $critical-connector-line-color;
+      }
+
+      .e-connector-line-arrow {
+        fill: $connector-line-color;
+      }
+
+      .e-critical-line-arrow {
+        fill: $critical-connector-line-color;
+      }
+
       .e-connector-line-right-arrow {
         border-left-color: $connector-line-color;
       }
@@ -281,7 +297,6 @@
       .e-connector-line-right-arrow-hover {
         border-left-color: $connector-line-hover-color;
       }
-
       .e-connector-line-left-arrow-hover {
         border-right-color: $connector-line-hover-color;
       }
@@ -290,7 +305,6 @@
         border-color: $connector-line-hover-color;
         outline-color: $connector-line-hover-color;
       }
-
       .e-gantt-false-line {
         border-top-color: $connector-false-line-color;
       }
@@ -335,6 +349,10 @@
 
       .e-connectorpoint-right {
         margin-left: $gantt-connector-point-right-margin-left;
+      }
+
+      .e-connectorpoint-left {
+        margin-right: $gantt-connector-point-left-margin-right;
       }
 
       .e-right-connectorpoint-outer-div,
@@ -684,14 +702,15 @@
 
   .e-gantt .e-gantt-chart .e-gantt-child-critical-taskbar-inner-div {
     background-color: $gantt-critical-child-task-bar;
-    border: $gantt-critical-child-task-bar-border;
+    outline: $gantt-critical-child-task-bar-border;
     border-radius: $gantt-parent-progress-bar-border-radius;
   }
 
   .e-gantt .e-gantt-chart .e-gantt-child-critical-progressbar-inner-div {
     background-color: $gantt-critical-child-progress-bar;
     border: $gantt-child-progress-bar-border;
-    border-radius: $gantt-child-progress-bar-border-radious;
+    position: absolute;
+    border-radius: $gantt-child-progress-bar-border-radius;
   }
 
   .e-gantt .e-gantt-chart .e-gantt-critical-unscheduled-taskbar {

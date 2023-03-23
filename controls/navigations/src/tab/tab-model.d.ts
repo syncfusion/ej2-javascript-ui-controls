@@ -73,11 +73,11 @@ export interface HeaderModel {
 
     /**
      * Options for positioning the icon in the Tab item header. This property depends on `iconCss` property.
-     * The possible values are:
-     * - Left: Places the icon to the `left` of the item.
-     * - Top: Places the icon on the `top` of the item.
-     * - Right: Places the icon to the `right` end of the item.
-     * - Bottom: Places the icon at the `bottom` of the item.
+     * The possible values for this property as follows
+     * * `Left`: Places the icon to the left of the item.
+     * * `Top`: Places the icon on the top of the item.
+     * * `Right`: Places the icon to the right end of the item.
+     * * `Bottom`: Places the icon at the bottom of the item.
      *
      * @default 'left'
      */
@@ -212,11 +212,11 @@ export interface TabModel extends ComponentModel{
 
     /**
      * Specifies the orientation of Tab header.
-     * The possible values are:
-     * - Top: Places the Tab header on the top.
-     * - Bottom: Places the Tab header at the bottom.
-     * - Left: Places the Tab header on the left.
-     * - Right: Places the Tab header at the right.
+     * The possible values for this property as follows
+     * * `Top`: Places the Tab header on the top.
+     * * `Bottom`: Places the Tab header at the bottom.
+     * * `Left`: Places the Tab header on the left.
+     * * `Right`: Places the Tab header at the right.
      *
      * @default 'Top'
      */
@@ -224,11 +224,11 @@ export interface TabModel extends ComponentModel{
 
     /**
      * Specifies the height style for Tab content.
-     * The possible values are:
-     * - None: Based on the given height property, the content panel height is set.
-     * - Auto: Tallest panel height of a given Tab content is set to all the other panels.
-     * - Content: Based on the corresponding content height, the content panel height is set.
-     * - Fill: Based on the parent height, the content panel height is set.
+     * The possible values for this property as follows
+     * * `None`: Based on the given height property, the content panel height is set.
+     * * `Auto`: Tallest panel height of a given Tab content is set to all the other panels.
+     * * `Content`: Based on the corresponding content height, the content panel height is set.
+     * * `Fill`: Based on the parent height, the content panel height is set.
      *
      * @default 'Content'
      */
@@ -237,8 +237,8 @@ export interface TabModel extends ComponentModel{
     /**
      * Specifies the Tab display mode when Tab content exceeds the viewing area.
      * The possible modes are:
-     * - Scrollable: All the elements are displayed in a single line with horizontal scrolling enabled.
-     * - Popup: Tab container holds the items that can be placed within the available space and rest of the items are moved to the popup.
+     * * `Scrollable`: All the elements are displayed in a single line with horizontal scrolling enabled.
+     * * `Popup`: Tab container holds the items that can be placed within the available space and rest of the items are moved to the popup.
      * If the popup content overflows the height of the page, the rest of the elements can be viewed by scrolling the popup.
      *
      * @default 'Scrollable'
@@ -248,9 +248,9 @@ export interface TabModel extends ComponentModel{
     /**
      * Specifies the modes for Tab content.
      * The possible modes are:
-     * `Dynamic` Load Tab content dynamically at the time of switching it's header.
-     * `Init` Load all tab contents at initial load.
-     * `Demand` Load Tab content when required but keep content once it is rendered.
+     * * `Demand` - The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
+     * * `Dynamic` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
+     * * `Init` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
      *
      * @default 'Dynamic'
      */

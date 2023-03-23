@@ -958,6 +958,10 @@ export type TabLeader =
      */
     'None' |
     /**
+     * Single
+     */
+    'Single' |
+    /**
      * Dotted
      */
     'Dot' |
@@ -1217,7 +1221,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'RightBorder'
 |'BottomBorder'
 |'HorizontalBorder'
-|'VerticalBorder'|'ColumnBreak';
+|'VerticalBorder'|'ColumnBreak'
+|'DragAndDropContent';
 /**
  * Enum for direction
  */
@@ -1422,7 +1427,7 @@ export type ToolbarItem =
  *
  * @private
  */
-export type TextFormFieldType = 'Text' | 'Number' | 'Date';
+export type TextFormFieldType = 'Text' | 'Number' | 'Date' | 'Calculation';
 /**
  * Specifies the type of Checkbox formField size
  *
@@ -1446,7 +1451,7 @@ export type VerticalOrigin = 'Margin' | 'Page' | 'Paragraph' | 'Line' | 'TopMarg
  *
  * @private
  */
-export type VerticalAlignment = 'None' | 'Top' | 'Center' | 'Bottom' | 'Inside' | 'Outside';
+export type VerticalAlignment = 'None' | 'Top' | 'Center' | 'Bottom' | 'Inline' | 'Inside' | 'Outside';
 /**
  * Specifies the type of HorizontalOrigin
  *
@@ -1464,7 +1469,7 @@ export type HorizontalAlignment = 'None' | 'Left' | 'Center' | 'Right' | 'Inside
  *
  * @private
  */
-export type LineFormatType = 'None' | 'Solid';
+export type LineFormatType = 'None' | 'Patterned' | 'Gradient' | 'Solid';
 /**
  * Specifies the type of Line Dashing
  *
@@ -1477,7 +1482,7 @@ export type LineDashing = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot' | 
  *
  * @private
  */
-export type AutoShapeType = 'Rectangle' | 'Oval';
+export type AutoShapeType = 'Rectangle' | 'RoundedRectangle' | 'StraightConnector' | 'Oval';
 /**
  * Wrapping style
  *

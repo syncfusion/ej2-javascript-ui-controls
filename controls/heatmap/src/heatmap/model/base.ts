@@ -3,13 +3,13 @@ import { Alignment, TextOverflow, BorderType } from '../utils/enum';
 import { FontModel, MultiLevelCategoriesModel, AxisLabelBorderModel } from './base-model';
 import { Theme } from './theme';
 /**
- * Configures the fonts in heat map.
+ * Sets and gets the options to customize the text in heatmap.
  */
 
 export class Font extends ChildProperty<Font> {
 
     /**
-     * Font size for the text.
+     * Specifies the font size for the text.
      *
      * @default '16px'
      */
@@ -17,7 +17,7 @@ export class Font extends ChildProperty<Font> {
     public size: string;
 
     /**
-     * Color for the text.
+     * Specifies the color for the text.
      *
      * @default ''
      */
@@ -25,13 +25,13 @@ export class Font extends ChildProperty<Font> {
     public color: string;
 
     /**
-     * FontFamily for the text.
+     * Specifies the font family for the text.
      */
     @Property('Segoe UI')
     public fontFamily: string;
 
     /**
-     * FontWeight for the text.
+     * Specifies the font weight for the text.
      *
      * @default 'Normal'
      */
@@ -39,7 +39,7 @@ export class Font extends ChildProperty<Font> {
     public fontWeight: string;
 
     /**
-     * FontStyle for the text.
+     * Specifies the font style for the text.
      *
      * @default 'Normal'
      */
@@ -47,7 +47,7 @@ export class Font extends ChildProperty<Font> {
     public fontStyle: string;
 
     /**
-     * text alignment
+     * Specifies the text alignment.
      *
      * @default 'Center'
      */
@@ -55,7 +55,7 @@ export class Font extends ChildProperty<Font> {
     public textAlignment: Alignment;
 
     /**
-     * Specifies the heat map text overflow
+     * Specifies the overflow style for the text in heatmap.
      *
      * @default 'Trim'
      */
@@ -65,12 +65,12 @@ export class Font extends ChildProperty<Font> {
 }
 
 /**
- * Configures the heat map margins.
+ * Sets and gets the options to configures the margins of the heatmap.
  */
 export class Margin extends ChildProperty<Margin> {
 
     /**
-     * Left margin in pixels.
+     * Specifies the left margin in pixels.
      *
      * @default 10
      */
@@ -78,7 +78,7 @@ export class Margin extends ChildProperty<Margin> {
     public left: number;
 
     /**
-     * Right margin in pixels.
+     * Specifies the right margin in pixels.
      *
      * @default 10
      */
@@ -86,7 +86,7 @@ export class Margin extends ChildProperty<Margin> {
     public right: number;
 
     /**
-     * Top margin in pixels.
+     * Specifies the top margin in pixels.
      *
      * @default 10
      */
@@ -94,7 +94,7 @@ export class Margin extends ChildProperty<Margin> {
     public top: number;
 
     /**
-     * Bottom margin in pixels.
+     * Specifies the bottom margin in pixels.
      *
      * @default 10
      */
@@ -103,12 +103,12 @@ export class Margin extends ChildProperty<Margin> {
 }
 
 /**
- * Configures the borders in the heat map.
+ * Sets and gets the options to customize the borders in the heatmap.
  */
 export class Border extends ChildProperty<Border> {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border that accepts value in hex value and rgba as a valid CSS color string.
      *
      * @default ''
      */
@@ -116,7 +116,7 @@ export class Border extends ChildProperty<Border> {
     public color: string;
 
     /**
-     * The width of the border in pixels.
+     * Specifies the width of the border in pixels.
      *
      * @default 1
      */
@@ -124,7 +124,7 @@ export class Border extends ChildProperty<Border> {
     public width: number;
 
     /**
-     * The radius of the border in pixels.
+     * Specifies the radius of the border in pixels.
      *
      * @default ''
      */
@@ -134,12 +134,12 @@ export class Border extends ChildProperty<Border> {
 }
 
 /**
- * Configures the tooltip borders in the heat map.
+ * Sets and gets the options to customize the tooltip borders in the heatmap.
  */
 export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Specifies the color of the border that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default ''
      */
@@ -147,7 +147,7 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
     public color: string;
 
     /**
-     * The width of the border in pixels.
+     * Sets and gets the width of the border in pixels.
      *
      * @default 0
      */
@@ -156,12 +156,12 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
 }
 
 /**
- * Configures the mapping name for size and color in SizeAndColor type.
+ * Sets and gets the options to configure the mapping value for size and color in bubble cell type.
  */
 export class BubbleData extends ChildProperty<BubbleData> {
 
     /**
-     * Mapping property to set size.
+     * Specifies the mapping value to set size from the data source.
      *
      * @default null
      */
@@ -169,7 +169,7 @@ export class BubbleData extends ChildProperty<BubbleData> {
     public size: string;
 
     /**
-     * Mapping property to set color.
+     * Specifies the mapping value to set color from the data source.
      *
      * @default null
      */
@@ -179,11 +179,11 @@ export class BubbleData extends ChildProperty<BubbleData> {
 }
 
 /**
- * class used to maintain Title styles.
+ * Sets and gets the options to customize the title of heatmap.
  */
 export class Title extends ChildProperty<Title> {
     /**
-     * Title text
+     * Sets and gets the text for the title.
      *
      * @default ''
      */
@@ -191,18 +191,18 @@ export class Title extends ChildProperty<Title> {
     public text: string;
 
     /**
-     * Options for customizing the title.
+     * Sets and gets the options to customize the text of the title.
      */
     @Complex<FontModel>({}, Font)
     public textStyle: FontModel;
 }
 
 /**
- * class used to maintain the fill color value for cell color range
+ * Sets and gets the options to apply the fill color value for cell color range.
  */
 export class FillColor extends ChildProperty<FillColor> {
     /**
-     * minimum fill color for cell color range
+     * Specifies the minimum fill color for cell color range.
      *
      * @default '#eeeeee'
      */
@@ -210,7 +210,7 @@ export class FillColor extends ChildProperty<FillColor> {
     public minColor: string;
 
     /**
-     * maximum fill color for cell color range
+     * Specifies the maximum fill color for cell color range.
      *
      * @default '#eeeeee'
      */
@@ -219,11 +219,11 @@ export class FillColor extends ChildProperty<FillColor> {
 }
 
 /**
- * class used to maintain palette information.
+ * Sets and gets the options to customize palette colors.
  */
 export class PaletteCollection extends ChildProperty<PaletteCollection> {
     /**
-     * Palette color value
+     * Sets and gets the value in the heatmap data to set the palette color.
      *
      * @default null
      */
@@ -231,7 +231,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public value: number;
 
     /**
-     * Palette color text
+     * Sets and gets the color for a palette.
      *
      * @default ''
      */
@@ -239,7 +239,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public color: string;
 
     /**
-     * Palette color label
+     * Sets and gets the label to be set in the corresponding legend for the palette color.
      *
      * @default ''
      */
@@ -247,7 +247,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public label: string;
 
     /**
-     * Palette start value
+     * Sets and gets the start value in the heatmap data to set the palette color.
      *
      * @default null
      */
@@ -255,7 +255,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public startValue: number;
 
     /**
-     * Palette end value
+     * Sets and gets the end value in the heatmap data to set the palette color.
      *
      * @default null
      */
@@ -263,7 +263,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public endValue: number;
 
     /**
-     * Palette minColor value
+     * Sets and gets the minimum color for color range in a palette.
      *
      * @default null
      */
@@ -271,7 +271,7 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public minColor: string;
 
     /**
-     * Palette maxColor value
+     * Sets and gets the maximum color for color range in a palette.
      *
      * @default null
      */
@@ -279,12 +279,12 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
     public maxColor: string;
 }
 /**
- * label border properties.
+ * Sets and gets the options to customize the label border.
  */
 export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border that accepts value in hex value and rgba as a valid CSS color string.
      *
      * @default ''
      */
@@ -292,7 +292,7 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
     public color: string;
 
     /**
-     * The width of the border in pixels.
+     * Specifies the width of the border in pixels.
      *
      * @default 1
      */
@@ -300,7 +300,7 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
     public width: number;
 
     /**
-     * Border type for labels
+     * Specifies the type of the border for the axis labels. The following are the available types.
      * * Rectangle
      * * Without Top Border
      * * Without Top/Bottom Border
@@ -314,6 +314,9 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
     public type: BorderType;
 }
 
+/**
+ * Sets and gets the options to customize the size of the bubble heatmap cell type.
+ */
 export class BubbleSize extends ChildProperty<BubbleSize> {
     /**
      * Specifies the minimum radius value of the cell in percentage.
@@ -334,12 +337,12 @@ export class BubbleSize extends ChildProperty<BubbleSize> {
 }
 
 /**
- * categories for multi level labels
+ * Sets and gets the options to configure the multi-level labels.
  */
 export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
 
     /**
-     * Start value of the multi level labels
+     * Specifies the start value of the multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -347,7 +350,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
     @Property(null)
     public start: number | Date | string;
     /**
-     * End value of the multi level labels
+     * Specifies the end value of the multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -355,7 +358,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
     @Property(null)
     public end: number | Date | string;
     /**
-     * multi level labels text.
+     * Specifies the text for multi-level label.
      *
      * @default ''
      */
@@ -363,7 +366,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
     public text: string;
 
     /**
-     * Maximum width of the text for multi level labels.
+     * Specifies the maximum width of the text for multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -374,15 +377,15 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
 }
 
 /**
- * MultiLevelLabels properties
+ * Sets and gets the options to customize the multi-level labels.
  */
 export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
 
     /**
-     * Defines the position of the multi level labels. They are,
-     * * Near: Places the multi level labels at Near.
-     * * Center: Places the multi level labels at Center.
-     * * Far: Places the multi level labels at Far.
+     * Specifies the position of the multi-level labels. The available positions are,
+     * * Near: Places the multi-level labels at left end of the available space.
+     * * Center: Places the multi-level labels at center of the available space.
+     * * Far: Places the multi-level labels at right end of the available space.
      *
      * @default 'Center'
      */
@@ -390,27 +393,27 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
     public alignment: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are,
-     * * Trim: Trim textOverflow for multi level labels.
-     * * Wrap: Wrap textOverflow for multi level labels.
-     * * none: None textOverflow for multi level labels.
+     * Sets and gets the overflow style of the multi-level labels. The available types are,
+     * * None: No action is taken when the text overflows.
+     * * Wrap: Wraps the multi-level labels when the text overflows.
+     * * Trim: Trims the multi-level labels when the text overflows.
      *
      * @default 'Wrap'
      */
     @Property('Wrap')
     public overflow: TextOverflow;
     /**
-     * Options to customize the multi level labels.
+     * Sets and gets the options to customize the text of the multi-level labels.
      */
     @Complex<FontModel>(Theme.axisLabelFont, Font)
     public textStyle: FontModel;
     /**
-     * Border of the multi level labels.
+     * Sets and gets the options to customize the border of the multi-level labels.
      */
     @Complex<AxisLabelBorderModel>({ color: '#b5b5b5', width: 1, type: 'Rectangle' }, AxisLabelBorder)
     public border: AxisLabelBorderModel;
     /**
-     * multi level categories for multi level labels.
+     * Sets and gets the options to configure the multi-level labels.
      */
     @Collection<MultiLevelCategories>([], MultiLevelCategories)
     public categories: MultiLevelCategoriesModel[];
@@ -420,6 +423,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
 
 /**
  * Internal class used to maintain colorcollection.
+ * @private
  */
 export class ColorCollection {
     public value: number;
@@ -440,21 +444,30 @@ export class ColorCollection {
 
     }
 }
+
 /**
- * class used to maintain color and value collection.
+ * Specifies the current data of the bubble cell.
  */
 export class BubbleTooltipData {
+    /** Defines the field name from the data source which is mapped to the bubble cell. */
     public mappingName: string;
+    /** Defines the value which mapped to the bubble cell. */
     public bubbleData: number;
+    /** Defines the type of the bubble heatmap. */
     public valueType: string;
+    /**
+     * @private
+     */
     constructor(mappingName: string, bubbleData: number, valueType: string) {
         this.mappingName = mappingName;
         this.bubbleData = bubbleData;
         this.valueType = valueType;
     }
 }
+
 /**
  * Internal class used to maintain legend colorcollection.
+ * @private
  */
 export class LegendColorCollection {
     public value: number;
@@ -480,6 +493,7 @@ export class LegendColorCollection {
 }
 /**
  * class used to maintain xAxis labels details for multipleRow label intersect action.
+ * @private
  */
 export class MultipleRow {
     public start: number;

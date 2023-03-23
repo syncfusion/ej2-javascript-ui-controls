@@ -180,7 +180,7 @@ export class Timeline {
             } else {
                 const value: string = property === 'topTier' ? 'bottomTier' : 'topTier';
                 const assignValue: string = 'bottomTier';
-                if ( newTimeline[assignValue].unit != "None") {
+                if ( newTimeline[`${assignValue}`].unit != "None") {
                     this.customTimelineSettings[value as string] = { ...newTimeline[assignValue as string] };
                 }
             }
@@ -480,7 +480,7 @@ export class Timeline {
                 secondValue = sortedUnitLevels[i + 1];
             }
 
-            if (count >= firstValue[tier].count) {
+            if (count >= firstValue[`${tier}`].count) {
                 currentZoomCollection = sortedUnitLevels[i as number];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
                     if (tier === "bottomTier") {
@@ -495,7 +495,7 @@ export class Timeline {
                     level = checkSameCountLevels[0].level;
                 }
                 break;
-            } else if (count < firstValue[tier].count && count > secondValue[tier].count) {
+            } else if (count < firstValue[`${tier}`].count && count > secondValue[`${tier}`].count) {
                 currentZoomCollection = sortedUnitLevels[i + 1];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
                     if (tier === "bottomTier") {

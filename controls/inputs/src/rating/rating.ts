@@ -146,7 +146,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Defines whether to show or hide the reset button in a rating component.
      * When set to "true", the reset button will be visible to the user, and they will be able to click it to reset the rating value to its default value.
-     *
+     * 
+     * {% codeBlock src='rating/allowReset/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -200,7 +202,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Defines the template that defines the appearance of each rated item in a rating component.
-     *
+     * 
+     * {% codeBlock src='rating/fullTemplate/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -224,7 +228,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
      * * Bottom
      * * Left
      * * Right
-     *
+     * 
+     * {% codeBlock src='rating/labelPosition/index.md' %}{% endcodeBlock %}
+     * 
      * @isenumeration true
      * @default LabelPosition.Right
      * @asptype LabelPosition
@@ -234,7 +240,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Defines the template that used as label over default label of the rating. The current value of rating passed as context to build the content.
-     *
+     * 
+     * {% codeBlock src='rating/labelTemplate/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -259,7 +267,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
      * * Half
      * * Quarter
      * * Exact
-     *
+     * 
+     * {% codeBlock src='rating/precision/index.md' %}{% endcodeBlock %}
+     * 
      * @isenumeration true
      * @default PrecisionType.Full
      * @asptype PrecisionType
@@ -279,7 +289,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Defines a value that specifies whether to display a label that shows the current value of a rating.
      * When set to "true", a label will be displayed that shows the current value of the rating; otherwise false.
-     *
+     * 
+     * {% codeBlock src='rating/showLabel/index.md' %}{% endcodeBlock %}
+     * 
      * @default false
      */
     @Property(false)
@@ -297,7 +309,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Defines the template that used as tooltip content over default tooltip content of the rating.
      * The current value of rating passed as context to build the content.
-     *
+     * 
+     * {% codeBlock src='rating/tooltipTemplate/index.md' %}{% endcodeBlock %}
+     * 
      * @default ''
      */
     @Property('')
@@ -308,7 +322,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
      * Based on "PrecisionType", users can select ratings with varying levels of precision.
      * The "value" is a decimal value that ranges from the minimum value to the items count,
      * as specified by the "min" and "itemsCount" properties of the rating.
-     *
+     * 
+     * {% codeBlock src='rating/value/index.md' %}{% endcodeBlock %}
+     * 
      * @default 0.0
      * @aspType double
      */
@@ -326,7 +342,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Event callback that is raised before rendering each item.
-     *
+     * 
+     * {% codeBlock src='rating/beforeItemRenderEvent/index.md' %}{% endcodeBlock %}
+     * 
      * @event beforeItemRender
      */
     @Event()
@@ -342,7 +360,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Event callback that is raised when a user hovers over an item.
-     *
+     * 
+     * {% codeBlock src='rating/onItemHoverEvent/index.md' %}{% endcodeBlock %}
+     * 
      * @event onItemHover
      */
     @Event()
@@ -350,7 +370,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Event callback that is raised when the value is changed.
-     *
+     * 
+     * {% codeBlock src='rating/valueChangedEvent/index.md' %}{% endcodeBlock %}
+     * 
      * @event valueChanged
      */
     @Event()
@@ -368,7 +390,8 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     private currentValue: number;
     private emptyTemplateFunction: Function;
     private fullTemplateFunction: Function;
-    private tooltipOpen: boolean = false;
+    private tooltipOpen: boolean;
+    private isReact?: boolean;
 
     /**
      * Constructor for creating the widget
@@ -391,14 +414,15 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             uparrow: 'uparrow',
             space: 'space'
         };
+        this.tooltipOpen = false;
     }
 
     public render(): void {
         this.initialize();
         this.updateMinValue();
         this.updateTemplateFunction();
+        this.triggerChange(null, this.value, false);
         this.renderItems();
-        this.updatePrecision();
         this.displayLabel();
     }
 
@@ -412,38 +436,44 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         attributes(this.element, { 'aria-label': 'rating' });
         this.renderItemList();
         this.updateReset();
-        this.updateDisabled();
-        this.wrapper.classList[this.readOnly ? 'add' : 'remove'](READONLY);
-        this.wrapper.classList[!this.visible ? 'add' : 'remove'](HIDDEN);
-        this.wrapper.classList[this.enableRtl ? 'add' : 'remove'](RTL);
-        this.wrapper.classList[this.enableAnimation ? 'add' : 'remove'](ANIMATION);
+        if (this.readOnly) {
+            this.wrapper.classList.add(READONLY);
+        }
+        if (!this.visible) {
+            this.wrapper.classList.add(HIDDEN);
+        }
+        if (this.enableRtl) {
+            this.wrapper.classList.add(RTL);
+        }
+        if (this.enableAnimation) {
+            this.wrapper.classList.add(ANIMATION);
+        }
         if (this.cssClass) {
             addClass([this.wrapper], this.cssClass.split(' '));
         }
         this.updateTooltip();
         this.wireKeyboardEvent();
+        this.updateDisabled();
     }
 
     private updateDisabled(): void {
         this.wrapper.classList[this.disabled ? 'add' : 'remove'](DISABLED);
         attributes(this.ratingItemList, { 'tabindex': (this.disabled) ? '-1' : '0' });
-        if (this.allowReset) {
-            this.updateResetButton();
-        }
+        this.updateResetButton();
     }
 
     private updateResetButton(): void {
-        const isDisabled: boolean = (this.value <= this.min) || this.disabled;
-        this.resetElement.classList[isDisabled ? 'add' : 'remove'](DISABLED);
-        attributes(this.resetElement, { 'aria-label': 'resetbutton', 'role': 'button',
-            'tabindex': (isDisabled ? '-1' : '0'), 'aria-hidden': isDisabled.toString() });
+        if (this.allowReset) {
+            const isDisabled: boolean = (this.value <= this.min) || this.disabled;
+            this.resetElement.classList[isDisabled ? 'add' : 'remove'](DISABLED);
+            attributes(this.resetElement, { 'tabindex': (isDisabled ? '-1' : '0'), 'aria-hidden': isDisabled.toString() });
+        }
     }
 
     private renderItemList(): void {
         this.ratingItemList = this.createElement('div', {
             className: ITEMLIST,
-            id: this.element.id + '_item-list',
-            attrs: { 'tabindex': '0' }
+            id: this.element.id + '_item-list'
         });
         attributes(this.ratingItemList, { 'aria-label': 'rating', 'role': 'slider' });
         this.wrapper.appendChild(this.ratingItemList);
@@ -492,7 +522,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             const ratingItemContainer: HTMLElement = this.createElement('span', { className: ITEMCONTAINER });
             const spanItem: HTMLElement = this.createElement('span', { className: 'e-rating-item' });
             const ratingValue: number = this.getRatingValue(this.value, i);
-            this.renderItemContent(spanItem, ratingValue, i);
+            this.renderItemContent(spanItem, ratingValue, i , false);
             ratingItemContainer.appendChild(spanItem);
             this.wireItemsEvents(ratingItemContainer, i + 1);
             this.itemElements.push(ratingItemContainer);
@@ -502,12 +532,10 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             });
         }
         attributes(this.ratingItemList, { 'aria-valuemax': this.itemsCount.toString() });
-        if (this.disabled) {
-            attributes(this.ratingItemList, { 'tabindex': '-1' });
-        }
+        this.updateItemValue(false);
     }
 
-    private renderItemContent(spanEle: HTMLElement, val: number, index: number, isrerender: boolean = false): void {
+    private renderItemContent(spanEle: HTMLElement, val: number, index: number, isrerender: boolean): void {
         if (isrerender) {
             this.removeItemContent(spanEle);
         }
@@ -549,17 +577,11 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private updateMinValue(): void {
-        this.min = this.validateValue(this.min);
+        this.setProperties({min: this.validateValue(this.min)}, true);
         if (this.min > 0 && this.value < this.min) {
             this.triggerChange(null, this.min, false);
         }
         attributes(this.ratingItemList, { 'aria-valuemin': this.min.toString() });
-    }
-
-    private updatePrecision(): void {
-        this.min = this.validateValue(this.min);
-        this.triggerChange(null, this.validateValue(this.value), false);
-        this.updateItemValue();
     }
 
     private validateValue(currentValue: number): number {
@@ -582,7 +604,8 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             (value >= i + 1) ? 1 : ((value < i) ? 0 : (value - i));
     }
 
-    private updateItemValue(): void {
+    private updateItemValue(isUpdate: boolean = true): void {
+        if (isUpdate && this.isReact) { this.clearTemplate(['ratingEmptyTemplate', 'ratingFullTemplate']); }
         for (let i: number = 0; i < this.itemsCount; i++) {
             const itemElement: HTMLElement = this.itemElements[parseInt(i.toString(), 10)];
             itemElement.classList.remove(SELECTED, INTERMEDIATE, SELECTEDVALUE);
@@ -592,13 +615,12 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             else if ((this.precision === PrecisionType.Full) && (i + 1 <= this.value) && (!this.enableSingleSelection)) {
                 itemElement.classList.add(SELECTEDVALUE);
             }
-            this.updateItemContent(ratingValue, i);
+            if (isUpdate) { this.updateItemContent(ratingValue, i); }
             itemElement.style.setProperty(RATINGVALUE, (ratingValue * 100) + '%');
             itemElement.classList[((this.value === 0) && (i === 0)) || (this.value === i + 1) || ((ratingValue > 0) && (ratingValue < 1)) ? 'add' : 'remove']('e-rating-focus');
         }
-        if (this.allowReset) {
-            this.updateResetButton();
-        }
+        if (isUpdate) { this.renderReactTemplates(); }
+        this.updateResetButton();
         attributes(this.ratingItemList, { 'aria-valuenow': this.currentValue.toString() });
         attributes(this.element, { 'value': this.value.toString() });
     }
@@ -607,25 +629,26 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.fullTemplate && !this.emptyTemplate) { return; }
         const spanEle: HTMLElement = this.itemElements[parseInt(index.toString(), 10)].querySelector('.e-rating-item');
         if (this.fullTemplate && ratingValue === 1) {
-            if (spanEle.classList.contains(FULLTEMPLATE)) { return; }
+            if (!this.isReact && spanEle.classList.contains(FULLTEMPLATE)) { return; }
             this.removeItemContent(spanEle as HTMLElement);
             spanEle.classList.add(FULLTEMPLATE);
-            spanEle.append(this.fullTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingFullTemplate', (this.element.id + 'fullTemplate'), this.isStringTemplate)[0]);
+            spanEle.append(this.fullTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingFullTemplate', (this.element.id + 'fullTemplate' + index), this.isStringTemplate)[0]);
         }
         else if (this.emptyTemplate) {
+            if (!this.isReact && spanEle.classList.contains(EMPTYTEMPLATE)) { return; }
             this.removeItemContent(spanEle as HTMLElement);
             spanEle.classList.add(EMPTYTEMPLATE);
-            spanEle.append(this.emptyTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingFullTemplate', (this.element.id + 'fullTemplate'), this.isStringTemplate)[0]);
+            spanEle.append(this.emptyTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingEmptyTemplate', (this.element.id + 'emptyTemplate' + index), this.isStringTemplate)[0]);
         }
         else {
             this.removeItemContent(spanEle as HTMLElement);
             addClass([spanEle], ICONCSS.split(' '));
         }
-        this.renderReactTemplates();
     }
 
     private updateTooltipContent(isChange: boolean): void {
         if (this.showTooltip) {
+            if (this.isReact) { this.clearTemplate(['ratingTooltipTemplate']); }
             let content: string | HTMLElement;
             if (this.tooltipTemplate) {
                 const templateFunction: Function = this.getTemplateString(this.tooltipTemplate);
@@ -672,22 +695,26 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     private updateLabel(): void {
         if (this.showLabel) {
             if (this.labelTemplate) {
+                if (this.isReact) { this.clearTemplate(['ratingLabelTemplate']); }
                 if (this.spanLabel.firstChild) {
                     this.spanLabel.removeChild(this.spanLabel.firstChild);
                 }
                 const templateFunction: Function = this.getTemplateString(this.labelTemplate);
                 this.spanLabel.append(templateFunction({ value: this.currentValue }, this, 'ratingLabelTemplate', (this.element.id + 'labelTemplate'), this.isStringTemplate)[0]);
+                this.renderReactTemplates();
             }
             else {
                 this.spanLabel.textContent = this.currentValue + ' / ' + this.itemsCount;
             }
-            this.renderReactTemplates();
         }
     }
 
     private updateReset(): void {
         if (this.allowReset) {
-            this.resetElement = this.createElement('span', { className: RESET });
+            this.resetElement = this.createElement('span', {
+                className: RESET,
+                attrs: {'aria-label': 'resetbutton', 'role': 'button'}
+            });
             this.updateResetButton();
             EventHandler.add(this.resetElement, 'click', this.resetClicked, this);
             this.wrapper.insertBefore(this.resetElement, this.ratingItemList);
@@ -729,9 +756,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         this.triggerChange(e, this.currentValue);
         this.updateItemValue();
         this.updateLabel();
-        if (this.allowReset) {
-            this.updateResetButton();
-        }
+        this.updateResetButton();
     }
 
     private updateValueChange(e: Event, val: number, isInteracted: boolean = true): void{
@@ -812,7 +837,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Reset’s the value to minimum.
-     *
+     * 
+     * {% codeBlock src='rating/reset/index.md' %}{% endcodeBlock %}
+     * 
      * @returns {void}
      */
     public reset(): void {
@@ -866,13 +893,12 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                     Math.round(0.1 * 10) / 10;
             currentValue = isIncrease ? this.value + currentValue : this.value - currentValue;
             this.updateValueChange(e, (currentValue));
-            if (this.allowReset) {
-                this.updateResetButton();
-            }
+            this.updateResetButton();
         }
     }
 
     private updateContent(): void {
+        if (this.isReact) { this.clearTemplate(['ratingEmptyTemplate', 'ratingFullTemplate']); }
         for (let i: number = 0; i < this.itemsCount; i++) {
             const itemElement: HTMLElement = this.itemElements[parseInt(i.toString(), 10)].firstElementChild as HTMLElement;
             this.renderItemContent(itemElement, this.getRatingValue(this.value, i), i, true);
@@ -914,6 +940,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         super.destroy();
         // unwires the events and detach the li elements
         this.removeItemElements();
+        this.clearTemplate();
         if (this.spanLabel) {
             remove(this.spanLabel);
             this.spanLabel = null;
@@ -992,7 +1019,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                 this.updateTooltip();
                 break;
             case 'precision':
-                this.updatePrecision();
+                this.updateMinValue();
+                this.triggerChange(null, this.value, false);
+                this.updateItemValue();
                 this.updateLabel();
                 break;
             case 'enableSingleSelection':
@@ -1013,7 +1042,6 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             case 'itemsCount':
                 this.removeItemElements();
                 this.renderItems();
-                this.updateItemValue();
                 this.updateLabel();
                 break;
             }

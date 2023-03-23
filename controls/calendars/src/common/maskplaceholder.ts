@@ -27,8 +27,8 @@ export class MaskPlaceholder  extends ChildProperty<MaskPlaceholder> {
      *
      * @default 'day of the week'
      */
-     @Property('day of the week')
-     public dayOfTheWeek: string;
+    @Property('day of the week')
+    public dayOfTheWeek: string;
     /**
      * Specifies the mask placeholder value for hour section.
      *
@@ -48,7 +48,7 @@ export class MaskPlaceholder  extends ChildProperty<MaskPlaceholder> {
      *
      * @default 'second'
      */
-     @Property('second')
-     public second: string;
-    
+    @Property('second')
+    public second: string;
+
 }

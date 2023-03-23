@@ -121,7 +121,7 @@ export type GaugeShape =
     'Text';
 
 /**
- * Specifies the position of legend for ranges in circular gauge component.
+ * Specifies the position of legend for ranges in circular gauge.
  */
 export type LegendPosition =
     /** Specifies the legend to be placed at the top of the circular gauge. */
@@ -138,7 +138,7 @@ export type LegendPosition =
     'Auto';
 
 /**
- * Specifies the alignment of the legend in circular gauge component.
+ * Specifies the alignment of the legend in circular gauge.
  */
 export type Alignment =
      /** Places the legend near the circular gauge with respect to the position of legend. */
@@ -149,7 +149,7 @@ export type Alignment =
      'Far';
 
 /**
- * Specifies the export type of circular gauge component.
+ * Specifies the export type of circular gauge.
  */
 export type ExportType =
     /** Specifies the rendered circular gauge to be exported in the png format. */

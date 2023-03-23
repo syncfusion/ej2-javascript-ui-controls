@@ -54,6 +54,12 @@
       font-size: 13px;
     }
 
+    .e-de-multi-cmt-mark::before {
+      color: $icon-color;
+      content: '\e8bc';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-post::before {
       content: '\e71d';
       font-family: 'e-icons';
@@ -183,17 +189,17 @@
 
   .e-de-table-border-setting {
     border: 1px solid $de-border-dlg-border-setting-inside-border;
-    height: 40px;
-    left: 5px;
+    height: 52px;
+    left: 3px;
     position: relative;
-    top: 5px;
-    width: 40px;
+    top: 3px;
+    width: 52px;
   }
 
   .e-de-table-border-setting-genral {
     border: 1px solid $de-border-dlg-border-setting-divs-color;
-    height: 52px;
-    width: 52px;
+    height: 60px;
+    width: 60px;
   }
 
   .e-de-table-border-preview-genral {

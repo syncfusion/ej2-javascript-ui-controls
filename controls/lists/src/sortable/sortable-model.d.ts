@@ -42,7 +42,7 @@ export interface SortableModel {
      * @event 'object'
      */
 
- 
+
     drag?: (e: any) => void;
 
     /**
@@ -50,7 +50,7 @@ export interface SortableModel {
      *
      *  @event 'object'
      */
- 
+
     beforeDragStart?: (e: any) => void;
 
     /**
@@ -58,6 +58,7 @@ export interface SortableModel {
      *
      *  @event 'object'
      */
+
     dragStart?: (e: any) => void;
 
     /**
@@ -65,6 +66,7 @@ export interface SortableModel {
      *
      *  @event 'object'
      */
+
     beforeDrop?: (e: any) => void;
 
     /**

@@ -23,11 +23,11 @@ export class TreeViewRenderer implements IAction {
     /** @hidden */
     public parent: PivotFieldList;
     /** @hidden */
-    public fieldTable: TreeView;
+    public fieldTable: TreeView;    
 
     private parentElement: HTMLElement;
-    private treeViewElement: HTMLElement;
     private fieldDialog: Dialog;
+    private treeViewElement: HTMLElement;
     private editorSearch: MaskedTextBox;
     private selectedNodes: string[] = [];
     private fieldListSort: string;
@@ -58,10 +58,10 @@ export class TreeViewRenderer implements IAction {
             const fieldTable: Element = createElement('div', {
                 className: cls.FIELD_TABLE_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_TABLE_CLASS : '')
             });
-            const treeHeader: Element = createElement('div', {
-                className: cls.FIELD_HEADER_CLASS,
-                innerHTML: this.parent.localeObj.getConstant('allFields')
+            const treeHeader: HTMLElement = createElement('div', {
+                className: cls.FIELD_HEADER_CLASS
             });
+            treeHeader.innerText = this.parent.localeObj.getConstant('allFields');
             const searchWrapper: HTMLElement = createElement('div', {
                 id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
                 className: cls.FIELD_LIST_SEARCH_CLASS
@@ -80,9 +80,9 @@ export class TreeViewRenderer implements IAction {
             this.fieldSearch.appendTo(searchInput);
             this.fieldSearch.addIcon('append', cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
             const promptDiv: HTMLElement = createElement('div', {
-                className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
-                innerHTML: this.parent.localeObj.getConstant('noMatches')
+                className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE
             });
+            promptDiv.innerText = this.parent.localeObj.getConstant('noMatches');
             const treeOuterDiv: HTMLElement = createElement('div', {
                 className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS + ' ' + cls.TREE_CONTAINER
             });
@@ -103,10 +103,10 @@ export class TreeViewRenderer implements IAction {
             this.parentElement.appendChild(fieldTable);
             if (this.parent.renderMode === 'Fixed') {
                 const centerDiv: Element = createElement('div', { className: cls.STATIC_CENTER_DIV_CLASS });
-                const axisHeader: Element = createElement('div', {
-                    className: cls.STATIC_CENTER_HEADER_CLASS,
-                    innerHTML: this.parent.localeObj.getConstant('centerHeader')
+                const axisHeader: HTMLElement = createElement('div', {
+                    className: cls.STATIC_CENTER_HEADER_CLASS
                 });
+                axisHeader.innerText = this.parent.localeObj.getConstant('centerHeader');
                 this.parentElement.appendChild(centerDiv);
                 this.parentElement.appendChild(axisHeader);
             }
@@ -148,6 +148,7 @@ export class TreeViewRenderer implements IAction {
             loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             nodeDragStart: this.dragStart.bind(this),
             nodeDragStop: this.dragStop.bind(this),
             drawNode: this.updateTreeNode.bind(this),
@@ -304,6 +305,7 @@ export class TreeViewRenderer implements IAction {
             visible: true,
             showCloseIcon: false,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             locale: this.parent.locale,
             width: 'auto',
             height: '350px',
@@ -327,7 +329,7 @@ export class TreeViewRenderer implements IAction {
         });
         this.fieldDialog.isStringTemplate = true;
         this.fieldDialog.appendTo(fieldListDialog);
-        // this.fieldDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('adaptiveFieldHeader');
+        // this.fieldDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('adaptiveFieldHeader');
     }
 
     private dialogClose(): void {
@@ -363,9 +365,9 @@ export class TreeViewRenderer implements IAction {
         this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         const promptDiv: HTMLElement = createElement('div', {
-            className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
-            innerHTML: this.parent.localeObj.getConstant('noMatches')
+            className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE
         });
+        promptDiv.innerText = this.parent.localeObj.getConstant('noMatches');
         editorTreeWrapper.appendChild(promptDiv);
         treeOuterDiv.appendChild(treeViewContainer);
         editorTreeWrapper.appendChild(treeOuterDiv);
@@ -377,6 +379,7 @@ export class TreeViewRenderer implements IAction {
             sortOrder: this.parent.dataType === 'olap' ? 'None' : 'Ascending',
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             cssClass: this.parent.cssClass,
             nodeChecked: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
@@ -720,6 +723,9 @@ export class TreeViewRenderer implements IAction {
             }
             this.updateDataSource();
         }
+        let selectedLi: HTMLElement = this.treeViewElement.querySelector('[data-uid="'+ id + '"]');
+        selectedLi.focus();
+        removeClass([selectedLi], 'e-hover');
         const parent: PivotFieldList = this.parent;
         setTimeout(() => {
             parent.axisFieldModule.render();

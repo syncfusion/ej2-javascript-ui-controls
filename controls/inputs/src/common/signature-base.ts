@@ -153,6 +153,9 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.element.height = this.element.offsetHeight;
             this.element.width = this.element.offsetWidth;
             this.isResponsive = true;
+        } else if (this.element.height !== this.element.offsetHeight - 1 || this.element.width !== this.element.offsetWidth - 1) {
+            this.element.height = this.element.offsetHeight;
+            this.element.width = this.element.offsetWidth;
         }
         this.canvasContext.scale(1, 1);
         this.canvasContext.fillStyle = this.strokeColor;
@@ -207,7 +210,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         this.signatureValue = this.snapColl[this.incStep];
         for (let i: number = 0; i < this.signPointsColl.length; i++) {
             this.signRatioPointsColl.push({ x: (this.signPointsColl[i as number].x / this.canvasContext.canvas.width),
-            y: (this.signPointsColl[i as number].y / this.canvasContext.canvas.height)});
+                y: (this.signPointsColl[i as number].y / this.canvasContext.canvas.height)});
         }
         this.signPointsColl = [];
     }
@@ -247,16 +250,16 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.canvasContext.canvas.width = this.element.offsetWidth;
             this.canvasContext.canvas.height = this.element.offsetHeight;
             this.canvasContext.scale(1, 1);
-            this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
             const pointSize: number = (this.minStrokeWidth + this.maxStrokeWidth) / 2;
             for (let i: number = 0; i < this.signRatioPointsColl.length; i++) {
-                this.arcDraw((this.signRatioPointsColl[i].x * this.canvasContext.canvas.width),
-                 (this.signRatioPointsColl[i].y * this.canvasContext.canvas.height), pointSize);
+                this.arcDraw((this.signRatioPointsColl[i as number].x * this.canvasContext.canvas.width),
+                            (this.signRatioPointsColl[i as number].y * this.canvasContext.canvas.height), pointSize);
             }
             this.signPointsColl = [];
             this.canvasContext.closePath();
             this.canvasContext.fill();
-        } else {
+        }
+        else {
             const restoreImg: HTMLImageElement = new Image();
             restoreImg.src = this.snapColl[this.incStep];
             restoreImg.onload = () => {
@@ -464,10 +467,10 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private enableOrDisable(isDisable: boolean): void {
         this.disabled = isDisable;
         if (isDisable) {
-            this.canvasContext.canvas.style.filter = "opacity(0.5)";
+            this.canvasContext.canvas.style.filter = 'opacity(0.5)';
             this.isRead(true);
         } else {
-            this.canvasContext.canvas.style.filter = "";
+            this.canvasContext.canvas.style.filter = '';
             this.isRead(false);
         }
     }

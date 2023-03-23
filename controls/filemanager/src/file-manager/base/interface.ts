@@ -17,22 +17,147 @@ import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 /**
  * Defines the view type of the FileManager.
  */
-export type ViewType = 'LargeIcons' | 'Details';
+export type ViewType = 
+    /**
+    * Displays the files and folders as large icons.
+    */
+    'LargeIcons' |
+    /**
+    * Displays the files and folders in a list format.
+    */
+    'Details';
+
 /**
  * Defines the files sorting order in FileManager.
  */
-export type SortOrder = 'Ascending' |'Descending'| 'None';
+export type SortOrder =
+    /**
+    * Indicates that the folders and files are sorted in the descending order.
+    */
+    'Ascending' |
+    /**
+    *  Indicates that the folders and files are sorted in the ascending order
+    */
+     'Descending' |
+    /**
+    * Indicates that the folders and files are not sorted.
+    */
+     'None';
 
 /**
  * Defines the Toolbar items of the FileManager.
  */
-export type ToolBarItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
-| 'Rename' | 'SortBy' | 'Refresh' | 'Selection' | 'View' | 'Details';
-/**
- * Defines the Context menu items for the FileManager.
- */
-export type MenuItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
-| 'Rename' | 'SortBy' | 'Refresh' | 'SelectAll' | 'View' | 'Details' | 'Open';
+export type ToolBarItems = 
+    /**
+     * Allows you to quickly create a new folder
+     */
+    'NewFolder' | 
+    /**
+     * Allows you to quickly and easily upload files from your local computer.
+     */
+    'Upload' | 
+    /**
+     * Allows you to remove a file or folder from its current location and move it to a different location.
+     */
+    'Cut' | 
+    /**
+     * Allows you to create a duplicate of a file or folder and place it in a different location.
+     */
+    'Copy' |
+    /**
+     * Allows you to place a previously cut or copied file or folder in a new location.
+     */ 
+    'Paste' | 
+    /**
+     * Allows you to remove a file or folder permanently.
+     */
+    'Delete' | 
+    /**
+     * Allows you to quickly and easily download files to your local computer.
+     */
+    'Download'| 
+    /**
+     * Allows you to change the name of a file or folder.
+     */
+    'Rename' | 
+    /**
+     * Allows you to sort files and folder by different criteria such as name, date, size, etc.
+     */
+    'SortBy' | 
+    /**
+     * Allows you to refresh the current folder's content, showing the changes made on the folder.
+     */
+    'Refresh' | 
+    /**
+     * Allows you to select one or more files or folders.
+     */
+    'Selection' | 
+    /**
+     * Allows you to change the way files and folders are displayed.
+     */
+    'View' | 
+    /**
+     * Allows you to see additional information about the files and folders, such as the size and date modified.
+     */
+    'Details';
+
+export type MenuItems = 
+    /**
+     * Allows you to quickly create a new folder
+     */
+    'NewFolder' | 
+    /**
+     * Allows you to quickly and easily upload files from your local computer.
+     */
+    'Upload' | 
+    /**
+     * Allows you to remove a file or folder from its current location and move it to a different location.
+     */
+    'Cut' | 
+    /**
+     * Allows you to create a duplicate of a file or folder and place it in a different location.
+     */
+    'Copy' | 
+    /**
+     * Allows you to place a previously cut or copied file or folder in a new location.
+     */ 
+    'Paste' | 
+    /**
+     * Allows you to remove a file or folder permanently.
+     */
+    'Delete' | 
+    /**
+     * Allows you to quickly and easily download files to your local computer.
+     */
+    'Download' | 
+    /**
+     * Allows you to change the name of a file or folder.
+     */
+    'Rename' | 
+    /**
+     * Allows you to sort files and folder by different criteria such as name, date, size, etc.
+     */
+    'SortBy' | 
+    /**
+     * Allows you to refresh the current folder's content, showing the changes made on the folder.
+     */
+    'Refresh' | 
+    /**
+     * Allows you to select all the files and folders in the current folder.
+     */
+    'SelectAll' | 
+    /**
+     * Allows you to change the way files and folders are displayed.
+     */
+    'View' | 
+    /**
+     * Allows you to see additional information about the files and folders, such as the size and date modified.
+     */
+    'Details' | 
+    /**
+     * Allows you to open the selected file or folder.
+     */
+    'Open';
 
 /**
  * Interfaces for File Manager Toolbar items.

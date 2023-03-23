@@ -3,9 +3,10 @@ import { HyperlinkTextInfo } from '../editor/editor-helper';
 import { FieldElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs } from '@syncfusion/ej2-buttons';
+import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs, Button } from '@syncfusion/ej2-buttons';
 import { DocumentHelper } from '../viewer';
 import { TextBox } from '@syncfusion/ej2-inputs';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 /**
  * The Hyperlink dialog is used to insert or edit hyperlink at selection.
  */
@@ -262,10 +263,10 @@ export class HyperlinkDialog {
      * @returns {void}
      */
     public onInsertHyperlink(): void {
-        let displayText: string = this.displayTextBox.value.trim();
+        let displayText: string = SanitizeHtmlHelper.sanitize(this.displayTextBox.value.trim());
         let address: string = this.urlTextBox.value.trim();
-        address = address.replace(/\s/g, "");
-        let screenTipText: string = this.screenTipTextBox.value.trim();
+        address = SanitizeHtmlHelper.sanitize(address.replace(/\s/g, ""));
+        let screenTipText: string = SanitizeHtmlHelper.sanitize(this.screenTipTextBox.value.trim());
         let isBookmark: boolean = false;
         if (!isNullOrUndefined(this.bookmarkDropdown.value) &&  this.bookmarkDropdown.value !== '' && this.bookmarkCheckbox.checked === true) {
             address = this.bookmarkDropdown.value as string;

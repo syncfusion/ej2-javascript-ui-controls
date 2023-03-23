@@ -111,7 +111,6 @@ export class FullScreen {
                             this.parent.toolbarModule.addFixedTBarClass();
                         }
                     }
-                    this.parent.refreshUI();
                     this.parent.trigger(events.actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
                 }
             });

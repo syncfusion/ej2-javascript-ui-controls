@@ -971,7 +971,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
                 this.toastCollection.splice(i, 1);
             }
         }
-        let toastBeforeClose: ToastBeforeCloseArgs = {
+        const toastBeforeClose: ToastBeforeCloseArgs = {
             options: this,
             cancel: false,
             type: interactionType,
@@ -1328,7 +1328,6 @@ export namespace ToastUtility {
             toastContainerElement = createElement('div', { 'className': ROOT + ' ' + CONTAINER + ' e-toast-util' });
             document.body.appendChild(toastContainerElement);
         }
-        let toastObj: Toast;
         let untilToastsModel: ToastModel;
         if (typeof(content) === 'string') {
             let cssClass: string;
@@ -1365,7 +1364,7 @@ export namespace ToastUtility {
         } else {
             untilToastsModel = content;
         }
-        toastObj = new Toast(untilToastsModel);
+        const toastObj : Toast = new Toast(untilToastsModel);
         toastObj.appendTo(toastContainerElement);
         toastObj.show();
         return toastObj;

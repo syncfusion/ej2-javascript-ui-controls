@@ -917,3 +917,180 @@ describe('ZIndex value chnaged after calling refresh method', () => {
         done();
     });
 });
+
+describe('Diagram-Layers - sendToBack Not functioning correctly for single node Layer', function()
+  {
+    let diagram:Diagram;
+    let ele:HTMLElement;
+
+    beforeAll((): void => {
+      const isDef = (o: any) => o !== undefined && o !== null;
+      if (!isDef(window.performance)) {
+          console.log("Unsupported environment, window.performance.memory is unavailable");
+          this.skip(); //Skips test (in Chai)
+          return;
+      }
+      ele = createElement('div', { id: 'diagram' });
+      document.body.appendChild(ele);
+      let nodes: NodeModel[] = [{
+        id: 'node1',
+        width: 100,
+        height: 100,
+        offsetX: 100,
+        offsetY: 100,
+        shape: {
+          type: 'Basic',
+          shape:'Ellipse',
+      },
+        annotations: [{
+            content: 'Layer 1 - node 1'
+        }]
+    },
+    {
+        id: 'node2',
+        width: 100,
+        height: 100,
+        offsetX: 150,
+        offsetY: 150,
+        style:{
+          color: 'red'
+        },
+        shape: {
+            type: 'Bpmn',
+            shape:'Event',
+            event: {
+              event: 'End',
+              trigger: 'None'
+          }
+        },
+        annotations: [{
+            content: 'Layer 2 - node2'
+        }]
+    },
+    {
+      id: 'node3',
+      width: 100,
+      height: 100,
+      offsetX: 300,
+      offsetY: 150,
+      shape: {
+          type: 'Basic',
+          shape:'Triangle',
+      },
+      annotations: [{
+          content: 'Layer 2 -node 3'
+      }]
+  }
+    ];
+    let layers:LayerModel[]=[{
+        id: 'layer1',
+        visible: true,
+        objects: ['node1']
+    },{
+      id: 'layer2',
+      visible: true,
+      objects: ['node2', 'node3']
+  }];
+    // initialize diagram component
+    diagram = new Diagram({
+    width: '100%',
+    height: '600px',
+    nodes: nodes,
+    layers: layers
+    });
+    // render initialized diagram
+    diagram.appendTo('#diagram');
+  });
+
+  afterAll((): void => {
+      diagram.destroy();
+      ele.remove();
+  });
+
+  it('sendToBack Command for a single node in a layer',(done: Function)=>
+  {
+    diagram.select([diagram.nodes[0]]);
+    expect(diagram.nodes[0].zIndex).toBe(0)
+    diagram.layerZIndexTable
+    diagram.sendToBack();
+    expect(diagram.nodes[0].zIndex).toBe(0)
+    done();
+  });
+  
+  it('sendToBack Command for a Multiple node in a layer',(done: Function)=>
+  {
+    diagram.select([diagram.nodes[2]]);
+    expect(diagram.nodes[1].zIndex).toBe(0)
+    expect(diagram.nodes[2].zIndex).toBe(1)
+    diagram.layerZIndexTable
+    diagram.sendToBack();
+    expect(diagram.nodes[2].zIndex).toBe(0)
+    expect(diagram.nodes[1].zIndex).toBe(1)
+    done();
+  });
+
+  it('BringToFront Command for a single node in a layer',(done: Function)=>
+  {
+    diagram.select([diagram.nodes[0]]);
+    expect(diagram.nodes[0].zIndex).toBe(0)
+    diagram.layerZIndexTable
+    diagram.bringToFront();
+    expect(diagram.nodes[0].zIndex).toBe(0)
+    done();
+  });
+  
+  it('BringToFront Command for a Multiple node in a layer',(done: Function)=>
+  {
+    diagram.select([diagram.nodes[2]]);
+    expect(diagram.nodes[1].zIndex).toBe(1)
+    expect(diagram.nodes[2].zIndex).toBe(0)
+    diagram.layerZIndexTable
+    diagram.bringToFront();
+    expect(diagram.nodes[2].zIndex).toBe(1)
+    expect(diagram.nodes[1].zIndex).toBe(0)
+    done();
+  });
+  it('bringLayerForward Command for a single node in a layer',(done: Function)=>
+  {
+    let selectedDiagram=diagram.layers[0];
+    expect(selectedDiagram.zIndex).toBe(0);
+    let diagramLayer=diagram.layers[0].id;
+    diagram.layerZIndexTable;
+    diagram.bringLayerForward(diagramLayer);
+    expect(selectedDiagram.zIndex).toBe(1)
+    done();
+  });
+  
+  it('bringLayerForward Command for a Multiple node in a layer',(done: Function)=>
+  {
+    let selectedDiagram=diagram.layers[1];
+    expect(selectedDiagram.zIndex).toBe(0);
+    let diagramLayer=diagram.layers[1].id;
+    diagram.layerZIndexTable;
+    diagram.bringLayerForward(diagramLayer);
+    expect(selectedDiagram.zIndex).toBe(1);
+    done();
+  });
+
+  it('sendLayerBackward Command for a Multiple node in a layer',(done: Function)=>
+  {
+    let selectedDiagram=diagram.layers[1];
+    expect(selectedDiagram.zIndex).toBe(1);
+    let diagramLayer=diagram.layers[1].id;
+    diagram.layerZIndexTable;
+    diagram.sendLayerBackward(diagramLayer);
+    expect(selectedDiagram.zIndex).toBe(0);
+    done();
+  });
+  it('sendLayerBackward Command for a Single node in a layer',(done: Function)=>
+  {
+    let selectedDiagram=diagram.layers[0];
+    expect(selectedDiagram.zIndex).toBe(1);
+    let diagramLayer=diagram.layers[0].id;
+    diagram.layerZIndexTable;
+    diagram.sendLayerBackward(diagramLayer);
+    expect(selectedDiagram.zIndex).toBe(0);
+    done();
+  });
+
+});

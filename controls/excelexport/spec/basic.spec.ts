@@ -476,7 +476,6 @@ describe('ExcelCreation', () => {
             }
         });
     });
-    
     it('EJ2-69584', (done) => {
         let book: Workbook = new Workbook({
            worksheets: [

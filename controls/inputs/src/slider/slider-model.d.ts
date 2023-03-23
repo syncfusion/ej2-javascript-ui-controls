@@ -15,6 +15,7 @@ export interface TicksDataModel {
      *  * both - Ticks are placed on the both side of the Slider bar.
      *  * none - Ticks are not shown.
      * {% codeBlock src='slider/placement/index.md' %}{% endcodeBlock %}
+     *
      * @default 'None'
      */
     placement?: Placement;
@@ -22,6 +23,7 @@ export interface TicksDataModel {
     /**
      * It is used to denote the distance between two major (large) ticks from the scale of the Slider.
      * {% codeBlock src='slider/largestep/index.md' %}{% endcodeBlock %}
+     *
      * @default 10
      */
     largeStep?: number;
@@ -29,12 +31,14 @@ export interface TicksDataModel {
     /**
      * It is used to denote the distance between two minor (small) ticks from the scale of the Slider.
      * {% codeBlock src='slider/smallstep/index.md' %}{% endcodeBlock %}
+     *
      * @default 1
      */
     smallStep?: number;
 
     /**
      * We can show or hide the small ticks in the Slider, which will be appeared in between the largeTicks.
+     *
      * @default false
      */
     showSmallTicks?: boolean;
@@ -54,18 +58,21 @@ export interface ColorRangeDataModel {
 
     /**
      * It is used to set the color in the slider bar.
+     *
      * @default ''
      */
     color?: string;
 
     /**
      * It is used to get the starting value for applying color.
+     *
      * @default null
      */
     start?: number;
 
     /**
      * It is used to get the end value for applying color.
+     *
      * @default null
      */
     end?: number;
@@ -79,30 +86,35 @@ export interface LimitDataModel {
 
     /**
      * It is used to enable the limit in the slider.
+     *
      * @default false
      */
     enabled?: boolean;
 
     /**
      * It is used to set the minimum start limit value.
+     *
      * @default null
      */
     minStart?: number;
 
     /**
      * It is used to set the minimum end limit value.
+     *
      * @default null
      */
     minEnd?: number;
 
     /**
      * It is used to set the maximum start limit value.
+     *
      * @default null
      */
     maxStart?: number;
 
     /**
      * It is used to set the maximum end limit value.
+     *
      * @default null
      */
     maxEnd?: number;
@@ -110,6 +122,7 @@ export interface LimitDataModel {
     /**
      * It is used to lock the first handle.
      * {% codeBlock src='slider/limitStartHandleFixed/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
     startHandleFixed?: boolean;
@@ -117,6 +130,7 @@ export interface LimitDataModel {
     /**
      * It is used to lock the second handle.
      * {% codeBlock src='slider/limitEndHandleFixed/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
     endHandleFixed?: boolean;
@@ -131,6 +145,7 @@ export interface TooltipDataModel {
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that define
      *  specific user-defined styles and themes to be applied on the Tooltip element.
+     *
      * @default ''
      */
     cssClass?: string;
@@ -148,6 +163,7 @@ export interface TooltipDataModel {
      * If it is in desktop, it will show the Tooltip content when hovering on the target element.
      * If it is in touch device. It will show the Tooltip content when tap and holding on the target element.
      * {% codeBlock src='slider/tooltipShowOn/index.md' %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     showOn?: TooltipShowOn;
@@ -176,6 +192,7 @@ export interface SliderModel extends ComponentModel{
      * The value should be specified in array of number when render Slider type as range.
      *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      * @isGenericType true
      */
@@ -184,23 +201,26 @@ export interface SliderModel extends ComponentModel{
     /**
      * Specifies an array of slider values in number or string type.
      * The min and max step values are not considered.
+     *
      * @default null
      */
     customValues?: string[] | number[];
 
     /**
      * Specifies the step value for each value change when the increase / decrease
-     *  button is clicked or on arrow keys press or on dragging the thumb. 
+     *  button is clicked or on arrow keys press or on dragging the thumb.
      *  Refer the documentation [here](../../slider/ticks#step)
      *  to know more about this property.
      *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 1
      */
     step?: number;
 
     /**
      * Specifies the width of the Slider.
+     *
      * @default null
      */
     width?: number | string;
@@ -209,6 +229,7 @@ export interface SliderModel extends ComponentModel{
      * Gets/Sets the minimum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     min?: number;
@@ -217,6 +238,7 @@ export interface SliderModel extends ComponentModel{
      * Gets/Sets the maximum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 100
      */
     max?: number;
@@ -224,6 +246,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * Specifies whether the render the slider in read-only mode to restrict any user interaction.
      * The slider rendered with user defined values and can’t be interacted with user actions.
+     *
      * @default false
      */
     readonly?: boolean;
@@ -234,6 +257,8 @@ export interface SliderModel extends ComponentModel{
      *  * minRange - Allows to select a single value in the Slider. It display’s a shadow from the start to the current value.
      *  * range - Allows to select a range of values in the Slider. It displays shadow in-between the selection range.
      * {% codeBlock src='slider/types/index.md' %}{% endcodeBlock %}
+     *
+     * @default 'Default'
      */
     type?: SliderType;
 
@@ -248,6 +273,7 @@ export interface SliderModel extends ComponentModel{
      *  to know more about this property with demo.
      * {% codeBlock src='slider/ticks/index.md' %}{% endcodeBlock %}
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { placement: 'before' }
      */
     ticks?: TicksDataModel;
@@ -258,12 +284,14 @@ export interface SliderModel extends ComponentModel{
      *  to know more about this property.
      *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { enabled: false }
      */
     limits?: LimitDataModel;
 
     /**
-     * Enables or Disables the slider.
+     * Enable or Disable the slider.
+     *
      * @default true
      */
     enabled?: boolean;
@@ -272,31 +300,35 @@ export interface SliderModel extends ComponentModel{
      * Specifies the visibility, position of the tooltip over the slider element.
      *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { placement: 'Before', isVisible: false, showOn: 'Focus', format: null }
      */
     tooltip?: TooltipDataModel;
 
     /**
-     * Specifies whether to show or hide the increase/decrease buttons 
+     * Specifies whether to show or hide the increase/decrease buttons
      * of Slider to change the slider value.
      * Refer the documentation [here](../../slider/getting-started#buttons)
      *  to know more about this property.
      *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default false
      */
     showButtons?: boolean;
 
     /**
-     * Enables/Disables the animation for slider movement.
+     * Enable or Disable the animation for slider movement.
+     *
      * @default true
      */
     enableAnimation?: boolean;
 
     /**
      *  Specifies whether to render the slider in vertical or horizontal orientation.
-     *  Refer the documentation [here](../../slider/getting-started#orientation)
+     *  Refer the documentation [here](../../slider/orientation/)
      *  to know more about this property.
+     *
      * @default 'Horizontal'
      */
     orientation?: SliderOrientation;
@@ -304,18 +336,21 @@ export interface SliderModel extends ComponentModel{
     /**
      * Specifies the custom classes to be added to the element used to customize the slider.
      * {% codeBlock src='slider/cssClass/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      */
     cssClass?: string;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     enableHtmlSanitizer?: boolean;
 
     /**
      * Triggers when the Slider is successfully created.
+     *
      * @event
      */
     created?: EmitType<Object>;
@@ -336,7 +371,7 @@ export interface SliderModel extends ComponentModel{
     changed?: EmitType<SliderChangeEventArgs>;
 
     /**
-     * Triggers on rendering the ticks element in the Slider, 
+     * Triggers on rendering the ticks element in the Slider,
      * which is used to customize the ticks labels dynamically.
      * {% codeBlock src='slider/renderingticksEvent/index.md' %}{% endcodeBlock %}
      * @event

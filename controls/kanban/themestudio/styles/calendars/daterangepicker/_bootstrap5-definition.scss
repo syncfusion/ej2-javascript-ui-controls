@@ -12,14 +12,14 @@ $range-max-height: 500px !default;
 $range-normal-nav-icon-width: 24px !default;
 $range-control-border-right: 0 !default;
 $range-normal-nav-icon-height: 24px !default;
-$range-calendar-medium-font-size: 14px !default;
-$range-calendar-btn-font-size: 14px !default;
-$range-presets-normal-list-font-size: 13px !default;
-$range-presets-bigger-list-font-size: 14px !default;
-$range-range-btn-font-weight: 500 !default;
+$range-calendar-medium-font-size: $text-sm !default;
+$range-calendar-btn-font-size: $text-sm !default;
+$range-presets-normal-list-font-size: $text-xs !default;
+$range-presets-bigger-list-font-size: $text-sm !default;
+$range-range-btn-font-weight: $font-weight-medium !default;
 $range-header-label-size: $text-lg !default;
 $range-calendar-small-font-size: $text-xs !default;
-$range-calendar-bigger-font-size: 20px !default;
+$range-calendar-bigger-font-size: $text-xl !default;
 $range-calendar-header-padding: 8px 5px !default;
 $range-e-bigger-header-padding: 10px 5px !default;
 $range-device-control-header-margin: 0 !default;
@@ -33,8 +33,8 @@ $range-calendar-margin: 0 !default;
 $range-start-end-label-width: 48% !default;
 $range-change-icon-width: 4% !default;
 $range-font-weight-bold: $font-weight-medium !default;
-$range-font-size: 15px !default;
-$range-bigger-change-icon-size: 18px !default;
+$range-font-size: $text-sm !default;
+$range-bigger-change-icon-size: $font-icon-18 !default;
 $range-indicator-label-width: 100% !default;
 $range-device-indicator-margin: 10px 0 !default;
 $range-separator-height: 1px !default;
@@ -55,10 +55,10 @@ $range-list-item-height: 48px !default;
 $range-list-item-padding: 0 24px !default;
 $range-listview-padding: 4px 0 !default;
 $range-list-item-line-height: 47px !default;
-$range-device-medium-font-size: 13px !default;
-$range-device-medium-header-font-size: 13px !default;
-$range-device-small-font-size: 11px !default;
-$range-week-header-font-size: 13px !default;
+$range-device-medium-font-size: $text-sm !default;
+$range-device-medium-header-font-size: $text-sm !default;
+$range-device-small-font-size: $text-xs !default;
+$range-week-header-font-size: $text-sm !default;
 $range-device-header-container-height: 36px !default;
 $range-device-header-container-width: 100% !default;
 $range-device-list-item-padding: 0 16px !default;
@@ -105,8 +105,8 @@ $range-calendar-landscape-height: 130px !default;
 
 // new variable
 $range-icon: '\e245' !default;
-$range-icon-font-size: 16px !default;
-$range-bigger-icon-font-size: 18px !default;
+$range-icon-font-size: $font-icon-16 !default;
+$range-bigger-icon-font-size: $font-icon-18 !default;
 $range-icon-next: '\e913' !default;
 $range-icon-prev: '\e921' !default;
 $range-change-icon: '\e85f' !default;
@@ -116,18 +116,18 @@ $range-rtl-icon-change: '\e85b' !default;
 
 // Mouse small size
 $range-small-header-label-size: 16px !default;
-$range-small-font-size: 12px !default;
+$range-small-font-size: $text-xs !default;
 $range-start-end-container-small-height: 32px !default;
-$range-calendar-mouse-small-font-size: 12px !default;
+$range-calendar-mouse-small-font-size: $text-xs !default;
 $range-indicator-small-margin: 0 0 10px 0 !default;
 $range-control-small-header-margin: 10px 10px 0 10px !default;
 $range-separator-small-margin: 0 10px !default;
 $range-small-footer-margin: 10px 10px 10px 8px !default;
 $range-preset-small-list-height: 26px !default;
-$range-presets-small-list-font-size: 12px !default;
+$range-presets-small-list-font-size: $text-xs !default;
 $calendar-bigger-small-max-width: 246px !default;
 $range-control-header-width: auto !default;
-$range-font-weight-normal: normal !default;
+$range-font-weight-normal: $font-weight-normal !default;
 $range-flex-style: flex !default;
 $range-flex-justify-content: flex-end !default;
 $range-inline-block-style: inline-block !default;
@@ -157,10 +157,10 @@ $range-text-overflow: ellipsis !default;
 $range-calendar-other-normal-border: none !default;
 
 // mouse small icon
-$range-small-icon-font-size: 14px !default;
+$range-small-icon-font-size: $font-icon-14 !default;
 
 // touch small icon
-$range-bigger-small-icon-font-size: 18px !default;
+$range-bigger-small-icon-font-size: $font-icon-18 !default;
 
 // color variables
 $range-bg-color: $flyout-bg-color !default;
@@ -175,7 +175,7 @@ $range-header-bg-color: $flyout-bg-color !default;
 $range-active-icon-color: $content-text-color !default;
 $range-active-state-icon-color: $content-text-color !default;
 $range-hover-color: $content-bg-color-alt3 !default;
-$range-hover-content-color: $content-bg-color-pressed !default;
+$range-hover-content-color: $content-bg-color-alt4 !default;
 $range-today-color: $content-bg-color-hover !default;
 $range-selection-bg: $primary !default;
 $range-other-hover-color: $content-bg-color !default;

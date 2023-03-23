@@ -257,7 +257,7 @@ describe('Month-agenda view rendering', () => {
 
             it('dateRange template', () => {
                 const model: ScheduleModel = {
-                    currentView: 'MonthAgenda', 
+                    currentView: 'MonthAgenda',
                     selectedDate: new Date(2017, 9, 5),
                     dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
                 };
@@ -344,8 +344,8 @@ describe('Month-agenda view rendering', () => {
                     maxDate: new Date(2017, 10, 12)
                 };
                 schObj = util.createSchedule(model, []);
-                const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-                const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+                const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+                const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
                 expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
                 expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');

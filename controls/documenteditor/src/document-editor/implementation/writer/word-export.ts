@@ -1,12 +1,13 @@
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageFormatInfo, HelperMethods } from '../index';
+import { ImageFormatInfo, ImageStringInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader, WColumnFormat, LocaleId } from '../../index';
 import { WTabStop } from '../index';
 import { ProtectionType, CompatibilityMode } from '../../base';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
+import { sectionsProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty , isAfterRowMarkProperty, isAfterParagraphMarkProperty, columnCountProperty, gridProperty} from '../../index';
 
 /**
  * Exports the document to Word format.
@@ -288,6 +289,7 @@ export class WordExport {
     private defParagraphFormat: any;
     private defaultTabWidthValue: number;
     private dontUseHtmlParagraphAutoSpacing: boolean;
+    private allowSpaceOfSameStyleInTable: boolean;
     private mRelationShipID: number = 0;
     private cRelationShipId: number = 0;
     private eRelationShipId: number = 0;
@@ -305,6 +307,7 @@ export class WordExport {
     private mDocumentImages: Dictionary<string, any>;
     private mSvgImages: Dictionary<string, any>;
     private mCustomXML: Dictionary<string, any>;
+    private mImages: Dictionary<number, string[]>;
     private mDocumentCharts: Dictionary<string, any>;
     private mExternalLinkImages: Dictionary<string, string>;
     private mHeaderFooterImages: Dictionary<string, Dictionary<string, any>>;
@@ -316,7 +319,7 @@ export class WordExport {
     private enforcement: boolean;
     private hashValue: string;
     private saltValue: string;
-    private protectionType: ProtectionType;
+    private protectionType: any;
     private fileName: string;
     private spanCellFormat: any;
     private mComments: any[] = [];
@@ -326,6 +329,8 @@ export class WordExport {
     private commentParaID: number = 0;
     private commentParaIDInfo: any = {};
     private replyCommentIdCollection: Dictionary<number, string>;
+    private imageRelationIds: Dictionary<number, string>;
+    private svgImageRelationIds: Dictionary<number, string>;
     private isInsideComment: boolean = false;
     private commentId: any = {};
     private currentCommentId: number = 0;
@@ -335,8 +340,11 @@ export class WordExport {
     private isRevisionContinuous: boolean = false;
     private formFieldShading: boolean;
     private trackChanges: boolean;
-    private compatibilityMode: CompatibilityMode;
-    private allowSpaceOfSameStyleInTable: boolean;
+    private compatibilityMode: number;
+    private isBookmarkAtEnd: Boolean = false;
+    private isBookmarkAtRowEnd: Boolean = false;
+    private keywordIndex: number = undefined;
+    private isHeaderFooter: boolean = false;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -490,6 +498,8 @@ export class WordExport {
         this.mDocPrID = undefined;
         this.mDifferentFirstPage = undefined;
         this.fileName = undefined;
+        this.imageRelationIds = undefined;
+        this.svgImageRelationIds = undefined;
         if (this.mArchive) {
             this.mArchive.destroy();
             this.mArchive = undefined;
@@ -501,11 +511,13 @@ export class WordExport {
     }
     // Saves the word document in the stream
     private serialize(documentHelper: DocumentHelper): void {
+        this.keywordIndex = documentHelper.owner.documentEditorSettings.optimizeSfdt ? 1 : 0;
         /* eslint-disable @typescript-eslint/no-explicit-any */
-        const document: any = documentHelper.owner.sfdtExportModule.write();
+        const document: any = documentHelper.owner.sfdtExportModule.write(this.keywordIndex);
         this.setDocument(document);
         this.mComments = documentHelper.comments;
         this.mCustomXML = documentHelper.customXmlData;
+        this.mImages = documentHelper.images;
         this.revisions = documentHelper.owner.revisions.changes;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
@@ -515,6 +527,8 @@ export class WordExport {
         this.commentId = {};
         this.mVerticalMerge = new Dictionary<number, number>();
         this.mGridSpans = new Dictionary<number, number>();
+        this.imageRelationIds = new Dictionary<number, string>();
+        this.svgImageRelationIds = new Dictionary<number, string>();
         let contenttype: string;
         //document.xml
         this.serializeDocument();
@@ -575,25 +589,25 @@ export class WordExport {
     // Sets the document
     private setDocument(document: any): void {
         this.document = document;
-        this.mSections = document.sections;
-        this.mLists = document.lists;
-        this.mAbstractLists = document.abstractLists;
-        this.defCharacterFormat = document.characterFormat;
-        this.defParagraphFormat = document.paragraphFormat;
-        this.defaultTabWidthValue = document.defaultTabWidth;
-        this.themeFontLang = document.themeFontLanguages;
-        this.dontUseHtmlParagraphAutoSpacing = document.dontUseHTMLParagraphAutoSpacing;
-        this.mStyles = document.styles;
-        this.mThemes = document.themes;
-        this.formatting = document.formatting;
-        this.enforcement = document.enforcement;
-        this.hashValue = document.hashValue;
-        this.saltValue = document.saltValue;
-        this.protectionType = document.protectionType;
-        this.formFieldShading = document.formFieldShading;
-        this.trackChanges = document.trackChanges;
-        this.compatibilityMode = document.compatibilityMode;
-        this.allowSpaceOfSameStyleInTable = document.allowSpaceOfSameStyleInTable;
+        this.mSections = document[sectionsProperty[this.keywordIndex]];
+        this.mLists = document[listsProperty[this.keywordIndex]];
+        this.mAbstractLists = document[abstractListsProperty[this.keywordIndex]];
+        this.defCharacterFormat = document[characterFormatProperty[this.keywordIndex]];
+        this.defParagraphFormat = document[paragraphFormatProperty[this.keywordIndex]];
+        this.defaultTabWidthValue = document[defaultTabWidthProperty[this.keywordIndex]];
+        this.themeFontLang = document[themeFontLanguagesProperty[this.keywordIndex]];
+        this.dontUseHtmlParagraphAutoSpacing = HelperMethods.parseBoolValue(document[doNotUseHTMLParagraphAutoSpacingProperty[this.keywordIndex]]);
+        this.mStyles = document[stylesProperty[this.keywordIndex]];
+        this.mThemes = document[themesProperty[this.keywordIndex]];
+        this.formatting = HelperMethods.parseBoolValue(document[formattingProperty[this.keywordIndex]]);
+        this.enforcement = HelperMethods.parseBoolValue(document[enforcementProperty[this.keywordIndex]]);
+        this.hashValue = document[hashValueProperty[this.keywordIndex]];
+        this.saltValue = document[saltValueProperty[this.keywordIndex]];
+        this.protectionType = document[protectionTypeProperty[this.keywordIndex]];
+        this.formFieldShading = HelperMethods.parseBoolValue(document[formFieldShadingProperty[this.keywordIndex]]);
+        this.trackChanges = HelperMethods.parseBoolValue(document[trackChangesProperty[this.keywordIndex]]);
+        this.compatibilityMode = document[compatibilityModeProperty[this.keywordIndex]];
+        this.allowSpaceOfSameStyleInTable = HelperMethods.parseBoolValue(document[allowSpaceOfSameStyleInTableProperty[this.keywordIndex]]);
     }
     // Clears the document
     private clearDocument(): void {
@@ -625,6 +639,7 @@ export class WordExport {
         this.efRelationShipId = 0;
         this.mDocPrID = 1;
         this.chartCount = 0;
+        this.keywordIndex = undefined;
         this.mDifferentFirstPage = false;
         if (this.mHeaderFooterColl) {
             this.mHeaderFooterColl.destroy();
@@ -707,9 +722,9 @@ export class WordExport {
     // Serializes the document body
     private serializeDocumentBody(writer: XmlWriter): void {
         writer.writeStartElement(undefined, 'body', this.wNamespace);
-        const count: number = this.document.sections.length;
+        const count: number = this.document[sectionsProperty[this.keywordIndex]].length;
         for (let i: number = 0; i < count; i++) {
-            this.section = this.document.sections[parseInt(i.toString(), 10)];
+            this.section = this.document[sectionsProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
             this.lastSection = i === count - 1;
             this.serializeSection(writer, this.section, i === count - 1);
             this.section = undefined;
@@ -719,7 +734,7 @@ export class WordExport {
     // Serializes the Section.
     private serializeSection(writer: XmlWriter, section: any, last: boolean): void {
         this.blockOwner = section;
-        this.serializeBodyItems(writer, section.blocks, last);
+        this.serializeBodyItems(writer, section[blocksProperty[this.keywordIndex]], last);
         if (last) {
             this.serializeSectionProperties(writer, section);
         }
@@ -747,25 +762,25 @@ export class WordExport {
             writer.writeStartElement(undefined, 'themeElements', this.aNamespace);
             writer.writeRaw('<a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000" /></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF" /></a:lt1><a:dk2><a:srgbClr val="44546A" /></a:dk2><a:lt2><a:srgbClr val="E7E6E6" /></a:lt2><a:accent1><a:srgbClr val="4472C4" /></a:accent1><a:accent2><a:srgbClr val="ED7D31" /></a:accent2><a:accent3><a:srgbClr val="A5A5A5" /></a:accent3><a:accent4><a:srgbClr val="FFC000" /></a:accent4><a:accent5><a:srgbClr val="5B9BD5" /></a:accent5><a:accent6><a:srgbClr val="70AD47" /></a:accent6><a:hlink><a:srgbClr val="0563C1" /></a:hlink><a:folHlink><a:srgbClr val="954F72" /></a:folHlink></a:clrScheme>');
             writer.writeStartElement(undefined, 'fontScheme', this.aNamespace);
-            writer.writeAttributeString(undefined, 'name', undefined, this.mThemes.fontSchemeName);
+            writer.writeAttributeString(undefined, 'name', undefined, this.mThemes[fontSchemeNameProperty[this.keywordIndex]]);
             writer.writeStartElement(undefined, 'majorFont', this.aNamespace);
-            for (let i: number = 0; i < this.mThemes.fontScheme.majorFontScheme.fontSchemeList.length; i++) {
-                let theme: any = this.mThemes.fontScheme.majorFontScheme.fontSchemeList[parseInt(i.toString(), 10)];
+            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
+                let theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
-            let keys: string[] = Object.keys(this.mThemes.fontScheme.majorFontScheme.fontTypeface);
+            let keys: string[] = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
             for (let key of keys) {
-                this.themeType(writer, key, this.mThemes.fontScheme.majorFontScheme.fontTypeface[`${key}`]);
+                this.themeType(writer, key, this.mThemes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]][`${key}`]);
             }
             writer.writeEndElement();
             writer.writeStartElement(undefined, 'minorFont', this.aNamespace);
-            for (let i: number = 0; i < this.mThemes.fontScheme.minorFontScheme.fontSchemeList.length; i++) {
-                let theme: any = this.mThemes.fontScheme.minorFontScheme.fontSchemeList[parseInt(i.toString(), 10)];
+            for (let i: number = 0; i < this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]].length; i++) {
+                let theme: any = this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontSchemeListProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
-            keys = Object.keys(this.mThemes.fontScheme.minorFontScheme.fontTypeface);
+            keys = Object.keys(this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]]);
             for (let key of keys) {
-                this.themeType(writer, key, this.mThemes.fontScheme.minorFontScheme.fontTypeface[`${key}`]);
+                this.themeType(writer, key, this.mThemes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]][fontTypefaceProperty[this.keywordIndex]][`${key}`]);
             }
             writer.writeEndElement();
             writer.writeEndElement();
@@ -780,10 +795,10 @@ export class WordExport {
         }
     }
     private themeFont(writer: XmlWriter, theme: any): void {
-        if (theme.name == 'latin' || theme.name == 'ea' || theme.name == 'cs') {
-            writer.writeStartElement(undefined, theme.name, this.aNamespace);
-            writer.writeAttributeString(undefined, 'typeface', undefined, theme.typeface);
-            writer.writeAttributeString(undefined, 'panose', undefined, theme.panose);
+        if (theme[nameProperty[this.keywordIndex]] == 'latin' || theme[nameProperty[this.keywordIndex]] == 'ea' || theme[nameProperty[this.keywordIndex]] == 'cs') {
+            writer.writeStartElement(undefined, theme[nameProperty[this.keywordIndex]], this.aNamespace);
+            writer.writeAttributeString(undefined, 'typeface', undefined, theme[typefaceProperty[this.keywordIndex]]);
+            writer.writeAttributeString(undefined, 'panose', undefined, theme[panoseProperty[this.keywordIndex]]);
             writer.writeEndElement();
         }
     }
@@ -850,7 +865,10 @@ export class WordExport {
         let multiText: string[] = text.split('\n');
         while (multiText.length > 0) {
             let block: any = {};
-            block.inlines = [{ text: multiText[0] }];
+            block[inlinesProperty[this.keywordIndex]] = [];
+            let inlines: any = {};
+            inlines[textProperty[this.keywordIndex]] = multiText[0];
+            block[inlinesProperty[this.keywordIndex]].push(inlines);
             blocks.push(block);
             multiText.splice(0, 1);
         }
@@ -892,23 +910,23 @@ export class WordExport {
     // Serialize the section properties.
     private serializeSectionProperties(writer: XmlWriter, section: any): void {
         writer.writeStartElement('w', 'sectPr', this.wNamespace);
-        if (section.headersFooters) {
-            this.serializeHFReference(writer, section.headersFooters);
+        if (section[headersFootersProperty[this.keywordIndex]]) {
+            this.serializeHFReference(writer, section[headersFootersProperty[this.keywordIndex]]);
         }
 
         // if (IsNeedToSerializeSectionFootNoteProperties(section))
         //     SerializeFootnoteProperties(section);
         // if (IsNeedToSerializeSectionEndNoteProperties(section))
         //     SerializeEndnoteProperties(section);
-        if (section.sectionFormat.breakCode === 'NoBreak') {
+        if (section[sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]] === 'NoBreak') {
             this.serializeSectionType(writer, 'continuous');
         } else {
             this.serializeSectionType(writer, 'nextPage');
         }
-        this.serializePageSetup(writer, section.sectionFormat);
-        this.serializeColumns(writer, section.sectionFormat);
-        this.serializeFootNotesPr(writer, section.sectionFormat);
-        this.serializeEndNotesPr(writer, section.sectionFormat);
+        this.serializePageSetup(writer, section[sectionFormatProperty[this.keywordIndex]]);
+        this.serializeColumns(writer, section[sectionFormatProperty[this.keywordIndex]]);
+        this.serializeFootNotesPr(writer, section[sectionFormatProperty[this.keywordIndex]]);
+        this.serializeEndNotesPr(writer, section[sectionFormatProperty[this.keywordIndex]]);
         // this.serializeSectionProtection(section);
 
         // if (section.PageSetup.VerticalAlignment !== PageAlignment.Top) {
@@ -932,14 +950,14 @@ export class WordExport {
         //     writer.WriteEndElement();
         // }
 
-        if (section.sectionFormat !== undefined && section.sectionFormat.differentFirstPage) {
+        if (section[sectionFormatProperty[this.keywordIndex]] !== undefined && HelperMethods.parseBoolValue(section[sectionFormatProperty[this.keywordIndex]][differentFirstPageProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'titlePg', this.wNamespace);
             writer.writeEndElement();
         }
 
         // SerializeTextDirection(section);
 
-        if (!isNullOrUndefined(section.sectionFormat) && section.sectionFormat.bidi) {
+        if (!isNullOrUndefined(section[sectionFormatProperty[this.keywordIndex]]) && HelperMethods.parseBoolValue(section[sectionFormatProperty[this.keywordIndex]][bidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
@@ -950,110 +968,116 @@ export class WordExport {
 
     }
     private serializeFootNotesPr(writer: XmlWriter, section: any): void {
-        if (section.footNoteNumberFormat || section.restartIndexForFootnotes) {
+        if (section[footNoteNumberFormatProperty[this.keywordIndex]] || section[restartIndexForFootnotesProperty[this.keywordIndex]]) {
             writer.writeStartElement(undefined, 'footnotePr', this.wNamespace);
 
             writer.writeStartElement(undefined, 'pos', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, 'pageBottom');
             writer.writeEndElement();
 
-            if (section.footNoteNumberFormat !== undefined) {
+            if (section[footNoteNumberFormatProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section.footNoteNumberFormat));
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section[footNoteNumberFormatProperty[this.keywordIndex]]));
                 writer.writeEndElement();
             }
-            if (section.restartIndexForFootnotes !== undefined) {
+            if (section[restartIndexForFootnotesProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForFootnotes));
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section[restartIndexForFootnotesProperty[this.keywordIndex]]));
                 writer.writeEndElement();
             }
-            if (section.initialFootNoteNumber !== undefined) {
+            if (section[initialFootNoteNumberProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numStart', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section.initialFootNoteNumber).toString());
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section[initialFootNoteNumberProperty[this.keywordIndex]]).toString());
                 writer.writeEndElement();
             }
             writer.writeEndElement();
         }
     }
 
-    private getFootNoteNumberFormat(numberFormat: string): string {
+    private getFootNoteNumberFormat(numberFormat: number | string): string {
         let patternType: string;
         switch (numberFormat) {
-        case 'UpperCaseRoman':
-            patternType = 'upperRoman';
-            break;
-        case 'LowerCaseRoman':
-            patternType = 'lowerRoman';
-            break;
-        case 'UpperCaseLetter':
-            patternType = 'upperLetter';
-            break;
-        case 'LowerCaseLetter':
-            patternType = 'lowerLetter';
-            break;
-        default:
-            patternType = 'decimal';
-            break;
+            case 'UpperCaseRoman':
+            case 1:
+                patternType = 'upperRoman';
+                break;
+            case 'LowerCaseRoman':
+            case 2:
+                patternType = 'lowerRoman';
+                break;
+            case 'UpperCaseLetter':
+            case 3:
+                patternType = 'upperLetter';
+                break;
+            case 'LowerCaseLetter':
+            case 4:
+                patternType = 'lowerLetter';
+                break;
+            default:
+                patternType = 'decimal';
+                break;
         }
         return patternType;
     }
 
 
-    private getFootNoteNumberRestart(numberRestart: string): string {
+    private getFootNoteNumberRestart(numberRestart: number | string): string {
         switch (numberRestart) {
-        case 'RestartForEachSection ':
-            return 'eachSect';
-        case 'RestartForEachPage':
-            return 'eachPage';
-        default:
-            return 'continuous';
+            case 'RestartForEachSection ':
+            case 1:
+                return 'eachSect';
+            case 'RestartForEachPage':
+            case 2:
+                return 'eachPage';
+            default:
+                return 'continuous';
         }
     }
 
     private getPageNumberFormat(numberFormat: string): string {
         let patternType: string;
         switch (numberFormat) {
-        case 'RomanUpper':
-            patternType = 'upperRoman';
-            break;
-        case 'RomanLower':
-            patternType = 'lowerRoman';
-            break;
-        case 'LetterUpper':
-            patternType = 'upperLetter';
-            break;
-        case 'LetterLower':
-            patternType = 'lowerLetter';
-            break;
-        default:
-            patternType = 'Arabic';
-            break;
+            case 'RomanUpper':
+                patternType = 'upperRoman';
+                break;
+            case 'RomanLower':
+                patternType = 'lowerRoman';
+                break;
+            case 'LetterUpper':
+                patternType = 'upperLetter';
+                break;
+            case 'LetterLower':
+                patternType = 'lowerLetter';
+                break;
+            default:
+                patternType = 'Arabic';
+                break;
         }
         return patternType;
     }
 
     // Serialize the Footnote Properties
     private serializeEndNotesPr(writer: XmlWriter, section: any): void {
-        if (section.endnoteNumberFormat || section.restartIndexForEndnotes) {
+        if (section[endnoteNumberFormatProperty[this.keywordIndex]] || section[restartIndexForEndnotesProperty[this.keywordIndex]]) {
             writer.writeStartElement(undefined, 'endnotePr', this.wNamespace);
 
             writer.writeStartElement(undefined, 'pos', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, 'docEnd');
             writer.writeEndElement();
 
-            if (section.endnoteNumberFormat !== undefined) {
+            if (section[endnoteNumberFormatProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section.endnoteNumberFormat));
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section[endnoteNumberFormatProperty[this.keywordIndex]]));
                 writer.writeEndElement();
             }
-            if (section.restartIndexForEndnotes !== undefined) {
+            if (section[restartIndexForEndnotesProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForEndnotes));
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section[restartIndexForEndnotesProperty[this.keywordIndex]]));
                 writer.writeEndElement();
             }
-            if (section.initialEndNoteNumber !== undefined) {
+            if (section[initialEndNoteNumberProperty[this.keywordIndex]] !== undefined) {
                 writer.writeStartElement(undefined, 'numStart', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section.initialEndNoteNumber).toString());
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section[initialEndNoteNumberProperty[this.keywordIndex]]).toString());
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -1062,21 +1086,21 @@ export class WordExport {
 
     // Serialize the column properties of section.
     private serializeColumns(writer: XmlWriter, sectionFormat: any): void {
-        if (sectionFormat.numberOfColumns !== undefined && sectionFormat.numberOfColumns > 1) {
+        if (sectionFormat[numberOfColumnsProperty[this.keywordIndex]] !== undefined && sectionFormat[numberOfColumnsProperty[this.keywordIndex]] > 1) {
             writer.writeStartElement(undefined, 'cols', this.wNamespace);
-            writer.writeAttributeString(undefined, 'num', this.wNamespace, sectionFormat.numberOfColumns.toString());
-            if (sectionFormat.lineBetweenColumns) {
+            writer.writeAttributeString(undefined, 'num', this.wNamespace, sectionFormat[numberOfColumnsProperty[this.keywordIndex]].toString());
+            if (HelperMethods.parseBoolValue(sectionFormat[lineBetweenColumnsProperty[this.keywordIndex]])) {
                 writer.writeAttributeString(undefined, 'sep', this.wNamespace, '1');
             }
-            if (sectionFormat.equalWidth) {
+            if (HelperMethods.parseBoolValue(sectionFormat[equalWidthProperty[this.keywordIndex]])) {
                 writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '1');
             } else {
                 writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '0');
-                if (sectionFormat.columns !== undefined && sectionFormat.columns.length > 0) {
-                    for (let i = 0; i < sectionFormat.columns.length; i++) {
+                if (sectionFormat[columnsProperty[this.keywordIndex]] !== undefined && sectionFormat[columnsProperty[this.keywordIndex]].length > 0) {
+                    for (let i = 0; i < sectionFormat[columnsProperty[this.keywordIndex]].length; i++) {
                         writer.writeStartElement(undefined, 'col', this.wNamespace);                        
-                        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(sectionFormat.columns[parseInt(i.toString(), 10)].width * this.twentiethOfPoint).toString());
-                        writer.writeAttributeString(undefined, 'space', this.wNamespace, this.roundToTwoDecimal(sectionFormat.columns[parseInt(i.toString(), 10)].space * this.twentiethOfPoint).toString());
+                        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(i.toString(), 10)][widthProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
+                        writer.writeAttributeString(undefined, 'space', this.wNamespace, this.roundToTwoDecimal(sectionFormat[columnsProperty[this.keywordIndex]][parseInt(i.toString(), 10)][spaceProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
                         writer.writeEndElement();
                     }
                 }
@@ -1136,9 +1160,9 @@ export class WordExport {
         //     }
         //     writer.WriteEndElement();
         // }
-        if (pageSetup.restartPageNumbering) {
+        if (HelperMethods.parseBoolValue(pageSetup[restartPageNumberingProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
-            writer.writeAttributeString(undefined, 'start', this.wNamespace, pageSetup.pageStartingNumber.toString());
+            writer.writeAttributeString(undefined, 'start', this.wNamespace, pageSetup[pageStartingNumberProperty[this.keywordIndex]].toString());
             writer.writeEndElement();
         }
         writer.writeStartElement(undefined, 'pgBorders', this.wNamespace);
@@ -1164,8 +1188,8 @@ export class WordExport {
     // serialize the page size
     private serializePageSize(writer: XmlWriter, pageSetup: any): void {
         writer.writeStartElement(undefined, 'pgSz', this.wNamespace);
-        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(pageSetup.pageWidth * this.twentiethOfPoint).toString());
-        writer.writeAttributeString(undefined, 'h', this.wNamespace, this.roundToTwoDecimal(pageSetup.pageHeight * this.twentiethOfPoint).toString());
+        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(pageSetup[pageWidthProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
+        writer.writeAttributeString(undefined, 'h', this.wNamespace, this.roundToTwoDecimal(pageSetup[pageHeightProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
 
         // if (pageSetup.Orientation === PageOrientation.Landscape)
         // {
@@ -1177,16 +1201,16 @@ export class WordExport {
     // Serialize the border.
     private serializePageMargins(writer: XmlWriter, pageSetup: any): void {
         writer.writeStartElement(undefined, 'pgMar', this.wNamespace);
-        let marginValue: number = Math.round(pageSetup.topMargin * this.twentiethOfPoint);
+        let marginValue: number = Math.round(pageSetup[topMarginProperty[this.keywordIndex]] * this.twentiethOfPoint);
         writer.writeAttributeString(undefined, 'top', this.wNamespace, marginValue.toString());
-        marginValue = Math.round(pageSetup.rightMargin * this.twentiethOfPoint);
+        marginValue = Math.round(pageSetup[rightMarginProperty[this.keywordIndex]] * this.twentiethOfPoint);
         writer.writeAttributeString(undefined, 'right', this.wNamespace, marginValue.toString());
-        marginValue = Math.round(pageSetup.bottomMargin * this.twentiethOfPoint);
+        marginValue = Math.round(pageSetup[bottomMarginProperty[this.keywordIndex]] * this.twentiethOfPoint);
         writer.writeAttributeString(undefined, 'bottom', this.wNamespace, marginValue.toString());
-        marginValue = Math.round(pageSetup.leftMargin * this.twentiethOfPoint);
+        marginValue = Math.round(pageSetup[leftMarginProperty[this.keywordIndex]] * this.twentiethOfPoint);
         writer.writeAttributeString(undefined, 'left', this.wNamespace, marginValue.toString());
-        writer.writeAttributeString(undefined, 'header', this.wNamespace, this.roundToTwoDecimal(pageSetup.headerDistance * this.twentiethOfPoint).toString());
-        writer.writeAttributeString(undefined, 'footer', this.wNamespace, this.roundToTwoDecimal(pageSetup.footerDistance * this.twentiethOfPoint).toString());
+        writer.writeAttributeString(undefined, 'header', this.wNamespace, this.roundToTwoDecimal(pageSetup[headerDistanceProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
+        writer.writeAttributeString(undefined, 'footer', this.wNamespace, this.roundToTwoDecimal(pageSetup[footerDistanceProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
 
         writer.writeAttributeString(undefined, 'gutter', this.wNamespace, '0');
 
@@ -1194,9 +1218,9 @@ export class WordExport {
     }
     //Serialize the page number type
     private serializePageNumberType(writer: XmlWriter, pageSetup: any): void {
-        if (pageSetup.pageNumberStyle !== undefined) {
+        if (pageSetup[pageNumberStyleProperty[this.keywordIndex]] !== undefined) {
             writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
-            writer.writeAttributeString(undefined, 'fmt', this.wNamespace, this.getPageNumberFormat(pageSetup.pageNumberStyle));
+            writer.writeAttributeString(undefined, 'fmt', this.wNamespace, this.getPageNumberFormat(pageSetup[pageNumberStyleProperty[this.keywordIndex]]));
             writer.writeEndElement();
         }
     }
@@ -1211,9 +1235,9 @@ export class WordExport {
 
         let hfId: string = '';
         if (headersFooters !== undefined) {
-            this.mDifferentFirstPage = this.section.sectionFormat.differentOddAndEvenPages;
-            let hf: any = headersFooters.firstPageHeader;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            this.mDifferentFirstPage = HelperMethods.parseBoolValue(this.section[sectionFormatProperty[this.keywordIndex]][differentOddAndEvenPagesProperty[this.keywordIndex]]);
+            let hf: any = headersFooters[firstPageHeaderProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'headerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'first');
                 hfId = this.getNextRelationShipID();
@@ -1221,8 +1245,8 @@ export class WordExport {
                 this.addHeaderFooter(hf, 'FirstPageHeader', hfId);
                 writer.writeEndElement();
             }
-            hf = headersFooters.firstPageFooter;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            hf = headersFooters[firstPageFooterProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'footerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'first');
                 hfId = this.getNextRelationShipID();
@@ -1230,8 +1254,8 @@ export class WordExport {
                 this.addHeaderFooter(hf, 'FirstPageFooter', hfId);
                 writer.writeEndElement();
             }
-            hf = headersFooters.evenHeader;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            hf = headersFooters[evenHeaderProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'headerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'even');
                 hfId = this.getNextRelationShipID();
@@ -1239,8 +1263,8 @@ export class WordExport {
                 this.addHeaderFooter(hf, 'EvenHeader', hfId);
                 writer.writeEndElement();
             }
-            hf = headersFooters.evenFooter;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            hf = headersFooters[evenFooterProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'footerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'even');
                 hfId = this.getNextRelationShipID();
@@ -1248,8 +1272,8 @@ export class WordExport {
                 this.addHeaderFooter(hf, 'EvenFooter', hfId);
                 writer.writeEndElement();
             }
-            hf = headersFooters.header;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            hf = headersFooters[headerProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'headerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'default');
                 hfId = this.getNextRelationShipID();
@@ -1257,8 +1281,8 @@ export class WordExport {
                 this.addHeaderFooter(hf, 'OddHeader', hfId);
                 writer.writeEndElement();
             }
-            hf = headersFooters.footer;
-            if (hf && hf.blocks && hf.blocks.length > 0) {
+            hf = headersFooters[footerProperty[this.keywordIndex]];
+            if (hf && hf[blocksProperty[this.keywordIndex]] && hf[blocksProperty[this.keywordIndex]].length > 0) {
                 writer.writeStartElement(undefined, 'footerReference', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'default');
                 hfId = this.getNextRelationShipID();
@@ -1296,62 +1320,62 @@ export class WordExport {
     /* eslint-disable-next-line max-len */
     private serializeContentProperties(writer: XmlWriter, contentProperties: any, items: any, isLastSection: boolean, inlines?: boolean): void {
         const repeatSdt: any = undefined;
-        if (!isNullOrUndefined(contentProperties.title)) {
+        if (!isNullOrUndefined(contentProperties[titleProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'alias', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.title);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties[titleProperty[this.keywordIndex]]);
             writer.writeEndElement();
             writer.writeStartElement(undefined, 'tag', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties.tag);
+            writer.writeAttributeString('w', 'val', this.wNamespace, contentProperties[tagProperty[this.keywordIndex]]);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.characterFormat)) {
-            this.serializeCharacterFormat(writer, items.contentControlProperties.characterFormat);
+        if (!isNullOrUndefined(contentProperties[characterFormatProperty[this.keywordIndex]])) {
+            this.serializeCharacterFormat(writer, items[contentControlPropertiesProperty[this.keywordIndex]][characterFormatProperty[this.keywordIndex]]);
         }
         // if (items.hasOwnProperty('blocks') && contentProperties.type !== 'CheckBox') {
         //     this.serializeContentParagraph(writer, items);
         // }
-        if (contentProperties.lockContents || contentProperties.lockContentControl) {
+        if (HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]]) || HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'lock', this.wNamespace);
-            if (contentProperties.lockContentControl && contentProperties.lockContents) {
+            if (HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]]) && HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtContentLocked');
-            } else if (contentProperties.lockContentControl) {
+            } else if (HelperMethods.parseBoolValue(contentProperties[lockContentControlProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'sdtLocked');
-            } else if (contentProperties.lockContents) {
+            } else if (HelperMethods.parseBoolValue(contentProperties[lockContentsProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'contentLocked');
             }
             writer.writeEndElement();
         }
-        if (contentProperties.hasPlaceHolderText && isNullOrUndefined(repeatSdt)) {
+        if (HelperMethods.parseBoolValue(contentProperties[hasPlaceHolderTextProperty[this.keywordIndex]]) && isNullOrUndefined(repeatSdt)) {
             writer.writeStartElement('w', 'placeholder', undefined);
             writer.writeAttributeString('w', 'docPart', this.wNamespace, undefined);
             writer.writeEndElement();
             writer.writeStartElement('w', 'showingPlcHdr', undefined);
             writer.writeEndElement();
         }
-        if (contentProperties.isTemporary) {
+        if (HelperMethods.parseBoolValue(contentProperties[isTemporaryProperty[this.keywordIndex]])) {
             writer.writeStartElement('w', 'temporary', undefined);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.appearance)) {
+        if (!isNullOrUndefined(contentProperties[appearanceProperty[this.keywordIndex]])) {
             writer.writeStartElement('w15', 'appearance', undefined);
-            writer.writeAttributeString('w15', 'val', undefined, contentProperties.appearance.toLowerCase());
+            writer.writeAttributeString('w15', 'val', undefined, this.keywordIndex == 1 ? this.getContentControlAppearance(contentProperties[appearanceProperty[this.keywordIndex]]).toLowerCase() : contentProperties[appearanceProperty[this.keywordIndex]].toLowerCase());
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.color)) {
+        if (!isNullOrUndefined(contentProperties[colorProperty[this.keywordIndex]])) {
             writer.writeStartElement('w15', 'color', undefined);
-            writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties.color));
+            writer.writeAttributeString('w', 'val', undefined, this.getColor(contentProperties[colorProperty[this.keywordIndex]]));
             writer.writeEndElement();
         }
-        if (contentProperties.multiline) {
+        if (HelperMethods.parseBoolValue(contentProperties[multiLineProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'text', this.wNamespace);
             writer.writeAttributeString('w', 'multiLine', this.wNamespace, '1');
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.xmlMapping)) {
-            if (contentProperties.xmlMapping.isMapped) {
+        if (!isNullOrUndefined(contentProperties[xmlMappingProperty[this.keywordIndex]])) {
+            if (HelperMethods.parseBoolValue(contentProperties[xmlMappingProperty[this.keywordIndex]][isMappedProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'dataBinding', this.wNamespace);
-                writer.writeAttributeString('w', 'xpath', undefined, contentProperties.xmlMapping.xPath);
-                writer.writeAttributeString('w', 'storeItemID', undefined, contentProperties.xmlMapping.storeItemId);
+                writer.writeAttributeString('w', 'xpath', undefined, contentProperties[xmlMappingProperty[this.keywordIndex]][xPathProperty[this.keywordIndex]]);
+                writer.writeAttributeString('w', 'storeItemID', undefined, contentProperties[xmlMappingProperty[this.keywordIndex]][storeItemIdProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
         }
@@ -1359,9 +1383,9 @@ export class WordExport {
             writer.writeStartElement('w', 'picture', this.wNamespace);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.uncheckedState || contentProperties.checkedState)) {
+        if (!isNullOrUndefined(contentProperties[uncheckedStateProperty[this.keywordIndex]] || contentProperties[checkedStateProperty[this.keywordIndex]])) {
             writer.writeStartElement('w14', 'checkbox', undefined);
-            if (contentProperties.isChecked) {
+            if (HelperMethods.parseBoolValue(contentProperties[isCheckedProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w14', 'checked', undefined);
                 writer.writeAttributeString('w14', 'val', undefined, '1');
                 writer.writeEndElement();
@@ -1371,30 +1395,30 @@ export class WordExport {
                 writer.writeEndElement();
             }
             writer.writeStartElement('w14', 'uncheckedState', undefined);
-            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.uncheckedState.value));
-            writer.writeAttributeString('w14', 'font', undefined, (contentProperties.uncheckedState.font));
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[uncheckedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
+            writer.writeAttributeString('w14', 'font', undefined, (contentProperties[uncheckedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]));
             writer.writeEndElement();
             writer.writeStartElement('w14', 'checkedState', undefined);
-            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties.checkedState.value));
-            writer.writeAttributeString('w14', 'font', undefined, contentProperties.checkedState.font);
+            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[checkedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
+            writer.writeAttributeString('w14', 'font', undefined, contentProperties[checkedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]);
             writer.writeEndElement();
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'DropDownList') {
-            const dropDownLists: any = contentProperties.contentControlListItems;
+        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]]) && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 5: 'DropDownList')) {
+            const dropDownLists: any = contentProperties[contentControlListItemsProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'dropDownList', this.wNamespace);
             this.serializeContentControlList(writer, dropDownLists);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(contentProperties.contentControlListItems) && contentProperties.type === 'ComboBox') {
-            const comboList: any = contentProperties.contentControlListItems;
+        if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]]) && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 3 : 'ComboBox')) {
+            const comboList: any = contentProperties[contentControlListItemsProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'comboBox', this.wNamespace);
             this.serializeContentControlList(writer, comboList);
             writer.writeEndElement();
         }
         this.serializeContentControlDate(writer, contentProperties);
-        if (!isNullOrUndefined(contentProperties.type)) {
-            if (contentProperties.type === 'Picture') {
+        if (!isNullOrUndefined(contentProperties[typeProperty[this.keywordIndex]])) {
+            if (contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 7 : 'Picture')) {
                 writer.writeStartElement(undefined, 'picture', this.wNamespace);
                 writer.writeEndElement();
             }
@@ -1405,29 +1429,29 @@ export class WordExport {
             return;
         }
         /* eslint-disable */
-        if (items.hasOwnProperty('blocks') && (isNullOrUndefined(items.cellFormat))) {
-            for (let i: number = 0; i < items.blocks.length; i++) {
-                const block: any = items.blocks[i];
-                if (block.hasOwnProperty('inlines')) {
+        if (items.hasOwnProperty(blocksProperty[this.keywordIndex]) && (isNullOrUndefined(items[cellFormatProperty[this.keywordIndex]]))) {
+            for (let i: number = 0; i < items[blocksProperty[this.keywordIndex]].length; i++) {
+                const block: any = items[blocksProperty[this.keywordIndex]][i];
+                if (block.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
                     this.paragraph = block;
                     this.serializeParagraph(writer, block, isLastSection);
                     this.paragraph = undefined;
-                } else if (block.hasOwnProperty('rowFormat')) {
+                } else if (block.hasOwnProperty(rowFormatProperty[this.keywordIndex])) {
                     const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
                     this.serializeRow(writer, block, mVerticalMerge);
-                } else if (block.hasOwnProperty('contentControlProperties')) {
-                    this.serializeContentControl(writer, block.contentControlProperties, block, isLastSection);
+                } else if (block.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+                    this.serializeContentControl(writer, block[contentControlPropertiesProperty[this.keywordIndex]], block, isLastSection);
                 } else {
                     const table: any = block;
                     this.serializeTable(writer, table);
                 }
             }
-        } else if (items.hasOwnProperty('rowFormat')) {
-            if (items.cells.length > 0) {
+        } else if (items.hasOwnProperty(rowFormatProperty[this.keywordIndex])) {
+            if (items[cellsProperty[this.keywordIndex]].length > 0) {
                 const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
                 this.serializeRow(writer, items, mVerticalMerge);
             }
-        } else if (items.hasOwnProperty('cellFormat')) {
+        } else if (items.hasOwnProperty(cellFormatProperty[this.keywordIndex])) {
             const mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
             this.serializeCell(writer, items, mVerticalMerge);
         }
@@ -1442,22 +1466,22 @@ export class WordExport {
     private serializeContentControlList(writer: XmlWriter, lists: any): void {
         for (let i: number = 0; i < lists.length; i++) {
             writer.writeStartElement(undefined, 'listItem', this.wNamespace);
-            if (!isNullOrUndefined(lists[i].displayText)) {
-                writer.writeAttributeString('w', 'displayText', this.wNamespace, lists[i].displayText);
+            if (!isNullOrUndefined(lists[i][displayTextProperty[this.keywordIndex]])) {
+                writer.writeAttributeString('w', 'displayText', this.wNamespace, lists[i][displayTextProperty[this.keywordIndex]]);
             }
-            writer.writeAttributeString('w', 'value', this.wNamespace, lists[i].value);
+            writer.writeAttributeString('w', 'value', this.wNamespace, lists[i][valueProperty[this.keywordIndex]]);
             writer.writeEndElement();
         }
     }
     //Serialize character formatfor content control
     private serializeContentParagraph(writer: XmlWriter, items: any): any {
-        for (let i: number = 0; i < items.blocks.length; i++) {
-            const blocks: any = items.blocks[i];
-            if (blocks.hasOwnProperty('inlines')) {
-                for (let j: number = 0; j < blocks.inlines.length; j++) {
-                    const inlines: any = blocks.inlines[j];
-                    if (!isNullOrUndefined(inlines.characterFormat)) {
-                        this.serializeCharacterFormat(writer, inlines.characterFormat);
+        for (let i: number = 0; i < items[blocksProperty[this.keywordIndex]].length; i++) {
+            const blocks: any = items[blocksProperty[this.keywordIndex]][i];
+            if (blocks.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
+                for (let j: number = 0; j < blocks[inlinesProperty[this.keywordIndex]].length; j++) {
+                    const inlines: any = blocks[inlinesProperty[this.keywordIndex]][j];
+                    if (!isNullOrUndefined(inlines[characterFormatProperty[this.keywordIndex]])) {
+                        this.serializeCharacterFormat(writer, inlines[characterFormatProperty[this.keywordIndex]]);
                     }
                 }
             }
@@ -1465,26 +1489,26 @@ export class WordExport {
     }
     // serialize content control date property
     private serializeContentControlDate(writer: XmlWriter, contentProperties: any): any {
-        if (contentProperties.type === 'Date') {
+        if (contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 4 : 'Date')) {
             writer.writeStartElement('w', 'date', this.wNamespace);
-            if (!isNullOrUndefined(contentProperties.dateDisplayFormat)) {
+            if (!isNullOrUndefined(contentProperties[dateCalendarTypeProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'calender', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateCalendarType);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.keywordIndex == 1 ? this.getDateCalendarType(contentProperties[dateCalendarTypeProperty[this.keywordIndex]]): contentProperties[dateCalendarTypeProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
-            if (!isNullOrUndefined(contentProperties.dateDisplayLocale)) {
+            if (!isNullOrUndefined(contentProperties[dateDisplayLocaleProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'lid', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayLocale);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties[dateDisplayLocaleProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
-            if (!isNullOrUndefined(contentProperties.dateStorageFormat)) {
+            if (!isNullOrUndefined(contentProperties[dateStorageFormatProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'storeMappedDataAs', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateStorageFormat);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.keywordIndex == 1 ? this.getDateStorageFormat(contentProperties[dateStorageFormatProperty[this.keywordIndex]]): contentProperties[dateStorageFormatProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
-            if (!isNullOrUndefined(contentProperties.dateCalendarType)) {
+            if (!isNullOrUndefined(contentProperties[dateDisplayFormatProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'dateFormat', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties.dateDisplayFormat);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, contentProperties[dateDisplayFormatProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -1495,16 +1519,16 @@ export class WordExport {
         if (isNullOrUndefined(item)) {
             throw new Error('BodyItem should not be undefined');
         }
-        if (item.hasOwnProperty('contentControlProperties')) {
-            this.serializeContentControl(writer, item.contentControlProperties, item, isLastSection);
-        } else if (item.hasOwnProperty('inlines')) {
+        if (item.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+            this.serializeContentControl(writer, item[contentControlPropertiesProperty[this.keywordIndex]], item, isLastSection);
+        } else if (item.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
             this.paragraph = item;
             this.serializeParagraph(writer, item, isLastSection);
             this.paragraph = undefined;
         } else {
             const table: any = item;
-            for (let i: number = 0; i < table.rows.length; i++) {
-                if (table.rows[i].cells.length > 0) {
+            for (let i: number = 0; i < table[rowsProperty[this.keywordIndex]].length; i++) {
+                if (table[rowsProperty[this.keywordIndex]][i][cellsProperty[this.keywordIndex]].length > 0) {
                     this.serializeTable(writer, table);
                     break;
                 }
@@ -1513,8 +1537,8 @@ export class WordExport {
         const sec: any = this.blockOwner;
 
         //Need to write the Section Properties if the Paragraph is last item in the section
-        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
-            && sec.blocks.indexOf(item) === sec.blocks.length - 1) {
+        if (!isLastSection && sec.hasOwnProperty(sectionFormatProperty[this.keywordIndex])
+            && sec[blocksProperty[this.keywordIndex]].indexOf(item) === sec[blocksProperty[this.keywordIndex]].length - 1) {
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeStartElement(undefined, 'pPr', this.wNamespace);
 
@@ -1542,28 +1566,30 @@ export class WordExport {
             writer.writeAttributeString('w14', 'paraId', undefined, this.commentParaID.toString());
         }
         writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-        if (!isNullOrUndefined(paragraph.paragraphFormat)) {
-            this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        if (!isNullOrUndefined(paragraph[paragraphFormatProperty[this.keywordIndex]])) {
+            this.serializeParagraphFormat(writer, paragraph[paragraphFormatProperty[this.keywordIndex]], paragraph);
         }
-        if (!isNullOrUndefined(paragraph.characterFormat)) {
-            this.serializeCharacterFormat(writer, paragraph.characterFormat);
+        if (!isNullOrUndefined(paragraph[characterFormatProperty[this.keywordIndex]])) {
+            this.serializeCharacterFormat(writer, paragraph[characterFormatProperty[this.keywordIndex]]);
         }
         writer.writeEndElement(); //end of pPr
 
         // Serialize watermark if paragraph is the first item of Header document.
         // EnsureWatermark(paragraph);
         this.prevRevisionIds = [];
-        this.serializeParagraphItems(writer, paragraph.inlines);
-        writer.writeEndElement(); //end of paragraph tag.
-
+        this.serializeParagraphItems(writer, paragraph[inlinesProperty[this.keywordIndex]]);
+        if (!this.isBookmarkAtEnd && !this.isBookmarkAtRowEnd) {
+            writer.writeEndElement(); //end of paragraph tag.
+        }
+        this.isBookmarkAtEnd = false;
     }
     //Serialize Revision start
     private serializeRevisionStart(writer: XmlWriter, item: any, previousNode: any): void {
-        if (item.hasOwnProperty('revisionIds')) {
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0) && isNullOrUndefined(item.revisionIds))) {
+        if (item.hasOwnProperty(revisionIdsProperty[this.keywordIndex])) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty(bookmarkTypeProperty[this.keywordIndex]) && (previousNode[bookmarkTypeProperty[this.keywordIndex]] === 0 && !(previousNode[nameProperty[this.keywordIndex]].indexOf('_Toc') >= 0) && isNullOrUndefined(item[revisionIdsProperty[this.keywordIndex]]))) {
                 return;
             }
-            const ids: string[] = item.revisionIds;
+            const ids: string[] = item[revisionIdsProperty[this.keywordIndex]];
 
             for (let i: number = 0; i < ids.length; i++) {
                 const revision: Revision = this.retrieveRevision(ids[i]);
@@ -1600,20 +1626,20 @@ export class WordExport {
         let isContinueOverride: boolean = false;
         for (let i: number = 0; i < paraItems.length; i++) {
             const item: any = paraItems[i];
-            if (item.hasOwnProperty('contentControlProperties')) {
+            if (item.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
                 inlines = true;
-                this.serializeContentControl(writer, item.contentControlProperties, item, undefined, inlines);
-                this.serializeParagraphItems(writer, item.inlines);
+                this.serializeContentControl(writer, item[contentControlPropertiesProperty[this.keywordIndex]], item, undefined, inlines);
+                this.serializeParagraphItems(writer, item[inlinesProperty[this.keywordIndex]]);
             }
-            if (item.hasOwnProperty('inlines')) {
+            if (item.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
                 this.serializeParagraphItems(writer, item);
             }
             this.serializeRevisionStart(writer, item, previousNode);
             let isBdo: boolean = false;
-            if (item.characterFormat) {
-                isBdo = !isNullOrUndefined(item.characterFormat.bdo) && item.characterFormat.bdo !== 'None';
+            if (item[characterFormatProperty[this.keywordIndex]]) {
+                isBdo = !isNullOrUndefined(item[characterFormatProperty[this.keywordIndex]][bdoProperty[this.keywordIndex]]) && item[characterFormatProperty[this.keywordIndex]][bdoProperty[this.keywordIndex]] !== 0;
                 if (isBdo && !isContinueOverride) {
-                    this.serializeBiDirectionalOverride(writer, item.characterFormat);
+                    this.serializeBiDirectionalOverride(writer, item[characterFormatProperty[this.keywordIndex]]);
                     isContinueOverride = true;
                 }
             }
@@ -1621,26 +1647,26 @@ export class WordExport {
                 writer.writeEndElement();
                 isContinueOverride = false;
             }
-            if (item.hasOwnProperty('fieldType')) {
+            if (item.hasOwnProperty(fieldTypeProperty[this.keywordIndex])) {
                 this.serializeFieldCharacter(writer, item);
-            } else if (item.hasOwnProperty('imageString')) {
+            } else if (item.hasOwnProperty(imageStringProperty[this.keywordIndex])) {
                 this.serializePicture(writer, item);
-            } else if (item.hasOwnProperty('shapeId')) {
+            } else if (item.hasOwnProperty(shapeIdProperty[this.keywordIndex])) {
                 const currentParargaph: any = this.paragraph;
                 this.serializeShape(writer, item);
                 this.paragraph = currentParargaph;
-            } else if (item.hasOwnProperty('bookmarkType')) {
+            } else if (item.hasOwnProperty(bookmarkTypeProperty[this.keywordIndex])) {
                 this.serializeBookMark(writer, item);
-            } else if (item.hasOwnProperty('editRangeId')) {
+            } else if (item.hasOwnProperty(editRangeIdProperty[this.keywordIndex])) {
                 this.serializeEditRange(writer, item);
-            } else if (item.hasOwnProperty('chartType')) {
+            } else if (item.hasOwnProperty(chartTypeProperty[this.keywordIndex])) {
                 this.chart = item;
                 this.serializeChart(writer, item);
                 // chart.xml
                 this.serializeChartStructure();
-            } else if (item.hasOwnProperty('commentCharacterType')) {
+            } else if (item.hasOwnProperty(commentCharacterTypeProperty[this.keywordIndex])) {
                 this.serializeComment(writer, item);
-            } else if (item.hasOwnProperty('footnoteType')) {
+            } else if (item.hasOwnProperty(footnoteTypeProperty[this.keywordIndex])) {
                 this.serializeEFReference(writer, item);
             } else {
                 this.serializeTextRange(writer, item, previousNode);
@@ -1660,12 +1686,12 @@ export class WordExport {
     }
     private serializeEFReference(writer: XmlWriter, item: any): void {
         let efId: string = '';
-        const ef: any = item.blocks;
-        if (item.footnoteType === 'Footnote') {
+        const ef: any = item[blocksProperty[this.keywordIndex]];
+        if (item[footnoteTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Footnote')) {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
-            this.serializeCharacterFormat(writer, item.characterFormat);
+            this.serializeCharacterFormat(writer, item[characterFormatProperty[this.keywordIndex]]);
             writer.writeStartElement(undefined, 'footnoteReference', this.wNamespace);
-            if(this.document.footnotes.continuationNotice && this.efRelationShipId === 0) {
+            if(this.document[footnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]] && this.efRelationShipId === 0) {
                 this.efRelationShipId = 1;
             }
             efId = this.getEFNextRelationShipID();
@@ -1675,7 +1701,7 @@ export class WordExport {
             writer.writeEndElement();
         } else {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
-            this.serializeCharacterFormat(writer, item.characterFormat);
+            this.serializeCharacterFormat(writer, item[characterFormatProperty[this.keywordIndex]]);
             writer.writeStartElement(undefined, 'endnoteReference', this.wNamespace);
             efId = this.getEFNextRelationShipID();
             writer.writeAttributeString(undefined, 'id', this.wNamespace, efId);
@@ -1786,7 +1812,7 @@ export class WordExport {
         writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
     }
     private serializeFootnotes(): any {
-        if (isNullOrUndefined(this.document.footnotes)) {
+        if (isNullOrUndefined(this.document[footnotesProperty[this.keywordIndex]])) {
             return;
         } else {
             const writer: XmlWriter = new XmlWriter();
@@ -1795,18 +1821,18 @@ export class WordExport {
             writer.writeStartElement('w', 'footnote', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'separator');
             writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
-            this.serializeBodyItems(writer, this.document.footnotes.separator, true);
+            this.serializeBodyItems(writer, this.document[footnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]], true);
             writer.writeEndElement();
             writer.writeStartElement('w', 'footnote', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationSeparator');
             writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
-            this.serializeBodyItems(writer, this.document.footnotes.continuationSeparator, true);
+            this.serializeBodyItems(writer, this.document[footnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]], true);
             writer.writeEndElement();
-            if (this.document.footnotes.continuationNotice) {
+            if (this.document[footnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]]) {
                 writer.writeStartElement('w', 'footnote', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationNotice');
                 writer.writeAttributeString(undefined, 'id', this.wNamespace, '1');
-                this.serializeBodyItems(writer, this.document.footnotes.continuationNotice, true);
+                this.serializeBodyItems(writer, this.document[footnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]], true);
                 writer.writeEndElement();
             }
             this.serializeEndnotesFootnote(writer, 'footnote');
@@ -1816,7 +1842,7 @@ export class WordExport {
         }
     }
     private serializeEndnotes(): any {
-        if (isNullOrUndefined(this.document.endnotes)) {
+        if (isNullOrUndefined(this.document[endnotesProperty[this.keywordIndex]])) {
             return;
         } else {
             const writer: XmlWriter = new XmlWriter();
@@ -1825,18 +1851,18 @@ export class WordExport {
             writer.writeStartElement('w', 'endnote', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'separator');
             writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
-            this.serializeBodyItems(writer, this.document.endnotes.separator, true);
+            this.serializeBodyItems(writer, this.document[endnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]], true);
             writer.writeEndElement();
             writer.writeStartElement('w', 'endnote', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationSeparator');
             writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
-            this.serializeBodyItems(writer, this.document.endnotes.continuationSeparator, true);
+            this.serializeBodyItems(writer, this.document[endnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]], true);
             writer.writeEndElement();
-            if (this.document.endnotes.continuationNotice) {
+            if (this.document[endnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]]) {
                 writer.writeStartElement('w', 'endnote', this.wNamespace);
                 writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationNotice');
                 writer.writeAttributeString(undefined, 'id', this.wNamespace, '1');
-                this.serializeBodyItems(writer, this.document.endnotes.continuationNotice, true);
+                this.serializeBodyItems(writer, this.document[endnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]], true);
                 writer.writeEndElement();
             }
             this.serializeEndnotesFootnote(writer, 'endnote');
@@ -1847,12 +1873,12 @@ export class WordExport {
     }
     //Serialize Revision end
     private serializeRevisionEnd(writer: XmlWriter, item: any, previousNode: any): void {
-        if (item.hasOwnProperty('revisionIds')) {
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0)) {
+        if (item.hasOwnProperty(revisionIdsProperty[this.keywordIndex])) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && (previousNode[fieldTypeProperty[this.keywordIndex]] === 0 && item[textProperty[this.keywordIndex]].indexOf('TOC') >= 0)) {
                 return;
             }
-            for (let i: number = 0; i < item.revisionIds.length; i++) {
-                const revision: Revision = this.retrieveRevision(item.revisionIds[i]);
+            for (let i: number = 0; i < item[revisionIdsProperty[this.keywordIndex]].length; i++) {
+                const revision: Revision = this.retrieveRevision(item[revisionIdsProperty[this.keywordIndex]][i]);
                 if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {
                     writer.writeEndElement();
                 }
@@ -1862,18 +1888,18 @@ export class WordExport {
     // Serialize the comment
     private serializeComment(writer: XmlWriter, comment: any): void {
         if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
-            if (comment.commentCharacterType === 0) {
+            if (comment[commentCharacterTypeProperty[this.keywordIndex]] === 0) {
                 writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
-            } else if (comment.commentCharacterType === 1) {
+            } else if (comment[commentCharacterTypeProperty[this.keywordIndex]] === 1) {
                 writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
             }
-            let commentId: number = this.commentId[comment.commentId];
+            let commentId: number = this.commentId[comment[commentIdProperty[this.keywordIndex]]];
             if (isNullOrUndefined(commentId)) {
-                commentId = this.commentId[comment.commentId] = this.currentCommentId++;
+                commentId = this.commentId[comment[commentIdProperty[this.keywordIndex]]] = this.currentCommentId++;
             }
             writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
             writer.writeEndElement();
-            if (comment.commentCharacterType === 1) {
+            if (comment[commentCharacterTypeProperty[this.keywordIndex]] === 1) {
                 this.serializeCommentItems(writer, commentId);
             }
         }
@@ -1888,39 +1914,54 @@ export class WordExport {
 
     private serializeBiDirectionalOverride(writer: any, characterFormat: any): void {
         writer.writeStartElement(undefined, 'bdo', this.wNamespace);
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, characterFormat.bdo.toLowerCase());
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, this.keywordIndex == 1 ? this.getBiDirectionalOverride(characterFormat[bdoProperty[this.keywordIndex]]).toLowerCase() : characterFormat[bdoProperty[this.keywordIndex]].toLowerCase());
     }
     // Serialize Document Protection
     //<w:permStart w:id="627587516" w:edGrp="everyone" />
     private serializeEditRange(writer: XmlWriter, editElement: any): void {
-        if (editElement.hasOwnProperty('editableRangeStart')) {
+        if (editElement.hasOwnProperty(editableRangeStartProperty[this.keywordIndex])) {
             writer.writeStartElement('w', 'permEnd', this.wNamespace);
         } else {
             writer.writeStartElement('w', 'permStart', this.wNamespace);
-            if (editElement.user && editElement.user !== '') {
-                writer.writeAttributeString('w', 'ed', this.wNamespace, editElement.user);
+            if (editElement[userProperty[this.keywordIndex]] && editElement[userProperty[this.keywordIndex]] !== '') {
+                writer.writeAttributeString('w', 'ed', this.wNamespace, editElement[userProperty[this.keywordIndex]]);
             }
-            if (editElement.group && editElement.group !== '') {
-                writer.writeAttributeString('w', 'edGrp', this.wNamespace, editElement.group.toLowerCase());
+            if (editElement[groupProperty[this.keywordIndex]] && editElement[groupProperty[this.keywordIndex]] !== '') {
+                writer.writeAttributeString('w', 'edGrp', this.wNamespace, editElement[groupProperty[this.keywordIndex]].toLowerCase());
             }
-            if (editElement.columnFirst && editElement.columnFirst !== -1) {
-                writer.writeAttributeString('w', 'colFirst', this.wNamespace, editElement.columnFirst.toString());
+            if (editElement[columnFirstProperty[this.keywordIndex]] && editElement[columnFirstProperty[this.keywordIndex]] !== -1) {
+                writer.writeAttributeString('w', 'colFirst', this.wNamespace, editElement[columnFirstProperty[this.keywordIndex]].toString());
             }
-            if (editElement.columnLast && editElement.columnLast !== -1) {
-                writer.writeAttributeString('w', 'colLast', this.wNamespace, editElement.columnLast.toString());
+            if (editElement[columnLastProperty[this.keywordIndex]] && editElement[columnLastProperty[this.keywordIndex]] !== -1) {
+                writer.writeAttributeString('w', 'colLast', this.wNamespace, editElement[columnLastProperty[this.keywordIndex]].toString());
             }
         }
-        writer.writeAttributeString('w', 'id', this.wNamespace, editElement.editRangeId);
+        writer.writeAttributeString('w', 'id', this.wNamespace, editElement[editRangeIdProperty[this.keywordIndex]]);
         writer.writeEndElement();
     }
     // Serialize the book mark
     private serializeBookMark(writer: XmlWriter, bookmark: any): void {
-        const bookmarkId: number = this.getBookmarkId(bookmark.name);
-        const bookmarkName: string = bookmark.name;
-        if (bookmark.bookmarkType === 0) {
+        const bookmarkId: number = this.getBookmarkId(bookmark[nameProperty[this.keywordIndex]]);
+        const bookmarkName: string = bookmark[nameProperty[this.keywordIndex]];
+        if (bookmark[bookmarkTypeProperty[this.keywordIndex]] === 0) {
             writer.writeStartElement('w', 'bookmarkStart', this.wNamespace);
             writer.writeAttributeString('w', 'name', this.wNamespace, bookmarkName);
-        } else if (bookmark.bookmarkType === 1) {
+            if(!isNullOrUndefined(bookmark[propertiesProperty[this.keywordIndex]])){
+                writer.writeAttributeString('w', 'colFirst', this.wNamespace, bookmark[propertiesProperty[this.keywordIndex]][columnFirstProperty[this.keywordIndex]].toString());
+                writer.writeAttributeString('w', 'colLast', this.wNamespace, bookmark[propertiesProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]].toString());
+            }
+        } else if (bookmark[bookmarkTypeProperty[this.keywordIndex]] === 1) {
+            if (!isNullOrUndefined(bookmark[propertiesProperty[this.keywordIndex]])) {
+                if (HelperMethods.parseBoolValue(bookmark[propertiesProperty[this.keywordIndex]][isAfterParagraphMarkProperty[this.keywordIndex]])) {
+                    writer.writeEndElement();
+                    this.isBookmarkAtEnd = true;
+                } else if (HelperMethods.parseBoolValue(bookmark[propertiesProperty[this.keywordIndex]][isAfterRowMarkProperty[this.keywordIndex]])) {
+                    writer.writeEndElement();
+                    writer.writeEndElement();
+                    writer.writeEndElement();
+                    this.isBookmarkAtRowEnd = true;
+                }
+            }
             writer.writeStartElement('w', 'bookmarkEnd', this.wNamespace);
         }
         writer.writeAttributeString('w', 'id', this.wNamespace, bookmarkId.toString());
@@ -1936,17 +1977,17 @@ export class WordExport {
     }
     // Serialize the picture.
     private serializePicture(writer: XmlWriter, image: any): void {
-        if (image.width >= 0 && image.height >= 0) {
+        if (image[widthProperty[this.keywordIndex]] >= 0 && image[heightProperty[this.keywordIndex]] >= 0) {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
-            this.serializeCharacterFormat(writer, image.characterFormat);
+            this.serializeCharacterFormat(writer, image[characterFormatProperty[this.keywordIndex]]);
             this.serializeDrawing(writer, image);
             writer.writeEndElement(); //end of run element
         }
     }
     private serializeShape(writer: XmlWriter, item: any): void {
-        if (item.width >= 0 && item.height >= 0) {
+        if (item[widthProperty[this.keywordIndex]] >= 0 && item[heightProperty[this.keywordIndex]] >= 0) {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
-            this.serializeCharacterFormat(writer, item.characterFormat);
+            this.serializeCharacterFormat(writer, item[characterFormatProperty[this.keywordIndex]]);
             this.serializeDrawing(writer, item);
             writer.writeEndElement(); //end of run element
         }
@@ -1954,10 +1995,10 @@ export class WordExport {
     // Serialize the drawing element.
     private serializeDrawing(writer: XmlWriter, draw: any): void {
         writer.writeStartElement(undefined, 'drawing', this.wNamespace);
-        if (draw.hasOwnProperty('chartType')) {
+        if (draw.hasOwnProperty(chartTypeProperty[this.keywordIndex])) {
             this.serializeInlineCharts(writer, draw);
         } else {
-            if (draw.textWrappingStyle === 'Inline') {
+            if (draw[textWrappingStyleProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Inline')) {
                 this.serializeInlinePictureAndShape(writer, draw);
             } else {
                 this.serializeWrappingPictureAndShape(writer, draw);
@@ -1970,56 +2011,59 @@ export class WordExport {
         writer.writeStartElement('wp', 'anchor', this.wpNamespace);
         this.serializePictureAndShapeDistance(writer, picture);
         writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
-        writer.writeAttributeString(undefined, 'relativeHeight', undefined, picture.zOrderPosition ? Math.abs(picture.zOrderPosition).toString() : '0');
-        let behindText: boolean = (picture.textWrappingStyle && picture.textWrappingStyle === 'Behind');
+        writer.writeAttributeString(undefined, 'relativeHeight', undefined, picture[zOrderPositionProperty[this.keywordIndex]] ? Math.abs(picture[zOrderPositionProperty[this.keywordIndex]]).toString() : '0');
+        let behindText: boolean = (picture[textWrappingStyleProperty[this.keywordIndex]] && picture[textWrappingStyleProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 4 : 'Behind'));
         writer.writeAttributeString(undefined, 'behindDoc', undefined, behindText ? '1' : '0');
-        const lockAnchor: string = (picture.LockAnchor) ? '1' : '0';
+        // LockAnchor & LayoutInCell & AllowOverlap in these boolean has 0 and 1 as values.If the value is null or undefined then set the default value as 0.
+        const lockAnchor: string = this.keywordIndex == 1 ? !isNullOrUndefined(picture[lockAnchorProperty[this.keywordIndex]]) ? picture[lockAnchorProperty[this.keywordIndex]].toString() : '0' : (picture[lockAnchorProperty[this.keywordIndex]]) ? '1' : '0';
         writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
-        const layoutcell: string = (picture.layoutInCell) ? '1' : '0';
+        const layoutcell: string = this.keywordIndex == 1 ? !isNullOrUndefined(picture[layoutInCellProperty[this.keywordIndex]]) ? picture[layoutInCellProperty[this.keywordIndex]].toString() : '0' : (picture[layoutInCellProperty[this.keywordIndex]]) ? '1' : '0';
         writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
-        const allowOverlap: string = (picture.allowOverlap) ? '1' : '0';
+        const allowOverlap: string = this.keywordIndex == 1 ? !isNullOrUndefined(picture[allowOverlapProperty[this.keywordIndex]]) ? picture[allowOverlapProperty[this.keywordIndex]].toString() : '0' : (picture[allowOverlapProperty[this.keywordIndex]]) ? '1' : '0';
         writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
         writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
         writer.writeAttributeString(undefined, 'x', undefined, '0');
         writer.writeAttributeString(undefined, 'y', undefined, '0');
         writer.writeEndElement();
         writer.writeStartElement('wp', 'positionH', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", picture.horizontalOrigin.toString()));
-        if (picture.horizontalAlignment === 'None') {
+        let horizontalOrigin: string = this.keywordIndex == 1 ? this.getHorizontalOrigin(picture[horizontalOriginProperty[this.keywordIndex]]) : picture[horizontalOriginProperty[this.keywordIndex]].toString();
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", horizontalOrigin));
+        if (picture[horizontalAlignmentProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'None')) {
             writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-            const horPos: number = Math.round(picture.horizontalPosition * this.emusPerPoint);
+            const horPos: number = Math.round(picture[horizontalPositionProperty[this.keywordIndex]] * this.emusPerPoint);
             writer.writeString(horPos.toString());
             writer.writeEndElement(); //end of posOffset
         } else {
             writer.writeStartElement('wp', 'align', this.wpNamespace);
-            const horAlig: string = picture.horizontalAlignment.toString().toLowerCase();
-            writer.writeString(horAlig);
+            const horAlig: string = this.keywordIndex == 1 ? this.getShapeHorizontalAlignment(picture[horizontalAlignmentProperty[this.keywordIndex]]) : picture[horizontalAlignmentProperty[this.keywordIndex]].toString();
+            writer.writeString(horAlig.toLowerCase());
             writer.writeEndElement(); //end of align
         }
         writer.writeEndElement(); //end of postionH
         writer.writeStartElement('wp', 'positionV', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", picture.verticalOrigin.toString()));
-        if (picture.verticalAlignment === 'None') {
+        let verticalOrigin: string = this.keywordIndex == 1 ? this.getVerticalOrigin(picture[verticalOriginProperty[this.keywordIndex]]) : picture[verticalOriginProperty[this.keywordIndex]].toString();
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", verticalOrigin));
+        if (picture[verticalAlignmentProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'None')) {
             writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-            const vertPos: number = Math.round(picture.verticalPosition * this.emusPerPoint);
+            const vertPos: number = Math.round(picture[verticalPositionProperty[this.keywordIndex]] * this.emusPerPoint);
             writer.writeString(vertPos.toString());
             writer.writeEndElement(); // end of posOffset
         } else {
             writer.writeStartElement('wp', 'align', this.wpNamespace);
-            const verAlig: string = picture.verticalAlignment.toString().toLowerCase();
-            writer.writeString(verAlig);
+            const verAlig: string = this.keywordIndex == 1 ? this.getShapeVerticalAlignment(picture[verticalAlignmentProperty[this.keywordIndex]]) : picture[verticalAlignmentProperty[this.keywordIndex]];
+            writer.writeString(verAlig.toLowerCase());
             writer.writeEndElement(); //end of align
         }
         writer.writeEndElement(); //end of postionV
 
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        const cx: number = Math.round(picture.width * this.emusPerPoint);
+        const cx: number = Math.round(picture[widthProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        const cy: number = Math.round(picture.height * this.emusPerPoint);
+        const cy: number = Math.round(picture[heightProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
 
-        if (!isNullOrUndefined(picture.imageString)) {
+        if (!isNullOrUndefined(picture[imageStringProperty[this.keywordIndex]])) {
             // this.serializePicProperties(writer, draw);
             this.serializeShapeWrapStyle(writer, picture);
             this.serializeDrawingGraphics(writer, picture);
@@ -2034,9 +2078,9 @@ export class WordExport {
         writer.writeStartElement(undefined, 'inline', this.wpNamespace);
         this.writeDefaultDistAttribute(writer);
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        const cx: number = Math.round(draw.width * this.emusPerPoint);
+        const cx: number = Math.round(draw[widthProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        const cy: number = Math.round(draw.height * this.emusPerPoint);
+        const cy: number = Math.round(draw[heightProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         // double borderWidth = (double)picture.PictureShape.PictureDescriptor.BorderLeft.LineWidth / DLSConstants.BorderLineFactor;
@@ -2052,7 +2096,7 @@ export class WordExport {
         // }
         //this.serializePicProperties(writer, image);
 
-        if (!isNullOrUndefined(draw.imageString)) {
+        if (!isNullOrUndefined(draw[imageStringProperty[this.keywordIndex]])) {
             this.serializeShapeWrapStyle(writer, draw);
             this.serializeDrawingGraphics(writer, draw);
         } else {
@@ -2061,13 +2105,13 @@ export class WordExport {
         writer.writeEndElement();
     }
     private serializePictureAndShapeDistance(writer: XmlWriter, draw: any): void {
-        let top: string = draw.distanceTop ? Math.round(draw.distanceTop * this.emusPerPoint).toString() : '0';
+        let top: string = draw[distanceTopProperty[this.keywordIndex]] ? Math.round(draw[distanceTopProperty[this.keywordIndex]] * this.emusPerPoint).toString() : '0';
         writer.writeAttributeString(undefined, 'distT', undefined, top);
-        let bottom: string = draw.distanceBottom ? Math.round(draw.distanceBottom * this.emusPerPoint).toString() : '0';
+        let bottom: string = draw[distanceBottomProperty[this.keywordIndex]] ? Math.round(draw[distanceBottomProperty[this.keywordIndex]] * this.emusPerPoint).toString() : '0';
         writer.writeAttributeString(undefined, 'distB', undefined, bottom);
-        let left: string = draw.distanceLeft ? Math.round(draw.distanceLeft * this.emusPerPoint).toString() : '114300';
+        let left: string = draw[distanceLeftProperty[this.keywordIndex]] ? Math.round(draw[distanceLeftProperty[this.keywordIndex]] * this.emusPerPoint).toString() : '114300';
         writer.writeAttributeString(undefined, 'distL', undefined, left);
-        let right: string = draw.distanceRight ? Math.round(draw.distanceRight * this.emusPerPoint).toString() : '114300';
+        let right: string = draw[distanceRightProperty[this.keywordIndex]] ? Math.round(draw[distanceRightProperty[this.keywordIndex]] * this.emusPerPoint).toString() : '114300';
         writer.writeAttributeString(undefined, 'distR', undefined, right);
     }
     private writeDefaultDistAttribute(writer: XmlWriter): void {
@@ -2081,9 +2125,9 @@ export class WordExport {
         writer.writeStartElement(undefined, 'inline', this.wpNamespace);
         this.writeDefaultDistAttribute(writer);
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        const cx: number = Math.round(item.width * this.emusPerPoint);
+        const cx: number = Math.round(item[widthProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        const cy: number = Math.round(item.height * this.emusPerPoint);
+        const cy: number = Math.round(item[heightProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement(); // end of wp:extend
         writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
@@ -2121,13 +2165,19 @@ export class WordExport {
         writer.writeEndElement(); // end of graphic data
         writer.writeEndElement(); // end of graphic
     }
+    private getBase64ImageString(image: any): ImageStringInfo {
+        let base64ImageString: string[] = this.mImages.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
+        let imageString: string = base64ImageString[HelperMethods.parseBoolValue(image[isMetaFileProperty[this.keywordIndex]]) ? 1 : 0];
+        let metaFileImageString: string = base64ImageString[0];
+        return { imageString: imageString, metaFileImageString: metaFileImageString };
+    }
     private getNextChartName(): string {
         return 'Chart' + (++this.chartCount);
     }
     // serialize chart
     private serializeChart(writer: XmlWriter, chart: any): void {
         writer.writeStartElement('w', 'r', this.wNamespace);
-        this.serializeCharacterFormat(writer, chart.characterFormat);
+        this.serializeCharacterFormat(writer, chart[characterFormatProperty[this.keywordIndex]]);
         this.serializeDrawing(writer, chart);
         writer.writeEndElement();
     }
@@ -2246,7 +2296,7 @@ export class WordExport {
         }
         this.mArchiveExcel = new ZipArchive();
         this.mArchiveExcel.compressionLevel = 'Normal';
-        const type: string = this.chart.chartType;
+        const type: string = this.chart[chartTypeProperty[this.keywordIndex]];
         const isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
         this.serializeWorkBook();
         this.serializeSharedString(isScatterType);
@@ -2312,30 +2362,30 @@ export class WordExport {
         const writer: XmlWriter = new XmlWriter();
         let sharedStringPath: string = '';
         const chartSharedString: string[] = [];
-        const type: string = this.chart.chartType;
-        const seriesLength: number = chart.chartSeries.length;
+        const type: string = this.chart[chartTypeProperty[this.keywordIndex]];
+        const seriesLength: number = chart[chartSeriesProperty[this.keywordIndex]].length;
         for (let column: number = 0; column < seriesLength; column++) {
-            const series: any = chart.chartSeries[column];
-            const seriesName: string = series.seriesName;
+            const series: any = chart[chartSeriesProperty[this.keywordIndex]][column];
+            const seriesName: string = series[seriesNameProperty[this.keywordIndex]];
             const isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
             if (isScatterType && column === 0) {
                 chartSharedString.push('X-Values');
             }
             if (isString) {
-                chartSharedString.push(series.seriesName);
+                chartSharedString.push(series[seriesNameProperty[this.keywordIndex]]);
                 this.chartStringCount++;
             }
         }
         if (type === 'Bubble') {
             chartSharedString.push('Size');
         }
-        for (let row: number = 0; row < chart.chartCategory.length; row++) {
-            const category: any = chart.chartCategory[row];
-            const format: string = chart.chartPrimaryCategoryAxis.numberFormat;
-            const categoryName: string = category.categoryXName;
+        for (let row: number = 0; row < chart[chartCategoryProperty[this.keywordIndex]].length; row++) {
+            const category: any = chart[chartCategoryProperty[this.keywordIndex]][row];
+            const format: string = chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][numberFormatProperty[this.keywordIndex]];
+            const categoryName: string = category[categoryXNameProperty[this.keywordIndex]];
             const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
             if (isString || format === 'm/d/yyyy') {
-                chartSharedString.push(category.categoryXName);
+                chartSharedString.push(category[categoryXNameProperty[this.keywordIndex]]);
                 this.chartStringCount++;
             }
         }
@@ -2365,11 +2415,11 @@ export class WordExport {
     private serializeExcelSheet(writer: XmlWriter, isScatterType: boolean): void {
         const chart: any = this.chart;
         let type: string = 's';
-        const isBubbleType: boolean = (chart.chartType === 'Bubble');
+        const isBubbleType: boolean = (chart[chartTypeProperty[this.keywordIndex]] === 'Bubble');
         let bubbleLength: number;
-        const categoryLength: number = chart.chartCategory.length + 1;
-        const format: string = chart.chartPrimaryCategoryAxis.numberFormat;
-        let seriesLength: number = chart.chartSeries.length + 1;
+        const categoryLength: number = chart[chartCategoryProperty[this.keywordIndex]].length + 1;
+        const format: string = chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][numberFormatProperty[this.keywordIndex]];
+        let seriesLength: number = chart[chartSeriesProperty[this.keywordIndex]].length + 1;
         if (isBubbleType) {
             bubbleLength = seriesLength;
             seriesLength = seriesLength + 1;
@@ -2386,8 +2436,8 @@ export class WordExport {
                 writer.writeStartElement(undefined, 'c', undefined);
                 writer.writeAttributeString(undefined, 'r', undefined, alphaNumeric);
                 if (row !== 0 && column === 0) {
-                    category = chart.chartCategory[row - 1];
-                    const categoryName: string = category.categoryXName;
+                    category = chart[chartCategoryProperty[this.keywordIndex]][row - 1];
+                    const categoryName: string = category[categoryXNameProperty[this.keywordIndex]];
                     const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
                     if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
                         type = 's';
@@ -2397,8 +2447,8 @@ export class WordExport {
                         type = 's';
                     }
                 } else if (row === 0 && column !== 0 && column !== (bubbleLength)) {
-                    series = chart.chartSeries[column - 1];
-                    const seriesName: string = series.seriesName;
+                    series = chart[chartSeriesProperty[this.keywordIndex]][column - 1];
+                    const seriesName: string = series[seriesNameProperty[this.keywordIndex]];
                     const isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
                     if (!isString) {
                         type = 'n';
@@ -2420,16 +2470,16 @@ export class WordExport {
                     writer.writeString(count.toString());
                     count++;
                 } else if (row !== 0 && type !== 's' && column === 0 && column !== (bubbleLength)) {
-                    writer.writeString(category.categoryXName);
+                    writer.writeString(category[categoryXNameProperty[this.keywordIndex]]);
                 } else if (column !== 0 && type !== 's' && row === 0 && column !== (bubbleLength)) {
-                    writer.writeString(series.seriesName);
+                    writer.writeString(series[seriesNameProperty[this.keywordIndex]]);
                 } else if (column !== 0 && column !== (bubbleLength)) {
-                    const data: any = category.chartData[column - 1];
-                    const yValue: any = data.yValue;
+                    const data: any = category[chartDataProperty[this.keywordIndex]][column - 1];
+                    const yValue: any = data[yValueProperty[this.keywordIndex]];
                     writer.writeString(yValue.toString());
                 } else if (isBubbleType && column === (bubbleLength)) {
-                    const data: any = category.chartData[column - 2];
-                    const size: any = data.size;
+                    const data: any = category[chartDataProperty[this.keywordIndex]][column - 2];
+                    const size: any = data[sizeProperty[this.keywordIndex]];
                     writer.writeString(size.toString());
                 }
                 writer.writeEndElement(); // end of v[value]
@@ -2520,9 +2570,9 @@ export class WordExport {
         writer.writeEndElement(); // end tag of mc alternate content
 
         writer.writeStartElement('c', 'chart', this.chartNamespace);
-        if (!isNullOrUndefined(this.chart.chartTitle)) {
+        if (!isNullOrUndefined(this.chart[chartTitleProperty[this.keywordIndex]])) {
             writer.writeStartElement('c', 'title', this.chartNamespace);
-            this.serializeTextProperties(writer, this.chart.chartTitleArea, this.chart.chartTitle);
+            this.serializeTextProperties(writer, this.chart[chartTitleAreaProperty[this.keywordIndex]], this.chart[chartTitleProperty[this.keywordIndex]]);
             writer.writeEndElement(); // end tag of title
         }
         // serialize plot area
@@ -2566,8 +2616,8 @@ export class WordExport {
         writer.writeStartElement('c', serializationChartType, this.chartNamespace);
         if (serializationChartType === 'barChart') {
             let barDiv: string = '';
-            if (chart.chartType === 'Column_Clustered' || chart.chartType === 'Column_Stacked'
-                || chart.chartType === 'Column_Stacked_100') {
+            if (chart[chartTypeProperty[this.keywordIndex]] === 'Column_Clustered' || chart[chartTypeProperty[this.keywordIndex]] === 'Column_Stacked'
+                || chart[chartTypeProperty[this.keywordIndex]] === 'Column_Stacked_100') {
                 barDiv = 'col';
             } else {
                 barDiv = 'bar';
@@ -2577,7 +2627,7 @@ export class WordExport {
             writer.writeEndElement(); // end of barDir
         }
         if (!isPieTypeSerialization && !isScatterType) {
-            let grouping: string = this.chartGrouping(chart.chartType);
+            let grouping: string = this.chartGrouping(chart[chartTypeProperty[this.keywordIndex]]);
             writer.writeStartElement('c', 'grouping', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, grouping);
             writer.writeEndElement(); // end of grouping
@@ -2591,8 +2641,8 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', undefined, '0');
         writer.writeEndElement(); // end of c:varyColors
         let valueSheet: string = '';
-        for (let i: number = 0; i < chart.chartSeries.length; i++) {
-            let series: any = chart.chartSeries[i];
+        for (let i: number = 0; i < chart[chartSeriesProperty[this.keywordIndex]].length; i++) {
+            let series: any = chart[chartSeriesProperty[this.keywordIndex]][i];
             this.seriesCount = i;
             writer.writeStartElement('c', 'ser', this.chartNamespace);
             writer.writeStartElement('c', 'idx', this.chartNamespace);
@@ -2616,22 +2666,22 @@ export class WordExport {
             writer.writeStartElement('c', 'pt', this.chartNamespace);
             writer.writeAttributeString(undefined, 'idx', undefined, '0');
             writer.writeStartElement('c', 'v', this.chartNamespace);
-            writer.writeString(series.seriesName);
+            writer.writeString(series[seriesNameProperty[this.keywordIndex]]);
             writer.writeEndElement(); // end of c:v
             writer.writeEndElement(); // end of pt
             writer.writeEndElement(); // end of strCache
             writer.writeEndElement(); // end of strRef
             writer.writeEndElement(); // end of tx
-            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut') {
+            if (chart[chartTypeProperty[this.keywordIndex]] === 'Pie' || chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut') {
                 this.parseChartDataPoint(writer, series);
                 writer.writeStartElement('c', 'explosion', this.chartNamespace);
                 writer.writeAttributeString(undefined, 'val', undefined, '0');
                 writer.writeEndElement(); // end of explosion
             } else if (!isScatterType) {
-                this.parseChartSeriesColor(writer, series.dataPoints, serializationChartType);
+                this.parseChartSeriesColor(writer, series[dataPointsProperty[this.keywordIndex]], serializationChartType);
             }
             if (serializationChartType === 'scatterChart') {
-                let fillColor: string = series.dataPoints[0].fill.foreColor;
+                let fillColor: string = series[dataPointsProperty[this.keywordIndex]][0][fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]];
                 writer.writeStartElement('c', 'marker', this.chartNamespace);
                 writer.writeStartElement('c', 'symbol', this.chartNamespace);
                 writer.writeAttributeString(undefined, 'val', undefined, 'circle');
@@ -2642,19 +2692,19 @@ export class WordExport {
                 this.serializeShapeProperties(writer, fillColor, false);
                 writer.writeEndElement(); // end of a: marker
             }
-            if (series.dataLabel) {
-                this.parseChartDataLabels(writer, series.dataLabel);
+            if (series[dataLabelProperty[this.keywordIndex]]) {
+                this.parseChartDataLabels(writer, series[dataLabelProperty[this.keywordIndex]]);
             }
-            if (series.trendLines) {
+            if (series[trendLinesProperty[this.keywordIndex]]) {
                 this.parseChartTrendLines(writer, series);
             }
-            if (series.errorBar) {
+            if (series[errorBarProperty[this.keywordIndex]]) {
                 this.serializeChartErrorBar(writer, series);
             }
             if (serializationChartType === 'scatterChart') {
                 this.serializeDefaultShapeProperties(writer);
             } else if (serializationChartType === 'bubbleChart') {
-                this.serializeShapeProperties(writer, series.dataPoints[i].fill.foreColor, false);
+                this.serializeShapeProperties(writer, series[dataPointsProperty[this.keywordIndex]][i][fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]], false);
             }
             let categoryType: string = 'cat';
             let categoryRef: string = 'strRef';
@@ -2702,17 +2752,17 @@ export class WordExport {
         writer.writeEndElement(); // end of c: showLeaderLines
         writer.writeEndElement(); // end of c: dLbls
         if (isPieTypeSerialization) {
-            let series: any = this.chart.chartSeries[0];
+            let series: any = this.chart[chartSeriesProperty[this.keywordIndex]][0];
             let sliceAngle: number = 0;
             let holeSize: number = 0;
-            if (series.hasOwnProperty('firstSliceAngle')) {
-                sliceAngle = series.firstSliceAngle;
+            if (series.hasOwnProperty(firstSliceAngleProperty[this.keywordIndex])) {
+                sliceAngle = series[firstSliceAngleProperty[this.keywordIndex]];
             }
             writer.writeStartElement('c', 'firstSliceAng', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, sliceAngle.toString());
             writer.writeEndElement(); // end of c: firstSliceAng
-            if (chart.chartType === 'Doughnut') {
-                holeSize = series.holeSize;
+            if (chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut') {
+                holeSize = series[holeSizeProperty[this.keywordIndex]];
                 writer.writeStartElement('c', 'holeSize', this.chartNamespace);
                 writer.writeAttributeString(undefined, 'val', undefined, holeSize.toString());
                 writer.writeEndElement(); // end of c: holeSize
@@ -2720,10 +2770,10 @@ export class WordExport {
         }
         if (serializationChartType !== 'lineChart' && !isScatterType) {
             writer.writeStartElement('c', 'gapWidth', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, this.chart.gapWidth.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart[gapWidthProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of gapWidth
             writer.writeStartElement('c', 'overlap', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, this.chart.overlap.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart[overlapProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of overlap
         } else if (serializationChartType !== 'bubbleChart') {
             writer.writeStartElement('c', 'smooth', this.chartNamespace);
@@ -2735,7 +2785,7 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'val', undefined, 'area');
             writer.writeEndElement(); // end of smooth
         }
-        let type: string = this.chart.chartType;
+        let type: string = this.chart[chartTypeProperty[this.keywordIndex]];
         if (!isPieTypeSerialization) {
             writer.writeStartElement('c', 'axId', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, '335265000');
@@ -2747,27 +2797,27 @@ export class WordExport {
         writer.writeEndElement(); // end of chart type
         let isStackedPercentage: boolean = (type === 'Column_Stacked_100' || type === 'Area_Stacked_100' ||
             type === 'Bar_Stacked_100' || type === 'Line_Stacked_100' || type === 'Line_Markers_Stacked_100');
-        let format: string = this.chart.chartPrimaryCategoryAxis.categoryType;
+        let format: string = this.chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][chartTypeProperty[this.keywordIndex]];
         if (!isPieTypeSerialization) {
             this.serializeCategoryAxis(writer, format, isStackedPercentage);
             this.serializeValueAxis(writer, format, isStackedPercentage);
         }
-        if (this.chart.hasOwnProperty('chartDataTable')) {
-            let dataTable: any = this.chart.chartDataTable;
+        if (this.chart.hasOwnProperty(chartDataTableProperty[this.keywordIndex])) {
+            let dataTable: any = this.chart[chartDataTableProperty[this.keywordIndex]];
             let showHorzBorder: number = 0;
             let showVertBorder: number = 0;
             let showOutline: number = 0;
             let showKeys: number = 0;
-            if (dataTable.showSeriesKeys) {
+            if (HelperMethods.parseBoolValue(dataTable[showSeriesKeysProperty[this.keywordIndex]])) {
                 showKeys = 1;
             }
-            if (dataTable.hasHorzBorder) {
+            if (HelperMethods.parseBoolValue(dataTable[hasHorizontalBorderProperty[this.keywordIndex]])) {
                 showHorzBorder = 1;
             }
-            if (dataTable.hasVertBorder) {
+            if (HelperMethods.parseBoolValue(dataTable[hasVerticalBorderProperty[this.keywordIndex]])) {
                 showVertBorder = 1;
             }
-            if (dataTable.hasBorders) {
+            if (HelperMethods.parseBoolValue(dataTable[hasBordersProperty[this.keywordIndex]])) {
                 showOutline = 1;
             }
             writer.writeStartElement('c', 'dTable', this.chartNamespace);
@@ -2792,7 +2842,7 @@ export class WordExport {
         writer.writeEndElement(); // end of plot area
 
         // legend
-        if (!isNullOrUndefined(this.chart.chartLegend.position)) {
+        if (!isNullOrUndefined(this.chart[chartLegendProperty[this.keywordIndex]][positionProperty[this.keywordIndex]])) {
             this.serializeChartLegend(writer);
         }
 
@@ -2804,9 +2854,9 @@ export class WordExport {
         writer.writeEndElement(); // end of c: dispBlanksAs
     }
     private serializeChartLegend(writer: XmlWriter): void {
-        let legendPosition: string = this.chartLegendPosition(this.chart.chartLegend);
-        let title: any = this.chart.chartLegend.chartTitleArea;
-        let fill: any = title.dataFormat.fill.foreColor;
+        let legendPosition: string = this.chartLegendPosition(this.chart[chartLegendProperty[this.keywordIndex]]);
+        let title: any = this.chart[chartLegendProperty[this.keywordIndex]][chartTitleAreaProperty[this.keywordIndex]];
+        let fill: any = title[dataFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]];
         writer.writeStartElement('c', 'legend', this.chartNamespace);
         writer.writeStartElement('c', 'legendPos', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, legendPosition);
@@ -2821,21 +2871,21 @@ export class WordExport {
         writer.writeStartElement('a', 'lstStyle', this.aNamespace);
         writer.writeEndElement();
         writer.writeStartElement('a', 'p', this.aNamespace);
-        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        this.serializeChartTitleFont(writer, title[fontSizeProperty[this.keywordIndex]], fill, title[fontNameProperty[this.keywordIndex]]);
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeEndElement();
     }
     private serializeChartErrorBar(writer: XmlWriter, series: any): void {
-        let errorBar: any = series.errorBar;
-        let errorBarValueType: string = this.errorBarValueType(errorBar.type);
+        let errorBar: any = series[errorBarProperty[this.keywordIndex]];
+        let errorBarValueType: string = this.errorBarValueType(errorBar[typeProperty[this.keywordIndex]]);
         let endStyle: number = 0;
-        if (errorBar.endStyle !== 'Cap') {
+        if (errorBar[endStyleProperty[this.keywordIndex]] !== 'Cap') {
             endStyle = 1;
         }
         writer.writeStartElement('c', 'errBars', this.chartNamespace);
         writer.writeStartElement('c', 'errBarType', this.chartNamespace);
-        writer.writeAttributeString(undefined, 'val', undefined, errorBar.direction.toLowerCase());
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar[directionProperty[this.keywordIndex]].toLowerCase());
         writer.writeEndElement(); // end of c: errBarType
         writer.writeStartElement('c', 'errValType', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, errorBarValueType);
@@ -2844,7 +2894,7 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', undefined, endStyle.toString());
         writer.writeEndElement(); // end of c: noEndCap
         writer.writeStartElement('c', 'val', this.chartNamespace);
-        writer.writeAttributeString(undefined, 'val', undefined, errorBar.numberValue.toString());
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar[numberValueProperty[this.keywordIndex]].toString());
         writer.writeEndElement(); // end of c: val
         this.serializeShapeProperties(writer, '595959', true);
 
@@ -2874,8 +2924,8 @@ export class WordExport {
     private serializeCategoryAxis(writer: XmlWriter, format: string, isStackedPercentage: boolean): void {
         // serialize category axis
         let axisType: string = 'catAx';
-        let formatCode: string = this.chart.chartPrimaryCategoryAxis.numberFormat;
-        let type: string = this.chart.chartType;
+        let formatCode: string = this.chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][numberFormatProperty[this.keywordIndex]];
+        let type: string = this.chart[chartTypeProperty[this.keywordIndex]];
         let isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
         if (format === 'Time') {
             axisType = 'dateAx';
@@ -2887,7 +2937,7 @@ export class WordExport {
         writer.writeStartElement('c', 'axId', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, '335265000');
         writer.writeEndElement(); // end of axId
-        this.serializeAxis(writer, '335263360', this.chart.chartPrimaryCategoryAxis, formatCode, isStackedPercentage);
+        this.serializeAxis(writer, '335263360', this.chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]], formatCode, isStackedPercentage);
         if (!isScatterType) {
             writer.writeStartElement('c', 'auto', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, '1');
@@ -2903,7 +2953,7 @@ export class WordExport {
             writer.writeStartElement('c', 'baseTimeUnit', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, 'days');
             writer.writeEndElement(); // end of baseTimeUnit
-        } else if (this.chart.chartType !== 'Bubble') {
+        } else if (this.chart[chartTypeProperty[this.keywordIndex]] !== 'Bubble') {
             writer.writeStartElement('c', 'noMultiLvlLbl', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, '0');
             writer.writeEndElement(); // end of noMultiLvlLbl
@@ -2912,7 +2962,7 @@ export class WordExport {
     }
     private serializeValueAxis(writer: XmlWriter, format: string, isStackedPercentage: boolean): void {
         // serialize category axis
-        let valueAxis: any = this.chart.chartPrimaryValueAxis;
+        let valueAxis: any = this.chart[chartPrimaryValueAxisProperty[this.keywordIndex]];
         let crossBetween: string = 'between';
         if (format === 'Time') {
             crossBetween = 'midCat';
@@ -2925,9 +2975,9 @@ export class WordExport {
         writer.writeStartElement('c', 'crossBetween', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, crossBetween);
         writer.writeEndElement(); // end of crossBetween
-        if (valueAxis.majorUnit !== 0 && !isStackedPercentage) {
+        if (valueAxis[majorUnitProperty[this.keywordIndex]] !== 0 && !isStackedPercentage) {
             writer.writeStartElement('c', 'majorUnit', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, valueAxis.majorUnit.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, valueAxis[majorUnitProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of majorUnit
         }
         writer.writeEndElement(); // end of valAx
@@ -2940,12 +2990,12 @@ export class WordExport {
         writer.writeStartElement('c', 'orientation', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, 'minMax');
         writer.writeEndElement(); // end of orientation
-        if (axis.maximumValue !== 0 && !isStackedPercentage) {
+        if (axis[maximumValueProperty[this.keywordIndex]] !== 0 && !isStackedPercentage) {
             writer.writeStartElement('c', 'max', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, axis.maximumValue.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, axis[maximumValueProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of max
             writer.writeStartElement('c', 'min', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, axis.minimumValue.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, axis[minimumValueProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of min
         }
         writer.writeEndElement(); // end of scaling
@@ -2959,19 +3009,19 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'val', undefined, 'b');
         }
         writer.writeEndElement(); // end of axPos
-        if (axis.hasMajorGridLines) {
+        if (HelperMethods.parseBoolValue(axis[hasMajorGridLinesProperty[this.keywordIndex]])) {
             writer.writeStartElement('c', 'majorGridlines', this.chartNamespace);
             this.serializeShapeProperties(writer, 'D9D9D9', true);
             writer.writeEndElement(); // end of majorGridlines
         }
-        if (axis.hasMinorGridLines) {
+        if (HelperMethods.parseBoolValue(axis[hasMinorGridLinesProperty[this.keywordIndex]])) {
             writer.writeStartElement('c', 'minorGridlines', this.chartNamespace);
             this.serializeShapeProperties(writer, 'F2F2F2', true);
             writer.writeEndElement(); // end of minorGridlines
         }
-        if (axis.chartTitle) {
+        if (axis[chartTitleProperty[this.keywordIndex]]) {
             writer.writeStartElement('c', 'title', this.chartNamespace);
-            this.serializeTextProperties(writer, axis.chartTitleArea, axis.chartTitle);
+            this.serializeTextProperties(writer, axis[chartTitleAreaProperty[this.keywordIndex]], axis[chartTitleProperty[this.keywordIndex]]);
             writer.writeEndElement(); // end tag of title
         }
         writer.writeStartElement('c', 'numFmt', this.chartNamespace);
@@ -2987,7 +3037,7 @@ export class WordExport {
         writer.writeStartElement('c', 'tickLblPos', this.chartNamespace);
         writer.writeAttributeString(undefined, 'val', undefined, tickLabelPosition);
         writer.writeEndElement(); // end of tickLblPos
-        if (this.chart.chartType === 'Bubble') {
+        if (this.chart[chartTypeProperty[this.keywordIndex]] === 'Bubble') {
             this.serializeShapeProperties(writer, 'BFBFBF', true);
         } else {
             this.serializeDefaultShapeProperties(writer);
@@ -2996,7 +3046,7 @@ export class WordExport {
         writer.writeStartElement('a', 'bodyPr', this.aNamespace);
         writer.writeEndElement(); // end of bodyPr
         writer.writeStartElement('a', 'p', this.aNamespace);
-        this.serializeChartTitleFont(writer, axis.fontSize, '595959', axis.fontName);
+        this.serializeChartTitleFont(writer, axis[fontSizeProperty[this.keywordIndex]], '595959', axis[fontNameProperty[this.keywordIndex]]);
         writer.writeEndElement(); // end of a: p
         writer.writeEndElement(); // end of c: txPr
         writer.writeStartElement('c', 'crossAx', this.chartNamespace);
@@ -3007,22 +3057,22 @@ export class WordExport {
         writer.writeEndElement(); // end of crosses
     }
     private parseChartTrendLines(writer: XmlWriter, series: any): void {
-        for (let i: number = 0; i < series.trendLines.length; i++) {
-            let data: any = series.trendLines[i];
-            let type: string = this.chartTrendLineType(data.type);
+        for (let i: number = 0; i < series[trendLinesProperty[this.keywordIndex]].length; i++) {
+            let data: any = series[trendLinesProperty[this.keywordIndex]][i];
+            let type: string = this.chartTrendLineType(data[typeProperty[this.keywordIndex]]);
             let dispRSqr: number = 0;
             let dispEq: number = 0;
-            if (data.isDisplayEquation) {
+            if (HelperMethods.parseBoolValue(data[isDisplayEquationProperty[this.keywordIndex]])) {
                 dispEq = 1;
-            } else if (data.isDisplayRSquared) {
+            } else if (HelperMethods.parseBoolValue(data[isDisplayRSquaredProperty[this.keywordIndex]])) {
                 dispRSqr = 1;
             }
-            let solidFill: any = series.dataPoints[i];
+            let solidFill: any = series[dataPointsProperty[this.keywordIndex]][i];
             writer.writeStartElement('c', 'trendline', this.chartNamespace);
             writer.writeStartElement('c', 'spPr', this.chartNamespace);
             writer.writeStartElement('a', 'ln', this.aNamespace);
             writer.writeAttributeString(undefined, 'w', undefined, '19050');
-            this.serializeChartSolidFill(writer, solidFill.fill.foreColor, false);
+            this.serializeChartSolidFill(writer, solidFill[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]], false);
             writer.writeStartElement('a', 'prstDash', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, 'sysDot');
             writer.writeEndElement(); // end of a: prstDash
@@ -3034,14 +3084,14 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'val', undefined, type);
             writer.writeEndElement(); // end of c: trendlineType
             writer.writeStartElement('c', 'forward', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, data.forward.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, data[forwardProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of c: forward
             writer.writeStartElement('c', 'backward', this.chartNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, data.backward.toString());
+            writer.writeAttributeString(undefined, 'val', undefined, data[backwardProperty[this.keywordIndex]].toString());
             writer.writeEndElement(); // end of c: backward
-            if (data.intercept !== 'NaN') {
+            if (data[interceptProperty[this.keywordIndex]] !== 'NaN') {
                 writer.writeStartElement('c', 'intercept', this.chartNamespace);
-                writer.writeAttributeString(undefined, 'val', undefined, data.intercept.toString());
+                writer.writeAttributeString(undefined, 'val', undefined, data[interceptProperty[this.keywordIndex]].toString());
                 writer.writeEndElement(); // end of c: intercept
             }
             writer.writeStartElement('c', 'dispRSqr', this.chartNamespace);
@@ -3067,7 +3117,7 @@ export class WordExport {
     }
     private parseChartDataLabels(writer: XmlWriter, dataLabels: any): void {
         let position: string = '';
-        let dataLabelPosition: string = dataLabels.position;
+        let dataLabelPosition: string = dataLabels[positionProperty[this.keywordIndex]];
         let isLegendKey: number = 0;
         let isBubbleSize: number = 0;
         let isCategoryName: number = 0;
@@ -3116,22 +3166,22 @@ export class WordExport {
         writer.writeStartElement('a', 'lstStyle', this.aNamespace);
         writer.writeEndElement(); //end of a:lstStyle.
         writer.writeStartElement('a', 'p', this.aNamespace);
-        this.serializeChartTitleFont(writer, dataLabels.fontSize, dataLabels.fontColor, dataLabels.fontName);
+        this.serializeChartTitleFont(writer, dataLabels[fontSizeProperty[this.keywordIndex]], dataLabels[fontColorProperty[this.keywordIndex]], dataLabels[fontNameProperty[this.keywordIndex]]);
         writer.writeEndElement(); //end of a:p.
         writer.writeEndElement(); //end of c:txPr.
-        if (dataLabels.isLegendKey) {
+        if (HelperMethods.parseBoolValue(dataLabels[isLegendKeyProperty[this.keywordIndex]])) {
             isLegendKey = 1;
-        } else if (dataLabels.isBubbleSize) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isBubbleSizeProperty[this.keywordIndex]])) {
             isBubbleSize = 1;
-        } else if (dataLabels.isCategoryName) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isCategoryNameProperty[this.keywordIndex]])) {
             isCategoryName = 1;
-        } else if (dataLabels.isSeriesName) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isSeriesNameProperty[this.keywordIndex]])) {
             isSeriesName = 1;
-        } else if (dataLabels.isValue) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isValueProperty[this.keywordIndex]])) {
             isValue = 1;
-        } else if (dataLabels.isPercentage) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isPercentageProperty[this.keywordIndex]])) {
             isPercentage = 1;
-        } else if (dataLabels.isLeaderLines) {
+        } else if (HelperMethods.parseBoolValue(dataLabels[isLeaderLinesProperty[this.keywordIndex]])) {
             isLeaderLines = 1;
         }
         if (position !== 'Automatic') {
@@ -3163,7 +3213,7 @@ export class WordExport {
         writer.writeEndElement(); // end of dLbls
     }
     private serializeShapeProperties(writer: XmlWriter, color: string, isLine: boolean): void {
-        let chartType: string = this.chart.chartType;
+        let chartType: string = this.chart[chartTypeProperty[this.keywordIndex]];
         let isScatterType: boolean = (chartType === 'Scatter_Markers' || chartType === 'Bubble');
         // serialize shape
         writer.writeStartElement('c', 'spPr', this.chartNamespace);
@@ -3206,8 +3256,8 @@ export class WordExport {
         writer.writeEndElement(); // end of a: ln
     }
     private serializeTextProperties(writer: XmlWriter, title: any, chartTitleName: string): void {
-        let fill: string = title.dataFormat.fill.foreColor;
-        let fontSize: number = title.fontSize * 100;
+        let fill: string = title[dataFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]];
+        let fontSize: number = title[fontSizeProperty[this.keywordIndex]] * 100;
         writer.writeStartElement('c', 'tx', this.chartNamespace);
         writer.writeStartElement('c', 'rich', this.chartNamespace);
         writer.writeStartElement('a', 'bodyPr', this.aNamespace);
@@ -3217,7 +3267,7 @@ export class WordExport {
         writer.writeStartElement('a', 'lstStyle', this.aNamespace);
         writer.writeEndElement(); // end of a:lstStyle
         writer.writeStartElement('a', 'p', this.aNamespace);
-        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        this.serializeChartTitleFont(writer, title[fontSizeProperty[this.keywordIndex]], fill, title[fontNameProperty[this.keywordIndex]]);
         writer.writeStartElement('a', 'r', this.aNamespace);
         writer.writeStartElement('a', 'rPr', this.aNamespace);
         writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
@@ -3225,7 +3275,7 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'sz', undefined, fontSize.toString());
         writer.writeAttributeString(undefined, 'baseline', undefined, '0');
         this.serializeChartSolidFill(writer, fill, false);
-        this.serializeFont(writer, title.fontName);
+        this.serializeFont(writer, title[fontNameProperty[this.keywordIndex]]);
         writer.writeEndElement(); // end of a: rPr
         writer.writeStartElement('a', 't', this.aNamespace);
         writer.writeString(chartTitleName);
@@ -3248,7 +3298,7 @@ export class WordExport {
         writer.writeEndElement(); // end of a: lstStyle
         writer.writeStartElement('a', 'p', this.aNamespace);
         writer.writeEndElement(); // end of a: p
-        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        this.serializeChartTitleFont(writer, title[fontSizeProperty[this.keywordIndex]], fill, title[fontNameProperty[this.keywordIndex]]);
         writer.writeEndElement(); // end of c: txPr
     }
     private serializeChartTitleFont(writer: XmlWriter, fontSize: number, fill: string, fontName: string): void {
@@ -3272,7 +3322,7 @@ export class WordExport {
         } else {
             writer.writeAttributeString(undefined, 'val', undefined, '595959');
         }
-        if (this.chart.chartType === 'Bubble' && isSeriesFill) {
+        if (this.chart[chartTypeProperty[this.keywordIndex]] === 'Bubble' && isSeriesFill) {
             writer.writeStartElement('a', 'alpha', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, '75000');
             writer.writeEndElement(); // end of alpha
@@ -3301,9 +3351,9 @@ export class WordExport {
                 writer.writeAttributeString(undefined, 'cap', undefined, 'rnd');
             }
             if (chartType !== 'lineChart') {
-                this.serializeChartSolidFill(writer, data.fill.foreColor, true);
+                this.serializeChartSolidFill(writer, data[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]], true);
             } else {
-                this.serializeChartSolidFill(writer, data.line.color, true);
+                this.serializeChartSolidFill(writer, data[lineProperty[this.keywordIndex]][colorProperty[this.keywordIndex]], true);
             }
             if (chartType !== 'lineChart') {
                 writer.writeStartElement('a', 'ln', this.aNamespace);
@@ -3319,15 +3369,15 @@ export class WordExport {
             if (chartType === 'lineChart') {
                 let symbolType: string = 'none';
                 let size: number = 0;
-                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
-                    symbolType = this.chart.chartSeries[i].seriesFormat.markerStyle;
-                    size = this.chart.chartSeries[i].seriesFormat.markerSize;
+                if (this.chart[chartSeriesProperty[this.keywordIndex]][i].hasOwnProperty(seriesFormatProperty[this.keywordIndex])) {
+                    symbolType = this.chart[chartSeriesProperty[this.keywordIndex]][i][seriesFormatProperty[this.keywordIndex]][markerStyleProperty[this.keywordIndex]];
+                    size = this.chart[chartSeriesProperty[this.keywordIndex]][i][seriesFormatProperty[this.keywordIndex]][markerSizeProperty[this.keywordIndex]];
                 }
                 writer.writeStartElement('c', 'marker', this.chartNamespace);
                 writer.writeStartElement('c', 'symbol', this.chartNamespace);
                 writer.writeAttributeString(undefined, 'val', undefined, symbolType.toLowerCase());
                 writer.writeEndElement(); // end of a: symbol
-                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
+                if (this.chart[chartSeriesProperty[this.keywordIndex]][i].hasOwnProperty(seriesFormatProperty[this.keywordIndex])) {
                     writer.writeStartElement('c', 'size', this.chartNamespace);
                     writer.writeAttributeString(undefined, 'val', undefined, size.toString());
                     writer.writeEndElement(); // end of a: size
@@ -3338,7 +3388,7 @@ export class WordExport {
     }
     private parseChartDataPoint(writer: XmlWriter, series: any): void {
         // data point
-        let dataPoints: any = series.dataPoints;
+        let dataPoints: any = series[dataPointsProperty[this.keywordIndex]];
         let points: any[] = [];
         for (let j: number = 0; j < dataPoints.length; j++) {
             points.push(dataPoints[j]);
@@ -3349,14 +3399,14 @@ export class WordExport {
             writer.writeStartElement('c', 'bubble3D', this.chartNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, '0');
             writer.writeEndElement(); // end of c:bubble3D
-            this.parseChartSeriesColor(writer, points, this.chart.chartType);
+            this.parseChartSeriesColor(writer, points, this.chart[chartTypeProperty[this.keywordIndex]]);
             writer.writeEndElement(); // end of c:dPt
             points = [];
         }
     }
     // chart data value
     private serializeChartCategory(writer: XmlWriter, chart: any, cacheType: string): void {
-        let chartCategory: any = chart.chartCategory;
+        let chartCategory: any = chart[chartCategoryProperty[this.keywordIndex]];
         let chartCategoryCount: number = chartCategory.length;
         writer.writeStartElement('c', 'f', this.chartNamespace);
         writer.writeString('Sheet1!$A$2:$A$' + (chartCategoryCount + 1).toString());
@@ -3375,8 +3425,8 @@ export class WordExport {
             writer.writeStartElement('c', 'pt', this.chartNamespace);
             writer.writeAttributeString(undefined, 'idx', undefined, i.toString());
             writer.writeStartElement('c', 'v', this.chartNamespace);
-            if (category.categoryXName !== '') {
-                writer.writeString(category.categoryXName);
+            if (category[categoryXNameProperty[this.keywordIndex]] !== '') {
+                writer.writeString(category[categoryXNameProperty[this.keywordIndex]]);
             }
             writer.writeEndElement(); // end of v
             writer.writeEndElement(); // end of pt
@@ -3404,7 +3454,7 @@ export class WordExport {
     }
     private serializeChartYValue(writer: XmlWriter, valueType: string, valueSheet: string): void {
         let chart: any = this.chart;
-        let chartCategory: any = chart.chartCategory;
+        let chartCategory: any = chart[chartCategoryProperty[this.keywordIndex]];
         let chartCategoryCount: number = chartCategory.length;
         writer.writeStartElement('c', valueType, this.chartNamespace);
         writer.writeStartElement('c', 'numRef', this.chartNamespace);
@@ -3420,16 +3470,16 @@ export class WordExport {
         writer.writeEndElement(); // end of ptCount
         for (let j: number = 0; j < chartCategoryCount; j++) {
             let category: any = chartCategory[j];
-            for (let k: number = 0; k < category.chartData.length; k++) {
+            for (let k: number = 0; k < category[chartDataProperty[this.keywordIndex]].length; k++) {
                 if (k === this.seriesCount) {
-                    let chartData: any = category.chartData[this.seriesCount];
+                    let chartData: any = category[chartDataProperty[this.keywordIndex]][this.seriesCount];
                     writer.writeStartElement('c', 'pt', this.chartNamespace);
                     writer.writeAttributeString(undefined, 'idx', undefined, j.toString());
                     writer.writeStartElement('c', 'v', this.chartNamespace);
                     if (valueType !== 'bubbleSize') {
-                        writer.writeString(chartData.yValue.toString());
+                        writer.writeString(chartData[yValueProperty[this.keywordIndex]].toString());
                     } else {
-                        writer.writeString(chartData.size.toString());
+                        writer.writeString(chartData[sizeProperty[this.keywordIndex]].toString());
                     }
                     writer.writeEndElement(); // end of v
                     writer.writeEndElement(); // end of pt
@@ -3442,7 +3492,7 @@ export class WordExport {
     }
     // chart type
     private chartType(chart: any): string {
-        let chartType: string = chart.chartType;
+        let chartType: string = chart[chartTypeProperty[this.keywordIndex]];
         switch (chartType) {
             case 'Pie':
                 chartType = 'pieChart';
@@ -3487,7 +3537,7 @@ export class WordExport {
     }
     // chart legend position
     private chartLegendPosition(chart: any): string {
-        let legendPosition: string = chart.position;
+        let legendPosition: string = chart[positionProperty[this.keywordIndex]];
         switch (legendPosition) {
             case 'Top':
                 legendPosition = 't';
@@ -3529,13 +3579,13 @@ export class WordExport {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
     private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
-        let val: string = shape.autoShapeType;
-        let id: number = shape.shapeId;
+        let val: number | string = shape[autoShapeTypeProperty[this.keywordIndex]];
+        let id: number = shape[shapeIdProperty[this.keywordIndex]];
         this.serializeShapeWrapStyle(writer, shape);
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
         writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        writer.writeAttributeString(undefined, 'name', undefined, shape.name);
-        writer.writeAttributeString(undefined, 'title', undefined, shape.title);
+        writer.writeAttributeString(undefined, 'name', undefined, shape[nameProperty[this.keywordIndex]]);
+        writer.writeAttributeString(undefined, 'title', undefined, shape[titleProperty[this.keywordIndex]]);
         writer.writeEndElement();
         writer.writeStartElement('a', 'graphic', this.aNamespace);
         writer.writeStartElement('a', 'graphicData', this.aNamespace);
@@ -3554,16 +3604,16 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'y', undefined, '0');
         writer.writeEndElement();
         writer.writeStartElement('a', 'ext', this.aNamespace);
-        let cx: number = Math.round((shape.width * this.emusPerPoint));
+        let cx: number = Math.round((shape[widthProperty[this.keywordIndex]] * this.emusPerPoint));
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        let cy: number = Math.round((shape.height * this.emusPerPoint));
+        let cy: number = Math.round((shape[heightProperty[this.keywordIndex]] * this.emusPerPoint));
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         writer.writeEndElement();
         writer.writeStartElement('a', 'prstGeom', this.aNamespace);
-        if (val === 'StraightConnector') {
+        if (val === (this.keywordIndex == 1 ? 3 : 'StraightConnector')) {
             writer.writeAttributeString(undefined, 'prst', undefined, 'straightConnector1');
-        } else if (val === 'RoundedRectangle') {
+        } else if (val === (this.keywordIndex == 1 ? 2 : 'RoundedRectangle')) {
             writer.writeAttributeString(undefined, 'prst', undefined, 'roundRect');
         } else {
             writer.writeAttributeString(undefined, 'prst', undefined, 'rect');
@@ -3571,24 +3621,24 @@ export class WordExport {
         writer.writeStartElement('a', 'avLst', this.aNamespace);
         writer.writeEndElement();
         writer.writeEndElement();
-        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
+        if (shape[fillFormatProperty[this.keywordIndex]] && shape[fillFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]] && HelperMethods.parseBoolValue(shape[fillFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]])) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.fillFormat.color));
+            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape[fillFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]]));
             writer.writeEndElement();
             writer.writeEndElement();
         } else {
             writer.writeStartElement('a', 'noFill', this.aNamespace);
             writer.writeEndElement();
         }
-        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint: this.emusPerPoint;
+        let lineWeight: number = shape[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]] ? shape[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]] * this.emusPerPoint: this.emusPerPoint;
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
-        if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')
-            && shape.lineFormat.line) {
+        if ((!isNullOrUndefined(shape[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]]) && shape[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 3 : 'None'))
+            && HelperMethods.parseBoolValue(shape[lineFormatProperty[this.keywordIndex]][lineProperty[this.keywordIndex]])) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
-            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
+            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape[lineFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]]));
             writer.writeEndElement();
             writer.writeEndElement();
             writer.writeStartElement('a', 'round', this.aNamespace);
@@ -3603,30 +3653,30 @@ export class WordExport {
         }
         writer.writeEndElement();
         writer.writeEndElement();
-        if (val === 'Rectangle' || val === 'RoundedRectangle') {
+        if (val === (this.keywordIndex == 1 ? 1 : 'Rectangle') || val === (this.keywordIndex == 1 ? 2 : 'RoundedRectangle')) {
             writer.writeStartElement('wps', 'txbx', this.wpShapeNamespace);
             writer.writeStartElement(undefined, 'txbxContent', this.wNamespace);
-            this.serializeBodyItems(writer, shape.textFrame.blocks, true);
+            this.serializeBodyItems(writer, shape[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]], true);
             writer.writeEndElement();
             writer.writeEndElement();
         }
         writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
-        if (!isNullOrUndefined(shape.textFrame)) {
+        if (!isNullOrUndefined(shape[textFrameProperty[this.keywordIndex]])) {
             let margin: string;
-            if (shape.textFrame.leftMargin >= 0) {
-                margin = Math.round(shape.textFrame.leftMargin * this.emusPerPoint).toString();
+            if (shape[textFrameProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] >= 0) {
+                margin = Math.round(shape[textFrameProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] * this.emusPerPoint).toString();
                 writer.writeAttributeString(undefined, 'lIns', undefined, margin);
             }
-            if (shape.textFrame.topMargin >= 0) {
-                margin = Math.round(shape.textFrame.topMargin * this.emusPerPoint).toString();
+            if (shape[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]] >= 0) {
+                margin = Math.round(shape[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]] * this.emusPerPoint).toString();
                 writer.writeAttributeString(undefined, 'tIns', undefined, margin);
             }
-            if (shape.textFrame.rightMargin >= 0) {
-                margin = Math.round(shape.textFrame.rightMargin * this.emusPerPoint).toString();
+            if (shape[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]] >= 0) {
+                margin = Math.round(shape[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]] * this.emusPerPoint).toString();
                 writer.writeAttributeString(undefined, 'rIns', undefined, margin);
             }
-            if (shape.textFrame.bottomMargin >= 0) {
-                margin = Math.round(shape.textFrame.bottomMargin * this.emusPerPoint).toString();
+            if (shape[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]] >= 0) {
+                margin = Math.round(shape[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]] * this.emusPerPoint).toString();
                 writer.writeAttributeString(undefined, 'bIns', undefined, margin);
             }
             writer.writeAttributeString(undefined, 'anchor', undefined, 't');
@@ -3642,18 +3692,19 @@ export class WordExport {
 
     }
     private serializeShapeWrapStyle(writer: XmlWriter, shape: any): void {
-        if (shape.textWrappingStyle !== 'Inline') {
+        let wrappingStyle: string = this.keywordIndex == 1 ? this.getTextWrappingStyle(shape[textWrappingStyleProperty[this.keywordIndex]]): shape[textWrappingStyleProperty[this.keywordIndex]];
+        if (wrappingStyle !== 'Inline') {
             let textWrappingStyle: string = 'wrapNone';
-            if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind') {
-                textWrappingStyle = 'wrap' + shape.textWrappingStyle;
-                if (shape.textWrappingStyle === 'Tight') {
+            if (wrappingStyle && wrappingStyle !== 'InFrontOfText' && wrappingStyle !== 'Behind') {
+                textWrappingStyle = 'wrap' + wrappingStyle;
+                if (wrappingStyle === 'Tight') {
                     textWrappingStyle = 'wrap' + 'Square';
                 }
             }
             writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
-            if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' &&
-                shape.textWrappingType) {
-                let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
+            if (wrappingStyle && wrappingStyle !== 'InFrontOfText' && wrappingStyle !== 'Behind' &&
+                !isNullOrUndefined(shape[textWrappingTypeProperty[this.keywordIndex]])) {
+                let wrapType: string = this.keywordIndex == 1 ? this.getTextWrappingType(shape[textWrappingTypeProperty[this.keywordIndex]]) : shape[textWrappingTypeProperty[this.keywordIndex]] === 'Both' ? 'bothSides' : (shape[textWrappingTypeProperty[this.keywordIndex]] as string).toLowerCase();
                 writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
             }
             writer.writeEndElement();
@@ -3663,10 +3714,12 @@ export class WordExport {
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
         let id: string = '';
         let format: string;
-        if (picture.isMetaFile && !isNullOrUndefined(picture.metaFileImageString)) {
-            format = HelperMethods.formatClippedString(picture.metaFileImageString).extension;
+        let imageStringInfo: ImageStringInfo = this.getBase64ImageString(picture);
+        let imageString: string = imageStringInfo.imageString;
+        if (HelperMethods.parseBoolValue(picture[isMetaFileProperty[this.keywordIndex]])) {
+            format = HelperMethods.formatClippedString(imageStringInfo.metaFileImageString).extension;
             if (format !== '.svg') {
-                picture.imageString = picture.metaFileImageString;
+                imageString = imageStringInfo.metaFileImageString;
             }
         }
         id = this.updateShapeId(picture, false);
@@ -3674,12 +3727,12 @@ export class WordExport {
         // Processing picture
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
         writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        if (!isNullOrUndefined(picture.alternativeText)) {
-            writer.writeAttributeString(undefined, 'descr', undefined, picture.alternativeText);
+        if (!isNullOrUndefined(picture[alternativeTextProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'descr', undefined, picture[alternativeTextProperty[this.keywordIndex]]);
         }
-        writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture.name) ? picture.name : '');
-        if (!isNullOrUndefined(picture.title))
-            writer.writeAttributeString(undefined, 'title', undefined, picture.title);
+        writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture[nameProperty[this.keywordIndex]]) ? picture[nameProperty[this.keywordIndex]] : '');
+        if (!isNullOrUndefined(picture[titleProperty[this.keywordIndex]]))
+            writer.writeAttributeString(undefined, 'title', undefined, picture[titleProperty[this.keywordIndex]]);
         // else
         // writer.writeAttributeString(undefined, 'title', undefined, '');
         // if (!picture.Visible)
@@ -3705,7 +3758,7 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('pic', 'blipFill', this.pictureNamespace);
         writer.writeStartElement('a', 'blip', this.aNamespace);
-        if (this.startsWith(picture.imageString, 'data:image')) {
+        if (this.startsWith(imageString, 'data:image')) {
             writer.writeAttributeString('r', 'embed', this.rNamespace, id);
         } else {
             if (this.documentImages.containsKey(id)) {
@@ -3714,7 +3767,7 @@ export class WordExport {
                 //it is having external relationship id
                 // if (!this.startsWith(picture.imageString, 'data:image')) {
                 this.documentImages.remove(id);
-                this.externalImages.add(id, picture.imageString);
+                this.externalImages.add(id, imageString);
                 writer.writeAttributeString(undefined, 'link', this.rNamespace, id);
             }
         }
@@ -3723,15 +3776,18 @@ export class WordExport {
         }
         //End Element Blip
         writer.writeEndElement();
-        if (picture.iscrop) {
+        if (!isNullOrUndefined(picture[topProperty[this.keywordIndex]]) && picture[topProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(picture[bottomProperty[this.keywordIndex]]) && picture[bottomProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(picture[leftProperty[this.keywordIndex]]) && picture[leftProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(picture[rightProperty[this.keywordIndex]]) && picture[rightProperty[this.keywordIndex]] !== 0) {
             writer.writeStartElement('a', 'srcRect', this.aNamespace);
-            let l: number = Math.round(picture.left * 1000);
+            let l: number = Math.round(picture[leftProperty[this.keywordIndex]] * 1000);
             writer.writeAttributeString(undefined, 'l', undefined, l.toString());
-            let t: number = Math.round(picture.top * 1000);
+            let t: number = Math.round(picture[topProperty[this.keywordIndex]] * 1000);
             writer.writeAttributeString(undefined, 't', undefined, t.toString());
-            let r: number = Math.round(picture.right * 1000);
+            let r: number = Math.round(picture[rightProperty[this.keywordIndex]] * 1000);
             writer.writeAttributeString(undefined, 'r', undefined, r.toString());
-            let b: number = Math.round(picture.bottom * 1000);
+            let b: number = Math.round(picture[bottomProperty[this.keywordIndex]] * 1000);
             writer.writeAttributeString(undefined, 'b', undefined, b.toString());
             writer.writeEndElement();
         }
@@ -3750,9 +3806,9 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'y', undefined, '0');
         writer.writeEndElement();
         writer.writeStartElement('a', 'ext', this.aNamespace);
-        let cx: number = Math.round((picture.width * this.emusPerPoint));
+        let cx: number = Math.round((picture[widthProperty[this.keywordIndex]] * this.emusPerPoint));
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        let cy: number = Math.round((picture.height * this.emusPerPoint));
+        let cy: number = Math.round((picture[heightProperty[this.keywordIndex]] * this.emusPerPoint));
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         writer.writeEndElement();
@@ -3800,8 +3856,8 @@ export class WordExport {
             id = this.updateHFImageRels(this.headerFooter, picture, isSvgData);
         } else {
             if (id === '') {
-                if (tOwner.hasOwnProperty('sectionFormat') || tOwner.hasOwnProperty('inlines')) {
-                    id = this.addImageRelation(!isSvgData? this.documentImages: this.svgImages, picture);
+                if (tOwner.hasOwnProperty(sectionFormatProperty[this.keywordIndex]) || tOwner.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
+                    id = this.addImageRelation(!isSvgData? this.documentImages: this.svgImages, picture, isSvgData);
 
                     // if (owner is WFootnote)
                     // {
@@ -3819,21 +3875,16 @@ export class WordExport {
         return id;
     }
     // Adds the image relation.
-    private addImageRelation(imageCollection: Dictionary<string, any>, image: any): string {
+    private addImageRelation(imageCollection: Dictionary<string, any>, image: any, isSvgData: boolean): string {
         let relationId: string = '';
-        // if (imageCollection.ContainsValue(imageRecord)) {
-        //     foreach(string key in imageCollection.keys)
-        //     {
-        //         if (imageRecord === imageCollection[key]) {
-        //             relationId = key;
-        //             break;
-        //         }
-        //     }
-        // }
-        // else {
-        relationId = this.getNextRelationShipID();
+        let index: number = isSvgData ? this.svgImageRelationIds.keys.indexOf(parseInt(image[imageStringProperty[this.keywordIndex]])) : this.imageRelationIds.keys.indexOf(parseInt(image[imageStringProperty[this.keywordIndex]]));
+        if (index < 0 || this.isHeaderFooter) {
+            relationId = this.getNextRelationShipID();
+            isSvgData ? this.svgImageRelationIds.add(parseInt(image[imageStringProperty[this.keywordIndex]]), relationId) : this.imageRelationIds.add(parseInt(image[imageStringProperty[this.keywordIndex]]), relationId);
+        } else {
+            relationId = isSvgData ? this.svgImageRelationIds.get(parseInt(image[imageStringProperty[this.keywordIndex]])) : this.imageRelationIds.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
+        }
         imageCollection.add(relationId, image);
-        // }
         return relationId;
     }
     // Update the HeaderFooter image relations.
@@ -3853,19 +3904,19 @@ export class WordExport {
                     if (isSvgImage) {
                         if (this.headerFooterSvgImages.containsKey(headerId)) {
                             headerImages = this.headerFooterSvgImages.get(headerId);
-                            id = this.addImageRelation(headerImages, image);
+                            id = this.addImageRelation(headerImages, image, true);
                         } else {
                             headerImages = new Dictionary<string, any>();
-                            id = this.addImageRelation(headerImages, image);
+                            id = this.addImageRelation(headerImages, image, true);
                             this.headerFooterSvgImages.add(headerId, headerImages);
                         }
                     } else {
                         if (this.headerFooterImages.containsKey(headerId)) {
                             headerImages = this.headerFooterImages.get(headerId);
-                            id = this.addImageRelation(headerImages, image);
+                            id = this.addImageRelation(headerImages, image, false);
                         } else {
                             headerImages = new Dictionary<string, any>();
-                            id = this.addImageRelation(headerImages, image);
+                            id = this.addImageRelation(headerImages, image, false);
                             this.headerFooterImages.add(headerId, headerImages);
                         }
                     }
@@ -3876,47 +3927,47 @@ export class WordExport {
     }
     // Serialize the table
     private serializeTable(writer: XmlWriter, table: any): void {
-        if (table.rows.length <= 0) {
+        if (table[rowsProperty[this.keywordIndex]].length <= 0) {
             return;
         }
         let owner: any = this.table;
         this.table = table;
         writer.writeStartElement(undefined, 'tbl', this.wNamespace);
-        let tableFormat: any = table.rows[0].rowFormat;
+        let tableFormat: any = table[rowsProperty[this.keywordIndex]][0][rowFormatProperty[this.keywordIndex]];
         this.serializeTableFormat(writer, tableFormat, table);
         this.serializeTableGrid(writer, table);
         let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
         let mHorizontalMerge: Dictionary<number, number> = new Dictionary<number, number>();
         let cellFormats: Dictionary<number, any> = new Dictionary<number, any>();
-        let rows: any = table.rows;
+        let rows: any = table[rowsProperty[this.keywordIndex]];
         if (rows.length > 0) {
             for (let rowIndex: number = 0; rowIndex < rows.length; rowIndex++) {
                 let row: any = rows[rowIndex];
-                if (row.cells.length > 0) {
-                    if (row.hasOwnProperty('contentControlProperties')) {
-                        this.serializeContentControl(writer, row.contentControlProperties, row);
+                if (row[cellsProperty[this.keywordIndex]].length > 0) {
+                    if (row.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+                        this.serializeContentControl(writer, row[contentControlPropertiesProperty[this.keywordIndex]], row);
                         continue;
                     }
                     let owner: any = this.row;
                     this.row = row;
                     writer.writeStartElement(undefined, 'tr', this.wNamespace);
                     this.serializeRowFormat(writer, row);
-                    let cells: any = row.cells;
+                    let cells: any = row[cellsProperty[this.keywordIndex]];
                     let cellLength: number = cells.length;
                     let prevColIndex: number = 0;
                     for (let i: number = 0; i < cellLength; i++) {
                         let cell: any = cells[i];
-                        let columnIndex: number = cell.columnIndex;
-                        if (cell.hasOwnProperty('contentControlProperties')) {
-                            this.serializeContentControl(writer, cell.contentControlProperties, cell);
+                        let columnIndex: number = cell[columnIndexProperty[this.keywordIndex]];
+                        if (cell.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+                            this.serializeContentControl(writer, cell[contentControlPropertiesProperty[this.keywordIndex]], cell);
                             continue;
                         }
-                        let cellFormat: any = cell.cellFormat;
+                        let cellFormat: any = cell[cellFormatProperty[this.keywordIndex]];
                         if ((columnIndex - prevColIndex) > 0) {
                             let checkIndex: number = i === 0 ? 0 : (prevColIndex + 1);
                             for (let k: number = checkIndex; k < columnIndex; k++) {
                                 if (mVerticalMerge.containsKey(k)) {
-                                    let format: any = this.getMergeCellFormat(cellFormat, cellFormats.get(k), k < cell.columnIndex);
+                                    let format: any = this.getMergeCellFormat(cellFormat, cellFormats.get(k), k < cell[columnIndexProperty[this.keywordIndex]]);
                                     this.serializeTableCell(writer, cell, format, false);
                                     mVerticalMerge.set(k, mVerticalMerge.get(k) - 1);
                                     if (mVerticalMerge.get(k) === 1) {
@@ -3937,17 +3988,17 @@ export class WordExport {
                             }
                         }
                         prevColIndex = columnIndex;
-                        if (cellFormat.rowSpan > 1) {
-                            mVerticalMerge.add(columnIndex, cellFormat.rowSpan);
+                        if (cellFormat[rowSpanProperty[this.keywordIndex]] > 1) {
+                            mVerticalMerge.add(columnIndex, cellFormat[rowSpanProperty[this.keywordIndex]]);
                             cellFormats.add(columnIndex, cellFormat);
                         }
                         this.serializeTableCell(writer, cell, cellFormat, true);
-                        if (cellFormat.columnSpan > 1 && cellFormat.rowSpan > 1) {
-                            mHorizontalMerge.add(columnIndex, cellFormat.columnSpan);
+                        if (cellFormat[columnSpanProperty[this.keywordIndex]] > 1 && cellFormat[rowSpanProperty[this.keywordIndex]] > 1) {
+                            mHorizontalMerge.add(columnIndex, cellFormat[columnSpanProperty[this.keywordIndex]]);
                         }
                         for (let j: number = columnIndex + 1; ; j++) {
                             if (mVerticalMerge.containsKey(j)) {
-                                let mergeFormat: any = this.getMergeCellFormat(cellFormat, cellFormats.get(j), j < cell.columnIndex);
+                                let mergeFormat: any = this.getMergeCellFormat(cellFormat, cellFormats.get(j), j < cell[columnIndexProperty[this.keywordIndex]]);
                                 this.serializeTableCell(writer, cell, mergeFormat, false);
                                 mVerticalMerge.set(j, mVerticalMerge.get(j) - 1);
                                 prevColIndex++;
@@ -3962,12 +4013,15 @@ export class WordExport {
                                     prevColIndex += mHorizontalMerge.get(j) - 1;
                                     j += mHorizontalMerge.get(j);
                                 }
-                            } else if (!(i === (cellLength - 1) && j < table.columnCount)) {
+                            } else if (!(i === (cellLength - 1) && j < table[columnCountProperty[this.keywordIndex]])) {
                                 break;
                             }
                         }
                     }
-                    writer.writeEndElement(); //end od table row 'tr'
+                    if (!this.isBookmarkAtRowEnd) {
+                        writer.writeEndElement(); //end od table row 'tr'
+                    }
+                    this.isBookmarkAtRowEnd = false;
                     this.row = owner;
                 }
             }
@@ -3978,9 +4032,9 @@ export class WordExport {
     private getMergeCellFormat(cellFormat: any, mergedCellFormat: any, before: boolean): any {
         let format: any = mergedCellFormat;
         if (before) {
-            format.borders.right = cellFormat.borders.left;
+            format[bordersProperty[this.keywordIndex]][rightProperty[this.keywordIndex]] = cellFormat[bordersProperty[this.keywordIndex]][leftProperty[this.keywordIndex]];
         } else {
-            format.borders.left = cellFormat.borders.right;
+            format[bordersProperty[this.keywordIndex]][leftProperty[this.keywordIndex]] = cellFormat[bordersProperty[this.keywordIndex]][rightProperty[this.keywordIndex]];
         }
         return format;
     }
@@ -3992,28 +4046,28 @@ export class WordExport {
         this.serializeCellWidth(xmlWriter, cellFormat);
         this.serializeCellMargins(xmlWriter, cellFormat);
         xmlWriter.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(xmlWriter, cellFormat.borders, 8, false);
+        this.serializeBorders(xmlWriter, cellFormat[bordersProperty[this.keywordIndex]], 8, false);
         xmlWriter.writeEndElement(); // end of tcBorders
-        this.serializeShading(xmlWriter, cell.cellFormat.shading);
+        this.serializeShading(xmlWriter, cell[cellFormatProperty[this.keywordIndex]][shadingProperty[this.keywordIndex]]);
         this.serializeTableCellDirection(xmlWriter, cellFormat);
-        this.serializeCellVerticalAlign(xmlWriter, cellFormat.verticalAlignment);
-        if (cellFormat.columnSpan > 1) {
-            let num: number = cellFormat.columnSpan;
+        this.serializeCellVerticalAlign(xmlWriter, cellFormat[verticalAlignmentProperty[this.keywordIndex]]);
+        if (cellFormat[columnSpanProperty[this.keywordIndex]] > 1) {
+            let num: number = cellFormat[columnSpanProperty[this.keywordIndex]];
             xmlWriter.writeStartElement(undefined, 'gridSpan', this.wNamespace);
             xmlWriter.writeAttributeString('w', 'val', this.wNamespace, num.toString());
             xmlWriter.writeEndElement();
         }
-        if (cellFormat.rowSpan > 1) {
+        if (cellFormat[rowSpanProperty[this.keywordIndex]] > 1) {
             xmlWriter.writeStartElement(undefined, 'vMerge', this.wNamespace);
             xmlWriter.writeAttributeString('w', 'val', this.wNamespace, mergeStart ? 'restart' : 'continue');
             xmlWriter.writeEndElement(); // end of vMerge
         }
         xmlWriter.writeEndElement(); // end of tcPr
-        if (cell && cell.blocks.length > 0) {
+        if (cell && cell[blocksProperty[this.keywordIndex]].length > 0) {
             let itemIndex: number = 0;
             let item: any = undefined;
-            while (itemIndex < cell.blocks.length) {
-                item = cell.blocks[itemIndex];
+            while (itemIndex < cell[blocksProperty[this.keywordIndex]].length) {
+                item = cell[blocksProperty[this.keywordIndex]][itemIndex];
                 this.serializeBodyItem(xmlWriter, item, false);
                 itemIndex += 1;
             }
@@ -4026,15 +4080,16 @@ export class WordExport {
             xmlWriter.writeEndElement(); //end of pPr
             xmlWriter.writeEndElement(); //end of P
         }
-        xmlWriter.writeEndElement(); //end of table cell 'tc' 
+        if (!this.isBookmarkAtRowEnd) {
+            xmlWriter.writeEndElement(); //end of table cell 'tc' 
+        }
         this.blockOwner = owner;
     }
     // Serialize the table grid
     private serializeTableGrid(writer: XmlWriter, table: any): void {
         writer.writeStartElement(undefined, 'tblGrid', this.wNamespace);
-
-        if (table.grid.length !== 0) {
-            this.serializeGridColumns(writer, table.grid);
+        if (table[gridProperty[this.keywordIndex]].length !== 0) {
+            this.serializeGridColumns(writer, table[gridProperty[this.keywordIndex]]);
         }
 
         writer.writeEndElement();
@@ -4045,9 +4100,9 @@ export class WordExport {
         if (rows.length > 0) {
             for (let i: number = 0; i < rows.length; i++) {
                 let row: any = rows[i];
-                if (row.cells.length > 0) {
-                    if (row.hasOwnProperty('contentControlProperties')) {
-                        this.serializeContentControl(writer, row.contentControlProperties, row);
+                if (row[cellsProperty[this.keywordIndex]].length > 0) {
+                    if (row.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+                        this.serializeContentControl(writer, row[contentControlPropertiesProperty[this.keywordIndex]], row);
                         continue;
                     }
                     this.serializeRow(writer, row, mVerticalMerge);
@@ -4062,38 +4117,38 @@ export class WordExport {
         writer.writeStartElement(undefined, 'tr', this.wNamespace);
         this.serializeRowFormat(writer, row);
 
-        this.serializeCells(writer, row.cells, mVerticalMerge);
+        this.serializeCells(writer, row[cellsProperty[this.keywordIndex]], mVerticalMerge);
 
         writer.writeEndElement(); //end od table row 'tr'
         this.row = owner;
     }
     // Serialize the row format
     private serializeRowFormat(writer: XmlWriter, row: any): void {
-        this.serializeRowMargins(writer, row.rowFormat);
+        this.serializeRowMargins(writer, row[rowFormatProperty[this.keywordIndex]]);
         writer.writeStartElement(undefined, 'trPr', this.wNamespace);
 
         //Serialize Row Height
-        if (row.rowFormat.height > 0) {
+        if (row[rowFormatProperty[this.keywordIndex]][heightProperty[this.keywordIndex]] > 0) {
             writer.writeStartElement(undefined, 'trHeight', this.wNamespace);
-            if (row.rowFormat.heightType === 'Exactly') {
+            if (row[rowFormatProperty[this.keywordIndex]][heightTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'Exactly')) {
                 writer.writeAttributeString('w', 'hRule', this.wNamespace, 'exact');
-            } else if (row.rowFormat.heightType === 'AtLeast') {
+            } else if (row[rowFormatProperty[this.keywordIndex]][heightTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'AtLeast')) {
                 writer.writeAttributeString('w', 'hRule', this.wNamespace, 'atLeast');
             }
-            let height: string = this.roundToTwoDecimal(row.rowFormat.height * this.twentiethOfPoint).toString();
+            let height: string = this.roundToTwoDecimal(row[rowFormatProperty[this.keywordIndex]][heightProperty[this.keywordIndex]] * this.twentiethOfPoint).toString();
             writer.writeAttributeString('w', 'val', this.wNamespace, height);
             writer.writeEndElement();
         }
-        let rowFormat: any = row.rowFormat;
+        let rowFormat: any = row[rowFormatProperty[this.keywordIndex]];
         // //Serialize 'gridBefore' element
-        let gridBefore: number = rowFormat.gridBefore;
+        let gridBefore: number = rowFormat[gridBeforeProperty[this.keywordIndex]];
         if (gridBefore > 0) {
             writer.writeStartElement(undefined, 'gridBefore', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, gridBefore.toString());
             writer.writeEndElement();
         }
         // //Serialize 'gridAfter' element
-        let gridAfter: number = rowFormat.gridAfter;
+        let gridAfter: number = rowFormat[gridAfterProperty[this.keywordIndex]];
         if (gridAfter > 0) {
             writer.writeStartElement(undefined, 'gridAfter', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, gridAfter.toString());
@@ -4102,14 +4157,16 @@ export class WordExport {
         // //Serialize 'wBefore' element 
         if (gridBefore > 0) {
             writer.writeStartElement(undefined, 'wBefore', this.wNamespace);
-            switch (rowFormat.gridBeforeWidthType) {
+            switch (rowFormat[gridBeforeWidthTypeProperty[this.keywordIndex]]) {
                 case 'Percent':
-                    let width: string = this.roundToTwoDecimal(rowFormat.gridBeforeWidth * this.percentageFactor).toString();
+                case 1:
+                    let width: string = this.roundToTwoDecimal(rowFormat[gridBeforeWidthProperty[this.keywordIndex]] * this.percentageFactor).toString();
                     writer.writeAttributeString('w', 'w', this.wNamespace, width);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'pct');
                     break;
                 case 'Point':
-                    let pointWidth: string = this.roundToTwoDecimal(rowFormat.gridBeforeWidth * this.twipsInOnePoint).toString();
+                case 2:
+                    let pointWidth: string = this.roundToTwoDecimal(rowFormat[gridBeforeWidthProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                     writer.writeAttributeString('w', 'w', this.wNamespace, pointWidth);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'dxa');
                     break;
@@ -4119,14 +4176,16 @@ export class WordExport {
         //Serialize 'wAfter' element
         if (gridAfter > 0) {
             writer.writeStartElement(undefined, 'wAfter', this.wNamespace);
-            switch (rowFormat.gridAfterWidthType) {
+            switch (rowFormat[gridAfterWidthTypeProperty[this.keywordIndex]]) {
                 case 'Percent':
-                    let width: string = this.roundToTwoDecimal(rowFormat.gridAfterWidth * this.percentageFactor).toString();
+                case 1:
+                    let width: string = this.roundToTwoDecimal(rowFormat[gridAfterWidthProperty[this.keywordIndex]] * this.percentageFactor).toString();
                     writer.writeAttributeString('w', 'val', this.wNamespace, width);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'pct');
                     break;
                 case 'Point':
-                    let pointWidth: string = this.roundToTwoDecimal(rowFormat.gridAfterWidth * this.twipsInOnePoint).toString();
+                case 2:
+                    let pointWidth: string = this.roundToTwoDecimal(rowFormat[gridAfterWidthProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                     writer.writeAttributeString('w', 'val', this.wNamespace, pointWidth);
                     writer.writeAttributeString('w', 'type', this.wNamespace, 'dxa');
                     break;
@@ -4134,17 +4193,17 @@ export class WordExport {
             writer.writeEndElement();
         }
         //Serialize 'cantSplit' element 
-        if (!rowFormat.allowBreakAcrossPages) {
+        if (!HelperMethods.parseBoolValue(rowFormat[allowBreakAcrossPagesProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'cantSplit', this.wNamespace);
             writer.writeEndElement();
         }
         // //Serialize 'tblHeader' element 
-        if (rowFormat.isHeader) {
+        if (HelperMethods.parseBoolValue(rowFormat[isHeaderProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'tblHeader', this.wNamespace);
             writer.writeEndElement();
         }
         //serialize revision
-        if (!isNullOrUndefined(rowFormat.revisionIds) && rowFormat.revisionIds.length > 0) {
+        if (!isNullOrUndefined(rowFormat[revisionIdsProperty[this.keywordIndex]]) && rowFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
             this.serializeRevisionStart(writer, rowFormat, undefined);
             this.serializeRevisionEnd(writer, rowFormat, undefined);
         }
@@ -4153,8 +4212,8 @@ export class WordExport {
     // serialize the table cells
     private serializeCells(writer: XmlWriter, cells: any, mVerticalMerge: Dictionary<number, number>): void {
         for (let i: number = 0; i < cells.length; i++) {
-            if (cells[i].hasOwnProperty('contentControlProperties')) {
-                this.serializeContentControl(writer, cells[i].contentControlProperties, cells[i]);
+            if (cells[i].hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
+                this.serializeContentControl(writer, cells[i][contentControlPropertiesProperty[this.keywordIndex]], cells[i]);
                 continue;
             }
             this.serializeCell(writer, cells[i], mVerticalMerge);
@@ -4165,12 +4224,12 @@ export class WordExport {
         let owner: any = this.blockOwner;
         this.blockOwner = cell;
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
-        mVerticalMerge = this.serializeCellFormat(writer, cell.cellFormat, true, true, mVerticalMerge);
-        if (cell.blocks.length > 0) {
+        mVerticalMerge = this.serializeCellFormat(writer, cell[cellFormatProperty[this.keywordIndex]], true, true, mVerticalMerge);
+        if (cell[blocksProperty[this.keywordIndex]].length > 0) {
             let itemIndex: number = 0;
             let item: any = undefined;
-            while (itemIndex < cell.blocks.length) {
-                item = cell.blocks[itemIndex];
+            while (itemIndex < cell[blocksProperty[this.keywordIndex]].length) {
+                item = cell[blocksProperty[this.keywordIndex]][itemIndex];
                 this.serializeBodyItem(writer, item, false);
                 itemIndex += 1;
             }
@@ -4187,7 +4246,7 @@ export class WordExport {
         writer.writeEndElement(); //end of table cell 'tc' 
         let increment: number = 1;
         // let count: number = 0;
-        if (mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment) && this.row.cells.length === 1) {
+        if (mVerticalMerge.containsKey((cell[columnIndexProperty[this.keywordIndex]] + cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]] - 1) + increment) && this.row[cellsProperty[this.keywordIndex]].length === 1) {
             let length: number = mVerticalMerge.keys[mVerticalMerge.keys.length - 1];
             while (increment <= length) {
                 increment = this.createCellForMerge(writer, cell, mVerticalMerge, increment);
@@ -4199,10 +4258,10 @@ export class WordExport {
         this.blockOwner = owner;
     }
     private createCellForMerge(writer: XmlWriter, cell: any, mVerticalMerge: Dictionary<number, number>, increment: number): number {
-        while (mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
-            && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
+        while (mVerticalMerge.containsKey((cell[columnIndexProperty[this.keywordIndex]] + cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]] - 1) + increment)
+            && (((this.row[cellsProperty[this.keywordIndex]].indexOf(cell) === this.row[cellsProperty[this.keywordIndex]].length - 1) || this.row[cellsProperty[this.keywordIndex]].indexOf(cell) === cell[columnIndexProperty[this.keywordIndex]]))
             && cell.nextNode === undefined) {
-            let collKey: number = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment;
+            let collKey: number = (cell[columnIndexProperty[this.keywordIndex]] + cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]] - 1) + increment;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
             let endProperties: boolean = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
@@ -4218,7 +4277,7 @@ export class WordExport {
             writer.writeEndElement();
             if (isNullOrUndefined(this.spanCellFormat)) {
                 writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-                this.serializeBorders(writer, cell.cellFormat.borders, 8, false);
+                this.serializeBorders(writer, cell[cellFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]], 8, false);
                 writer.writeEndElement();
             }
             if (!endProperties) {
@@ -4238,9 +4297,9 @@ export class WordExport {
 
         let cell: any = this.blockOwner;
         //Get the table fomat
-        let tf: any = this.table.tableFormat;
+        let tf: any = this.table[tableFormatProperty[this.keywordIndex]];
         //Get the row format
-        let rf: any = this.row.rowFormat;
+        let rf: any = this.row[rowFormatProperty[this.keywordIndex]];
         writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
         //w:cnfStyle -   Table Cell Conditional Formatting
         // SerializeCnfStyleElement(cell);
@@ -4256,10 +4315,10 @@ export class WordExport {
         }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(writer, cellFormat.borders, 8, false);
+        this.serializeBorders(writer, cellFormat[bordersProperty[this.keywordIndex]], 8, false);
         writer.writeEndElement();
         //w:shd -  Table Cell Shading
-        this.serializeShading(writer, cell.cellFormat.shading);
+        this.serializeShading(writer, cell[cellFormatProperty[this.keywordIndex]][shadingProperty[this.keywordIndex]]);
         // //w:noWrap -   Don't Wrap Cell Content
         // if (cellFormat.HasValue(CellFormat.TextWrapKey)) {
         //     m_writer.WriteStartElement('noWrap', W_namespace);
@@ -4287,7 +4346,7 @@ export class WordExport {
         // }
         //w:vAlign -  Table Cell Vertical Alignment
         // if (cellFormat.HasValue(CellFormat.VrAlignmentKey))
-        this.serializeCellVerticalAlign(writer, cellFormat.verticalAlignment);
+        this.serializeCellVerticalAlign(writer, cellFormat[verticalAlignmentProperty[this.keywordIndex]]);
         // //w:hideMark -   Ignore End Of Cell Marker In Row Height Calculation
         // SerializeDocxProps(tempDocxProps, 'hideMark');
         // //w:cellIns -    Table Cell Insertion
@@ -4322,14 +4381,14 @@ export class WordExport {
     // Serialize the cell width
     private serializeCellWidth(writer: XmlWriter, cf: any): void {
         writer.writeStartElement(undefined, 'tcW', this.wNamespace);
-        if (cf.preferredWidthType === 'Percent') {
+        if (cf[preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'Percent')) {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.percentageFactor).toString());
-        } else if (cf.preferredWidthType === 'Auto') {
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf[preferredWidthProperty[this.keywordIndex]] * this.percentageFactor).toString());
+        } else if (cf[preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Auto')) {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
             writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
         } else {
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.twipsInOnePoint).toString());
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf[preferredWidthProperty[this.keywordIndex]] * this.twipsInOnePoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
         }
 
@@ -4340,18 +4399,18 @@ export class WordExport {
         let cell: any = this.blockOwner;
         let isserialized: boolean = false;
         let collKey: number;
-        let currentIndex: number = cell.columnIndex;
-        let cellIndex: number = this.row.cells.indexOf(cell);
-        let prevIndex: number = cellIndex > 0 ? this.row.cells[cellIndex - 1].columnIndex : cell.columnIndex;
-        if (cell.columnIndex === cellIndex) {
-            collKey = cell.columnIndex;
+        let currentIndex: number = cell[columnIndexProperty[this.keywordIndex]];
+        let cellIndex: number = this.row[cellsProperty[this.keywordIndex]].indexOf(cell);
+        let prevIndex: number = cellIndex > 0 ? this.row[cellsProperty[this.keywordIndex]][cellIndex - 1][columnIndexProperty[this.keywordIndex]] : cell[columnIndexProperty[this.keywordIndex]];
+        if (cell[columnIndexProperty[this.keywordIndex]] === cellIndex) {
+            collKey = cell[columnIndexProperty[this.keywordIndex]];
             isserialized = true;
         } else {
             isserialized = false;
         }
         if (!isserialized) {
             if (cellIndex === 0) {
-                currentIndex = cell.columnIndex;
+                currentIndex = cell[columnIndexProperty[this.keywordIndex]];
                 prevIndex = -1;
             }
             for (let i: number = prevIndex; i < currentIndex; i++) {
@@ -4362,12 +4421,12 @@ export class WordExport {
                 }
             }
         }
-        if (cellFormat.rowSpan > 1) {
+        if (cellFormat[rowSpanProperty[this.keywordIndex]] > 1) {
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             this.spanCellFormat = cellFormat;
-            mVerticalMerge.add(collKey, cellFormat.rowSpan - 1);
-            if (cellFormat.columnSpan > 1) {
-                this.mGridSpans.add(collKey, cellFormat.columnSpan);
+            mVerticalMerge.add(collKey, cellFormat[rowSpanProperty[this.keywordIndex]] - 1);
+            if (cellFormat[columnSpanProperty[this.keywordIndex]] > 1) {
+                this.mGridSpans.add(collKey, cellFormat[columnSpanProperty[this.keywordIndex]]);
             }
             writer.writeAttributeString('w', 'val', this.wNamespace, 'restart');
             writer.writeEndElement();
@@ -4382,7 +4441,7 @@ export class WordExport {
         writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
         writer.writeEndElement();
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(writer, cell.cellFormat.borders, 8, false);
+        this.serializeBorders(writer, cell[cellFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]], 8, false);
         writer.writeEndElement();
         writer.writeEndElement(); //end tcPr
         writer.writeStartElement('w', 'p', this.wNamespace);
@@ -4390,7 +4449,7 @@ export class WordExport {
         writer.writeEndElement(); //end tc
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
         writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
-        this.serializeCellWidth(writer, cell.cellFormat);
+        this.serializeCellWidth(writer, cell[cellFormatProperty[this.keywordIndex]]);
         mVerticalMerge = this.checkMergeCell(collKey, mVerticalMerge);
         return mVerticalMerge;
     }
@@ -4416,8 +4475,8 @@ export class WordExport {
     // Serialize the grid span element of cell.
     private serializeGridSpan(writer: XmlWriter, cell: any): void {
         // int gridSpan = cell.cellFormat.GridSpan;
-        if (cell.cellFormat.columnSpan > 1) {
-            let num: number = cell.cellFormat.columnSpan;
+        if (cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]] > 1) {
+            let num: number = cell[cellFormatProperty[this.keywordIndex]][columnSpanProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'gridSpan', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, num.toString());
             writer.writeEndElement();
@@ -4459,9 +4518,11 @@ export class WordExport {
         writer.writeStartElement(undefined, 'vAlign', this.wNamespace);
         switch (alignment) {
             case 'Center':
+            case 1:
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'center');
                 break;
             case 'Bottom':
+            case 2:
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'bottom');
                 break;
             default:
@@ -4504,17 +4565,17 @@ export class WordExport {
         //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');  
         this.serializeTablePositioning(writer, table);
         this.serializeTableWidth(writer, table);
-        this.serializeTableAlignment(writer, table.tableFormat);
-        this.serializeCellSpacing(writer, table.tableFormat);
-        this.serializeTableIndentation(writer, table.tableFormat);
-        this.serializeTableMargins(writer, table.tableFormat);
-        this.serializeTableBorders(writer, table.tableFormat);
-        this.serializeShading(writer, table.tableFormat.shading);
-        if (table.tableFormat.bidi) {
+        this.serializeTableAlignment(writer, table[tableFormatProperty[this.keywordIndex]]);
+        this.serializeCellSpacing(writer, table[tableFormatProperty[this.keywordIndex]]);
+        this.serializeTableIndentation(writer, table[tableFormatProperty[this.keywordIndex]]);
+        this.serializeTableMargins(writer, table[tableFormatProperty[this.keywordIndex]]);
+        this.serializeTableBorders(writer, table[tableFormatProperty[this.keywordIndex]]);
+        this.serializeShading(writer, table[tableFormatProperty[this.keywordIndex]][shadingProperty[this.keywordIndex]]);
+        if (HelperMethods.parseBoolValue(table[tableFormatProperty[this.keywordIndex]][bidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'bidiVisual', this.wNamespace);
             writer.writeEndElement();
         }
-        this.serializeTblLayout(writer, table.tableFormat);
+        this.serializeTblLayout(writer, table[tableFormatProperty[this.keywordIndex]]);
         // this.serializeTableCellMargin(writer, table.tableFormat);
         //     SerializeTableLook(table);
         //         if (!isNullOrUndefined(table.Title))
@@ -4556,52 +4617,52 @@ export class WordExport {
     }
     // Serialize the table position
     private serializeTablePositioning(writer: XmlWriter, table: any): void {
-        if (table.wrapTextAround) {
+        if (HelperMethods.parseBoolValue(table[wrapTextAroundProperty[this.keywordIndex]])) {
             writer.writeStartElement('w', 'tblpPr', this.wNamespace);
-            if (table.positioning.distanceLeft > 0) {
-                let left: string = Math.round(table.positioning.distanceLeft * this.twipsInOnePoint).toString();
+            if (table[positioningProperty[this.keywordIndex]][distanceLeftProperty[this.keywordIndex]] > 0) {
+                let left: string = Math.round(table[positioningProperty[this.keywordIndex]][distanceLeftProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'leftFromText', this.wNamespace, left);
             }
-            if (table.positioning.distanceRight > 0) {
-                let right: string = Math.round(table.positioning.distanceRight * this.twipsInOnePoint).toString();
+            if (table[positioningProperty[this.keywordIndex]][distanceRightProperty[this.keywordIndex]] > 0) {
+                let right: string = Math.round(table[positioningProperty[this.keywordIndex]][distanceRightProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'rightFromText', this.wNamespace, right);
             }
-            if (table.positioning.distanceTop > 0) {
-                let top: string = Math.round(table.positioning.distanceTop * this.twipsInOnePoint).toString();
+            if (table[positioningProperty[this.keywordIndex]][distanceTopProperty[this.keywordIndex]] > 0) {
+                let top: string = Math.round(table[positioningProperty[this.keywordIndex]][distanceTopProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'topFromText', this.wNamespace, top);
             }
-            if (table.positioning.distanceBottom > 0) {
-                let bottom: string = Math.round(table.positioning.distanceBottom * this.twipsInOnePoint).toString();
+            if (table[positioningProperty[this.keywordIndex]][distanceBottomProperty[this.keywordIndex]] > 0) {
+                let bottom: string = Math.round(table[positioningProperty[this.keywordIndex]][distanceBottomProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'bottomFromText', this.wNamespace, bottom);
             }
-            if (table.positioning.verticalOrigin) {
-                let verticalOrigin: string = table.positioning.verticalOrigin === 'Paragraph' ? 'text' : table.positioning.verticalOrigin.toLowerCase();
+            if (table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]) {
+                let verticalOrigin: string = table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'text' : this.getTableVerticalRelation(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]).toLowerCase();
                 writer.writeAttributeString('w', 'vertAnchor', this.wNamespace, verticalOrigin);
             }
-            if (table.positioning.horizontalOrigin && table.positioning.horizontalOrigin !== 'Column') {
-                writer.writeAttributeString('w', 'horzAnchor', this.wNamespace, table.positioning.horizontalOrigin.toLowerCase());
+            if (table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Column')) {
+                writer.writeAttributeString('w', 'horzAnchor', this.wNamespace, this.getTableHorizontalRelation(table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]]).toLowerCase());
             }
-            if (table.positioning.horizontalAlignment && table.positioning.horizontalAlignment !== 'Left') {
-                let horizontalAlignment: string = table.positioning.horizontalAlignment.toLowerCase();
+            if (table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Left')) {
+                let horizontalAlignment: string = this.keywordIndex == 1 ? this.getTableHorizontalAlignment(table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]]) : table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]].toLowerCase();
                 writer.writeAttributeString('w', 'tblpXSpec', this.wNamespace, horizontalAlignment);
             }
-            if (table.positioning.verticalAlignment && table.positioning.verticalAlignment !== 'None') {
-                let verticalAlignment: string = table.positioning.verticalAlignment.toLowerCase();
+            if (table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'None')) {
+                let verticalAlignment: string = this.keywordIndex == 1 ? this.getTableVerticalAlignment(table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]]) : table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]].toLowerCase();
                 writer.writeAttributeString('w', 'tblpYSpec', this.wNamespace, verticalAlignment);
             }
-            if (((!isNullOrUndefined(table.positioning.horizontalAlignment) && table.positioning.horizontalAlignment === 'Left')
-                || !table.positioning.horizontalAlignment)
-                && table.positioning.horizontalPosition > 0) {
-                let horizontalPosition: string = Math.round(table.positioning.horizontalPosition * this.twipsInOnePoint).toString();
+            if (((!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Left'))
+                || !table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]])
+                && table[positioningProperty[this.keywordIndex]][horizontalPositionProperty[this.keywordIndex]] > 0) {
+                let horizontalPosition: string = Math.round(table[positioningProperty[this.keywordIndex]][horizontalPositionProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpX', this.wNamespace, horizontalPosition);
             }
-            if (!isNullOrUndefined(table.positioning.verticalAlignment) && table.positioning.verticalAlignment === 'None') {
-                let verticalPosition: string = Math.round(table.positioning.verticalPosition * this.twipsInOnePoint).toString();
+            if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'None')) {
+                let verticalPosition: string = Math.round(table[positioningProperty[this.keywordIndex]][verticalPositionProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpY', this.wNamespace, verticalPosition);
             }
             writer.writeEndElement();
 
-            if (!table.positioning.allowOverlap) {
+            if (!HelperMethods.parseBoolValue(table[positioningProperty[this.keywordIndex]][allowOverlapProperty[this.keywordIndex]])) {
                 writer.writeStartElement('w', 'tblOverlap', this.wNamespace);
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'never');
                 writer.writeEndElement();
@@ -4625,29 +4686,29 @@ export class WordExport {
     // serialize the table margins, row margins, cell margins
     private serializeMargins(writer: XmlWriter, format: any, tag: string): void {
         writer.writeStartElement(undefined, tag, this.wNamespace);
-        if (!isNullOrUndefined(format.topMargin)) {
-            let topMargin: number = Math.round(format.topMargin * 20);
+        if (!isNullOrUndefined(format[topMarginProperty[this.keywordIndex]])) {
+            let topMargin: number = Math.round(format[topMarginProperty[this.keywordIndex]] * 20);
             writer.writeStartElement(undefined, 'top', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, topMargin.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(format.leftMargin)) {
-            let leftMargin: number = Math.round(format.leftMargin * 20);
+        if (!isNullOrUndefined(format[leftMarginProperty[this.keywordIndex]])) {
+            let leftMargin: number = Math.round(format[leftMarginProperty[this.keywordIndex]] * 20);
             writer.writeStartElement(undefined, 'left', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, leftMargin.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(format.bottomMargin)) {
-            let bottomMargin: number = Math.round(format.bottomMargin * 20);
+        if (!isNullOrUndefined(format[bottomMarginProperty[this.keywordIndex]])) {
+            let bottomMargin: number = Math.round(format[bottomMarginProperty[this.keywordIndex]] * 20);
             writer.writeStartElement(undefined, 'bottom', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, bottomMargin.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(format.rightMargin)) {
-            let rightMargin: number = Math.round(format.rightMargin * 20);
+        if (!isNullOrUndefined(format[rightMarginProperty[this.keywordIndex]])) {
+            let rightMargin: number = Math.round(format[rightMarginProperty[this.keywordIndex]] * 20);
             writer.writeStartElement(undefined, 'right', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, rightMargin.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
@@ -4659,86 +4720,127 @@ export class WordExport {
     private serializeShading(writer: XmlWriter, format: any): void {
         // if (format.textureStyle !== 'TextureNone') {
         writer.writeStartElement(undefined, 'shd', this.wNamespace);
-        if (format.backgroundColor && format.backgroundColor !== 'empty') {
-            writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
+        if (format[backgroundColorProperty[this.keywordIndex]] && format[backgroundColorProperty[this.keywordIndex]] !== 'empty') {
+            writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format[backgroundColorProperty[this.keywordIndex]]));
         } else {
             writer.writeAttributeString(undefined, 'fill', this.wNamespace, 'auto');
         }
-        if (format.foregroundColor === 'empty' || isNullOrUndefined(format.foregroundColor)) {
+        if (format[foregroundColorProperty[this.keywordIndex]] === 'empty' || isNullOrUndefined(format[foregroundColorProperty[this.keywordIndex]])) {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, 'auto');
         } else {
-            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(format.foregroundColor));
+            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(format[foregroundColorProperty[this.keywordIndex]]));
         }
-        if (!isNullOrUndefined(format.textureStyle)) {
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format.textureStyle));
+        if (!isNullOrUndefined(format[textureProperty[this.keywordIndex]])) {
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format[textureProperty[this.keywordIndex]]));
         }
         writer.writeEndElement();
         // }
     }
-    private getTextureStyle(textureStyle: any): string {
+    private getTextureStyle(textureStyle: number | string): string {
         switch (textureStyle) {
             case 'Texture5Percent':
             case 'Texture2Pt5Percent':
             case 'Texture7Pt5Percent':
+            case 1:
+            case 2:
+            case 3:
                 return 'pct5';
             case 'Texture10Percent':
+            case 4:
                 return 'pct10';
             case 'Texture12Pt5Percent':
+            case 5:
                 return 'pct12';
             case 'Texture15Percent':
             case 'Texture17Pt5Percent':
+            case 6:
+            case 7:
                 return 'pct15';
             case 'Texture20Percent':
             case 'Texture22Pt5Percent':
+            case 8:
+            case 9:
                 return 'pct20';
             case 'Texture25Percent':
             case 'Texture27Pt5Percent':
+            case 10:
+            case 11:
                 return 'pct25';
             case 'Texture30Percent':
             case 'Texture32Pt5Percent':
+            case 12:
+            case 13:
                 return 'pct30';
             case 'Texture35Percent':
+            case 14:
                 return 'pct35';
             case 'Texture37Pt5Percent':
+            case 15:
                 return 'pct37';
             case 'Texture40Percent':
             case 'Texture42Pt5Percent':
+            case 16:
+            case 17:
                 return 'pct40';
             case 'Texture45Percent':
             case 'Texture47Pt5Percent':
+            case 18:
+            case 19:
                 return 'pct45';
             case 'Texture50Percent':
             case 'Texture52Pt5Percent':
+            case 20:
+            case 21:
                 return 'pct50';
             case 'Texture55Percent':
             case 'Texture57Pt5Percent':
+            case 22:
+            case 23:
                 return 'pct55';
             case 'Texture60Percent':
+            case 24:
                 return 'pct60';
             case 'Texture62Pt5Percent':
+            case 25:
                 return 'pct62';
             case 'Texture65Percent':
             case 'Texture67Pt5Percent':
+            case 26:
+            case 27:
                 return 'pct65';
             case 'Texture70Percent':
             case 'Texture72Pt5Percent':
+            case 28:
+            case 29:
                 return 'pct70';
             case 'Texture75Percent':
             case 'Texture77Pt5Percent':
+            case 30:
+            case 31:
                 return 'pct75';
             case 'Texture80Percent':
             case 'Texture82Pt5Percent':
+            case 32:
+            case 33:
                 return 'pct80';
             case 'Texture85Percent':
+            case 34:
                 return 'pct85';
             case 'Texture87Pt5Percent':
+            case 35:
                 return 'pct87';
             case 'Texture90Percent':
             case 'Texture92Pt5Percent':
+            case 36:
+            case 37:
                 return 'pct90';
             case 'Texture95Percent':
             case 'Texture97Pt5Percent':
+            case 38:
+            case 39:
                 return 'pct95';
+            case 40:
+                return 'solid';
             case 'TextureCross':
                 return 'thinHorzCross';
             case 'TextureDarkCross':
@@ -4750,9 +4852,19 @@ export class WordExport {
             case 'TextureDarkDiagonalUp':
                 return 'diagStripe';
             case 'TextureDarkHorizontal':
+            case 41:
                 return 'horzStripe';
             case 'TextureDarkVertical':
+            case 42:
                 return 'vertStripe';
+            case 43:
+                return 'reverseDiagStripe';
+            case 44:
+                return 'diagStripe';
+            case 45:
+                return 'horzCross';
+            case 46:
+                return 'diagCross';
             case 'TextureDiagonalCross':
                 return 'thinDiagCross';
             case 'TextureDiagonalDown':
@@ -4760,50 +4872,60 @@ export class WordExport {
             case 'TextureDiagonalUp':
                 return 'thinDiagStripe';
             case 'TextureHorizontal':
+            case 47:
                 return 'thinHorzStripe';
             case 'TextureSolid':
                 return 'solid';
             case 'TextureVertical':
+            case 48:
                 return 'thinVertStripe';
+            case 49:
+                return 'thinReverseDiagStripe';
+            case 50:
+                return 'thinDiagStripe';
+            case 51:
+                return 'thinHorzCross';
+            case 52:
+                return 'thinDiagCross';
             default:
                 return 'clear';
         }
     }
     //serialize the paragraph border
     private serializeParagraphBorders(writer: XmlWriter, formatPara: any): void {
-        let borders: any = formatPara.borders;
+        let borders: any = formatPara[bordersProperty[this.keywordIndex]];
         writer.writeStartElement(undefined, 'pBdr', this.wNamespace);
-        this.serializeBorders(writer, formatPara.borders, 8, true);
+        this.serializeBorders(writer, formatPara[bordersProperty[this.keywordIndex]], 8, true);
         writer.writeEndElement();
     }
     // Serialize the table borders
     private serializeTableBorders(writer: XmlWriter, format: any): void {
-        let borders: any = format.borders;
+        let borders: any = format[bordersProperty[this.keywordIndex]];
         // if (IsNoneBorder(borders))
         //     return;
         writer.writeStartElement(undefined, 'tblBorders', this.wNamespace);
-        this.serializeBorders(writer, format.borders, 8, false);
+        this.serializeBorders(writer, format[bordersProperty[this.keywordIndex]], 8, false);
         writer.writeEndElement();
     }
     // Serialize the borders.
     private serializeBorders(writer: XmlWriter, borders: any, multipler: number, isParagraphBorder: boolean): void {
-        this.serializeBorder(writer, borders.top, 'top', multipler);
-        this.serializeBorder(writer, borders.left, 'left', multipler);
-        this.serializeBorder(writer, borders.bottom, 'bottom', multipler);
-        this.serializeBorder(writer, borders.right, 'right', multipler);
+        this.serializeBorder(writer, borders[topProperty[this.keywordIndex]], 'top', multipler);
+        this.serializeBorder(writer, borders[leftProperty[this.keywordIndex]], 'left', multipler);
+        this.serializeBorder(writer, borders[bottomProperty[this.keywordIndex]], 'bottom', multipler);
+        this.serializeBorder(writer, borders[rightProperty[this.keywordIndex]], 'right', multipler);
         if (isParagraphBorder) {
-            this.serializeBorder(writer, borders.horizontal, 'between', multipler);
-            this.serializeBorder(writer, borders.vertical, 'bar', multipler);
+            this.serializeBorder(writer, borders[horizontalProperty[this.keywordIndex]], 'between', multipler);
+            this.serializeBorder(writer, borders[verticalProperty[this.keywordIndex]], 'bar', multipler);
         } else {
-            this.serializeBorder(writer, borders.horizontal, 'insideH', multipler);
-            this.serializeBorder(writer, borders.vertical, 'insideV', multipler);
-            this.serializeBorder(writer, borders.diagonalDown, 'tl2br', multipler);
-            this.serializeBorder(writer, borders.diagonalUp, 'tr2bl', multipler);
+            this.serializeBorder(writer, borders[horizontalProperty[this.keywordIndex]], 'insideH', multipler);
+            this.serializeBorder(writer, borders[verticalProperty[this.keywordIndex]], 'insideV', multipler);
+            this.serializeBorder(writer, borders[diagonalDownProperty[this.keywordIndex]], 'tl2br', multipler);
+            this.serializeBorder(writer, borders[diagonalUpProperty[this.keywordIndex]], 'tr2bl', multipler);
         }
     }
     // Serialize the table layout element
     private serializeTblLayout(writer: XmlWriter, format: any): void {
-        if (!format.allowAutoFit) {
+        if (!HelperMethods.parseBoolValue(format[allowAutoFitProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'tblLayout', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'fixed');
             writer.writeEndElement();
@@ -4811,16 +4933,16 @@ export class WordExport {
     }
     // Serializes the Border
     private serializeBorder(writer: XmlWriter, border: any, tagName: string, multiplier: number): void {
-        let borderStyle: any = border.lineStyle;
-        let sz: number = ((border.lineWidth ? border.lineWidth : 0) * multiplier);
-        let space: number = border.space ? border.space : 0;
+        let borderStyle: any = border[lineStyleProperty[this.keywordIndex]];
+        let sz: number = ((border[lineWidthProperty[this.keywordIndex]] ? border[lineWidthProperty[this.keywordIndex]] : 0) * multiplier);
+        let space: number = border[spaceProperty[this.keywordIndex]] ? border[spaceProperty[this.keywordIndex]] : 0;
 
-        if (borderStyle === 'Cleared') {
+        if (borderStyle === (this.keywordIndex == 1 ? 26 : 'Cleared')) {
             writer.writeStartElement(undefined, tagName, this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'nil');
             writer.writeEndElement();
             return;
-        } else if (((borderStyle === 'None' || isNullOrUndefined(borderStyle)) && !border.hasNoneStyle) || (sz <= 0 && !border.hasNoneStyle)) {
+        } else if (((borderStyle === (this.keywordIndex == 1 ? 1 : 'None') || isNullOrUndefined(borderStyle)) && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) || (sz <= 0 && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]]))) {
             return;
         }
         writer.writeStartElement(undefined, tagName, this.wNamespace);
@@ -4832,13 +4954,13 @@ export class WordExport {
         // }
         // else
         // {
-        if (border.color) {
-            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border.color));
+        if (border[colorProperty[this.keywordIndex]]) {
+            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border[colorProperty[this.keywordIndex]]));
         }
         // }
         writer.writeAttributeString(undefined, 'sz', this.wNamespace, this.roundToTwoDecimal(sz).toString());
         writer.writeAttributeString(undefined, 'space', this.wNamespace, space.toString());
-        if (border.shadow) {
+        if (HelperMethods.parseBoolValue(border[shadowProperty[this.keywordIndex]])) {
             writer.writeAttributeString(undefined, 'shadow', this.wNamespace, 'on');
         }
 
@@ -4846,60 +4968,93 @@ export class WordExport {
         writer.writeEndElement();
     }
     // Get the border style as string
-    private getBorderStyle(borderStyle: any): string {
+    private getBorderStyle(borderStyle: number | string): string {
         switch (borderStyle) {
             case 'Cleared':
                 return 'cleared';
             case 'None':
+            case 1:
                 return 'None';
             case 'DashSmallGap':
                 return 'dashSmallGap';
             case 'Triple':
                 return 'triple';
             case 'Dot':
+            case 2:
                 return 'dotted';
+            case 3:
+                return 'dashSmallGap';
             case 'DashDot':
                 return 'dotDash';
             case 'DashLargeGap':
+            case 4:
                 return 'dashed';
+            case 5:
+                return 'dotDash';
             case 'DashDotDot':
+            case 6:
                 return 'dotDotDash';
             case 'Double':
+            case 7:
                 return 'double';
+            case 8:
+                return 'triple';
             case 'ThinThickSmallGap':
+            case 9:
                 return 'thinThickSmallGap';
             case 'ThickThinSmallGap':
+            case 10:
                 return 'thickThinSmallGap';
             case 'ThinThickThinSmallGap':
+            case 11:
                 return 'thinThickThinSmallGap';
             case 'ThickThinMediumGap':
+            case 12:
                 return 'thickThinMediumGap';
             case 'ThinThickMediumGap':
+            case 13:
                 return 'thinThickMediumGap';
             case 'ThinThickThinMediumGap':
+            case 14:
                 return 'thinThickThinMediumGap';
             case 'ThickThinLargeGap':
                 return 'thickThinLargeGap';
             case 'ThinThickLargeGap':
+            case 15:
                 return 'thinThickLargeGap';
+            case 16:
+                return 'thickThinLargeGap';
             case 'ThinThickThinLargeGap':
+            case 17:
                 return 'thinThickThinLargeGap';
             case 'Thick':
                 return 'thick';
             case 'SingleWavy':
+            case 18:
                 return 'wave';
             case 'DoubleWavy':
+            case 19:
                 return 'doubleWave';
             case 'DashDotStroked':
+            case 20:
                 return 'dashDotStroked';
             case 'Engrave3D':
                 return 'threeDEngrave';
             case 'Emboss3D':
+            case 21:
                 return 'threeDEmboss';
+            case 22:
+                return 'threeDEngrave';
             case 'Outset':
+            case 23:
                 return 'outset';
             case 'Inset':
+            case 24:
                 return 'inset';
+            case 25:
+                return 'thick';
+            case 26:
+                return 'cleared';
             // case 'None':
             //     return 'none';
             default:
@@ -4908,9 +5063,9 @@ export class WordExport {
     }
     // Serialize the table indentation.
     private serializeTableIndentation(writer: XmlWriter, format: any): void {
-        if (!isNullOrUndefined(format.leftIndent)) {
+        if (!isNullOrUndefined(format[leftIndentProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'tblInd', this.wNamespace);
-            let tableIndent: number = Math.round(format.leftIndent * this.twipsInOnePoint);
+            let tableIndent: number = Math.round(format[leftIndentProperty[this.keywordIndex]] * this.twipsInOnePoint);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, tableIndent.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
@@ -4918,9 +5073,9 @@ export class WordExport {
     }
     // Serialize the cell spacing.
     private serializeCellSpacing(writer: XmlWriter, format: any): void {
-        if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
+        if (!isNullOrUndefined(format[cellSpacingProperty[this.keywordIndex]]) && format[cellSpacingProperty[this.keywordIndex]] > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal((format.cellSpacing / 2) * this.twentiethOfPoint).toString());
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal((format[cellSpacingProperty[this.keywordIndex]] / 2) * this.twentiethOfPoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
             writer.writeEndElement();
         }
@@ -4929,11 +5084,11 @@ export class WordExport {
     private serializeTableWidth(writer: XmlWriter, table: any): void {
 
         writer.writeStartElement(undefined, 'tblW', this.wNamespace);
-        if (table.tableFormat.preferredWidthType === 'Percent') {
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, (table.tableFormat.preferredWidth * this.percentageFactor).toString());
+        if (table[tableFormatProperty[this.keywordIndex]][preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'Percent')) {
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, (table[tableFormatProperty[this.keywordIndex]][preferredWidthProperty[this.keywordIndex]] * this.percentageFactor).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
-        } else if (table.tableFormat.preferredWidthType === 'Point') {
-            let tableWidth: number = Math.round(table.tableFormat.preferredWidth * this.twipsInOnePoint);
+        } else if (table[tableFormatProperty[this.keywordIndex]][preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 2 : 'Point')) {
+            let tableWidth: number = Math.round(table[tableFormatProperty[this.keywordIndex]][preferredWidthProperty[this.keywordIndex]]* this.twipsInOnePoint);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, tableWidth.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
         } else {
@@ -4946,12 +5101,16 @@ export class WordExport {
     private serializeTableAlignment(writer: XmlWriter, format: any): void {
         writer.writeStartElement(undefined, 'jc', this.wNamespace);
 
-        switch (format.tableAlignment) {
+        switch (format[tableAlignmentProperty[this.keywordIndex]]) {
             case 'Right':
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'right');
                 break;
             case 'Center':
+            case 1:
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'center');
+                break;
+            case 2:
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'right');
                 break;
             default:
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'left');
@@ -4963,63 +5122,63 @@ export class WordExport {
     // Serialize the field
     private serializeFieldCharacter(writer: XmlWriter, field: any): void {
         writer.writeStartElement(undefined, 'r', this.wNamespace);
-        this.serializeCharacterFormat(writer, field.characterFormat);
+        this.serializeCharacterFormat(writer, field[characterFormatProperty[this.keywordIndex]]);
         writer.writeStartElement(undefined, 'fldChar', this.wNamespace);
-        let type: string = field.fieldType === 0 ? 'begin'
-            : field.fieldType === 1 ? 'end' : 'separate';
+        let type: string = field[fieldTypeProperty[this.keywordIndex]] === 0 ? 'begin'
+            : field[fieldTypeProperty[this.keywordIndex]] === 1 ? 'end' : 'separate';
         writer.writeAttributeString(undefined, 'fldCharType', this.wNamespace, type);
-        if (type === 'begin' && !isNullOrUndefined(field.formFieldData)) {
-            let formFieldData: any = field.formFieldData;
+        if (type === 'begin' && !isNullOrUndefined(field[formFieldDataProperty[this.keywordIndex]])) {
+            let formFieldData: any = field[formFieldDataProperty[this.keywordIndex]];
             writer.writeStartElement(undefined, 'ffData', this.wNamespace);
             writer.writeStartElement(undefined, 'name', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.name);
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[nameProperty[this.keywordIndex]]);
             writer.writeEndElement();
             writer.writeStartElement(undefined, 'enabled', this.wNamespace);
             writer.writeEndElement();
-            if (formFieldData.hasOwnProperty('textInput')) {
+            if (formFieldData.hasOwnProperty(textInputProperty[this.keywordIndex])) {
                 writer.writeStartElement(undefined, 'textInput', this.wNamespace);
-                let type: any = formFieldData.textInput.type;
+                let type: string = this.keywordIndex == 1 ? this.getTextFormFieldType(formFieldData[textInputProperty[this.keywordIndex]][typeProperty[this.keywordIndex]]) : formFieldData[textInputProperty[this.keywordIndex]][typeProperty[this.keywordIndex]].toString();
                 if (type === 'Number' || 'Date') {
                     writer.writeStartElement(undefined, 'type', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type == 'Calculation' ? 'calculated' : formFieldData.textInput.type.toString().toLowerCase());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, type == 'Calculation' ? 'calculated' : type.toLowerCase());
                     writer.writeEndElement();
                 }
                 writer.writeStartElement(undefined, 'default', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.defaultValue);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[textInputProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]]);
                 writer.writeEndElement();
                 writer.writeStartElement(undefined, 'format', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.format);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.keywordIndex == 1 ? this.getTextFormFieldFormat(formFieldData[textInputProperty[this.keywordIndex]][formatProperty[this.keywordIndex]]) : formFieldData[textInputProperty[this.keywordIndex]][formatProperty[this.keywordIndex]]);
                 writer.writeEndElement();
                 writer.writeEndElement();
-            } else if (formFieldData.hasOwnProperty('checkBox')) {
+            } else if (formFieldData.hasOwnProperty(checkBoxProperty[this.keywordIndex])) {
                 writer.writeStartElement(undefined, 'checkBox', this.wNamespace);
-                if (formFieldData.checkBox.sizeType === 'Auto') {
+                if (formFieldData[checkBoxProperty[this.keywordIndex]][sizeTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Auto')) {
                     writer.writeStartElement(undefined, 'sizeAuto', this.wNamespace);
                     writer.writeEndElement();
                 } else {
                     writer.writeStartElement(undefined, 'size', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, this.roundToTwoDecimal(formFieldData.checkBox.size * 2).toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, this.roundToTwoDecimal(formFieldData[checkBoxProperty[this.keywordIndex]][sizeProperty[this.keywordIndex]] * 2).toString());
                     writer.writeEndElement();
                 }
                 writer.writeStartElement(undefined, 'defalut', this.wNamespace);
-                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.defaultValue ? '1' : '0');
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[checkBoxProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]] ? '1' : '0');
                 writer.writeEndElement();
-                if (formFieldData.checkBox.checked) {
+                if (formFieldData[checkBoxProperty[this.keywordIndex]][checkedProperty[this.keywordIndex]]) {
                     writer.writeStartElement(undefined, 'checked', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.checked ? '1' : '0');
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[checkBoxProperty[this.keywordIndex]][checkedProperty[this.keywordIndex]] ? '1' : '0');
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
             } else {
                 writer.writeStartElement(undefined, 'ddList', this.wNamespace);
-                if (formFieldData.dropDownList.selectedIndex !== 0) {
+                if (formFieldData[dropDownListProperty[this.keywordIndex]][selectedIndexProperty[this.keywordIndex]] !== 0) {
                     writer.writeStartElement(undefined, 'result', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[dropDownListProperty[this.keywordIndex]][selectedIndexProperty[this.keywordIndex]].toString());
                     writer.writeEndElement();
                 }
-                for (let i: number = 0; i < formFieldData.dropDownList.dropDownItems.length; i++) {
+                for (let i: number = 0; i < formFieldData[dropDownListProperty[this.keywordIndex]][dropDownItemsProperty[this.keywordIndex]].length; i++) {
                     writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropDownItems[i].toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData[dropDownListProperty[this.keywordIndex]][dropDownItemsProperty[this.keywordIndex]][i].toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -5028,7 +5187,7 @@ export class WordExport {
         }
         writer.writeEndElement();
         writer.writeEndElement();
-        if (field.fieldType === 0 && field.fieldCodeType === 'FieldFormTextInput') {
+        if (field[fieldTypeProperty[this.keywordIndex]] === 0 && field[fieldTypeProperty[this.keywordIndex]] === 'FieldFormTextInput') {
             writer.writeStartElement('w', 'r', this.wNamespace);
             writer.writeStartElement(undefined, 'instrText', this.wNamespace);
             writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
@@ -5040,51 +5199,51 @@ export class WordExport {
     // Serialize the text range.
     private serializeTextRange(writer: XmlWriter, span: any, previousNode: any, efType?: string): void {
         writer.writeStartElement('w', 'r', this.wNamespace);
-        if (!isNullOrUndefined(span.characterFormat)) {
-            this.serializeCharacterFormat(writer, span.characterFormat);
+        if (!isNullOrUndefined(span[characterFormatProperty[this.keywordIndex]])) {
+            this.serializeCharacterFormat(writer, span[characterFormatProperty[this.keywordIndex]]);
         }
-        if (span.text === '\t') {
+        if (span[textProperty[this.keywordIndex]] === '\t') {
             writer.writeElementString(undefined, 'tab', this.wNamespace, undefined);
-        } else if (span.text === '\v') {
+        } else if (span[textProperty[this.keywordIndex]] === '\v') {
             writer.writeElementString(undefined, 'br', this.wNamespace, undefined);
-        } else if (span.text === '\f') {
+        } else if (span[textProperty[this.keywordIndex]] === '\f') {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
             writer.writeEndElement();
-        } else if (span.text === String.fromCharCode(14)) {
+        } else if (span[textProperty[this.keywordIndex]] === String.fromCharCode(14)) {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'column');
             writer.writeEndElement();
-        }  else if (encodeURI(span.text) === '%02') {
+        }  else if (encodeURI(span[textProperty[this.keywordIndex]]) === '%02') {
             writer.writeStartElement(undefined, 'footnoteRef', this.wNamespace);
             writer.writeEndElement();
-        } else if (encodeURI(span.text) === '%02' && efType === 'endnote') {
+        } else if (encodeURI(span[textProperty[this.keywordIndex]]) === '%02' && efType === 'endnote') {
             writer.writeStartElement(undefined, 'endnoteRef', this.wNamespace);
             writer.writeEndElement();
-        } else if (encodeURI(span.text) === '%03') {
+        } else if (encodeURI(span[textProperty[this.keywordIndex]]) === '%03') {
             writer.writeStartElement(undefined, 'separator', this.wNamespace);
             writer.writeEndElement();
-        } else if (encodeURI(span.text) === '%04') {
+        } else if (encodeURI(span[textProperty[this.keywordIndex]]) === '%04') {
             writer.writeStartElement(undefined, 'continuationSeparator', this.wNamespace);
             writer.writeEndElement();
         } else {
             let isDeleteText: boolean = this.retrieveDeleteRevision(span);
             let isField: boolean = !isNullOrUndefined(previousNode)
-                && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType !== 2;
+                && previousNode.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && previousNode[fieldTypeProperty[this.keywordIndex]] !== 2;
             let localName: string = isField ? isDeleteText ? 'delInstrText' : 'instrText' : isDeleteText ? 'delText' : 't';
             writer.writeStartElement(undefined, localName, this.wNamespace);
             writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
-            writer.writeString(span.text);
+            writer.writeString(span[textProperty[this.keywordIndex]]);
             writer.writeEndElement();
         }
 
         writer.writeEndElement();
     }
     private retrieveDeleteRevision(span: any): boolean {
-        if (span.hasOwnProperty('revisionIds')) {
-            if (span.revisionIds.length > 0) {
-                for (let i: number = 0; i < span.revisionIds.length; i++) {
-                    if (this.retrieveRevision(span.revisionIds[i]).revisionType === 'Deletion') {
+        if (span.hasOwnProperty(revisionIdsProperty[this.keywordIndex])) {
+            if (span[revisionIdsProperty[this.keywordIndex]].length > 0) {
+                for (let i: number = 0; i < span[revisionIdsProperty[this.keywordIndex]].length; i++) {
+                    if (this.retrieveRevision(span[revisionIdsProperty[this.keywordIndex]][i]).revisionType === 'Deletion') {
                         return true;
                     }
                 }
@@ -5098,50 +5257,50 @@ export class WordExport {
             return;
         }
         this.serializeParagraphBorders(writer, paragraphFormat);
-        if (!isNullOrUndefined(paragraphFormat.styleName)) {
+        if (!isNullOrUndefined(paragraphFormat[styleNameProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'pStyle', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, paragraphFormat.styleName);
+            writer.writeAttributeString('w', 'val', this.wNamespace, paragraphFormat[styleNameProperty[this.keywordIndex]]);
             writer.writeEndElement(); //end of pStyle
         }
         if (!isNullOrUndefined(paragraph)) {
-            this.serializeListFormat(writer, paragraph.paragraphFormat.listFormat);
+            this.serializeListFormat(writer, paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]]);
         } else {
-            this.serializeListFormat(writer, paragraphFormat.listFormat);
+            this.serializeListFormat(writer, paragraphFormat[listFormatProperty[this.keywordIndex]]);
         }
-        if (paragraphFormat.bidi) {
+        if (HelperMethods.parseBoolValue(paragraphFormat[bidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.keepWithNext)) {
+        if (!isNullOrUndefined(paragraphFormat[keepWithNextProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'keepNext', this.wNamespace);
-            if (!paragraphFormat.keepWithNext) {
+            if (!HelperMethods.parseBoolValue(paragraphFormat[keepWithNextProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '0');
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.keepLinesTogether)) {
+        if (!isNullOrUndefined(paragraphFormat[keepLinesTogetherProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'keepLines', this.wNamespace);
-            if (!paragraphFormat.keepLinesTogether) {
+            if (!HelperMethods.parseBoolValue(paragraphFormat[keepLinesTogetherProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '0');
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) { 
+        if (!isNullOrUndefined(paragraphFormat[outlineLevelProperty[this.keywordIndex]])) { 
             writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat[outlineLevelProperty[this.keywordIndex]]).toString());
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);
-        if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
+        if (!isNullOrUndefined(paragraphFormat[contextualSpacingProperty[this.keywordIndex]])) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
-            if (!paragraphFormat.contextualSpacing) {
+            if (!HelperMethods.parseBoolValue(paragraphFormat[contextualSpacingProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '0');
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(paragraphFormat.widowControl)) {
+        if (!isNullOrUndefined(paragraphFormat[widowControlProperty[this.keywordIndex]])) {
             writer.writeStartElement('w', 'widowControl', this.wNamespace);
-            if (paragraphFormat.widowControl) {
+            if (HelperMethods.parseBoolValue(paragraphFormat[widowControlProperty[this.keywordIndex]])) {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '1');
             }else {
                 writer.writeAttributeString('w', 'val', this.wNamespace, '0');  
@@ -5149,17 +5308,23 @@ export class WordExport {
             writer.writeEndElement();
         }
         this.serializeIndentation(writer, paragraphFormat);
-        this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
-        if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
-            this.serializeTabs(writer, paragraphFormat.tabs);
+        this.serializeParagraphAlignment(writer, paragraphFormat[textAlignmentProperty[this.keywordIndex]], HelperMethods.parseBoolValue(paragraphFormat[bidiProperty[this.keywordIndex]]));
+        if (!isNullOrUndefined(paragraphFormat[tabsProperty[this.keywordIndex]]) && paragraphFormat[tabsProperty[this.keywordIndex]].length > 0) {
+            this.serializeTabs(writer, paragraphFormat[tabsProperty[this.keywordIndex]]);
         }
     }
 
-    private getOutlineLevelValue(outlineLvl: string): number {
-        if (outlineLvl.indexOf('Level') !== -1) {
-            let lvlNumber: number = parseInt(outlineLvl.substring(5), 10);
-            if (lvlNumber > 0) {
-                return lvlNumber - 1;
+    private getOutlineLevelValue(outlineLvl: any): number {
+        if(this.keywordIndex == 1){
+            if (outlineLvl > 0) {
+                return outlineLvl;
+            }
+        }else {
+            if (outlineLvl.toString().indexOf('Level') !== -1) {
+                let lvlNumber: number = parseInt(outlineLvl.toString().substring(5), 10);
+                if (lvlNumber > 0) {
+                    return lvlNumber - 1;
+                }
             }
         }
         return 9;
@@ -5176,49 +5341,297 @@ export class WordExport {
     private serializeTab(writer: XmlWriter, tabStop: WTabStop): void {
         let position: number = 0;
         writer.writeStartElement('w', 'tab', this.wNamespace);
-        if (tabStop.position === 0 && tabStop.deletePosition !== 0) {
-            position = tabStop.deletePosition * this.twentiethOfPoint;
+        if (tabStop[positionProperty[this.keywordIndex]] === 0 && tabStop[deletePositionProperty[this.keywordIndex]] !== 0) {
+            position = tabStop[deletePositionProperty[this.keywordIndex]] * this.twentiethOfPoint;
             writer.writeAttributeString('w', 'val', this.wNamespace, 'clear');
         } else {
-            position = tabStop.position * this.twentiethOfPoint;
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTabJustification(tabStop.tabJustification));
+            position = tabStop[positionProperty[this.keywordIndex]] * this.twentiethOfPoint;
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTabJustification(tabStop[tabJustificationProperty[this.keywordIndex]]));
         }
-        if (!isNullOrUndefined(tabStop.tabLeader) && (tabStop.tabLeader !== 'None')) {
-            writer.writeAttributeString('w', 'leader', this.wNamespace, this.getTabLeader(tabStop.tabLeader));
+        if (!isNullOrUndefined(tabStop[tabLeaderProperty[this.keywordIndex]]) && (tabStop[tabLeaderProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0: 'None'))) {
+            writer.writeAttributeString('w', 'leader', this.wNamespace, this.getTabLeader(tabStop[tabLeaderProperty[this.keywordIndex]]));
         }
         if (!isNaN(position)) {
             writer.writeAttributeString('w', 'pos', this.wNamespace, position.toString() + '');
         }
         writer.writeEndElement();
     }
-    private getTabLeader(tabLeader: TabLeader): string {
+    private getTextWrappingType(textWrappingType: number): string {
+        switch (textWrappingType) {
+            case 0:
+                return 'bothSides';
+            case 1:
+                return 'left';
+            case 2:
+                return 'right';
+            case 3:
+                return 'largest';
+            default:
+                return 'bothSides'
+        }
+    }
+    private getTextWrappingStyle(textWrappingStyle: number): string {
+        switch (textWrappingStyle) {
+            case 1:
+                return 'InFrontOfText';
+            case 2:
+                return 'Square';
+            case 3:
+                return 'TopAndBottom';
+            case 4:
+                return 'Behind';
+            default:
+                return 'Inline';
+        }
+    }
+    private getDateStorageFormat(dateStorageFormat: number): string {
+        switch (dateStorageFormat) {
+            case 2:
+                return 'DateStorageDateTime';
+            case 3:
+                return 'DateStorageText';
+            default:
+                return 'DateStorageDate';
+        }
+    }
+    private getDateCalendarType(dateCalendarType: number): string {
+        switch (dateCalendarType) {
+            case 1:
+                return 'GregorianArabic';
+            case 2:
+                return 'GregorianEnglish';
+            case 3:
+                return 'GregorianMiddleEastFrench';
+            case 4:
+                return 'GregorianTransliteratedEnglish';
+            case 5:
+                return 'GregorianTransliteratedFrench';
+            case 6:
+                return 'Hebrew';
+            case 7:
+                return 'Hijri';
+            case 8:
+                return 'Japan';
+            case 9:
+                return 'Korean';
+            case 10:
+                return 'Saka';
+            case 11:
+                return 'Taiwan';
+            case 12:
+                return 'Thai';
+            default:
+                return 'Gregorian';
+        }
+    }
+    private getContentControlAppearance(contentControlAppearance: number): string {
+        switch (contentControlAppearance) {
+            case 2:
+                return 'Hidden';
+            case 3:
+                return 'Tags';
+            default:
+                return 'BoundingBox';
+        }
+    }
+    private getTextFormFieldFormat(textFormFieldFormat: number): string {
+        switch (textFormFieldFormat) {
+            case 1:
+                return 'FirstCapital';
+            case 2:
+                return 'Lowercase';
+            case 3:
+                return 'Uppercase';
+            case 4:
+                return 'Titlecase';
+            default:
+                return 'None';
+        }
+    }
+    private getTextFormFieldType(textFormFieldType: number): string {
+        switch (textFormFieldType) {
+            case 1:
+                return 'Number';
+            case 2:
+                return 'Date';
+            case 3:
+                return 'Calculation';
+            default:
+                return 'Text';
+        }
+    }
+    private getTabLeader(tabLeader: number | TabLeader): string {
         switch (tabLeader) {
             case 'Dot':
+            case 2:
                 return 'dot';
             case 'Hyphen':
+            case 3:
                 return 'hyphen';
             case 'Underscore':
+            case 4:
                 return 'underscore';
             default:
                 return 'none';
         }
     }
-    private getTabJustification(tabJustification: TabJustification): string {
+    private getTabJustification(tabJustification: number | TabJustification): string {
         switch (tabJustification) {
             case 'Bar':
+            case 0:
+                return 'left';
+            case 1:
                 return 'bar';
             case 'Center':
+            case 2:
                 return 'center';
             case 'Decimal':
+            case 3:
                 return 'decimal';
             case 'Left':
                 return 'left';
             case 'List':
+            case 4:
                 return 'num';
             case 'Right':
+            case 5:
                 return 'right';
             default:
                 return 'clear';
+        }
+    }
+    private getTableVerticalAlignment(tableVerticalPosition: number): string {
+        switch (tableVerticalPosition) {
+            case 1:
+                return 'top';
+            case 2:
+                return 'center';
+            case 3:
+                return 'bottom';
+            case 4:
+                return 'inside';
+            case 5:
+                return 'outside';
+            default:
+                return 'none';
+        }
+    }
+    private getTableHorizontalAlignment(tableHorizontalPosition: number): string {
+        switch (tableHorizontalPosition) {
+            case 1:
+                return 'center';
+            case 2:
+                return 'inside';
+            case 3:
+                return 'outside';
+            case 4:
+                return 'right';
+            default:
+                return 'left';
+        }
+    }
+    private getTableVerticalRelation(tableRelation: number): string {
+        switch (tableRelation) {
+            case 1:
+                return 'Margin';
+            case 2:
+                return 'Page';
+            default:
+                return 'Paragraph';
+        }
+    }
+    private getTableHorizontalRelation(tableRelation: number): string {
+        switch (tableRelation) {
+            case 1:
+                return 'Margin';
+            case 2:
+                return 'Page';
+            default:
+                return 'Column';
+        }
+    }
+    private getVerticalOrigin(verticalOrigin: number): string {
+        switch (verticalOrigin) {
+            case 1:
+                return 'BottomMargin';
+            case 2:
+                return 'InsideMargin';
+            case 3:
+                return 'Line';
+            case 4:
+                return 'Margin';
+            case 5:
+                return 'OutsideMargin';
+            case 6:
+                return 'Page';
+            case 7:
+                return 'TopMargin';
+            default:
+                return 'Paragraph';
+        }
+    }
+    private getHorizontalOrigin(horizontalOrigin: number): string {
+        switch (horizontalOrigin) {
+            case 1:
+                return 'Character';
+            case 2:
+                return 'InsideMargin';
+            case 3:
+                return 'LeftMargin';
+            case 4:
+                return 'Margin';
+            case 5:
+                return 'OutsideMargin';
+            case 6:
+                return 'Page';
+            case 7:
+                return 'RightMargin';
+            default:
+                return 'Column';
+        }
+    }
+    private getShapeVerticalAlignment(shapeVerticalAlignment: number): string {
+        switch (shapeVerticalAlignment) {
+            case 1:
+                return 'Top';
+            case 2:
+                return 'Center';
+            case 3:
+                return 'Bottom';
+            case 4:
+                return 'Inline';
+            case 5:
+                return 'Inside';
+            case 6:
+                return 'Outside';
+            default:
+                return 'None';
+        }
+    }
+    private getShapeHorizontalAlignment(shapeHorizontalAlignment: number): string {
+        switch (shapeHorizontalAlignment) {
+            case 1:
+                return 'Center';
+            case 2:
+                return 'Inside';
+            case 3:
+                return 'Left';
+            case 4:
+                return 'Outside';
+            case 5:
+                return 'Right';
+            default:
+                return 'None';
+        }
+    }
+    private getBiDirectionalOverride(biDirectionalOverride: number): string {
+        switch (biDirectionalOverride) {
+            case 1:
+                return 'LTR';
+            case 2:
+                return 'RTL';
+            default:
+                return 'None';
         }
     }
     // // Seraializes the pargraph list format
@@ -5263,19 +5676,19 @@ export class WordExport {
         //     this.serializeNumPr(writer, lf.listId, lf.listLevelNumber);
         // }
         // }
-        if (!isNullOrUndefined(lf.listId) || !isNullOrUndefined(lf.listLevelNumber)) {
+        if (!isNullOrUndefined(lf[listIdProperty[this.keywordIndex]]) || !isNullOrUndefined(lf[listLevelNumberProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'numPr', this.wNamespace);
 
-            if (!isNullOrUndefined(lf.listLevelNumber) && lf.listLevelNumber !== -1) {
+            if (!isNullOrUndefined(lf[listLevelNumberProperty[this.keywordIndex]]) && lf[listLevelNumberProperty[this.keywordIndex]] !== -1) {
                 writer.writeStartElement(undefined, 'ilvl', this.wNamespace);
-                writer.writeAttributeString('w', 'val', this.wNamespace, lf.listLevelNumber.toString());
+                writer.writeAttributeString('w', 'val', this.wNamespace, lf[listLevelNumberProperty[this.keywordIndex]].toString());
                 writer.writeEndElement();
             }
 
-            if (!isNullOrUndefined(lf.listId)) {
+            if (!isNullOrUndefined(lf[listIdProperty[this.keywordIndex]])) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
-                let listId = (lf.listId + 1).toString()
-                if (lf.listId === -1) {
+                let listId = (lf[listIdProperty[this.keywordIndex]] + 1).toString()
+                if (lf[listIdProperty[this.keywordIndex]] === -1) {
                     listId = '';
                 }
                 writer.writeAttributeString('w', 'val', this.wNamespace, listId);
@@ -5309,12 +5722,15 @@ export class WordExport {
             let alignment: string;
             switch (txtAlignment) {
                 case 'Center':
+                case 1:
                     alignment = 'center';
                     break;
                 case 'Right':
+                case 2:
                     alignment = 'right';
                     break;
                 case 'Justify':
+                case 3:
                     alignment = 'both';
                     break;
                 default:
@@ -5338,12 +5754,12 @@ export class WordExport {
         //     short afterLines = (short)Math.Round(paragraphFormat.AfterLines * DLSConstants.HundredthsUnit);
         //     writer.WriteAttributeString('afterLines', this.wNamespace, ToString((float)afterLines));                 
         // }
-        if (!isNullOrUndefined(paragraphFormat.beforeSpacing)) {
-            writer.writeAttributeString(undefined, 'before', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.beforeSpacing * this.twentiethOfPoint).toString());
+        if (!isNullOrUndefined(paragraphFormat[beforeSpacingProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'before', this.wNamespace, this.roundToTwoDecimal(paragraphFormat[beforeSpacingProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
         }
         
-        if(!isNullOrUndefined(paragraphFormat.spaceBeforeAuto)) {
-            let value : string = (paragraphFormat.spaceBeforeAuto) ? "1" : "0";
+        if(!isNullOrUndefined(paragraphFormat[spaceBeforeAutoProperty[this.keywordIndex]])) {
+            let value : string = this.keywordIndex == 1 ? paragraphFormat[spaceBeforeAutoProperty[this.keywordIndex]].toString() : (paragraphFormat[spaceBeforeAutoProperty[this.keywordIndex]]) ? "1" : "0";
             writer.writeAttributeString(undefined, 'beforeAutospacing', this.wNamespace, value);
         }
 
@@ -5361,12 +5777,12 @@ export class WordExport {
         //     }
         // }
 
-        if (!isNullOrUndefined(paragraphFormat.afterSpacing)) {
-            writer.writeAttributeString(undefined, 'after', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.afterSpacing * this.twentiethOfPoint).toString());
+        if (!isNullOrUndefined(paragraphFormat[afterSpacingProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'after', this.wNamespace, this.roundToTwoDecimal(paragraphFormat[afterSpacingProperty[this.keywordIndex]] * this.twentiethOfPoint).toString());
         }
         
-        if(!isNullOrUndefined(paragraphFormat.spaceAfterAuto)) {
-            let value : string = (paragraphFormat.spaceAfterAuto) ? "1" : "0";
+        if(!isNullOrUndefined(paragraphFormat[spaceAfterAutoProperty[this.keywordIndex]])) {
+            let value : string = this.keywordIndex == 1 ? paragraphFormat[spaceAfterAutoProperty[this.keywordIndex]].toString() : (paragraphFormat[spaceAfterAutoProperty[this.keywordIndex]]) ? "1" : "0";
             writer.writeAttributeString(undefined, 'afterAutospacing', this.wNamespace, value);
         }
 
@@ -5387,15 +5803,16 @@ export class WordExport {
 
 
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
-            let lineSpacingValue: number = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+        // lineSpacingType has enum values 0,1,2 for AtLeast, Exactly and Multiple respectively
+        if (!isNullOrUndefined(paragraphFormat[lineSpacingProperty[this.keywordIndex]])) {
+            let lineSpacingValue: number = (paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'AtLeast') || paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 2 : 'Exactly')) ? this.roundToTwoDecimal(paragraphFormat[lineSpacingProperty[this.keywordIndex]] * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat[lineSpacingProperty[this.keywordIndex]] * 240);
             writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
         }
-        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+        if (!isNullOrUndefined(paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]])) {
             let lineSpacingType: string = 'auto';
-            if (paragraphFormat.lineSpacingType === 'AtLeast') {
+            if (paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'AtLeast')) {
                 lineSpacingType = 'atLeast';
-            } else if (paragraphFormat.lineSpacingType === 'Exactly') {
+            } else if (paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 2 : 'Exactly')) {
                 lineSpacingType = 'exact';
             }
             writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
@@ -5406,17 +5823,17 @@ export class WordExport {
     private serializeIndentation(writer: XmlWriter, paragraphFormat: any): void {
 
         writer.writeStartElement(undefined, 'ind', this.wNamespace);
-        if (!isNullOrUndefined(paragraphFormat.leftIndent)) {
-            writer.writeAttributeString(undefined, 'left', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.leftIndent * this.twipsInOnePoint).toString());
+        if (!isNullOrUndefined(paragraphFormat[leftIndentProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'left', this.wNamespace, this.roundToTwoDecimal(paragraphFormat[leftIndentProperty[this.keywordIndex]] * this.twipsInOnePoint).toString());
         }
-        if (!isNullOrUndefined(paragraphFormat.rightIndent)) {
-            writer.writeAttributeString(undefined, 'right', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.rightIndent * this.twipsInOnePoint).toString());
+        if (!isNullOrUndefined(paragraphFormat[rightIndentProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'right', this.wNamespace, this.roundToTwoDecimal(paragraphFormat[rightIndentProperty[this.keywordIndex]] * this.twipsInOnePoint).toString());
         }
-        if (!isNullOrUndefined(paragraphFormat.firstLineIndent)) {
-            if (paragraphFormat.firstLineIndent < 0) {
-                writer.writeAttributeString(undefined, 'hanging', this.wNamespace, this.roundToTwoDecimal(-1 * paragraphFormat.firstLineIndent * this.twipsInOnePoint).toString());
+        if (!isNullOrUndefined(paragraphFormat[firstLineIndentProperty[this.keywordIndex]])) {
+            if (paragraphFormat[firstLineIndentProperty[this.keywordIndex]] < 0) {
+                writer.writeAttributeString(undefined, 'hanging', this.wNamespace, this.roundToTwoDecimal(-1 * paragraphFormat[firstLineIndentProperty[this.keywordIndex]] * this.twipsInOnePoint).toString());
             } else {
-                writer.writeAttributeString(undefined, 'firstLine', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.firstLineIndent * this.twipsInOnePoint).toString());
+                writer.writeAttributeString(undefined, 'firstLine', this.wNamespace, this.roundToTwoDecimal(paragraphFormat[firstLineIndentProperty[this.keywordIndex]] * this.twipsInOnePoint).toString());
             }
         }
         writer.writeEndElement();
@@ -5570,103 +5987,105 @@ export class WordExport {
         for (let i: number = 0; i < this.mStyles.length; i++) {
             let style: any = this.mStyles[i];
             writer.writeStartElement(undefined, 'style', this.wNamespace);
-            let type: string = style.type === 'Paragraph' ? 'paragraph' : 'character';
+            let type: string = style[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'paragraph' : 'character';
             writer.writeAttributeString('w', 'type', this.wNamespace, type);
-            writer.writeAttributeString('w', 'styleId', this.wNamespace, style.name);
+            writer.writeAttributeString('w', 'styleId', this.wNamespace, style[nameProperty[this.keywordIndex]]);
             //name
             writer.writeStartElement(undefined, 'name', this.wNamespace);
             let list:string[] =["TOC 1" , "TOC 2" , "TOC 3" , "TOC 4", "TOC 5" , "TOC 6" ,"TOC 7" ,"TOC 8" ,"TOC 9"];
-            if(list.indexOf(style.name) != -1){
-                writer.writeAttributeString('w', 'val', this.wNamespace, style.name.toLowerCase());
+            if(list.indexOf(style[nameProperty[this.keywordIndex]]) != -1){
+                writer.writeAttributeString('w', 'val', this.wNamespace, style[nameProperty[this.keywordIndex]].toLowerCase());
             }
             else {
-                writer.writeAttributeString('w', 'val', this.wNamespace, style.name);
+                writer.writeAttributeString('w', 'val', this.wNamespace, style[nameProperty[this.keywordIndex]]);
             }
             writer.writeEndElement();
             //basedOn
-            if (!isNullOrUndefined(style.basedOn)) {
+            if (!isNullOrUndefined(style[basedOnProperty[this.keywordIndex]])) {
                 writer.writeStartElement(undefined, 'basedOn', this.wNamespace);
-                writer.writeAttributeString('w', 'val', this.wNamespace, style.basedOn);
+                writer.writeAttributeString('w', 'val', this.wNamespace, style[basedOnProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
             //next
-            if (!isNullOrUndefined(style.next)) {
+            if (!isNullOrUndefined(style[nextProperty[this.keywordIndex]])) {
                 writer.writeStartElement(undefined, 'next', this.wNamespace);
-                writer.writeAttributeString('w', 'val', this.wNamespace, style.next);
+                writer.writeAttributeString('w', 'val', this.wNamespace, style[nextProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
             //link
-            if (!isNullOrUndefined(style.link)) {
+            if (!isNullOrUndefined(style[linkProperty[this.keywordIndex]])) {
                 writer.writeStartElement(undefined, 'link', this.wNamespace);
-                writer.writeAttributeString('w', 'val', this.wNamespace, style.link);
+                writer.writeAttributeString('w', 'val', this.wNamespace, style[linkProperty[this.keywordIndex]]);
                 writer.writeEndElement();
             }
-            if (style.type === 'Paragraph') {
+            if (style[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph')) {
                 writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-                this.serializeParagraphFormat(writer, style.paragraphFormat, undefined);
+                this.serializeParagraphFormat(writer, style[paragraphFormatProperty[this.keywordIndex]], undefined);
                 writer.writeEndElement();
             }
             // let value = (style.characterFormat as WCharacterFormat).newgetCharacterFormat();
-            this.serializeCharacterFormat(writer, style.characterFormat);
+            this.serializeCharacterFormat(writer, style[characterFormatProperty[this.keywordIndex]]);
             writer.writeEndElement(); //end of Style
         }
     }
     // Serializes the Character format
     private serializeCharacterFormat(writer: XmlWriter, characterFormat: any): void {
         writer.writeStartElement(undefined, 'rPr', this.wNamespace);
-        if (!isNullOrUndefined(characterFormat.styleName)) {
+        if (!isNullOrUndefined(characterFormat[styleNameProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'rStyle', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, characterFormat.styleName);
+            writer.writeAttributeString('w', 'val', this.wNamespace, characterFormat[styleNameProperty[this.keywordIndex]]);
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.fontFamily) || !isNullOrUndefined(characterFormat.fontFamilyBidi)) {
+        if (!isNullOrUndefined(characterFormat[fontFamilyProperty[this.keywordIndex]]) || !isNullOrUndefined(characterFormat[fontFamilyBidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'rFonts', this.wNamespace);
-            if (!isNullOrUndefined(characterFormat.fontFamilyAscii)) {
-                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyAscii) ? 'asciiTheme' : 'ascii';
-                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamily);
+            if (!isNullOrUndefined(characterFormat[fontFamilyAsciiProperty[this.keywordIndex]])) {
+                let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyAsciiProperty[this.keywordIndex]]) ? 'asciiTheme' : 'ascii';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyProperty[this.keywordIndex]]);
             }
-            if (!isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
-                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyFarEast) ? 'eastAsiaTheme' : 'eastAsia';
-                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyFarEast);
+            if (!isNullOrUndefined(characterFormat[fontFamilyFarEastProperty[this.keywordIndex]])) {
+                let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyFarEastProperty[this.keywordIndex]]) ? 'eastAsiaTheme' : 'eastAsia';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyFarEastProperty[this.keywordIndex]]);
             }
-            if (!isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
-                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyNonFarEast) ? 'hAnsiTheme' : 'hAnsi';
-                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyNonFarEast);
+            if (!isNullOrUndefined(characterFormat[fontFamilyNonFarEastProperty[this.keywordIndex]])) {
+                let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyNonFarEastProperty[this.keywordIndex]]) ? 'hAnsiTheme' : 'hAnsi';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyNonFarEastProperty[this.keywordIndex]]);
             }
-            if (!isNullOrUndefined(characterFormat.fontFamilyBidi)) {
-                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyBidi) ? 'cstheme' : 'cs';
-                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyBidi);
+            if (!isNullOrUndefined(characterFormat[fontFamilyBidiProperty[this.keywordIndex]])) {
+                let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyBidiProperty[this.keywordIndex]]) ? 'cstheme' : 'cs';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyBidiProperty[this.keywordIndex]]);
             }
             writer.writeEndElement(); //end         
         }
-        if (!isNullOrUndefined(characterFormat.bold)) {
-            this.serializeBoolProperty(writer, 'b', characterFormat.bold);
+        if (!isNullOrUndefined(characterFormat[boldProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'b', HelperMethods.parseBoolValue(characterFormat[boldProperty[this.keywordIndex]]));
         }
-        if (characterFormat.boldBidi) {
-            this.serializeBoolProperty(writer, 'bCs', characterFormat.boldBidi);
+        if (HelperMethods.parseBoolValue(characterFormat[boldBidiProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'bCs', HelperMethods.parseBoolValue(characterFormat[boldBidiProperty[this.keywordIndex]]));
         }
-        if (!isNullOrUndefined(characterFormat.italic)) {
-            this.serializeBoolProperty(writer, 'i', characterFormat.italic);
+        if (!isNullOrUndefined(characterFormat[italicProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'i', HelperMethods.parseBoolValue(characterFormat[italicProperty[this.keywordIndex]]));
         }
-        if (!isNullOrUndefined(characterFormat.italicBidi)) {
-            this.serializeBoolProperty(writer, 'iCs', characterFormat.italicBidi);
+        if (!isNullOrUndefined(characterFormat[italicBidiProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'iCs', HelperMethods.parseBoolValue(characterFormat[italicBidiProperty[this.keywordIndex]]));
         }
-        if (characterFormat.bidi) {
+        if (HelperMethods.parseBoolValue(characterFormat[bidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'rtl', this.wNamespace);
             writer.writeEndElement();
         }
-        if (characterFormat.allCaps) {
-            this.serializeBoolProperty(writer, 'caps', characterFormat.allCaps);
+        if (HelperMethods.parseBoolValue(characterFormat[allCapsProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'caps', HelperMethods.parseBoolValue(characterFormat[allCapsProperty[this.keywordIndex]]));
         }
-        if (characterFormat.complexScript) {
-            this.serializeBoolProperty(writer, 'cs', characterFormat.complexScript);
+        if (HelperMethods.parseBoolValue(characterFormat[complexScriptProperty[this.keywordIndex]])) {
+            this.serializeBoolProperty(writer, 'cs', HelperMethods.parseBoolValue(characterFormat[complexScriptProperty[this.keywordIndex]]));
         }
-        if (!isNullOrUndefined(characterFormat.strikethrough)) {
-            switch (characterFormat.strikethrough) {
+        if (!isNullOrUndefined(characterFormat[strikethroughProperty[this.keywordIndex]])) {
+            switch (characterFormat[strikethroughProperty[this.keywordIndex]]) {
                 case 'SingleStrike':
+                case 1:
                     this.serializeBoolProperty(writer, 'strike', true);
                     break;
                 case 'DoubleStrike':
+                case 2:
                     this.serializeBoolProperty(writer, 'dstrike', true);
                     break;
                 default:
@@ -5676,48 +6095,50 @@ export class WordExport {
 
             }
         }
-        if (!isNullOrUndefined(characterFormat.fontColor)) {
+        if (!isNullOrUndefined(characterFormat[fontColorProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'color', this.wNamespace);
             // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
-            if (characterFormat.fontColor === 'empty' || characterFormat.fontColor === '#00000000') {
+            if (characterFormat[fontColorProperty[this.keywordIndex]] === 'empty' || characterFormat[fontColorProperty[this.keywordIndex]] === '#00000000') {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'auto');
             } else {
-                writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat.fontColor));
+                writer.writeAttributeString('w', 'val', this.wNamespace, this.getColor(characterFormat[fontColorProperty[this.keywordIndex]]));
             }
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.fontSize)) {
+        if (!isNullOrUndefined(characterFormat[fontSizeProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'sz', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSize * 2).toString());
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat[fontSizeProperty[this.keywordIndex]] * 2).toString());
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.fontSizeBidi)) {
+        if (!isNullOrUndefined(characterFormat[fontSizeBidiProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'szCs', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat.fontSizeBidi * 2).toString());
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat[fontSizeBidiProperty[this.keywordIndex]] * 2).toString());
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {
+        if (!isNullOrUndefined(characterFormat[highlightColorProperty[this.keywordIndex]]) && characterFormat[highlightColorProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'NoColor')) {
             writer.writeStartElement(undefined, 'highlight', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getHighlightColor(characterFormat.highlightColor));
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getHighlightColor(characterFormat[highlightColorProperty[this.keywordIndex]]));
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.revisionIds) && characterFormat.revisionIds.length > 0) {
+        if (!isNullOrUndefined(characterFormat[revisionIdsProperty[this.keywordIndex]]) && characterFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
             this.serializeRevisionStart(writer, characterFormat, undefined);
             this.serializeRevisionEnd(writer, characterFormat, undefined);
         }
-        if (!isNullOrUndefined(characterFormat.underline)) {
+        if (!isNullOrUndefined(characterFormat[underlineProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'u', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, this.getUnderlineStyle(characterFormat.underline));
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getUnderlineStyle(characterFormat[underlineProperty[this.keywordIndex]]));
             writer.writeEndElement();
         }
-        if (!isNullOrUndefined(characterFormat.baselineAlignment)) {
+        if (!isNullOrUndefined(characterFormat[baselineAlignmentProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'vertAlign', this.wNamespace);
-            switch (characterFormat.baselineAlignment) {
-                case 'Subscript':
-                    writer.writeAttributeString('w', 'val', this.wNamespace, 'subscript');
-                    break;
+            switch (characterFormat[baselineAlignmentProperty[this.keywordIndex]]) {
                 case 'Superscript':
-                    writer.writeAttributeString('w', 'val', this.wNamespace, 'superscript');
+                    case 1:
+                        writer.writeAttributeString('w', 'val', this.wNamespace, 'superscript');
+                        break;
+                case 'Subscript':
+                case 2:
+                    writer.writeAttributeString('w', 'val', this.wNamespace, 'subscript');
                     break;
                 default:
                     writer.writeAttributeString('w', 'val', this.wNamespace, 'baseline');
@@ -5740,89 +6161,122 @@ export class WordExport {
         return color;
     }
     // Get the underline style as string
-    private getUnderlineStyle(underlineStyle: any): string {
+    private getUnderlineStyle(underlineStyle: number | string): string {
         switch (underlineStyle) {
-            case 'DotDotDashHeavy':
-                return 'dashDotDotHeavy';
-            case 'DotDashHeavy':
-                return 'dashDotHeavy';
-            case 'DashHeavy':
-                return 'dashedHeavy';
+            case 'None':
+            case 0:
+                return 'none';
+            case 'Single':
+            case 1:
+                return 'single';
+            case 'Words':
+            case 2:
+                return 'words';
+            case 'Double':
+            case 3:
+                return 'double';
+            case 'Dotted':
+            case 4:
+                return 'dotted';
+            case 'Thick':
+            case 5:
+                return 'thick';
+            case 6:
+                return 'dash';
             case 'DashLong':
+            case 7:
                 return 'dashLong';
-            case 'DashLongHeavy':
-                return 'dashLongHeavy';
             case 'DotDash':
+            case 8:
                 return 'dotDash';
             case 'DotDotDash':
+            case 9:
                 return 'dotDotDash';
-            case 'Dotted':
-                return 'dotted';
-            case 'DottedHeavy':
-                return 'dottedHeavy';
-            case 'Double':
-                return 'double';
-            case 'Single':
-                return 'single';
-            case 'Thick':
-                return 'thick';
             case 'Wavy':
+            case 10:
                 return 'wave';
-            case 'WavyDouble':
-                return 'wavyDouble';
+            case 'DottedHeavy':
+            case 11:
+                return 'dottedHeavy';
+            case 'DashHeavy':
+            case 12:
+                return 'dashedHeavy';
+            case 'DashLongHeavy':
+            case 13:
+                return 'dashLongHeavy';
+            case 'DotDashHeavy':
+            case 14:
+                return 'dashDotHeavy';
+            case 'DotDotDashHeavy':
+            case 15:
+                return 'dashDotDotHeavy';
             case 'WavyHeavy':
+            case 16:
                 return 'wavyHeavy';
-            case 'Words':
-                return 'words';
-            case 'None':
-                return 'none';
+            case 'WavyDouble':
+            case 17:
+                return 'wavyDouble';
             default:
                 return 'dash';
         }
     }
-    private getHighlightColor(highlight: any): string {
+    private getHighlightColor(highlight: number | string): string {
         switch (highlight) {
             // Highlights the content with bright green (#ff00ff00) color.
             case 'BrightGreen':
+            case 2:
                 return 'green';
             // Highlights the content with turquoise (#ff00ffff) color.
             case 'Turquoise':
+            case 3:
                 return 'cyan';
             // Highlights the content with pink (#ffff00ff) color.
             case 'Pink':
+            case 4:
                 return 'magenta';
             // Highlights the content with blue (#ff0000ff) color.
             case 'Blue':
+            case 5:
                 return 'blue';
             // Highlights the content with red (#ffff0000) color.
             case 'Red':
+            case 6:
                 return 'red';
             // Highlights the content with dark blue (#ff000080) color.
             case 'DarkBlue':
+            case 7:
                 return 'darkBlue';
             // Highlights the content with teal (#ff008080) color.
             case 'Teal':
+            case 8:
                 return 'darkCyan';
             // Highlights the content with green (#ff008000) color.
             case 'Green':
+            case 9:
                 return 'darkGreen';
             // Highlights the content with violet (#ff800080) color.
             case 'Violet':
+            case 10:
                 return 'darkMagenta';
             // Highlights the content with dark red (#ff800000) color.
             case 'DarkRed':
+            case 11:
                 return 'darkRed';
             // Highlights the content with dark yellow (#ff808000)  color.
             case 'DarkYellow':
+            case 12:
                 return 'darkYellow';
             // Highlights the content with gray 50 (#ff808080) color.
             case 'Gray50':
+            case 13:
                 return 'darkGray';
             // Highlights the content with gray 25 (#ffc0c0c0) color.
             case 'Gray25':
+            case 14:
                 return 'lightGray';
             // Highlights the content with black (#ff000000) color.
             case 'Black':
+            case 15:
                 return 'black';
             // Highlights the content with yellow (#ffffff00) color.
             default:
@@ -5845,7 +6299,7 @@ export class WordExport {
     // Serialize the list styles and numberings (numberings.xml)
     private serializeNumberings(): void {
 
-        if (this.document.lists.length === 0) {
+        if (this.document[listsProperty[this.keywordIndex]].length === 0) {
             return;
         }
 
@@ -5853,8 +6307,8 @@ export class WordExport {
         writer.writeStartElement('w', 'numbering', this.wNamespace);
         this.writeCommonAttributeStrings(writer);
         // this.serializePictureBullets(writer, this.mDocument.lists);
-        this.serializeAbstractListStyles(writer, this.document.abstractLists);
-        this.serializeListInstances(writer, this.document.lists);
+        this.serializeAbstractListStyles(writer, this.document[abstractListsProperty[this.keywordIndex]]);
+        this.serializeListInstances(writer, this.document[listsProperty[this.keywordIndex]]);
         // SerializeListOverrides(writer, this.mDocument.ridesm_document.ListOverrides);
         writer.writeEndElement();
         let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.numberingPath);
@@ -5865,12 +6319,12 @@ export class WordExport {
         for (let i: number = 0; i < listStyles.length; i++) {
             let abstractList: any = listStyles[i];
             writer.writeStartElement(undefined, 'abstractNum', this.wNamespace);
-            writer.writeAttributeString(undefined, 'abstractNumId', this.wNamespace, abstractList.abstractListId.toString());
+            writer.writeAttributeString(undefined, 'abstractNumId', this.wNamespace, abstractList[abstractListIdProperty[this.keywordIndex]].toString());
             writer.writeStartElement(undefined, 'nsid', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, this.generateHex());
             writer.writeEndElement();
-            for (let ilvl: number = 0, cnt: number = abstractList.levels.length; ilvl < cnt; ilvl++) {
-                this.serializeListLevel(writer, abstractList.levels[ilvl], ilvl);
+            for (let ilvl: number = 0, cnt: number = abstractList[levelsProperty[this.keywordIndex]].length; ilvl < cnt; ilvl++) {
+                this.serializeListLevel(writer, abstractList[levelsProperty[this.keywordIndex]][ilvl], ilvl);
             }
             writer.writeEndElement(); //end of abstractNum
         }
@@ -5880,12 +6334,12 @@ export class WordExport {
         for (let i: number = 0; i < listStyles.length; i++) {
             let list: any = listStyles[i];
             writer.writeStartElement(undefined, 'num', this.wNamespace);
-            writer.writeAttributeString(undefined, 'numId', this.wNamespace, (list.listId + 1).toString());
+            writer.writeAttributeString(undefined, 'numId', this.wNamespace, (list[listIdProperty[this.keywordIndex]] + 1).toString());
             writer.writeStartElement(undefined, 'abstractNumId', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, list.abstractListId.toString());
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, list[abstractListIdProperty[this.keywordIndex]].toString());
             writer.writeEndElement();
-            for (let lvl: number = 0, cnt: number = list.levelOverrides.length; lvl < cnt; lvl++) {
-                this.serializeLevelOverrides(writer, list.levelOverrides[lvl], list.levelOverrides[lvl].levelNumber);
+            for (let lvl: number = 0, cnt: number = list[levelOverridesProperty[this.keywordIndex]].length; lvl < cnt; lvl++) {
+                this.serializeLevelOverrides(writer, list[levelOverridesProperty[this.keywordIndex]][lvl], list[levelOverridesProperty[this.keywordIndex]][lvl][levelNumberProperty[this.keywordIndex]]);
             }
             writer.writeEndElement();
         }
@@ -5902,10 +6356,10 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
 
         writer.writeStartElement(undefined, 'start', this.wNamespace);
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel[startAtProperty[this.keywordIndex]].toString());
         writer.writeEndElement();
         writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getLevelPattern(listLevel.listLevelPattern));
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getLevelPattern(listLevel[listLevelPatternProperty[this.keywordIndex]]));
         writer.writeEndElement();
 
         // if (listLevel.restartLevel > 0) {
@@ -5954,61 +6408,73 @@ export class WordExport {
         //     writer.WriteEndElement();
         // }
         writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-        this.serializeParagraphFormat(writer, listLevel.paragraphFormat, undefined);
+        this.serializeParagraphFormat(writer, listLevel[paragraphFormatProperty[this.keywordIndex]], undefined);
         writer.writeEndElement(); //end of pPr
-        this.serializeCharacterFormat(writer, listLevel.characterFormat);
+        this.serializeCharacterFormat(writer, listLevel[characterFormatProperty[this.keywordIndex]]);
         writer.writeEndElement();
     }
     //Serialize the levelOverrides
     private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number) : void {
         writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
-        if(!isNullOrUndefined(listLevel.overrideListLevel))
-            this.serializeListLevel(writer, listLevel.overrideListLevel, levelIndex);
-        if (!isNullOrUndefined(listLevel.startAt)) {
+        if(!isNullOrUndefined(listLevel[overrideListLevelProperty[this.keywordIndex]]))
+            this.serializeListLevel(writer, listLevel[overrideListLevelProperty[this.keywordIndex]], levelIndex);
+        if (!isNullOrUndefined(listLevel[startAtProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel[startAtProperty[this.keywordIndex]].toString());
             writer.writeEndElement();
         }
         writer.writeEndElement();     
     }
-    private getLevelPattern(levelPattern: any): string {
+    private getLevelPattern(levelPattern: number | string): string {
         let patternType: string;
         switch (levelPattern) {
+            case 'None':
+            case 0:
+                patternType = 'none';
+                break;
             case 'Arabic':
+            case 1:
                 patternType = 'decimal';
                 break;
             case 'UpRoman':
+            case 2:
                 patternType = 'upperRoman';
                 break;
             case 'LowRoman':
+            case 3:
                 patternType = 'lowerRoman';
                 break;
             case 'UpLetter':
+            case 4:
                 patternType = 'upperLetter';
                 break;
             case 'LowLetter':
+            case 5:
                 patternType = 'lowerLetter';
                 break;
-            case 'None':
-                patternType = 'none';
-                break;
             case 'Ordinal':
+            case 6:
                 patternType = 'ordinal';
                 break;
             case 'Number':
+            case 7:
                 patternType = 'cardinalText';
                 break;
             case 'OrdinalText':
+            case 8:
                 patternType = 'ordinalText';
                 break;
             case 'LeadingZero':
+            case 9:
                 patternType = 'decimalZero';
                 break;
             case 'FarEast':
+            case 11:
                 patternType = 'aiueoFullWidth';
                 break;
             case 'Special':
+            case 12:
                 patternType = 'russianLower';
                 break;
             // case 'Bullet':
@@ -6022,16 +6488,16 @@ export class WordExport {
     private serializeLevelText(writer: XmlWriter, listLevel: any, lvlIndex: number): void {
         writer.writeStartElement(undefined, 'lvlText', this.wNamespace);
 
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, (listLevel.numberFormat));
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, (listLevel[numberFormatProperty[this.keywordIndex]]));
         writer.writeEndElement();
     }
     // Serialize the level follow character
     private serializeLevelFollow(writer: XmlWriter, listLevel: any): void {
         let fc: string;
         //TODO:Type issue returns number instead of string
-        if (listLevel.followCharacter === 'Tab') {
+        if (listLevel[followCharacterProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Tab')) {
             fc = 'tab';
-        } else if (listLevel.followCharacter === 'Space') {
+        } else if (listLevel[followCharacterProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'Space')) {
             fc = 'space';
         } else {
             fc = 'nothing';
@@ -6041,21 +6507,21 @@ export class WordExport {
         writer.writeEndElement();
     }
     private serializeThemeFontLang(writer: XmlWriter): void {
-        let isLanguageIdBi: boolean = this.themeFontLang.localeIdBidi > 0;
-        let isLanguageId: boolean = this.themeFontLang.localeIdAscii > 0;
-        let isLanguageIdFarEast: boolean = this.themeFontLang.localeIdFarEast > 0;
+        let isLanguageIdBi: boolean = this.themeFontLang[localeIdBidiProperty[this.keywordIndex]] > 0;
+        let isLanguageId: boolean = this.themeFontLang[localeIdProperty[this.keywordIndex]] > 0;
+        let isLanguageIdFarEast: boolean = this.themeFontLang[localeIdFarEastProperty[this.keywordIndex]] > 0;
         if (isLanguageId || isLanguageIdFarEast || isLanguageIdBi) {
             writer.writeStartElement('w', 'themeFontLang', undefined);
             if (isLanguageId) {
-                let ascii: string = LocaleId[this.themeFontLang.localeIdAscii];
+                let ascii: string = LocaleId[this.themeFontLang[localeIdProperty[this.keywordIndex]]];
                 writer.writeAttributeString('w', 'val', undefined, ascii.replace('_','-')); //Ascii key
             }
             if (isLanguageIdBi) {
-                let bidi: string = LocaleId[this.themeFontLang.localeIdBidi];
+                let bidi: string = LocaleId[this.themeFontLang[localeIdBidiProperty[this.keywordIndex]]];
                 writer.writeAttributeString('w', 'bidi', undefined, bidi.replace('_','-')); //Bidi key
             }
             if (isLanguageIdFarEast) {
-                let farEast: string = LocaleId[this.themeFontLang.localeIdFarEast];
+                let farEast: string = LocaleId[this.themeFontLang[localeIdFarEastProperty[this.keywordIndex]]];
                 writer.writeAttributeString('w', 'eastAsia', undefined, farEast.replace('_','-')); //EastAsia key
             }
             writer.writeEndElement();
@@ -6066,19 +6532,23 @@ export class WordExport {
         if (this.formatting) {
             writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
         }
-        if (this.protectionType && this.protectionType !== 'NoProtection') {
+        if (this.protectionType && this.protectionType !== 0) {
             let editMode: string;
             switch (this.protectionType) {
                 case 'ReadOnly':
+                case 1:
                     editMode = 'readOnly';
                     break;
                 case 'FormFieldsOnly':
+                case 2:
                     editMode = 'forms';
                     break;
                 case 'CommentsOnly':
+                case 3:
                     editMode = 'comments';
                     break;
                 case 'RevisionsOnly':
+                case 4:
                     editMode = 'trackedChanges';
                     break;
             }
@@ -6200,7 +6670,7 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', this.wNamespace, compatValue);
         writer.writeEndElement();
         writer.writeEndElement();
-        if (this.document.footnotes) {
+        if (this.document[footnotesProperty[this.keywordIndex]]) {
             //this.serializeFootNotesPr(writer, this.document.section.sectionFormat);
             writer.writeStartElement(undefined, 'footnotePr', this.wNamespace);
             writer.writeStartElement(undefined, 'footnote', this.wNamespace);
@@ -6211,7 +6681,7 @@ export class WordExport {
             writer.writeEndElement();
             writer.writeEndElement();
         }
-        if (this.document.endnotes) {
+        if (this.document[endnotesProperty[this.keywordIndex]]) {
             // this.serializeEndNotesPr(writer, this.document.section.sectionFormat);
             writer.writeStartElement(undefined, 'endnotePr', this.wNamespace);
             writer.writeStartElement(undefined, 'endnote', this.wNamespace);
@@ -6239,12 +6709,14 @@ export class WordExport {
         //implementation
     }
     private serializeHeaderFooters(): void {
+        this.isHeaderFooter = true;
         this.serializeHeaderFooter('EvenFooter');
         this.serializeHeaderFooter('EvenHeader');
         this.serializeHeaderFooter('FirstPageFooter');
         this.serializeHeaderFooter('FirstPageHeader');
         this.serializeHeaderFooter('OddFooter');
         this.serializeHeaderFooter('OddHeader');
+        this.isHeaderFooter = false;
     }
     // Serializes the Header/Footer
     private serializeHeaderFooter(hfType: any): void {
@@ -6283,7 +6755,7 @@ export class WordExport {
         this.writeHFCommonAttributes(writer);
         let owner: any = this.blockOwner;
         this.blockOwner = header;
-        this.serializeBodyItems(writer, header.blocks, true);
+        this.serializeBodyItems(writer, header[blocksProperty[this.keywordIndex]], true);
         this.blockOwner = owner;
         writer.writeEndElement();
         let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, headerFooterPath);
@@ -6355,7 +6827,7 @@ export class WordExport {
         let writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w', 'ftr', this.wNamespace);
         this.writeHFCommonAttributes(writer);
-        this.serializeBodyItems(writer, footer.blocks, true);
+        this.serializeBodyItems(writer, footer[blocksProperty[this.keywordIndex]], true);
 
         writer.writeEndElement();
 
@@ -6371,10 +6843,10 @@ export class WordExport {
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
-        if (this.document.endnotes) {
+        if (this.document[endnotesProperty[this.keywordIndex]]) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.endnoteRelType, 'endnotes.xml');
         }
-        if (this.document.footnotes) {
+        if (this.document[footnotesProperty[this.keywordIndex]]) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.footnoteRelType, 'footnotes.xml');
         }
         if (this.mComments.length > 0) {
@@ -6387,7 +6859,7 @@ export class WordExport {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
         }
 
-        if (this.document.lists.length > 0) {
+        if (this.document[listsProperty[this.keywordIndex]].length > 0) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.numberingRelType, 'numbering.xml');
         }
 
@@ -6454,7 +6926,14 @@ export class WordExport {
             let keys: string[] = images.keys;
             for (let i: number = 0; i < keys.length; i++) {
                 let mImage: any = images.get(keys[i]);
-                base64ImageString = !isSvg ? mImage.imageString : mImage.metaFileImageString;
+                let imageStringInfo: ImageStringInfo = this.getBase64ImageString(mImage);
+                base64ImageString = imageStringInfo.imageString;
+                if (HelperMethods.parseBoolValue(mImage.isMetaFile)) {
+                    let format: string = HelperMethods.formatClippedString(imageStringInfo.metaFileImageString).extension;
+                    if (format !== '.svg' || isSvg) {
+                        base64ImageString = imageStringInfo.metaFileImageString;
+                    }
+                }
 
                 if (isNullOrUndefined(base64ImageString)) {
                     imagePath = this.imagePath + '/0.jpeg';

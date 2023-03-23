@@ -127,8 +127,8 @@ export class FocusStrategy {
         }
         if (gObj.toolbar || gObj.toolbarTemplate) {
             const toolbarElement: Element = gObj.toolbarModule.element;
-                const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
-                if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
+            const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems();
+            if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
                 (toolbarElement as HTMLElement).tabIndex = -1;
                 (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).tabIndex = 0;
             } else {
@@ -316,7 +316,7 @@ export class FocusStrategy {
                 || parentsUntil(e.target as Element, 'e-groupdroparea')
                 || (e.target as HTMLElement).classList.contains('e-toolbar'))) {
                 const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
-                const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
+                const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems();
                 if (focusableToolbarItems.length > 0) {
                     e.preventDefault();
                     (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
@@ -661,7 +661,7 @@ export class FocusStrategy {
         this.removeFocus();
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
             const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
-            const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
+            const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems();
             e.preventDefault();
             if (focusableToolbarItems.length > 0) {
                 (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
@@ -918,7 +918,8 @@ export class FocusStrategy {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             if (!(this.parent.isFrozenGrid() && ((e.args && (e.args.requestType === 'sorting'
-                || e.args.requestType === 'batchsave')) || e.name === 'batchAdd' || e.name === 'batchCancel'))) {
+                || e.args.requestType === 'batchsave' || e.args.requestType === 'paging'))
+                || e.name === 'batchAdd' || e.name === 'batchCancel'))) {
                 cFocus.generateRows(
                     updateRow,
                     {

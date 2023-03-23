@@ -34,6 +34,8 @@ export class Annotations {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To create annotation elements
+     * 
+     * @private
      */
     public createAnnotationTemplate(parentElement: HTMLElement, annotation: Annotation, annotationIndex: number): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

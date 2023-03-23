@@ -31,14 +31,14 @@ $ddl-bigger-small-list-nodata-font-size: $text-sm;
 
 // Small Size
 
-$ddl-small-icon-font-size: 14px !default;
+$ddl-small-icon-font-size: $font-icon-14 !default;
 $ddl-small-line-height: 26px !default;
 $ddl-small-list-text-indent: 8px !default;
 $ddl-small-list-header-font-size: $text-xxs !default;
 
 // Touch Small
 
-$ddl-bigger-small-icon-font-size: 18px !default;
+$ddl-bigger-small-icon-font-size: $font-icon-18 !default;
 $ddl-bigger-small-line-height: 30px !default;
 $ddl-bigger-small-list-text-indent: 8px !default;
 $ddl-bigger-text-indent: 8px !default;

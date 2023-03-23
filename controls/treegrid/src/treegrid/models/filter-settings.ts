@@ -175,9 +175,10 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     public type: FilterType;
     /**
      * Defines the filter bar modes. The available options are,
-     * * `OnEnter`: Initiates filter operation after Enter key is pressed.
-     * * `Immediate`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
-     *
+     * ```props
+     * *  OnEnter :- Initiates filter operation after Enter key is pressed.
+     * *  Immediate :- Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
+     * ```
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.FilterBarMode
@@ -218,14 +219,18 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     @Property(false)
     public ignoreAccent: boolean;
     /**
-     * Defines the filter types. The available options are,
-     * `Parent`: Shows the filtered record with parent record.
-     * `Child`: Shows the filtered record with child record.
-     * `Both` : shows the filtered record with both parent and child record.
-     * `None` : Shows only filtered record.
+     *  Defines the filter hierarchy modes. The available options are,
+     * ```props
+     * *  Parent :- Shows the filtered record with parent record.
+     * *  Child :- Shows the filtered record with child record.
+     * *  Both :- Shows the filtered record with both parent and child record.
+     * *  None :- Shows only the filtered record.
+     * ```
      * {% codeBlock src='treegrid/hierarchyMode/index.md' %}{% endcodeBlock %}
      *
      * @default Parent
+     * @isEnumeration true
+     * @aspType FilterHierarchyMode
      */
     @Property('Parent')
     public hierarchyMode: FilterHierarchyMode;

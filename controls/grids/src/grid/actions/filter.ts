@@ -61,7 +61,8 @@ export class Filter implements IAction {
     /** @hidden */
     public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
-        lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
+        lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith', wildCard: 'wildcard',
+        isNull: 'isnull', notNull: 'notnull', like: 'like'
     };
     private fltrDlgDetails: { field?: string, isOpen?: boolean } = { field: '', isOpen: false };
 
@@ -125,7 +126,7 @@ export class Filter implements IAction {
                 const cellrender: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
                 cellrender.addCellRenderer(CellType.Filter, new FilterCellRenderer(this.parent, this.serviceLocator));
                 this.valueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');
-                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar', attrs: { role: 'row' } });
+                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar'});
                 const row: Row<Column> = this.generateRow();
                 row.data = this.values;
                 if (gObj.getFrozenMode() === 'Right') {
@@ -486,6 +487,9 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator
             && isNullOrUndefined(this.column.filterBarTemplate) && isNullOrUndefined(this.column.filterTemplate)) {
             filterOperator = this.getOperatorName(fieldName);
+        }
+        if (filterOperator === 'like' && (filterValue as string).indexOf('%') === -1) {
+            filterValue = '%' + filterValue + '%';
         }
         if (!this.column) {
             return;
@@ -1085,19 +1089,16 @@ export class Filter implements IAction {
             break;
         case 'string':
             this.matchCase = false;
-            if (value.charAt(0) === '*') {
-                this.value = (this.value as string).slice(1);
-                this.operator = this.filterOperators.startsWith;
-            } else if (value.charAt(value.length - 1) === '%') {
-                this.value = (this.value as string).slice(0, -1);
-                this.operator = this.filterOperators.startsWith;
-            } else if (value.charAt(0) === '%') {
-                this.value = (this.value as string).slice(1);
-                this.operator = this.filterOperators.endsWith;
+            if (this.column.filter.operator) {
+                this.operator = this.column.filter.operator as string;
             } else {
-                if (this.column.filter.operator) {
-                    this.operator = this.column.filter.operator as string;
-                } else {
+                if (value.indexOf('*') !== -1 || value.indexOf('?') !== -1 || value.indexOf('%3f') !== -1) {
+                    this.operator = this.filterOperators.wildCard;
+                }
+                else if (value.indexOf('%') !== -1) {
+                    this.operator = this.filterOperators.like;
+                }
+                else {
                     this.operator = this.filterOperators.startsWith;
                 }
             }
@@ -1156,7 +1157,9 @@ export class Filter implements IAction {
             { value: 'greaterthanorequal', text: this.l10n.getConstant('GreaterThanOrEqual') },
             { value: 'lessthan', text: this.l10n.getConstant('LessThan') },
             { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
-            { value: 'notequal', text: this.l10n.getConstant('NotEqual') }
+            { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
+            { value: 'isnull', text: this.l10n.getConstant('IsNull') },
+            { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
         ];
         this.customOperators = {
             stringOperator: [
@@ -1164,7 +1167,14 @@ export class Filter implements IAction {
                 { value: 'endswith', text: this.l10n.getConstant('EndsWith') },
                 { value: 'contains', text: this.l10n.getConstant('Contains') },
                 { value: 'equal', text: this.l10n.getConstant('Equal') },
-                { value: 'notequal', text: this.l10n.getConstant('NotEqual') }],
+                { value: 'isempty', text: this.l10n.getConstant('IsEmpty') },
+                { value: 'doesnotstartwith', text: this.l10n.getConstant('NotStartsWith') },
+                { value: 'doesnotendwith', text: this.l10n.getConstant('NotEndsWith') },
+                { value: 'doesnotcontain', text: this.l10n.getConstant('NotContains') },
+                { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
+                { value: 'isnotempty', text: this.l10n.getConstant('IsNotEmpty') },
+                { value: 'like', text: this.l10n.getConstant('Like') }
+            ],
 
             numberOperator: numOptr,
 

@@ -2,47 +2,6 @@
 
 ## [Unreleased]
 
-## 20.4.52 (2023-02-28)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I435982`, `#I434351` - Issue with "rendered cell template destroyed while updating the cell value using `updateCell` method" has been resolved.
-
-## 20.4.50 (2023-02-14)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I434077` - Issue with "after deleting rows beyond the rendered region, the edited cell value is not updated to the expected cell in finite mode" has been resolved.
-
-## 20.4.49 (2023-02-07)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I432121` - Issue with "editing cell data is not updated on the cell while scrolling the sheet before save the edited cell value" has been resolved.
-
-## 20.4.48 (2023-02-01)
-
-### Spreadsheet
-
-#### New Features
-
-- `#F178912` - Now, you can specify the `orientation` type for PDF export.
-
-## 20.4.40 (2022-12-28)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I422232` - Issue with "`SUMIFS` formula is not working properly while providing as nested formula to the `SUM` formula" has been resolved.
-- `#F179330` - Issue with "custom function reference is removed from the control instance while calling the `refresh` method" has been resolved.
-
 ## 20.3.60 (2022-12-06)
 
 ### Spreadsheet

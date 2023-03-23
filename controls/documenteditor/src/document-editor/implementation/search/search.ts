@@ -272,6 +272,7 @@ export class Search {
             if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(start) &&
                 !isNullOrUndefined(end) && !isNullOrUndefined(start.paragraph) && !isNullOrUndefined(end.paragraph)) {
                 this.owner.selection.selectRange(start, end);
+                this.documentHelper.updateFocus();
             }
         }
     }

@@ -24,7 +24,6 @@ export interface IFontMapping {
 
 /** @private */
 export interface IShapes {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     renderOption?: Object;
     functionName?: string;
 }

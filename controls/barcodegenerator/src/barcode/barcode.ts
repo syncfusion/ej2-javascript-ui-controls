@@ -184,7 +184,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         const arg: ValidateEvent = {
             message: message
         };
-        this.trigger(BarcodeEvent[eventName], arg);
+        this.trigger(BarcodeEvent[`${eventName}`], arg);
     }
 
     // eslint-disable-next-line
@@ -396,10 +396,10 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         const measureElement: HTMLCollection = document.getElementsByClassName('barcodeMeasureElement');
         if (measureElement.length > 0) {
             for (let i: number = measureElement.length - 1; i >= 0; i--) {
-                measureElement[i].parentNode.removeChild(measureElement[i]);
+                measureElement[parseInt(i.toString(), 10)].parentNode.removeChild(measureElement[parseInt(i.toString(), 10)]);
             }
             const element: string = 'barcodeMeasureElement';
-            window[element] = null;
+            window[`${element}`] = null;
         }
     }
 

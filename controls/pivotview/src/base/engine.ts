@@ -1,5 +1,5 @@
 import { extend, Internationalization, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotUtil } from './util';
 import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition } from './types';
@@ -18,7 +18,7 @@ export class PivotEngine {
     /** @hidden */
     public fieldList: IFieldListOptions;
     /** @hidden */
-    public pivotValues: IPivotValues;
+    public pivotValues: IAxisSet[][];
     /** @hidden */
     public aggregatedValueMatrix: IMatrix2D = [];
     /** @hidden */
@@ -196,6 +196,7 @@ export class PivotEngine {
     private currencyCode: string;
     private enablePaging: boolean = false;
     private enableVirtualization: boolean = false;
+    private enableHtmlSanitizer: boolean = false;
     private isParentLevelAdded: boolean = true;
     
     /** @hidden */
@@ -255,6 +256,7 @@ export class PivotEngine {
             customProperties.clonedReport) : {};
         this.enablePaging = customProperties.enablePaging;
         this.enableVirtualization = customProperties.enableVirtualization;
+        this.enableHtmlSanitizer = customProperties.enableHtmlSanitizer;
         this.isPagingOrVirtualizationEnabled = this.enablePaging || this.enableVirtualization;
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
@@ -1358,7 +1360,8 @@ export class PivotEngine {
             const isFieldHasExpandAll: boolean = fList[key as string].expandAll;
             //let sort: string[] = [];
             for (let dl: number = 0; dl < dlen; dl++) {
-                const mkey: string = data[dl as number][this.fieldKeys[key as string] as string] as string;
+                let mkey: string = data[dl as number][this.fieldKeys[key as string] as string] as string;
+                mkey = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(mkey) : mkey;
                 // if (!isNullOrUndefined(mkey)) {
                 if (!isDataAvail) {
                     let fKey: string = mkey;
@@ -2356,7 +2359,9 @@ export class PivotEngine {
      * @returns {void}
      * @hidden
      */
-    public onCalcOperation(field: ICalculatedFields): void {
+    public onCalcOperation(field: ICalculatedFields, dataSourceSettings: IDataOptions): void {
+        this.calculatedFieldSettings = dataSourceSettings.calculatedFieldSettings ? dataSourceSettings.calculatedFieldSettings : [];
+        this.values = dataSourceSettings.values ? dataSourceSettings.values : [];
         this.rMembers = this.headerCollection.rowHeaders;
         this.cMembers = this.headerCollection.columnHeaders;
         this.getCalculatedField(this.fields);
@@ -3180,8 +3185,9 @@ export class PivotEngine {
                 member.colSpan = 1;
                 const memInd: number = isNoData ? childrens.members[Object.keys(savedMembers)[0]].ordinal :
                     this.indexMatrix[position[pos as number]][childrens.index];
-                const headerValue: string = isNoData ? Object.keys(savedMembers)[0] :   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (data as any)[position[pos as number]][this.fieldKeys[fieldName as string] as any] as string;
+                headerValue = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(headerValue) : headerValue;
                 if ((isNullOrUndefined(headerValue) || (this.localeObj && headerValue === this.localeObj.getConstant('undefined')))
                     && !this.showHeaderWhenEmpty) {
                     if (showNoDataItems && !isNoData && keyInd > 0 && pos + 1 === position.length &&
@@ -3647,7 +3653,7 @@ export class PivotEngine {
         return set;
     }
     private getTableData(
-        rows: IAxisSet[], reformAxis: IAxisSet[], columns: IAxisSet[], pIndex: number, data: IPivotValues,
+        rows: IAxisSet[], reformAxis: IAxisSet[], columns: IAxisSet[], pIndex: number, data: IAxisSet[][],
         vlt: number, level: number, rTotal?: IAxisSet, cTotal?: IAxisSet, valueParentIndex?: number): void {
         for (let rlt: number = rows.length, rln: number = 0; rln < rlt; rln++) {
             const tnum: number = (!this.valueAxis && !this.isLastHeaderHasMeasures && data.length < (this.columns.length + 1)) ?
@@ -3760,7 +3766,7 @@ export class PivotEngine {
         }
     }
     private insertRowSubTotals(
-        reformAxis: IAxisSet[], columns: IAxisSet[], tnum: number, data: IPivotValues,
+        reformAxis: IAxisSet[], columns: IAxisSet[], tnum: number, data: IAxisSet[][],
         vlt: number, level: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
         const isValueAxis: boolean = reformAxis[tnum as number].type ? reformAxis[tnum as number].type === 'value' &&
             (reformAxis[tnum as number].valueSort.levelName as string) !== reformAxis[tnum as number].actualText : false;
@@ -4025,7 +4031,7 @@ export class PivotEngine {
         };
         return headerData;
     }
-    private applyAdvancedAggregate(rowheads: IAxisSet[], colheads: IAxisSet[], data: IPivotValues): void {
+    private applyAdvancedAggregate(rowheads: IAxisSet[], colheads: IAxisSet[], data: IAxisSet[][]): void {
         this.aggregatedValueMatrix = [];
         if (this.selectedHeaders.values.length > 0) {
             const pivotIndex: { [key: string]: [number, number] } = {};
@@ -4035,7 +4041,7 @@ export class PivotEngine {
             for (let rlt: number = data.length, rln: number = 0; rln < rlt; rln++) {
                 if (data[rln as number] !== undefined && data[rln as number][0] !== undefined) {
                     if (!isIndexFilled) {
-                        for (let clt: number = (data[rln as number] as IPivotValues[]).length, cln: number = 0; cln < clt; cln++) {
+                        for (let clt: number = (data[rln as number] as IAxisSet[][]).length, cln: number = 0; cln < clt; cln++) {
                             const actualText: string = (data[rln as number][cln as number] as IAxisSet).actualText as string;
                             if ((data[rln as number][cln as number] as IAxisSet).axis === 'value' &&
                                 this.selectedHeaders.values.indexOf(actualText) !== -1) {
@@ -4075,7 +4081,7 @@ export class PivotEngine {
         }
     }
     private updateAggregates(
-        rowheads: IAxisSet[], colheads: IAxisSet[], data: IPivotValues, selectedHeaders: IHeaderData[], colIndex: number[],
+        rowheads: IAxisSet[], colheads: IAxisSet[], data: IAxisSet[][], selectedHeaders: IHeaderData[], colIndex: number[],
         rowIndex: number[], pivotIndex: { [key: string]: [number, number] }): void {
         for (const headers of selectedHeaders) {
             const selectedHeaderCollection: IAxisSet[] = headers.aggregateHeaders;
@@ -4503,7 +4509,7 @@ export class PivotEngine {
         return null;
     }
     private recursiveRowData(
-        rows: IAxisSet[], reformAxis: IAxisSet[], columns: IAxisSet[], tnum: number, data: IPivotValues, vlt: number,
+        rows: IAxisSet[], reformAxis: IAxisSet[], columns: IAxisSet[], tnum: number, data: IAxisSet[][], vlt: number,
         isLeastNode: boolean, rln: number, vln: number, level: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
         if (!isLeastNode) {
             this.getTableData(reformAxis[tnum as number].members, reformAxis, columns, tnum, data, vlt, level + 1, rTotal, cTotal);
@@ -4517,7 +4523,7 @@ export class PivotEngine {
         }
     }
     private updateRowData(
-        rows: IAxisSet[], columns: IAxisSet[], tnum: number, data: IPivotValues, vln: number, rln: number,
+        rows: IAxisSet[], columns: IAxisSet[], tnum: number, data: IAxisSet[][], vln: number, rln: number,
         cln: number, dln: number, actCnt: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
         const mPos: number = this.fieldList[this.values[vln as number].name].index;
         const aggregate: string = this.fieldList[this.values[vln as number].name].aggregateType;
@@ -4727,7 +4733,7 @@ export class PivotEngine {
         return valueAxis.concat(member).slice(0, member.length);
     }
     private frameDefinedHeaderData(
-        axis: IAxisSet[], reformAxis: IAxisSet[], data: IPivotValues, levelIndex: number, tnum: number, vcnt: number): void {
+        axis: IAxisSet[], reformAxis: IAxisSet[], data: IAxisSet[][], levelIndex: number, tnum: number, vcnt: number): void {
         // let sortText: string = this.valueSortSettings.headerText;
         for (let rln: number = 0, rlt: number = axis.length; rln < rlt; rln++) {
             let showSubTotals: boolean = true;
@@ -4790,7 +4796,7 @@ export class PivotEngine {
     }
     private getHeaderData(
         rows: IFieldOptions[], columns: IFieldOptions[], values: IFieldOptions[], rowAxis: IAxisSet[], axis: IAxisSet[],
-        reformAxis: IAxisSet[], data: IPivotValues, tnum: number, vcnt: number): void {
+        reformAxis: IAxisSet[], data: IAxisSet[][], tnum: number, vcnt: number): void {
         if (!this.valueAxis && !this.isLastHeaderHasMeasures) {
             const columnHeaders: IAxisSet[] = [];
             if (this.showGrandTotals && this.showColumnGrandTotals && axis[axis.length - 1].type === 'grand sum') {
@@ -5438,6 +5444,11 @@ export interface IDataOptions {
      */
     localeIdentifier?: number;
     /**
+     * Allows you to assign multiple roles to the OLAP cube, separated by commas, each of which can access only restricted OLAP cube information such as measures, dimensions, and more that can be rendered in the pivot table. 
+     * > It is applicable only for OLAP data source.
+     */
+    roles?: string;
+    /**
      * Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
      * You can fetch JSON data from remote server by using DataManager.
      * > It is applicable only for relational data source.
@@ -5863,14 +5874,15 @@ export interface IStringIndex {
 }
 /**
  * It holds the collection of cell information to render the pivot table component.
+ * @hidden
  */
 export interface IPivotValues {
     /**
      * Allows you to configure the pivot cell information retrieved from the data source.
      */
     [key: number]: {
-        [key: number]: number | string | Object | IAxisSet;
-        length: number;
+        [key: number]: number | string | Object | IAxisSet,
+        length: number
     };
     /**
      * Gets or sets the length of the array. This is a number one higher than the highest index in the array.
@@ -6528,6 +6540,7 @@ export interface IDrilledItem {
 }
 /**
  * Allows you to configure the additional properties from the pivot component to popuplate the pivot engine.
+ * @hidden
  */
 export interface ICustomProperties {
     /**
@@ -6562,6 +6575,10 @@ export interface ICustomProperties {
      * Specifies the whther drill through is enabled or not.
      */
     isDrillThrough?: boolean;
+    /**
+     * Specifies the whther html sanitizer is enabled or not.
+     */
+    enableHtmlSanitizer?: boolean;
     /**
      * Specifies the current locale information of the component.
      */

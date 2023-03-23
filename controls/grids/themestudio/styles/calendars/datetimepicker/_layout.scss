@@ -34,7 +34,7 @@
     #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
       font-size: 16px;
       margin: $datetime-date-icon-margin;
-      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
         min-height: $datetime-normal-min-height;
         min-width: $datetime-normal-min-width;
       }
@@ -55,7 +55,12 @@
   }
 
   #{&}.e-datetimepicker.e-time-modal {
-    background-color: $datetime-default-overlay;
+    @if $skin-name != 'Material3' {
+      background-color: $datetime-default-overlay;
+    }
+    @if $skin-name == 'Material3' {
+      background: $datetime-default-overlay;
+    }
     height: 100%;
     left: 0;
     opacity: .5;
@@ -116,7 +121,7 @@
 
     #{if(&, '&', '*')} .e-input-group-icon.e-time-icon {
       margin: $datetime-time-bigger-icon-margin;
-      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
         min-height: $datetime-bigger-min-height;
         min-width: $datetime-bigger-min-width;
       }

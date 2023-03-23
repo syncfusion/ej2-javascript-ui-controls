@@ -354,6 +354,7 @@ export class BaseHistoryInfo {
                 selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             }
             this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+            this.documentHelper.updateFocus();
             isSelectionChanged = true;
         }
         this.owner.trackChangesPane.isTrackingPageBreak = false;
@@ -409,6 +410,7 @@ export class BaseHistoryInfo {
                 && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selection.selectRange(insertTextPosition, endTextPosition);
+            this.documentHelper.updateFocus();
             let isDelete: boolean = false;
             if (this.action === 'BackSpace' || this.action === 'Uppercase' || this.action === 'RemoveRowTrack') {
                 isDelete = true;
@@ -450,6 +452,7 @@ export class BaseHistoryInfo {
             this.owner.isShiftingEnabled = false;
         }
         this.owner.selection.selectRange(start, end);
+        this.documentHelper.updateFocus();
         if (this.action === 'RowResizing' || this.action === 'CellResizing') {
             this.revertResizing();
         } else if (this.action === 'CellOptions' || this.action === 'TableOptions') {
@@ -496,7 +499,7 @@ export class BaseHistoryInfo {
                 editor.insertSection(this.owner.selection, true);
                 break;
             case 'SectionBreakContinuous':
-                editor.insertSection(this.owner.selection, true);
+                editor.insertSection(this.owner.selection, true, undefined, true);
                 break;
             case 'TableAutoFitToContents':
                 editor.autoFitTable('FitToContents');
@@ -687,7 +690,7 @@ export class BaseHistoryInfo {
                     this.owner.documentHelper.headersFooters.splice(node.sectionIndex, 0, node.removedHeaderFooters[0]);
                     node.removedHeaderFooters = undefined;
                 }
-                this.owner.editorModule.insertSection(this.owner.selection, false, true);
+                this.owner.editorModule.insertSection(this.owner.selection, false, true, undefined, node.sectionFormat);
             } else if (typeof (node) === 'string' && this.action === 'AcceptTOC') {
                 let insertIndex: string = this.selectionStart;
                 let widget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;

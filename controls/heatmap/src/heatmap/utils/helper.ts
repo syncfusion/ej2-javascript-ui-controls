@@ -184,16 +184,20 @@ export class CurrentRect {
 
 
 /**
- * Class to define the details of selected cell.
- *
- * @private
+ * Specifies the details of the selected cells.
  */
 export class SelectedCellDetails {
+    /** Defines the value of the cell that is currently selected. */
     public value: number | BubbleTooltipData[];
+    /** Defines x-axis label of the cell that is currently selected. */
     public xLabel: string;
+    /** Defines y-axis label of the cell that is currently selected. */
     public yLabel: string;
+    /** Defines x-axis value of the cell that is currently selected. */
     public xValue: string | number | Date;
+    /** Defines y-axis value of the cell that is currently selected. */
     public yValue: string | number | Date;
+    /** Defines the cell element that is currently selected. */
     public cellElement: Element;
     /** @private */
     public xPosition: number;
@@ -207,6 +211,9 @@ export class SelectedCellDetails {
     public x: number;
     /** @private */
     public y: number;
+    /**
+     * @private
+     */
     constructor(
         value: number | BubbleTooltipData[], xLabel: string, yLabel: string, xValue: number,
         yValue: number, cellElement: Element,

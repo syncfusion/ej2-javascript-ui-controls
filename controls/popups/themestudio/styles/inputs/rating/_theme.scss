@@ -22,8 +22,13 @@
     .e-rating-item-container {
       .e-rating-icon {
         -webkit-text-fill-color: transparent;
-        -webkit-text-stroke: $rating-border-width $rating-unrated-bg-color;
-        @if ($skin-name =='tailwind') {
+        @if ($skin-name == 'Material3') {
+          -webkit-text-stroke: $rating-border-width transparent;
+        }
+        @else {
+          -webkit-text-stroke: $rating-border-width $rating-unrated-bg-color;
+        }
+        @if ($skin-name == 'Material3' or $skin-name =='tailwind') {
           background: $rating-unrated-bg-color;
           background-clip: text;
           /* stylelint-disable property-no-vendor-prefix */
@@ -120,6 +125,13 @@
       .e-rating-item-container {
         .e-rating-icon {
           -webkit-text-stroke: $rating-border-width $rating-unrated-disabled-bg-color;
+          @if ($skin-name == 'Material3') {
+            background: $rating-unrated-disabled-bg-color;
+            background-clip: text;
+            /* stylelint-disable property-no-vendor-prefix */
+            -webkit-background-clip: text;
+            /* stylelint-enable property-no-vendor-prefix */
+          }
         }
 
         &.e-rating-selected .e-rating-icon,

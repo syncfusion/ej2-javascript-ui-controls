@@ -1,7 +1,7 @@
 import { Dialog, OffsetPosition, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Droppable, createElement, extend, remove, addClass, closest, getInstance, select } from '@syncfusion/ej2-base';
+import { Droppable, createElement, extend, remove, addClass, closest, getInstance, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine } from '../../base/engine';
+import { IDataOptions, IFieldOptions, ICalculatedFields, IFormatSettings, PivotEngine, IField } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button, RadioButton, CheckBox, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -18,7 +18,7 @@ import { Tab, Accordion, AccordionItemModel, AccordionClickArgs } from '@syncfus
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PivotUtil } from '../../base/util';
 import { IOlapField, OlapEngine } from '../../base/olap/engine';
-import { FormatSettingsModel, CalculatedFieldSettingsModel, DataSourceSettingsModel } from '../../pivotview/model/datasourcesettings-model';
+import { FormatSettingsModel, CalculatedFieldSettingsModel, DataSourceSettingsModel } from '../../model/datasourcesettings-model';
 import { AggregateTypes } from '../base/enum';
 
 /**
@@ -319,7 +319,7 @@ export class CalculatedField implements IAction {
                     const fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
                     const memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                     const hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                    fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
+                    fieldTitle.innerText = this.parent.localeObj.getConstant('caption');
                     (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = expression;
                     memberTypeDrop.readonly = true;
                     memberTypeDrop.value = memberType;
@@ -356,7 +356,7 @@ export class CalculatedField implements IAction {
                     const ddlFormatTypes: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                     const memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                     const fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
-                    fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
+                    fieldTitle.innerText = this.parent.localeObj.getConstant('fieldTitle');
                     hierarchyDrop.index = 0;
                     hierarchyDrop.dataBind();
                     ddlFormatTypes.index = 0;
@@ -474,7 +474,7 @@ export class CalculatedField implements IAction {
         if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() !== 'pivotfieldlist') {
             this.parent.updateDataSource();
         }
-        this.removeErrorDialog();
+        this.closeErrorDialog();
     }
     /**
      * To set position for context menu.
@@ -530,7 +530,7 @@ export class CalculatedField implements IAction {
             closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id.split('_').pop());
             this.curMenu.textContent = field + ' (' + menu.element.textContent + ')';
             addClass([this.curMenu.parentElement.parentElement], ['e-node-focus', 'e-hover']);
-            this.curMenu.parentElement.parentElement.setAttribute('tabindex', '-1');
+            this.curMenu.parentElement.parentElement.setAttribute('tabindex', '0');
             this.curMenu.parentElement.parentElement.focus();
         }
     }
@@ -920,24 +920,26 @@ export class CalculatedField implements IAction {
             for (const key of (parent.engineModule.fieldList ? Object.keys(parent.engineModule.fieldList) : [])) {
                 let type: string = null;
                 let typeVal: string = null;
-                if ((parent.engineModule.fieldList[key as string].type !== 'number' || parent.engineModule.fieldList[key as string].type === 'include' ||
-                    parent.engineModule.fieldList[key as string].type === 'exclude') &&
-                    (parent.engineModule.fieldList[key as string].aggregateType !== 'DistinctCount')) {
+                let field: IField = parent.engineModule.fieldList[key as string];
+                if ((field.type !== 'number' || parent.engineModule.fieldList[key as string].type === 'include' || parent.engineModule.fieldList[key as string].type === 'exclude') && field.aggregateType !== 'DistinctCount') {
                     typeVal = COUNT;
                 } else {
-                    typeVal = parent.engineModule.fieldList[key as string].aggregateType !== undefined ?
-                        (parent.engineModule.fieldList[key as string].aggregateType) : SUM;
+                    typeVal = field.aggregateType !== undefined ?
+                        (field.aggregateType) : SUM;
                 }
                 type = this.parent.localeObj.getConstant(typeVal);
                 fields.push({
-                    index: parent.engineModule.fieldList[key as string].index,
-                    name: parent.engineModule.fieldList[key as string].caption + ' (' + type + ')',
+                    index: field.index,
+                    name: (this.parent.enableHtmlSanitizer ?
+                        SanitizeHtmlHelper.sanitize(field.caption) : field.caption) + ' (' + type + ')',
                     type: typeVal,
                     icon: cls.FORMAT + ' ' + cls.ICON,
-                    formula: parent.engineModule.fieldList[key as string].formula,
-                    field: key,
-                    caption: parent.engineModule.fieldList[key as string].caption ?
-                        parent.engineModule.fieldList[key as string].caption : key
+                    formula: (this.parent.enableHtmlSanitizer ?
+                        SanitizeHtmlHelper.sanitize(field.formula) : field.formula),
+                    field: (this.parent.enableHtmlSanitizer ?
+                        SanitizeHtmlHelper.sanitize(key) : key),
+                    caption: this.parent.enableHtmlSanitizer ?
+                        SanitizeHtmlHelper.sanitize(field.caption ? field.caption : key) : field.caption ? field.caption : key
                 });
             }
         }
@@ -1066,6 +1068,7 @@ export class CalculatedField implements IAction {
             closeOnEscape: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             showCloseIcon: true,
             header: this.parent.localeObj.getConstant('createCalculatedField'),
             target: document.body,
@@ -1081,7 +1084,7 @@ export class CalculatedField implements IAction {
     }
 
     private beforeOpen(): void {
-        // this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('createCalculatedField');
+        // this.dialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('createCalculatedField');
         this.dialog.element.querySelector('.e-dlg-header').
             setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
     }
@@ -1095,7 +1098,9 @@ export class CalculatedField implements IAction {
             }
         }
         this.destroy();
-        remove(document.getElementById(this.parentID + 'calculateddialog'));
+        if (!isNullOrUndefined(document.getElementById(this.parentID + 'calculateddialog'))) {
+            remove(document.getElementById(this.parentID + 'calculateddialog'));
+        }
         if (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
             remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
         }
@@ -1143,22 +1148,24 @@ export class CalculatedField implements IAction {
             outerDiv.appendChild(accordDiv);
             const buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
             const addBtn: HTMLElement = createElement('button', {
-                id: this.parentID + 'addBtn', innerHTML: this.parent.localeObj.getConstant('add'),
+                id: this.parentID + 'addBtn',
                 className: cls.CALCADDBTN, attrs: { 'type': 'button' }
             });
+            addBtn.innerText = this.parent.localeObj.getConstant('add');
             const cancelBtn: HTMLElement = createElement('button', {
-                id: this.parentID + 'cancelBtn', innerHTML: this.parent.localeObj.getConstant('cancel'),
+                id: this.parentID + 'cancelBtn',
                 className: cls.CALCCANCELBTN, attrs: { 'type': 'button' }
             });
+            cancelBtn.innerText = this.parent.localeObj.getConstant('cancel');
             buttonDiv.appendChild(cancelBtn);
             buttonDiv.appendChild(addBtn);
             outerDiv.appendChild(buttonDiv);
         } else {
             if (!this.parent.isAdaptive && this.parent.dataType === 'olap') {
                 const formulaTitle: HTMLElement = createElement('div', {
-                    className: cls.PIVOT_FIELD_TITLE_CLASS, id: this.parentID + '_' + 'FieldNameTitle',
-                    innerHTML: this.parent.localeObj.getConstant('fieldTitle')
+                    className: cls.PIVOT_FIELD_TITLE_CLASS, id: this.parentID + '_' + 'FieldNameTitle'
                 });
+                formulaTitle.innerText = this.parent.localeObj.getConstant('fieldTitle');
                 pivotCalcDiv.appendChild(formulaTitle);
             }
             const inputDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv', className: cls.CALCINPUTDIV });
@@ -1176,10 +1183,10 @@ export class CalculatedField implements IAction {
             const wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_container', className: cls.TREEVIEWOUTER });
             if (!this.parent.isAdaptive) {
                 const fieldTitle: HTMLElement = createElement('div', {
-                    className: cls.PIVOT_ALL_FIELD_TITLE_CLASS,
-                    innerHTML: (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('allFields') :
-                        this.parent.localeObj.getConstant('formulaField'))
+                    className: cls.PIVOT_ALL_FIELD_TITLE_CLASS
                 });
+                fieldTitle.innerText = (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('allFields') :
+                    this.parent.localeObj.getConstant('formulaField'));
                 if (this.parent.dataType === 'olap') {
                     const headerWrapperDiv: HTMLElement = createElement('div', { className: cls.PIVOT_ALL_FIELD_TITLE_CLASS + '-container' });
                     headerWrapperDiv.appendChild(fieldTitle);
@@ -1200,6 +1207,7 @@ export class CalculatedField implements IAction {
                         offsetY: (this.parent.enableRtl ? -10 : -10),
                         locale: this.parent.locale,
                         enableRtl: this.parent.enableRtl,
+                        enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                         width: 220,
                         cssClass: this.parent.cssClass
                     });
@@ -1219,10 +1227,10 @@ export class CalculatedField implements IAction {
             }
             if (!this.parent.isAdaptive) {
                 const formulaTitle: HTMLElement = createElement('div', {
-                    className: cls.PIVOT_FORMULA_TITLE_CLASS,
-                    innerHTML: (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('expressionField') :
-                        this.parent.localeObj.getConstant('formula'))
+                    className: cls.PIVOT_FORMULA_TITLE_CLASS
                 });
+                formulaTitle.innerText = (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('expressionField') :
+                    this.parent.localeObj.getConstant('formula'));
                 if (this.parent.dataType === 'olap') {
                     pivotCalcDiv.appendChild(formulaTitle);
                 } else {
@@ -1246,18 +1254,19 @@ export class CalculatedField implements IAction {
             if (this.parent.isAdaptive) {
                 const buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
                 const okBtn: HTMLElement = createElement('button', {
-                    id: this.parentID + 'okBtn', innerHTML: this.parent.localeObj.getConstant('apply'),
+                    id: this.parentID + 'okBtn',
                     className: cls.CALCOKBTN, attrs: { 'type': 'button' }
                 });
+                okBtn.innerText = this.parent.localeObj.getConstant('apply');
                 buttonDiv.appendChild(okBtn);
                 outerDiv.appendChild(buttonDiv);
             }
             if (this.parent.dataType === 'olap') {
                 if (!this.parent.isAdaptive) {
                     const memberTypeTitle: HTMLElement = createElement('div', {
-                        className: cls.OLAP_MEMBER_TITLE_CLASS,
-                        innerHTML: this.parent.localeObj.getConstant('memberType')
+                        className: cls.OLAP_MEMBER_TITLE_CLASS
                     });
+                    memberTypeTitle.innerText = this.parent.localeObj.getConstant('memberType');
                     pivotCalcDiv.appendChild(memberTypeTitle);
                 }
                 const memberTypeDrop: HTMLElement = createElement('div', { id: this.parentID + 'Member_Type_Div', className: cls.CALC_MEMBER_TYPE_DIV });
@@ -1266,13 +1275,14 @@ export class CalculatedField implements IAction {
                 } else {
                     pivotCalcDiv.appendChild(memberTypeDrop);
                     const hierarchyTitle: HTMLElement = createElement('div', {
-                        className: cls.OLAP_HIERARCHY_TITLE_CLASS,
-                        innerHTML: this.parent.localeObj.getConstant('selectedHierarchy')
+                        className: cls.OLAP_HIERARCHY_TITLE_CLASS
                     });
+                    hierarchyTitle.innerText = this.parent.localeObj.getConstant('selectedHierarchy');
                     pivotCalcDiv.appendChild(hierarchyTitle);
                 }
                 const hierarchyDrop: HTMLElement = createElement('div', {
-                    id: this.parentID + 'Hierarchy_List_Div', className: cls.CALC_HIERARCHY_LIST_DIV });
+                    id: this.parentID + 'Hierarchy_List_Div', className: cls.CALC_HIERARCHY_LIST_DIV
+                });
                 if (this.parent.isAdaptive) {
                     outerDiv.appendChild(hierarchyDrop);
                 } else {
@@ -1281,13 +1291,14 @@ export class CalculatedField implements IAction {
             }
             if (!this.parent.isAdaptive) {
                 const formatTitle: HTMLElement = createElement('div', {
-                    className: cls.PIVOT_FORMAT_TITLE_CLASS,
-                    innerHTML: this.parent.localeObj.getConstant('formatString')
+                    className: cls.PIVOT_FORMAT_TITLE_CLASS
                 });
+                formatTitle.innerText = this.parent.localeObj.getConstant('formatString');
                 pivotCalcDiv.appendChild(formatTitle);
             }
             const ddlFormatTypes: HTMLElement = createElement('div', {
-                id: this.parentID + 'Format_Div', className: cls.CALC_FORMAT_TYPE_DIV });
+                id: this.parentID + 'Format_Div', className: cls.CALC_FORMAT_TYPE_DIV
+            });
             if (this.parent.isAdaptive) {
                 outerDiv.appendChild(ddlFormatTypes);
             } else {
@@ -1539,6 +1550,7 @@ export class CalculatedField implements IAction {
                 fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale,
                 nodeDragStart: this.dragStart.bind(this),
                 nodeDragging: (e: DragAndDropEventArgs) => {
@@ -1574,6 +1586,7 @@ export class CalculatedField implements IAction {
                 fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale,
                 cssClass: this.parent.cssClass,
                 nodeCollapsing: this.nodeCollapsing.bind(this),
@@ -1830,7 +1843,7 @@ export class CalculatedField implements IAction {
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null) {
             this.createDropElements();
         }
-        const cancelBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+        const cancelBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer });
         cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
         if (cancelBtn.element) {
@@ -1838,7 +1851,7 @@ export class CalculatedField implements IAction {
         }
         if ((this.parent as PivotFieldList).
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null && this.parent.isAdaptive) {
-            const okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+            const okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer });
             okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
             this.inputObj = new MaskedTextBox({
@@ -1866,7 +1879,7 @@ export class CalculatedField implements IAction {
                 okBtn.element.onclick = this.applyFormula.bind(this);
             }
         } else if (this.parent.isAdaptive) {
-            const addBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+            const addBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer });
             addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             if (this.parent.dataType === 'olap') {
@@ -1877,6 +1890,7 @@ export class CalculatedField implements IAction {
                     sortOrder: 'None',
                     enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     nodeClicked: this.fieldClickHandler.bind(this),
                     drawNode: this.drawTreeNode.bind(this),
                     nodeExpanding: this.updateNodeIcon.bind(this),
@@ -1894,6 +1908,7 @@ export class CalculatedField implements IAction {
                     items: this.getAccordionData(this.parent),
                     enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     expanding: this.accordionExpand.bind(this),
                     clicked: this.accordionClickHandler.bind(this),
                     created: this.accordionCreated.bind(this)
@@ -1923,7 +1938,7 @@ export class CalculatedField implements IAction {
                             name: AGRTYPE + key,
                             checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i as number],
                             change: this.onChange.bind(this),
-                            locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                             cssClass: this.parent.cssClass
                         });
                         radiobutton.isStringTemplate = true;
@@ -1963,7 +1978,7 @@ export class CalculatedField implements IAction {
             }
             const checkbox: CheckBox = new CheckBox({
                 label: this.parent.engineModule.fieldList[key as string].caption + ' (' + this.parent.localeObj.getConstant(type) + ')',
-                locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 cssClass: this.parent.cssClass
             });
             checkbox.isStringTemplate = true;
@@ -2083,7 +2098,7 @@ export class CalculatedField implements IAction {
 
     private createConfirmDialog(title: string, description: string, calcInfo: ICalculatedFields, isRemove?: boolean, node?: Element): void {
         const errorDialog: HTMLElement = createElement('div', {
-            id: this.parentID + '_ErrorDialog',
+            id: this.parentID + '_CalculatedFieldErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
@@ -2093,6 +2108,7 @@ export class CalculatedField implements IAction {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -2105,7 +2121,7 @@ export class CalculatedField implements IAction {
                     }
                 },
                 {
-                    click: this.removeErrorDialog.bind(this),
+                    click: this.closeErrorDialog.bind(this),
                     buttonModel: {
                         cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         content: isRemove ? this.parent.localeObj.getConstant('no') : this.parent.localeObj.getConstant('cancel'), isPrimary: true
@@ -2123,7 +2139,7 @@ export class CalculatedField implements IAction {
         });
         this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
-        // this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
+        // this.confirmPopUp.element.querySelector('.e-dlg-header').innerText = title;
     }
 
     private replaceFormula(calcInfo: ICalculatedFields): void {
@@ -2158,9 +2174,16 @@ export class CalculatedField implements IAction {
     }
 
     private removeErrorDialog(): void {
-        if (document.getElementById(this.parentID + '_ErrorDialog')) {
-            remove(document.getElementById(this.parentID + '_ErrorDialog').parentElement);
+        if (this.confirmPopUp && !this.confirmPopUp.isDestroyed) {
+            this.confirmPopUp.destroy();
         }
+        if (select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) !== null) {
+            remove(select('#' + this.parentID + '_CalculatedFieldErrorDialog', document));
+        }
+    }
+
+    private closeErrorDialog(): void {
+        this.confirmPopUp.close();
     }
 
     /**

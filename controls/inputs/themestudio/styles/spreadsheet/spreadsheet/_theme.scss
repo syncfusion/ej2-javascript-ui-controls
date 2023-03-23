@@ -12,7 +12,7 @@
     }
 
     & .e-find-dlg .e-header {
-      font-weight: 500;
+      font-weight: $find-dlg-header-font-weight;
     }
 
     & .e-scrollbar {
@@ -155,7 +155,7 @@
 
       &:hover:not(.e-active) {
         background: $tbar-hover-bg;
-        border-color: $ribbon-item-hover-border-color;
+        border-color: $spreadsheet-ribbon-item-hover-border-color;
 
         @if $skin-name == 'bootstrap4' {
           color: $tbar-hover-font;
@@ -179,7 +179,7 @@
       &.e-active {
         @if $skin-name != 'highcontrast' {
           background: $tbar-focus-bg;
-          border-color: $ribbon-item-active-border-color;
+          border-color: $spreadsheet-ribbon-item-active-border-color;
         }
       }
 
@@ -220,7 +220,7 @@
 
         &:hover:not(.e-active) {
           background: $tbar-hover-bg;
-          border-color: $ribbon-item-hover-border-color;
+          border-color: $spreadsheet-ribbon-item-hover-border-color;
 
           @if $skin-name == 'bootstrap5' {
             color: $tbar-active-icon-color;
@@ -244,7 +244,7 @@
         &.e-active {
           @if $skin-name != 'highcontrast' {
             background: $tbar-focus-bg;
-            border-color: $ribbon-item-active-border-color;
+            border-color: $spreadsheet-ribbon-item-active-border-color;
           }
 
           @if $skin-name == 'bootstrap5' {
@@ -1338,7 +1338,7 @@
     }
   }
 
-  .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
+  .e-spreadsheet .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
     color: $tbar-default-icon-color;
   }
 

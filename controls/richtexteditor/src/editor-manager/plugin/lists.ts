@@ -139,7 +139,7 @@ export class Lists {
                 this.parent.domNode.insertAfter(insertTag, startNodeParent);
                 e.event.preventDefault();
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertTag, 0);
-                if (startNodeParent.textContent === '') {
+                if (startNodeParent.textContent === '' && (startNodeParent.querySelectorAll('audio,video').length === 0 )) {
                     detach(startNodeParent);
                 } else {
                     detach(startNode);

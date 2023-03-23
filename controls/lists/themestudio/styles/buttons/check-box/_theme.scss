@@ -45,6 +45,20 @@
         }
       }
 
+      &:hover {
+        @if $skin-name == 'Material3' {
+          & .e-ripple-element {
+            background: $cbox-ripple-bgcolor;
+          }
+
+          & .e-ripple-check {
+            & .e-ripple-element {
+              background: $cbox-checked-ripple-bgcolo;
+            }
+          }
+        }
+      }
+
       & .e-label {
         color: $cbox-color;
       }
@@ -120,7 +134,7 @@
           }
 
           &.e-stop {
-            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }
@@ -141,13 +155,23 @@
       &.e-checkbox-disabled {
         & .e-frame {
           background-color: $cbox-disabled-bgcolor;
-          border-color: $cbox-disabled-border-color;
+          @if $skin-name == 'Material3' {
+            border: $cbox-border $cbox-disabled-border-color;
+          }
+          @else {
+            border-color: $cbox-disabled-border-color;
+          }
           color: $cbox-disabled-color;
 
           &.e-check {
             background-color: $cbox-checkmark-disabled-bgcolor;
             @if $skin-name == 'bootstrap4' {
               border-color: transparent;
+            }
+            @if $skin-name == 'Material3' {
+              border: none;
+              border-color: $cbox-checkmark-disabled-border-color;
+              line-height: 14px;
             }
             @else {
               border-color: $cbox-checkmark-disabled-border-color;
@@ -159,6 +183,11 @@
             background-color: $cbox-indeterminate-disabled-bgcolor;
             @if $skin-name == 'bootstrap4' {
               border-color: transparent;
+            }
+            @if $skin-name == 'Material3' {
+              border: none;
+              border: $cbox-indeterminate-disabled-border-color;
+              line-height: 14px;
             }
             @else {
               border-color: $cbox-indeterminate-disabled-border-color;
@@ -238,6 +267,10 @@
               &:not(.e-check):not(.e-stop) {
                 color: $cbox-icon-color;
               }
+            }
+            @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+              background-color: $cbox-checkmark-hover-bgcolor;
+              border-color: $cbox-checkmark-hover-border-color;
             }
           }
         }

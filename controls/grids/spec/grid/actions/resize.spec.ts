@@ -751,7 +751,7 @@ describe('Resize module', () => {
                     expect(tables[i].style.width).not.toBe("");
                 }
             });    
-
+    
             afterAll(() => {
                 destroy(gridObj);
                 gridObj = null;

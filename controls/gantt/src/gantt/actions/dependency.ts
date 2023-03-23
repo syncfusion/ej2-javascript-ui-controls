@@ -33,7 +33,9 @@ export class Dependency {
         for (let count: number = length; count >= 0; count--) {
             const ganttData: IGanttData = predecessorTasks[count as number];
             const ganttProp: ITaskData = ganttData.ganttProperties;
-            this.ensurePredecessorCollectionHelper(ganttData, ganttProp);     
+            if ((!ganttData.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
+                this.ensurePredecessorCollectionHelper(ganttData, ganttProp);
+            }    
         }
     }
     /**
@@ -200,18 +202,26 @@ export class Dependency {
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
-            let fromData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.to);
-            let toData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.from);
-            let isValid: boolean 
-            if (this.parent.connectorLineEditModule && toData && fromData) {
-               isValid = this.parent.connectorLineEditModule.validateParentPredecessor(toData, fromData);
-               if(isValid)
-                collection.push(obj);
+            const isOwnParent: boolean = this.checkIsParent(match[0]);
+            if (!this.parent.allowParentDependency) {
+                if (!isOwnParent) {
+                    collection.push(obj);
+                }
             }
             else {
-               collection.push(obj);
+                let fromData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.to);
+                let toData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.from);
+                let isValid: boolean
+                if (this.parent.connectorLineEditModule && toData && fromData) {
+                    isValid = this.parent.connectorLineEditModule.validateParentPredecessor(toData, fromData);
+                    if (isValid)
+                        collection.push(obj);
+                }
+                else {
+                    collection.push(obj);
+                }
+                match.splice(0);
             }
-            match.splice(0);
         });
         return collection;
     }
@@ -327,7 +337,9 @@ export class Dependency {
         const length: number = predecessorsCollection.length;
         for (let count: number = 0; count < length; count++) {
             ganttRecord = predecessorsCollection[count as number];
-            this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+            if ((!ganttRecord.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
+               this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+            }
         }
     }
     /**
@@ -376,12 +388,16 @@ export class Dependency {
      * @private
      */
     public updatedRecordsDateByPredecessor(): void {
+        if (!this.parent.autoCalculateDateScheduling) {
+            return;
+        }
         const flatData: IGanttData[] = this.parent.flatData;
         const totLength: number = this.parent.flatData.length;
         for (let count: number = 0; count < totLength; count++) {
             if (flatData[count as number].ganttProperties.predecessorsName) {
                 this.validatePredecessorDates(flatData[count as number]);
-                if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks) {
+                if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks
+                    && this.parent.allowParentDependency) {
                     this.parent.editModule['updateChildItems'](flatData[count as number]);
                 }
             }
@@ -427,7 +443,7 @@ export class Dependency {
                 const predecessor: IPredecessor = predecessors[count as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
                 record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
-                if (this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) == -1 
+                if (this.parent.allowParentDependency && this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) == -1 
                     && (ganttRecord.hasChildRecords || record.hasChildRecords)) {
                         this.parentPredecessors.push(ganttRecord);
                     }

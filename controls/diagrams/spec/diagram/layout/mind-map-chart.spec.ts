@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
     ConnectorModel, Node,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, TextModel, ConnectorConstraints, PortVisibility, NodeConstraints, PointPort, SelectorConstraints, SnapConstraints, DiagramTools, MarginModel, HorizontalAlignment, Side, UserHandleModel, VerticalAlignment, Connector, ToolBase, randomId, PointPortModel
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, TextModel, ConnectorConstraints, PortVisibility, NodeConstraints, PointPort, SelectorConstraints, SnapConstraints, DiagramTools, HorizontalAlignment, MarginModel, Side, UserHandleModel, VerticalAlignment, Connector, ToolBase, randomId, PointPortModel
 } from '../../../src/diagram/index';
 import { MindMap } from '../../../src/diagram/layout/mind-map';
 import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/spatial-search';
@@ -917,3 +917,4 @@ export interface EmployeeInfo {
     Root: string;
     Label: string;
 }
+

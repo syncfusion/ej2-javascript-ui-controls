@@ -1333,3 +1333,55 @@ describe('EJ2-55031 - Selecting some texts and applying Font and background colo
         destroy(rteObj);
     });
 });
+
+describe('BLAZ-29736 - Font Color not Applying for the hyperlink Text', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<p><a href="https://www.google.com/">Google</a></p>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Should wrap the span element around the text content of the hyperlink', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('a').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('a').childNodes[0], 6);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        const spanElem = rteObj.element.querySelector('.e-content').querySelector('span');
+        expect(spanElem.parentElement.nodeName).toEqual('A');
+        expect(spanElem.querySelector('a')).toEqual(null);
+    });
+});
+describe('EJ2-70136 - Font Size value not updating while on selected text', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it('EJ2-70136 - Font Size value not updating while on selected text', () => {
+        rteObj = renderRTE({
+            value: `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>`,
+            toolbarSettings: {
+                items: ['FontSize']
+            }
+        });
+        let rteEle = rteObj.element;
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        const range:Range =new Range();
+        range.setStart(focusNode.childNodes[0],0);
+        range.setEnd (focusNode.childNodes[4],focusNode.childNodes[4].textContent.length);
+        domSelection.setRange(document,range);
+        let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        fontSizePicker.click();
+        var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
+        fontSizeChooser.click();
+        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><a href="https://ej2.syncfusion.com/home/" target="_blank"><span style="font-size: 24pt;">HTML markup</span></a><span style="font-size: 24pt;"> or </span><a href="https://ej2.syncfusion.com/home/" target="_blank"><span style="font-size: 24pt;">markdown</span></a><span style="font-size: 24pt;"> of the content</span></p>');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});

@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
 /* eslint-disable no-case-declarations */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { ChartLocation, ControlPoints } from '../../common/utils/helper';

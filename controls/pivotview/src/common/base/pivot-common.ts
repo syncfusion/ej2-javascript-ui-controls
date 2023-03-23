@@ -59,6 +59,8 @@ export class PivotCommon {
     public dataType: string;
     /** @hidden */
     public cssClass: string;
+    /** @hidden */
+    public enableHtmlSanitizer: boolean;
 
 
     //Module Declarations
@@ -87,6 +89,7 @@ export class PivotCommon {
         this.dataSourceSettings = control.dataSourceSettings;
         this.engineModule = control.pivotEngine;
         this.enableRtl = control.enableRtl;
+        this.enableHtmlSanitizer = control.enableHtmlSanitizer;
         this.isAdaptive = control.isAdaptive;
         this.renderMode = control.renderMode;
         this.parentID = control.id;

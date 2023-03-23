@@ -120,6 +120,7 @@ export class Selection {
     // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for selection
+     * @private
      */
     public addSelection(layerIndex: number, name: string, enable: boolean): void {
         const targetElement: Element = getTargetElement(layerIndex, name, enable, this.maps);

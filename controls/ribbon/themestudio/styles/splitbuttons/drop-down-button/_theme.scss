@@ -1,0 +1,78 @@
+@include export-module('drop-down-button-theme') {
+
+  /*! drop-down button theme */
+  .e-dropdown-popup {
+    background-color: $drop-down-btn-ul-bgcolor;
+    color: $drop-down-btn-color;
+
+    & ul {
+      & .e-item  {
+        & .e-menu-url {
+          color: $drop-down-btn-color;
+        }
+
+        & .e-menu-icon {
+          color: $drop-down-btn-menu-icon-color;
+        }
+
+        &.e-focused {
+          background-color: $drop-down-btn-li-focus-bgcolor;
+          box-shadow: $drop-down-btn-li-box-shadow;
+        }
+
+        &:hover {
+          @if $skin-name == 'bootstrap5' {
+            background-color: $drop-down-btn-li-hover-bgcolor;
+          }
+          @else {
+            background-color: $drop-down-btn-li-bgcolor;
+          }
+          color: $drop-down-btn-li-selection-font-color;
+        }
+
+        &:active,
+        &.e-selected {
+          background-color: $drop-down-btn-li-selection-bgcolor;
+          color: $drop-down-btn-selected-color;
+
+          & .e-menu-url {
+            color: $drop-down-btn-selected-color;
+          }
+
+          & .e-menu-icon {
+            @if $skin-name == 'FluentUI' or $theme-name == 'FluentUI' {
+              color: $drop-down-btn-menu-icon-color;
+            }
+            @else {
+              color: $drop-down-btn-selected-color;
+            }
+          }
+        }
+      }
+
+      & .e-separator {
+        border-bottom-color: $drop-down-btn-li-border-color;
+      }
+    }
+  }
+
+  .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
+    &.e-inherit {
+      background: inherit;
+      border-color: transparent;
+      box-shadow: none;
+      color: inherit;
+
+      &:hover,
+      &:focus,
+      &:active,
+      &.e-active {
+        background-color: rgba(transparent, .056);
+        border-color: transparent;
+        box-shadow: none;
+        color: inherit;
+      }
+    }
+  }
+}

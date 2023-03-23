@@ -30,7 +30,7 @@ export class Search implements IAction {
     /**
      * Searches Grid records by given key.
      *
-     * > You can customize the default search action by using [`searchSettings`](grid/#searchsettings/).
+     * > You can customize the default search action by using [`searchSettings`](./searchsettings/).
      *
      * @param  {string} searchString - Defines the key.
      * @returns {void}

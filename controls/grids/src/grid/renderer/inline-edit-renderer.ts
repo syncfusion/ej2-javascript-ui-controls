@@ -38,7 +38,7 @@ export class InlineEditRender {
         } else {
             tbody = isVirtualFrozen ? this.parent.getMovableContentTbody() : this.parent.getContentTable().querySelector( literals.tbody);
         }
-        args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow', attrs: { role: 'row' } });
+        args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             const emptyRow: Element = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
@@ -310,7 +310,7 @@ export class InlineEditRender {
         const table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { cellspacing: '0.25', role: 'grid' } });
         table.appendChild(gObj.getContentTable().querySelector(literals.colGroup).cloneNode(true));
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
-        const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
+        const tr: Element = this.parent.createElement('tr');
         let i: number = 0;
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);

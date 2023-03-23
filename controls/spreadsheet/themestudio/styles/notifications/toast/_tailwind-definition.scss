@@ -1,5 +1,3 @@
-$skin-name: 'tailwind' !default;
-
 //Layout Variables Start
 //Mouse Mode Start
 $toast-icon-nrml-height: 20px !default;
@@ -40,7 +38,7 @@ $toast-progressbar-bgr-height: 4px !default;
 $toast-content-bgr-padding: 12px 0 !default;
 $toast-bgr-border-radious: 6px !default;
 $toast-font-bgr-size: $text-sm !default;
-$toast-title-font-weight: bold !default;
+$toast-title-font-weight: $font-weight-bold !default;
 
 //Touch Mode End
 //Layout Variables End

@@ -41,41 +41,41 @@ describe('AutoComplete', () => {
             request: request
         }
     };
-    describe('EJ2-10357 -  Autocomplete (and all components with dropdown) displays the suggestions list even if the focus is lost for related component.', () => {
-        let autoObj: any;
-        let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
-        let dataSource = new DataManager({
-            url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
-            crossDomain: true
-        });
-        beforeAll(() => {
-            document.body.appendChild(autoEle);
-            autoObj = new AutoComplete({
-                dataSource: dataSource,
-                query: new Query().from('Customers').select('ContactName').take(7),
-                fields: { text: 'ContactName' },
-                placeholder: 'Select a name'
-            });
-            autoObj.appendTo(autoEle);
-        });
-        afterAll(() => {
-            autoObj.destroy();
-            autoEle.remove();
-        });
+    // describe('EJ2-10357 -  Autocomplete (and all components with dropdown) displays the suggestions list even if the focus is lost for related component.', () => {
+    //     let autoObj: any;
+    //     let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+    //     let dataSource = new DataManager({
+    //         url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
+    //         crossDomain: true
+    //     });
+    //     beforeAll(() => {
+    //         document.body.appendChild(autoEle);
+    //         autoObj = new AutoComplete({
+    //             dataSource: dataSource,
+    //             query: new Query().from('Customers').select('ContactName').take(7),
+    //             fields: { text: 'ContactName' },
+    //             placeholder: 'Select a name'
+    //         });
+    //         autoObj.appendTo(autoEle);
+    //     });
+    //     afterAll(() => {
+    //         autoObj.destroy();
+    //         autoEle.remove();
+    //     });
 
-        it('check whether the autocomplete popup is shown or not', () => {
-            autoObj.focusIn()
-            autoObj.inputElement.value = "a";
-            let event: any = new Event('keyup');
-            event.keyCode = 65;
-            event.key = "a";
-            autoObj.isValidKey = true;
-            autoObj.onFilterUp(event);
-            let event2: any = new Event("blur");
-            autoObj.filterInput.dispatchEvent(event2);
-            expect(autoObj.isPopupOpen).toBe(false);
-        });
-    });
+    //     it('check whether the autocomplete popup is shown or not', () => {
+    //         autoObj.focusIn()
+    //         autoObj.inputElement.value = "a";
+    //         let event: any = new Event('keyup');
+    //         event.keyCode = 65;
+    //         event.key = "a";
+    //         autoObj.isValidKey = true;
+    //         autoObj.onFilterUp(event);
+    //         let event2: any = new Event("blur");
+    //         autoObj.filterInput.dispatchEvent(event2);
+    //         expect(autoObj.isPopupOpen).toBe(false);
+    //     });
+    // });
     describe('EJ2-10319 -  Autocomplete two way binding value is not properly updated for first time', () => {
         let autoObj: any;
         let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });

@@ -195,8 +195,8 @@ export class Islamic {
         }
             break;
         case 'Decade': {
-            let startIslamicYear = 1361;
-            let gregorianValue = HijriParser.toGregorian(startIslamicYear, 1, 1);
+            const startIslamicYear: number = 1361;
+            const gregorianValue: Date = HijriParser.toGregorian(startIslamicYear, 1, 1);
             let prevDecadeCompare: boolean =
                     this.hijriCompareDecade(date, this.calendarInstance.min) < 1;
             const nextDecadeCompare: boolean =
@@ -316,10 +316,10 @@ export class Islamic {
         let startHdrYr: any = this.calendarInstance.globalize.formatDate(
             startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
         let endHdrYr: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
-        let splityear = this.calendarInstance.headerElement.textContent.split('-');
+        const splityear: any = this.calendarInstance.headerElement.textContent.split('-');
         if ((!isNullOrUndefined(e) && (splityear[0] !== startHdrYr) && (e as KeyboardEventArgs).action === 'home') || (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action === 'end')) {
-                startHdrYr = this.calendarInstance.headerElement.textContent.split('-')[0].trim();
-                endHdrYr = this.calendarInstance.headerElement.textContent.split('-')[1].trim();
+            startHdrYr = this.calendarInstance.headerElement.textContent.split('-')[0].trim();
+            endHdrYr = this.calendarInstance.headerElement.textContent.split('-')[1].trim();
         }
         if (this.calendarInstance.islamicPreviousHeader) {
             startHdrYr = this.calendarInstance.islamicPreviousHeader.split('-')[0].trim();
@@ -327,55 +327,62 @@ export class Islamic {
             this.calendarInstance.islamicPreviousHeader = null;
         }
         if (this.calendarInstance.previousIconClicked) {
-            for (var i = 0; i <= splityear.length; i++) {
-                endHdrYr = endHdrYr - splityear[i as number] === 2 || splityear[i as number] - endHdrYr === 2 ? (parseInt(endHdrYr) + 1).toString() : endHdrYr - splityear[i as number] === 3 || splityear[i as number] - endHdrYr === 3 ? (parseInt(endHdrYr) + 2).toString() : endHdrYr - splityear[i as number] === 4 || splityear[i as number] - endHdrYr === 4 ? (parseInt(endHdrYr) + 3).toString() : endHdrYr - splityear[i as number] === 5 || splityear[i as number] - endHdrYr === 5 ? (parseInt(endHdrYr) + 4).toString() : endHdrYr;
+            // eslint-disable-next-line no-var
+            for (var i: number = 0; i <= splityear.length; i++) {
+                endHdrYr = endHdrYr - splityear[i as number] === 2 || splityear[i as number]
+                 - endHdrYr === 2 ? (parseInt(endHdrYr, 10) + 1).toString() :
+                    endHdrYr - splityear[i as number] === 3 || splityear[i as number] - endHdrYr === 3 ?
+                        (parseInt(endHdrYr, 10) + 2).toString() : endHdrYr - splityear[i as number] === 4 ||
+                    splityear[i as number] - endHdrYr === 4 ? (parseInt(endHdrYr, 10) + 3).toString() :
+                            endHdrYr - splityear[i as number] === 5 || splityear[i as number] - endHdrYr === 5 ?
+                                (parseInt(endHdrYr, 10) + 4).toString() : endHdrYr;
                 if (endHdrYr - splityear[i as number] === 0 || splityear[i as number] - endHdrYr === 0) {
-                    endHdrYr = (parseInt(endHdrYr) - 1).toString();
+                    endHdrYr = (parseInt(endHdrYr, 10) - 1).toString();
                 }
             }
             if (endHdrYr - splityear[i as number] === 8 || splityear[i as number] - endHdrYr === 8) {
-                endHdrYr = (parseInt(endHdrYr) - 9).toString();
-                startHdrYr = (parseInt(endHdrYr) - 9).toString();
+                endHdrYr = (parseInt(endHdrYr, 10) - 9).toString();
+                startHdrYr = (parseInt(endHdrYr, 10) - 9).toString();
             }
             if (endHdrYr - splityear[i as number] === 7 || splityear[i as number] - endHdrYr === 7) {
-                endHdrYr = (parseInt(endHdrYr) - 8).toString();
-                startHdrYr = (parseInt(endHdrYr) - 9).toString();
+                endHdrYr = (parseInt(endHdrYr, 10) - 8).toString();
+                startHdrYr = (parseInt(endHdrYr, 10) - 9).toString();
             }
             startHdrYr = endHdrYr - startHdrYr === 10
-                ? (parseInt(startHdrYr) + 1).toString() : endHdrYr - startHdrYr === 11
-                ? (parseInt(startHdrYr) + 2).toString() : endHdrYr - startHdrYr === 12
-                ? (parseInt(startHdrYr) + 3).toString() : startHdrYr;
+                ? (parseInt(startHdrYr, 10) + 1).toString() : endHdrYr - startHdrYr === 11
+                    ? (parseInt(startHdrYr, 10) + 2).toString() : endHdrYr - startHdrYr === 12
+                        ? (parseInt(startHdrYr, 10) + 3).toString() : startHdrYr;
             if (endHdrYr - startHdrYr === 8) {
-                startHdrYr = (parseInt(startHdrYr) - 1).toString();
+                startHdrYr = (parseInt(startHdrYr, 10) - 1).toString();
             }
         }
         if (this.calendarInstance.nextIconClicked) {
-            for (var i = 0; i <= splityear.length; i++) {
+            for (let i: number = 0; i <= splityear.length; i++) {
                 if (startHdrYr - splityear[i as number] === 0 || splityear[i as number] - startHdrYr === 0) {
-                    startHdrYr = (parseInt(startHdrYr) + 1).toString();
+                    startHdrYr = (parseInt(startHdrYr, 10) + 1).toString();
                 }
                 if (startHdrYr - splityear[i as number] === 2 && startHdrYr > splityear[i as number].trim()) {
-                    startHdrYr = (parseInt(startHdrYr) - 1).toString();
+                    startHdrYr = (parseInt(startHdrYr, 10) - 1).toString();
                 }
                 if (splityear[i as number] - startHdrYr === 1 && startHdrYr < splityear[i as number].trim()) {
-                    startHdrYr = (parseInt(startHdrYr) + 2).toString();
+                    startHdrYr = (parseInt(startHdrYr, 10) + 2).toString();
                 }
             }
             if (startHdrYr - this.calendarInstance.headerTitleElement.textContent.split('-')[1].trim() > 1) {
-                startHdrYr = (parseInt(this.calendarInstance.headerTitleElement.textContent.split('-')[1].trim()) + 1).toString();
-                endHdrYr = (parseInt(startHdrYr) + 9).toString();
+                startHdrYr = (parseInt(this.calendarInstance.headerTitleElement.textContent.split('-')[1].trim(), 10) + 1).toString();
+                endHdrYr = (parseInt(startHdrYr, 10) + 9).toString();
             }
-            endHdrYr = endHdrYr - startHdrYr === 10 ? (parseInt(endHdrYr) - 1).toString() : endHdrYr;
+            endHdrYr = endHdrYr - startHdrYr === 10 ? (parseInt(endHdrYr, 10) - 1).toString() : endHdrYr;
             endHdrYr = endHdrYr - startHdrYr === 7
-                ? (parseInt(endHdrYr) + 2).toString() : endHdrYr - startHdrYr === 8
-                ? (parseInt(endHdrYr) + 1).toString() : endHdrYr;
+                ? (parseInt(endHdrYr, 10) + 2).toString() : endHdrYr - startHdrYr === 8
+                    ? (parseInt(endHdrYr, 10) + 1).toString() : endHdrYr;
         }
         this.calendarInstance.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
         this.calendarInstance.nextIconClicked = this.calendarInstance.previousIconClicked = false;
-        const year: any = (parseInt(startHdrYr) - 2).toString();
-        startFullYr = Math.round(parseInt(startHdrYr) * 0.97 + 622);
-        endFullYr = Math.round(parseInt(endHdrYr) * 0.97 + 622);
-        let startYear: number = Math.round(parseInt(year) * 0.97 + 622);
+        const year: any = (parseInt(startHdrYr, 10) - 2).toString();
+        startFullYr = Math.round(parseInt(startHdrYr, 10) * 0.97 + 622);
+        endFullYr = Math.round(parseInt(endHdrYr, 10) * 0.97 + 622);
+        const startYear: number = Math.round(parseInt(year, 10) * 0.97 + 622);
         for (let rowCount: number = 1; rowCount <= yearCell; ++rowCount) {
             const year: number = startYear + rowCount;
             localDate.setFullYear(year);
@@ -389,34 +396,37 @@ export class Islamic {
             islamicDate = this.getIslamicDate(localDate);
             const gregorianObject: Date = HijriParser.toGregorian(islamicDate.year, 1, 1);
             localDate = gregorianObject;
-            if (islamicDate.year === parseInt(startHdrYr) - 1 || islamicDate.year >= startHdrYr && islamicDate.year <= endFullYr || islamicDate.year === parseInt(endHdrYr) + 1) {
-            const tdEle: HTMLElement = this.islamicDayCell(localDate);
-            attributes(tdEle, { 'role': 'gridcell' });
-            const dayLink: HTMLElement = this.calendarInstance.createElement('span');
-            dayLink.textContent = this.calendarInstance.globalize.formatDate(
-                localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
-            if (islamicDate.year === parseInt(startHdrYr) - 1 || (year < startFullYr) || (year > endFullYr) && islamicDate.year !== parseInt(endHdrYr)) {
-                addClass([tdEle], OTHERMONTH);
-            } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
+            if (islamicDate.year === parseInt(startHdrYr, 10) - 1 || islamicDate.year >= startHdrYr &&
+             islamicDate.year <= endFullYr || islamicDate.year === parseInt(endHdrYr, 10) + 1) {
+                const tdEle: HTMLElement = this.islamicDayCell(localDate);
+                attributes(tdEle, { 'role': 'gridcell' });
+                const dayLink: HTMLElement = this.calendarInstance.createElement('span');
+                dayLink.textContent = this.calendarInstance.globalize.formatDate(
+                    localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+                if (islamicDate.year === parseInt(startHdrYr, 10) - 1 || (year < startFullYr) ||
+                 (year > endFullYr) && islamicDate.year !== parseInt(endHdrYr, 10)) {
+                    addClass([tdEle], OTHERMONTH);
+                } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
                 || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
-                addClass([tdEle], DISABLED);
-            } else if (!isNullOrUndefined(value) &&
+                    addClass([tdEle], DISABLED);
+                } else if (!isNullOrUndefined(value) &&
                 (<any>(this.getIslamicDate(localDate))).year ===
                 (<any>(this.getIslamicDate(value))).year) {
-                addClass([tdEle], SELECTED);
-            } else {
-                if (localDate.getFullYear() === this.calendarInstance.currentDate.getFullYear() && !tdEle.classList.contains(DISABLED)) {
+                    addClass([tdEle], SELECTED);
+                } else {
+                    if (localDate.getFullYear() === this.calendarInstance.currentDate.getFullYear() &&
+                     !tdEle.classList.contains(DISABLED)) {
+                        addClass([tdEle], FOCUSEDDATE);
+                    }
+                }
+                if (!tdEle.classList.contains(DISABLED)) {
+                    EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
+                }
+                tdEle.appendChild(dayLink);
+                if ((!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'home' && islamicDate.year.toString() === startHdrYr) || (!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'end' && islamicDate.year.toString() === endHdrYr)) {
                     addClass([tdEle], FOCUSEDDATE);
                 }
-            }
-            if (!tdEle.classList.contains(DISABLED)) {
-                EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
-            }
-            tdEle.appendChild(dayLink);
-            if ((!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'home' && islamicDate.year.toString() === startHdrYr) || (!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'end' && islamicDate.year.toString() === endHdrYr)) {
-                    addClass([tdEle], FOCUSEDDATE);
-            }
-            tdEles.push(tdEle); }
+                tdEles.push(tdEle); }
         }
         this.islamicRenderTemplate(tdEles, numCells, 'e-decade', e, value);
     }

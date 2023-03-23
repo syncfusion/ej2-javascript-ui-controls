@@ -133,7 +133,7 @@ export class Render {
                 addClass([expandIcon], (expand ) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
-                emptyExpandIcon.style.width = '7px'; totalIconsWidth += 7;
+                emptyExpandIcon.style.width = '4px'; totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
             } else if (pad || !pad && !data.level) {
                 // icons width
@@ -227,7 +227,7 @@ export class Render {
             args.cell.classList.add('e-templatecell');
         }
         const textContent: string = args.cell.querySelector('.e-treecell') != null ?
-            args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
+        args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
         if ( typeof(args.column.template) === 'object' && this.templateResult ) {
             appendChildren(cellElement , this.templateResult);
             this.templateResult = null;
@@ -248,7 +248,7 @@ export class Render {
                 } else {
                     const str: string = 'isStringTemplate';
                     const result: Element[] = args.column[`${templateFn}`](
-                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
+                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[`${str}`]);
                     appendChildren(cellElement, result);
                 }
                 delete args.column.template;

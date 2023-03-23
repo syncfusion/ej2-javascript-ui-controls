@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData } from './datasource.spec';
+import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData, IndentData } from './datasource.spec';
 import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs, ResizeArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
@@ -2309,6 +2309,106 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     });
     afterAll(() => {
       destroy(TreeGridObj);
+    });
+  });
+
+  describe('EJ2-70690 - Indent is not proper when using sub parent and direct child in parent data.', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: IndentData,
+          childMapping: 'subtasks',
+          height: '400',
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+              { field: 'taskName', headerText: 'Task Name', width: 250 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          ],
+        },
+        done
+      );
+    });
+    it('Checking width of emptyExpandIcon', (done: Function) => {
+      rows = gridObj.getRows();
+      (rows[23].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect(gridObj.getRows()[23].getElementsByClassName('e-treecolumn-container')[0].children[4].getBoundingClientRect().width).toBe(4);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-70639 - Provide XSS- security for Tree Grid', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let XssData: Object[] = [
+      {
+          taskID: 1,
+          taskName: '<img id="target" src="x" onerror="alert(document.domain)">',
+          startDate: new Date('02/03/2017'),
+          endDate: new Date('02/07/2017'),
+          progress: 100,
+          duration: 5,
+          priority: 'Normal',
+          approved: false,
+          isInExpandState: true,
+          subtasks: [
+              { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false },
+              { taskID: 3, taskName: 'Plan budget', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, approved: true },
+              { taskID: 4, taskName: 'Allocate resources', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Critical', approved: false },
+              { taskID: 5, taskName: '<img id="target" src="x" onerror="alert(document.domain)">', startDate: new Date('02/07/2017'), endDate: new Date('02/07/2017'), duration: 0, progress: 0, priority: 'Low', approved: true }
+          ]
+      },
+      {
+          taskID: 6,
+          taskName: 'Design',
+          startDate: new Date('02/10/2017'),
+          endDate: new Date('02/14/2017'),
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          isInExpandState: false,
+          approved: false,
+          subtasks: [
+              { taskID: 7, taskName: 'Software Specification', startDate: new Date('02/10/2017'), endDate: new Date('02/12/2017'), duration: 3, progress: 60, priority: 'Normal', approved: false },
+              { taskID: 8, taskName: 'Develop prototype', startDate: new Date('02/10/2017'), endDate: new Date('02/12/2017'), duration: 3, progress: 100, priority: 'Critical', approved: false },
+              { taskID: 9, taskName: 'Get approval from customer', startDate: new Date('02/13/2017'), endDate: new Date('02/14/2017'), duration: 2, progress: 100, approved: true },
+              { taskID: 10, taskName: 'Design Documentation', startDate: new Date('02/13/2017'), endDate: new Date('02/14/2017'), duration: 2, progress: 100, approved: true },
+              { taskID: 11, taskName: 'Design complete', startDate: new Date('02/14/2017'), endDate: new Date('02/14/2017'), duration: 0, progress: 0, priority: 'Normal', approved: true }
+          ]
+      }];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: XssData,
+          childMapping: 'subtasks',
+          enableHtmlSanitizer: true,
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80, disableHtmlEncode: false, },
+            { field: 'taskName', headerText: 'Task Name', width: 200, disableHtmlEncode: false, },
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' }, disableHtmlEncode: false, },
+            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90, disableHtmlEncode: false, },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90, disableHtmlEncode: false, }
+        ]
+        },
+        done
+      );
+    });
+    it('test the html sanitizer', () => {
+      expect((gridObj.getRowByIndex(0) as any ).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false);
+      expect((gridObj.getRowByIndex(4) as any ).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false); 
+    });
+    afterAll(() => {
+      destroy(gridObj);
     });
   });
 

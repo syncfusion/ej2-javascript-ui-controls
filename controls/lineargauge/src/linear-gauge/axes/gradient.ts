@@ -5,13 +5,13 @@ import { LinearGauge } from '../../linear-gauge';
 import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { ColorStopModel, GradientPositionModel} from '../axes/gradient-model';
 /**
- * Specified the color information for the gradient in the linear gauge.
+ * Specifies the color information for the gradient in the linear gauge.
  */
 export class ColorStop extends ChildProperty<ColorStop> {
     /**
      * Specifies the color of the gradient.
      *
-     * @default "#000000"
+     * @default '#000000'
      */
     @Property('#000000')
     public color : string;
@@ -25,14 +25,14 @@ export class ColorStop extends ChildProperty<ColorStop> {
     /**
      * Specifies the offset of the gradient.
      *
-     * @default "0%"
+     * @default '0%'
      */
     @Property('0%')
     public offset : string;
     /**
      * Specifies the style of the gradient.
      *
-     * @default ""
+     * @default ''
      */
     @Property('')
     public style ?: string;
@@ -45,14 +45,14 @@ export class GradientPosition extends ChildProperty<GradientPosition> {
     /**
      * Specifies the horizontal position of the gradient.
      *
-     * @default "0%"
+     * @default '0%'
      */
     @Property('0%')
     public x : string;
     /**
      * Specifies the vertical position of the gradient.
      *
-     * @default "0%"
+     * @default '0%'
      */
     @Property('0%')
     public y : string;
@@ -65,14 +65,14 @@ export class LinearGradient extends ChildProperty<LinearGradient> {
     /**
      * Specifies the start value of the linear gradient.
      *
-     * @default "0%"
+     * @default '0%'
      */
     @Property('0%')
     public startValue: string;
     /**
      * Specifies the end value of the linear gradient.
      *
-     * @default "100%"
+     * @default '100%'
      */
     @Property('100%')
     public endValue: string;
@@ -90,7 +90,7 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
     /**
      * Specifies the radius of the radial gradient.
      *
-     * @default "0%"
+     * @default '0%'
      */
     @Property('0%')
     public radius: string;

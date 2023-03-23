@@ -6,7 +6,7 @@ import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndef
 export interface CellSettingsModel {
 
     /**
-     * Toggles the visibility of data label over the heatmap cells.
+     * Enables or disables the visibility of data label over the heatmap cells.
      *
      * @default true
      */
@@ -14,7 +14,7 @@ export interface CellSettingsModel {
     showLabel?: boolean;
 
     /**
-     * Specifies the formatting options for the data label.
+     * Used to format the label in the heatmap cells.
      *
      * @default ''
      */
@@ -22,7 +22,7 @@ export interface CellSettingsModel {
     format?: string;
 
     /**
-     * Enable or disable the cell highlighting on mouse hover
+     * Enable or disable the cell highlighting on mouse hover.
      *
      * @default true
      */
@@ -36,43 +36,43 @@ export interface CellSettingsModel {
     bubbleSize?: BubbleSizeModel;
 
     /**
-     * Specifies the cell border style.
+     * Sets and gets the options to customize the cell border style.
      *
      * @default ''
      */
     border?: BorderModel;
 
     /**
-     * Specifies the cell label style.
+     * Sets and gets the options to customize the cell label style.
      *
      * @default ''
      */
     textStyle?: FontModel;
 
     /**
-     * Defines cell Type. They are
-     * * Rect: Render a HeatMap cells in rectangle shape.
-     * * Bubble: Render a HeatMap cells in bubble shape.
+     * Sets and gets the type of the cells in heatmap. The available types are,
+     * * Rect: Renders the heatmap cells in rectangle shape.
+     * * Bubble: Renders the heatmap cells in bubble shape.
      *
      * @default 'Rect'
      */
     tileType?: CellType;
 
     /**
-     * Defines Bubble Type. They are
-     * * Size: Define the bubble type is size.
-     * * Color: Define the bubble type is color.
-     * * Sector: Define the bubble type is sector.
-     * * SizeAndColor: Define the bubble type is sizeandcolor.
+     * Specifies the type of the bubble heatmap. The available types are,
+     * * Size: The bubble heatmap will be rendered in size variations based on the provided data.
+     * * Color: The bubble heatmap will be rendered in color variations based on the provided data.
+     * * Sector: The bubble heatmap will be rendered as sectors based on the provided data.
+     * * SizeAndColor: The bubble heatmap will be rendered in size and color variations based on the provided data.
      *
      * @default 'Color'
      */
     bubbleType?: BubbleType;
 
     /**
-     * Enable or disable the bubble to display in inverse
+     * Enable or disable the bubble to display in inverse when `Size` and `SizeAndColor` bubble types are set.
      *
-     * @default true
+     * @default false
      */
     isInversedBubbleSize?: boolean;
 

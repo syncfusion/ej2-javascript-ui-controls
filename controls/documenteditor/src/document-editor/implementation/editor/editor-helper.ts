@@ -1,10 +1,18 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
+import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 import { WBorder } from '../format';
+import {
+    boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty,
+    strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty,
+    styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty,
+    fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, complexScriptProperty, fontFamilyAsciiProperty,
+    fontFamilyFarEastProperty, fontFamilyNonFarEastProperty
+} from '../../index';
 
 /**
  * @private
@@ -40,6 +48,92 @@ export class HelperMethods {
             return text + this;
         }
     }
+    /**
+     * @private
+     * @param text 
+     * @returns 
+     */
+    private static replaceSpecialChars(text: string): string {
+        text = text.replace("^[\\s]*", '');
+        text = text.replace("^[#@!~\\$%^&\\*\\(\\)\\-_\\+\\.=\\{\\}\\[\\]:;,<>\\?'\\\\\"\\“\\”\\//0123456789]+", '');
+        text = text.replace("[#@!~\\$%^&\\*\\(\\)\\-_\\+\\.=\\{\\}\\[\\]:;,<>\\?'\\\\\"\\“\\”\\//0123456789]+$", '');
+        return text;
+    }
+    /**
+     * @private
+     * @param text 
+     * @returns 
+     */
+    public static getSpellCheckData(text: string): any {
+        text = text.replace('\r\n', ' ');
+        text = text.replace('\n', ' ');
+        text = text.replace('\r', ' ');
+        text = text.replace('\v', ' ');
+        text = text.replace('\t', ' ');
+        text = text.replace('/', ' ');
+
+        let stringarr: string[] = text.split(' ');
+        let spellColl: any = [];
+        for (const str of stringarr) {
+            let spellInfo: any = {};
+            spellInfo.Text = this.replaceSpecialChars(str);
+            spellInfo.HasSpellError = false;
+            spellColl.push(spellInfo);
+        }
+        return spellColl;
+    }
+    /**
+     * @private
+     * Get the SFDT document from the optimized SFDT.
+     * @param json 
+     * @returns 
+     */
+    public static getSfdtDocument(json: any): any {
+        json = (json instanceof Object) ? json : JSON.parse(json);
+        if (!isNullOrUndefined(json.sfdt)) {
+            let zipArchive: ZipArchive = new ZipArchive();
+            zipArchive.open(JSON.stringify(json.sfdt));
+            let zipItem: ZipArchiveItem = zipArchive.items[0] as ZipArchiveItem;
+            let value: Uint8Array = new Uint8Array(zipItem.data as ArrayBuffer);
+            let str: string = HelperMethods.utf8ArrayToString(value);            
+            json = JSON.parse(str);
+        }
+        return json;
+    }
+    /* eslint-disable */
+    /**
+     * @private
+     * Convert the Uint8Array to string.
+     * @param array 
+     * @returns 
+     */
+    public static utf8ArrayToString(array: Uint8Array): string {
+        let out: string = '';
+        let i: number = 0;
+        let c: number = 0;
+        let c1: number = 0;
+        let c2: number = 0;
+        let c3: number = 0;
+        while (i < array.length) {
+            /*eslint-disable*/
+            c = array[i];
+            if (c < 128) {
+                out += String.fromCharCode(c);
+                i++;
+            } else if (c > 191 && c < 224) {
+                c2 = array[i + 1];
+                out += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                i += 2;
+            } else {
+                c2 = array[i + 1];
+                c3 = array[i + 2];
+                out += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                i += 3;
+            }
+        }
+        return out;
+    }
+    /* eslint-enable */
     /**
      * Removes text from specified index in string.
      *
@@ -278,40 +372,185 @@ export class HelperMethods {
         }
         return str;
     }
+    public static getBoolValue(value: boolean): number
+    {
+        return value ? 1 : 0;
+    }
+    public static getBoolInfo(value: boolean, keywordIndex: number): any
+    {
+        if (keywordIndex == 1) {
+            return this.getBoolValue(value);
+        }else {
+            return value;
+        }
+
+    }
+    public static parseBoolValue(value: any): boolean {
+        if (value instanceof String) {
+            if (isNullOrUndefined(value) || value == "f" || value == "0" || value == "off" || value == "false") {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (value == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    public static getBaselineAlignmentEnumValue(baselineAlignment: BaselineAlignment): number {
+        switch (baselineAlignment) {
+            case 'Normal':
+                return 0;
+            case 'Superscript':
+                return 1;
+            case 'Subscript':
+                return 2;
+        }
+    }
+    public static getUnderlineEnumValue(underline: Underline): number {
+        switch (underline) {
+            case 'None':
+                return 0;
+            case 'Single':
+                return 1;
+            case 'Words':
+                return 2;
+            case 'Double':
+                return 3;
+            case 'Dotted':
+                return 4;
+            case 'Thick':
+                return 5;
+            case 'Dash':
+                return 6;
+            case 'DashLong':
+                return 7;
+            case 'DotDash':
+                return 8;
+            case 'DotDotDash':
+                return 9;
+            case 'Wavy':
+                return 10;
+            case 'DottedHeavy':
+                return 11;
+            case 'DashHeavy':
+                return 12;
+            case 'DashLongHeavy':
+                return 13;
+            case 'DotDashHeavy':
+                return 14;
+            case 'DotDotDashHeavy':
+                return 15;
+            case 'WavyHeavy':
+                return 16;
+            case 'WavyDouble':
+                return 17;
+        }
+    }
+    public static getStrikeThroughEnumValue(strikethrough: Strikethrough): number {
+        switch (strikethrough) {
+            case 'None':
+                return 0;
+            case 'SingleStrike':
+                return 1;
+            case 'DoubleStrike':
+                return 2;
+        }
+    }
+    public static getHighlightColorEnumValue(highlightColor: HighlightColor): number {
+        switch (highlightColor) {
+            case 'NoColor':
+                return 0;
+            case 'Yellow':
+                return 1;
+            case 'BrightGreen':
+                return 2;
+            case 'Turquoise':
+                return 3;
+            case 'Pink':
+                return 4;
+            case 'Blue':
+                return 5;
+            case 'Red':
+                return 6;
+            case 'DarkBlue':
+                return 7;
+            case 'Teal':
+                return 8;
+            case 'Green':
+                return 9;
+            case 'Violet':
+                return 10;
+            case 'DarkRed':
+                return 11;
+            case 'DarkYellow':
+                return 12;
+            case 'Gray50':
+                return 13;
+            case 'Gray25':
+                return 14;
+            case 'Black':
+                return 15;
+        }
+    }
+    public static getBiDirectionalOverride(biDirectionalOverride: BiDirectionalOverride): number {
+        switch (biDirectionalOverride) {
+            case 'None':
+                return 0;
+            case 'LTR':
+                return 1;
+            case 'RTL':
+                return 2;
+        }
+    }
 
     /* eslint-disable */
-    public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat): void {
-        characterFormat.bold = isInline ? format.bold : format.getValue('bold');
-        characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
-        characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
-        characterFormat.underline = isInline ? format.underline : format.getValue('underline');
-        characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
-        characterFormat.baselineAlignment = isInline ? format.baselineAlignment : format.getValue('baselineAlignment');
-        characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
-        characterFormat.fontColor = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
-        characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
-        characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
-        characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
-        characterFormat.boldBidi = isInline ? format.boldBidi : format.getValue('boldBidi');
-        characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
-        characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
-        characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
-        characterFormat.allCaps = isInline ? format.allCaps : format.getValue('allCaps');
-        characterFormat.localeIdBidi = isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
-        characterFormat.complexScript = isInline ? format.complexScript : format.getValue('complexScript');
-        characterFormat.fontFamilyAscii = isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
-        characterFormat.fontFamilyNonFarEast = isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
-        characterFormat.fontFamilyFarEast = isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
+    public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat, keywordIndex?: number): void {
+        keywordIndex = isNullOrUndefined(keywordIndex) ? 0 : keywordIndex;
+        characterFormat[boldProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bold, keywordIndex) : format.getValue('bold');
+        characterFormat[italicProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italic, keywordIndex) : format.getValue('italic');
+        characterFormat[fontSizeProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat[fontFamilyProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
+        characterFormat[underlineProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.underline): format.underline : 
+        keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.getValue('underline') as Underline): format.getValue('underline') as Underline;
+        characterFormat[strikethroughProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.strikethrough) :(format.strikethrough) : 
+        keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.getValue('strikethrough') as Strikethrough):(format.getValue('strikethrough') as Strikethrough);
+        characterFormat[baselineAlignmentProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.baselineAlignment) :(format.baselineAlignment) : 
+        keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.getValue('baselineAlignment') as BaselineAlignment):(format.getValue('baselineAlignment') as BaselineAlignment);
+        characterFormat[highlightColorProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? HelperMethods.getHighlightColorCode(format.highlightColor) :(format.highlightColor) : 
+        keywordIndex == 1 ? HelperMethods.getHighlightColorEnumValue(format.getValue('highlightColor') as HighlightColor):(format.getValue('highlightColor') as HighlightColor);
+        characterFormat[fontColorProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
+        characterFormat[styleNameProperty[keywordIndex]] = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
+        characterFormat[bidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bidi, keywordIndex) : format.getValue('bidi');
+        characterFormat[bdoProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? HelperMethods.getBiDirectionalOverride(format.bdo): (format.bdo) : 
+        keywordIndex == 1 ? HelperMethods.getBiDirectionalOverride(format.getValue('bdo') as BiDirectionalOverride): (format.getValue('bdo') as BiDirectionalOverride);
+        characterFormat[boldBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.boldBidi, keywordIndex) : format.getValue('boldBidi');
+        characterFormat[italicBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italicBidi, keywordIndex) : format.getValue('italicBidi');
+        characterFormat[fontSizeBidiProperty[keywordIndex]] = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
+        characterFormat[fontFamilyBidiProperty[keywordIndex]] = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+        characterFormat[allCapsProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.allCaps, keywordIndex) : format.getValue('allCaps');
+        characterFormat[localeIdBidiProperty[keywordIndex]] = isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
+        characterFormat[complexScriptProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
+        characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
+        characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
+        characterFormat[fontFamilyFarEastProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
         if (format.hasValue('fontFamily')) {
-            if (isNullOrUndefined(characterFormat.fontFamilyAscii)) {
-                characterFormat.fontFamilyAscii = format.fontFamily;
+            if (isNullOrUndefined(characterFormat[fontFamilyAsciiProperty[keywordIndex]])) {
+                characterFormat[fontFamilyAsciiProperty[keywordIndex]] = format.fontFamily;
             }
-            if (isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
-                characterFormat.fontFamilyNonFarEast = format.fontFamily;
+            if (isNullOrUndefined(characterFormat[fontFamilyNonFarEastProperty[keywordIndex]])) {
+                characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = format.fontFamily;
             }
-            if (isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
-                characterFormat.fontFamilyFarEast = format.fontFamily;
+            if (isNullOrUndefined(characterFormat[fontFamilyFarEastProperty[keywordIndex]])) {
+                characterFormat[fontFamilyFarEastProperty[keywordIndex]] = format.fontFamily;
             }
         }
     }
@@ -496,16 +735,16 @@ export class HelperMethods {
         const dt: Date = new Date(date);
         return new Date(dt.getTime() + dt.getTimezoneOffset() * 60000);
     }
-    public static getCompatibilityModeValue(compatibilityMode: CompatibilityMode): string {
+    public static getCompatibilityModeValue(compatibilityMode: number): string {
         let compatValue: string;
         switch (compatibilityMode) {
-        case 'Word2003':
+        case 1:
             compatValue = '11';
             break;
-        case 'Word2007':
+        case 2:
             compatValue = '12';
             break;
-        case 'Word2010':
+        case 3:
             compatValue = '14';
             break;
         default:
@@ -1027,6 +1266,14 @@ export interface ImageFormatInfo {
 /**
  * @private
  */
+ export interface ImageStringInfo {
+    imageString: string
+    metaFileImageString: string
+}
+
+/**
+ * @private
+ */
 export interface PositionInfo {
     startPosition: TextPosition
     endPosition: TextPosition
@@ -1037,6 +1284,13 @@ export interface PositionInfo {
 export interface BorderRenderInfo {
     skipTopBorder: boolean;
     skipBottomBorder: boolean
+}
+/**
+ * @private
+ */
+export interface LineCountInfo {
+    lineWidget: LineWidget
+    lineCount: number
 }
 /**
  * Specifies the field information.

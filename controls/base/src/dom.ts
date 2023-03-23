@@ -58,13 +58,14 @@ export function createElement(tagName: string, properties?: ElementProperties): 
  */
 export function addClass(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     const classList: string[] = getClassList(classes);
+    const regExp: RegExpConstructor = RegExp;
     for (const ele of (elements as Element[])) {
         for (const className of classList) {
             if (isObject(ele)) {
                 const curClass: string = getValue('attributes.className', ele);
                 if (isNullOrUndefined(curClass)) {
                     setValue('attributes.className', className, ele);
-                } else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                } else if (!new regExp('\\b' + className + '\\b', 'i').test(curClass)) {
                     setValue('attributes.className', curClass + ' ' + className, ele);
                 }
             } else {

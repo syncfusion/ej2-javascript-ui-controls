@@ -1083,6 +1083,9 @@ export class BatchEdit {
                 rowObj.changes = extend({}, {}, rowObj.data, true);
             }
             if (!isNullOrUndefined(field)) {
+                if (typeof value === 'string') {
+                    value = this.parent.sanitize(value);
+                }
                 DataUtil.setValue(field, value, rowObj.changes);
             }
             if (rowObj.data[`${field}`] !== value) {

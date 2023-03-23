@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable max-len */
 /* eslint-disable valid-jsdoc */
 import { Chart } from '../chart';
@@ -291,7 +292,7 @@ export class Crosshair {
                     pathElement.setAttribute('d', direction);
                     if (typeof text !== 'string' && text.length > 1) {
                         for (let i: number = 0; i < text.length; i++) {
-                            textElem.childNodes[i as number].textContent = text[i];
+                            textElem.childNodes[i as number].textContent = text[i as number];
                         }
                     } else {
                         textElem.textContent = text as string;
@@ -320,7 +321,7 @@ export class Crosshair {
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
                         axisGroup.appendChild(defElement);
 
-                        defElement.innerHTML = shadow;
+                        (<HTMLElement>defElement).innerText = shadow;
                         pathElement.setAttribute('stroke', '#cccccc');
                         pathElement.setAttribute('stroke-width', '0.5');
                     }
@@ -374,10 +375,10 @@ export class Crosshair {
         if (typeof text !== 'string' && text.length > 1) {
             this.elementSize.width = 0; this.elementSize.height = 0;
             for (let i: number = 0; i < text.length; i++) {
-                let size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle);
+                const size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle);
                 this.elementSize.height += size.height;
                 if (this.elementSize.width < size.width) {
-                    this.elementSize.width = size.width
+                    this.elementSize.width = size.width;
                 }
             }
         }

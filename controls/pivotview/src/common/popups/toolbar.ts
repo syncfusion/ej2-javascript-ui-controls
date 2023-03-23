@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs, PivotActionInfo } from '../base/interface';
@@ -88,6 +88,7 @@ export class Toolbar {
             created: this.create.bind(this),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             items: this.getItems(),
             allowKeyboard: false,
             cssClass: this.parent.cssClass,
@@ -136,7 +137,7 @@ export class Toolbar {
     }
 
     private getItems(): ItemModel[] {
-        const toolbar: (ToolbarItems | ItemModel)[] = this.parent.toolbar.filter(
+        const toolbar: ToolbarItems[] = (this.parent.toolbar as ToolbarItems[]).filter(
             (v: ToolbarItems, i: number, a: ToolbarItems[]) => a.indexOf(v) === i);
         const items: ItemModel[] = [];
         for (const item of toolbar) {
@@ -336,9 +337,9 @@ export class Toolbar {
         });
         const textarea: HTMLElement = createElement('textarea', {
             className: cls.MDX_QUERY_CONTENT,
-            innerHTML: this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings).trim(),
             attrs: { 'readonly': 'readonly', 'aria-label': this.parent.localeObj.getConstant('mdxQuery') }
         });
+        textarea.innerText = this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings).trim();
         outerDiv.appendChild(textarea);
         this.mdxDialog.content = outerDiv;
         this.mdxDialog.show();
@@ -351,17 +352,17 @@ export class Toolbar {
                 className: cls.GRID_REPORT_OUTER
             });
             const label: HTMLElement = createElement('div', {
-                className: cls.GRID_REPORT_LABEL,
-                innerHTML: this.parent.localeObj.getConstant('reportName')
+                className: cls.GRID_REPORT_LABEL
             });
+            label.innerText = this.parent.localeObj.getConstant('reportName');
             const input: HTMLElement = createElement('input', {
                 className: cls.GRID_REPORT_INPUT + ' ' + cls.INPUT,
-                innerHTML: (action && action === 'rename' ? this.currentReport : ''),
                 attrs: {
                     'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
                     'value': (action && action === 'rename' ? this.currentReport : '')
                 }
             });
+            input.innerText = (action && action === 'rename' ? this.currentReport : '');
             (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
             outerDiv.appendChild(label);
             outerDiv.appendChild(input);
@@ -481,6 +482,7 @@ export class Toolbar {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             zIndex: 1000001,
@@ -519,6 +521,7 @@ export class Toolbar {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             zIndex: 1000001,
@@ -687,6 +690,7 @@ export class Toolbar {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             header: title,
             content: description,
             isModal: true,
@@ -716,7 +720,7 @@ export class Toolbar {
         });
         this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
-        this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
+        (this.confirmPopUp.element.querySelector('.e-dlg-header') as HTMLElement).innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(title) : title;
     }
 
     private okButtonClick(): void {
@@ -870,6 +874,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this),
                     beforeOpen: this.whitespaceRemove.bind(this),
@@ -925,7 +930,7 @@ export class Toolbar {
             this.exportMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,
+                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
                     onClose: () => {
@@ -989,7 +994,7 @@ export class Toolbar {
             this.subTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,
+                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
                     onClose: () => {
@@ -1048,7 +1053,7 @@ export class Toolbar {
             this.grandTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,
+                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
                     onClose: () => {
@@ -1077,7 +1082,7 @@ export class Toolbar {
             this.formattingMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    locale: this.parent.locale,
+                    locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this)
                 });
@@ -1152,7 +1157,8 @@ export class Toolbar {
                     document.getElementById(this.parent.element.id + '_' + 'multipleAxes').click();
                 },
                 enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale
+                locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
@@ -1181,7 +1187,8 @@ export class Toolbar {
                     document.getElementById(this.parent.element.id + '_' + 'showLegend').click();
                 },
                 enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale
+                locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'showLegendCheckBox');
@@ -1543,6 +1550,7 @@ export class Toolbar {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -1619,11 +1627,13 @@ export class Toolbar {
         const optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-container' });
         const axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-container' });
         const optionTextDiv: HTMLElement = createElement('div', {
-            className: 'e-chart-type-option-text', innerHTML: this.parent.localeObj.getConstant('ChartType')
+            className: 'e-chart-type-option-text'
         });
+        optionTextDiv.innerText = this.parent.localeObj.getConstant('ChartType');
         const axisModeTextDiv: HTMLElement = createElement('div', {
-            className: 'e-multiple-axes-mode-text', innerHTML: this.parent.localeObj.getConstant('multipleAxisMode')
+            className: 'e-multiple-axes-mode-text'
         });
+        axisModeTextDiv.innerText = this.parent.localeObj.getConstant('multipleAxisMode');
         const dropOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_ChartTypeOption' });
         const dropModeOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_AxisModeOption' });
         optionWrapperDiv.appendChild(optionTextDiv);
@@ -1701,7 +1711,8 @@ export class Toolbar {
                 (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = args.checked;
             },
             enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale
+            locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         const checkbox1: CheckBox = new CheckBox({
             label: this.parent.localeObj.getConstant('showLegend'),
@@ -1709,7 +1720,8 @@ export class Toolbar {
             change: () => { this.chartLableState = true; },
             cssClass: 'e-dialog-show-legend' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale
+            locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element) as HTMLElement);
         checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);

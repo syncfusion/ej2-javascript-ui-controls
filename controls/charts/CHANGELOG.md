@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### Chart
+
+#### New Features
+
+- `#I320485` - Provided support to place a label at the center of the pie and donut charts.
+- `#I416444` - Provided support for a new chart type called range step area which is used to display the difference between minimum and maximum values over a certain time period.
+- `#I396453`, `#I314160` - Provided support to customize the height and color of the error bar of each data point.
+
+#### Bug Fixes
+
+- `#I444557` - Resolved the issue where the legend and the chart were overlapping.
+- `#I431278` - Resolved issue with overlapping chart and data label when rotation is enabled.
+
 ## 20.4.54 (2023-03-14)
 
 ### Chart
@@ -49,7 +64,6 @@
 - `#I430549` - The axis labels getting cut off when rotating the labels has been fixed.
 - `#F180163` - Removed the chart focus element when changing to the next page.
 - `#I432239` - Now, the chartDoubleClick event is triggered when used in conjunction with the chartMouseClick event.
-- `#I431278` - Data label is now rendered properly when using a template.
 
 ## 20.4.48 (2023-02-01)
 

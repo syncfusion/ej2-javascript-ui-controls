@@ -4,7 +4,7 @@ import { triggerDownload, getElementByID } from '../utils/helper';
 import { ExportType } from '../utils/enum';
 
 /**
- * This module enables the export to Image functionality in Maps control.
+ * This module enables the export to Image functionality in maps.
  *
  * @hidden
  */

@@ -997,7 +997,7 @@ describe('Schedule base module', () => {
                 StartTime: new Date(2017, 10, 6, 10),
                 EndTime: new Date(2017, 10, 6, 11, 30),
                 IsAllDay: false,
-                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
             };
             schObj.openQuickInfoPopup(eventObj);
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1008,7 +1008,7 @@ describe('Schedule base module', () => {
         });
 
         it('openQuickInfoPopup - Cell', () => {
-            const eventObj: Record<string, any> = { StartTime : new Date(2017, 10, 6,10), EndTime: new Date(2017, 10, 6,11) };
+            const eventObj: Record<string, any> = { StartTime : new Date(2017, 10, 6, 10), EndTime: new Date(2017, 10, 6, 11) };
             schObj.openQuickInfoPopup(eventObj);
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
@@ -1051,14 +1051,14 @@ describe('Schedule base module', () => {
                     StartTime: new Date(2017, 10, 6, 10),
                     EndTime: new Date(2017, 10, 6, 11, 30),
                     IsAllDay: false,
-                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
                 };
                 schObj.openQuickInfoPopup(eventObj);
                 const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup.classList).toContain('e-popup-open');
                 expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
                 expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
-                (<HTMLElement>eventPopup.querySelector('.e-close')).click();               
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
                 done();
             };
             schObj.currentView = 'TimelineDay';
@@ -1072,14 +1072,14 @@ describe('Schedule base module', () => {
                     StartTime: new Date(2017, 10, 6, 10),
                     EndTime: new Date(2017, 10, 6, 11, 30),
                     IsAllDay: false,
-                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
                 };
                 schObj.openQuickInfoPopup(eventObj);
                 const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup.classList).toContain('e-popup-open');
                 expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
                 expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
-                (<HTMLElement>eventPopup.querySelector('.e-close')).click();                
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
                 done();
             };
             schObj.currentView = 'TimelineYear';
@@ -1093,14 +1093,14 @@ describe('Schedule base module', () => {
                     StartTime: new Date(2017, 10, 6, 10),
                     EndTime: new Date(2017, 10, 6, 11, 30),
                     IsAllDay: false,
-                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
                 };
                 schObj.openQuickInfoPopup(eventObj);
                 const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup.classList).toContain('e-popup-open');
                 expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
                 expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
-                (<HTMLElement>eventPopup.querySelector('.e-close')).click();                
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
                 done();
             };
             schObj.currentView = 'TimelineMonth';
@@ -1806,7 +1806,7 @@ describe('Schedule base module', () => {
                 views: [
                     { option: 'Week', dateHeaderTemplate: dateHeaderTemplate },
                     { option: 'Month', cellHeaderTemplate: cellHeaderTemplate, cellTemplate: cellTemplate },
-                    { option: 'Year', dateRangeTemplate: dateRangeTemplate },              
+                    { option: 'Year', dateRangeTemplate: dateRangeTemplate }
                 ]
             };
             schObj = util.createSchedule(model, eventData, done);
@@ -1868,7 +1868,7 @@ describe('Schedule base module', () => {
         const cellHeaderTemplate: string = '<div class="e-custom-cell">~${getDateHeaderText(data.date)}</div>';
         const resourceHeaderTemp: string = '<div class="resource-template">' +
             '<div class="resource-details"><div class="resource-name">~${resourceData.Text}~</div></div></div>';
-        const dateRangeTemplate: string = '<div class="date-text">${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';    
+        const dateRangeTemplate: string = '<div class="date-text">${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 selectedDate: new Date(2020, 0, 4),
@@ -2082,7 +2082,7 @@ describe('Schedule base module', () => {
                 // dateRangeTemplate checking
                 expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>');
                 schObj.refreshTemplates('dateRangeTemplate');
-                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>'); 
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>');
                 done();
             };
             schObj.currentView = 'TimelineWeek';
@@ -2109,7 +2109,7 @@ describe('Schedule base module', () => {
                 // dateRangeTemplate checking
                 expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">30-3</div>');
                 schObj.refreshTemplates('dateRangeTemplate');
-                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">30-3</div>'); 
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">30-3</div>');
                 done();
             };
             schObj.currentView = 'TimelineWorkWeek';
@@ -2381,7 +2381,7 @@ describe('Schedule base module', () => {
                             Location: 'Space Centre USA',
                             StartTime: new Date(2022, 3, 4, 9, 30),
                             EndTime: new Date(2022, 3, 4, 11, 0),
-                            CategoryColor: '#1aaa55',
+                            CategoryColor: '#1aaa55'
                         },
                         {
                             Id: 2,
@@ -2389,7 +2389,7 @@ describe('Schedule base module', () => {
                             Location: 'Newyork City',
                             StartTime: new Date(2022, 3, 6, 12, 0),
                             EndTime: new Date(2022, 3, 6, 14, 0),
-                            CategoryColor: '#357cd2',
+                            CategoryColor: '#357cd2'
                         },
                         {
                             Id: 3,
@@ -2397,9 +2397,9 @@ describe('Schedule base module', () => {
                             Location: 'Newyork City',
                             StartTime: new Date(2022, 3, 8, 12, 0),
                             EndTime: new Date(2022, 3, 8, 14, 0),
-                            CategoryColor: '#357cd2',
+                            CategoryColor: '#357cd2'
                         }
-                    ],
+                    ]
                 }
             };
             schObj = util.createSchedule(model, [], done);
@@ -2413,7 +2413,7 @@ describe('Schedule base module', () => {
                 const renderedAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
                 expect(renderedAppointments.length).toEqual(1);
                 done();
-            }
+            };
             expect(schObj.eventsProcessed.length).toEqual(3);
             const renderedAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
             expect(renderedAppointments.length).toEqual(1);

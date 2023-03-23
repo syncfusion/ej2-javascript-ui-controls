@@ -222,12 +222,7 @@ export class EventBase {
     }
 
     public filterEvents(startDate: Date, endDate: Date, appointments: Record<string, any>[] = this.parent.eventsProcessed, resourceTdData?: TdData): Record<string, any>[] {
-        const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        const predicate: Predicate = new Predicate(fieldMapping.startTime, 'greaterthanorequal', startDate).
-            and(new Predicate(fieldMapping.endTime, 'greaterthanorequal', startDate)).
-            and(new Predicate(fieldMapping.startTime, 'lessthan', endDate)).
-            or(new Predicate(fieldMapping.startTime, 'lessthanorequal', startDate).
-                and(new Predicate(fieldMapping.endTime, 'greaterthan', startDate)));
+        const predicate: Predicate = this.parent.dataModule.getStartEndQuery(startDate, endDate);
         let filter: Record<string, any>[] = new DataManager({ json: appointments }).executeLocal(new Query().where(predicate)) as Record<string, any>[];
         if (resourceTdData) {
             filter = this.filterEventsByResource(resourceTdData, filter);
@@ -1089,9 +1084,8 @@ export class EventBase {
                 this.parent.currentView.indexOf('Year') === -1 ? '_' + resIndex : '');
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
-            const appointmentSubject: HTMLElement = createElement('div', {
-                className: cls.SUBJECT_CLASS, innerHTML: eventSubject
-            });
+            const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
+            appointmentSubject.innerText = this.parent.sanitize(eventSubject);
             templateElement = [appointmentSubject];
         }
         append(templateElement, appointmentWrapper);
@@ -1275,6 +1269,30 @@ export class EventBase {
         const eventArgs: TouchEvent = (e as Record<string, any> & MouseEvent & TouchEvent).event as TouchEvent;
         return eventArgs && eventArgs.changedTouches ? eventArgs.changedTouches[0] : e.changedTouches ? e.changedTouches[0] :
             (<MouseEvent & TouchEvent>eventArgs) || e;
+    }
+
+    public renderSpannedIcon(element: HTMLElement, spanEvent: Record<string, any>): void {
+        const iconElement: HTMLElement = createElement('div', { className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON });
+        if (spanEvent.isLeft) {
+            const iconLeft: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            addClass([iconLeft], cls.EVENT_ICON_LEFT_CLASS);
+            prepend([iconLeft], element);
+        }
+        if (spanEvent.isRight) {
+            const iconRight: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            addClass([iconRight], cls.EVENT_ICON_RIGHT_CLASS);
+            append([iconRight], element);
+        }
+        if (spanEvent.isTop) {
+            const iconTop: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            addClass([iconTop], cls.EVENT_ICON_UP_CLASS);
+            prepend([iconTop], element);
+        }
+        if (spanEvent.isBottom) {
+            const iconBottom: HTMLElement = iconElement.cloneNode() as HTMLElement;
+            addClass([iconBottom], cls.EVENT_ICON_DOWN_CLASS);
+            append([iconBottom], element);
+        }
     }
 
     private unWireEvents(): void {

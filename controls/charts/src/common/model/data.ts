@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Query, DataManager, Deferred } from '@syncfusion/ej2-data';
 
 /**

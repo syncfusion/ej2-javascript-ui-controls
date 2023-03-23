@@ -57,8 +57,8 @@ export class CodaBar extends OneDimension {
     private getPatternCollection(givenCharacter: string, codes: string[]): number[] {
         const code: number[] = [];
         for (let i: number = 0; i < givenCharacter.length; i++) {
-            const char: string = givenCharacter[i];
-            code.push(codes[char]);
+            const char: string = givenCharacter[parseInt(i.toString(), 10)];
+            code.push(codes[`${char}`]);
         }
         return code;
     }

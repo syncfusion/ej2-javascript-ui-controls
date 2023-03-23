@@ -395,7 +395,6 @@ export class DiagramEventHandler {
                                 targetEle = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_html_element');
                             }
                             if ( arg.element.tooltip.openOn === 'Auto') {
-                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 (this.diagram.tooltipObject as Tooltip).open(targetEle);
                             }
                         }
@@ -829,11 +828,9 @@ export class DiagramEventHandler {
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
                             if (!evt.pageY && (evt instanceof TouchEvent) && evt.changedTouches) {
                                 window.getSelection().removeAllRanges();
-                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 this.diagram.contextMenuModule.contextMenu.open(evt.changedTouches[0].pageY, evt.changedTouches[0].pageX, this.diagram.element);
                                 evt.preventDefault();
                             } else {
-                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
                             }
                             this.diagram.checkMenu = false;
@@ -1547,10 +1544,10 @@ export class DiagramEventHandler {
                 if(this.hoverElement.tooltip.relativeMode === "Mouse"){
                     this.setTooltipOffset(mousePosition);
                 }
-            }
-            else{
-                this.diagram.tooltipObject.offsetX = 0;
-                this.diagram.tooltipObject.offsetY = 0;
+                else{
+                    this.diagram.tooltipObject.offsetX = 0;
+                    this.diagram.tooltipObject.offsetY = 0;
+                }
             }
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
@@ -1564,7 +1561,6 @@ export class DiagramEventHandler {
                 (this.diagram.tooltipObject as Tooltip).close();
                 (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                 if (isBlazor()) {
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                     (this.diagram.tooltipObject as BlazorTooltip).open(targetEle, {});
                 } else {
                     (this.diagram.tooltipObject as Tooltip).dataBind();
@@ -1576,7 +1572,6 @@ export class DiagramEventHandler {
                     (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
                 }
                 else{
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                     (this.diagram.tooltipObject as Tooltip).open(targetEle);
                 }
             }

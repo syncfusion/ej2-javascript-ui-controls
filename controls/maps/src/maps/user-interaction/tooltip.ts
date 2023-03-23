@@ -1,6 +1,6 @@
 import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, extend, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
     formatValue, convertStringToValue } from '../utils/helper';
@@ -17,6 +17,9 @@ export class MapsTooltip {
     private isTouch: boolean;
     private tooltipId: string;
     private clearTimeout: number;
+    /**
+     * @private
+     */
     public tooltipTargetID: string;
     constructor(maps: Maps) {
         this.maps = maps;
@@ -24,6 +27,9 @@ export class MapsTooltip {
         this.addEventListener();
     }
 
+    /**
+     * @private
+     */
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -40,6 +46,10 @@ export class MapsTooltip {
             pageY = e.pageY;
             target = <Element>e.target;
         }
+        if (this.maps.isDevice) {
+            clearTimeout(this.clearTimeout);
+            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        }
         let option: TooltipSettingsModel;
         let currentData: string = '';
         const targetId: string = target.id;
@@ -54,7 +64,7 @@ export class MapsTooltip {
         this.tooltipTargetID = targetId;
         const istooltipRender: boolean = (targetId.indexOf('_shapeIndex_') > -1)
             || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
-        if (istooltipRender) {
+        if (istooltipRender && this.maps.markerDragArgument === null) {
             if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 const shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
@@ -203,8 +213,8 @@ export class MapsTooltip {
                             header: '',
                             data: option['data'],
                             template: option['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
-                                [currentData.toString()],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [SanitizeHtmlHelper.sanitize(tooltipArgs.content.toString())] :
+                                [SanitizeHtmlHelper.sanitize(currentData.toString())],
                             shapes: [],
                             location: option['location'],
                             palette: [markerFill],
@@ -219,8 +229,8 @@ export class MapsTooltip {
                             header: '',
                             data: tooltipArgs.options['data'],
                             template: tooltipArgs.options['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
-                                [currentData.toString()],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [SanitizeHtmlHelper.sanitize(tooltipArgs.content.toString())] :
+                                [SanitizeHtmlHelper.sanitize(currentData.toString())],
                             shapes: [],
                             location: tooltipArgs.options['location'],
                             palette: [markerFill],
@@ -306,6 +316,9 @@ export class MapsTooltip {
         }
         return format;
     }
+    /**
+     * @private
+     */
     public mouseUpHandler(e: PointerEvent): void {
         this.renderTooltip(e);
         if (this.maps.tooltipDisplayMode === 'MouseMove') {
@@ -314,6 +327,9 @@ export class MapsTooltip {
         }
     }
 
+    /**
+     * @private
+     */
     public removeTooltip(): boolean {
         let isTooltipRemoved: boolean = false;
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
@@ -333,6 +349,7 @@ export class MapsTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
+     * @private
      */
     public addEventListener(): void {
         if (this.maps.isDestroyed) {
@@ -348,6 +365,9 @@ export class MapsTooltip {
         this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
         this.maps.element.addEventListener('contextmenu', this.removeTooltip);
     }
+    /**
+     * @private
+     */
     public removeEventListener(): void {
         if (this.maps) {
             if (this.maps.isDestroyed) {

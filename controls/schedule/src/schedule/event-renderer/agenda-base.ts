@@ -108,9 +108,13 @@ export class AgendaBase extends ViewBase {
         if (!isNullOrUndefined(eventLocation) && eventLocation !== '') {
             eventSubject += ',';
         }
-        appSubjectWrap.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventSubject }));
+        const appSubjectText: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
+        appSubjectText.innerText = this.parent.sanitize(eventSubject);
+        appSubjectWrap.appendChild(appSubjectText);
         if (!isNullOrUndefined(eventLocation) && eventLocation !== '') {
-            appSubjectWrap.appendChild(createElement('div', { className: cls.LOCATION_CLASS, innerHTML: eventLocation }));
+            const appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS });
+            appLocation.innerText = this.parent.sanitize(eventLocation);
+            appSubjectWrap.appendChild(appLocation);
         }
         if (!isNullOrUndefined(event[fieldMapping.recurrenceRule])) {
             const iconClass: string = (event[fieldMapping.id] === event[fieldMapping.recurrenceID]) ?

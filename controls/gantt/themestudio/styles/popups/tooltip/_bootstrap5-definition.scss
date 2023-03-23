@@ -12,7 +12,7 @@ $tooltip-arrow-inner-border: 7px !default;
 $tooltip-horizontal-padding: 4px !default;
 $tooltip-vertical-padding: 8px !default;
 $tooltip-line-height: 18px !default;
-$tooltip-arrow-icon-font-size: 16px !default;
+$tooltip-arrow-icon-font-size: $text-base !default;
 $tooltip-tip-bottom-height: 8px !default;
 $tooltip-tip-bottom-left: 50% !default;
 $tooltip-tip-bottom-top: 100% !default;

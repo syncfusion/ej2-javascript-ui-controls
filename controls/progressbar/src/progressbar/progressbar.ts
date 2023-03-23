@@ -4,16 +4,16 @@ import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Co
 import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
 import { Rect, Size, RectOption, stringToNumber } from './utils/helper';
-import { MarginModel, AnimationModel, FontModel, RangeColorModel } from './model/progress-base-model';
-import { Margin, Animation, Font, RangeColor } from './model/progress-base';
-import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';
+import { MarginModel, AnimationModel, FontModel, RangeColorModel, TooltipSettingsModel } from './model/progress-base-model';
+import { Margin, Animation, Font, RangeColor, TooltipSettings } from './model/progress-base';
+import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs, ITooltipRenderEventArgs } from './model/progress-interface';
 import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';
 import { SvgRenderer, PathOption, getElement } from '@syncfusion/ej2-svg-base';
 import { ProgressType, CornerType, ProgressTheme, ModeType } from './utils/enum';
 import { getProgressThemeColor } from './utils/theme';
 import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';
 import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';
-import { ProgressAnnotation } from './model/index';
+import { ProgressAnnotation, ProgressTooltip } from './model/index';
 import { ProgressAnnotationSettingsModel } from './model/index';
 import { ProgressAnnotationSettings } from './model/index';
 import { Linear } from './types/linear-progress';
@@ -21,7 +21,7 @@ import { Circular } from './types/circular-progress';
 import { ProgressAnimation } from './utils/progress-animation';
 
 /**
- *  progress bar control.
+ *  progress bar control
  */
 @NotifyPropertyChanges
 export class ProgressBar extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -29,210 +29,227 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         super(options, element);
     }
     /**
-     * type of the progress bar.
+     * type of the progress bar
      *
      * @default Linear
      */
     @Property('Linear')
     public type: ProgressType;
     /**
-     * progress value.
+     * progress value
      *
      * @default null
      */
     @Property(null)
     public value: number;
     /**
-     * secondary progress value.
+     * secondary progress value
      *
      * @default null
      */
     @Property(null)
     public secondaryProgress: number;
+
     /**
-     * minimum progress value.
+     * Defines color for the secondary progress bar. By default, it takes the primary progress bar color with half of the opacity.
+     *
+     * @default ''
+     */
+    @Property('')
+    public secondaryProgressColor: string;
+
+    /**
+     * Defines thickness for the secondary progress bar. By default, it takes the primary progress bar thickness.
+     *
+     * @default null
+     */
+    @Property(null)
+    public secondaryProgressThickness: number;
+
+    /**
+     * minimum progress value
      *
      * @default 0
      */
     @Property(0)
     public minimum: number;
     /**
-     * maximum progress value.
+     * maximum progress value
      *
      * @default 0
      */
     @Property(100)
     public maximum: number;
     /**
-     * startAngle for circular progress bar.
+     * startAngle for circular progress bar
      *
      * @default 0
      */
     @Property(0)
     public startAngle: number;
     /**
-     * endAngle for circular progress bar.
+     * endAngle for circular progress bar
      *
      * @default 0
      */
     @Property(0)
     public endAngle: number;
     /**
-     * track radius for circular.
+     * track radius for circular
      *
      * @default '100%'
      */
     @Property('100%')
     public radius: string;
     /**
-     * progress radius for circular.
+     * progress radius for circular
      *
      * @default '100%'
      */
     @Property('100%')
     public innerRadius: string;
     /**
-     * segmentCount of the progress bar.
+     * segmentCount of the progress bar
      *
      * @default 1
      */
     @Property(1)
     public segmentCount: number;
     /**
-     * gapwidth of the segment.
+     * gapwidth of the segment
      *
      * @default null
      */
     @Property(null)
     public gapWidth: number;
     /**
-     * Segment color.
+     * Segment color
      *
      * @default null
      */
     @Property('')
     public segmentColor: string[];
     /**
-     * corner type.
+     * corner type
      *
      * @default Auto
      */
     @Property('Auto')
     public cornerRadius: CornerType;
     /**
-     * height of the progress bar.
+     * height of the progress bar
      *
      * @default null
      */
     @Property(null)
     public height: string;
     /**
-     * width of the progress bar.
+     * width of the progress bar
      *
      * @default null
      */
     @Property(null)
     public width: string;
     /**
-     * Indeterminate progress.
+     * Indeterminate progress
      *
      * @default false
      */
     @Property(false)
     public isIndeterminate: boolean;
     /**
-     * Active state.
+     * Active state
      *
      * @default false
      */
     @Property(false)
     public isActive: boolean;
     /**
-     * gradient.
+     * gradient
      *
      * @default false
      */
     @Property(false)
     public isGradient: boolean;
     /**
-     * striped.
+     * striped
      *
      * @default false
      */
     @Property(false)
     public isStriped: boolean;
     /**
-     * modes of linear progress.
+     * modes of linear progress
      *
      * @default null
      */
     @Property('Auto')
     public role: ModeType;
     /**
-     * right to left.
+     * right to left
      *
      * @default false
      */
     @Property(false)
     public enableRtl: boolean;
     /**
-     * labelOnTrack.
+     * labelOnTrack
      *
      * @default true
      */
     @Property(true)
     public labelOnTrack: boolean;
     /**
-     * trackColor.
+     * trackColor
      *
      * @default null
      */
     @Property(null)
     public trackColor: string;
     /**
-     * progressColor.
+     * progressColor
      *
      * @default null
      */
     @Property(null)
     public progressColor: string;
     /**
-     * track thickness.
+     * track thickness
      *
      * @default 0
      */
     @Property(0)
     public trackThickness: number;
     /**
-     * progress thickness.
+     * progress thickness
      *
      * @default 0
      */
     @Property(0)
     public progressThickness: number;
     /**
-     * pie view.
+     * pie view
      *
      * @default false
      */
     @Property(false)
     public enablePieProgress: boolean;
     /**
-     * theme style.
+     * theme style
      *
      * @default Fabric
      */
     @Property('Fabric')
     public theme: ProgressTheme;
     /**
-     * label of the progress bar.
+     * label of the progress bar
      *
      * @default false
      */
     @Property(false)
     public showProgressValue: boolean;
     /**
-     * disable the trackSegment.
+     * disable the trackSegment
      *
      * @default false
      */
@@ -244,15 +261,20 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: 'Normal', fontFamily: null }, Font)
     public labelStyle: FontModel;
     /**
-     * margin size.
+     * margin size
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
     /**
-     * Animation for the progress bar.
+     * Animation for the progress bar
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
+    /**
+     * Options for customizing the tooltip of progressbar.
+     */
+    @Complex<TooltipSettingsModel>({}, TooltipSettings)
+    public tooltip: TooltipSettingsModel;
     /**
      * Triggers before the progress bar get rendered.
      *
@@ -296,40 +318,47 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Event()
     public animationComplete: EmitType<IProgressValueEventArgs>;
     /**
-     * Trigger after mouse click.
+     * Trigger after mouse click
      *
      * @event mouseClick
      */
     @Event()
     public mouseClick: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse move.
+     * Trigger after mouse move
      *
      * @event mouseMove
      */
     @Event()
     public mouseMove: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse up.
+     * Trigger after mouse up
      *
      * @event mouseUp
      */
     @Event()
     public mouseUp: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse down.
+     * Trigger after mouse down
      *
      * @event mouseDown
      */
     @Event()
     public mouseDown: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse down.
+     * Trigger after mouse down
      *
      * @event mouseLeave
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
+    /**
+     * Triggers before the tooltip for series is rendered.
+     *
+     * @event tooltipRender
+     */
+     @Event()
+     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
      * The configuration for annotation in Progressbar.
      */
@@ -402,6 +431,20 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     // private resizeTo: number;
     /** @private */
     public destroyIndeterminate: boolean = false;
+    /** @private */
+    public tooltipElement: HTMLElement;
+    /** @private */
+    public mouseX: number;
+    /** @private */
+    public mouseY: number;
+    /** @private */
+    public scaleX: number = 1;
+    /** @private */
+    public scaleY: number = 1;
+    /** ProgressTooltip module to use tooltip */
+    public progressTooltipModule: ProgressTooltip = new ProgressTooltip(this);
+    /** @private */
+    public initialClipRect: Rect;
 
     /**
      * controlRenderedTimeStamp used to avoid inital resize issue while theme change
@@ -461,34 +504,51 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.progressRect.y = this.margin.top;
         this.progressRect.width = this.progressSize.width - (this.margin.left + this.margin.right);
         this.progressRect.height = this.progressSize.height - (this.margin.top + this.margin.bottom);
+        this.initialClipRect = new Rect(this.progressRect.x , this.progressRect.y, this.progressSize.height, this.progressSize.width);
     }
 
     /**
      * Render Annotation in progress bar
      */
     private renderAnnotations(): void {
-        this.createSecElement();
         this.renderAnnotation();
-        this.setSecondaryElementPosition();
+        
     }
 
     /**
      * Render SVG Element
      */
     private renderElements(): void {
+        this.createSecondaryElement();
         this.renderTrack();
         this.renderProgress();
         this.renderLabel();
         if (this.annotations.length > 0) {
             this.renderAnnotations();
         }
+        this.setSecondaryElementPosition();
+        if (this.tooltip.enable && !(this.tooltip.showTooltipOnHover))
+        {
+            this.progressTooltipModule.tooltip();
+        }
     }
 
-    private createSecElement(): void {
+    private createSecondaryElement(): void {
         const secElement: Element = document.getElementById(this.element.id + 'Secondary_Element');
+        if (this.tooltip.enable) {
+            this.tooltipElement = createElement('div', {
+                id: this.element.id + '_tooltip',
+                className: 'ejSVGTooltip',
+                styles: 'pointer-events: none; position: absolute; zIndex: 1; visibility: visible'
+            });
+            if (secElement) {
+                this.secElement.appendChild(this.tooltipElement);
+            }
+        }
+        const tooltipElement: Element = document.getElementById(this.element.id + '_tooltip');
         if (secElement) {
             secElement.innerHTML = '';
-            this.secElement = secElement as HTMLElement;
+            this.secElement = tooltipElement ? secElement.appendChild(tooltipElement) as HTMLElement : secElement as HTMLElement;
             return;
         }
         this.secElement = createElement('div', {
@@ -496,6 +556,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             styles: 'position: absolute'
         });
         this.element.appendChild(this.secElement);
+        if (this.tooltipElement) {
+            this.secElement.appendChild(this.tooltipElement);
+        }
     }
 
     /**
@@ -703,7 +766,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 this.trigger('resized', arg);
                 if ((this.width === null || this.height === null || this.width.indexOf('%') > -1 || this.height.indexOf('%') > -1)
                     && !arg.cancel) {
-                    this.secElement ? this.secElement.innerHTML = '' : this.secElement;
+                    if (this.secElement) { this.secElement.innerHTML = ''; }
                     this.calculateProgressBarSize();
                     this.createSVG();
                     this.renderElements();
@@ -723,6 +786,16 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
     private progressMouseMove(e: PointerEvent): void {
         this.mouseEvent(mouseMove, e);
+        const target: Element = e.target as Element;
+        if (this.tooltip.enable && this.tooltip.showTooltipOnHover) {
+            if (target.id.indexOf('Circularprogress') >= 0 || target.id.indexOf('Circularbuffer') >= 0 || target.id.indexOf('Linearprogress') >= 0 || target.id.indexOf('Linearbuffer' ) >= 0 || target.id.indexOf('Linearbuffer') >= 0) {
+                this.progressTooltipModule.tooltip(e);
+            }
+            else if (this.progressTooltipModule.isRendered) {
+                this.progressTooltipModule.removeTooltip(1000);
+                this.progressTooltipModule.isRendered = false;
+            }
+        }
     }
 
     private progressMouseUp(e: PointerEvent): void {
@@ -843,6 +916,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         if (enableAnnotation) {
             modules.push({
                 member: 'ProgressAnnotation',
+                args: [this]
+            });
+        }
+        if (this.tooltip.enable) {
+            modules.push({
+                member: 'Tooltip',
                 args: [this]
             });
         }

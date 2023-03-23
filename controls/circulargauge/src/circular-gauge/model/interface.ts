@@ -9,7 +9,7 @@ import { TooltipSettings } from './base';
 import { GaugeShape } from '../utils/enum';
 
 /**
- * Specifies the event arguments of the circular gauge component.
+ * Specifies the event arguments of the circular gauge.
  */
 export interface ICircularGaugeEventArgs {
     /**
@@ -79,7 +79,7 @@ export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
  */
 export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Specifies the instance of the circular gauge component.
+     * Specifies the instance of the circular gauge.
      */
     gauge?: CircularGauge;
     /**
@@ -101,7 +101,7 @@ export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
  */
 export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Specifies the instance of circular gauge component.
+     * Specifies the instance of circular gauge.
      */
     gauge?: CircularGauge;
     /**
@@ -254,6 +254,8 @@ export interface IMouseEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies the event arguments for the visible pointer.
+ * 
+ * @private
  */
 export interface IVisiblePointer {
     /**
@@ -269,6 +271,8 @@ export interface IVisiblePointer {
 
 /**
  * Specifies the visible range
+ * 
+ * @private
  */
 export interface IVisibleRange {
     /**
@@ -284,6 +288,8 @@ export interface IVisibleRange {
 
 /**
  * Specifies the event arguments for the font settings of the axis label and legend in circular gauge.
+ * 
+ * @private
  */
 export interface IFontMapping {
     /**
@@ -309,6 +315,8 @@ export interface IFontMapping {
 }
 /**
  * Specifies the arguments for the theme style in circular gauge.
+ * 
+ * @private
  */
 export interface IThemeStyle {
     /** Specifies the background color for the circular gauge. */
@@ -365,6 +373,8 @@ export interface ILegendRenderEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies the arguments for the legend regions in circular gauge.
+ * 
+ * @private
  */
 export interface ILegendRegions {
     /**

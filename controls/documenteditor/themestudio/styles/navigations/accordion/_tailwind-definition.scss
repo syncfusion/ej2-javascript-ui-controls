@@ -22,9 +22,8 @@ $acrdn-item-nested-panel-item-select-margin: 0 !default;
 $acrdn-item-overflow: hidden !default;
 $acrdn-item-hover-focus-hdr-con-text-decoration: none !default;
 $acrdn-item-hdr-border-radius: 0 !default;
-$acrdn-item-hdr-margin-bottom: 0 !default;
 $acrdn-item-tgl-icon-display: table !default;
-$acrdn-item-arrow-icon-font-size: 18px !default;
+$acrdn-item-arrow-icon-font-size: $text-lg !default;
 $acrdn-opacity: .5 !default;
 
 // Header, Nested header and RTL mode Padding
@@ -72,7 +71,7 @@ $acrdn-header-font-weight: $font-weight-medium !default;
 $acrdn-header-font-size: $text-sm !default;
 $acrdn-nest-header-font-size: $text-sm !default;
 $acrdn-nest-header-content-font-size: $acrdn-nest-header-font-size !default;
-$acrdn-nest-header-content-font-weight: normal !default;
+$acrdn-nest-header-content-font-weight: $font-weight-normal !default;
 $acrdn-content-font-size: $text-sm !default;
 $acrdn-header-font-bgr-size: $text-base !default;
 $acrdn-content-font-bgr-size: $text-base !default;
@@ -88,9 +87,9 @@ $acrdn-header-active-bg: $content-bg-color-pressed !default;
 $acrdn-border-type: solid !default;
 $acrdn-border-size: 1px !default;
 $acrdn-border-radius: 0 !default;
-$acrdn-bgr-arrow-icon-font-size: 22px;
-$acrdn-bgr-item-header-content-font-size: 16px !default;
-$acrdn-icon-font-size: 18px !default;
+$acrdn-bgr-arrow-icon-font-size: $text-xl;
+$acrdn-bgr-item-header-content-font-size: $text-base !default;
+$acrdn-icon-font-size: $text-lg !default;
 $acrdn-item-icon-disable-color: $icon-color-disabled;
 $acrdn-text-disable-color: $content-text-color-disabled;
 

@@ -1363,7 +1363,7 @@ describe('Vertical View Event Render Module', () => {
     describe('allowInline property with template ', () => {
         let schObj: Schedule;
         let keyModule: any;
-        const eventTemplate = '<div class = e-subject >Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
+        const eventTemplate: string = '<div class = e-subject >Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
             '<div>EndTime: ${EndTime.toLocaleString()</div>';
         beforeAll((done: Function) => {
             const model: ScheduleModel = {
@@ -1383,17 +1383,17 @@ describe('Vertical View Event Render Module', () => {
             util.destroy(schObj);
         });
 
-        it('Checking allowInline property in Agenda view', (done) => {
-            schObj.dataBound = function () {
+        it('Checking allowInline property in Agenda view', (done: DoneFn) => {
+            schObj.dataBound = () => {
                 const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList[0].firstElementChild.innerHTML).toBe('Subject: Testing');
                 done();
             };
             const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(23);
-            eventElementList[0].click()
+            eventElementList[0].click();
             expect(eventElementList[0].firstElementChild.className).toBe('e-subject-wrap');
-            const inLineEdited: HTMLInputElement = eventElementList[0].firstElementChild.firstChild as HTMLInputElement
+            const inLineEdited: HTMLInputElement = eventElementList[0].firstElementChild.firstChild as HTMLInputElement;
             inLineEdited.value = 'Testing';
             expect(inLineEdited.value).toBe('Testing');
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
@@ -1401,9 +1401,9 @@ describe('Vertical View Event Render Module', () => {
 
         it('Checking allowInline property in TimelineWeek view', (done: Function) => {
             schObj.dataBound = () => {
-                schObj.dataBound = function () {
-                    const eventElement = schObj.element.querySelector('[data-id="Appointment_11"]');
-                    const inLineEdited = eventElement.children[1].firstElementChild.firstElementChild;
+                schObj.dataBound = () => {
+                    const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_11"]');
+                    const inLineEdited: Element = eventElement.children[1].firstElementChild.firstElementChild;
                     expect(inLineEdited.innerHTML).toBe('Subject: timeline');
                     done();
                 };
@@ -1416,16 +1416,16 @@ describe('Vertical View Event Render Module', () => {
                 expect(inLineEdited.value).toBe('timeline');
                 keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
                 done();
-            }
+            };
             schObj.currentView = 'TimelineWeek';
             schObj.dataBind();
         });
 
         it('Checking allowInline property in Week view', (done: Function) => {
             schObj.dataBound = () => {
-                schObj.dataBound = function () {
-                    const eventElement = schObj.element.querySelector('[data-id="Appointment_22"]');
-                    const inLineEdited = eventElement.children[1].firstElementChild;
+                schObj.dataBound = () => {
+                    const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_22"]');
+                    const inLineEdited: Element = eventElement.children[1].firstElementChild;
                     expect(inLineEdited.innerHTML).toBe('Subject: week');
                     done();
                 };
@@ -1439,15 +1439,15 @@ describe('Vertical View Event Render Module', () => {
                 expect(inLineEdited.value).toBe('week');
                 keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
                 done();
-            }
+            };
             schObj.currentView = 'Week';
             schObj.dataBind();
         });
 
         it('Checking allowInline property in TimelineMonth view', (done: Function) => {
             schObj.dataBound = () => {
-                schObj.dataBound = function () {
-                    const eventElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+                schObj.dataBound = () => {
+                    const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_22"]');
                     const inLineEdited: HTMLElement = eventElement.children[1].firstElementChild as HTMLElement;
                     expect(inLineEdited.innerHTML).toBe('Subject: timelineMonth');
                     done();
@@ -1461,7 +1461,7 @@ describe('Vertical View Event Render Module', () => {
                 expect(inLineEdited.value).toBe('timelineMonth');
                 keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
                 done();
-            }
+            };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
@@ -1780,6 +1780,56 @@ describe('Vertical View Event Render Module', () => {
             (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0].value = new Date(2022, 10, 4, 11, 30);
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
+        });
+    });
+
+    describe('EJ2-69228 - generateEventOccurrences public method test', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Refreshment',
+            StartTime: new Date(2023, 1, 1, 10, 0),
+            EndTime: new Date(2023, 1, 1, 12, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+        }, {
+            Id: 2,
+            Subject: 'Meeting',
+            StartTime: new Date(2023, 1, 1, 10, 0),
+            EndTime: new Date(2023, 1, 1, 12, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;UNTIL=20230224T070000Z;'
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2023, 1, 1)
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', () => {
+            expect(schObj.eventsData.length).toEqual(2);
+            const eventList: Element = schObj.element.querySelector('.e-appointment');
+            expect(eventList.querySelector('.e-subject').innerHTML).toBe('Refreshment');
+        });
+
+        it('checking generateEventOccurrences method with parent event as argument', () => {
+            expect(schObj.generateEventOccurrences(data[0]).length).toEqual(43);
+            expect(schObj.generateEventOccurrences(data[1]).length).toEqual(24);
+        });
+
+        it('checking generateEventOccurrences method with parent event and startDate as arguments', () => {
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 8)).length).toEqual(18);
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 8))[0].StartTime.getTime()).toEqual(
+                new Date(2023, 1, 7, 10, 0).getTime());
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 20)).length).toEqual(6);
+        });
+
+        it('checking generateEventOccurrences method with parent event and wrong startDate as arguments', () => {
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 2, 3)).length).toEqual(0);
         });
     });
 

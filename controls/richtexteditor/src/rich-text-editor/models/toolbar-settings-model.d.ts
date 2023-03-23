@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat, DisplayLayoutOptions } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat, DisplayLayoutOptions } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems, FormatPainterContext } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
 
 /**
  * Interface for a class ToolbarSettings
@@ -572,6 +572,34 @@ export interface QuickToolbarSettingsModel {
      * @default ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles']
      */
     table?: (string | IToolbarItems)[];
+
+}
+
+/**
+ * Interface for a class FormatPainterSettings
+ */
+export interface FormatPainterSettingsModel {
+
+    /**
+     * Defines the context or contexts in which styles will be copied.
+     *
+     * @default ['Text', 'List', 'Table']
+     */
+    allowedContext?: FormatPainterContext[];
+
+    /**
+     * Defines the tag name selectors for obtaining the formats from the elements.
+     *
+     * @default 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;'
+     */
+    allowedFormats?: string;
+
+    /**
+     * Defines selectors for the elements from which fetching formats is expressly prohibited.
+     *
+     * @default null
+     */
+    deniedFormats?: string;
 
 }
 

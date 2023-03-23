@@ -1,6 +1,5 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { RangeNavigator } from '../range-navigator';
 import { valueToCoefficient, textElement, firstToLowerCase } from '../../common/utils/helper';

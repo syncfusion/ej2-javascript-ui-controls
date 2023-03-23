@@ -569,4 +569,73 @@ describe('Checking RTL Behaviour for Title', () => {
         accumulation.refresh();
     });
   });
+  describe('Checking RTL Behaviour for CenterLabel', () => {
+    let element: HTMLElement;
+    let segement: Element;
+    let id: string = 'ej2-container';
+    let sliceid: string = id + '_Series_0' + '_Point_';
+    let trigger: MouseEvents = new MouseEvents();
+    let textElement: Element;
+    let labelId: string = id + '_centerLabel';
+    let accumulation: AccumulationChart;
+    let anchor: string;
+    beforeAll((): void => {
+        element = createElement('div', { id: id });
+        document.body.appendChild(element);
+        accumulation = new AccumulationChart({
+            border: { width: 1, color: 'blue' },
+            series: [
+                {
+                    type: 'Pie',  innerRadius: '50%',
+                    dataSource: piedata, animation: { enable: false }, xName: 'x', yName: 'y'
+                }
+            ], 
+            width: '600', 
+            height: '400', 
+            centerLabel: {
+                text: 'Syncfusion',
+                textStyle: {
+                    size: '11px',
+                },
+                hoverTextFormat: '${point.x}'
+            }
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.loaded = null;
+        accumulation.destroy();
+        removeElement(id);
+    });
+    it('Cheking CenterLabel text', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
+            expect(centerLabel.innerHTML === 'Syncfusion').toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+    it('Checking CenterLabel text on point mouse move', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            segement = getElement(sliceid + 0);
+            trigger.mousemoveEvent(segement, 0, 0, 200, 200);
+            let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
+            expect(centerLabel.innerHTML === '1').toBe(true);
+            trigger.mouseleavetEvent(element, 1000, 1000);
+            done();
+        };
+        accumulation.refresh();
+    });
+    it('Checking CenterLabel text-anchor', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textElement = getElement(labelId);
+            anchor = textElement.getAttribute('text-anchor');
+            expect(anchor === 'middle').toBe(true);
+            done();
+        };
+        accumulation.refresh();
+    });
+    
+  });
 });

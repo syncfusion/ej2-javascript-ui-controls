@@ -257,3 +257,5 @@ export const duplicateSheetFilterHandler: string = 'duplicateSheetFilterHandler'
 export const unMerge: string = 'unMerge';
 /** @hidden */
 export const addFormatToCustomFormatDlg: string = 'addFormatToCustomFormatDlg';
+/** @hidden */
+export const checkFormulaRef: string = 'checkFormulaRef';

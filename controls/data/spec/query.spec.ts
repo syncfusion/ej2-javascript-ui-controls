@@ -1009,6 +1009,76 @@ describe('Query', () => {
                     expect(result.length).toBe(4);
                 });
             });
+            describe('for andnot predicate with localdata', () => {
+                let result: any;
+                beforeAll((done: Function) => {
+                    dataManager = new DataManager(data);
+                    let predicate: Predicate = new Predicate('OrderID', 'lessThan', 10251, true).
+                        andnot('CustomerID', 'startsWith', 'VI', true);
+                    query = new Query().where(predicate);
+                    result = query.executeLocal(dataManager);
+                    done();
+                });
+                it('To check filtered data length.', () => {
+                    expect(query.queries[0].e.predicates[1].operator).toBe('startswith');
+                    expect(query.queries[0].e.predicates[1].condition).toBe(undefined);
+                    expect(result.length).toBe(1);
+                });
+                it('To check data filtered properly.', () => {
+                    expect(DataUtil.notStartsWith(result[0]["CustomerID"], 'VI')).toBe(true);
+                    expect(result[0].OrderID < 10251).toBe(true);
+                });
+                it('To check the query added properly.', () => {
+                    expect(query.queries[0].e.condition).toEqual('and not');
+                    expect(query.queries[0].e.predicates.length).toEqual(2);
+                    expect(query.queries[0].fn).toEqual('onWhere');
+                });
+                it('To check field name as predicate.', () => {
+                    let pred: Predicate = new Predicate('CustomerID', 'startsWith', 'VI', true);
+                    let predicate: Predicate = new Predicate('OrderID', 'lessThan', 10251, true).andnot(pred);
+                    query = new Query().where(predicate);
+                    result = query.executeLocal(dataManager);
+                    expect(query.queries[0].e.predicates[1].operator).toBe('startswith');
+                    expect(query.queries[0].e.predicates[1].condition).toBe(undefined);
+                    expect(result.length).toBe(1);
+                });
+            });
+            describe('for ornot predicate with localdata', () => {
+                let result: any;
+                beforeAll((done: Function) => {
+                    dataManager = new DataManager(data);
+                    let predicate: Predicate = new Predicate('OrderID', 'lessThan', 10251, true).
+                        ornot('CustomerID', 'startsWith', 'VI', true);
+                    query = new Query().where(predicate);
+                    result = query.executeLocal(dataManager);
+                    done();
+                });
+                it('To check filtered data length.', () => {
+                    expect(query.queries[0].e.predicates[1].operator).toBe('startswith');
+                    expect(query.queries[0].e.predicates[1].condition).toBe(undefined);
+                    expect(result.length).toBe(4);
+                });
+                it('To check data filtered properly.', () => {
+                    expect(DataUtil.notStartsWith(result[3]["CustomerID"], 'VI')).toBe(true);
+                    expect(result[0].OrderID < 10251).toBe(true);
+                    expect(result[1].OrderID < 10251).toBe(true);
+                    expect(result[2].OrderID < 10251).toBe(true);
+                });
+                it('To check the query added properly.', () => {
+                    expect(query.queries[0].e.condition).toEqual('or not');
+                    expect(query.queries[0].e.predicates.length).toEqual(2);
+                    expect(query.queries[0].fn).toEqual('onWhere');
+                });
+                it('To check field name as predicate.', () => {
+                    let pred: Predicate = new Predicate('CustomerID', 'startsWith', 'VI', true);
+                    let predicate: Predicate = new Predicate('OrderID', 'lessThan', 10251, true).ornot(pred);
+                    query = new Query().where(predicate);
+                    result = query.executeLocal(dataManager);
+                    expect(query.queries[0].e.predicates[1].operator).toBe('startswith');
+                    expect(query.queries[0].e.predicates[1].condition).toBe(undefined);
+                    expect(result.length).toBe(4);
+                });
+            });
             describe('for array of predicate', () => {
                 let result: any;
                 beforeAll((done: Function) => {

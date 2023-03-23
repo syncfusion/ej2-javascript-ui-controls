@@ -461,9 +461,9 @@ export class ViewBase {
                 [].slice.call(this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false));
             append(quickTemplate, tdElement);
         } else {
-            tdElement.appendChild(createElement('div', {
-                className: className, innerHTML: tdData.resourceData[tdData.resource.textField] as string
-            }));
+            const resourceText: HTMLElement = createElement('div', { className: className });
+            resourceText.innerText = this.parent.sanitize(tdData.resourceData[tdData.resource.textField] as string);
+            tdElement.appendChild(resourceText);
         }
     }
 
@@ -491,7 +491,6 @@ export class ViewBase {
             const colElements: HTMLElement[] = this.getColElements();
             const contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
             const colWidth: number = (contentBody.getBoundingClientRect().width / (colElements.length / 2));
-            colElements.forEach((col: HTMLElement) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
             if (content.offsetHeight !== content.clientHeight) {
                 const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
                 if (!isNullOrUndefined(resourceColumn)) {

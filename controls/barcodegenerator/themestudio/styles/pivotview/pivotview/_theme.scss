@@ -111,15 +111,17 @@
     }
 
     .e-toolbar .e-tbar-btn {
-      @if ($skin-name == 'tailwind') {
-        background-color: transparent;
-    }
+      background-color: transparent;
+
+      @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+        border: none !important;
+      }
 
       &:hover {
         @if ($skin-name == 'tailwind') {
           background-color: $pivot-toolbar-icon-hover-color;
-    }
-    }
+        }
+      }
     }
 
 
@@ -685,9 +687,7 @@
           height: $pivotgrid-button-icon-wrapper-size;
           margin-left: 4px;
           width: $pivotgrid-button-icon-wrapper-size;
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            margin-left: 4px;
-          }
+          padding-top: $pivotgrid-group-button-icon-wrapper-padding-top;
 
           &:hover {
             color: $pivotgrid-icon-hover-color;
@@ -705,6 +705,7 @@
           transition: transform 200ms ease-in-out;
 
           &.e-descend {
+            margin-top: $pivotgrid-group-button-icon-wrapper-marigin-top;
             transform: rotateX(180deg);
           }
         }
@@ -826,7 +827,6 @@
               height: $pivotgrid-button-icon-wrapper-size;
               margin-left: 4px !important;
               width: $pivotgrid-button-icon-wrapper-size;
-              padding-top: 2px;
     
               &:hover {
                 color: $pivotgrid-icon-hover-color;
@@ -842,11 +842,7 @@
               width: 18px;
     
               &.e-descend {
-                margin-top: 3px;
                 transform: rotateX(180deg);
-                @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'fabric') {
-                  margin-top: 4px !important;
-                }
               }
             }
     
@@ -972,6 +968,14 @@
     .e-pivot-pager {
       padding: $pivotpager-padding;
 
+      &.sf-pager {
+        .e-pivot-pager-info-container{
+          &.e-pagercontainer {
+            font-size: unset;
+          }
+        }
+      }
+
       &.e-pivot-pager-bottom {
         border-top: 0;
       }
@@ -1072,6 +1076,10 @@
           .e-pivot-row-pager-settings,
           .e-pivot-column-pager-settings {
             flex: none;
+
+            &.e-pivot-pager-axis-container {
+              display: inline-table;
+            }
 
             .e-numeric {
               margin: $pivotpager-numeric-box-margin;
@@ -1238,6 +1246,10 @@
           &:not(.e-pivot-pager-single-maindiv) {
             .e-pagercontainer {
               margin-top: $pivotpager-adaptive-page-container-marging-top;
+
+              @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') or ($skin-name == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast')  {
+                margin-left: 0;
+              }
             }
           }
         }
@@ -1528,10 +1540,19 @@
           }
         }
       }
+
+      .e-scrollbar .e-movablescrollbar {
+        min-height: 1px !important;
+        visibility: hidden;
+      }
     }
 
     .e-component-disable {
       display: none !important;
+    }
+
+    .e-pivotchart.e-chart {
+      overflow: visible !important;
     }
 
     /* stylelint-enable */
@@ -1697,6 +1718,9 @@
             width: $pivotgrid-bigger-button-icon-wrapper-size;
             @if ($pivotgrid-skin == 'bootstrap4') {
               padding-left: 12px;
+            }
+            @if ($skin-name == "bootstrap") or ($skin-name == "bootstrap4") or ($skin-name == "FluentUI") {
+              padding-top: 0;
             }
           }
 

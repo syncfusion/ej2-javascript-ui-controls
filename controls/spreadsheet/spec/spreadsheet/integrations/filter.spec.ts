@@ -654,7 +654,22 @@ describe('Filter ->', () => {
 
     describe('Filter dialog opening and filter with different operators->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Boolean Test' }]},
+                        { cells: [{ index: 8, value: 'True' }]},
+                        { cells: [{ index: 8, value: 'False' }]},
+                        { cells: [{ index: 8, value: 'True' }]},
+                        { cells: [{ index: 8, value: 'True' }]},
+                        { index:6, cells: [{ index: 8, value: 'True' }]},
+                        { cells: [{ index: 8, value: 'False' }]},
+                        { cells: [{ index: 8, value: 'False' }]},
+                        { cells: [{ index: 8, value: 'True' }]},
+                        { cells: [{ index: 8, value: 'False' }]}
+                    ]
+                }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -798,6 +813,200 @@ describe('Filter ->', () => {
                 helper.click('#' + helper.id + '_sorting');
                 helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
                 done();
+            });
+        });
+        it('Apply filter with operator as doesnotcontains', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('NotContains');
+            spreadsheet.applyFilter([{ field: 'F', predicate: 'or', operator: 'doesnotcontains', value: '300' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[6].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotcontains', value: 'Shoe' }]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[4].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[6].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[10].hidden).toBeFalsy();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                    helper.click('#' + helper.id + '_sorting');
+                    helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                    done();
+                });
+            });
+        });
+        it('Apply filter with operator as doesnotstartswith', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('NotBeginsWith');
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotstartswith', value: 's' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[6].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[8].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as doesnotendswith', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('NotEndsWith');
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotendswith', value: 'shoes' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[9].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[4].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                done();
+            });
+        });
+        it('Apply filter with operator as isempty', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A2']);
+            helper.triggerKeyNativeEvent(46);
+            helper.getInstance().filterModule.getFilterOperator('Empty');
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'isempty', value: '' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[10].hidden).toBeTruthy();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                spreadsheet.applyFilter([{ field: 'I', predicate: 'or', operator: 'isempty', value: '' }]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[10].hidden).toBeTruthy();
+                    expect(helper.invoke('getCell', [0, 8]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 8]).querySelector('.e-filtered')).not.toBeNull();
+                    helper.click('#' + helper.id + '_sorting');
+                    helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                    helper.invoke('selectRange', ['B4']);
+                    helper.triggerKeyNativeEvent(46);
+                    spreadsheet.applyFilter([{ field: 'B', predicate: 'or', operator: 'isempty', value: '' }]);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[3].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                        expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                        expect(spreadsheet.sheets[0].rows[9].hidden).toBeTruthy();
+                        expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filtered')).not.toBeNull();
+                        helper.click('#' + helper.id + '_sorting');
+                        helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                        helper.invoke('selectRange', ['D10']);
+                        helper.triggerKeyNativeEvent(46);
+                        spreadsheet.applyFilter([{ field: 'D', predicate: 'or', operator: 'isempty', value: '' }]);
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].rows[9].hidden).toBeFalsy();
+                            expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                            expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                            expect(spreadsheet.sheets[0].rows[10].hidden).toBeTruthy();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                            helper.click('#' + helper.id + '_sorting');
+                            helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                            helper.invoke('selectRange', ['C5']);
+                            helper.triggerKeyNativeEvent(46);
+                            spreadsheet.applyFilter([{ field: 'C', predicate: 'or', operator: 'isempty', value: '' }]);
+                            setTimeout(() => {
+                                expect(spreadsheet.sheets[0].rows[4].hidden).toBeFalsy();
+                                expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                                expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                                expect(spreadsheet.sheets[0].rows[9].hidden).toBeTruthy();
+                                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filtered')).not.toBeNull();
+                                helper.click('#' + helper.id + '_sorting');
+                                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        it('Apply filter with operator as isnotempty', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().filterModule.getFilterOperator('NotEmpty');
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'isnotempty', value: '' }]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[4].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[7].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[10].hidden).toBeFalsy();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                spreadsheet.applyFilter([{ field: 'I', predicate: 'or', operator: 'isnotempty', value: '' }]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[10].hidden).toBeFalsy();
+                    expect(helper.invoke('getCell', [0, 8]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 8]).querySelector('.e-filtered')).not.toBeNull();
+                    helper.click('#' + helper.id + '_sorting');
+                    helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                    helper.invoke('selectRange', ['B4']);
+                    helper.triggerKeyNativeEvent(46);
+                    spreadsheet.applyFilter([{ field: 'B', predicate: 'or', operator: 'isnotempty', value: '' }]);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
+                        expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].rows[7].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].rows[9].hidden).toBeFalsy();
+                        expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filtered')).not.toBeNull();
+                        helper.click('#' + helper.id + '_sorting');
+                        helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                        helper.invoke('selectRange', ['D10']);
+                        helper.triggerKeyNativeEvent(46);
+                        spreadsheet.applyFilter([{ field: 'D', predicate: 'or', operator: 'isnotempty', value: '' }]);
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].rows[9].hidden).toBeTruthy();
+                            expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                            expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                            expect(spreadsheet.sheets[0].rows[10].hidden).toBeFalsy();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                            helper.click('#' + helper.id + '_sorting');
+                            helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                            helper.invoke('selectRange', ['C5']);
+                            helper.triggerKeyNativeEvent(46);
+                            spreadsheet.applyFilter([{ field: 'C', predicate: 'or', operator: 'isnotempty', value: '' }]);
+                            setTimeout(() => {
+                                expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                                expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                                expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                                expect(spreadsheet.sheets[0].rows[9].hidden).toBeFalsy();
+                                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filtered')).not.toBeNull();
+                                helper.click('#' + helper.id + '_sorting');
+                                helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
+                                done();
+                            });
+                        });
+                    });
+                });
             });
         });
     });

@@ -1,6 +1,5 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
 import { withInRange, getPoint, drawSymbol, getElement } from '../../common/utils/helper';
 import { markerAnimate, TransformToVisible, ChartLocation, appendChildElement } from '../../common/utils/helper';

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType, detach } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, SanitizeHtmlHelper, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
@@ -66,6 +66,7 @@ export class EventWindow {
             content: this.getEventWindowContent(),
             cssClass: cls.EVENT_WINDOW_DIALOG_CLASS,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             height: this.parent.isAdaptive ? '100%' : 'auto',
             minHeight: '300px',
             isModal: true,
@@ -281,6 +282,10 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Record<string, any>): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
+                if (this.fieldValidator) {
+                    this.fieldValidator.destroy();
+                    this.fieldValidator = null;
+                }
                 if (this.recurrenceEditor) {
                     this.recurrenceEditor.destroy();
                     this.recurrenceEditor = null;
@@ -460,6 +465,7 @@ export class EventWindow {
         if (resourceData.allowMultiple) {
             const listObj: MultiSelect = new MultiSelect({
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 cssClass: this.parent.cssClass || '',
                 dataSource: resourceData.dataSource as Record<string, any>[],
                 change: this.onMultiselectResourceChange.bind(this),
@@ -606,6 +612,7 @@ export class EventWindow {
             change: this.onChange.bind(this),
             cssClass: value + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             label: this.getFieldLabel(value)
         });
         checkBox.appendTo(checkBoxInput);
@@ -735,6 +742,7 @@ export class EventWindow {
             target: this.element,
             animationSettings: { effect: 'Zoom' },
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             isModal: true,
             cssClass: REPEAT_DIALOG_CLASS,
             open: this.repeatOpenDialog.bind(this)
@@ -807,6 +815,9 @@ export class EventWindow {
         if (!this.parent.eventSettings.allowAdding) {
             return;
         }
+        if (this.parent.isAdaptive && repeatType && !this.repeatDialogObject) {
+            this.renderRepeatDialog();
+        }
         this.element.querySelector('.' + cls.FORM_CLASS).removeAttribute('data-id');
         this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         eventObj.Timezone = false;
@@ -836,10 +847,18 @@ export class EventWindow {
                 selectedType: !isNullOrUndefined(repeatType) ? repeatType : !isNullOrUndefined(eventObj[this.fields.recurrenceRule]) ?
                     this.recurrenceEditor.selectedType : 0
             });
+            this.repeatRule = this.recurrenceEditor.value;
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             const element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
-            addClass([element], HIDE_STYLE_CLASS);
+            if (eventObj[this.fields.recurrenceRule] || repeatType) {
+                removeClass([element], HIDE_STYLE_CLASS);
+                this.repeatStatus.setProperties({ checked: true });
+            }
+            else {
+                addClass([element], HIDE_STYLE_CLASS);
+                this.repeatStatus.setProperties({ checked: false });
+            }
             this.updateRepeatLabel(this.repeatRule);
         } else {
             const saveButton: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
@@ -1255,7 +1274,7 @@ export class EventWindow {
             }
         }
         if (this.recurrenceEditor && this.recurrenceEditor.value && this.recurrenceEditor.value !== '') {
-            if(this.parent.currentAction !== 'EditOccurrence'){
+            if (this.parent.currentAction !== 'EditOccurrence') {
                 alertType = this.recurrenceValidation(<Date>eventObj[this.fields.startTime], <Date>eventObj[this.fields.endTime], alert);
             }
             let isShowAlert: boolean = true;
@@ -1486,9 +1505,11 @@ export class EventWindow {
         }
         const currentStartTime: Date = new Date(+currentData[this.fields.startTime]);
         const currentEndTime: Date = new Date(+currentData[this.fields.endTime]);
+        let nextStartTime: Date;
+        let nextEndTime: Date;
         if (index !== recurColl.length - 1) {
-            var nextStartTime = new Date(+recurColl[index + 1][this.fields.startTime]);
-            var nextEndTime = new Date(+recurColl[index + 1][this.fields.endTime]);
+            nextStartTime = new Date(+recurColl[index + 1][this.fields.startTime]);
+            nextEndTime = new Date(+recurColl[index + 1][this.fields.endTime]);
         }
         const lastEndTime: Date = new Date(+recurColl[recurColl.length - 1][this.fields.endTime]);
         if (index === 0) {
@@ -1671,7 +1692,7 @@ export class EventWindow {
             if ((element as HTMLInputElement).type === 'checkbox') {
                 value = (element as HTMLInputElement).checked as boolean;
             } else {
-                value = SanitizeHtmlHelper.sanitize((element as HTMLInputElement).value as string);
+                value = this.parent.sanitize((element as HTMLInputElement).value as string);
             }
         }
         return value;

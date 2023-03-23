@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlignmentType } from '../utils/enum';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { TextAlignmentType } from '../utils/enum';import { Theme } from '../utils/theme';
 
 /**
  * Interface for a class Margin
@@ -6,7 +6,7 @@ import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlig
 export interface MarginModel {
 
     /**
-     * To customize top margin value.
+     * To customize top margin value
      *
      * @default 10
      */
@@ -14,7 +14,7 @@ export interface MarginModel {
     top?: number;
 
     /**
-     * To customize top bottom value.
+     * To customize top bottom value
      *
      * @default 10
      */
@@ -22,7 +22,7 @@ export interface MarginModel {
     bottom?: number;
 
     /**
-     * To customize top left value.
+     * To customize top left value
      *
      * @default 10
      */
@@ -30,7 +30,7 @@ export interface MarginModel {
     left?: number;
 
     /**
-     * To customize top right value.
+     * To customize top right value
      *
      * @default 10
      */
@@ -85,14 +85,14 @@ export interface FontModel {
     opacity?: number;
 
     /**
-     * text alignment for label.
+     * text alignment for label
      *
      * @default Far
      */
     textAlignment?: TextAlignmentType;
 
     /**
-     * label text.
+     * label text
      *
      * @default ''
      */
@@ -141,18 +141,95 @@ export interface ProgressAnnotationSettingsModel {
     content?: string;
 
     /**
-     * to move annotation.
+     * to move annotation
      *
      * @default 0
      */
     annotationAngle?: number;
 
     /**
-     * to move annotation.
+     * to move annotation
      *
      * @default '0%'
      */
     annotationRadius?: string;
+
+}
+
+/**
+ * Interface for a class Border
+ */
+export interface BorderModel {
+
+    /**
+     * The color of the border that accepts value in hex as a valid CSS color string.
+     *
+     * @default ''
+     */
+
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+
+    width?: number;
+
+}
+
+/**
+ * Interface for a class TooltipSettings
+ */
+export interface TooltipSettingsModel {
+
+    /**
+     * If set to true, tooltip will be displayed for the progress bar.
+     *
+     * @default false.
+     */
+
+    enable?: boolean;
+
+    /**
+      * The fill color of the tooltip that accepts value in hex as a valid CSS color string.
+      *
+      * @default null.
+      */
+ 
+    fill?: string;
+
+    /**
+      * Format the tooltip content. Use ${value} as the placeholder text to display the corresponding progress value.
+      *
+      * @default null.
+      */
+ 
+    format?: string;
+
+    /**
+      * If set to true, tooltip will be displayed for the progress bar on mouse hover.
+      *
+      * @default false.
+      */
+ 
+    showTooltipOnHover?: boolean;
+
+    /**
+      * Options to customize the tooltip text.
+      *
+      */
+ 
+    textStyle?: FontModel;
+
+    /**
+     * Options to customize tooltip borders.
+     *
+     * @default {}
+     */
+
+    border?: BorderModel;
 
 }
 

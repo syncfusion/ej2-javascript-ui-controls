@@ -125,8 +125,8 @@ export class Code39Extension extends Code39 {
         const code: object = this.code39ExtensionValues();
         let asciivalue: number;
         for (let i: number = 0; i < givenCharacter.length; i++) {
-            asciivalue = givenCharacter[i].charCodeAt(0);
-            encodedString += code[asciivalue];
+            asciivalue = givenCharacter[parseInt(i.toString(), 10)].charCodeAt(0);
+            encodedString += code[parseInt(asciivalue.toString(), 10)];
         }
         return encodedString;
     }

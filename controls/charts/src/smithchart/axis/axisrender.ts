@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Smithchart } from '../../smithchart';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';
 import { SmithchartAxisModel, SmithchartAxisLineModel, SmithchartMinorGridLinesModel } from '../../smithchart/axis/axis-model';

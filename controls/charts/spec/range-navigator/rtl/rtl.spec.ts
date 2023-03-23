@@ -86,7 +86,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_LeftSlider');
                 // eslint-disable-next-line 
-                expect(element.childNodes.length === 4).toBe(true);
+                expect(element.childNodes.length === 3).toBe(true);
                 // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
@@ -100,7 +100,7 @@ describe('Range navigator', () => {
         it('checking with right slider', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider');
-                expect(element.childNodes.length).toEqual(4);
+                expect(element.childNodes.length).toEqual(3);
                 // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();

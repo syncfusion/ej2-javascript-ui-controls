@@ -419,32 +419,6 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(helper.invoke('getCell', [1, 0]).textContent).toBe('   (0.19)');
             done();
         });
-        it ('Apply date and time formats to cell which contain negative value', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '-10' }, 'F3']);
-            const cell: any = helper.getInstance().sheets[0].rows[2].cells[5];
-            expect(cell.value).toBe(-10);
-            helper.invoke('numberFormat', ['mm-dd-yyyy', 'F3']);
-            expect(cell.format).toBe('mm-dd-yyyy');
-            const cellEle: HTMLElement = helper.invoke('getCell', [2, 5]);
-            expect(cellEle.textContent).toBe('########');
-            helper.invoke('numberFormat', ['MMM-yy', 'F3']);
-            expect(cell.value).toBe(-10);
-            expect(cell.format).toBe('MMM-yy');
-            expect(cellEle.textContent).toBe('########');
-            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'F3']);
-            expect(cell.value).toBe(-10);
-            expect(cell.format).toBe('h:mm:ss AM/PM');
-            expect(cellEle.textContent).toBe('########');
-            helper.invoke('numberFormat', ['h:mm', 'F3']);
-            expect(cell.value).toBe(-10);
-            expect(cell.format).toBe('h:mm');
-            expect(cellEle.textContent).toBe('########');
-            helper.invoke('numberFormat', ['dd/MM/yyyy h:mm', 'F3']);
-            expect(cell.value).toBe(-10);
-            expect(cell.format).toBe('dd/MM/yyyy h:mm');
-            expect(cellEle.textContent).toBe('########');
-            done();
-        });
         it ('Auto deduct on general number format applied cells', (done: Function) => {
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
             helper.invoke('selectRange', ['F3']);
@@ -492,6 +466,32 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
             expect(row.cells[5].value).toBe('44713');
             expect(cellEle.textContent).toBe('44713');
+            done();
+        });
+        it ('Apply date and time formats to cell which contain negative value', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '-10' }, 'F3']);
+            const cell: any = helper.getInstance().sheets[0].rows[2].cells[5];
+            expect(cell.value).toBe(-10);
+            helper.invoke('numberFormat', ['mm-dd-yyyy', 'F3']);
+            expect(cell.format).toBe('mm-dd-yyyy');
+            const cellEle: HTMLElement = helper.invoke('getCell', [2, 5]);
+            expect(cellEle.textContent).toBe('########');
+            helper.invoke('numberFormat', ['MMM-yy', 'F3']);
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('MMM-yy');
+            expect(cellEle.textContent).toBe('########');
+            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'F3']);
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('h:mm:ss AM/PM');
+            expect(cellEle.textContent).toBe('########');
+            helper.invoke('numberFormat', ['h:mm', 'F3']);
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('h:mm');
+            expect(cellEle.textContent).toBe('########');
+            helper.invoke('numberFormat', ['dd/MM/yyyy h:mm', 'F3']);
+            expect(cell.value).toBe(-10);
+            expect(cell.format).toBe('dd/MM/yyyy h:mm');
+            expect(cellEle.textContent).toBe('########');
             done();
         });
     });
@@ -665,7 +665,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
         });
     });
     describe('CR Issues ->', (): void => {
-        describe('SF-343605, EJ2-56678, SF-366825 ->', () => {
+        describe('SF-343605, EJ2-56678, SF-366825, EJ2-69867 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [
@@ -934,6 +934,17 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cellEle.textContent).toBe('-670.0E-3');
                 done();
             });
+            it('EJ2-69867 - Exceptions thrown while importing a file with custom format into a spreadsheet', (done: Function) => {
+                helper.edit('G1', '0');
+                setTimeout((): void => {
+                    helper.invoke('numberFormat', ['_(* #,##0_);_(* (#,##0);_(* "-"??_);_(@_)', 'G1']);
+                    const cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[6];
+                    expect(cell.value.toString()).toBe('0');
+                    const cellEle: HTMLElement = helper.invoke('getCell', [0, 6]);
+                    expect(cellEle.getElementsByClassName("e-fill-sec")[0]).toBeUndefined();
+                    done();
+                });
+            });
         });
     });
 
@@ -1081,6 +1092,13 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                     expect(inputElement.placeholder).toEqual('Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus');
                     done();
                 });  
+            });
+            it('Set custom time format with localized content',(done:Function):void => {
+                helper.invoke('updateCell', [{ value: '0.37' }, 'A1']);
+                helper.invoke('numberFormat', ['h:mm AM/PM', 'A1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe(0.37);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('8:52 AM');
+                done();
             });
         });
     });

@@ -47,16 +47,16 @@ export function showTooltip(text: string, x: number, y: number, areaWidth: numbe
     x = (x + width > areaWidth) ? x - width : x;
     if (!tooltip) {
         tooltip = createElement('div', {
-            innerHTML: text,
             id: id
         });
+        tooltip.innerText = text;
         tooltip.style.cssText = 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
         'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
         'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
         'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"';
         element.appendChild(tooltip);
     } else {
-        tooltip.innerHTML = text;
+        tooltip.innerText = text;
         tooltip.style.top = (y + 15).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }

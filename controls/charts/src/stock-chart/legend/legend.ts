@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/check-param-names */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable jsdoc/require-param-type */
 /* eslint-disable jsdoc/require-param-description */
 /* eslint-disable valid-jsdoc */
@@ -312,6 +314,7 @@ export class StockLegend extends BaseLegend {
     }
     /**
      * To handle mosue move for Stocklegend module
+     *
      * @param e
      */
     private mouseMove(e: MouseEvent): void {
@@ -321,6 +324,7 @@ export class StockLegend extends BaseLegend {
     }
     /**
      * To handle mosue end for Stocklegend module
+     *
      * @param e
      */
     private mouseEnd(e: MouseEvent): void {
@@ -576,6 +580,7 @@ export class StockLegend extends BaseLegend {
 
     /**
      * To show the tooltip for the trimmed text in legend.
+     *
      * @param event
      * @returns {void}
      */

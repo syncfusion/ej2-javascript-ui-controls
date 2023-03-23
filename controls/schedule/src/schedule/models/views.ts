@@ -12,18 +12,18 @@ export class Views extends ChildProperty<Views> {
     /**
      * It accepts the schedule view name, based on which we can define with its related properties in a single object.
      * The applicable view names are,
-     * * Day
-     * * Week
-     * * WorkWeek
-     * * Month
-     * * Year
-     * * Agenda
-     * * MonthAgenda
-     * * TimelineDay
-     * * TimelineWeek
-     * * TimelineWorkWeek
-     * * TimelineMonth
-     * * TimelineYear
+     * * Day - Denotes Day view of the scheduler.
+     * * Week - Denotes Week view of the scheduler.
+     * * WorkWeek - Denotes Work Week view of the scheduler.
+     * * Month - Denotes Month view of the scheduler.
+     * * Year - Denotes Year view of the scheduler.
+     * * Agenda - Denotes Agenda view of the scheduler.
+     * * MonthAgenda - Denotes Month Agenda view of the scheduler.
+     * * TimelineDay - Denotes Timeline Day view of the scheduler.
+     * * TimelineWeek - Denotes Timeline Week view of the scheduler.
+     * * TimelineWorkWeek - Denotes Timeline Work Week view of the scheduler.
+     * * TimelineMonth - Denotes Timeline Month view of the scheduler.
+     * * TimelineYear - Denotes Timeline Year view of the scheduler.
      *
      * @default null
      */
@@ -32,7 +32,8 @@ export class Views extends ChildProperty<Views> {
 
     /**
      * To denote whether the view name given on the `option` is active or not.
-     * It acts similar to the `currentView` property and defines the active view of Schedule.
+     * It acts similar to the [`currentView`](../../schedule/#current-view/)
+     * property and defines the active view of Schedule.
      *
      * @default false
      */
@@ -264,8 +265,8 @@ export class Views extends ChildProperty<Views> {
     /**
      * It is used to specify the year view rendering orientation on the schedule.
      * The applicable orientation values are,
-     * * Horizontal
-     * * Vertical
+     * * Horizontal - Denotes the horizontal orientation of Timeline Year view.
+     * * Vertical - Denotes the vertical orientation of Timeline Year view.
      *
      * @default 'Horizontal'
      */

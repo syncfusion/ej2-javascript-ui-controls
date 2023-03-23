@@ -57,8 +57,10 @@ export class CellEdit {
         }
         if (data.hasChildRecords && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
             data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
-            ||field === taskSettings.progress || field === taskSettings.work || field === 'taskType')) {
-            args.cancel = true;
+            || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work || field === 'taskType')) {
+            if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
+                args.cancel = true;
+            }
         } else {
             const callBackPromise: Deferred = new Deferred();
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
@@ -107,7 +109,7 @@ export class CellEdit {
     }
     private isValueChange(args: Record<string, unknown>, field: string): boolean {
         const data: IGanttData = getValue('data', args);
-        const editedValue: Record<string, unknown> = data[field];
+        const editedValue: Record<string, unknown> = data[`${field}`];
         const previousValue: Record<string, unknown> = getValue('previousData', args);
         if ((isNOU(editedValue) && !isNOU(previousValue)) || (!isNOU(editedValue) && isNOU(previousValue))) {
             return true;
@@ -233,7 +235,8 @@ export class CellEdit {
         const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.startDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
-        currentValue = this.parent.dateValidationModule.checkStartDate(currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone);
+        currentValue = this.parent.dateValidationModule.checkStartDate(
+            currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone);
         if (isNOU(currentValue)) {
             if (!ganttData.hasChildRecords) {
                 this.parent.setRecordValue('startDate', null, ganttProb, true);
@@ -261,7 +264,7 @@ export class CellEdit {
         const ganttSegments: ITaskSegment[] = [];
         const segments: ITaskSegment[] = ganttProp.segments;
         for (let i: number = 0; i < segments.length; i++) {
-            const segment: ITaskSegment = segments[i];
+            const segment: ITaskSegment = segments[parseInt(i.toString(), 10)];
             let endDate: Date = segment.endDate;
             endDate = (!isNullOrUndefined(ganttProp.endDate)) && endDate.getTime() <
                 ganttProp.endDate.getTime() && i !== segments.length - 1 ? endDate : ganttProp.endDate;
@@ -372,7 +375,7 @@ export class CellEdit {
         const currentDuration: number = ganttProb.duration;
         if (isNOU(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
-            if (args.data[this.parent.taskFields.duration]!=null) {
+            if (args.data[this.parent.taskFields.duration] != null) {
                 this.parent.setRecordValue('endDate', null, ganttProb, true);
             }
         } else {
@@ -512,7 +515,7 @@ export class CellEdit {
                     }
                 }
                 if (!isNOU(index) && index !== -1) {
-                    editedResources.push(previousResource[index]);
+                    editedResources.push(previousResource[parseInt(index.toString(), 10)]);
                 } else {
                     const resource: Object[] = resourceData.filter((resourceInfo: Object) => {
                         return (editedResourceId[count as number] === resourceInfo[resourceSettings.id]);
@@ -572,7 +575,7 @@ export class CellEdit {
     private typeEdited(args: ITaskbarEditedEventArgs, editedObj: Object): void {
         const key: string = 'taskType';
         const ganttProb: ITaskData = args.data.ganttProperties;
-        const taskType: string = editedObj[key];
+        const taskType: string = editedObj[`${key}`];
         this.parent.setRecordValue('taskType', taskType, ganttProb, true);
         //this.parent.dataOperation.updateMappingData(args.data, 'taskType');
         this.updateEditedRecord(args);

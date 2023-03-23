@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { withInRange, pathAnimation, getElement } from '../../common/utils/helper';
@@ -96,12 +95,10 @@ export class CandleSeries extends ColumnBase {
             if (!previousPoint) {
                 return <string>series.bearFillColor;
             } else {
-                return <number>previousPoint.close > <number>point.close ? <string>series.bullFillColor :
-                    <string>series.bearFillColor;
+                return <number>previousPoint.close > <number>point.close ? <string>series.bullFillColor : <string>series.bearFillColor;
             }
         } else {
-            return <number>point.open > <number>point.close ? <string>series.bullFillColor :
-                <string>series.bearFillColor;
+            return <number>point.open > <number>point.close ? <string>series.bullFillColor : <string>series.bearFillColor;
         }
     }
 

@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-excel-export",
-	"version": "20.4.53",
+	"version": "17.3.8",
 	"description": "Essential Javascript 2 Excel Export Library",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-excel-export.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-excel-export.es2015.js",
+	"es2015": "./dist/es6/ej2-excel-export.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-compression": "*"

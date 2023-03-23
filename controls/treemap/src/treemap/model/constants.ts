@@ -111,7 +111,7 @@ export const legendRendering: string = 'legendRendering';
  */
 export const resize: string = 'resize';
 /**
- * Define the font family in treemap component.
+ * Define the font family in treemap.
  *
  * @private
  */

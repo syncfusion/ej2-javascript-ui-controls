@@ -5,7 +5,7 @@ import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortO
 import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';
 import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';
 import { SaveFormat, DisplayLayoutOptions } from '../../common';
-import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';
+import { ToolbarType, ActionOnScroll, ToolbarItems, FormatPainterContext } from '../base/enum';
 import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';
 import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
 
@@ -587,7 +587,32 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     @Property(['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles'])
     public table: (string | IToolbarItems)[];
 }
-
+/**
+ * Configure the format painter settings of the Rich Text Editor.
+ */
+export class FormatPainterSettings extends ChildProperty<FormatPainterSettings> {
+    /**
+     * Defines the context or contexts in which styles will be copied.
+     *
+     * @default ['Text', 'List', 'Table']
+     */
+    @Property(['Text', 'List', 'Table'])
+    public allowedContext: FormatPainterContext[];
+    /**
+     * Defines the tag name selectors for obtaining the formats from the elements.
+     *
+     * @default 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;'
+     */
+    @Property('b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;')
+    public allowedFormats: string;
+    /**
+     * Defines selectors for the elements from which fetching formats is expressly prohibited.
+     *
+     * @default null
+     */
+    @Property(null)
+    public deniedFormats: string;
+}
 /**
  * Configures the Paste Cleanup settings of the RichTextEditor.
  */

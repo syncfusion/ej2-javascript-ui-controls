@@ -18,7 +18,7 @@ export class TwoDimensional {
     /**
      * To reconstruct proper two dimensional dataSource depends on min and max values.
      *
-     *  @private
+     * @private
      */
 
     public processDataSource(dataSource: Object): void {

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Encoding } from '@syncfusion/ej2-file-utils';
 /**
  * array literal codes
@@ -980,3 +981,4 @@ export class ChecksumCalculator {
         return checksum_uint;
     }
 }
+/* eslint-enable */

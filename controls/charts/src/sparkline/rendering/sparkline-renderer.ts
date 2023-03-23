@@ -1,8 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -294,7 +292,7 @@ export class SparklineRenderer {
             pathOption['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
                 const element: Element = drawPath(this.sparkline, pathOption, group);
-                element.setAttribute('role', 'datapoint');
+                element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
             }
             const diffRadian: number = edRad - stRad;
@@ -411,7 +409,7 @@ export class SparklineRenderer {
                 temp.location.x = temp.x + (temp.width / 2);
                 if (!pointArgs.cancel) {
                     const element: Element = drawRectangle(spark, rectOptions, group);
-                    element.setAttribute('role', 'datapoint');
+                    element.setAttribute('role', 'img');
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     group.appendChild(element);
                 }
@@ -449,7 +447,7 @@ export class SparklineRenderer {
             options['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
                 const element: Element = drawRectangle(spark, options, group);
-                element.setAttribute('role', 'datapoint');
+                element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
             }
         }
@@ -504,7 +502,7 @@ export class SparklineRenderer {
                     option['stroke-width'] = markerArgs.border.width;
                     option.r = markerArgs.size / 2;
                     const element: Element = drawCircle(spark, option, group);
-                    element.setAttribute('role', 'datapoint');
+                    element.setAttribute('role', 'img');
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     group.appendChild(element);
                 }

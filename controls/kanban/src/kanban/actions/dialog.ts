@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { append, createElement, remove, isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
+import { append, createElement, remove, isNullOrUndefined, closest, extend , SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { DropDownList, DropDownListModel, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
@@ -347,6 +347,12 @@ export class KanbanDialog {
                 if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
                     && activeCard.element) {
                     updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
+                }
+                if (this.parent.enableHtmlSanitizer) {
+                    if (typeof this.cardData[this.parent.cardSettings.contentField] === 'string') {
+                        this.cardData[this.parent.cardSettings.contentField] =
+                        SanitizeHtmlHelper.sanitize(this.cardData[this.parent.cardSettings.contentField]);
+                    }
                 }
                 this.parent.crudModule.updateCard(this.cardData, updateIndex);
             }

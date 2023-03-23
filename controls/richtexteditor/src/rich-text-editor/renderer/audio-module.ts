@@ -216,7 +216,7 @@ export class Audio {
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && this.isAudioElem(selectNodeEle[0] as HTMLElement) && selectNodeEle.length < 1) {
                 if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-                save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+                {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -264,7 +264,7 @@ export class Audio {
             break;
         case 'insert-audio':
             if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+            {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;
@@ -291,7 +291,8 @@ export class Audio {
             this.insertAudio({
                 args: {
                     item: { command: 'Audios', subCommand: 'Audio' } as IToolbarItemModel,
-                    originalEvent: event
+                    originalEvent: event,
+                    name: !isInternal ? 'showDialog' : null
                 },
                 selectNode: selectNodeEle,
                 selection: save,

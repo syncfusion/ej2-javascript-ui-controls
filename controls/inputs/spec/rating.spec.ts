@@ -407,6 +407,25 @@ describe('Rating', () => {
             expect(itemList.getAttribute('aria-valuemin')).toBe('2');
             expect(itemList.getAttribute('aria-valuenow')).toBe('3');
         });
+
+        it('Spec coverage for isReact', () => {
+            rating = new Rating({
+                showLabel: true,
+                labelTemplate: '<span>testTemplate</span>',
+                emptyTemplate: '<span class="emptyTemplate"></span>',
+                value: 1,
+                fullTemplate: '<span class="fullTemplate"></span>'
+            });
+            rating.appendTo('#rating');
+            (rating as any).isReact = true;
+            expect(ratingElement.parentElement.querySelector('.e-rating-label') != null).toEqual(true);
+            expect(ratingElement.parentElement.querySelector('.e-rating-label').innerHTML).toEqual('<span>testTemplate</span>');
+            expect(ratingElement.parentElement.querySelectorAll('.emptyTemplate').length).toBe(4);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-empty').length).toBe(4);
+            expect(ratingElement.parentElement.querySelectorAll('.fullTemplate').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-full').length).toBe(1);
+
+        });
     });
 
     describe('Rating Precision', () => {
@@ -1224,7 +1243,7 @@ describe('Rating', () => {
                 expect(isClicked).toEqual(true);
             });
 
-            it('reset Method', () => {
+            it('reset Method with reset button', () => {
                 rating = new Rating({
                     allowReset: true,
                     value: 3,
@@ -1236,6 +1255,18 @@ describe('Rating', () => {
                 rating.reset();
                 expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(2);
                 expect(ratingElement.parentElement.querySelector('.e-reset').classList).toContain('e-disabled');
+            });
+
+            it('reset Method withot reset button', () => {
+                rating = new Rating({
+                    value: 3
+                });
+                rating.appendTo('#rating');
+                expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+                expect(rating.value).toBe(3);
+                rating.reset();
+                expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
+                expect(rating.value).toBe(0);
             });
         });
     });

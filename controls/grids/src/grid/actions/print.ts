@@ -80,7 +80,7 @@ export class Print {
     /**
      * By default, prints all the Grid pages and hides the pager.
      * > You can customize print options using the
-     * [`printMode`](grid/#printmode-string/).
+     * [`printMode`](./printmode/).
      *
      * @returns {void}
      */

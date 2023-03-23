@@ -330,7 +330,10 @@ export class Selection {
             const rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10);
             const isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
-                this.selectRow(rIndex, isToggle);
+                if (!this.parent.allowTaskbarDragAndDrop || (this.parent.allowTaskbarDragAndDrop && (this.parent.rowDragAndDropModule &&
+                   !this.parent.rowDragAndDropModule['draggedRecord']))) {
+                   this.selectRow(rIndex, isToggle);
+                }
             } else {
                 if (this.isMultiShiftRequest) {
                     this.selectRowsByRange(isNullOrUndefined(this.prevRowIndex) ? rIndex : this.prevRowIndex, rIndex);
@@ -375,7 +378,7 @@ export class Selection {
 
     private addRemoveClass(records: number[]): void {
         if(typeof(records)=="number"){
-            records = Array.from(String(records), (num:any)=>Number(num));
+            records = [records];
             }
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {

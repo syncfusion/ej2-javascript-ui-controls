@@ -489,12 +489,13 @@ export interface ErrorBarSettingsModel {
     color?: string;
 
     /**
-     * The vertical error of the error bar.
+     * The vertical error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
-    verticalError?: number;
+    verticalError?: number | string;
 
     /**
      * The stroke width of the error bar..
@@ -505,49 +506,61 @@ export interface ErrorBarSettingsModel {
     width?: number;
 
     /**
-     * The horizontal error of the error bar.
+     * The horizontal error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
-    horizontalError?: number;
+    horizontalError?: number | string;
 
     /**
-     * The vertical positive error of the error bar.
+     * The vertical positive error of the point can be mapped from the data source as well.
      *
      * @default 3
+     * @aspType Object
      */
 
-    verticalPositiveError?: number;
+    verticalPositiveError?: number | string;
 
     /**
-     * The vertical negative error of the error bar.
+     * The vertical negative error of the point can be mapped from the data source as well.
      *
      * @default 3
+     * @aspType Object
      */
 
-    verticalNegativeError?: number;
+    verticalNegativeError?: number | string;
 
     /**
-     * The horizontal positive error of the error bar.
+     * The horizontal positive error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
-    horizontalPositiveError?: number;
+    horizontalPositiveError?: number | string;
 
     /**
-     * The horizontal negative error of the error bar.
+     * The horizontal negative error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
-    horizontalNegativeError?: number;
+    horizontalNegativeError?: number | string;
 
     /**
      * Options for customizing the cap of the error bar.
      */
     errorBarCap?: ErrorBarCapSettingsModel;
+
+    /**
+     * Defines the color for the error bar, which is mapped with the mapping name of the data source.
+     *
+     * @default ''
+     */
+    errorBarColorMapping?: string;
 
 }
 
@@ -1001,6 +1014,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * * InvertedTriangle
      * * SeriesType
      * * Image
+     *
      * @default 'SeriesType'
      */
 
@@ -1008,6 +1022,7 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
 

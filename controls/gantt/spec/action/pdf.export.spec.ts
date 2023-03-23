@@ -6,7 +6,7 @@ import { exportData } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
-import { getValue } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 describe('Gantt pdfexport support', () => {
     let exportComplete: () => void = () => true;
     describe('Gantt toolbar action', () => {
@@ -199,5 +199,59 @@ describe('Gantt pdfexport support', () => {
                 ganttObj.pdfExport();
             });
             });
+        });
+    });
+    describe('Gantt PDF Export with blobdata', () => {
+        Gantt.Inject(Toolbar, PdfExport);
+        let ganttObj: Gantt;
+        let blobDatas: any;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: exportData,
+                    allowPdfExport: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    toolbar: ['PdfExport'],
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    pdfExportComplete: (args: any) => {
+                        expect(!isNullOrUndefined(args)).toBe(true);
+                    },
+                    columns: [
+                        {
+                            field: 'TaskName',
+                            headerText: 'Task Name',
+                            width: '250',
+                            clipMode: 'EllipsisWithTooltip',
+                        },
+                        { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                        { field: 'Duration', headerText: 'Duration' },
+                        { field: 'EndDate', headerText: 'End Date' },
+                        { field: 'Predecessor', headerText: 'Predecessor' },
+                    ],
+                    treeColumnIndex: 0,
+                    height: '450px',
+    
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Export blob object', () => {
+            ganttObj.pdfExport(null, null, null, true)
+    
         });
     });

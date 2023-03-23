@@ -28,8 +28,8 @@ export function measureText(text: string, font: TextStyleModel): Size {
     if (typeof (text) === 'string' && (text.indexOf('<') > -1 || text.indexOf('>') > -1)) {
         const textArray: string[] = text.split(' ');
         for (let i: number = 0; i < textArray.length; i++) {
-            if (textArray[i].indexOf('<br/>') === -1) {
-                textArray[i] = textArray[i].replace(/[<>]/g, '&');
+            if (textArray[i as number].indexOf('<br/>') === -1) {
+                textArray[i as number] = textArray[i as number].replace(/[<>]/g, '&');
             }
         }
         text = textArray.join(' ');
@@ -75,20 +75,20 @@ export function findDirection(
             + (height) + ' ' + (width - rX) + ' ' + (height));
         if (arrowPadding !== 0) {
             if (controlName === 'RangeNavigator') {
-				if ((arrowLocation.x - arrowPadding) > width / 2) {
-					direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
-                    direction = direction.concat(' L' + ' ' + (tipX + arrowPadding) + ' ' + (height + arrowPadding) 
+                if ((arrowLocation.x - arrowPadding) > width / 2) {
+                    direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
+                    direction = direction.concat(' L' + ' ' + (tipX + arrowPadding) + ' ' + (height + arrowPadding)
                         + ' L' + ' ' + (arrowLocation.x) + ' ' + height);
-				} else {
-					direction = direction.concat(' L' + ' ' + (arrowLocation.x) + ' ' + (height));
-                    direction = direction.concat(' L' + ' ' + (tipX - arrowPadding) + ' ' + (height + arrowPadding) 
+                } else {
+                    direction = direction.concat(' L' + ' ' + (arrowLocation.x) + ' ' + (height));
+                    direction = direction.concat(' L' + ' ' + (tipX - arrowPadding) + ' ' + (height + arrowPadding)
                         + ' L' + ' ' + (arrowLocation.x - arrowPadding) + ' ' + height);
-				}
-			} else {
-				direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
-				direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding) 
+                }
+            } else {
+                direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
+                direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding)
                     + ' L' + ' ' + (arrowLocation.x - arrowPadding) + ' ' + height);
-			}
+            }
         }
         if ((arrowLocation.x - arrowPadding) > startX) {
             direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
@@ -116,31 +116,31 @@ export function findDirection(
     } else if (left) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
             + (startY) + ' ' + (startX + rX) + ' ' + (startY));
-        
+
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
             + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding));
-        
+
         direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY - arrowPadding)) :
-         direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));
-        
+            direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));
+
         direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y)) :
-         direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding));
-        
+            direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding));
+
         direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
-        
+
         direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
     } else {
         direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
             + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding));
 
-            direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY - arrowPadding)) :
-             direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY));
-            
-            direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y)) :
-             direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding));
-            
-            direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY - arrowPadding)) :
+            direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY));
+
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y)) :
+            direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding));
+
+        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX + rX) + ' ' + (height));
 
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '

@@ -499,6 +499,39 @@ export class DragSettings extends ChildProperty<DragSettings> {
 }
 
 /**
+ * Options to customize the center label of the pie and doughnut chart.
+ *
+ * @default {}
+ */
+
+export class CenterLabel extends ChildProperty<CenterLabel> {
+
+    /**
+     * Define the label to be placed to the center of the pie and doughnut chart.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public text: string;
+
+    /**
+     * Defines the font style of the center label.
+     */
+
+    @Complex<FontModel>(Theme.chartTitleFont, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Define the format for the center label when mouse hovered on the pie data.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public hoverTextFormat: string;
+}
+/**
  * Configures the ToolTips in the chart.
  *
  * @public
@@ -714,7 +747,7 @@ export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings
     /**
      * Buttons
      */
-    
+
     @Collection<PeriodsModel>([], Periods)
     public periods: PeriodsModel[];
 }

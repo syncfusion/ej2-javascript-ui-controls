@@ -172,7 +172,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
         const arg: ValidateEvent = {
             message: message
         };
-        this.trigger(BarcodeEvent[eventName], arg);
+        this.trigger(BarcodeEvent[`${eventName}`], arg);
     }
 
 

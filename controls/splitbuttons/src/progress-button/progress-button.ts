@@ -119,7 +119,9 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * * Top: The icon will be positioned at the top of the text content.
      * * Bottom: The icon will be positioned at the bottom of the text content.
      *
-     * @default "Left"
+     * @isenumeration true
+     * @default Syncfusion.EJ2.Buttons.IconPosition.Left
+     * @asptype Syncfusion.EJ2.Buttons.IconPosition
      */
     @Property('Left')
     public iconPosition: string | IconPosition;
@@ -662,10 +664,26 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 }
 /**
  * Defines the spin position of progress button.
+ * ```props
+ * Left :- The spinner will be positioned to the left of the text content.
+ * Right :- The spinner will be positioned to the right of the text content.
+ * Top :- The spinner will be positioned at the top of the text content.
+ * Bottom :- The spinner will be positioned at the bottom of the text content.
+ * Center :- The spinner will be positioned at the center of the progress button.
+ * ```
  */
 export type SpinPosition = 'Left' | 'Right' | 'Top' | 'Bottom' | 'Center';
 /**
  * Defines the animation effect of progress button.
+ * ```props
+ * None :- The button will not have any animation effect on the text content.
+ * SlideLeft :- The text content will slide to the left as an animation effect.
+ * SlideRight :- The text content will slide to the right as an animation effect.
+ * SlideUp :- The text content will slide up as an animation effect.
+ * SlideDown :- The text content will slide down as an animation effect.
+ * ZoomIn :- The text content will zoom in as an animation effect.
+ * ZoomOut :- The text content will zoom out as an animation effect.
+ * ```
  */
 export type AnimationEffect = 'None' | 'SlideLeft' | 'SlideRight' | 'SlideUp' | 'SlideDown' | 'ZoomIn' | 'ZoomOut';
 /**

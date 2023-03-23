@@ -1,7 +1,7 @@
 /**
  * CR-Issues RTE spec
  */
-import { createElement, L10n, isNullOrUndefined, Browser, detach } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, Browser, detach, isVisible } from '@syncfusion/ej2-base';
 import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
@@ -883,14 +883,14 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML).toEqual('<p>RTE</p>');
             rteObj.disableToolbarItem(['Bold']);
             expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(3);
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold');
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo');
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold (Ctrl + B)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo (Ctrl + Z)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo (Ctrl + Y)');
             rteObj.refresh();
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(2);
-                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo');
-                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo (Ctrl + Z)');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo (Ctrl + Y)');
                 done();
             }, 200)
         });
@@ -1478,7 +1478,7 @@ describe('RTE CR issues', () => {
             expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
         });
     });
-    
+
     describe(' EJ2-65988 - Code block doesnt work properly when pasting contents into the pre tag in RTE' , () => {
         let rteObj: RichTextEditor ;
         let keyBoardEvent: any = {
@@ -1608,7 +1608,7 @@ describe('RTE CR issues', () => {
             (document.querySelector('.e-outdent') as HTMLElement).click();
             (document.querySelector('.e-order-list') as HTMLElement).click();
             expect(rteObj.element.querySelectorAll('li').length ).toEqual(7);
-            expect(rteObj.element.querySelectorAll('ol').length ).toEqual(3);
+            expect(rteObj.element.querySelectorAll('ol').length ).toEqual(3);           
             done();
         });
         it('Should not remove the list after clicking the outdent Multiple times', (done: Function) => {
@@ -2078,5 +2078,54 @@ describe('RTE CR issues', () => {
             expect((nodeList[1] as HTMLElement).style.fontSize === '36pt')
             done();
         });
+    });
+});
+
+describe("EJ2-69957: Quick toolbar tooltip remains in the open state after close the toolbar", () => {
+    let rteObj: RichTextEditor;
+    let originalTimeout: number;
+    let divEle = createElement('div',{id:'rteDiv',className:'RTEtooltip'});
+    beforeEach((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        document.body.appendChild(divEle);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                items: ['Undo', 'Redo', '|',
+            'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+            'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+            'SubScript', 'SuperScript', '|',
+            'LowerCase', 'UpperCase', '|', 
+            'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+            'Indent', 'Outdent', '|',
+            'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+            'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+            },
+            value:`<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><b>Toolbar</b></p><ol>
+            <li> <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p></li><li> <p>The Toolbar is fully customizable </p></li></ol>
+            <p><b>Links</b></p><ol><li><p>You can insert a hyperlink with its corresponding dialog </p></li><li><p>Attach a hyperlink to the displayed text. </p></li><li><p>Customize the quick toolbar based on the hyperlink </p> </li></ol>
+            <p><b>Image.</b></p><ol><li><p>Allows you to insert images from an online source as well as the local computer </p> </li><li><p>You can upload an image </p></li><li> 
+            <p>Provides an option to customize the quick toolbar for an image </p> </li></ol><img alt="Logo" src="//ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`
+        });
+        rteObj.appendTo('#rteDiv');
+        done();
+    });
+
+    afterEach(() => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        destroy(rteObj);
+        detach( divEle );
+    });
+
+    it('check undo tooltip content', (done: Function) => {
+        const undoEle = document.querySelectorAll('#rteDiv.RTEtooltip .e-toolbar-item')[0];
+        let mouseEve = new MouseEvent("mouseover", {bubbles: true,cancelable: true,view: window});
+        undoEle.dispatchEvent(mouseEve);
+        setTimeout(() => {
+            expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+            expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl + Z)').toBe(true);
+            dispatchEvent(undoEle, 'mouseleave');
+            done();
+        }, 5000);
     });
 });

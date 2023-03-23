@@ -7,7 +7,7 @@ $listview-item-line-height: 18px !default;
 $listview-item-padding: 7px 9px 7px 12px !default;
 $listview-rtl-item-padding: 7px 12px 7px 12px !default;
 $listview-header-padding: 6px 12px !default;
-$listview-back-icon-font-size: 12px !default;
+$listview-back-icon-font-size: $text-xs !default;
 $listview-root-border-radius: 4px !default;
 $listview-nested-icon-collapsible: 12px !default;
 $listview-icon-size: 20px !default;

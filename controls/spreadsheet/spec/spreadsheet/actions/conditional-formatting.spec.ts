@@ -72,20 +72,55 @@ describe('Conditional formatting ->', () => {
             expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
             expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
 
-            helper.invoke('conditionalFormat', [{ type: 'Bottom10Percentage', range: 'H2:H11', value: "30" }]);
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'J2:J7' }]);
+            helper.edit('J2', '10');
+            helper.edit('J3', '20');
+            expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('50%');
+            expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [2, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            expect(helper.invoke('getCell', [2, 9]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+
+            helper.invoke('conditionalFormat', [{ type: 'Bottom10Percentage', range: 'H1:H200', value: "30" }]);
             expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
             expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(156, 0, 85)');
             expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 7]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [6, 7]).style.backgroundColor).toBe('');
+
+            helper.invoke('clearConditionalFormat', ['H1:H200']);
+            helper.invoke('conditionalFormat', [{ type: 'Bottom10Percentage', range: 'H2:H6', value: "10" }]);
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [3, 7]).style.color).toBe('');
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [6, 7]).style.backgroundColor).toBe('');
 
             helper.invoke('conditionalFormat', [{ type: 'ThreeArrows', range: 'D2:D11' }]);
             expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
             expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
             expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
 
-            helper.invoke('conditionalFormat', [{ type: 'Top10Percentage', cFColor: 'GreenFT', range: 'B2:B11', value: "15" }]);
+            helper.invoke('conditionalFormat', [{ type: 'Top10Percentage', cFColor: 'GreenFT', range: 'B1:B200', value: "15" }]);
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 1]).style.color).toBe('');
+            expect(helper.invoke('getCell', [4, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+            expect(helper.invoke('getCell', [8, 1]).style.color).toBe('rgb(0, 97, 0)');
+
+            helper.invoke('clearConditionalFormat', ['B1:B200']);
+            helper.invoke('conditionalFormat', [{ type: 'Top10Percentage', cFColor: 'GreenFT', range: 'B2:B6', value: "15" }]);
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 1]).style.color).toBe('');
             expect(helper.invoke('getCell', [4, 1]).style.backgroundColor).toBe('rgb(198, 239, 206)');
             expect(helper.invoke('getCell', [4, 1]).style.color).toBe('rgb(0, 97, 0)');
-            expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+            expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('');
 
             helper.invoke('clearConditionalFormat', ['B2:B11']);
             helper.invoke('conditionalFormat', [{ type: 'BelowAverage', range: 'B2:B11' }]);
@@ -115,6 +150,32 @@ describe('Conditional formatting ->', () => {
             expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
             expect(helper.invoke('getCell', [3, 4]).style.color).toBe('');
+            expect(helper.invoke('getCell', [4, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [6, 4]).style.color).toBe('rgb(156, 0, 85)');
+
+            helper.invoke('clearConditionalFormat', ['E2:E11']);
+            helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedT', value: '30,16', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [4, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [6, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [3, 4]).style.color).toBe('');
+
+            helper.invoke('clearConditionalFormat', ['B2:B11']);
+            helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedT', value: '02/14/2014,02/04/2014', range: 'B2:B11' }]);
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 1]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 1]).style.color).toBe('');
+            expect(helper.invoke('getCell', [3, 1]).style.color).toBe('');
+            expect(helper.invoke('getCell', [7, 1]).style.color).toBe('rgb(156, 0, 85)');
+
+            helper.invoke('clearConditionalFormat', ['B2:B11']);
+            helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedT', value: '02/04/2014,02/14/2014', range: 'B2:B11' }]);
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 1]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 1]).style.color).toBe('');
+            expect(helper.invoke('getCell', [3, 1]).style.color).toBe('');
+            expect(helper.invoke('getCell', [7, 1]).style.color).toBe('rgb(156, 0, 85)');
 
             helper.invoke('clearConditionalFormat', ['E2:E11']);
             helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'YellowFT', value: '15', range: 'E2:E11' }]);

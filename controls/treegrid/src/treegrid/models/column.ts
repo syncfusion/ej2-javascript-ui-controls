@@ -486,9 +486,11 @@ export interface ColumnModel {
 
     /**
      * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area.
-     * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
+     * ```props
+     * * Clip :- Truncates the cell content when it overflows its area.
+     * * Ellipsis :- Displays ellipsis when the cell content overflows its area.
+     * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area also it will display tooltip while hover on ellipsis applied cell.
+     * ```
      * also it will display tooltip while hover on ellipsis applied cell.
      *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis

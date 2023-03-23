@@ -52,6 +52,7 @@ export class ErrorDialog {
             visible: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             zIndex: zIndex,

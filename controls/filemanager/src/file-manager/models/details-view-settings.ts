@@ -13,7 +13,7 @@ export const columnArray: ColumnModel[] = [
         format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190'
     },
     {
-        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
+        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>', format: 'n2'
     }
 ];
 /**

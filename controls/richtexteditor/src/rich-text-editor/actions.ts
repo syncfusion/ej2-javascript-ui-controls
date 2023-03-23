@@ -22,3 +22,4 @@ export * from './actions/full-screen';
 export * from './actions/html-attributes';
 export * from './actions/html-toolbar-status';
 export * from './actions/xhtml-validation';
+export * from './actions/format-painter';

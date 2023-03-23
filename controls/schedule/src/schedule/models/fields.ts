@@ -3,8 +3,8 @@ import { FieldOptionsModel } from './field-options-model';
 import { FieldOptions } from './field-options';
 
 /**
- * A Class that holds the collection of event fields that requires to be mapped with the dataSource
- * fields along with its available configuration settings. Each field in it accepts both string and Object
+ * A class that holds the collection of event fields that requires to be mapped with the dataSource
+ * fields along with its available configuration settings. Each field in it accepts both string and object
  *  data type. When each of the field is assigned with simple `string` value, it is assumed that the dataSource field
  *  name is mapped with it. If the `object` type is defined on each fields, then the validation related settings and mapping of
  *  those fields with dataSource can be given altogether within it.
@@ -54,7 +54,8 @@ export class Field extends ChildProperty<Field> {
     public endTime: FieldOptionsModel;
 
     /**
-     * It maps the `startTimezone` field from the dataSource and usually accepts the valid IANA timezone names.
+     * It maps the `startTimezone` field from the dataSource and usually accepts the valid
+     * [`IANA timezone names`](https://docs.actian.com/ingres/11.0/index.html#page/Ing_Install/IANA_World_Regions_and_Time_Zone_Names.htm).
      *  It is assumed that the value provided for this field is taken into consideration while processing
      *  the `startTime` field. When this field is not mapped with any timezone names,
      *  then the events will be processed based on the timezone assigned to the Schedule.
@@ -65,7 +66,8 @@ export class Field extends ChildProperty<Field> {
     public startTimezone: FieldOptionsModel;
 
     /**
-     * It maps the `endTimezone` field from the dataSource and usually accepts the valid IANA timezone names.
+     * It maps the `endTimezone` field from the dataSource and usually accepts the valid
+     * [`IANA timezone names`](https://docs.actian.com/ingres/11.0/index.html#page/Ing_Install/IANA_World_Regions_and_Time_Zone_Names.htm).
      *  It is assumed that the value provided for this field is taken into consideration while processing the `endTime` field.
      *  When this field is not mapped with any timezone names, then the events will be processed based on the timezone assigned
      *  to the Schedule.

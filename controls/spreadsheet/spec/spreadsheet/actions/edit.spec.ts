@@ -433,6 +433,30 @@ describe('Editing ->', () => {
             });
         });
 
+        it('Delete Image using Backspace key->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertImage([{ src: 'https://www.w3schools.com/images/w3schools_green.jpg'}], 'K3');
+            const image: ImageModel = spreadsheet.sheets[0].rows[2].cells[10].image[0];
+            expect(image.height).toBe(300);
+            expect(image.width).toBe(400);
+            expect(image.top).toBe(40);
+            expect(image.left).toBe(640);
+            expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            const imageId: string = image.id;
+            expect(helper.getElement('#' + imageId).style.left).toBe('640px');
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            setTimeout(() => {
+                const Image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
+                helper.triggerMouseAction( 'mousedown', { x: Image.getBoundingClientRect().left, y: Image.getBoundingClientRect().top }, Image, Image);
+                helper.triggerMouseAction( 'mouseup', { x: Image.getBoundingClientRect().left, y: Image.getBoundingClientRect().top }, document, Image);
+                helper.triggerKeyNativeEvent(8);
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
+                    done();
+                });
+            });
+        });
+
         it('Delete Chart->', (done: Function) => {
             helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
             EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
@@ -441,6 +465,21 @@ describe('Editing ->', () => {
                 helper.triggerMouseAction( 'mousedown', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, Chart, Chart);
                 helper.triggerMouseAction( 'mouseup', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, document, Chart);
                 helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('#' + helper.id + '_spreadsheet_chart_1_overlay')).toBeNull();
+                    done();
+                });
+            });
+        });
+
+        it('Delete Chart using Backspace key->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'I1:J5' }]]);
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            setTimeout(() => {
+                const Chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                helper.triggerMouseAction( 'mousedown', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, Chart, Chart);
+                helper.triggerMouseAction( 'mouseup', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, document, Chart);
+                helper.triggerKeyNativeEvent(8);
                 setTimeout(() => {
                     expect(helper.getElementFromSpreadsheet('#' + helper.id + '_spreadsheet_chart_1_overlay')).toBeNull();
                     done();
@@ -746,7 +785,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I267737, I267730, FB21561, EJ2-56562, EJ2-60404, EJ2-68764 ->', () => {
+        describe('I267737, I267730, FB21561, EJ2-56562, EJ2-60404 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     actionBegin: (args) => {
@@ -804,18 +843,6 @@ describe('Editing ->', () => {
                 helper.edit('A1', '11');
                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('2');
                 expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe(2);
-                done();
-            });
-            it('When a large cell range is selected for calculation, the formula result is not updated in the cell', (done: Function) => {
-                helper.invoke('selectRange', ['F1']);
-                helper.invoke('startEdit');
-                helper.getElement('.e-spreadsheet-edit').textContent = 'Test1';
-                helper.getContentElement().parentElement.scrollTop = 1000;
-                helper.getContentElement().parentElement.scrollTop = 0;
-                expect(helper.getInstance().editModule.isEdit).toBeTruthy();
-                helper.triggerKeyNativeEvent(13);
-                expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Test1');
-                expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toBe('Test1');
                 done();
             });
         });

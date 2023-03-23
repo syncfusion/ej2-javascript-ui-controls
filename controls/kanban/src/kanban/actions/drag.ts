@@ -203,8 +203,10 @@ export class DragAndDrop {
         let isCollapsed: boolean = false;
         if (contentCell) {
             isCollapsed = contentCell.classList.contains(cls.COLLAPSED_CLASS) && contentCell.classList.contains(cls.DROPPING_CLASS);
-            cellDimension  = contentCell.getBoundingClientRect();
-            this.updateDimension(cellDimension);
+            if (contentCell.getAttribute('aria-expanded') === 'true' || !contentCell.parentElement.hasAttribute('aria-expanded')) {
+                cellDimension  = contentCell.getBoundingClientRect();
+                this.updateDimension(cellDimension);
+            }
             borderElem = contentCell.querySelector('.' + cls.BORDER_CLASS) as HTMLElement;
         }
         if (target && target.tagName === 'TABLE') {
@@ -370,7 +372,9 @@ export class DragAndDrop {
 
     private updateDimension(dimensions: ClientRect, target?: HTMLElement): void {
         [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
-            addClass([element], cls.DROPPING_CLASS);
+            if (element.parentElement && (element.parentElement.getAttribute('aria-expanded') === 'true' || !element.parentElement.hasAttribute('aria-expanded'))) {
+                addClass([element], cls.DROPPING_CLASS);
+            }
             const hasAddButton : HTMLElement = (element.previousElementSibling as HTMLElement);
             element.style.height = parseInt(dimensions.height.toString(), 10) - (hasAddButton &&
                 hasAddButton.classList.contains(cls.SHOW_ADD_BUTTON) ? hasAddButton.offsetHeight + hasAddButton.offsetTop : 0) + 'px';
@@ -666,7 +670,7 @@ export class DragAndDrop {
             if (yBounds && (this.dragEdges.top || this.dragEdges.bottom)) {
                 parent.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
                 if (this.parent.swimlaneSettings.enableFrozenRows) {
-                    this.dragObj.cloneElement.style.top = !this.dragEdges.top ? (parseInt(this.dragObj.cloneElement.style.top) + scrollSensitivity) + 'px' : (parseInt(this.dragObj.cloneElement.style.top) - scrollSensitivity) + 'px';
+                    this.dragObj.cloneElement.style.top = !this.dragEdges.top ? (parseInt(this.dragObj.cloneElement.style.top, 10) + scrollSensitivity) + 'px' : (parseInt(this.dragObj.cloneElement.style.top, 10) - scrollSensitivity) + 'px';
                 }
                 if (column) {
                     column.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;

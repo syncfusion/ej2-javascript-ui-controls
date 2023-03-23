@@ -12,6 +12,7 @@ export const regex: any = {
     /* eslint-disable no-useless-escape */
     EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
+    /* eslint-disable-next-line security/detect-unsafe-regex */
     URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
     DATE_ISO: new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'),
     DIGITS: new RegExp('^[0-9]*$'),
@@ -207,9 +208,9 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         if (name) {
             // eslint-disable-next-line no-prototype-builtins
             if (this.rules.hasOwnProperty(name)) {
-                extend(this.rules[name], rules, {});
+                extend(this.rules[`${name}`], rules, {});
             } else {
-                this.rules[name] = <IKeyValue>rules;
+                this.rules[`${name}`] = <IKeyValue>rules;
             }
         }
     }
@@ -225,11 +226,11 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     public removeRules(name?: string, rules?: string[]): void {
         if (!name && !rules) {
             this.rules = {};
-        } else if (this.rules[name] && !rules) {
-            delete this.rules[name];
-        } else if (!isNullOrUndefined(this.rules[name] && rules)) {
+        } else if (this.rules[`${name}`] && !rules) {
+            delete this.rules[`${name}`];
+        } else if (!isNullOrUndefined(this.rules[`${name}`] && rules)) {
             for (let i: number = 0; i < rules.length; i++) {
-                delete this.rules[name][rules[i]];
+                delete this.rules[`${name}`][rules[parseInt(i.toString())]];
             }
         } else {
             return;
@@ -349,7 +350,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         for (const key of Object.keys(this.defaultMessages)) {
             this.l10n.setLocale(this.locale);
             const value: string = this.l10n.getConstant(key);
-            this.localyMessage[key] = value;
+            this.localyMessage[`${key}`] = value;
         }
     }
 
@@ -527,7 +528,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         let customMessage: string;
         if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
             this.getInputElement(input.name);
-            customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
+            customMessage = this.getErrorMessage(this.rules[input.name][`${ruleName}`], ruleName);
         }
         if (message) {
             value = [value, message];
@@ -536,7 +537,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         } else if (customMessage) {
             value = [value, customMessage];
         }
-        ruleCon[ruleName] = value;
+        ruleCon[`${ruleName}`] = value;
     }
 
     // Wire events to the form elements
@@ -631,10 +632,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Validate each rule based on input element name
     private validateRules(name: string): void {
-        if (!this.rules[name]) {
+        if (!this.rules[`${name}`]) {
             return;
         }
-        const rules: string[] = Object.keys(this.rules[name]);
+        const rules: string[] = Object.keys(this.rules[`${name}`]);
         let hiddenType: boolean = false;
         let validateHiddenType: boolean = false;
         const vhPos: number = rules.indexOf('validateHidden');
@@ -655,7 +656,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             }
             this.getErrorElement(name);
             for (const rule of rules) {
-                const errorMessage: string = this.getErrorMessage(this.rules[name][rule], rule);
+                const errorMessage: string = this.getErrorMessage(this.rules[`${name}`][`${rule}`], rule);
                 const errorRule: ErrorRule = { name: name, message: errorMessage };
                 const eventArgs: FormEventArgs = {
                     inputName: name,
@@ -699,7 +700,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Update the optional validation status
     private optionalValidationStatus(name: string, refer: FormEventArgs): void {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
+        if (!this.rules[`${name}`][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             refer.status = '';
@@ -709,9 +710,9 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Check the input element whether it's value satisfy the validation rule or not
     private isValid(name: string, rule: string): boolean {
-        const params: Object = this.rules[name][rule];
+        const params: Object = this.rules[`${name}`][`${rule}`];
         const param: Object = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
-        const currentRule: { [key: string]: Object } = <IKeyValue>this.rules[name][rule];
+        const currentRule: { [key: string]: Object } = <IKeyValue>this.rules[`${name}`][`${rule}`];
         const args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
         this.trigger('validationBegin', args);
         if (!args.param && rule === 'required') {
@@ -726,7 +727,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             }
             return selectAll('input[name="' + name + '"]:checked', this.element).length > 0;
         } else {
-            return FormValidator.checkValidator[rule](args);
+            return FormValidator.checkValidator[`${rule}`](args);
         }
     }
 
@@ -735,12 +736,12 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         let message: string = this.inputElement.getAttribute('data-' + rule + '-message') ?
             this.inputElement.getAttribute('data-' + rule + '-message') :
             (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
-                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
+                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[`${rule}`] : this.defaultMessages[`${rule}`];
         const formats: string[] = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i: number = 0; i < formats.length; i++) {
-                const value: string = ruleValue instanceof Array ? ruleValue[i] : ruleValue;
-                message = message.replace(formats[i], value);
+                const value: string = ruleValue instanceof Array ? ruleValue[parseInt(i.toString())] : ruleValue;
+                message = message.replace(formats[parseInt(i.toString())], value);
             }
         }
         return message;
@@ -793,7 +794,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     // Remove existing rule from errorRules object
     private removeErrorRules(name: string): void {
         for (let i: number = 0; i < this.errorRules.length; i++) {
-            const rule: ErrorRule = this.errorRules[i];
+            const rule: ErrorRule = this.errorRules[parseInt(i.toString())];
             if (rule.name === name) {
                 this.errorRules.splice(i, 1);
             }
@@ -820,7 +821,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Check whether the input element have required rule and its value is not empty
     private checkRequired(name: string): void {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
+        if (!this.rules[`${name}`][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             this.hideMessage(name);
@@ -891,6 +892,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             }
         },
         regex: (option: ValidArgs): boolean => {
+            /* eslint-disable-next-line security/detect-non-literal-regexp */
             return new RegExp(<string>option.param).test(option.value);
         },
         equalTo: (option: ValidArgs): boolean => {

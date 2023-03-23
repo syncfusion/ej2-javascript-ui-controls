@@ -21,7 +21,12 @@
     box-shadow: $datetime-popup-shadow;
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
-      background-color: $datetime-list-bg-color;
+      @if $skin-name != 'Material3' {
+        background-color: $datetime-list-bg-color;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datetime-list-bg-color;
+      }
 
       #{if(&, '&', '*')} li.e-list-item {
         border: $datetime-list-default-border-style;
@@ -31,18 +36,33 @@
       #{if(&, '&', '*')} .e-list-item.e-hover,
       #{if(&, '&', '*')} .e-list-item.e-navigation,
       #{if(&, '&', '*')} .e-list-item:focus {
-        background-color: $datetime-list-hover-bg-color;
+        @if $skin-name != 'Material3' {
+          background-color: $datetime-list-hover-bg-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $datetime-list-hover-bg-color;
+        }
         border: $datetime-list-hover-border-color;
         color: $datetime-list-hover-font-color;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active {
-        background-color: $datetime-list-active-bg-color;
+        @if $skin-name != 'Material3' {
+          background-color: $datetime-list-active-bg-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $datetime-list-active-bg-color;
+        }
         color: $datetime-list-active-font-color;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
-        background-color: $datetime-list-active-hover-bg-color;
+        @if $skin-name != 'Material3' {
+          background-color: $datetime-list-active-hover-bg-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $datetime-list-active-hover-bg-color;
+        }
         color: $datetime-list-active-hover-font-color;
       }
     }

@@ -1,4 +1,6 @@
 // layout variable
+$badge-theme: 'Material3' !default;
+
 // Base Badge
 $badge-base-border-radius: 2px !default;
 $badge-base-font-size: $text-xs !default;
@@ -91,19 +93,19 @@ $badge-touch-dot-height: 12px !default;
 
 // theme variable
 $badge-primary-bg-color: $primary !default;
-$badge-secondary-bg-color: $content-bg-color-alt1 !default;
-$badge-success-bg-color: $success-light !default;
-$badge-danger-bg-color: $danger-light !default;
-$badge-warning-bg-color: $warning-light !default;
-$badge-info-bg-color: $info-light !default;
+$badge-secondary-bg-color: $primary-light !default;
+$badge-success-bg-color: $success-dark !default;
+$badge-danger-bg-color: $danger-dark !default;
+$badge-warning-bg-color: $warning-dark !default;
+$badge-info-bg-color: $info-dark !default;
 $badge-light-bg-color: $content-bg-color-alt2 !default;
-$badge-dark-bg-color: $content-text-color-alt2 !default;
+$badge-dark-bg-color: $inverse-surface !default;
 
 $badge-primary-font-color: $primary-text-color !default;
-$badge-secondary-font-color: $content-text-color-alt1 !default;
-$badge-success-font-color: $success !default;
-$badge-danger-font-color: $danger !default;
-$badge-info-font-color: $info-dark !default;
-$badge-light-font-color: $content-text-color-alt1 !default;
-$badge-dark-font-color: $secondary-text-color !default;
-$badge-warning-font-color: $warning-dark !default;
+$badge-secondary-font-color: $primary-darker !default;
+$badge-success-font-color: $success-text !default;
+$badge-danger-font-color: $warning-text !default;
+$badge-info-font-color: $info-text !default;
+$badge-light-font-color: $content-text-color !default;
+$badge-dark-font-color: $content-text-color-inverse !default;
+$badge-warning-font-color: $warning-text !default;

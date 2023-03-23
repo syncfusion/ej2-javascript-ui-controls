@@ -455,7 +455,7 @@ describe('Chart Control', () =>{
         it('checcking labelintersect action as rotate45 inside position', (done: Function) => {
             loaded = (args: Object): void => {
                 let firstLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(firstLabel.textContent).toEqual('1c...');
+                expect(firstLabel.textContent).toEqual('1...');
                 expect(firstLabel.getAttribute('transform').indexOf('rotate(45') > -1).toBe(true);
                 done();
             };

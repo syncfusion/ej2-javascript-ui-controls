@@ -30,87 +30,107 @@ export interface IThemeStyle {
 }
 
 export interface ILoadedEventArgs extends IHeatMapEventArgs {
-    /** Defines the current heatmap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
 }
 
+/**
+ * Defines the basic and common options in the event arguments of the heatmap.
+ */
 export interface IHeatMapEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Specifies the cancel state for the event. The default value is false. If set as true, the event progress will be stopped. */
     cancel: boolean;
 }
 
+/**
+ * Specifies the event arguments for the cell clicked event in the heatmap.
+ */
 export interface ICellClickEventArgs extends IHeatMapEventArgs {
-    /** Defines the current HeatMap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
-    /** Defines current clicked cell element */
+    /** Defines current cell element on which click is performed. */
     cellElement: Element;
-    /** Defines current clicked cell value */
+    /** Defines current value of the cell on which click is performed. */
     value: number;
-    /** Defines x-axis label for current clicked cell */
+    /** Defines x-axis label of the cell on which click is performed. */
     xLabel: string;
-    /** Defines y-axis label for current clicked cell */
+    /** Defines y-axis label of the cell on which click is performed. */
     yLabel: string;
-    /** Defines x-axis value for current clicked cell */
+    /** Defines x-axis value of the cell on which click is performed. */
     xValue: string | number | Date;
-    /** Defines y-axis value for current clicked cell */
+    /** Defines y-axis value of the cell on which click is performed. */
     yValue: string | number | Date;
-    /** Defines mouse event */
+    /** Defines the pointer event for the click action. */
     event: PointerEvent;
 }
 
+/**
+ * Specifies the event argument for the tooltip render event in heatmap.
+ */
 export interface ITooltipEventArgs extends IHeatMapEventArgs {
-    /** Defines the current HeatMap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
-    /** Defines current hover cell value */
+    /** Defines value of the cell on which the tooltip is rendered. */
     value: number | BubbleTooltipData[];
-    /** Defines x-axis label for current hover cell */
+    /** Defines x-axis label of the cell on which tooltip is rendered. */
     xLabel: string;
-    /** Defines y-axis label for current hover cell */
+    /** Defines y-axis label of the cell on which tooltip is rendered. */
     yLabel: string;
-    /** Defines x-axis value for current hover cell */
+    /** Defines x-axis value of the cell on which tooltip is rendered. */
     xValue: string | number | Date;
-    /** Defines y-axis value for current hover cell */
+    /** Defines y-axis value of the cell on which tooltip is rendered. */
     yValue: string | number | Date;
-    /** Defines tooltip text value */
+    /** Defines content of the tooltip. */
     content: string[];
 }
 
+/**
+ * Specifies the event argument for the cell render event.
+ */
 export interface ICellEventArgs extends IHeatMapEventArgs {
-    /** Defines the current HeatMap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
-    /** Defines current hover cell value */
+    /** Defines value of the cell that is currently rendered. */
     value: number | BubbleTooltipData[];
-    /** Defines x-axis label */
+    /** Defines x-axis label of the cell that is currently rendered. */
     xLabel: string;
-    /** Defines y-axis label */
+    /** Defines y-axis label of the cell that is currently rendered. */
     yLabel: string;
-    /** Defines x-axis value */
+    /** Defines x-axis value of the cell that is currently rendered. */
     xValue: string | number | Date;
-    /** Defines y-axis value */
+    /** Defines y-axis value of the cell that is currently rendered. */
     yValue: string | number | Date;
-    /** Defines cell value */
+    /** Defines label of the cell that is currently rendered. */
     displayText: string;
-    /** Defines cell color of a particular cell */
+    /** Defines color of the cell that is currently rendered. */
     cellColor: string;
 }
 
 export interface ISelectedEventArgs extends IHeatMapEventArgs {
-    /** Defines the current HeatMap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
-    /** Defines details of a cell */
+    /** Defines details of the current selected cells. */
     data: SelectedCellDetails[];
 }
+
+/**
+ * Specifies the event arguments for the resize event in heatmap.
+ */
 export interface IResizeEventArgs extends IHeatMapEventArgs  {
-    /** Defines the previous size of the heatmap */
+    /** Specifies the size of the heatmap before it gets resized. */
     previousSize: Size;
-    /** Defines the current size of the heatmap */
+    /** Specifies the size of the heatmap after it gets resized. */
     currentSize: Size;
-    /** Defines the current HeatMap instance */
+    /** Defines the current HeatMap instance. */
     heatmap: HeatMap;
 }
+
+/**
+ * Specifies the event arguments for the legend render event.
+ */
 export interface ILegendRenderEventArgs extends IHeatMapEventArgs {
-    /** Defines the current legend text */
+    /** Defines the legend text of the legend item that is currently rendered. */
     text: string;
 }

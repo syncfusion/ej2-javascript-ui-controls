@@ -50,7 +50,7 @@ export class Code11 extends OneDimension {
         const code: string[] = [];
         const codes: string[] = this.getCodeValue() as string[];
         for (let i: number = 0; i < givenChar.length; i++) {
-            code.push(codes[givenChar[i]]);
+            code.push(codes[givenChar[parseInt(i.toString(), 10)]]);
         }
         return code;
     }

@@ -7,7 +7,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface HeatMapModel extends ComponentModel{
 
     /**
-     * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
+     * Sets and gets the width of the heatmap. The width of the heatmap accepts pixel or percentage values given in string format.
      *
      * If specified as '100%, heatmap renders to the full width of its parent element.
      *
@@ -17,7 +17,7 @@ export interface HeatMapModel extends ComponentModel{
     width?: string;
 
     /**
-     * The height of the heatmap accepts pixel values given in string format.
+     * Sets and gets the height of the heatmap. The height of the heatmap accepts pixel or percentage values given in string format.
      *
      * @default null
      */
@@ -25,7 +25,7 @@ export interface HeatMapModel extends ComponentModel{
     height?: string;
 
     /**
-     * Enable or disable the tool tip for heatmap
+     * Enable or disable the visibility of the tooltip for heatmap.
      *
      * @default true
      */
@@ -33,7 +33,7 @@ export interface HeatMapModel extends ComponentModel{
     showTooltip?: boolean;
 
     /**
-     * Triggers when click the heat map cell.
+     * Triggers before the tooltip of the heatmap is rendered on the heatmap cell.
      *
      * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      *
@@ -42,7 +42,7 @@ export interface HeatMapModel extends ComponentModel{
     tooltipRender?: EmitType<ITooltipEventArgs>;
 
     /**
-     * Triggers after resizing of Heatmap.
+     * Triggers to notify the resize of the heatmap when the window is resized.
      *
      * @event 'object'
      */
@@ -65,24 +65,24 @@ export interface HeatMapModel extends ComponentModel{
     cellRender?: EmitType<ICellEventArgs>;
 
     /**
-     * Triggers when multiple cells gets selected.
+     * Triggers when heatmap cell gets selected.
      *
      * @event 'object'
      */
     cellSelected?: EmitType<ISelectedEventArgs>;
 
     /**
-     * Specifies the rendering mode of heat map.
-     * * SVG - Heat map is render using SVG draw mode.
-     * * Canvas - Heat map is render using Canvas draw mode.
-     * * Auto - Automatically switch the draw mode based on number of records in data source.
+     * Specifies the rendering mode of heatmap. The following are the available rendering modes.
+     * * SVG - Heatmap is rendered using SVG element.
+     * * Canvas - Heatmap is rendered using Canvas element.
+     * * Auto - Automatically switches the rendering mode based on number of records in the data source.
      *
      * @default SVG
      */
     renderingMode?: DrawType;
 
     /**
-     * Specifies the datasource for the heat map.
+     * Sets and gets the data to visualize in the heatmap.
      *
      * @isDataManager false
      * @default null
@@ -91,7 +91,7 @@ export interface HeatMapModel extends ComponentModel{
     dataSource?: Object ;
 
     /**
-     * Specifies the datasource settings for heat map.
+     * Sets and gets the options to customize the data mapping for the data in the heatmap.
      * {% codeBlock src='heatmap/dataSourceSettings/index.md' %}{% endcodeBlock %}
      */
     dataSourceSettings?: DataModel;
@@ -104,14 +104,14 @@ export interface HeatMapModel extends ComponentModel{
     backgroundColor?: string;
 
     /**
-     *  Specifies the theme for heatmap.
+     *  Sets and gets the theme styles supported for heatmap. When the theme is set, the styles associated with the theme will be set in the heatmap.
      *
      * @default 'Material'
      */
     theme?: HeatMapTheme;
 
     /**
-     * Enable or disable the selection of multiple cells in heatmap
+     * Enable or disable the selection of cells in heatmap.
      * {% codeBlock src='heatmap/allowSelection/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -128,67 +128,63 @@ export interface HeatMapModel extends ComponentModel{
     enableMultiSelect?: boolean;
 
     /**
-     * Options to customize left, right, top and bottom margins of the heat map.
+     * Sets and gets the options to customize left, right, top and bottom margins of the heatmap.
      */
 
     margin?: MarginModel;
 
     /**
-     * Title of heat map
+     * Sets and gets the options to customize the title of the heatmap.
      * {% codeBlock src='heatmap/titleSettings/index.md' %}{% endcodeBlock %}
-     *
-     * @default ''
      */
     titleSettings?: TitleModel;
 
     /**
-     * Options to configure the horizontal axis.
+     * Sets and gets the options to configure the horizontal axis.
      */
 
     xAxis?: AxisModel;
 
     /**
-     * Options for customizing the legend of the heat map
+     * Sets and gets the options for customizing the legend of the heatmap.
      * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
-     *
-     * @default ''
      */
     legendSettings?: LegendSettingsModel;
 
     /**
-     * Options for customizing the cell color of the heat map
+     * Sets and gets the options for customizing the cell color of the heatmap.
      * {% codeBlock src='heatmap/paletteSettings/index.md' %}{% endcodeBlock %}
      */
     paletteSettings?: PaletteSettingsModel;
 
     /**
-     * Options for customizing the ToolTipSettings property  of the heat map
+     * Sets and gets the options for customizing the tooltip of the heatmap.
      * {% codeBlock src='heatmap/tooltipSettings/index.md' %}{% endcodeBlock %}
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
-     * Options to configure the vertical axis.
+     * Sets and gets the options to configure the vertical axis.
      */
 
     yAxis?: AxisModel;
 
     /**
-     * Options to customize the heat map cell
+     * Sets and gets the options to customize the heatmap cells.
      * {% codeBlock src='heatmap/cellSettings/index.md' %}{% endcodeBlock %}
      */
 
     cellSettings?: CellSettingsModel;
 
     /**
-     * Triggers after heat map rendered.
+     * Triggers after heatmap is completely rendered.
      *
      * @event 'object'
      */
     created?: EmitType<Object>;
 
     /**
-     * Triggers before heat map load.
+     * Triggers before heatmap gets loaded.
      * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
@@ -196,7 +192,7 @@ export interface HeatMapModel extends ComponentModel{
     load?: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers when click the heat map cell.
+     * Triggers when clicking on the heatmap cell.
      *
      * @event 'object'
      */

@@ -65,7 +65,7 @@ export class UpcE extends OneDimension {
 
     private getExpansion(lastDigit: string): string {
         const value: string[] = this.getValue();
-        return value[lastDigit];
+        return value[`${lastDigit}`];
     }
 
     private getUpcValue(): string {
@@ -74,7 +74,7 @@ export class UpcE extends OneDimension {
         let result: string = '';
         let index: number = 0;
         for (let i: number = 0; i < expansionValue.length; i++) {
-            const value: string = expansionValue[i];
+            const value: string = expansionValue[parseInt(i.toString(), 10)];
             if (value === 'X') {
                 result += this.value[index++];
             } else {
@@ -110,11 +110,11 @@ export class UpcE extends OneDimension {
         // eslint-disable-next-line
         const codes: object = this.getBinaries();
         for (let i: number = 0; i < string.length; i++) {
-            tempValue = codes[structure[i]];
+            tempValue = codes[structure[parseInt(i.toString(), 10)]];
             if (i === 0) {
-                code = tempValue[string[i]];
+                code = tempValue[string[parseInt(i.toString(), 10)]];
             } else {
-                code += tempValue[string[i]];
+                code += tempValue[string[parseInt(i.toString(), 10)]];
             }
         }
         return code;

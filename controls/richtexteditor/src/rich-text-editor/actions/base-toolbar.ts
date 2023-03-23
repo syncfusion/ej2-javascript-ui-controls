@@ -2,14 +2,14 @@ import { ItemModel, Toolbar as tool, ClickEventArgs } from '@syncfusion/ej2-navi
 import { RenderType } from '../base/enum';
 import { CLS_HR_SEPARATOR } from '../base/classes';
 import * as events from '../base/constant';
-import { getTooltipText, toObjectLowerCase } from '../base/util';
+import { getTooltipText, isIDevice, toObjectLowerCase } from '../base/util';
 import { ToolbarItems } from '../base/enum';
-import { tools, templateItems } from '../models/items';
+import { tools, templateItems, windowKeys } from '../models/items';
 import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems, ICssClassArgs } from '../base/interface';
 import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EmitType, Browser } from '@syncfusion/ej2-base';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -129,13 +129,22 @@ export class BaseToolbar {
             case '-':
                 return { type: 'Separator', cssClass: CLS_HR_SEPARATOR };
             default:
-                return {
-                    id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
-                    prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
-                    tooltipText: getTooltipText(itemStr, this.locator),
-                    command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
-                    subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
-                };
+                if (this.parent.showTooltip) {
+                    return {
+                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
+                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
+                        tooltipText: getTooltipText(itemStr, this.locator),
+                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
+                    };
+                } else {
+                    return {
+                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
+                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
+                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
+                    };
+                }
             }
         }
     }
@@ -175,6 +184,19 @@ export class BaseToolbar {
                     };
                 }
                 items.push(item as ItemModel);
+            }
+        }
+        for (let num : number = 0; num < items.length; num++){
+            const tooltipText : string = items[num as number].tooltipText;
+            let shortCutKey : string;
+            if (windowKeys[`${tooltipText}`]){
+                shortCutKey = Browser.isDevice && isIDevice() ? windowKeys[`${tooltipText}`].replace('Ctrl', 'Cmd') : windowKeys[`${tooltipText}`];
+            }
+            else{
+                shortCutKey = tooltipText;
+            }
+            if (shortCutKey) {
+                items[num as number].tooltipText = (tooltipText !== shortCutKey) ? tooltipText + ' (' + shortCutKey + ')' : tooltipText;
             }
         }
         return items;

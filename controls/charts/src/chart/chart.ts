@@ -1,3 +1,8 @@
+/* eslint-disable jsdoc/valid-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable jsdoc/require-param-type */
+/* eslint-disable jsdoc/require-returns-description */
+/* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable curly */
 /* eslint-disable @typescript-eslint/tslint/config */
 /* eslint-disable no-case-declarations */
@@ -5,7 +10,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
@@ -60,6 +64,7 @@ import { HiloOpenCloseSeries } from './series/hilo-open-close-series';
 import { WaterfallSeries } from './series/waterfall-series';
 import { BubbleSeries } from './series/bubble-series';
 import { RangeAreaSeries } from './series/range-area-series';
+import { RangeStepAreaSeries } from './series/range-step-area-series';
 import { SplineRangeAreaSeries } from './series/spline-range-area-series';
 import { Tooltip } from './user-interaction/tooltip';
 import { Crosshair } from './user-interaction/crosshair';
@@ -180,6 +185,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -187,6 +193,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -194,6 +201,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 
     /**
      * The opacity for background.
+     *
      * @default 1
      */
     @Property(1)
@@ -453,6 +461,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `rangeAreaSeriesModule` is used to add rangeArea series in chart.
      */
     public rangeAreaSeriesModule: RangeAreaSeries;
+    /**
+     * `rangeStepAreaSeriesModule` is used to add rangeStepArea series in chart.
+     */
+    public rangeStepAreaSeriesModule: RangeStepAreaSeries;
     /**
      * `splineRangeAreaSeriesModule` is used to add splineRangeArea series in chart.
      */
@@ -1031,6 +1043,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers before resizing of chart
+     *
      * @event
      * @blazorProperty 'BeforeResize'
      */
@@ -1663,6 +1676,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             this.animateSeries = false;
         }
+
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
     }
 
@@ -2067,7 +2081,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         // eslint-disable-next-line prefer-const
         svgElement = (this.enableCanvas) ?
             svgElement : this.svgObject;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const canvas: boolean = (this.enableCanvas) ?
             false : this.enableCanvas;
     }
@@ -3342,7 +3355,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public chartOnMouseClick(e:  PointerEvent | TouchEvent): boolean {
         const element: Element = <Element>e.target;
-        let chart: Chart = this;
+        const chart: Chart = this;
         this.clickCount++;
         let timeInterval: number = 400;
         if (this.clickCount === 1) {
@@ -3638,7 +3651,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         const style: HTMLStyleElement = document.createElement('style');
         style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
-        style.innerHTML = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
+        style.innerText = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
         'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
             'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
         document.body.appendChild(style);

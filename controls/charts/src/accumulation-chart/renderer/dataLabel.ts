@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 /**
@@ -785,7 +784,6 @@ export class AccumulationDataLabel extends AccumulationBase {
                             +element.getAttribute('x'), +element.getAttribute('y')
                         ) : null;
                         const textWidth: number = point.textSize.width;
-                        const textHeight: number = point.textSize.height;
                         if (dataLabel.enableRotation) {
                             if (angle === 0) {
                                 if (point.labelPosition === 'Outside') {
@@ -816,7 +814,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                                 this.accumulation.enableRtl ? 'end' : 'start', point.labelCollection, rotate, 'auto', degree
                             ),
                             point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
-                            datalabelGroup, false, redraw, true, false, this.accumulation.duration
+                            datalabelGroup, false, redraw, true, false, this.accumulation.duration, null, null, null, null, true
                         );
                         element = null;
                     }

@@ -269,8 +269,8 @@ describe('Filtering module => ', () => {
 
         it('Filter string with * operator testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(4);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'CustomerID', 'startswith', 'v', 'and', false)).toBeTruthy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                expect(args['currentFilterObject'].operator).toBe('wildcard');
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -283,8 +283,8 @@ describe('Filtering module => ', () => {
 
         it('Filter string with % first operator testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'CustomerID', 'endswith', 'v', 'and', false)).toBeTruthy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(4);
+                expect(args['currentFilterObject'].operator).toBe('like');
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -297,8 +297,8 @@ describe('Filtering module => ', () => {
 
         it('Filter string with % last operator testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(5);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'CustomerID', 'startswith', 'b', 'and', false)).toBeTruthy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(0);
+                expect(args['currentFilterObject'].operator).toBe('like');
                 done();
             };
             gridObj.actionComplete = actionComplete;

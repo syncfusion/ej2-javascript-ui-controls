@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/tslint/config */
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */

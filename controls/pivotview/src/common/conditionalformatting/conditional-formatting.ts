@@ -1,11 +1,11 @@
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass, select } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { IConditionalFormatSettings } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs as DropDownArgs } from '@syncfusion/ej2-dropdowns';
-import { ConditionalFormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
+import { ConditionalFormatSettingsModel } from '../../model/datasourcesettings-model';
 import { Condition } from '../../base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
@@ -99,6 +99,7 @@ export class ConditionalFormatting {
             this.dialog = new Dialog({
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: this.parent.cssClass, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
@@ -108,13 +109,13 @@ export class ConditionalFormatting {
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: this.parent.cssClass, isModal: false, closeOnEscape: true,
-                enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+                enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
-        // this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
+        // this.dialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('conditionalFormating');
     }
 
     private beforeOpen(): void {
@@ -188,9 +189,9 @@ export class ConditionalFormatting {
             const outerDiv: HTMLElement = this.createDialogElements();
             const element: HTMLElement = createElement('p', {
                 id: this.parentID + 'emptyFormat',
-                className: cls.EMPTY_FORMAT,
-                innerHTML: this.parent.localeObj.getConstant('emptyFormat')
+                className: cls.EMPTY_FORMAT
             });
+            element.innerText = this.parent.localeObj.getConstant('emptyFormat');
             outerDiv.appendChild(element);
             format.appendChild(outerDiv);
         }
@@ -216,9 +217,9 @@ export class ConditionalFormatting {
             let table: HTMLElement = createElement('table', { id: this.parentID + 'cftable' + i, className: cls.FORMAT_TABLE, attrs: { 'role': 'table' } });
             let tRow: HTMLElement = createElement('tr'); let td: HTMLElement = createElement('td');
             const valuelabel: HTMLElement = createElement('span', {
-                id: this.parentID + 'valuelabel' + i, className: cls.FORMAT_VALUE_LABEL,
-                innerHTML: this.parent.localeObj.getConstant('value')
+                id: this.parentID + 'valuelabel' + i, className: cls.FORMAT_VALUE_LABEL
             });
+            valuelabel.innerText = this.parent.localeObj.getConstant('value');
             td.appendChild(valuelabel); tRow.appendChild(td);
             table.appendChild(tRow); tRow = createElement('tr'); td = createElement('td');
             const measureDropdown: HTMLElement = createElement('div', { id: this.parentID + 'measure' + i });
@@ -266,9 +267,9 @@ export class ConditionalFormatting {
             }
             tRow = createElement('tr'); td = createElement('td');
             const formatlabel: HTMLElement = createElement('span', {
-                id: this.parentID + 'formatlabel' + i, className: cls.FORMAT_LABEL,
-                innerHTML: this.parent.localeObj.getConstant('formatLabel')
+                id: this.parentID + 'formatlabel' + i, className: cls.FORMAT_LABEL
             });
+            formatlabel.innerText = this.parent.localeObj.getConstant('formatLabel');
             td.appendChild(formatlabel); tRow.appendChild(td); table.appendChild(tRow); tRow = createElement('tr');
             td = createElement('td'); const fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' + i });
             const fontNameInput: HTMLInputElement = createElement('input', {
@@ -310,9 +311,12 @@ export class ConditionalFormatting {
             field: this.parent.localeObj.getConstant('AllValues')
         });
         for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+            let caption: string = this.parent.dataSourceSettings.values[i as number].caption ||
+                this.parent.dataSourceSettings.values[i as number].name;
+            caption = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(caption) : caption;
             fields.push({
                 index: i + 1,
-                name: this.parent.dataSourceSettings.values[i as number].caption || this.parent.dataSourceSettings.values[i as number].name,
+                name: caption,
                 field: this.parent.dataSourceSettings.values[i as number].name
             });
         }
@@ -441,7 +445,8 @@ export class ConditionalFormatting {
         addClass([this.backgroundColor[i as number].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         const toggleBtn: Button = new Button({
             iconCss: cls.ICON + ' ' + cls.FORMAT_DELETE_ICON,
-            cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), locale: this.parent.locale, enableRtl: this.parent.enableRtl
+            cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         toggleBtn.isStringTemplate = true;
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);

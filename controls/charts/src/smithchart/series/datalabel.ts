@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { createElement } from '@syncfusion/ej2-base';
 import { Smithchart} from '../../smithchart';
 import { SmithchartMarginModel, SmithchartFontModel} from '../../smithchart/utils/utils-model';

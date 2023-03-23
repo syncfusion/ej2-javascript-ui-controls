@@ -1,4 +1,4 @@
-import { getRangeAddress, Spreadsheet } from "../../../src/index";
+import { getRangeAddress, SheetModel, Spreadsheet } from "../../../src/index";
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 
@@ -402,69 +402,73 @@ describe('Spreadsheet cell navigation module ->', () => {
     });
 
     describe('Keyboard Navigation with Locked and Unlocked cells ->', () => {
+        let sheet: SheetModel;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], 
                 created: (): void => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     spreadsheet.protectSheet(
-                        'Sheet1', { selectCells: true, selectUnLockedCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false });
+                        'Sheet1', { selectCells: false, selectUnLockedCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false });
                 } }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
         
-        it('Right arrow Button in Last used column Cell for Navigation', (done: Function) => {
+        it('Right arrow Button in last used column cell for navigation', (done: Function) => {
+            sheet = helper.getInstance().sheets[0];
             helper.invoke('lockCells', ['B2:D5', false]);
+            expect(sheet.selectedRange).toBe('A1:A1');
             helper.invoke('selectRange', ['H11']);
+            expect(sheet.selectedRange).toBe('A1:A1');
+            helper.triggerKeyNativeEvent(39);
+            setTimeout(() => {
+                expect(sheet.selectedRange).toBe('B2:B2');
+                done();
+            }, 10);
+        });
+        it('Right arrow Button in the last unlocked Row cell for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['D5']);
+            expect(sheet.selectedRange).toBe('D5:D5');
             helper.triggerKeyNativeEvent(39);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
                 done();
             }, 10);
         });
-        it('Right arrow Button in Last used Row Cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['A11']);
+        it('Right arrow button in the last unlocked column cell for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['D3']);
             helper.triggerKeyNativeEvent(39);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('B4:B4');
                 done();
             }, 10);
         });
-        it('Right arrow Button in next to Last used Row Cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['A12']);
-            helper.triggerKeyNativeEvent(39);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
-                done();
-            }, 10);
-        });
-        it('Left arrow Button Last used column for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H1']);
+        it('Left arrow button from first unlocked column for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['B3']);
             helper.triggerKeyNativeEvent(37);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('D5:D5');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
                 done();
             }, 10);
         });
-        it('Down arrow Button in Last used Range Column for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H11']);
+        it('Down arrow Button in last unlocked row for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['B5']);
+            helper.triggerKeyNativeEvent(40);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('C2:C2');
+                done();
+            }, 10);
+        });
+        it('Down arrow Button in last unlocked row and column cell for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['D5']);
             helper.triggerKeyNativeEvent(40);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
                 done();
             }, 10);
         });
-        it('Down arrow Button in Next to Last used Range Column for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['I1']);
-            helper.triggerKeyNativeEvent(40);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
-                done();
-            }, 10);
-        });
-        it('Up arrow Button in Next to Last used Range Row for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['A11']);
+        it('Up arrow Button in the first unlocked row and column cell for navigation', (done: Function) => {
             helper.triggerKeyNativeEvent(38);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D5:D5');

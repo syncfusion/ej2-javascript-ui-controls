@@ -524,6 +524,26 @@ describe('CheckBox', () => {
        
     });
 
+    describe('CR issues', () => {
+        afterEach(() => {
+            checkbox.destroy();
+        });
+
+        it('EJ2-70192 - Intermediate state not working properly while Property change of checkbox', () => {
+            checkbox = new CheckBox({ checked: true }, '#checkbox');
+            checkbox.indeterminate = true;
+            checkbox.dataBind();
+            expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(true);
+            expect(element.parentElement.children[1].classList.contains('e-check')).toEqual(false);
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+            checkbox.dataBind();
+            expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(false);
+            expect(element.parentElement.children[1].classList.contains('e-check')).toEqual(false);
+        });
+       
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange);

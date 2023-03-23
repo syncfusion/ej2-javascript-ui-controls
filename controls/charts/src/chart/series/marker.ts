@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
 import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
 import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
@@ -101,7 +99,7 @@ export class Marker extends MarkerExplode {
         if (!argsData.cancel) {
             let y: Object;
             if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn'
-            || series.type === 'SplineRangeArea') {
+            || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') {
                 y = index ? point.low : point.high;
             } else if (isBoxPlot) {
                 y = point.outliers[index as number];
@@ -229,7 +227,7 @@ export class Marker extends MarkerExplode {
             const delay: number = series.animation.delay + series.animation.duration;
             const duration: number = series.chart.animated ? series.chart.duration : 200;
             let j: number = 1;
-            const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea') ? 2 : 1;
+            const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
                 if (series.points[i as number].symbolLocations) {
                     if (!series.points[i as number].symbolLocations.length || !markerElements[j as number]) {

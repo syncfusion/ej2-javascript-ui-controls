@@ -1464,7 +1464,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     // EJ2-66465 - Added below code to empty the segment collection if connector type is bezier
     if (dataObj.connectors) {
         for (let i: number = 0; i < dataObj.connectors.length; i++) {
-            if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0) {
+            if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0 && dataObj.connectors[i].bezierSettings.allowSegmentsReset) {
                 dataObj.connectors[i].segments = [];
             }
         }

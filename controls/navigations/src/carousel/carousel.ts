@@ -46,30 +46,33 @@ const CLS_TRANSITION_END: string = 'e-transition-end';
 
 /**
  * Specifies the direction of previous/next button navigations in carousel.
- *
- * * `Previous` - To determine the previous direction of carousel item transition.
- * * `Next` - To determine the next direction of carousel item transition.
+ * ```props
+ * Previous :- To determine the previous direction of carousel item transition.
+ * Next :- To determine the next direction of carousel item transition.
+ * ```
  */
 export type CarouselSlideDirection = 'Previous' | 'Next';
 
 /**
  * Specifies the state of navigation buttons displayed in carousel.
- *
- * * `Hidden` - Navigation buttons are hidden.
- * * `Visible` - Navigation buttons are visible.
- * * `VisibleOnHover` - Navigation buttons are visible only when we hover the carousel.
+ * ```props
+ * Hidden :- Navigation buttons are hidden.
+ * Visible :- Navigation buttons are visible.
+ * VisibleOnHover :- Navigation buttons are visible only when we hover the carousel.
+ * ```
  */
 export type CarouselButtonVisibility = 'Hidden' | 'Visible' | 'VisibleOnHover';
 
 /**
  * Specifies the animation effects of carousel slide.
- *
- * * `None` - The carousel item transition happens without animation.
- * * `Slide` - The carousel item transition happens with slide animation.
- * * `Fade` - The Carousel item transition happens with fade animation.
- * * `Custom` - The Carousel item transition happens with custom animation.
+ * ```props
+ * None :- The carousel item transition happens without animation.
+ * Slide :- The carousel item transition happens with slide animation.
+ * Fade :- The Carousel item transition happens with fade animation.
+ * Custom :- The Carousel item transition happens with custom animation.
+ * ```
  */
-export type CarouselAnimationEffect = 'None' | 'Fade' | 'Slide' | 'Custom';
+export type CarouselAnimationEffect = 'None' | 'Slide' | 'Fade' | 'Custom';
 
 /** An interface that holds details when changing the slide. */
 export interface SlideChangingEventArgs extends BaseEventArgs {
@@ -162,10 +165,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      *  Specifies the type of animation effects. The possible values for this property as follows
-     *  * None
-     *  * Slide
-     *  * Fade
-     *  * Custom
+    * * `None`: The carousel item transition happens without animation.
+    * * `Slide`: The carousel item transition happens with slide animation.
+    * * `Fade`: The Carousel item transition happens with fade animation.
+    * * `Custom`: The Carousel item transition happens with custom animation.
      *
      *  @default 'Slide'
      */
@@ -311,9 +314,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines how to show the previous, next and play pause buttons visibility. The possible values for this property as follows
-     * * Hidden
-     * * Visible
-     * * VisibleOnHover
+     * * `Hidden`: Navigation buttons are hidden.
+     * * `Visible`: Navigation buttons are visible.
+     * * `VisibleOnHover`: Navigation buttons are visible only when we hover the carousel.
      *
      * @default 'Visible'
      */
@@ -406,6 +409,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     public onPropertyChanged(newProp: CarouselModel, oldProp: CarouselModel): void {
         let target: Element;
+        let rtlElement: Element[];
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'animationEffect':
@@ -441,10 +445,19 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'enableRtl':
+                rtlElement = [].slice.call(this.element.querySelectorAll(`.${CLS_PREV_BUTTON},
+                .${CLS_NEXT_BUTTON}, .${CLS_PLAY_BUTTON}`));
+                rtlElement.push(this.element);
                 if (this.enableRtl) {
-                    addClass([this.element], CLS_RTL);
+                    addClass(rtlElement, CLS_RTL);
                 } else {
-                    removeClass([this.element], CLS_RTL);
+                    removeClass(rtlElement, CLS_RTL);
+                }
+                if (this.partialVisible) {
+                    const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
+                    const cloneCount: number = this.loop ? 2 : 0;
+                    const slideWidth: number = itemsContainer.firstElementChild.clientWidth;
+                    itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
                 }
                 break;
             case 'buttonsVisibility':
@@ -591,11 +604,16 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             const slideWidth: number = itemsContainer.firstElementChild.clientWidth;
             const cloneCount: number = this.loop ? 2 : 0;
             itemsContainer.style.transitionProperty = 'none';
-            itemsContainer.style.transform = `translateX(${-(slideWidth) * (this.selectedIndex + cloneCount)}px)`;
+            itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
         }
         this.autoSlide();
         this.renderTouchActions();
         this.renderKeyboardActions();
+    }
+
+    private getTranslateX(slideWidth: number, count: number = 1): string {
+        return this.enableRtl ? `translateX(${(slideWidth) * (count)}px)` :
+            `translateX(${-(slideWidth) * (count)}px)`;
     }
 
     private renderSlide(item: Record<string, any>, itemTemplate: string, index: number, container: HTMLElement,
@@ -650,7 +668,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             append(template, buttonContainer);
         } else {
             const button: HTMLElement = this.createElement('button', {
-                attrs: { 'aria-label': this.localeObj.getConstant(direction === 'Previous' ? 'previousSlide' : 'nextSlide') }
+                attrs: { 'aria-label': this.localeObj.getConstant(direction === 'Previous' ? 'previousSlide' : 'nextSlide'), 'type': 'button' }
             });
             const buttonObj: Button = new Button({
                 cssClass: CLS_FLAT + ' ' + CLS_ROUND + ' ' + (direction === 'Previous' ? CLS_PREV_BUTTON : CLS_NEXT_BUTTON),
@@ -679,7 +697,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             append(template, playPauseWrap);
         } else {
             const playButton: HTMLElement = this.createElement('button', {
-                attrs: { 'aria-label': this.localeObj.getConstant(this.autoPlay ? 'pauseSlideTransition' : 'playSlideTransition') }
+                attrs: { 'aria-label': this.localeObj.getConstant(this.autoPlay ? 'pauseSlideTransition' : 'playSlideTransition'), 'type': 'button' }
             });
             const isLastSlide: boolean = this.selectedIndex === this.slideItems.length - 1 && !this.loop;
             const buttonObj: Button = new Button({
@@ -722,7 +740,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     const template: HTMLElement[] = this.templateParser(this.indicatorsTemplate)({ index: index, selectedIndex: this.selectedIndex }, this, 'indicatorsTemplate', templateId, false);
                     append(template, indicatorBar);
                 } else {
-                    const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR });
+                    const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR, attrs: { 'type': 'button' } });
                     indicatorBar.appendChild(indicator);
                     indicator.appendChild(this.createElement('div', {
                         attrs: {
@@ -877,17 +895,17 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 container.style.transitionProperty = 'transform';
                 if (this.loop) {
                     if (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next') {
-                        container.style.transform = `translateX(${-(slideWidth) * (allSlides.length + 2)}px)`;
+                        container.style.transform = this.getTranslateX(slideWidth, allSlides.length + 2);
                     }
                     else if (this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous') {
-                        container.style.transform = `translateX(${-(slideWidth)}px)`;
+                        container.style.transform = this.getTranslateX(slideWidth);
                     }
                     else {
-                        container.style.transform = `translateX(${-(slideWidth) * (currentIndex + 2)}px)`;
+                        container.style.transform = this.getTranslateX(slideWidth, currentIndex + 2);
                     }
                 }
                 else {
-                    container.style.transform = `translateX(${-(slideWidth) * (currentIndex)}px)`;
+                    container.style.transform = this.getTranslateX(slideWidth, currentIndex);
                 }
             }
             if (this.animationEffect === 'Slide') {
@@ -925,7 +943,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
                 const slideWidth: number = this.slideChangedEventArgs.currentSlide.clientWidth;
                 container.style.transitionProperty = 'none';
-                container.style.transform = `translate(${-(slideWidth) * (this.slideChangedEventArgs.currentIndex + 2)}px)`;
+                container.style.transform = this.getTranslateX(slideWidth, this.slideChangedEventArgs.currentIndex + 2);
             }
             addClass([this.slideChangedEventArgs.currentSlide], CLS_ACTIVE);
             removeClass([this.slideChangedEventArgs.previousSlide], CLS_ACTIVE);

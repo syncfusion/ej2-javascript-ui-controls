@@ -15,7 +15,6 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
 
     public element: HTMLElement = this.parent.createElement('TH', {
         className: 'e-headercell e-stackedheadercell', attrs: {
-            role: 'columnheader',
             tabindex: '-1'
         }
     });
@@ -41,7 +40,7 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         if (!isNullOrUndefined(column.headerTemplate)) {
             appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
         } else {
-            this.appendHtml(div, column.headerText, column.getDomSetter());
+            this.appendHtml(div, this.parent.sanitize(column.headerText), column.getDomSetter());
         }
 
         if (cell.column.toolTip) {

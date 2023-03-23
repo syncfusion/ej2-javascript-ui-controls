@@ -116,11 +116,11 @@ export class Ean13 extends OneDimension {
         // eslint-disable-next-line
         const codes: object = this.getBinaries();
         for (let i: number = 0; i < leftString.length; i++) {
-            tempCodes = codes[structure[i]];
+            tempCodes = codes[structure[parseInt(i.toString(), 10)]];
             if (i === 0) {
-                code = tempCodes[leftString[i]];
+                code = tempCodes[leftString[parseInt(i.toString(), 10)]];
             } else {
-                code += tempCodes[leftString[i]];
+                code += tempCodes[leftString[parseInt(i.toString(), 10)]];
             }
         }
         return code;

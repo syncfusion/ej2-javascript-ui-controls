@@ -128,7 +128,7 @@
     background-color: $sidebar-overlay;
     height: 100%;
     left: 0;
-    @if ($skin-name != 'tailwind' and  $skin-name != 'bootstrap5' and  $skin-name != 'FluentUI') {
+    @if ($skin-name != 'tailwind' and  $skin-name != 'bootstrap5' and  $skin-name != 'FluentUI' and $skin-name != 'Material3') {
       opacity: .5;
     }
     pointer-events: auto;

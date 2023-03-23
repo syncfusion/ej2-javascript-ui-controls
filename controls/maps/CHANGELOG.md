@@ -8,38 +8,14 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
+## 21.1.35 (2023-03-23)
 
 ### Maps
 
-#### Bug Fixes
+#### New Features
 
-- `#I443513` - Zoom factor calculation in the `zoomToCoordinates` method is now improved.
-
-## 20.4.49 (2023-02-07)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I430846` - Maps will be rendered properly when the `zoomFactor` and `centerPosition` is set to their initial value using `zoomByPosition` method.
-- `#I430070` - Marker templates will now render properly in the Maps when they are contained within an HTML div element with "scroll" overflow CSS style.
-
-## 20.4.48 (2023-02-01)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I430070` - Marker templates will now render properly in the Maps when they are contained within an HTML div element with "scroll" overflow CSS style.
-
-## 20.4.44 (2023-01-18)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I426534` - When the destroy method is invoked, the resize event is now properly removed from the Maps control.
+- `#I275734`, `#I293775` - The appearance of the buttons and tooltips in the zoom toolbar can now be customized using properties in the `buttonSettings` and `tooltipSettings` in the `toolbarSettings` property of `zoomSettings`.
+- `#I425592` - The marker rendered in the Maps can now be dragged and dropped in the desired location based on the requirement. Events are also supported to notify the drag start and end.
 
 ## 20.4.38 (2022-12-21)
 

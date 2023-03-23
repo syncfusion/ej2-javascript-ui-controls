@@ -35,7 +35,7 @@
       padding-right: $breadcrumb-padding-right;
     }
 
-    @if $breadcrumb-skin == 'bootstrap' {
+    @if $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'Material3' {
       background-color: $breadcrumb-bgcolor;
       border-radius: 4px;
     }
@@ -127,7 +127,7 @@
           }
         }
 
-        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'tailwind' {
+        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'tailwind' or $breadcrumb-skin == 'Material3' {
           &:hover,
           &:focus,
           &:active {

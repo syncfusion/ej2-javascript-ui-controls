@@ -628,6 +628,29 @@ describe('Carousel Testing', () => {
             expect(carouselElement.querySelectorAll('.e-carousel-item')[3].classList.contains('e-active')).toBe(true);
             expect(getComputedStyle(carouselItems).getPropertyValue('transition-property')).toBe('transform');
         });
+        it('test case for partialslide with EnableRtl ', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ animationEffect: 'None', items: items, partialVisible: true, loop: true, showPlayButton: true }, carouselElement);
+            expect(carouselElement.classList.contains('e-rtl')).toBe(false);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-previous-button').classList.contains('e-rtl')).toBe(false);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-next-button').classList.contains('e-rtl')).toBe(false);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-play-button').classList.contains('e-rtl')).toBe(false);
+            carousel.enableRtl = true;
+            carousel.dataBind();
+            expect(carouselElement.classList.contains('e-rtl')).toBe(true);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-previous-button').classList.contains('e-rtl')).toBe(true);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-next-button').classList.contains('e-rtl')).toBe(true);
+            expect(carouselElement.querySelector('.e-carousel-navigators .e-play-button').classList.contains('e-rtl')).toBe(true);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(true);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[6].classList.contains('e-active')).toBe(false);
+            (carouselElement.querySelector('.e-previous-icon') as HTMLElement).click();
+            jasmine.clock().tick(1500);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(false);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[6].classList.contains('e-active')).toBe(true);
+            (carouselElement.querySelector('.e-next-icon') as HTMLElement).click();
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[6].classList.contains('e-active')).toBe(false);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(true);
+        });
     });
 
     describe('test case for partialslide without loop', () => {

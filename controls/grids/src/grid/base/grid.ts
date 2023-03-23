@@ -83,7 +83,7 @@ import { ILogger } from '../actions/logger';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
-import { DateFormatOptions, NumberFormatOptions } from '@syncfusion/ej2-base';
+import { DateFormatOptions, NumberFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as literals from '../base/string-literals';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { HeaderCellRenderer } from '../renderer/header-cell-renderer';
@@ -276,6 +276,8 @@ export class Predicate extends ChildProperty<Predicate> {
 
     /**
      * Defines the UID of filter column.
+     *
+     * @default ''
      */
     @Property()
     public uid: string;
@@ -356,7 +358,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      *
      * @default OnEnter
      */
-    @Property()
+    @Property('OnEnter')
     public mode: FilterBarMode;
 
     /**
@@ -429,7 +431,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
 
     /**
      * The cell selection modes are flow and box. It requires the selection
-     * [`mode`](grid/#mode-selectionmode/) to be either cell or both.
+     * [`mode`](./selectionmode/) to be either cell or both.
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
@@ -554,9 +556,9 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * Checks for strings not equal to the specified string. <br/></td></tr>
      * </table>
      *
-     * @default 'contains'
+     * @default 'wildcard'
      */
-    @Property('contains')
+    @Property('wildcard')
     public operator: string;
 
     /**
@@ -938,11 +940,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isPersistSelection: boolean;
     /**
      * Gets the currently visible records of the Grid.
+     *
+     * @default []
      */
-    public currentViewData: Object[] = [];
+    @Property([])
+    public currentViewData: Object[];
     /** @hidden */
     /**
      * Gets the parent Grid details.
+     *
+     * @default {}
      */
     @Property()
     public parentDetails: ParentDetails;
@@ -1054,7 +1061,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public selectionModule: Selection;
     /**
      * The `showHider` is used to manipulate column's show/hide operation in the Grid.
+     *
+     * @default ''
      */
+    @Property ()
     public showHider: ShowHide;
     /**
      * The `searchModule` is used to manipulate searching in the Grid.
@@ -1210,6 +1220,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public enableStickyHeader: boolean;
+
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the Grid component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * If `allowTextWrap` set to true,
@@ -1523,6 +1543,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public showColumnMenu: boolean;
 
     /**
+     * If `autoFit` set to true, then it will auto fit the columns based on given width.
+     *
+     * @default false
+     */
+    @Property(false)
+    public autoFit: boolean;
+
+    /**
      * Configures the group settings.
      * {% codeBlock src='grid/groupSettings/index.md' %}{% endcodeBlock %}
      *
@@ -1563,15 +1591,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public showColumnChooser: boolean;
     /**
      * Configures the column chooser in the Grid.
-     *  <br><br>
-     * The available operators are,
-     * `startsWith` - Checks whether a value begins with the specified value.
-     * `endsWith` - Checks whether a value ends with the specified value.
-     * `contains` - Checks whether a value contains the specified value.
-     * `equal` - Checks whether a value is equal to the specified value.
-     * `notEqual` - Checks for values not equal to the specified value.
      *
-     * @default { operator: 'startsWith' }
+     * @default { columnChooserOperator: 'wildCard' }
      */
     @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
     public columnChooserSettings: ColumnChooserSettingsModel;
@@ -1623,6 +1644,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > * The row template must be a table row.
      *
      * > Check the [`Row Template`](../../grid/row/) customization.
+     *
+     * @default ''
      */
     @Property()
     public rowTemplate: string;
@@ -1633,22 +1656,29 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
      *
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
+     *
+     * @default ''
      */
     @Property()
     public detailTemplate: string;
 
     /**
      * Defines Grid options to render child Grid.
-     * It requires the [`queryString`](/#querystring) for parent
+     * It requires the [`queryString`](./#querystring) for parent
      * and child relationship.
      *
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
+     *
+     * @default ''
+     *
      */
     @Property()
     public childGrid: GridModel;
 
     /**
      * Defines the relationship between parent and child datasource. It acts as the foreign key for parent datasource.
+     *
+     * @default ''
      */
     @Property()
     public queryString: string;
@@ -1856,6 +1886,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Defines the version for Grid persistence.
+     *
+     * @default default version
      */
     @Property('default version')
     public ej2StatePersistenceVersion: string;
@@ -1911,7 +1943,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /* eslint-disable */
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
-     *
+     * 
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin
@@ -2724,7 +2756,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.componentRefresh = Component.prototype.refresh;
         this.filterOperators = {
             contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
-            lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
+            lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith', wildCard: 'wildcard',
+            isNull: 'isnull', notNull: 'notnull', like: 'like'
         };
         this.defaultLocale = {
             EmptyRecord: 'No records to display',
@@ -2771,8 +2804,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             FilterButton: 'Filter',
             ClearButton: 'Clear',
             StartsWith: 'Starts With',
+            NotStartsWith: 'Does Not Start With',
+            Like: 'Like',
             EndsWith: 'Ends With',
+            NotEndsWith: 'Does Not End With',
             Contains: 'Contains',
+            NotContains: 'Does Not Contain',
+            IsNull: 'Null',
+            NotNull: 'Not Null',
+            IsEmpty: 'Empty',
+            IsNotEmpty: 'Not Empty',
             Equal: 'Equal',
             NotEqual: 'Not Equal',
             LessThan: 'Less Than',
@@ -3761,6 +3802,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
                 this.getDataModule().isQueryInvokedFromData = false;
                 break;
+            case 'autoFit':
+                if (this.autoFit) {
+                    this.preventAdjustColumns();
+                } else {
+                    this.restoreAdjustColumns();
+                }
+                break;
             default:
                 this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }
@@ -4056,7 +4104,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
             if (!totalFrozenCount && !directFrozenCount && !isNullOrUndefined(col.freezeTable)) {
                 col.freezeTable = undefined;
-           }
+            }
         }
     }
 
@@ -4199,6 +4247,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets the header div of the Grid to replace the old header.
      *
      * @param  {Element} element - Specifies the Grid header.
+     *
      * @returns {void}
      */
     public setGridHeaderContent(element: Element): void {
@@ -4218,6 +4267,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets the content table of the Grid to replace the old content table.
      *
      * @param  {Element} element - Specifies the Grid content table.
+     *
      * @returns {void}
      */
     public setGridContentTable(element: Element): void {
@@ -4237,6 +4287,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets the content div of the Grid to replace the old Grid content.
      *
      * @param  {Element} element - Specifies the Grid content.
+     *
      * @returns {void}
      */
     public setGridContent(element: Element): void {
@@ -4256,6 +4307,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets the header table of the Grid to replace the old one.
      *
      * @param  {Element} element - Specifies the Grid header table.
+     *
      * @returns {void}
      */
     public setGridHeaderTable(element: Element): void {
@@ -4296,6 +4348,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets the pager of the Grid to replace the old pager.
      *
      * @param  {Element} element - Specifies the Grid pager.
+     *
      * @returns {void}
      */
     public setGridPager(element: Element): void {
@@ -4306,6 +4359,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a row by index.
      *
      * @param  {number} index - Specifies the row index.
+     *
      * @returns {Element} returns the element
      */
     public getRowByIndex(index: number): Element {
@@ -4320,6 +4374,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a movable tables row by index.
      *
      * @param  {number} index - Specifies the row index.
+     *
      * @returns {Element} returns the element
      */
     public getMovableRowByIndex(index: number): Element {
@@ -4359,6 +4414,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get a row information based on cell
      *
      * @param {Element | EventTarget} target - specifies the element
+     *
      * @returns {RowInfo} returns the row info
      */
     public getRowInfo(target: Element | EventTarget): RowInfo {
@@ -4574,6 +4630,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {string } field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
+     *
      * @returns {void}
      */
     public setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void {
@@ -4592,6 +4649,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             getValue(pkName, r.data) === key)[0];
         const tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + selectedRow[`${rowuID}`] + ']') : null;
         if (!isNullOrUndefined(tr)) {
+            if (typeof value === 'string') {
+                value = this.sanitize(value);
+            }
             setValue(field, value, selectedRow[`${rowData}`]);
             let left: number = this.getFrozenLeftColumnsCount() || this.getFrozenColumns();
             const movable: number = this.getMovableColumnsCount();
@@ -4644,7 +4704,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public refreshReactColumnTemplateByUid(columnUid: string, renderTemplates?: boolean): void {
         if ((<{ isReact?: boolean }>this).isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4735,6 +4794,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
      * @param {Object} rowData - To update new data for the particular row.
+     *
      * @returns {void}
      */
     public setRowData(key: string | number, rowData?: Object): void {
@@ -4795,6 +4855,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
+     *
      * @returns {Element} Returns the Element
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
@@ -4807,6 +4868,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
+     *
      * @returns {Element} Returns the Element
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
@@ -4836,6 +4898,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by column index.
      *
      * @param  {number} index - Specifies the column index.
+     *
      * @returns {Element} Returns the Element
      */
     public getColumnHeaderByIndex(index: number): Element {
@@ -4947,6 +5010,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by column name.
      *
      * @param  {string} field - Specifies the column name.
+     *
      * @returns {Element} - Returns the element
      */
     public getColumnHeaderByField(field: string): Element {
@@ -4958,6 +5022,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column header by UID.
      *
      * @param {string} uid - Specifies the column uid.
+     *
      * @returns {Element} - Returns the element
      */
     public getColumnHeaderByUid(uid: string): Element {
@@ -4983,6 +5048,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a Column by column name.
      *
      * @param  {string} field - Specifies the column name.
+     *
      * @returns {Column} Returns the column
      */
     public getColumnByField(field: string): Column {
@@ -4998,6 +5064,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column index by column name.
      *
      * @param  {string} field - Specifies the column name.
+     *
      * @returns {number} Returns the index by field
      */
     public getColumnIndexByField(field: string): number {
@@ -5014,6 +5081,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column by UID.
      *
      * @param  {string} uid - Specifies the column UID.
+     *
      * @returns {Column} Returns the column
      */
     public getColumnByUid(uid: string): Column {
@@ -5047,6 +5115,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column index by UID.
      *
      * @param  {string} uid - Specifies the column UID.
+     *
      * @returns {number} Returns the column by index
      */
     public getColumnIndexByUid(uid: string): number {
@@ -5065,6 +5134,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets UID by column name.
      *
      * @param  {string} field - Specifies the column name.
+     *
      * @returns {string} Returns the column by field
      */
     public getUidByColumnField(field: string): string {
@@ -5281,6 +5351,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} showBy - Defines the column key either as field name or header text.
+     *
      * @returns {void}
      */
     public showColumns(keys: string | string[], showBy?: string): void {
@@ -5293,6 +5364,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {string|string[]} keys - Defines a single or collection of column names.
      * @param  {string} hideBy - Defines the column key either as field name or header text.
+     *
      * @returns {void}
      */
     public hideColumns(keys: string | string[], hideBy?: string): void {
@@ -5497,6 +5569,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Navigates to the specified target page.
      *
      * @param  {number} pageNo - Defines the page number to navigate.
+     *
      * @returns {void}
      */
     public goToPage(pageNo: number): void {
@@ -5509,6 +5582,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Defines the text of external message.
      *
      * @param  {string} message - Defines the message to update.
+     *
      * @returns {void}
      */
     public updateExternalMessage(message: string): void {
@@ -5523,12 +5597,62 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {string} columnName - Defines the column name to be sorted.
      * @param {SortDirection} direction - Defines the direction of sorting field.
      * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained.
+     *
      * @returns {void}
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
         if (this.sortModule) {
             this.sortModule.sortColumn(columnName, direction, isMultiSort);
         }
+    }
+
+    /**
+     * Remove the existing columns along with the grid actions like sorting, filtering, searching, grouping, aggregate, etc., and grid will refresh with new columns based on the updated new data source.
+     * > * If no columns are specified while changing the data source, then the columns are auto generated in the Grid based on the list of columns in the updated data source.
+     *
+     * @param {Object | DataManager | DataResult} dataSource -  Assign the new datasource.
+     * @param {Column[] | string[] | ColumnModel[]} columns - Defines columns.
+     * @returns {void}
+     *
+     *
+     * ```typescript
+     * <button id="btn">change dataSource </button>
+     * <div id="Grid"></div>
+     * <script>
+     * let gridObj: Grid = new Grid({
+     *     dataSource: employeeData,  // you can define the datamanager here if you are binding a data through datamanager
+     *     columns: [
+     *         { field: 'OrderID', headerText: 'Order ID', width:100 },
+     *         { field: 'EmployeeID', headerText: 'Employee ID' }],
+     * });
+     * gridObj.appendTo('#Grid');
+     * document.getElementById('btn').addEventListener("click", function(){
+     * let newColumn: [
+     *     { field: 'CustomerID', headerText: 'Customer ID', width:100 },
+     *     { field: 'FirstName', headerText: 'Name' }];
+     * gridObj.changeDataSource(customerData, newColumn);
+     * });
+     * </script>
+     * ```
+     *
+     */
+    public changeDataSource(dataSource?: Object | DataManager | DataResult, columns?: Column[] | string[] | ColumnModel[]): void {
+        this.setProperties({ sortSettings: { columns: [] } }, true);
+        this.setProperties({ filterSettings: { columns: [] } }, true);
+        this.setProperties({ searchSettings: { key: '' } }, true);
+        if (this.allowGrouping) {
+            this.setProperties({ groupSettings: { columns: [] } }, true);
+        }
+        if (columns && columns.length) {
+            this.setProperties({ columns: columns }, true);
+        }
+        if (dataSource) {
+            if (isNullOrUndefined(columns)) {
+                this.setProperties({ columns: [] }, true);
+            }
+            this.setProperties({ dataSource: dataSource }, true);
+        }
+        this.freezeRefresh();
     }
 
     /**
@@ -5583,6 +5707,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * then filter ignores the diacritic characters or accents while filtering.
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column.
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
+     *
      * @returns {void}
      */
     public filterByColumn(fieldName: string, filterOperator: string,
@@ -5628,6 +5753,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} index - Defines the row index.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     *
      * @returns {void}
      */
     public selectRow(index: number, isToggle?: boolean): void {
@@ -5640,6 +5766,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Selects a collection of rows by indexes.
      *
      * @param  {number[]} rowIndexes - Specifies the row indexes.
+     *
      * @returns {void}
      */
     public selectRows(rowIndexes: number[]): void {
@@ -5664,6 +5791,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     *
      * @returns {void}
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
@@ -5677,6 +5805,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {IIndex} startIndex - Specifies the row and column's start index.
      * @param  {IIndex} endIndex - Specifies the row and column's end index.
+     *
      * @returns {void}
      */
     public selectCellsByRange(startIndex: IIndex, endIndex?: IIndex): void {
@@ -5689,6 +5818,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * [`searchSettings`](./#searchsettings/).
      *
      * @param  {string} searchString - Defines the key.
+     *
      * @returns {void}
      */
     public search(searchString: string): void {
@@ -5790,6 +5920,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
+     *
      * @returns {void}
      */
     public editCell(index: number, field: string): void {
@@ -5816,6 +5947,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     *
      * @returns {void}
      */
     public updateCell(rowIndex: number, field: string, value: string | number | boolean | Date): void {
@@ -5831,6 +5963,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
+     *
      * @returns {void}
      */
     public updateRow(index: number, data: Object): void {
@@ -5856,6 +5989,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     *
      * @returns {void}
      */
     public enableToolbarItems(items: string[], isEnable: boolean): void {
@@ -5939,6 +6073,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
             this.widthService.setWidthToColumns();
             this.recalcIndentWidth();
+            if (this.autoFit) {
+                this.preventAdjustColumns();
+            }
         }
         if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
             && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
@@ -5967,6 +6104,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {string} fromFName - Defines the origin field name.
      * @param  {string} toFName - Defines the destination field name.
+     *
      * @returns {void}
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
@@ -5981,6 +6119,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} fromIndex - Defines the origin field index.
      * @param  {number} toIndex - Defines the destination field index.
+     *
      * @returns {void}
      */
     public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
@@ -5995,6 +6134,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {string} fieldName - Defines the field name.
      * @param  {number} toIndex - Defines the destination field index.
+     *
      * @returns {void}
      */
     public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
@@ -6008,6 +6148,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} fromIndexes - Defines the origin Indexes.
      * @param  {number} toIndex - Defines the destination Index.
+     *
      * @returns {void}
      */
     public reorderRows(fromIndexes: number[], toIndex: number): void {
@@ -6084,6 +6225,96 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.resizeModule) {
             this.resizeModule.autoFitColumns(fieldNames);
         }
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public preventAdjustColumns(): void {
+        if (this.isFrozenGrid() || (this.enableAdaptiveUI && this.rowRenderingMode === 'Vertical')
+            || (this.allowResizing && this.resizeSettings.mode === 'Auto')) { return; }
+        const columns: Column[] = this.getColumns();
+        const headerTable: HTMLElement = this.getHeaderTable() as HTMLElement;
+        let tableWidth: number = 0;
+        for (let i: number = 0; i < columns.length; i++) {
+            if (columns[parseInt(i.toString(), 10)].visible) {
+                if (this.groupSettings.columns.length
+                    && this.groupSettings.columns.indexOf(columns[parseInt(i.toString(), 10)].field) > -1) {
+                    const headerCol: HTMLElement[] = [].slice.call(headerTable.querySelector('colgroup')
+                        .querySelectorAll(':not(.e-group-intent):not(.e-detail-intent):not(.e-drag-intent)'));
+                    if (headerCol[parseInt(i.toString(), 10)].style.display === 'none') {
+                        continue;
+                    }
+                }
+                if (columns[parseInt(i.toString(), 10)].width) {
+                    tableWidth += parseFloat(columns[parseInt(i.toString(), 10)].width.toString());
+                } else {
+                    tableWidth = 0;
+                    break;
+                }
+            }
+        }
+        if (tableWidth) {
+            const percentageWidth: boolean = this.isPercentageWidthGrid();
+            const unit: string = this.widthUnit(percentageWidth);
+            const contentTable: HTMLElement = this.getContentTable() as HTMLElement;
+            if (this.groupSettings.columns.length || this.isDetail() || this.isRowDragable()) {
+                const indentWidth: number = this.defaultIndentWidth(percentageWidth);
+                const indentWidthUnitFormat: string = indentWidth.toString() + unit;
+                const headerIndentCol: HTMLElement[] = [].slice.call(headerTable.querySelector('colgroup')
+                    .querySelectorAll('.e-group-intent, .e-detail-intent, .e-drag-intent'));
+                const contentIndentCol: HTMLElement[] = [].slice.call(contentTable.querySelector('colgroup')
+                    .querySelectorAll('.e-group-intent, .e-detail-intent, .e-drag-intent'));
+                for (let i: number = 0; i < headerIndentCol.length; i++) {
+                    headerIndentCol[parseInt(i.toString(), 10)].style.setProperty('width', indentWidthUnitFormat);
+                    contentIndentCol[parseInt(i.toString(), 10)].style.setProperty('width', indentWidthUnitFormat);
+                    tableWidth += indentWidth;
+                }
+            }
+            if ((percentageWidth && tableWidth < 100)
+                || (!percentageWidth && tableWidth < contentTable.parentElement.clientWidth)) {
+                addClass([headerTable, contentTable], ['e-tableborder']);
+            }
+            const tableWidthUnitFormat: string = tableWidth.toString() + unit;
+            headerTable.style.setProperty('width', tableWidthUnitFormat);
+            contentTable.style.setProperty('width', tableWidthUnitFormat);
+        } else {
+            this.restoreAdjustColumns();
+        }
+    }
+
+    private restoreAdjustColumns(): void {
+        if (this.isFrozenGrid() || (this.enableAdaptiveUI && this.rowRenderingMode === 'Vertical')
+            || (this.allowResizing && this.resizeSettings.mode === 'Auto')) { return; }
+        const headerTable: HTMLElement = this.getHeaderTable() as HTMLElement;
+        const contentTable: HTMLElement = this.getContentTable() as HTMLElement;
+        removeClass([headerTable, contentTable], ['e-tableborder']);
+        headerTable.style.removeProperty('width');
+        contentTable.style.removeProperty('width');
+        if (this.groupSettings.columns.length || this.isDetail() || this.isRowDragable()) {
+            const percentageWidth: boolean = this.isPercentageWidthGrid();
+            const indentWidthUnitFormat: string = this.defaultIndentWidth(percentageWidth).toString() + this.widthUnit(percentageWidth);
+            const headerIndentCol: HTMLElement[] = [].slice.call(headerTable.querySelector('colgroup')
+                .querySelectorAll('.e-group-intent, .e-detail-intent, .e-drag-intent'));
+            headerIndentCol.forEach((element: HTMLElement) => {
+                element.style.setProperty('width', indentWidthUnitFormat);
+            });
+            headerTable.querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            this.recalcIndentWidth();
+        }
+    }
+
+    private widthUnit(percentageWidth: boolean): string {
+        return percentageWidth ? '%' : 'px';
+    }
+
+    private defaultIndentWidth(percentageWidth: boolean): number {
+        return percentageWidth ? parseFloat((30 / this.element.offsetWidth * 100).toFixed(1)) : 30;
+    }
+
+    private isPercentageWidthGrid(): boolean {
+        return this.getColumns()[0].width.toString().indexOf('%') > -1;
     }
 
     /**
@@ -6370,16 +6601,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     return;
                 }
                 if (this.getTooltipStatus(element)) {
+                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
+                    const domSetter: string = col.disableHtmlEncode ? 'innerText' : 'innerHTML';
                     const contentDiv: HTMLDivElement = this.createElement('div');
                     if (element.getElementsByClassName('e-headertext').length) {
-                        contentDiv.innerHTML = (element.getElementsByClassName('e-headertext')[0] as HTMLElement).innerText;
+                        const innerElement: HTMLElement = element.getElementsByClassName('e-headertext')[0] as HTMLElement;
+                        contentDiv[`${domSetter}`] = this.sanitize(innerElement.innerText);
                         this.toolTipObj.content = contentDiv;
                     } else {
-                        contentDiv.innerHTML = element.innerText;
+                        contentDiv[`${domSetter}`] = this.sanitize(element.innerText);
                         this.toolTipObj.content = contentDiv;
                     }
                     this.prevElement = element;
-                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
+                    if (this.enableHtmlSanitizer) {
+                        this.toolTipObj.enableHtmlSanitizer = true;
+                    }
                     if (col.disableHtmlEncode) {
                         (<{ enableHtmlParse?: boolean }>this.toolTipObj).enableHtmlParse = false;
                     }
@@ -6454,7 +6690,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         myTable.className = table.className;
         myTable.style.cssText = 'table-layout: auto;width: auto';
         const ele: string = (type === 'header') ? 'th' : 'td';
-        const myTr: HTMLTableRowElement = this.createElement('tr', { attrs: { role: 'row' } }) as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.createElement('tr') as HTMLTableRowElement;
         const mytd: HTMLElement = this.createElement(ele) as HTMLElement;
         myTr.appendChild(mytd);
         myTable.appendChild(myTr);
@@ -6551,6 +6787,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get current visible data of grid.
      *
      * @returns {Object[]} Returns the current view records
+     *
      * @isGenericType true
      */
     public getCurrentViewRecords(): Object[] {
@@ -6921,6 +7158,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {isMultipleExport} isMultipleExport - Define to enable multiple export.
      * @param {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
+     *
      * @returns {Promise<any>} Returns pdfexport
      */
     public pdfExport(
@@ -6933,6 +7171,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Groups a column by column name.
      *
      * @param  {string} columnName - Defines the column name to group.
+     *
      * @returns {void}
      */
     public groupColumn(columnName: string): void {
@@ -6989,6 +7228,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      *
      * @param  {string} columnName - Defines the column name to ungroup.
+     *
      * @returns {void}
      */
     public ungroupColumn(columnName: string): void {
@@ -7002,6 +7242,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {number} x - Defines the X axis.
      * @param {number} y - Defines the Y axis.
+     *
      * @returns {void}
      */
     public openColumnChooser(x?: number, y?: number): void {
@@ -7090,6 +7331,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Selects a collection of cells by row and column indexes.
      *
      * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     *
      * @returns {void}
      */
     public selectCells(rowCellIndexes: ISelectedCell[]): void {
@@ -7103,6 +7345,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {number} startIndex - Specifies the start row index.
      * @param  {number} endIndex - Specifies the end row index.
+     *
      * @returns {void}
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
@@ -7133,6 +7376,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {string[]} propertyNames - Defines the collection of template name.
      * @param {any} index - specifies the index
+     *
+     * @returns {void}
      */
     // eslint-disable-next-line
     public destroyTemplate(propertyNames?: string[], index?: any): void {
@@ -7198,6 +7443,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get row index by primary key or row data.
      *
      * @param  {string | Object} value - Defines the primary key value.
+     *
      * @returns {number} Returns the index
      */
     public getRowIndexByPrimaryKey(value: string | Object): number {
@@ -7407,7 +7653,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * calculatePageSizeByParentHeight
+     * Calculates the page size by parent element height
      *
      * @param {number | string } containerHeight - specifies the container height
      * @returns {number} returns the page size
@@ -7459,6 +7705,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param  {AggregateColumnModel} summaryCol - Pass Aggregate Column details.
      * @param  {Object} summaryData - Pass JSON Array for which its field values to be calculated.
+     *
      * @returns {number} returns the summary values
      */
     public getSummaryValues(summaryCol: AggregateColumnModel, summaryData: Object): number {
@@ -7470,6 +7717,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sends a Post request to export Grid to Excel file in server side.
      *
      * @param  {string} url - Pass Url for server side excel export action.
+     *
      * @returns {void}
      */
     public serverExcelExport(url: string): void {
@@ -7480,6 +7728,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sends a Post request to export Grid to Pdf file in server side.
      *
      * @param  {string} url - Pass Url for server side pdf export action.
+     *
      * @returns {void}
      */
     public serverPdfExport(url: string): void {
@@ -7491,6 +7740,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Sends a Post request to export Grid to CSV file in server side.
      *
      * @param  {string} url - Pass Url for server side pdf export action.
+     *
      * @returns {void}
      */
     public serverCsvExport(url: string): void {
@@ -7821,6 +8071,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (<{ visible?: boolean }>rows[parseInt(i.toString(), 10)]).visible = true;
             }
         }
+    }
+
+    /**
+     * Method to sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @param {string} value - Specifies the html value to sanitize
+     * @returns {string} Returns the sanitized html string
+     * @hidden
+     */
+    public sanitize(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            return SanitizeHtmlHelper.sanitize(value);
+        }
+        return value;
     }
 
     /**

@@ -555,6 +555,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Styles',
         'command': 'Table',
         'subCommand': 'Styles'
+    },
+    'formatpainter': {
+        'id': 'FormatPainter',
+        'icon': 'e-rte-format-painter',
+        'tooltip': 'Format Painter',
+        'command': 'FormatPainter',
+        'subCommand': 'FormatPainter'
     }
 };
 
@@ -766,3 +773,29 @@ export function updateDropDownLocale(self: IRichTextEditor): void {
         TableStyleItems[i].text = getLocale(self, tableStyleLocale, TableStyleItems[i]);
     });
 }
+
+export let windowKeys: { [key: string]: string} = {
+    'Insert Link':'Ctrl + K',
+    'Insert Image':'Ctrl + Shift + I',
+    'Create Table':'Ctrl + Shift + E',
+    'Undo':'Ctrl + Z',
+    'Redo':'Ctrl + Y',
+    'Copy':'Ctrl + C',
+    'Cut':'Ctrl + X',
+    'Paste':'Ctrl + V',
+    'Bold':'Ctrl + B',
+    'Italic':'Ctrl + I',
+    'Underline':'Ctrl + U',
+    'Strikethrough':'Ctrl + Shift + S',
+    'Upper Case':'Ctrl + Shift + U',
+    'Lower Case':'Ctrl + Shift + L',
+    'Superscript':'Ctrl + Shift + =',
+    'Subscript':'Ctrl + =',
+    'Source Code':'Ctrl + Shift + H',
+    'Maximize':'Ctrl + Shift + F',
+    'Minimize':'Esc',
+    'Clear Format':'Ctrl + Shift + R',
+    'Numbered List':'Ctrl + Shift + O',
+    'Bulleted List':'Ctrl + Alt + O',
+    'Format Painter': 'Ctrl + Shift + C, Ctrl + Shift + V'
+};

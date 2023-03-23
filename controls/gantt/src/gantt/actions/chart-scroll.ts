@@ -89,20 +89,31 @@ export class ChartScroll {
             this.parent.chartVerticalLineContainer.style.top = formatUnit(scrollTop);
         }
     }
-    private removeShimmer():any {
-        let parent:any = this.parent;
+    private removeShimmer(): void {
+        const parent: any = this.parent;
         setTimeout(function () {
             parent.hideMaskRow();
+            if (parent.viewType === 'ResourceView' && !parent.allowTaskbarOverlap && parent.showOverAllocation) {
+                for (let i: number = 0; i < parent.currentViewData.length; i++) {
+                    const tr: Element = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
+                    if (tr['style'].display !== 'none' && parent.currentViewData[i as number].hasChildRecords && !parent.currentViewData[i as number].expanded) {
+                        parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
+                    }
+                }
+                parent.contentHeight = parent.enableRtl ? parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                    parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+                document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = parent.contentHeight + 'px';
+            }
         }, 0);
-    };
-    private updateShimmer():any {
-        let parent:any = this.parent;
+    }
+    private updateShimmer(): void {
+        const parent: any = this.parent;
         setTimeout(function () {
             parent.showMaskRow();
-        }, 0);    
+        }, 0);
     }
-    private updateSpinner():any {
-        let parent:any = this.parent;
+    private updateSpinner(): void {
+        const parent: any = this.parent;
         this.parent.showSpinner();
         window.clearTimeout(this.isScrolling);
         this.isScrolling = setTimeout(function () {
@@ -134,11 +145,11 @@ export class ChartScroll {
             scrollArgs.scrollDirection = 'Horizontal';
             scrollArgs.action = 'HorizontalScroll';
         }
-        if ((scrollArgs.scrollDirection != 'Horizontal' && !isNullOrUndefined(scrollArgs.scrollDirection)) && this.parent.enableVirtualization === true && (this.parent.isToolBarClick 
+        if ((scrollArgs.scrollDirection !== 'Horizontal' && !isNullOrUndefined(scrollArgs.scrollDirection)) && this.parent.enableVirtualization === true && (this.parent.isToolBarClick
             || isNullOrUndefined(this.parent.isToolBarClick))) {
             this.parent.isVirtualScroll = true;
             if (this.parent.showIndicator || isNullOrUndefined(this.parent.showIndicator)) {
-                if (!this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === "Spinner") {
+                if (!this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === 'Spinner') {
                     this.updateSpinner();
                 }
             }
@@ -182,11 +193,12 @@ export class ChartScroll {
      * To set scroll left for chart scroll container
      *
      * @param {number} scrollLeft  - To set scroll left for scroll container
+     * @param {number} leftSign - specifies left sign
      * @returns {void} .
      */
     public setScrollLeft(scrollLeft: number, leftSign?: number): void {
         if (leftSign) {
-           scrollLeft = leftSign == -1 && this.parent.enableRtl ? -scrollLeft : scrollLeft;
+            scrollLeft = leftSign === -1 && this.parent.enableRtl ? -scrollLeft : scrollLeft;
         }
         this.element.scrollLeft = scrollLeft;
         this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;

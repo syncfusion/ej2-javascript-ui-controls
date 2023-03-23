@@ -12,6 +12,7 @@ import { updatePath, getPath, getDirectories } from '../common/utility';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule, getPathId } from '../common/index';
 import { copyFiles, cutFiles, removeActive, pasteHandler, getParentPath, readDropPath } from '../common/index';
 import { hasEditAccess, createDeniedDialog, hasDownloadAccess, getAccessClass } from '../common/index';
+
 /**
  * NavigationPane module
  */
@@ -242,7 +243,7 @@ export class NavigationPane {
             this.parent.isFiltered = false;
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent) {
+        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent) { 
             this.parent.pathId = getPathId(args.node);
             return;
         }
@@ -339,7 +340,7 @@ export class NavigationPane {
             setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
         if (this.parent.uploadObj.directoryUpload && !(this.parent.hasId)) {
-                this.updateTree(args);
+            this.updateTree(args);
         }
     }
 

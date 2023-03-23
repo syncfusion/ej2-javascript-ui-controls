@@ -1,50 +1,49 @@
 /**
- * Defines types of Filter Hierarchy
- * * Parent - Specifies the filter type as Parent.
- * * Child - Specifies the filter type as excel.
- * * Both - Specifies the filter type as filter bar
- * * None - Specifies the filter type as check box.
+ * Defines modes of Filter Hierarchy
+ * ```props
+ * * Parent :- Shows filtered records with its Parent records.
+ * * Child :- Shows filtered records with its Child records.
+ * * Both :- Shows filtered records with its Parent and Child records.
+ * * None :- Shows only the filetred records.
+ * ```
  */
 export type FilterHierarchyMode =
-      /** Shows filtered records with its Parent records */
-      'Parent' |
-      /** Shows filtered records with its Child records */
-      'Child' |
-      /** Shows filtered records with its Parent and Child records */
-      'Both' |
-      /** Shows only filetred records */
-      'None';
+ 'Parent' |
+ 'Child' |
+ 'Both' |
+ 'None';
 
 /**
  * Defines Predefined toolbar items.
- *
+ * ```props
+ * * Add :- Add new record.
+ * * Edit :- Edit the selected record.
+ * * Update :- Update the edited record.
+ * * Delete :- Delete the selected record.
+ * * Cancel :- Cancel the edited state.
+ * * Search :- Searches the TreeGrid records by given key.
+ * * ExpandAll :- Expands all the rows in TreeGrid.
+ * * CollapseAll :- Collapses all the rows in TreeGrid.
+ * * ExcelExport :- Export the TreeGrid to Excel.
+ * * PdfExport :- Export the TreeGrid to Pdf.
+ * * CsvExport :- Export the TreeGrid to Csv.
+ * * Print :- Print the TreeGrid.
+ * ```
  * @hidden
  */
 export type ToolbarItems =
-    /** Add new record */
-    'Add' |
-    /** Delete selected record */
-    'Delete' |
-    /** Update edited record */
-    'Update' |
-    /** Cancel the edited state */
-    'Cancel' |
-    /** Edit the selected record */
-    'Edit' |
-    /** Searches the TreeGrid records by given key */
-    'Search' |
-    /** Expands all the rows in TreeGrid */
-    'ExpandAll' |
-    /** Collapses all the rows in TreeGrid */
-    'CollapseAll' |
-    /** Export the TreeGrid to Excel */
-    'ExcelExport' |
-    /** Export the TreeGrid to Pdf */
-    'PdfExport' |
-    /** Export the TreeGrid to Csv */
-    'CsvExport' |
-    /** Print the TreeGrid */
-    'Print';
+'Add' |
+'Delete' |
+'Update' |
+'Cancel' |
+'Edit' |
+'Search' |
+'ExpandAll' |
+'CollapseAll' |
+'ExcelExport' |
+'PdfExport' |
+'CsvExport' |
+'Print';
 /**
  * Defines Predefined toolbar items.
  *
@@ -69,57 +68,55 @@ export enum ToolbarItem {
 
 /**
  * Defines different PageSizeMode
- * * All - Specifies the PageSizeMode as All
- * * Root - Specifies the PageSizeMode as Root
+ * ```props
+ * * All :- Defines the pageSizeMode as All
+ * * Root :- Defines the pageSizeMode as Root
+ * ```
  */
 export type PageSizeMode =
-    /**  Defines the pageSizeMode as All */
-    'All' |
-    /**  Defines the pageSizeMode as Root */
-    'Root';
+'All' |
+'Root';
 
 /**
  * Defines predefined contextmenu items.
- *
+ * ```props
+ * * AutoFitAll :- Auto fit the size of all columns.
+ * * AutoFit :- Auto fit the current column.
+ * * SortAscending :- Sort the current column in ascending order.
+ * * SortDescending :- Sort the current column in descending order.
+ * * Edit :- Edit the current record.
+ * * Delete :- Delete the current record.
+ * * Save :- Save the edited record.
+ * * Cancel :- Cancel the edited state.
+ * * PdfExport :- Export the TreeGrid as Pdf format.
+ * * ExcelExport :- Export the TreeGrid as Excel format.
+ * * CsvExport :- Export the TreeGrid as CSV format.
+ * * FirstPage :- Go to the first page.
+ * * PrevPage :- Go to the previous page.
+ * * LastPage :- Go to the last page.
+ * * NextPage :- Go to the next page.
+ * ```
  * @hidden
  */
 export type ContextMenuItem =
-    /** `AutoFitAll` - Auto fit the size of all columns. */
-    'AutoFitAll' |
-    /**  `AutoFit` - Auto fit the current column. */
-    'AutoFit' |
-    /**  `SortAscending` - Sort the current column in ascending order. */
-    'SortAscending' |
-    /** `SortDescending` - Sort the current column in descending order. */
-    'SortDescending' |
-    /**  `Edit` - Edit the current record. */
-    'Edit' |
-    /** `Delete` - Delete the current record. */
-    'Delete' |
-    /** `Save` - Save the edited record. */
-    'Save' |
-    /** `Cancel` - Cancel the edited state. */
-    'Cancel' |
-    /** `PdfExport` - Export the TreeGrid as Pdf format. */
-    'PdfExport' |
-    /** `ExcelExport` - Export the TreeGrid as Excel format. */
-    'ExcelExport' |
-    /** `CsvExport` - Export the TreeGrid as CSV format. */
-    'CsvExport' |
-    /** `FirstPage` - Go to the first page. */
-    'FirstPage' |
-    /** `PrevPage` - Go to the previous page. */
-    'PrevPage' |
-    /** `LastPage` - Go to the last page. */
-    'LastPage' |
-    /** `NextPage` - Go to the next page. */
-    'NextPage' |
-    /** AddRow to the TreeGrid */
-    'AddRow'|
-    /** `Indent` - Indents the record to one level of hierarchy */
-    'Indent'|
-    /** `Outdent` - Outdent the record to one level of hierarchy */
-    'Outdent';
+'AutoFitAll' |
+'AutoFit' |
+'SortAscending' |
+'SortDescending' |
+'Edit' |
+'Delete' |
+'Save' |
+'Cancel' |
+'PdfExport' |
+'ExcelExport' |
+'CsvExport' |
+'FirstPage' |
+'PrevPage' |
+'LastPage' |
+'NextPage' |
+'AddRow'|
+'Indent'|
+'Outdent';
 
 
 /**
@@ -149,70 +146,72 @@ export enum ContextMenuItems {
 }
 /**
  * Defines modes of editing.
+ * ```props
+ * * Cell :- Defines the editing mode as Cell.
+ * * Row :- Defines the editing mode as Row.
+ * * Dialog :- Defines the editing mode as Dialog.
+ * * Batch :- Defines the editing mode as Batch.
+ * ```
  */
 export type EditMode =
-/**  Defines EditMode as Cell */
 'Cell' |
-/**  Defines EditMode as Row */
 'Row' |
-/**  Defines EditMode as Dialog */
 'Dialog' |
-/**  Defines EditMode as Batch */
 'Batch' ;
+
 /**
  * Defines the position where the new row has to be added.
+ * ```props
+ * * Top :- Defines new row position as top of all rows.
+ * * Bottom :- Defines new row position as bottom of all rows.
+ * * Above :- Defines new row position as above the selected row.
+ * * Below :- Defines new row position as below the selected row.
+ * * Child :- Defines new row position as child to the selected row.
+ * ```
  */
 export type RowPosition =
-/**  Defines new row position as top of all rows */
 'Top' |
-/**  Defines new row position as bottom of all rows */
 'Bottom' |
-/**  Defines new row position as above the selected row */
 'Above' |
-/**  Defines new row position as below the selected row */
 'Below' |
-/**  Defines new row position as child to the selected row */
 'Child' ;
+
 /**
  * Defines types of Filter
- * * Menu - Specifies the filter type as menu.
- * * Excel - Specifies the filter type as excel.
- * * FilterBar - Specifies the filter type as filter bar.
+ * ```props
+ * * Menu :- Defines the filter type as Menu.
+ * * Excel :- Defines the filter type as Excel.
+ * * FilterBar :- Defines the filter type as FilterBar.
+ * ```
  */
 export type FilterType =
-    /**  Defines FilterType as filterbar */
-    'FilterBar' |
-    /**  Defines FilterType as excel */
-    'Excel' |
-    /**  Defines FilterType as menu */
-    'Menu' ;
+'FilterBar' |
+'Excel' |
+'Menu' ;
 
 /**
  * Defines the wrap mode.
- * * Both -  Wraps both header and content.
- * * Header - Wraps header alone.
- * * Content - Wraps content alone.
+ * ```props
+ * * Both :-  Wraps both header and content.
+ * * Header :- Wraps header alone.
+ * * Content :- Wraps content alone.
  */
 export type WrapMode =
-    /** Wraps both header and content */
-    'Both' |
-    /** Wraps  header alone */
-    'Header' |
-    /** Wraps  content alone */
-    'Content';
+'Both' |
+'Header' |
+'Content';
+
 /**
  * Defines types of CopyHierarchyMode. They are
- * * Parent
- * * Child
- * * Both
- * * None
+ * ```props
+ * * Parent :- Defines CopyHiearchyMode as Parent.
+ * * Child :- Defines CopyHiearchyMode as Child.
+ * * Both :- Defines CopyHiearchyMode as Both.
+ * * None :- Defines CopyHiearchyMode as None.
+ * ```
  */
 export declare type CopyHierarchyType =
-/**  Defines CopyHiearchyMode as Parent */
 'Parent' |
-/**  Defines CopyHiearchyMode as Child */
 'Child' |
-/**  Defines CopyHiearchyMode as Both */
 'Both' |
-/**  Defines CopyHiearchyMode as None */
 'None' ;

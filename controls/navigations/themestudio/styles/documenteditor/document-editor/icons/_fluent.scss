@@ -53,6 +53,11 @@
       font-size: 13px;
     }
 
+    .e-de-multi-cmt-mark::before {
+      content: '\e8bc';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-post::before {
       content: '\e71d';
       font-family: 'e-icons';
@@ -163,6 +168,8 @@
     content: '\e775';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 5px;
+    position: absolute;
   }
 
   .e-de-tablecell-center-alignment::before {
@@ -170,6 +177,8 @@
     content: '\e7e5';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 5px;
+    position: absolute;
   }
 
   .e-de-tablecell-bottom-alignment::before {
@@ -177,6 +186,8 @@
     content: '\e7d9';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 5px;
+    position: absolute;
   }
 
   .e-de-table-border-setting {
@@ -226,15 +237,16 @@
     content: '\e7eb';
     font-size: $de-border-none-setting-font-size;
     position: absolute;
+    margin: 3px;
   }
 
   .e-de-table-border-box-setting::before {
     color: $icon-color;
     content: '\e834';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3px;
     position: absolute;
-    top: 2px;
+    top: 4px;
   }
 
   .e-de-table-border-all-setting::before {
@@ -242,18 +254,18 @@
     content: '\e7e8';
     font-family: 'e-icons';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3px;
     position: absolute;
-    top: 2px;
+    top: 4px;
   }
 
   .e-de-table-border-custom-setting::before {
     color: $icon-color;
     content: '\e7d5';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3px;
     position: absolute;
-    top: 2px;
+    top: 4px;
   }
 
   .e-de-para-border-none-setting::before {
@@ -261,33 +273,35 @@
     content: '\e890';
     font-size: $de-border-none-setting-font-size;
     position: absolute;
+    margin: 3px;
+    top: 1px;
   }
 
   .e-de-para-border-box-setting::before {
     color: $icon-color;
     content: '\e891';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3.5px;
     position: absolute;
-    top: 2px;
+    top: 3.5px;
   }
 
   .e-de-para-border-shadow-setting::before {
     color: $icon-color;
     content: '\e892';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3.5px;
     position: absolute;
-    top: 2px;
+    top: 3.5px;
   }
 
   .e-de-para-border-custom-setting::before {
     color: $icon-color;
     content: '\e88f';
     font-size: $de-border-setting-font-size;
-    left: 2px;
+    left: 3.5px;
     position: absolute;
-    top: 2px;
+    top: 3.5px;
   }
 
   .e-de-table-border-toptop-alignment::before {
@@ -364,8 +378,8 @@
   }
 
   .e-de-columns-presets-genral {
-    height: 62px;
-    width: 62px;
+    height: 70px;
+    width: 70px;
     margin-right: 33px;
     margin-bottom: 12px;
   }

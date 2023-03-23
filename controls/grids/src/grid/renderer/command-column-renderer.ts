@@ -22,7 +22,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
 
     public element: HTMLElement = this.parent.createElement('TD', {
         className: 'e-rowcell e-unboundcell', attrs: {
-            role: 'gridcell', tabindex: '-1'
+            tabindex: '-1'
         }
     });
     constructor(parent: IGrid, locator?: ServiceLocator) {

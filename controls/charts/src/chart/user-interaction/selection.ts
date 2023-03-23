@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-constant-condition */
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Selection src file
  */
@@ -183,7 +183,7 @@ export class Selection extends BaseSelection {
         const series: Series = <Series>chart.series[index.series];
         elementId = (series.type !== 'Scatter' && series.type !== 'Bubble' && marker) ? (elementId + '_Symbol' + suffix) : elementId;
 
-        return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea') && series.marker.visible) ?
+        return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') && series.marker.visible) ?
             getElement(elementId + '1') : null];
     }
 
@@ -412,7 +412,7 @@ export class Selection extends BaseSelection {
                         seriesIndex = series.index;
                         points = (<Series>series).points;
                         if (!isNaN(pointIndex)) {
-                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex as number].yValue :
+                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[pointIndex as number].yValue :
                                 points[pointIndex as number].regions[0].y;
                             selectedPointX = points[pointIndex as number].xValue;
                             if (chart.primaryXAxis.valueType === 'Category') {
@@ -426,7 +426,7 @@ export class Selection extends BaseSelection {
                                     pointIndex: pointIndex
                                 });
                             }
-                            if (series.type === 'RangeArea' || series.type === 'SplineRangeArea') {
+                            if (series.type === 'RangeArea' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') {
                                 selectedPointValues.push({
                                     x: selectedPointX, y: points[pointIndex as number].regions[0].y,
                                     seriesIndex: seriesIndex, pointIndex: pointIndex
@@ -458,7 +458,7 @@ export class Selection extends BaseSelection {
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
                     selectedPointX = points[pointIndex as number].xValue;
-                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex as number].yValue :
+                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[pointIndex as number].yValue :
                         points[pointIndex as number].regions[0].y;
                     if (chart.primaryXAxis.valueType === 'Category') {
                         selectedPointX = points[pointIndex as number].x.toLocaleString();
@@ -676,7 +676,7 @@ export class Selection extends BaseSelection {
                         this.removeSvgClass(legendShape, className);
                     } else {
                         this.addSvgClass(legendShape, className);
-                        if (className.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                        if (className.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && this.chart.highlightColor !== 'transparent' && !isNullOrUndefined(this.chart.highlightColor)) {
                             legendShape.setAttribute('stroke', this.chart.highlightColor);
                             if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightPattern === 'None') {
                                 legendShape.setAttribute('fill', this.chart.highlightColor);
@@ -949,7 +949,9 @@ export class Selection extends BaseSelection {
             ids[0] = ids[1];
         } else if (id.indexOf('_Point_') > -1) {
             ids = id.split('_Series_')[1].split('_Point_');
-        } else if (id.indexOf('_Series_') > -1) {
+        }else if (id.indexOf('_border_') > -1) {
+            ids[0] = id.split('_border_')[1];
+        }else if (id.indexOf('_Series_') > -1) {
             ids[0] = id.split('_Series_')[1];
         } else if (id.indexOf('_chart_legend_shape_') > -1) {
             ids = id.split('_chart_legend_shape_');
@@ -1000,7 +1002,7 @@ export class Selection extends BaseSelection {
                     yAxisOffset = series.yAxis.rect.y - axisOffset.y;
                 }
                 for (let j: number = 0; j < points.length; j++) {
-                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[j as number].yValue :
+                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[j as number].yValue :
                         points[j as number].regions[0].y;
                     let isCurrentPoint: boolean;
                     let selectedPointX: string | number | Date = points[j as number].xValue;
@@ -1032,7 +1034,7 @@ export class Selection extends BaseSelection {
                         this.selection(chart, index, this.findElements(chart, series, index, '', !series.isRectSeries ? series.marker.visible : false));
                         selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
-                    if (isCurrentPoint && (series.type === 'RangeArea' || series.type === 'SplineRangeArea')) {
+                    if (isCurrentPoint && (series.type === 'RangeArea' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea')) {
                         selectedPointValues.push({ x: selectedPointX, y: points[j as number].regions[0].y });
                     }
                 }
@@ -1531,7 +1533,7 @@ export class Selection extends BaseSelection {
     public highlightChart(target: Element, eventType: string): void {
         if (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight) {
             if (!isNullOrUndefined(target)) {
-                if (target.id.indexOf('text') > 1) {
+                if (target.id.indexOf('_legend_text') > 1) {
                     target = getElement(target.id.replace('text', 'shape'));
                 }
                 if ((target).hasAttribute('class') && ((target).getAttribute('class').indexOf('highlight') > -1 ||

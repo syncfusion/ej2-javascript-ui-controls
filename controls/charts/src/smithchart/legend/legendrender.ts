@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart } from '../../smithchart';
 import { measureText, TextOption, renderTextElement, CircleOption, PathOption, RectOption } from '../../smithchart/utils/helper';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';

@@ -130,6 +130,8 @@ $calendar-bigger-week-header-font-size: 14px !default;
 $calendar-today-border-color: 1px solid $accent !default;
 $calendar-today-box-shadow: none !default;
 $calendar-focus-box-shadow: none !default;
+$calendar-disabled-today-box-shadow: inset 1px 0 $accent, inset 0 1px $accent, inset -1px 0 $accent, inset 0 -1px $accent !default;
+$calendar-disabled-today-font-color: #808080 !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-normal-month-view-width: $calendar-normal-month-view-height !default;
@@ -159,10 +161,10 @@ $calendar-week-number-font-weight: 500 !default;
 
 //enddefault
 //today
-$calendar-footer-container-padding: 0 10px 10px 10px !default;
+$calendar-footer-container-padding: 10px 10px 10px 10px !default;
 $calendar-footer-border: none !default;
 $calendar-footer-background: $calendar-bg-color !default;
-$calendar-bigger-footer-container-padding: 0 10px 10px 10px !default;
+$calendar-bigger-footer-container-padding: 10px 10px 10px 10px !default;
 $calendar-bigger-footer-border: none !default;
 $calendar-today-disabled-background-style: transparent !default;
 $calendar-today-disabled-border-style: transparent !default;

@@ -10,7 +10,7 @@ import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
-import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
@@ -36,6 +36,7 @@ import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
 import { NodeCutter, DOMNode } from '../../editor-manager';
 import { EnterKeyAction } from '../actions/enter-key';
+import { FormatPainter } from '../actions/format-painter';
 /**
  * Specifies Rich Text Editor interfaces.
  *
@@ -87,6 +88,17 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     tableSettings: TableSettingsModel
 
     pasteCleanupSettings: PasteCleanupSettingsModel
+    /**
+     * Configure the format painter settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedContext: ['Text', 'List', 'Table'],
+     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
+     * deniedFormats: null
+     * }
+     */
+    formatPainterSettings: FormatPainterSettingsModel
 
     floatingToolbarOffset?: number
 
@@ -118,6 +130,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     value?: string
     saveInterval?: number
 
+    showTooltip?: boolean;
     isBlur?: boolean
     isRTE?: boolean
     contentModule?: IRenderer
@@ -150,6 +163,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     markdownEditorModule: MarkdownEditor
     htmlEditorModule: HtmlEditor
     countModule?: Count
+    formatPainterModule?: FormatPainter
     serviceLocator?: ServiceLocator
     setEnable?(): void
     setReadOnly?(isInit?: boolean): void
@@ -196,6 +210,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getInsertVidMaxWidth?(): string | number
     getSelection(): string
     currentTarget: HTMLElement
+    focusIn(): void
 }
 /**
  * @deprecated
@@ -256,6 +271,7 @@ export interface NotifyArgs {
     insertElement?: Element
     touchData?: ITouchData
     allowedStylePropertiesArray?: string[]
+    formatPainterSettings?: FormatPainterSettingsModel
 }
 
 /**
@@ -494,6 +510,17 @@ export interface ITableCommandsArgs {
 /**
  * @deprecated
  */
+export interface IFormatPainterArgs {
+    /**
+     * Defines the action to be performed.
+     * Allowed values are 'format-copy', 'format-paste', 'escape'.
+     */
+    formatPainterAction: string
+}
+
+/**
+ * @deprecated
+ */
 export interface ITableArgs {
     rows?: number
     columns?: number
@@ -509,7 +536,7 @@ export interface ITableArgs {
  */
 export interface ITableNotifyArgs {
     module?: string
-    args?: ClickEventArgs | MouseEvent | KeyboardEventArgs
+    args?: ClickEventArgs | MouseEvent | KeyboardEventArgs | TouchEvent
     selection?: NodeSelection
     selectNode?: Node[]
     selectParent?: Node[]
@@ -871,6 +898,7 @@ export interface IHtmlFormatterModel {
     element?: Element
     keyConfig?: { [key: string]: string }
     options?: { [key: string]: number }
+    formatPainterSettings?: FormatPainterSettingsModel
 }
 /**
  * @deprecated
@@ -1295,7 +1323,7 @@ export interface ImageUploadingEventArgs {
      *
      * @blazorType object
      */
-    customFormData: { [key: string]: Object }[]
+    customFormData: { [key: string]: Object; }[];
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
      *
@@ -1483,6 +1511,18 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     'removeFormat': {
         command: 'Clear',
         subCommand: 'ClearFormat'
+    },
+    'copyFormatPainter' : {
+        command: 'FormatPainter',
+        value: 'format-copy'
+    },
+    'applyFormatPainter' : {
+        command: 'FormatPainter',
+        value: 'format-paste'
+    },
+    'escapeFormatPainter' : {
+        command: 'FormatPainter',
+        value: 'escape'
     }
 };
 
@@ -1494,7 +1534,8 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
-'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';
+'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter'
+| 'copyFormatPainter' | 'escapeFormatPainter';
 
 /**
  * @hidden

@@ -538,11 +538,11 @@ describe('IE 11 insert link', () => {
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Link"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Link (Ctrl + K)"]'), preventDefault: function () { } };
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Link"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Link (Ctrl + K)"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).linkModule.dialogObj.element)).toBe(true);
 

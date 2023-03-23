@@ -32,6 +32,9 @@
         // font-size: $de-para-dlg-heading-font-size;
         font-weight: $de-para-dlg-heading-font-weight;
         margin-bottom: $de-ff-dlg-heading-mrgn-btm;
+        @if $skin-name=='Material3' {
+            font-size: 14px;
+        }
         @if $skin-name=='tailwind' {
             color: $de-dlg-heading-main-header;
         }
@@ -585,7 +588,9 @@
     .e-de-table-dia-align-label {
         display: inline-block;
         font-size: $de-table-alignment-label-font-size;
-        font-weight: $de-header-font-weight;
+        @if $skin-name !='Material3' {
+            font-weight: $de-header-font-weight;
+        }
         margin-left: $de-table-alignment-label-margin-left;
         margin-top: $de-table-alignment-label-margin-top;
     }
@@ -602,16 +607,22 @@
     .e-de-table-alignment-active {
         border: 1px solid $de-table-align-active-color;
     }
-    // .e-de-table-dialog-options-label {
-    //     font-size: $de-table-options-font-size;
-    //     font-weight: $de-table-options-font-weight;
-    //     padding-bottom: $de-table-options-padding-bottom;
-    //     @if $skin-name=='tailwind' {
-    //         color: $de-dlg-heading-main-header;
-    //     }
-    // }
+    .e-de-table-dialog-options-label {
+        @if $skin-name =='Material3' {
+            font-size: $de-table-options-font-size;
+            font-weight: $de-table-options-font-weight;
+            padding-bottom: $de-table-options-padding-bottom;
+        }
+        // @if $skin-name=='tailwind' {
+        //     color: $de-dlg-heading-main-header;
+        // }
+    }
     .e-de-table-dialog-size-label {
         padding-top: $de-table-options-padding-top !important;
+        @if $skin-name =='Material3' {
+            font-weight: 600;
+            font-size: 12px;
+        }
     }
 
     .e-de-list-ddl-header {
@@ -807,8 +818,10 @@
         .e-de-style-paragraph-group-button,
         .e-de-style-paragraph-indent-group-button {
             .e-btn {
-                background-color: $de-style-dlg-btn-bg-color;
-                border-color: $de-style-dlg-btn-border-color;
+                background: $de-style-dlg-btn-bg-color;
+                @if $skin-name !='Material3' {
+                    border-color: $de-style-dlg-btn-border-color;
+                }
                 #{if(&, '&', '*')}:focus {
                     background-color: $de-style-btn-bg-color;
                     box-shadow: $de-toggle-btn-border;
@@ -898,7 +911,7 @@
                 margin-right: $de-style-list-top;
             }
             .e-bigger {
-                .e-de-style-left-div .e-de-style-dlg-name-input {
+                .e-de-style-dlg-name-input {
                     height: $e-de-style-input-text-height-bigger;
                 }
                 .e-de-style-bold-button-size {
@@ -1471,7 +1484,7 @@
     }
     .e-de-restrict-pane,
     .e-de-op {
-        background-color: $de-op-bg-color;
+        background: $de-op-bg-color;
     }
     .e-de-restrict-pane,
     .e-de-op {
@@ -1720,13 +1733,21 @@
     }
     .e-de-font-dlg {
         width: $de-font-dlg-width;
+        @if $skin-name == 'Material3' {
+            padding: 8px
+        }
     }
     .e-de-hyperlink {
         width: $de-hyper-link-width;
     }
     .e-bigger {
         .e-de-hyperlink {
-            width: 300px;
+            @if $skin-name=='Material3' {
+                width: 320px;
+            }
+            @else {
+                width: 300px;
+            }
         }
     }
     .e-de-insert-table {
@@ -1824,14 +1845,23 @@
     }
     .e-de-table-properties-dlg {
         //height: $de-table-ppty-dlg-height;
+        @if $skin-name =='Material3' {
+            padding: 0px 8px;
+        }
         width: $de-table-ppty-dlg-width;
     }
     .e-de-table-border-shading-dlg {
         width: $de-table-border-shading-dlg-width;
+        @if $skin-name =='Material3'{
+            height: 400px
+        }
     }
     .e-de-table-cell-margin-dlg {
         height: $de-table-cell-margin-dlg-height;
         width: $de-table-cell-margin-dlg-width;
+        @if $skin-name =='Material3' {
+            padding: 0px 8px
+        }
     }
     .e-de-table-options-dlg {
         height: $de-table-options-dlg-height;
@@ -2096,15 +2126,26 @@
             }
             .e-de-style-bold-button-size {
                 margin-left: $de-style-dialog-label-bottom-margin;
-                @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' {
+                @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
                     margin-right: 8px;
                     height: 35px;
                 }
             }
         }
+
+        @if $skin-name =='Material3' {
+            .e-de-style-font-group-button button,
+            .e-de-style-paragraph-indent-group-button button,
+            .e-de-style-paragraph-group-button button {
+                width: 36px;
+                border-radius: 4px;
+                margin-right: 5px;
+                background: $de-style-dlg-btn-bg-color;
+            }
+        }
         .e-de-style-bold-button-size {
             margin-left: $de-style-dialog-label-bottom-margin;
-            @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' {
+            @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
                 margin-right: 8px;
                 height: 31px;
             }
@@ -2137,7 +2178,7 @@
             margin-left: $de-style-font-margin-left;
             margin-right: $de-style-font-margin-right;
         }
-        .e-de-style-left-div .e-de-style-dlg-name-input {
+        .e-de-style-dlg-name-input {
             height: $e-de-style-input-text-height;
         }
         .e-style-list {
@@ -2153,6 +2194,10 @@
             @else 
             {
               width: 135px;
+              @if $skin-name =='Material3' {
+                background: $de-style-dlg-btn-bg-color;
+                border-radius: 2px;
+              }
             }
         }
         .e-de-style-options-div,
@@ -2160,11 +2205,15 @@
             margin-bottom: $de-style-dialog-option-div-bottom-margin !important;
         }
         .e-de-style-paragraph-group-button {
-            border-right: 2px solid $de-style-toggle-btn-color;
+            @if $skin-name !='Material3' {
+                border-right: 2px solid $de-style-toggle-btn-color;
+            }
         }
         .e-de-style-font-group-button {
-            border-left: 2px solid $de-style-toggle-btn-color;
-            border-right: 2px solid $de-style-toggle-btn-color;
+            @if $skin-name !='Material3' {
+                border-left: 2px solid $de-style-toggle-btn-color;
+                border-right: 2px solid $de-style-toggle-btn-color;
+            }
             @if $skin-name=='bootstrap5' or $skin-name == 'FluentUI' {
                 padding-right: $de-style-dialog-option-div-bottom-margin;
             }
@@ -2259,14 +2308,18 @@
             margin-left: 0;
             margin-right: $de-table-ppty-dlg-measure-div-margin-left;
         }
-        // .e-de-table-ppty-dlg-left-indent-container {
-        //     bottom: $e-de-table-ppty-dlg-left-indent-container-bottom;
-        //     left: $de-table-prop-left-indnt-cntr-pos;
-        //     position: relative;
-        // }
-        // .e-de-table-ppty-dlg-left-indent-container.e-de-rtl {
-        //     right: $de-table-prop-left-indnt-cntr-pos;
-        // }
+        .e-de-table-ppty-dlg-left-indent-container {
+            @if $skin-name =='Material3' {
+                bottom: $e-de-table-ppty-dlg-left-indent-container-bottom;
+                left: $de-table-prop-left-indnt-cntr-pos;
+                position: relative;
+            }
+        }
+        .e-de-table-ppty-dlg-left-indent-container.e-de-rtl {
+            @if $skin-name =='Material3' {
+                right: $de-table-prop-left-indnt-cntr-pos;
+            }
+        }
         .e-de-table-ppty-dlg-row-height-label {
             float: right;
             margin-right: $de-table-ppty-dlg-row-height-label-margin-right;
@@ -2518,7 +2571,12 @@
         
         .e-de-ltr-btn-div {
             font-size: 12px;
-            width: 200px;
+            @if $skin-name =='Material3' {
+                width: 100px;
+            }
+            @else {
+                width: 200px;
+            }
         }
         .e-de-tbl-rtl-btn-div {
             font-size: 12px;
@@ -2802,8 +2860,10 @@
             @if $skin-name !='tailwind' and $skin-name != 'FluentUI' {
                 background-color: $de-background;
             }
-            border: 1px solid $de-cmt-separator;
-            border-radius: 2px;
+            @if $skin-name !='Material3' {
+                border: 1px solid $de-cmt-separator;
+                border-radius: 2px;
+            }
             margin: $de-cmt-sub-container-margin;
             padding: $de-cmt-sub-container-padding;
         }
@@ -2917,7 +2977,12 @@
             .e-de-track-pane-drop-btn {
                 padding-left: 0px;
                 padding-right: 0px;
-                padding-top: 5px;
+                @if $skin-name =='Material3' {
+                    padding-top: 10px;
+                }
+                @else {
+                    padding-top: 5px;
+                }
                 font-size: 13px;
                 font-weight: $de-header-font-weight;
             }
@@ -3044,7 +3109,12 @@
         }
         .e-de-cmt-textarea.e-input {
             color: $de-cmt-pant-content-font;
-            font-size: 13px;
+            @if $skin-name == 'tailwind' {
+                font-size: $de-cmt-author-nme-fnt-size;
+            }
+            @else {
+                font-size: 13px;
+            }
             line-height: normal;
             min-height: 30px;
             overflow: hidden;

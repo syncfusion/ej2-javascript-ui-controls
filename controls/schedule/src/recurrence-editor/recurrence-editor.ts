@@ -1206,4 +1206,15 @@ export interface RecurrenceEditorChangeEventArgs {
     value: string;
 }
 type DayFormateType = 'wide' | 'narrow' | 'short';
+
+/**
+ * Defines the repeat type of the recurrence editor.
+ * ```props
+ * none :- Denotes no repetition.
+ * daily :- Denotes repetition every day.
+ * weekly :- Denotes repetition every week.
+ * monthly :- Denotes repetition every month.
+ * yearly :- Denotes repetition every year.
+ * ```
+ */
 export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';

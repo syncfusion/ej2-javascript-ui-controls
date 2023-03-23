@@ -83,7 +83,6 @@ describe('filter menu module =>', () => {
             gridObj.actionComplete = actionComplete;
             (gridObj.filterModule as any).filterIconClickHandler(
                 getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
-
         });
         it('number filter functionalites testing', (done: Function) => {
             let instances: string = 'ej2_instances';
@@ -266,6 +265,28 @@ describe('filter menu module =>', () => {
             (gridObj.filterModule as any).filterIconClickHandler(
                 getClickObj(gridObj.getColumnHeaderByField('Verified').querySelector('.e-filtermenudiv')));
 
+        });
+
+        it('number filter ui change render testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterafteropen') {
+                    expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
+                    let instances: string = 'ej2_instances';
+                    const dd: DropDownList = document.querySelector('.e-dropdownlist')[instances][0];
+                    dd.value = 'isnull';
+                    const valInput: HTMLElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
+                    expect(valInput.hasAttribute('disabled')).toBe(false);
+                    dd.change();
+                    expect(valInput.hasAttribute('disabled')).toBe(true);
+                    dd.value = 'equal';
+                    dd.refresh();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
         });
 
         afterAll(() => {

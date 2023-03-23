@@ -65,32 +65,36 @@ export class DateProcessor {
             }
         }
         let tStartDate: Date;
-        do {
-            tStartDate = new Date(cloneStartDate.getTime());
-            const holidayLength: number = this.parent.totalHolidayDates.length;
-            // check holidays and weekends
-            if (this.isValidateNonWorkDays(ganttProp)) {
-                const startTime: number = (!validateAsMilestone || isLoad) ? this.parent.defaultStartTime : this.parent.defaultEndTime;
-                if (!this.parent.includeWeekend) {
-                    const tempDate: Date = new Date(cloneStartDate.getTime());
-                    cloneStartDate = this.getNextWorkingDay(cloneStartDate);
-                    if (tempDate.getTime() !== cloneStartDate.getTime()) {
-                        this.setTime(startTime, cloneStartDate);
+        if (this.parent.autoCalculateDateScheduling) {
+            do {
+                tStartDate = new Date(cloneStartDate.getTime());
+                const holidayLength: number = this.parent.totalHolidayDates.length;
+                // check holidays and weekends
+                if (this.isValidateNonWorkDays(ganttProp)) {
+                    const startTime: number = (!validateAsMilestone || isLoad) ? this.parent.defaultStartTime : this.parent.defaultEndTime;
+                    if (!this.parent.includeWeekend) {
+                        const tempDate: Date = new Date(cloneStartDate.getTime());
+                        cloneStartDate = this.getNextWorkingDay(cloneStartDate);
+                        if (tempDate.getTime() !== cloneStartDate.getTime()) {
+                            this.setTime(startTime, cloneStartDate);
+                        }
+                    }
+                    for (let count: number = 0; count < holidayLength; count++) {
+                        const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
+                        const holidayTo: Date = new Date(holidayFrom.getTime());
+                        holidayFrom.setHours(0, 0, 0, 0);
+                        holidayTo.setHours(23, 59, 59, 59);
+                        if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
+                            cloneStartDate.setDate(cloneStartDate.getDate() + 1);
+                            this.setTime(startTime, cloneStartDate);
+                        }
                     }
                 }
-                for (let count: number = 0; count < holidayLength; count++) {
-                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
-                    const holidayTo: Date = new Date(holidayFrom.getTime());
-                    holidayFrom.setHours(0, 0, 0, 0);
-                    holidayTo.setHours(23, 59, 59, 59);
-                    if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
-                        cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-                        this.setTime(startTime, cloneStartDate);
-                    }
-                }
-            }
-        } while (tStartDate.getTime() !== cloneStartDate.getTime());
-        return new Date(cloneStartDate.getTime());
+            } while (tStartDate.getTime() !== cloneStartDate.getTime());
+            return new Date(cloneStartDate.getTime());
+        } else {
+            return new Date(cloneStartDate.getTime());
+        }
     }
     /**
      * To update given date value to valid end date
@@ -123,36 +127,43 @@ export class DateProcessor {
             }
         }
         let tempCheckDate: Date;
-        do {
-            tempCheckDate = new Date(cloneEndDate.getTime());
-            const holidayLength: number = this.parent.totalHolidayDates.length;
-            if (this.isValidateNonWorkDays(ganttProp)) {
-                if (!this.parent.includeWeekend) {
-                    const tempDate: Date = new Date(cloneEndDate.getTime());
-                    cloneEndDate = this.getPreviousWorkingDay(cloneEndDate);
-                    if (tempDate.getTime() !== cloneEndDate.getTime()) {
-                        this.setTime(this.parent.defaultEndTime, cloneEndDate);
-                    }
-                }
-                for (let count: number = 0; count < holidayLength; count++) {
-                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
-                    const holidayTo: Date = new Date(holidayFrom.getTime());
-                    const tempHoliday: Date = new Date(cloneEndDate.getTime());
-                    tempHoliday.setMinutes(cloneEndDate.getMilliseconds() - 2);
-                    holidayFrom.setHours(0, 0, 0, 0);
-                    holidayTo.setHours(23, 59, 59, 59);
-                    if (cloneEndDate.getTime() >= holidayFrom.getTime() && cloneEndDate.getTime() < holidayTo.getTime() ||
-                        tempHoliday.getTime() >= holidayFrom.getTime() && tempHoliday.getTime() < holidayTo.getTime()) {
-                        cloneEndDate.setDate(cloneEndDate.getDate() - 1);
-                        if (!(cloneEndDate.getTime() === holidayFrom.getTime() && this.parent.defaultEndTime === 86400 &&
-                            this.getSecondsInDecimal(cloneEndDate) === 0)) {
+        if (this.parent.autoCalculateDateScheduling) {
+            do {
+                tempCheckDate = new Date(cloneEndDate.getTime());
+                const holidayLength: number = this.parent.totalHolidayDates.length;
+                if (this.isValidateNonWorkDays(ganttProp)) {
+                    if (!this.parent.includeWeekend) {
+                        const tempDate: Date = new Date(cloneEndDate.getTime());
+                        cloneEndDate = this.getPreviousWorkingDay(cloneEndDate);
+                        if (tempDate.getTime() !== cloneEndDate.getTime()) {
                             this.setTime(this.parent.defaultEndTime, cloneEndDate);
                         }
                     }
+                    for (let count: number = 0; count < holidayLength; count++) {
+                        const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
+                        const holidayTo: Date = new Date(holidayFrom.getTime());
+                        const tempHoliday: Date = new Date(cloneEndDate.getTime());
+                        tempHoliday.setMinutes(cloneEndDate.getMilliseconds() - 2);
+                        holidayFrom.setHours(0, 0, 0, 0);
+                        holidayTo.setHours(23, 59, 59, 59);
+                        if (cloneEndDate.getTime() >= holidayFrom.getTime() && cloneEndDate.getTime() < holidayTo.getTime() ||
+                            tempHoliday.getTime() >= holidayFrom.getTime() && tempHoliday.getTime() < holidayTo.getTime()) {
+                            cloneEndDate.setDate(cloneEndDate.getDate() - 1);
+                            if (!(cloneEndDate.getTime() === holidayFrom.getTime() && this.parent.defaultEndTime === 86400 &&
+                                this.getSecondsInDecimal(cloneEndDate) === 0)) {
+                                this.setTime(this.parent.defaultEndTime, cloneEndDate);
+                            }
+                        }
+                    }
                 }
+            } while (tempCheckDate.getTime() !== cloneEndDate.getTime());
+            return new Date(cloneEndDate.getTime());
+        } else {
+            if (!isNullOrUndefined(cloneEndDate)) {
+                this.setTime(this.parent.defaultEndTime, cloneEndDate);
             }
-        } while (tempCheckDate.getTime() !== cloneEndDate.getTime());
-        return new Date(cloneEndDate.getTime());
+            return new Date(cloneEndDate.getTime());
+        } 
     }
     /**
      * To validate the baseline start date
@@ -258,6 +269,12 @@ export class DateProcessor {
                 tempEndDate = this.getEndDate(ganttProp.startDate, duration, ganttProp.durationUnit, ganttProp, false);
             }
             this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
+        } else {
+            tempEndDate = ganttData[this.parent.taskFields.endDate];
+            if (!isNullOrUndefined(tempEndDate)) {
+                this.setTime(this.parent.defaultEndTime, tempEndDate);
+            }
+            this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
         }
         if (this.parent.taskFields.endDate) {
             this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
@@ -326,9 +343,9 @@ export class DateProcessor {
      */
     private getNonworkingTime(sDate: Date, eDate: Date, isAutoSchedule: boolean, isCheckTimeZone: boolean): number {
         isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
-        const weekendCount: number = !this.parent.includeWeekend && isAutoSchedule ? this.getWeekendCount(sDate, eDate) : 0;
+        const weekendCount: number = (!this.parent.includeWeekend && this.parent.autoCalculateDateScheduling) && isAutoSchedule ? this.getWeekendCount(sDate, eDate) : 0;
         const totalHours: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
-        const holidaysCount: number = isAutoSchedule ? this.getHolidaysCount(sDate, eDate) : 0;
+        const holidaysCount: number = isAutoSchedule && this.parent.autoCalculateDateScheduling ? this.getHolidaysCount(sDate, eDate) : 0;
         const totWorkDays: number = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
         const nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
         const totalNonWorkTime: number = (totWorkDays * (86400 - this.parent.secondsPerDay)) +
@@ -514,7 +531,7 @@ export class DateProcessor {
                                 if (data.ganttProperties.taskId === record.parentItem.taskId) {
                                     if (!isNullOrUndefined(data.ganttProperties.startDate))
                                         sDate = data.ganttProperties.startDate;
-                                }
+                                }else { sDate = this.getProjectStartDate(ganttProp) }
                             })
                         }
                         else { sDate = this.getProjectStartDate(ganttProp) }
@@ -781,6 +798,9 @@ export class DateProcessor {
     /*Check given date is on holidays*/
     public isOnHolidayOrWeekEnd(date: Date, checkWeekEnd: boolean): boolean {
         checkWeekEnd = !isNullOrUndefined(checkWeekEnd) ? checkWeekEnd : this.parent.includeWeekend;
+        if (!this.parent.autoCalculateDateScheduling) {
+            checkWeekEnd = true;
+        }
         if (!checkWeekEnd && this.parent.nonWorkingDayIndex.indexOf(date.getDay()) !== -1) {
             return true;
         }
@@ -810,8 +830,8 @@ export class DateProcessor {
         let startRangeIndex: number = -1;
         let endRangeIndex: number = -1;
         let totNonWrkSecs: number = 0;
-        const startOnHoliday: boolean = isAutoSchedule ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
-        const endOnHoliday: boolean = isAutoSchedule ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
+        const startOnHoliday: boolean = isAutoSchedule && this.parent.autoCalculateDateScheduling? this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        const endOnHoliday: boolean = isAutoSchedule && this.parent.autoCalculateDateScheduling? this.isOnHolidayOrWeekEnd(endDate, null) : false;
 
         for (let i: number = 0; i < this.parent.nonWorkingTimeRanges.length; i++) {
             const val: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[i as number];

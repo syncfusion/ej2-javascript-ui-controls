@@ -1,8 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { Sparkline, ITooltipRenderingEventArgs } from '../index';
 import { SparkValues, PathOption, drawPath, getIdElement, Rect, withInBounds } from '../utils/helper';

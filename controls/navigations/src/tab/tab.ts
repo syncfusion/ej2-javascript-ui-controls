@@ -13,16 +13,36 @@ type HTEle = HTMLElement;
 type Str = string;
 
 /**
- * Options to set the orientation of Tab header.
+ * Specifies the orientation of the Tab header.
+ * ```props
+ * Top :- Places the Tab header on the top.
+ * Bottom :- Places the Tab header on the bottom.
+ * Left :- Places the Tab header on the left.
+ * Right :- Places the Tab header on the right.
+ * ```
  */
 export type HeaderPosition = 'Top' | 'Bottom' | 'Left' | 'Right';
+
 /**
  * Options to set the content element height adjust modes.
+ * ```props
+ * None :- Based on the given height property, the content panel height is set.
+ * Auto :- Tallest panel height of a given Tab content is set to all the other panels.
+ * Content :- Based on the corresponding content height, the content panel height is set.
+ * Fill :- Content element take height based on the parent height.
+ * ```
  */
 export type HeightStyles = 'None' | 'Auto' | 'Content' | 'Fill';
+
 /**
  * Specifies the options of Tab content display mode.
+ * ```props
+ * Demand :- The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
+ * Dynamic :- The content of all the tabs are rendered on the initial load and maintained in the DOM.
+ * Init :- The content of all the tabs are rendered on the initial load and maintained in the DOM.
+ * ```
  */
+
 export type ContentLoad = 'Dynamic' | 'Init' | 'Demand';
 
 const CLS_TAB: string = 'e-tab';
@@ -198,11 +218,11 @@ export class Header extends ChildProperty<Header> {
     public iconCss: string;
     /**
      * Options for positioning the icon in the Tab item header. This property depends on `iconCss` property.
-     * The possible values are:
-     * - Left: Places the icon to the `left` of the item.
-     * - Top: Places the icon on the `top` of the item.
-     * - Right: Places the icon to the `right` end of the item.
-     * - Bottom: Places the icon at the `bottom` of the item.
+     * The possible values for this property as follows
+     * * `Left`: Places the icon to the left of the item.
+     * * `Top`: Places the icon on the top of the item.
+     * * `Right`: Places the icon to the right end of the item.
+     * * `Bottom`: Places the icon at the bottom of the item.
      *
      * @default 'left'
      */
@@ -412,11 +432,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public selectedItem: number;
     /**
      * Specifies the orientation of Tab header.
-     * The possible values are:
-     * - Top: Places the Tab header on the top.
-     * - Bottom: Places the Tab header at the bottom.
-     * - Left: Places the Tab header on the left.
-     * - Right: Places the Tab header at the right.
+     * The possible values for this property as follows
+     * * `Top`: Places the Tab header on the top.
+     * * `Bottom`: Places the Tab header at the bottom.
+     * * `Left`: Places the Tab header on the left.
+     * * `Right`: Places the Tab header at the right.
      *
      * @default 'Top'
      */
@@ -424,11 +444,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public headerPlacement: HeaderPosition;
     /**
      * Specifies the height style for Tab content.
-     * The possible values are:
-     * - None: Based on the given height property, the content panel height is set.
-     * - Auto: Tallest panel height of a given Tab content is set to all the other panels.
-     * - Content: Based on the corresponding content height, the content panel height is set.
-     * - Fill: Based on the parent height, the content panel height is set.
+     * The possible values for this property as follows
+     * * `None`: Based on the given height property, the content panel height is set.
+     * * `Auto`: Tallest panel height of a given Tab content is set to all the other panels.
+     * * `Content`: Based on the corresponding content height, the content panel height is set.
+     * * `Fill`: Based on the parent height, the content panel height is set.
      *
      * @default 'Content'
      */
@@ -437,8 +457,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Specifies the Tab display mode when Tab content exceeds the viewing area.
      * The possible modes are:
-     * - Scrollable: All the elements are displayed in a single line with horizontal scrolling enabled.
-     * - Popup: Tab container holds the items that can be placed within the available space and rest of the items are moved to the popup.
+     * * `Scrollable`: All the elements are displayed in a single line with horizontal scrolling enabled.
+     * * `Popup`: Tab container holds the items that can be placed within the available space and rest of the items are moved to the popup.
      * If the popup content overflows the height of the page, the rest of the elements can be viewed by scrolling the popup.
      *
      * @default 'Scrollable'
@@ -448,9 +468,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Specifies the modes for Tab content.
      * The possible modes are:
-     * `Dynamic` Load Tab content dynamically at the time of switching it's header.
-     * `Init` Load all tab contents at initial load.
-     * `Demand` Load Tab content when required but keep content once it is rendered.
+     * * `Demand` - The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
+     * * `Dynamic` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
+     * * `Init` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
      *
      * @default 'Dynamic'
      */
@@ -796,7 +816,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     }).outerHTML;
                     const wrap: HTEle = this.createElement('div', {
                         className: CLS_WRAP, innerHTML: cont,
-                        attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index }
+                        attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-disabled': 'false' }
                     });
                     tabItems.appendChild(this.createElement('div', attr));
                     selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
@@ -920,7 +940,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
             const tabIndex : string =  isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
-            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex , role: 'tab', 'aria-selected': 'false' };
+            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex , role: 'tab', 'aria-selected': 'false', 'aria-disabled': 'false' };
             tCont.appendChild(this.btnCls.cloneNode(true));
             const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
@@ -1699,6 +1719,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const scrCnt: HTEle = <HTEle>select('.' + this.scrCntClass, this.tbItems);
         if (!this.isVertical() && !isNOU(scrCnt)) {
             const scrBar: HTEle = <HTEle>select('.e-hscroll-bar', this.tbItems);
+            scrBar.removeAttribute('tabindex');
             const scrStart: number = scrBar.scrollLeft;
             const scrEnd: number = scrStart + scrBar.offsetWidth;
             const eleStart: number = target.offsetLeft;
@@ -2056,7 +2077,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.items[index].disabled = !value;
             this.dataBind();
         }
-        tbItems.setAttribute('aria-disabled', (value === true) ? 'false' : 'true');
+        tbItems.firstElementChild.setAttribute('aria-disabled', (value === true) ? 'false' : 'true');
     }
     /**
      * Adds new items to the Tab that accepts an array as Tab items.
@@ -2173,6 +2194,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
                 if (!isNOU(cntTrg)) {
                     const registeredTemplate = (this as any).registeredTemplate;
+                    const portal = (this as any).portals;
                     if (registeredTemplate && registeredTemplate.content) {
                         var templateToClear = [];
                         for (let i = 0; i < registeredTemplate.content.length; i++) {
@@ -2185,6 +2207,16 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         }
                         if (templateToClear.length > 0) {
                             this.clearTemplate(['content'], templateToClear);
+                        }
+                    }
+                    else if (portal) {
+                        for (var i = 0; i < portal.length; i++) {
+                            var portalItem = portal[i];
+                            var closestItem = closest(portalItem.containerInfo, '.' + CLS_ITEM);
+                            if (!isNullOrUndefined(portalItem) && closestItem === cntTrg) {
+                                this.clearTemplate(['content'], i);
+                                break;
+                            }
                         }
                     }
                     detach(cntTrg);
@@ -2543,7 +2575,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     }
                 }
                 const tabIndex: string = isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
-                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-selected': 'true'};
+                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-selected': 'true', 'aria-disabled': 'false' };
                 tConts.appendChild(this.btnCls.cloneNode(true));
                 const wraper: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
                 wraper.appendChild(tConts);
@@ -2600,7 +2632,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const tabIndex: string = element.firstElementChild.getAttribute('data-tabindex'); 
             const wrap: HTEle = this.createElement('div', {
                 className: CLS_WRAP, innerHTML: conte,
-                attrs: { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-selected': 'true' }
+                attrs: { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-selected': 'true', 'aria-disabled': 'false' }
             });
             tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
             this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wrap);

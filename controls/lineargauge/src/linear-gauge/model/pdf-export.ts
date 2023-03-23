@@ -25,7 +25,7 @@ export class PdfExport {
      * @param {LinearGauge} gauge - Specifies the Linear Gauge instance.
      * @param {ExportType} type - Specifies the extension type of the file to which the Linear Gauge to be exported.
      * @param {string} fileName - Specifies the name of the file.
-     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the gauge.
      * @param {boolean} allowDownload - Specifies whether the exported file should be downloaded or not.
      * @returns {Promise<string>} Returns the promise string
      * @private

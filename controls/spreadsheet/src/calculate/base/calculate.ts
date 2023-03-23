@@ -423,7 +423,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const startDateUTC: number = Date.UTC(
             startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
             startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
-        return new Date(new Date(((dateVal - 1) * (1000 * 3600 * 24)) + startDateUTC).toUTCString().replace(' GMT', ''));
+            return new Date(new Date(((dateVal - 1) * (1000 * 3600 * 24)) + startDateUTC).toUTCString().replace(' GMT', ''));
     }
 
     public getFormulaInfoTable(): Map<string, FormulaInfo> {
@@ -2126,7 +2126,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         return false;
     }
-
+    
     /**
      * @hidden
      * @param {string} val - Specifies the value.
@@ -2221,7 +2221,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             format: 'h:mm:ss a'
         });
     }
-
+    
     /**
      * @hidden
      * @param {Date} dateTime - Specify the date Time

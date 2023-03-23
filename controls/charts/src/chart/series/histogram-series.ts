@@ -1,7 +1,6 @@
+/* eslint-disable jsdoc/require-returns-type */
 /* eslint-disable radix */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { sum, ChartLocation, getPoint, templateAnimate } from '../../common/utils/helper';

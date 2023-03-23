@@ -151,7 +151,7 @@ export class KeyboardShortcut {
                     e.preventDefault();
                 }
             }
-            if (e.keyCode === 79) { /*Ctrl + O*/
+            if (e.keyCode === 79 && this.parent.allowOpen) { /*Ctrl + O*/
                 select('#' + this.parent.element.id + '_fileUpload', this.parent.element).click();
             } else if (e.keyCode === 83) { /*Ctrl + S*/
                 if (this.parent.saveUrl && this.parent.allowSave) { this.parent.notify(exportDialog, null); }

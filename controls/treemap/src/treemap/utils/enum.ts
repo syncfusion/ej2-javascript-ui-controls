@@ -3,36 +3,36 @@
  * Defines the position of the label in treemap leaf node.
  */
 export type LabelPosition =
-    /** To show the position of the label based on the top and left of the treemap leaf nodes.  */
+    /** Specifies to show the position of the label based on the top and left of the treemap leaf nodes.  */
     'TopLeft' |
-    /** To show the position of the label based on the top and center of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the top and center of the treemap leaf nodes. */
     'TopCenter' |
-    /** To show the position of the label based on the top and right of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the top and right of the treemap leaf nodes. */
     'TopRight' |
-    /** To show the position of the label based on the center and left of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the center and left of the treemap leaf nodes. */
     'CenterLeft' |
-    /** To show the position of the label based on the center of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the center of the treemap leaf nodes. */
     'Center' |
-    /** To show the position of the label based on the center and right of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the center and right of the treemap leaf nodes. */
     'CenterRight' |
-    /** To show the position of the label based on the bottom and left of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the bottom and left of the treemap leaf nodes. */
     'BottomLeft' |
-    /** To show the position of the label based on the bottom and center of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the bottom and center of the treemap leaf nodes. */
     'BottomCenter' |
-    /** To show the position of the label based on the bottom and right of the treemap leaf nodes. */
+    /** Specifies to show the position of the label based on the bottom and right of the treemap leaf nodes. */
     'BottomRight';
 
 /**
  * Specifies the layout rendering mode of the treemap.
  */
 export type LayoutMode =
-    /** This visualizes the treemap as the nested rectangles having size proportionate to weight value */
+    /** This visualizes the treemap as the nested rectangles having size proportionate to weight value. */
     'Squarified' |
-    /** This visualizes the treemap as the horizontal rectangles having size proportionate to weight value */
+    /** This visualizes the treemap as the horizontal rectangles having size proportionate to weight value. */
     'SliceAndDiceHorizontal' |
-    /** This visualizes the treemap as the vertical rectangles having size proportionate to weight value */
+    /** This visualizes the treemap as the vertical rectangles having size proportionate to weight value. */
     'SliceAndDiceVertical' |
-    /** This visualizes the treemap as the auto rectangles having size proportionate to weight value */
+    /** This visualizes the treemap rectangles having size proportionate to weight value. This type automatically provides the orientation based on the size of the treemap. */
     'SliceAndDiceAuto';
 
 /**
@@ -51,11 +51,11 @@ export type Alignment =
 export type HighLightMode =
     /** Highlights the treemap item when the mouse over is done on the treemap item. */
     'Item' |
-    /** Highlights the treemap item and level when the mouse over is done on the treemap item. */
+    /** Highlights the treemap item and all its children when the mouse over is done on the treemap item. */
     'Child' |
-    /** Highlights the treemap item and parent level when the mouse over is done on the treemap item. */
+    /** Highlights the treemap item and all its parent levels when the mouse over is done on the treemap item. */
     'Parent' |
-    /** Highlights all the related nodes when the mouse over is done on the treemap item. */
+    /** Highlights all the related nodes such as child and parent when the mouse over is done on the treemap item. */
     'All';
 /**
  * Specifies the element which must be selected when click event is performed in treemap.
@@ -63,39 +63,39 @@ export type HighLightMode =
 export type SelectionMode =
     /** Selects the treemap item when the click operation is done on the treemap item. */
     'Item' |
-    /** Selects the treemap item and level when the click operation is done on the treemap item. */
+    /** Selects the treemap item and all its children when the click operation is done on the treemap item. */
     'Child' |
-    /** Selects the treemap item and parent level when the click operation is done on the treemap item.. */
+    /** Selects the treemap item and all its parent levels when the click operation is done on the treemap item.. */
     'Parent' |
-    /** Selects all the related nodes when the click operation is done on the treemap item. */
+    /** Selects all the related nodes such as child and parent when the click operation is done on the treemap item. */
     'All';
 /**
- * Specifies the export type for the treemap
+ * Specifies the export type for the treemap.
  */
 export type ExportType =
-    /** Specifies the rendered treemap to be exported in the png format. */
+    /** Specifies that the rendered treemap is to be exported in the PNG format. */
     'PNG' |
-    /** Specifies the rendered treemap to be exported in the jpeg format. */
+    /** Specifies that the rendered treemap is to be exported in the JPEG format. */
     'JPEG' |
-    /** Specifies the rendered treemap to be exported in the svg format. */
+    /** Specifies that the rendered treemap is to be exported in the SVG format. */
     'SVG' |
-    /** Specifies the rendered treemap to be exported in the pdf format. */
+    /** Specifies that the rendered treemap is to be exported in the PDF format. */
     'PDF';
 /**
- * Defines the text to be placed within the defined margins.
+ * Defines the action of the label to be placed within the defined margins.
  */
 export type LabelAlignment =
-    /** Specifies that the data label will trim if exceeded the defined margins. */
+    /** Specifies that the label will be trimmed if it exceeds the defined margins. */
     'Trim' |
-    /** Specifies that the data label will hide if exceeded the defined margins. */
+    /** Specifies that the label will be hidden if it exceeds the defined margins. */
     'Hide' |
-    /** Specifies the word to force all text to fit within the defined margins. */
+    /** Specifies that the label will be wrapped by word to fit within the defined margins. */
     'WrapByWord' |
     /** Specifies to wrap the data label if exceed the defined margins. */
     'Wrap';
 
 /**
- * Defines the shape of legend in the treemap component.
+ * Defines the shape of legend item in the treemap.
  */
 export type LegendShape =
     /** Defines the legend shape as circle. */
@@ -121,7 +121,7 @@ export type LegendShape =
     /** Defines the legend shape as image. */
     'Image';
 /**
- * Defines the position of the legend in the treemap component.
+ * Defines the position of the legend in the treemap.
  */
 export type LegendPosition =
     /** Specifies to place the legend at the top of the treemap. */
@@ -132,17 +132,17 @@ export type LegendPosition =
     'Bottom' |
     /** Specifies to place the legend on the right of the treemap. */
     'Right' |
-    /** Specifies to place the legend based on given x and y positions. */
+    /** Specifies to place the legend based on given custom positions. */
     'Float' |
-    /** Specifies to place the legend based on width and height. */
+    /** Specifies to place the legend in a automatic position based on width and height. */
     'Auto';
 /**
- * Defines the legend rendering modes. The modes are default and interactive modes.
+ * Defines the modes for rendering the legend.
  */
 export type LegendMode =
-    /** Specifies the legend as static. */
+    /** Sets the legend as fixed, and has the option to add different shapes showcasing legend items. */
     'Default' |
-    /** Specifies the legend as interactive. */
+    /** Set the legend as interactive, which is rectangular in shape with an indicator showcasing legend items. */
     'Interactive';
 /**
  * Specifies the orientation of the legend in the treemap.
@@ -150,19 +150,19 @@ export type LegendMode =
 export type LegendOrientation =
     /** Defines the legend renders with default behavior. */
     'None' |
-    /** Defines the legend renders with items places horizontally. */
+    /** Defines the legend rendered with items placed horizontally. */
     'Horizontal' |
-    /** Defines the legend renders with items places vertically. */
+    /** Defines the legend rendered with items placed vertically. */
     'Vertical';
 /**
- * Defines the label intersect action in treemap component.
+ * Defines the action to perform when the labels intersect each other in the treemap.
  */
 export type LabelIntersectAction =
     /** Specifies that no action will be taken when the label contents intersect. */
     'None' |
-    /** Specifies the data label to be trimmed when it intersects. */
+    /** Specifies that the data label should be trimmed when it intersects. */
     'Trim' |
-    /** Specifies the data label to be hidden when it intersects. */
+    /** Specifies that the data label should be hidden when it intersects. */
     'Hide';
 
 /**
@@ -178,23 +178,23 @@ export type LabelPlacement =
  * Defines the theme supported for treemap.
  */
 export type TreeMapTheme =
-    /** Render a treemap with material theme. */
+    /** Render a treemap with Material theme. */
     'Material' |
-    /** Render a treemap with fabric theme. */
+    /** Render a treemap with Fabric theme. */
     'Fabric' |
-    /** Render a treemap with highcontrast light theme. */
+    /** Render a treemap with HighContrast light theme. */
     'HighContrastLight' |
-    /** Render a treemap with bootstrap theme. */
+    /** Render a treemap with Bootstrap theme. */
     'Bootstrap' |
-    /** Render a treemap with material dark theme. */
+    /** Render a treemap with Material dark theme. */
     'MaterialDark' |
-    /** Render a treemap with fabric dark theme. */
+    /** Render a treemap with Fabric dark theme. */
     'FabricDark' |
-    /** Render a treemap with highcontrast dark theme. */
+    /** Render a treemap with HighContrast dark theme. */
     'HighContrast' |
-    /** Render a treemap with bootstrap dark theme. */
+    /** Render a treemap with Bootstrap dark theme. */
     'BootstrapDark'|
-    /** Render a treemap with bootstrap4 theme. */
+    /** Render a treemap with Bootstrap4 theme. */
     'Bootstrap4'|
     /**  Render a treemap with Tailwind theme. */
     'Tailwind' |
@@ -220,3 +220,29 @@ export type RenderingMode =
     'BottomRightTopLeft' |
     /** Renders the treemap items from top left to bottom right direction */
     'TopLeftBottomRight';
+
+/**
+ * Defines the shape of the marker in the tooltip of the treemap.
+ * @private
+ */
+export type MarkerShape =
+    /** Renders circle shape marker in the tooltip. */
+    'Circle' |
+    /** Renders rectangle shape marker in the tooltip. */
+    'Rectangle' |
+    /** Renders triangle shape marker in the tooltip. */
+    'Triangle' |
+    /** Renders diamond shape marker in the tooltip. */
+    'Diamond' |
+    /** Renders cross shape marker in the tooltip. */
+    'Cross' |
+    /** Renders horizontal line shape marker in the tooltip. */
+    'HorizontalLine' |
+    /** Renders vertical line shape marker in the tooltip. */
+    'VerticalLine' |
+    /** Renders pentagon shape marker in the tooltip. */
+    'Pentagon' |
+    /** Renders inverted triangle shape marker in the tooltip. */
+    'InvertedTriangle' |
+    /** Renders image marker in the tooltip. */
+    'Image';

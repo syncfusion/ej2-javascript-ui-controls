@@ -1,7 +1,7 @@
-import { extend, isNullOrUndefined, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined as isNOU, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
 import { updateUndoRedoStatus, isIDevice } from '../base/util';
-import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs } from './../base/interface';
+import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from './../base/interface';
 import { IRichTextEditor, IEditorModel, IItemCollectionArgs } from './../base/interface';
 import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from './../../common/interface';
 import { KEY_DOWN, KEY_UP } from './../../common/constant';
@@ -32,10 +32,16 @@ export class Formatter {
         const selection: Selection = self.contentModule.getDocument().getSelection();
         const range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
         let saveSelection: NodeSelection;
+        const isKeyboardVideoInsert: boolean = (!isNOU(value) && !isNOU((value as IVideoCommandsArgs).cssClass) &&
+        (value as IVideoCommandsArgs).cssClass !== 'e-video-inline');
         if (self.editorMode === 'HTML') {
-            saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+            if (!isNOU(args) && !isKeyboardVideoInsert) {
+                if (isNOU(args.name) || (!isNOU(args.name) && args.name !== 'showDialog')) {
+                    saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+                }
+            }
         }
-        if (!isNullOrUndefined(args)
+        if (!isNOU(args)
             && args.item.command
             && args.item.command !== 'Table'
             && args.item.command !== 'Actions'
@@ -50,7 +56,7 @@ export class Formatter {
                 || self.contentModule.getPanel() === range.commonAncestorContainer)) {
             return;
         }
-        if (!isNullOrUndefined(args) && self.maxLength !== -1 && !isNullOrUndefined(args.item.command)) {
+        if (!isNOU(args) && self.maxLength !== -1 && !isNOU(args.item.command)) {
             let currentInsertContentLength: number = 0;
             if (args.item.command === 'Links') {
                 currentInsertContentLength = value.text.length === 0 ? value.url.length : value.text.length;
@@ -65,7 +71,7 @@ export class Formatter {
                 return;
             }
         }
-        if (isNullOrUndefined(args)) {
+        if (isNOU(args)) {
             const action: string = (event as KeyboardEventArgs).action;
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 args = {};
@@ -89,7 +95,7 @@ export class Formatter {
                     }
                 });
             }
-            const isTableModule : boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
+            const isTableModule : boolean = isNOU(self.tableModule) ? true : self.tableModule ?
                 self.tableModule.ensureInsideTableList : false;
             if ((event.which === 9 && isTableModule) || event.which !== 9) {
                 if (event.which === 13 && self.editorMode === 'HTML') {
@@ -104,22 +110,25 @@ export class Formatter {
                     enterAction: self.enterKey
                 });
             }
-        } else if (!isNullOrUndefined(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
+        } else if (!isNOU(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
             && args.item.command !== 'Font')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
-                && args.name === 'colorPickerChanged'))) {
+                && args.name === 'colorPickerChanged') || args.item.subCommand === 'FormatPainter')) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
+                    const formatPainterCopyAction: boolean = !isNOU(actionBeginArgs.name) && actionBeginArgs.name === 'format-copy';
                     if (this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links'
-                        && actionBeginArgs.item.command !== 'Images') {
+                        && actionBeginArgs.item.command !== 'Images' && !formatPainterCopyAction) {
                         this.saveData();
                     }
                     self.isBlur = false;
                     (self.contentModule.getEditPanel() as HTMLElement).focus();
-                    if (self.editorMode === 'HTML') {
-                        saveSelection.restore();
+                    if (self.editorMode === 'HTML' && !isKeyboardVideoInsert) {
+                        if (isNOU(args.selectType) || (!isNOU(args.selectType) && args.selectType !== 'showDialog')) {
+                            saveSelection.restore();
+                        }
                     }
                     const command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
                     if (command === 'paste' || command === 'cut' || command === 'copy') {
@@ -140,7 +149,7 @@ export class Formatter {
                 }
             });
         }
-        if (isNullOrUndefined(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
+        if (isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
             this.enableUndo(self);
         }
     }
@@ -176,7 +185,7 @@ export class Formatter {
      */
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
         self.notify(CONSTANT.contentChanged, {});
-        if (events && (isNullOrUndefined(events.event) || (events.event as KeyboardEventArgs).action !== 'copy')) {
+        if (events && (isNOU(events.event) || (events.event as KeyboardEventArgs).action !== 'copy')) {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);
         }

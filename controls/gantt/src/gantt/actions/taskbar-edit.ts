@@ -56,6 +56,11 @@ export class TaskbarEdit extends DateProcessor {
     private elementOffsetHeight: number = 0;
     public segmentIndex: number = -1;
     private targetElement: Element;
+    public currentItemTop: number = 0;
+    public currentItemPrevTop: number = 0;
+    public topValue: number = 0;
+    public draggedRecordMarginTop: number = 0;
+    public dragMoveY: number;
 
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
@@ -296,7 +301,9 @@ export class TaskbarEdit extends DateProcessor {
                         if (!isNullOrUndefined(parentRecord) && !parentRecord.expanded) {
                             this.prevZIndex = (this.taskBarEditElement).style.zIndex;
                             (this.taskBarEditElement).style.zIndex = '1000';
-                            addClass([this.taskBarEditElement.querySelector('.e-gantt-child-taskbar')], 'e-collapsed-taskbar-drag');
+                            if (this.taskBarEditElement.querySelector('.e-gantt-child-taskbar')) {
+                               addClass([this.taskBarEditElement.querySelector('.e-gantt-child-taskbar')], 'e-collapsed-taskbar-drag');
+                            }
                         }
                     }
                 }
@@ -460,8 +467,19 @@ export class TaskbarEdit extends DateProcessor {
                     this.parent.ganttChartModule.scrollObject.previousScroll.left;
             }
             this.tooltipPositionX = this.mouseDownX;
-            this.mouseDownY = e.pageY - containerPosition.top +
+            this.mouseDownY = this.dragMoveY = e.pageY - containerPosition.top +
                 this.parent.ganttChartModule.scrollObject.previousScroll.top;
+        }
+        if (this.parent.viewType == "ResourceView" && this.parent.allowTaskbarDragAndDrop) {
+            let toolbarHeight: number = 0;
+            if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
+                toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
+            }
+            this.topValue = this.parent.getOffsetRect(event.target as HTMLElement).top - this.parent.getOffsetRect(this.parent.element).top -
+                            parseInt((closest(event.target as Element, '.e-taskbar-main-container'))['style'].marginTop) -
+                            this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'] -
+                            toolbarHeight + document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollTop;
+            this.currentItemPrevTop = this.currentItemTop = this.topValue;
         }
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') {
             this.fromPredecessorText = this.taskBarEditAction === 'ConnectorPointLeftDrag' ? 'start' : 'finish';
@@ -589,6 +607,21 @@ export class TaskbarEdit extends DateProcessor {
                     this.drawFalseLine();
                 }
             }
+            if (this.parent.viewType == 'ResourceView' && this.parent.allowTaskbarDragAndDrop) {
+                if (this.dragMoveY > this.mouseMoveY) {
+                    this.mouseMoveY = this.dragMoveY - this.mouseMoveY;
+                    this.currentItemTop = this.currentItemTop - this.mouseMoveY;
+                } else {
+                    this.mouseMoveY -= this.dragMoveY;
+                    this.currentItemTop = this.currentItemTop + this.mouseMoveY;
+                }
+                const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
+                this.dragMoveY = e.pageY - containerPosition.top + this.parent.ganttChartModule.scrollObject.previousScroll.top;
+                this.topValue = this.currentItemTop;
+                this.currentItemPrevTop = (this.currentItemPrevTop === 0 ||
+                    this.topValue == this.currentItemTop) ? this.topValue :
+                    this.currentItemPrevTop;
+            }
             this.setItemPosition();
             this.updateEditedItem();
             this.editTooltip.updateTooltip(this.segmentIndex);
@@ -602,19 +635,20 @@ export class TaskbarEdit extends DateProcessor {
                 }
 
             });
-            this.parent.flatData.map((data)=>{
-                if((!isNullOrUndefined(this.taskBarEditRecord.parentItem)) && data.ganttProperties.taskId===this.taskBarEditRecord.parentItem.taskId){
-                    data.childRecords.map((s)=>{
+            this.parent.flatData.map((data) => {
+                if ((!isNullOrUndefined(this.taskBarEditRecord.parentItem)) && data.ganttProperties.taskId === this.taskBarEditRecord.parentItem.taskId) {
+                    data.childRecords.map((s) => {
                         if (isNullOrUndefined(s.ganttProperties.startDate) || isNullOrUndefined(s.ganttProperties.endDate) ||
-                        isNullOrUndefined(s.ganttProperties.duration)) {
+                            isNullOrUndefined(s.ganttProperties.duration)) {
                             this.parent.dataOperation.updateGanttData()
-                        } 
+                        }
                     })
                 }
             })
+
         }
-       
-    }
+
+}
 
     /**
      * To update property while perform mouse move.
@@ -669,11 +703,11 @@ export class TaskbarEdit extends DateProcessor {
             } else if ((mouseX - 20) < containerPosition.left) {
                 this.timerCount = this.parent.ganttChartModule.scrollObject.previousScroll.left;
                 this.startScrollTimer('left');
-            } else if (isConnectorLineEdit && ((mouseY + 80) >
+            } else if (((mouseY + 80) >
                 containerPosition.top + this.parent.ganttChartModule.chartBodyContainer.offsetHeight)) {
                 this.timerCount = this.parent.ganttChartModule.scrollObject.previousScroll.top;
                 this.startScrollTimer('bottom');
-            } else if (isConnectorLineEdit && ((mouseY - 20) < containerPosition.top)) {
+            } else if (((mouseY - 20) < containerPosition.top)) {
                 this.timerCount = this.parent.ganttChartModule.scrollObject.previousScroll.top;
                 this.startScrollTimer('top');
             } else {
@@ -1489,6 +1523,11 @@ export class TaskbarEdit extends DateProcessor {
                 taskBarMainContainer.style.width = (width) + 'px';
                 leftLabelContainer.style.width = (item.left) + 'px';
                 taskBarMainContainer.style.setProperty(position, (item.left) + 'px');
+                if (this.parent.viewType === 'ResourceView' && this.parent.allowTaskbarDragAndDrop && this.parent.rowDragAndDropModule &&
+                   (this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'MilestoneDrag')) {
+                    taskBarMainContainer.style.setProperty('top', (this.topValue) + 'px');
+                    taskBarMainContainer.style.zIndex = '4';
+                }
                 if (this.taskBarEditAction === 'LeftResizing' && this.segmentIndex === 0) {
                     const parent: HTMLElement = this.taskBarEditElement.parentElement;
                     const segmentedTasks: HTMLCollectionOf<HTMLElement> =
@@ -1598,7 +1637,8 @@ export class TaskbarEdit extends DateProcessor {
         this.previousMouseMove = null;
         this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
         if (this.taskBarEditAction && this.isMouseDragged) {
-            if (!this.dragMouseLeave && this.taskBarEditedAction) {
+            if ((!this.dragMouseLeave && this.taskBarEditedAction) || (this.parent.viewType === 'ResourceView' &&
+                this.parent.allowTaskbarDragAndDrop)) {
                 this.taskBarEditedAction(e);
                 this.isMouseDragged = false;
             } else {
@@ -1708,6 +1748,65 @@ export class TaskbarEdit extends DateProcessor {
         const args: ITaskbarEditedEventArgs = extend({}, arg);
         const ganttRecord: IGanttData = args.data;
         const taskData: ITaskData = ganttRecord.ganttProperties;
+        const draggedRecIndex: number = this.parent.currentViewData.indexOf(ganttRecord);
+        if ((args.taskBarEditAction === 'MilestoneDrag' || args.taskBarEditAction === 'ChildDrag') && this.parent.viewType === "ResourceView"
+            && this.parent.allowTaskbarDragAndDrop && this.dragMoveY > 0) {
+            if (this.parent.rowDragAndDropModule) {
+                let flatRecordCol: IGanttData[] = this.parent.currentViewData;
+                if (flatRecordCol[this.taskBarEditRecord.parentItem.index] && ((this.parent.editedRecords.indexOf(flatRecordCol[this.taskBarEditRecord.parentItem.index as number]) === -1))) {
+                    this.parent.editedRecords.push(flatRecordCol[this.taskBarEditRecord.parentItem.index as number]);
+                }
+                let ganttrec: IGanttData;
+                let resHeight: number = 0;
+                let rowCount: number = 0;
+                let childIndex: string;
+                let droppedRecord: IGanttData[];
+                let treeGridrows: number = this.parent.treeGrid.getRows().length;
+                for (let i: number = 0; i < treeGridrows; i++) {
+                    if (resHeight < this.dragMoveY && this.parent.getRowByIndex(i as number).style.display !== 'none') {
+                        rowCount = i;
+                        resHeight = resHeight + parseInt(this.parent.getRowByIndex(i as number).style.height);
+                        if (!flatRecordCol[i as number].parentItem) {
+                            ganttrec = flatRecordCol[i as number];
+                        }
+                        else {
+                            ganttrec = this.parent.getRecordByID(flatRecordCol[i as number].parentItem.taskId);
+                        }
+                    }
+                }
+                let draggedRecordtaskbar: HTMLCollectionOf<Element> = this.parent.getRowByIndex(draggedRecIndex as number).getElementsByClassName('e-taskbar-main-container');
+                let taskbarContainer: HTMLCollectionOf<Element> = this.parent.getRowByIndex(rowCount as number).getElementsByClassName('e-taskbar-main-container');
+                for (let j: number = 0; j < taskbarContainer.length; j++) {
+                    if (taskbarContainer[j as number]['offsetTop'] < this.dragMoveY && draggedRecordtaskbar[0].getAttribute('rowuniqueid') !==
+                        taskbarContainer[j as number].getAttribute('rowuniqueid')) {
+                        this.draggedRecordMarginTop = taskbarContainer[j as number]['style'].marginTop;
+                        childIndex = taskbarContainer[j as number].getAttribute('rowuniqueid');
+                    }
+                }
+                if (childIndex) {
+                    droppedRecord = this.parent.currentViewData.filter((data: IGanttData) => {
+                        if (data['rowUniqueID'] === childIndex) {
+                            return data;
+                        }
+                        else {
+                            return null
+                        }
+                    })
+                }
+                if (droppedRecord) {
+                    const droppedRecordIndex: number = this.parent.currentViewData.indexOf(droppedRecord[0]);
+                    let position: string = (droppedRecord[0].hasChildRecords || (!droppedRecord[0].parentItem &&
+                        droppedRecord[0].childRecords.length == 0)) ? 'child' : 'below';
+                    if (this.parent.rowDragAndDropModule) {
+                        this.parent.rowDragAndDropModule.reorderRows([draggedRecIndex as number], droppedRecordIndex, position);
+                    }
+                    this.dragMoveY = 0;
+                }
+            }
+            if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+                this.parent.ganttChartModule.renderOverAllocationContainer();
+            }
+        }
         if (args.taskBarEditAction === 'ProgressResizing') {
             if (args.previousData.progress !== taskData.progress) {
                 this.parent.setRecordValue(
@@ -1911,13 +2010,19 @@ export class TaskbarEdit extends DateProcessor {
             }
             if ((this.parent.virtualScrollModule && this.parent.enableVirtualization &&
                 !this.elementOffsetLeft) || !this.parent.enableVirtualization) {
-                if (this.taskBarEditElement.children[0].classList.contains('e-manualparent-main-container')) {
-                    this.elementOffsetLeft = this.taskBarEditElement.children[0]['offsetLeft'] + this.taskBarEditElement.offsetLeft;
-                    this.elementOffsetTop = ((this.taskBarEditElement.offsetTop - 5) + this.taskBarEditElement.children[0]['offsetTop']) + scrollTop;
-                }
-                else {
+                if (!this.parent.allowParentDependency) {
                     this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
                     this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                }
+                else {
+                    if (this.taskBarEditElement.children[0].classList.contains('e-manualparent-main-container')) {
+                        this.elementOffsetLeft = this.taskBarEditElement.children[0]['offsetLeft'] + this.taskBarEditElement.offsetLeft;
+                        this.elementOffsetTop = ((this.taskBarEditElement.offsetTop - 5) + this.taskBarEditElement.children[0]['offsetTop']) + scrollTop;
+                    }
+                    else {
+                        this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
+                        this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                    }
                 }
                 this.elementOffsetWidth = this.taskBarEditElement.offsetWidth;
                 this.elementOffsetHeight = this.taskBarEditElement.offsetHeight;

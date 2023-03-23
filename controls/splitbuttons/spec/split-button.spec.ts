@@ -3,6 +3,7 @@ import { SplitButton } from '../src/split-button/split-button';
 import { ItemModel } from '../src/common/common-model';
 import { createElement } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
+import { BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '../src';
 /**
  * Split Button spec
  */
@@ -127,6 +128,7 @@ describe('Split Button', () => {
         const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 13,
+            action: 'enter',
             target: null
         };
         const downEventArgs: any = {
@@ -142,7 +144,7 @@ describe('Split Button', () => {
         li[0].classList.add('e-focused');
         button.keyBoardHandler(downEventArgs);
         enterEventArgs.target = li[1];
-        button.keyBoardHandler(enterEventArgs);
+        button.btnKeyBoardHandler(enterEventArgs);
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         button.secondaryBtnObj.element.click();
         enterEventArgs.target = button.dropDown.element.children[0];
@@ -190,6 +192,22 @@ describe('Split Button', () => {
         button = new SplitButton({}, '#angsplitbtn');
         button.focusIn();
         
+    });
+
+    describe('CR issues', () => {
+        afterEach(() => {
+            button.destroy();
+        });
+        it('EJ2-68928 - Script error thrown when we add items in before open event with enable createPopupOnClick property', () => {
+            button = new SplitButton({ createPopupOnClick: true,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                button.addItems(items);
+            }, open:  (args: OpenCloseMenuEventArgs) => {
+                expect(args.items.length).toEqual(3);
+            }});
+            button.appendTo('#splitbtn');
+            button.secondaryBtnObj.element.click();
+        });
     });
 
     it('memory leak', () => {

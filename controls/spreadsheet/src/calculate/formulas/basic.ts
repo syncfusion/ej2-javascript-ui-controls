@@ -409,19 +409,13 @@ export class BasicFormulas {
             const range: string = ranges[k as number];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
-                let startRow: number = this.parent.rowIndex(range.substr(0, i));
-                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                const startRow: number = this.parent.rowIndex(range.substr(0, i));
+                const endRow: number = this.parent.rowIndex(range.substr(i + 1));
                 if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                if (startRow > endRow) {
-                    [startRow, endRow] = [endRow, startRow];
-                }
-                let col1: number = this.parent.colIndex(range.substr(0, i));
-                let col2: number = this.parent.colIndex(range.substr(i + 1));
-                if (col1 > col2) {
-                    [col1, col2] = [col2, col1];
-                } 
+                const col1: number = this.parent.colIndex(range.substr(0, i));
+                const col2: number = this.parent.colIndex(range.substr(i + 1));
                 if (mulValues === null) {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];
@@ -1547,22 +1541,37 @@ export class BasicFormulas {
      * @returns {string | boolean} - Compute the edate value.
      */
     public ComputeEDATE(...args: string[]): Date | string  {
-        let date: Date; let mValue: string | number;
         if (args.length !== 2 || isNullOrUndefined(args)) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
-        } else if (args[0] === '') {
+        }
+        if (args[0] === '' || args[1] === '') {
+            return this.parent.getErrorStrings()[CommonErrors.na];
+        }
+        args[0] = args[0].split(this.parent.tic).join('');
+        args[1] = args[1].split(this.parent.tic).join('');
+        if (args[0] === '' || args[1] === '') {
             return this.parent.getErrorStrings()[CommonErrors.value];
         } else {
-            const dValue: string = this.parent.getValueFromArg(args[0]);
-            mValue = this.parent.getValueFromArg(args[1]);
-            mValue = parseInt(mValue, 10);
-            if (isNaN(mValue)) {
-                return this.parent.getErrorStrings()[CommonErrors.num];
+            let dValue: string | number = this.parent.getValueFromArg(args[0]) || '0';
+            const mValue: string | number = parseInt(this.parent.getValueFromArg(args[1]) || '0', 10);
+            let date: Date;
+            if (this.parent.isNumber(dValue)) {
+                dValue = parseInt(dValue, 10);
+                date = this.parent.fromOADate(dValue);
+            } else {
+                date = new Date(Date.parse(dValue));
             }
-            date  = (isNaN(parseInt(dValue, 10))) ? new Date(Date.parse(dValue)) : this.parent.fromOADate(parseInt(dValue, 10));
-            if (isNullOrUndefined(this.parent.isDate(date))) { return this.parent.getErrorStrings()[CommonErrors.value]; }
+            if (isNaN(mValue) || isNullOrUndefined(this.parent.isDate(date))) {
+                return this.parent.getErrorStrings()[CommonErrors.value];
+            }
+            date.setMonth(date.getMonth() + mValue);
+            let result: number = (this.parent.parentObject as { dateToInt: Function }).dateToInt(date);
+            // For 0 and 1 values we are considering the same starting date as 1/1/1900, so for 0 we are decrementing the value with 1.
+            if (dValue.toString() === '0') {
+                result -= 1;
+            }
+            return result.toString();
         }
-        return new Date(date.setMonth(date.getMonth() + mValue)).toLocaleDateString();
     }
 
     /**

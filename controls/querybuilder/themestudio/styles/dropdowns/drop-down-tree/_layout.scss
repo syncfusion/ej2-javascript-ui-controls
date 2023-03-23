@@ -14,6 +14,13 @@
     }
 
     &.e-icon-anim {
+      @if $ddt-skin-name == 'Material3' {
+        .e-ddt-icon {
+          background: $ddt-dd-icon-bg;
+          border-radius: $ddt-dd-icon-radius;
+        }
+      }
+
       .e-ddt-icon::before {
         @include ddt-rotate(180deg);
       }
@@ -30,8 +37,11 @@
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
         box-sizing: content-box;
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' {
           min-height: $ddt-close-icon-min-height;
+        }
+        @if $ddt-skin-name == 'Material3' {
+          padding: $ddt-close-icon-padding;
         }
       }
 
@@ -43,6 +53,13 @@
         }
         @if $ddt-skin-name == 'bootstrap5' {
           font-size: 20px;
+        }
+
+        @if $ddt-skin-name == 'Material3' {
+          font-size: $ddt-chip-icon-line-height;
+          padding: $ddt-dd-icon-padding;
+          margin: $ddt-dd-icon-margin;
+          line-height: $ddt-chip-icon-line-height;
         }
       }
 
@@ -90,7 +107,7 @@
     &.e-show-chip {
 
       .e-chips-close {
-        @if $ddt-skin-name != 'bootstrap5' {
+        @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
           line-height: $ddt-chip-icon-line-height;
         }
         min-height: $ddt-chip-close-height;
@@ -358,7 +375,7 @@
             @if $ddt-skin-name == 'FluentUI' {
               line-height: 30px;
             }
-            @else {
+            @else if $ddt-skin-name != 'Material3' {
               padding-top: $ddt-overflow-count-padding-top;
             }
           }
@@ -470,6 +487,9 @@
         @else if $ddt-skin-name == 'bootstrap5' {
           padding: 0 8px;
         }
+        @else if $ddt-skin-name == 'Material3' {
+          padding: $ddt-select-all-padding;
+        }
 
         &.e-hide-selectall {
           display: none;
@@ -498,7 +518,7 @@
 
       & .e-filter-wrap .e-input,
       & .e-filter-wrap .e-input:focus {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
           padding: $ddt-list-filter-text-indent;
         }
       }
@@ -615,20 +635,20 @@
           @if $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
             border-width: 2px;
           }
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
             height: $ddt-treeview-fullrow-height;
           }
         }
 
         & > .e-ul {
           overflow: hidden;
-          @if $ddt-skin-name != 'FluentUI'  {
+          @if $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3'  {
             padding: $ddt-treeview-padding;
           }
         }
 
         &.e-fullrow-wrap .e-text-content {
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' {
             padding-bottom: $ddt-treeview-content-padding-top;
             padding-top: $ddt-treeview-content-padding-bottom;
           }
@@ -890,7 +910,7 @@
             bottom: auto;
             right: 36px;
           }
-          @else {
+          @else if $ddt-skin-name != 'Material3' {
             right: $ddt-dd-icon-bigger-width;
           }
         }
@@ -1185,14 +1205,14 @@
     }
 
     &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
         margin-right: $ddt-dd-icon-bigger-width;
       }
       max-width: $ddt-big-chip-ddi-width;
     }
 
     &.e-show-clear .e-chips-wrapper .e-chips:last-child {
-      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+      @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
         margin-right: $ddt-close-icon-bigger-width;
       }
       max-width: $ddt-big-chip-ci-width;
@@ -1265,7 +1285,7 @@
       }
 
       .e-treeview .e-fullrow {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
           height: $ddt-treeview-fullrow-bigger-height;
         }
       }
@@ -1346,7 +1366,7 @@
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
           margin-right: 4px;
         }
-        @else {
+        @else if $ddt-skin-name != 'Material3' {
           margin-left: $ddt-dd-icon-bigger-width;
           margin-right: 1px;
         }
@@ -1356,7 +1376,7 @@
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
           margin-right: 4px;
         }
-        @else {
+        @else if $ddt-skin-name != 'Material3' {
           margin-left: $ddt-close-icon-bigger-width;
           margin-right: 1px;
         }
@@ -1375,7 +1395,7 @@
       &.e-show-chip,
       &.e-show-text  {
         &.e-input-group.e-show-dd-icon .e-clear-icon {
-          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
             left: $ddt-dd-icon-bigger-width;
           }
           right: auto;

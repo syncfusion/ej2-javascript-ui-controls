@@ -21,7 +21,7 @@ import { PivotUtil } from '../../base/util';
 import { SelectedCellsInfo } from '../../common/popups/grouping';
 import { AggregateTypes } from '../../common/base/enum';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
-import { FieldOptionsModel } from '../model/datasourcesettings-model';
+import { FieldOptionsModel } from '../../model/datasourcesettings-model';
 
 /**
  * Module to render PivotGrid control
@@ -1419,8 +1419,8 @@ export class Render {
                     } else if (cell.type) {
                         tCell.classList.add('e-colstot');
                     }
-                    let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) :
-                        cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
+                    let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') : 
+                        cell.formattedText) : cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
                     localizedText = isColumnFieldsAvail ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
@@ -1564,7 +1564,7 @@ export class Render {
     }
 
     private getRowStartPos(): number {
-        const pivotValues: IPivotValues = this.parent.pivotValues;
+        const pivotValues: IAxisSet[][] = this.parent.pivotValues;
         let rowPos: number;
         for (let rCnt: number = 0; rCnt < (pivotValues ? pivotValues.length : 0); rCnt++) {
             if (pivotValues[rCnt as number] && pivotValues[rCnt as number][0] && (pivotValues[rCnt as number][0] as IAxisSet).axis === 'row') {
@@ -1580,7 +1580,7 @@ export class Render {
         if (this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             if ((this.parent.enableValueSorting) || !this.engine.isEngineUpdated) {
                 let rowCnt: number = 0;
-                const pivotValues: IPivotValues = this.parent.pivotValues;
+                const pivotValues: IAxisSet[][] = this.parent.pivotValues;
                 const start: number = type === 'value' ? this.rowStartPos : 0;
                 const end: number = type === 'value' ? (pivotValues ? pivotValues.length : 0) : this.rowStartPos;
                 for (let rCnt: number = start; rCnt < end; rCnt++) {
@@ -1756,11 +1756,12 @@ export class Render {
                             ((colField[cCnt as number].memberType !== 3 || headerCnt === 0) ?
                                 colField[cCnt as number].colSpan : headerSplit[cCnt as number] as number) : 1;
                         colSpan = this.parent.dataType === 'olap' ? 1 : colSpan;
-                        const formattedText: string = colField[cCnt as number] ? (colField[cCnt as number].type === 'grand sum' ?
+                        let formattedText: string = colField[cCnt as number] ? (colField[cCnt as number].type === 'grand sum' ?
                             (isNullOrUndefined(colField[cCnt as number].valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') :
                                 colField[cCnt as number].formattedText) : (colField[cCnt as number].type === 'sum' ?
                                 colField[cCnt as number].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
                                 colField[cCnt as number].formattedText)) : '';
+                        formattedText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(formattedText) : formattedText;
                         if (headerCnt === this.engine.headerContent.length - 1) {
                             colSpan = 1;
                             autoFitApplied = pivotColumns.length - 1 !== colCount ? false : (!refreshColumn && !this.parent.isEmptyGrid

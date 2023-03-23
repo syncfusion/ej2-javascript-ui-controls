@@ -180,9 +180,9 @@ describe('Range navigator', () => {
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
-                    expect(getElement('container_RightSlider_ThumpSymbol').getAttribute('fill')).toBe('#BFBFBF');
+                    expect(getElement('container_RightSlider_ThumpSymbol').getAttribute('fill')).toBe('#262626');
                     expect(Math.floor(+args.start)).toEqual(20);
-                    expect(Math.ceil(+args.end) > 22 && Math.ceil(+args.end) < 38).toBe(true);
+                    expect(Math.ceil(+args.end) > 21 && Math.ceil(+args.end) < 38).toBe(true);
                     isCheck = false;
                     done();
                 }

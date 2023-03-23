@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { ChildProperty, Property, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { DataManager, Query} from '@syncfusion/ej2-data';
 import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';
@@ -584,6 +583,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
      * * Image -Render a image.     *
+     *
      * @default 'SeriesType'
      */
 
@@ -591,6 +591,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     public legendShape: LegendShape;
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
     @Property('')

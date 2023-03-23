@@ -228,6 +228,8 @@ export class ImageDecoder {
         if (this.mFormat === ImageFormat.Unknown && this.checkIfJpeg()) {
             this.mFormat = ImageFormat.Jpeg;
             this.parseJpegImage();
+        } else {
+            throw new TypeError('Only the JPEG format is supported');
         }
         this.reset();
         this.mImageData = new ByteArray(this.mStream.count);

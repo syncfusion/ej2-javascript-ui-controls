@@ -1651,7 +1651,7 @@ describe('Resource view with persistence', () => {
               EnumStatusVacationTimeOff: 0,
             },
           ];
-          
+
           let multiTaskbarDataLess: Object[] = [
             {
               PlanningId: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
@@ -1734,7 +1734,7 @@ describe('Resource view with persistence', () => {
               EnumStatusVacationTimeOff: 0,
             },
           ];
-          
+
           let resources: object[] = [
             {
               ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
@@ -1776,7 +1776,7 @@ describe('Resource view with persistence', () => {
                   id: 'ResourceId',
                   name: 'ResourceName',
                 },
-              
+
                 editSettings: {
                   allowAdding: true,
                   allowEditing: true,

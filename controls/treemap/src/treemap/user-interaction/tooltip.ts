@@ -1,6 +1,6 @@
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Location, getMousePosition, textFormatter, formatValue } from '../utils/helper';
 import { TooltipSettingsModel } from '../model/base-model';
 import { ITreeMapTooltipRenderEventArgs, ITreeMapTooltipArgs } from '../model/interface';
@@ -53,11 +53,11 @@ export class TreeMapTooltip {
                     markerFill = item['options']['fill'];
                 }
                 if (this.treemap.enableRtl) {
-                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                        formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];
+                    tooltipContent = [SanitizeHtmlHelper.sanitize(textFormatter(this.tooltipSettings.format, toolTipData, this.treemap)) ||
+                        SanitizeHtmlHelper.sanitize(formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString())];
                 } else {
-                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                    tooltipContent = [SanitizeHtmlHelper.sanitize(textFormatter(this.tooltipSettings.format, toolTipData, this.treemap)) ||
+                        SanitizeHtmlHelper.sanitize(this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap))];
                 }
                 if (document.getElementById(this.tooltipId)) {
                     tooltipEle = document.getElementById(this.tooltipId);
@@ -159,6 +159,7 @@ export class TreeMapTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
+     * @private
      */
     public addEventListener(): void {
         if (this.treemap.isDestroyed) {
@@ -170,6 +171,7 @@ export class TreeMapTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To unbind events for tooltip module
+     * @private
      */
     public removeEventListener(): void {
         if (this.treemap.isDestroyed) {

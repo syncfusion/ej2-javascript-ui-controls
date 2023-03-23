@@ -43,7 +43,7 @@ export class ColumnChooser implements IAction {
     private cBoxTrue: Element;
     private cBoxFalse: Element;
     private searchBoxObj: SearchBox;
-    private searchOperator: string = 'startswith';
+    private searchOperator: string = 'wildcard';
     private targetdlg: Element;
     private prevShowedCols: string[] = [];
     private hideDialogFunction: Function = this.hideDialog.bind(this);
@@ -788,6 +788,9 @@ export class ColumnChooser implements IAction {
             columns: this.getColumns() as Column[], cancel: false,
             searchOperator: this.parent.columnChooserSettings.operator
         };
+        if (this.searchOperator !== args1.searchOperator) {
+            args1.searchOperator = this.searchOperator;
+        }
         this.parent.trigger(events.beforeOpenColumnChooser, args1);
         this.searchOperator = args1.searchOperator;
         return args1;

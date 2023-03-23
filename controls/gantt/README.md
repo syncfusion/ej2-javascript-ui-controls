@@ -66,7 +66,7 @@ Gantt control is also offered in following list of frameworks.
 
 ## Support
 
-Product support is available through following mediums.
+Product support is available through the following mediums.
 
 * [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
 * [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-gantt-npm)

@@ -61,7 +61,7 @@ export class CanvasRenderer {
     // method to get the attributes value
     // tslint:disable-next-line:no-any
     private getOptionValue<T>(options: any, key: string): T {
-        return options[key] as T;
+        return options[key as string] as T;
     }
     /* tslint:enable */
 
@@ -206,7 +206,7 @@ export class CanvasRenderer {
         for (let i: number = 0; i < dataSplit.length; i = i + 3) {
             const x1: number = parseFloat(dataSplit[i + 1]);
             const y1: number = parseFloat(dataSplit[i + 2]);
-            switch (dataSplit[i]) {
+            switch (dataSplit[i as number]) {
             case 'M':
                 if (!options.innerR && !options.cx) {
                     this.ctx.moveTo(x1, y1);
@@ -346,7 +346,7 @@ export class CanvasRenderer {
         this.ctx.beginPath();
         const points: string[] = options.points.split(' ');
         for (let i: number = 0; i < points.length - 1; i++) {
-            const point: string[] = points[i].split(',');
+            const point: string[] = points[i as number].split(',');
             const x: number = parseFloat(point[0]);
             const y: number = parseFloat(point[1]);
             if (i === 0) {
@@ -441,8 +441,8 @@ export class CanvasRenderer {
         let colorName: string;
         if (!isNullOrUndefined(colors[0].colorStop)) {
             for (let i: number = 0; i <= colors.length - 1; i++) {
-                const color: string = colors[i].color;
-                const newColorStop: string = (colors[i].colorStop).slice(0, -1);
+                const color: string = colors[i as number].color;
+                const newColorStop: string = (colors[i as number].colorStop).slice(0, -1);
                 const stopColor: number = parseInt(newColorStop, 10) / 100;
                 myGradient.addColorStop(stopColor, color);
             }
@@ -462,9 +462,9 @@ export class CanvasRenderer {
      */
     public setElementAttributes(options: SVGCanvasAttributes, element: HTMLElement | Element): HTMLElement | Element {
         const keys: string[] = Object.keys(options);
-        const values: string[] = Object.keys(options).map((key: string) => { return options[key]; });
+        const values: string[] = Object.keys(options).map((key: string) => { return options[key as string]; });
         for (let i: number = 0; i < keys.length; i++) {
-            element.setAttribute(keys[i], values[i]);
+            element.setAttribute(keys[i as number], values[i as number]);
         }
         return null;
     }
@@ -519,7 +519,7 @@ export class CanvasRenderer {
      *
      * Dummy method for using canvas/svg render in the same variable name in chart control
      */
-     public drawCircularClipPath(): Element {
+    public drawCircularClipPath(): Element {
         return null;
     }
 

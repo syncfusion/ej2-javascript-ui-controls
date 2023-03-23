@@ -137,8 +137,8 @@ export class Code93 extends OneDimension {
     private getPatternCollection(givenCharacter: string, codes: string[], encodingValue: string[]): void {
         const code: string[] = encodingValue;
         for (let i: number = 0; i < givenCharacter.length; i++) {
-            const char: string = givenCharacter[i];
-            code.push(codes[char]);
+            const char: string = givenCharacter[parseInt(i.toString(), 10)];
+            code.push(codes[`${char}`]);
         }
     }
 
@@ -150,13 +150,13 @@ export class Code93 extends OneDimension {
         // eslint-disable-next-line
         const codes: object = this.getCharacterWeight();
         for (let i: number = value.length; i > 0; i--) {
-            const characterValue: number = codes[value[j]] * i;
+            const characterValue: number = codes[value[parseInt(j.toString(), 10)]] * i;
             weightSum += characterValue;
             j++;
         }
         const moduloValue: number = weightSum % 47;
         const objectValue: string[] = Object.keys(codes);
-        const appendSymbol: string = objectValue[moduloValue];
+        const appendSymbol: string = objectValue[parseInt(moduloValue.toString(), 10)];
         return appendSymbol;
     }
 

@@ -6,14 +6,14 @@ import { Property, Complex, ChildProperty, DateFormatOptions, isNullOrUndefined,
 export interface AxisModel {
 
     /**
-     * Title of heat map axis
+     * Sets and gets the options to customize the title of heatmap axis.
      *
      * @default ''
      */
     title?: TitleModel;
 
     /**
-     * If set to true, the axis will render at the opposite side of its default position.
+     * Enables or disables the axis to render in opposed position. If set to true, the axis will render at the opposite side of its default position.
      *
      * @default false
      */
@@ -21,17 +21,19 @@ export interface AxisModel {
     opposedPosition?: boolean;
 
     /**
-     * Options for label assignment.
+     * Sets and gets the list of texts to be displayed in an axis as labels.
+     * 
+     * @default null
      */
     labels?: string[];
 
     /**
-     * Options for customizing the label text.
+     * Sets and gets the options to customize the axis labels.
      */
     textStyle?: FontModel;
 
     /**
-     * The angle to rotate the axis label
+     * Sets and gets the angle to rotate the axis label.
      *
      * @default 0
      */
@@ -39,7 +41,7 @@ export interface AxisModel {
     labelRotation?: number;
 
     /**
-     * It specifies whether the axis to be rendered in inversed manner or not.
+     * Enables or disables the axis to be rendered in an inversed manner.
      *
      * @default false
      */
@@ -47,10 +49,10 @@ export interface AxisModel {
     isInversed?: boolean;
 
     /**
-     * Specifies the type of data the axis is handling.
+     * Specifies the type of data the axis is handling. The available types are,
      * * Numeric:  Renders a numeric axis.
-     * * DateTime: Renders a dateTime axis.
-     * * Category: Renders a category axis.
+     * * DateTime: Renders a axis that handles date and time.
+     * * Category: Renders a axis that renders user provided labels.
      *
      * @default Category
      * @aspType Syncfusion.EJ2.HeatMap.ValueType
@@ -60,7 +62,7 @@ export interface AxisModel {
     valueType?: ValueType;
 
     /**
-     * Specifies the increment for an axis label.
+     * Specifies the increment for an axis label. When this property is set, the displayed text of the labels will be multiplied with the increment value.
      *
      * @default 1
      */
@@ -68,12 +70,12 @@ export interface AxisModel {
     increment?: number;
 
     /**
-     * Defines the axis label display type for date time axis.
+     * Specifies the axis label display type for the date time axis. The following are available types,
      * * None: Axis labels displayed based on the value type.
-     * * Years: Define the axis labels display in every year.
-     * * Months: Define the axis labels display in every month.
-     * * Days: Define the axis labels display in every day.
-     * * Hours: Define the axis labels display in every hour.
+     * * Years: Displays the axis labels for every year.
+     * * Months: Displays the axis labels for every month.
+     * * Days: Displays the axis labels for every day.
+     * * Hours: Displays the axis labels for every hour.
      *
      * @default 'None'
      */
@@ -97,7 +99,7 @@ export interface AxisModel {
     maximum?: Object;
 
     /**
-     * Specifies the interval for an axis.
+     * Specifies the interval for an axis. This properties provides an interval between the axis labels.
      *
      * @default null
      */
@@ -114,12 +116,12 @@ export interface AxisModel {
     labelFormat?: string;
 
     /**
-     * Specifies the types like `Years`, `Months`, `Days`, `Hours`, `Minutes` in date time axis.They are,
-     * * Years: Defines the interval of the axis in years.
-     * * Months: Defines the interval of the axis in months.
-     * * Days: Defines the interval of the axis in days.
-     * * Hours: Defines the interval of the axis in hours.
-     * * Minutes: Defines the interval of the axis in minutes.
+     * Specifies the type of the interval between the axis labels in date time axis.The available types are,
+     * * Years: Defines the interval of the axis labels in years.
+     * * Months: Defines the interval of the axis labels in months.
+     * * Days: Defines the interval of the axis labels in days.
+     * * Hours: Defines the interval of the axis labels in hours.
+     * * Minutes: Defines the interval of the axis labels in minutes.
      *
      * @default 'Days'
      */
@@ -127,10 +129,11 @@ export interface AxisModel {
     intervalType?: IntervalType;
 
     /**
-     * Specifies the actions like `Rotate45`, `None` and `Trim` when the axis labels intersect with each other.They are,
+     * Specifies the actions when the axis labels intersect with each other.The actions available are,
      * * None: Shows all the labels.
-     * * Rotate45: Rotates the label to 45 degree when it intersects.
-     * * Trim : Trim the label when label text width exceed the label width
+     * * Trim : Trims the label when label text intersects with other labels.
+     * * Rotate45: Rotates the label to 45 degree when it intersects other labels.
+     * * MultipleRows: Shows all the labels as multiple rows when it intersects other labels.
      *
      * @default Trim
      */
@@ -138,7 +141,7 @@ export interface AxisModel {
     labelIntersectAction?: LabelIntersectAction;
 
     /**
-     * Enable Trim for heatmap yAxis
+     * Enables or disables the trimming of the axis labels when the label exceeds maximum length.
      *
      * @default false
      */
@@ -146,20 +149,20 @@ export interface AxisModel {
     enableTrim?: boolean;
 
     /**
-     * Specifies the maximum length of an axis label.
+     * Specifies the maximum length of the axis labels.
      *
      * @default 35.
      */
     maxLabelLength?: number;
 
     /**
-     * Border of the axis labels.
+     * Set and gets the options to customize the border of the axis labels.
      */
 
     border?: AxisLabelBorderModel;
 
     /**
-     * Specifies the multi level labels collection for the axis
+     * Sets and gets the options to customize the multi level labels for an axis.
      */
     multiLevelLabels?: MultiLevelLabelsModel[];
 

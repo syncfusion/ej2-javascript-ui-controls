@@ -23,6 +23,11 @@ $de-spellcheck-tlbr-margin-left: 7.5px !default;
 $de-zoom-tlbr-margin-left: calc(100% - 405px) !default;
 $de-zoom-tlbr-margin-left-big: calc(100% - 435px) !default;
 $e-de-statusbar-separator-color: #dadada;
+$e-de-ctnr-break-listview-margin-right: 12px !default;
+$e-de-ctnr-break-listview-margin-right-big: 16px !default;
+$e-de-ctnr-break-listview-margin-left: 12px !default;
+$e-de-ctnr-break-listview-margin-left-big: 16px !default;
+$de-tlbr-btn-height: calc(100% - 10px) !default;
 
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 120px) !default;
@@ -113,8 +118,8 @@ $de-prop-pane-margin: 14px;
 $de-table-prop-border-margin: 14px;
 $de-clr-pckr-width: 30.8px;
 $de-toolbar-font-size: 12px;
-$de-toolbar-padding-bottom: 6px;
-$de-toolbar-padding-bottom-bg: 6px;
+$de-toolbar-padding-bottom: 5px;
+$de-toolbar-padding-bottom-bg: 5px;
 $de-header-font-weight: normal;
 $de-list-thmbnail-border-clr: #e4e4e4;
 $de-prop-sub-label-mrgn-btm: 8px;

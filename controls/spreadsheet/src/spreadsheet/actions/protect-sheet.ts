@@ -11,12 +11,14 @@ import { SheetModel } from '../../workbook';
 import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { OpenOptions } from '../common/interface';
+import { Dialog as DialogComponent } from '@syncfusion/ej2-popups';
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
 export class ProtectSheet {
     private parent: Spreadsheet;
     private dialog: Dialog;
+    private protectSheetDialog: DialogComponent;
     private optionList: ListView;
     private password: string = '';
     /**
@@ -104,24 +106,23 @@ export class ProtectSheet {
 
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-sheet-password-dialog' });
         const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-sheet-password-content' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('SheetPassword') });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH.innerText = l10n.getConstant('SheetPassword');
         const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdInput.setAttribute('placeholder', l10n.getConstant('EnterThePassword'));
         pwdCont.appendChild(pwdInput);
         pwdCont.insertBefore(textH, pwdInput);
         dialogElem.appendChild(pwdCont);
-        const protectHeaderCntent: HTMLElement = this.parent.createElement('div', {
-            className: 'e-protect-content',
-            innerHTML: l10n.getConstant('ProtectAllowUser')
-        });
+        const protectHeaderCntent: HTMLElement = this.parent.createElement('div', { className: 'e-protect-content' });
+        protectHeaderCntent.innerText = l10n.getConstant('ProtectAllowUser');
         this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
         const checkbox: CheckBox = new CheckBox({ checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox' });
         const listViewElement: HTMLElement = this.parent.createElement('div', {
             className: 'e-protect-option-list',
             id: this.parent.element.id + '_option_list'
         });
-        const headerContent: HTMLElement = this.parent.createElement(
-            'div', { className: 'e-header-content', innerHTML: l10n.getConstant('ProtectSheet') });
+        const headerContent: HTMLElement = this.parent.createElement('div', { className: 'e-header-content' });
+        headerContent.innerText = l10n.getConstant('ProtectSheet');
         const checkBoxElement: HTMLElement = this.parent.createElement(
             'input', { id: this.parent.element.id + '_protect_check', attrs: { type: 'checkbox' } });
 
@@ -161,6 +162,7 @@ export class ProtectSheet {
                 buttonModel: { content: l10n.getConstant('Cancel') }
             }]
         }, false);
+        this.protectSheetDialog = this.dialog.dialogInstance;
         checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
         this.optionList.appendTo('#' + this.parent.element.id + '_option_list');
         this.optionList.selectMultipleItems([{ id: '1' }, { id: '6'}]);
@@ -375,8 +377,10 @@ export class ProtectSheet {
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-password-dialog' });
         const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-password-content' });
         const cnfrmPwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-password-content' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Password') });
-        const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('ConfirmPassword') });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH.innerText = l10n.getConstant('Password');
+        const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        urlH.innerText = l10n.getConstant('ConfirmPassword');
         const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         const cnfrmPwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdInput.setAttribute('placeholder', l10n.getConstant('EnterThePassword'));
@@ -573,7 +577,7 @@ export class ProtectSheet {
             },
             buttons: [{
                 buttonModel: {
-                    content: l10n.getConstant('Ok'), isPrimary: true, disabled: this.parent.openModule.isImportedFile &&
+                    content: l10n.getConstant('Ok'), isPrimary: true, disabled: this.parent.allowOpen && this.parent.openModule.isImportedFile &&
                         (this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) ? false : true
                 },
                 click: (): void => {
@@ -602,6 +606,9 @@ export class ProtectSheet {
                 dialogInst.dialogInstance.content = this.reEnterSheetPasswordContent(); dialogInst.dialogInstance.dataBind();
                 this.parent.element.focus();
             },
+            close: (): void =>{
+                this.dialog.dialogInstance = this.protectSheetDialog;
+            },
             buttons: [{
                 buttonModel: {
                     content: l10n.getConstant('Ok'), isPrimary: true, disabled: true
@@ -609,6 +616,7 @@ export class ProtectSheet {
                 click: (): void => {
                     this.alertMessage();
                     this.selectSheetPassword();
+                    
                 }
             }]
         });
@@ -618,7 +626,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dlgElem: HTMLElement = this.parent.createElement('div', { className: 'e-unprotectpwd-dialog' });
         const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-unprotectpwd-content' });
-        const textHeader: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('EnterThePassword') });
+        const textHeader: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textHeader.innerText = l10n.getConstant('EnterThePassword');
         const pwdInputElem: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdCont.appendChild(pwdInputElem);
         pwdCont.insertBefore(textHeader, pwdInputElem);
@@ -630,7 +639,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-dialog' });
         const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-content' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('ReEnterPassword') });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH.innerText = l10n.getConstant('ReEnterPassword');
         const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdCont.appendChild(pwdInput);
         pwdCont.insertBefore(textH, pwdInput);
@@ -642,7 +652,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogCnt: HTMLElement = this.parent.createElement('div', { className: 'e-unprotectsheetpwd-dialog' });
         const pwdCnt: HTMLElement = this.parent.createElement('div', { className: 'e-unprotectsheetpwd-content' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('EnterThePassword') });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH.innerText = l10n.getConstant('EnterThePassword');
         const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdCnt.appendChild(pwdInput);
         pwdCnt.insertBefore(textH, pwdInput);
@@ -658,10 +669,8 @@ export class ProtectSheet {
             this.removeWorkbookProtection();
             this.parent.notify(completeAction, { action: 'protectWorkbook', eventArgs: { isProtected: false } });
         } else {
-            const pwdSpan: Element = this.parent.createElement('span', {
-                className: 'e-unprotectpwd-alert-span',
-                innerHTML: l10n.getConstant('UnprotectPasswordAlert')
-            });
+            const pwdSpan: HTMLElement = this.parent.createElement('span', { className: 'e-unprotectpwd-alert-span' });
+            pwdSpan.innerText = l10n.getConstant('UnprotectPasswordAlert');
             (this.parent.element.querySelector('.e-unprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
         }
     }
@@ -690,7 +699,6 @@ export class ProtectSheet {
                 sheetPassword: (pwd as CellModel).value,
                 sheetIndex: this.parent.activeSheetIndex
             };
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.parent.open(impArgs);
         }
         else {
@@ -698,10 +706,8 @@ export class ProtectSheet {
                 dialogInst.hide();
                 this.unProtectSheetPassword();
             } else {
-                const pwdSpan: Element = this.parent.createElement('span', {
-                    className: 'e-unprotectsheetpwd-alert-span',
-                    innerHTML: l10n.getConstant('UnprotectPasswordAlert')
-                });
+                const pwdSpan: HTMLElement = this.parent.createElement('span', { className: 'e-unprotectsheetpwd-alert-span' });
+                pwdSpan.innerText = l10n.getConstant('UnprotectPasswordAlert');
                 (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
             }
         }
@@ -714,7 +720,7 @@ export class ProtectSheet {
         this.parent.setSheetPropertyOnMute(sheet, 'password', '');
         const isActive: boolean = sheet.isProtected ? false : true;
         this.parent.notify(applyProtect, { isActive: isActive, id: this.parent.element.id + '_protect', sheetIndex: sheetIdx, triggerEvent: true });
-        if (this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1 ) {
+        if (this.parent.allowOpen && this.parent.openModule.isImportedFile && this.parent.openModule.unProtectSheetIdx.indexOf(sheetIdx) === -1 ) {
             this.parent.openModule.unProtectSheetIdx.push(sheetIdx);
         }
     }
@@ -757,10 +763,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-importprotectpwd-dialog' });
         const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-importprotectpwd-content' });
-        const textSpan: HTMLElement = this.parent.createElement('span', {
-            className: 'e-header',
-            innerHTML: '"' + (args.file as File).name + '"' + ' ' + l10n.getConstant('IsProtected')
-        });
+        const textSpan: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+        textSpan.innerText = '"' + (args.file as File).name + '"' + ' ' + l10n.getConstant('IsProtected');
         const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
         pwdInput.setAttribute('placeholder', l10n.getConstant('EnterThePassword'));
         pwdCont.appendChild(textSpan);
@@ -776,7 +780,6 @@ export class ProtectSheet {
             file: args.file,
             password: (pwd as CellModel).value
         };
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         this.parent.open(impArgs);
     }
 
@@ -784,7 +787,7 @@ export class ProtectSheet {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (this.parent.openModule.isImportedFile &&
+        if (this.parent.allowOpen && this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);
         }

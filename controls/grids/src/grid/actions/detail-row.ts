@@ -81,8 +81,8 @@ export class DetailRow {
                 needToRefresh = true;
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 const rowId: string = getUid('grid-row');
-                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId, role: 'row'} });
-                const detailCell: Element = this.parent.createElement('td', { className: 'e-detailcell' });
+                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
+                const detailCell: Element = this.parent.createElement('th', { className: 'e-detailcell', attrs: {'scope': 'col'} });
                 let colSpan: number = this.parent.getVisibleColumns().length;
                 if (this.parent.allowRowDragAndDrop) {
                     colSpan++;
@@ -100,7 +100,7 @@ export class DetailRow {
                     detailRow.appendChild(this.parent.createElement('td', { className: 'e-indentcell' }));
                     row.cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
                 }
-                detailRow.appendChild(this.parent.createElement('td', { className: 'e-detailindentcell' }));
+                detailRow.appendChild(this.parent.createElement('th', { className: 'e-detailindentcell', attrs: {'scope': 'col'} }));
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {

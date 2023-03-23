@@ -21,6 +21,8 @@ export class PdfExport {
     private pdfDocument: PdfDocument;
     public gantt: PdfGantt;
     public isPdfExport: boolean = false;
+    private isBlob: boolean;
+    private blobPromise: Promise<{ blobData: Blob }>;
     /**
      * @param {Gantt} parent .
      * @hidden
@@ -57,7 +59,8 @@ export class PdfExport {
      * @param {object} pdfDoc .
      * @returns {Promise<Object>} .
      */
-    public export(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
+    public export(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+        this.isBlob = isBlob;
         const args: Object = {
             requestType: 'beforePdfExport',
             ganttObject: this.parent,
@@ -98,7 +101,7 @@ export class PdfExport {
             this.pdfDocument = new PdfDocument();
         }
         this.processExport(data, pdfExportProperties, isMultipleExport).then(() => {
-            this.parent.trigger('pdfExportComplete', {});
+            this.parent.trigger('pdfExportComplete', this.isBlob ? { promise: this.blobPromise } : {});
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
                 this.parent.hideMaskRow();
             } else {
@@ -122,12 +125,17 @@ export class PdfExport {
             const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(pdfPage, 0, 0, format);
             this.gantt.drawChart(layouter);
             if (!isMultipleExport) {
+                if (!this.isBlob) {
                 // save the PDF
                 if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.fileName) {
                     this.pdfDocument.save(pdfExportProperties.fileName);
                 } else {
                     this.pdfDocument.save('Export.pdf');
                 }
+            }
+            else {
+                this.blobPromise = this.pdfDocument.save();
+            }
                 this.pdfDocument.destroy();
             }
             return this.pdfDocument;

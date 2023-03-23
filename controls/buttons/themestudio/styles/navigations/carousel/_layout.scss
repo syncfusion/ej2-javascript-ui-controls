@@ -55,6 +55,13 @@
       }
     }
 
+    &.e-blazor-carousel.e-partial.e-rtl {
+      .e-carousel-items {
+        transform: translateX(calc(100% / var(--carousel-items-count) * (var(--carousel-items-current))));
+        transition: transform $carousel-animation-duration $carousel-animation-timing-function;
+      }
+    }
+
     &.e-carousel-slide-animation:not(.e-partial) {
       .e-carousel-item {
         backface-visibility: hidden;

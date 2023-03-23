@@ -7,11 +7,13 @@ import { stringToNumber, getAngleFromValue, getLocationFromAngle, getPointer, ge
 import { getMousePosition, getElementSize } from '../utils/helper-tooltip';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Browser, createElement, remove } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
 
 /**
  * Sets and gets the module that handles the tooltip of the circular gauge
+ * 
+ * @hidden
  */
 
 export class GaugeTooltip {
@@ -51,6 +53,8 @@ export class GaugeTooltip {
      *
      * @param {PointerEvent} e - specifies the event argument.
      * @returns {void}
+     * 
+     * @private
      */
     public renderTooltip(e: PointerEvent): void {
         this.gaugeId = this.gauge.element.getAttribute('id');
@@ -184,7 +188,7 @@ export class GaugeTooltip {
             const startData: string = (this.currentRange.start).toString();
             const endData: string = (this.currentRange.end).toString();
             const rangeContent: string = customLabelFormat ?
-                rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
+                rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) : this.gauge.enableRtl ? 'Start:' + rangeFormat(roundStartValue) + ' <br>End:' + rangeFormat(roundEndValue) + ' ':
                 'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
             location = getLocationFromAngle(
                 rangeAngle, this.currentRange.currentRadius, this.gauge.midPoint
@@ -357,8 +361,9 @@ export class GaugeTooltip {
             enable: true,
             data: { value: tooltipArg.content },
             template: template,
+            enableRTL: gauge.enableRtl,
             enableAnimation: tooltipArg.tooltip.enableAnimation,
-            content: [tooltipArg.content],
+            content: [SanitizeHtmlHelper.sanitize(tooltipArg.content)],
             location: tooltipArg.location,
             inverted: arrowInverted,
             areaBounds: tooltipRect,
@@ -506,6 +511,8 @@ export class GaugeTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
+     * 
+     * @private
      */
     public addEventListener(): void {
         if (this.gauge.isDestroyed) {
@@ -519,6 +526,8 @@ export class GaugeTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To unbind events for tooltip module
+     * 
+     * @private
      */
     public removeEventListener(): void {
         if (this.gauge) {

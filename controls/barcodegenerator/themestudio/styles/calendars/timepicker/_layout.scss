@@ -12,9 +12,12 @@
 
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-normal-font-size;
-      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+      @if $timepicker-skin-name == 'material' or $timepicker-skin-name == 'material-dark' or $timepicker-skin-name == 'Material3' {
         min-height: $timepicker-normal-input-min-height;
         min-width: $timepicker-normal-input-min-width;
+      }
+      @if $timepicker-skin-name == 'Material3' {
+        padding: $timepicker-icon-padding;
       }
     }
 
@@ -28,7 +31,12 @@
   }
 
   #{&}.e-timepicker.e-time-modal {
-    background-color: $timepicker-default-overlay;
+    @if $timepicker-skin-name != 'Material3' {
+      background-color: $timepicker-default-overlay;
+    }
+    @if $timepicker-skin-name == 'Material3' {
+      background: $timepicker-default-overlay;
+    }
     height: 100%;
     left: 0;
     opacity: .5;
@@ -86,7 +94,7 @@
 
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-font-size;
-      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+      @if $timepicker-skin-name == 'material' or $timepicker-skin-name == 'material-dark' or $timepicker-skin-name == 'Material3' {
         min-height: $timepicker-bigger-input-min-height;
         min-width: $timepicker-bigger-input-min-width;
       }

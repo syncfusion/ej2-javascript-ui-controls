@@ -280,3 +280,51 @@ describe('Gantt taskbar rendering', () => {
         });
     });
 });
+describe('Manual Task', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    'TaskID': 1,
+                    'TaskName': 'Parent Task 1',
+                    'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'),
+                    'Progress': '40',
+                    'isManual' : true,
+                    'Children': [
+                         { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                         'EndDate': new Date('02/03/2017'), 'Progress': '40' },
+                        
+                    ]
+                }
+              
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                dependency: 'Predecessor',
+                child: 'Children',
+                manual: 'isManual',
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            projectStartDate: new Date('02/20/2017'),
+            projectEndDate: new Date('03/30/2017'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('manual task convert into milestone', () => {
+       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+    });
+});

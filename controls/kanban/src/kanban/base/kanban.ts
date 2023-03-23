@@ -161,6 +161,14 @@ export class Kanban extends Component<HTMLElement> {
     public allowKeyboard: boolean;
 
     /**
+     * Determine whether to prevent cross-site scripting code in Kanban data entry fields.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Defines the stacked header for Kanban columns with text and key fields.
      *
      * @default []

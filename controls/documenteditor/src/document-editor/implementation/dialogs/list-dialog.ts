@@ -134,6 +134,7 @@ export class ListDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-list-dlg' }
         }];
+        const dialogElement: HTMLElement = this.documentHelper.dialog2.element;
         this.documentHelper.dialog2.dataBind();
         if (bindEvent) {
             this.wireAndBindEvent(locale, isRtl);

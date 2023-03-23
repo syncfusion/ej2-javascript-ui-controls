@@ -122,7 +122,7 @@ export class Ribbon {
                 { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id),
                     htmlAttributes: { 'aria-label': l10n.getConstant('Paste') }, id: id + '_paste', disabled: true},
                 { type: 'Separator', id: id + '_separator_2' },
-                { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
+                { template: this.getNumFormatDDB(id, l10n), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                 { type: 'Separator', id: id + '_separator_3' },
                 { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
                 { type: 'Separator', id: id + '_separator_4' },
@@ -267,7 +267,7 @@ export class Ribbon {
 
     private getHyperlinkDlg(): void {
         const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        const row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
+        const row: RowModel = this.parent.sheets[this.parent.activeSheetIndex].rows[indexes[0]];
         let cell: CellModel;
         if (!isNullOrUndefined(row)) {
             cell = row.cells[indexes[1]];
@@ -490,9 +490,11 @@ export class Ribbon {
         return chartThemeBtn;
     }
 
-    private getNumFormatDDB(id: string): Element {
+    private getNumFormatDDB(id: string, l10n: L10n): Element {
         const numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format', attrs: { 'type': 'button' } });
-        numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
+        const numFormatText: HTMLElement = this.parent.createElement('span', { className: 'e-tbar-btn-text' });
+        numFormatText.innerText = l10n.getConstant('General');
+        numFormatBtn.appendChild(numFormatText);
         const customFormatData: string[] = ['General', '0', '0.00', '#,##0', '#,##0.00', '#,##0_);(#,##0)', '#,##0_);[Red](#,##0)',
             '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', '$#,##0_);($#,##0)', '$#,##0_);[Red]($#,##0)', '$#,##0.00_);($#,##0.00)',
             '$#,##0.00_);[Red]($#,##0.00)','0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy', 'dd-MMM-yy', 'dd-MMM',
@@ -558,10 +560,15 @@ export class Ribbon {
         let chartBtn: HTMLElement;
         if (isChart) {
             chartBtn = this.parent.createElement('button', { id: id + '_chart-btn', attrs: { 'type': 'button' } });
-            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('Chart') }));
+            const chartBtnSpan: HTMLElement = this.parent.createElement('span', { id: id + '_chart' });
+            chartBtnSpan.innerText = l10n.getConstant('Chart');
+            chartBtn.appendChild(chartBtnSpan);
+            
         } else {
             chartBtn = this.parent.createElement('button', { id: id + '_chart-type-btn', attrs: { 'type': 'button' } });
-            chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart_type', innerHTML: l10n.getConstant('ChartType') }));
+            const chartBtnSpan: HTMLElement = this.parent.createElement('span', { id: id + '_chart_type' });
+            chartBtnSpan.innerText = l10n.getConstant('ChartType');
+            chartBtn.appendChild(chartBtnSpan);
             this.createChartDdb(chartBtn, false);
         }
         return chartBtn;
@@ -657,8 +664,8 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => this.chartSelected(args, chartDdb)
         });
         const column: HTMLElement = this.parent.createElement('div', { id: 'column_main', className: 'e-column-main' });
-        const column1Text: HTMLElement =
-            this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text', innerHTML: l10n.getConstant('Column') });
+        const column1Text: HTMLElement = this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text' });
+        column1Text.innerText = l10n.getConstant('Column');
         const column1Cont: HTMLElement = this.parent.createElement('div', { id: 'column1_cont', className: 'e-column1-cont' });
         const column2Cont: HTMLElement = this.parent.createElement('div', { id: 'column2_cont', className: 'e-column2-cont' });
         column.appendChild(column1Text);
@@ -689,8 +696,8 @@ export class Ribbon {
         column1Cont.appendChild(clusteredColumn); column1Cont.appendChild(stackedColumn); column1Cont.appendChild(stackedColumn100);
         column2Cont.appendChild(clusteredColumn3D); column2Cont.appendChild(stackedColumn3D); column2Cont.appendChild(stackedColumn1003D);
         const bar: HTMLElement = this.parent.createElement('div', { id: 'bar_main', className: 'e-bar-main' });
-        const bar1Text: HTMLElement =
-         this.parent.createElement('div', { id: 'bar1_text', className: 'e-bar1-text', innerHTML: l10n.getConstant('Bar') });
+        const bar1Text: HTMLElement = this.parent.createElement('div', { id: 'bar1_text', className: 'e-bar1-text' });
+        bar1Text.innerText = l10n.getConstant('Bar');
         const bar1Cont: HTMLElement = this.parent.createElement('div', { id: 'bar1_cont', className: 'e-bar1-cont' });
         const bar2Cont: HTMLElement = this.parent.createElement('div', { id: 'bar2_cont', className: 'e-bar2-cont' });
         bar.appendChild(bar1Text);
@@ -717,8 +724,8 @@ export class Ribbon {
 
         const area: HTMLElement =
             this.parent.createElement('div', { id: 'area_main', className: 'e-area-main' });
-        const areaText: HTMLElement =
-            this.parent.createElement('div', { id: 'area_text', className: 'e-area-text', innerHTML: l10n.getConstant('Area') });
+        const areaText: HTMLElement = this.parent.createElement('div', { id: 'area_text', className: 'e-area-text' });
+        areaText.innerText = l10n.getConstant('Area');
         const areaCont: HTMLElement =
             this.parent.createElement('div', { id: 'area_cont', className: 'e-area-cont' });
         area.appendChild(areaText);
@@ -735,8 +742,8 @@ export class Ribbon {
 
         const line: HTMLElement =
             this.parent.createElement('div', { id: 'line_main', className: 'e-line-main' });
-        const lineText: HTMLElement =
-         this.parent.createElement('div', { id: 'line_text', className: 'e-line-text', innerHTML: l10n.getConstant('Line') });
+        const lineText: HTMLElement = this.parent.createElement('div', { id: 'line_text', className: 'e-line-text' });
+        lineText.innerText = l10n.getConstant('Line');
         const lineCont: HTMLElement = this.parent.createElement('div', { id: 'line_cont', className: 'e-line-cont' });
         line.appendChild(lineText);
         line.appendChild(lineCont);
@@ -751,8 +758,8 @@ export class Ribbon {
         lineCont.appendChild(defLine); lineCont.appendChild(stackedLine); lineCont.appendChild(stackedLine100);
 
         const pie: HTMLElement = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
-        const pieText: HTMLElement =
-            this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text', innerHTML: l10n.getConstant('Pie') });
+        const pieText: HTMLElement = this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text' });
+        pieText.innerText = l10n.getConstant('Pie');
         const pieCont: HTMLElement = this.parent.createElement('div', { id: 'pie_cont', className: 'e-pie-cont' });
         pie.appendChild(pieText);
         pie.appendChild(pieCont);
@@ -763,7 +770,8 @@ export class Ribbon {
         pieCont.appendChild(defPie); pieCont.appendChild(doughnut);
 
         const radar: HTMLElement = this.parent.createElement('div', { id: 'radar_main', className: 'e-radar-main' });
-        const radarText: HTMLElement = this.parent.createElement('div', { id: 'radar_text', className: 'e-radar-text', innerHTML: 'Radar' });
+        const radarText: HTMLElement = this.parent.createElement('div', { id: 'radar_text', className: 'e-radar-text' });
+        radarText.innerText = l10n.getConstant('Radar');
         const radarCont: HTMLElement = this.parent.createElement('div', { id: 'radar_cont', className: 'e-radar-cont' });
         radar.appendChild(radarText);
         radar.appendChild(radarCont);
@@ -775,8 +783,8 @@ export class Ribbon {
         radarCont.appendChild(defradar); radarCont.appendChild(radarMarkers);
 
         const scatter: HTMLElement = this.parent.createElement('div', { id: 'scatter_main', className: 'e-scatter-main' });
-        const scatterText: HTMLElement =
-            this.parent.createElement('div', { id: 'scatter_text', className: 'e-scatter-text', innerHTML: l10n.getConstant('Scatter') });
+        const scatterText: HTMLElement = this.parent.createElement('div', { id: 'scatter_text', className: 'e-scatter-text' });
+        scatterText.innerText = l10n.getConstant('Scatter');
         const scatterCont: HTMLElement = this.parent.createElement('div', { id: 'scatter_cont', className: 'e-scatter-cont' });
         scatter.appendChild(scatterText);
         scatter.appendChild(scatterCont);
@@ -814,7 +822,9 @@ export class Ribbon {
         });
         this.addChartDdb.createElement = this.parent.createElement;
         const addChartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_addchart', attrs: { 'type': 'button' } });
-        addChartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('AddChartElement') }));
+        const chartBtnText: HTMLElement = this.parent.createElement('span', { id: id + '_chart' });
+        chartBtnText.innerText = l10n.getConstant('AddChartElement');
+        addChartBtn.appendChild(chartBtnText);
         this.addChartDdb.appendTo(addChartBtn);
         return this.addChartDdb.element;
     }
@@ -984,13 +994,17 @@ export class Ribbon {
         cfMenu.createElement = this.parent.createElement;
 
         const iconSets: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
-        const is1: HTMLElement = this.parent.createElement('div', { id: 'is1', className: 'e-is1', innerHTML: 'Directional' });
+        const is1: HTMLElement = this.parent.createElement('div', { id: 'is1', className: 'e-is1' });
+        is1.innerText = 'Directional';
         const is2: HTMLElement = this.parent.createElement('div', { id: 'is2', className: 'e-is2' });
-        const is3: HTMLElement = this.parent.createElement('div', { id: 'is3', className: 'e-is3', innerHTML: 'Shapes' });
+        const is3: HTMLElement = this.parent.createElement('div', { id: 'is3', className: 'e-is3' });
+        is3.innerText = 'Shapes';
         const is4: HTMLElement = this.parent.createElement('div', { id: 'is4', className: 'e-is4' });
-        const is5: HTMLElement = this.parent.createElement('div', { id: 'is5', className: 'e-is5', innerHTML: 'Indicators' });
+        const is5: HTMLElement = this.parent.createElement('div', { id: 'is5', className: 'e-is5' });
+        is5.innerText = 'Indicators';
         const is6: HTMLElement = this.parent.createElement('div', { id: 'is6', className: 'e-is6' });
-        const is7: HTMLElement = this.parent.createElement('div', { id: 'is7', className: 'e-is7', innerHTML: 'Ratings' });
+        const is7: HTMLElement = this.parent.createElement('div', { id: 'is7', className: 'e-is7' });
+        is7.innerText = 'Ratings';
         const is8: HTMLElement = this.parent.createElement('div', { id: 'is8', className: 'e-is8' });
         is1.title = l10n.getConstant('GYColorScale'); is2.title = l10n.getConstant('YGColorScale');
         is3.title = l10n.getConstant('GYColorScale'); is4.title = l10n.getConstant('YGColorScale');
@@ -1339,7 +1353,9 @@ export class Ribbon {
 
     private getFontNameDDB(id: string): Element {
         const fontNameBtn: HTMLElement = this.parent.createElement('button', { id: id + '_font_name', attrs: { 'type': 'button' } });
-        fontNameBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Calibri' }));
+        const fontBtnText: HTMLElement = this.parent.createElement('span', { className: 'e-tbar-btn-text' });
+        fontBtnText.innerText = 'Calibri';
+        fontNameBtn.appendChild(fontBtnText);
         this.fontNameDdb = new DropDownButton({
             cssClass: 'e-font-family',
             items: this.getFontFamilyItems(),
@@ -1978,8 +1994,10 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dummyDiv: HTMLElement = this.parent.createElement('div');
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
-        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('Apply'), attrs: { 'type': 'button' } });
-        const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatTypeList') + ':'});
+        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', attrs: { 'type': 'button' } });
+        dialogBtn.innerText = l10n.getConstant('Apply');
+        const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample' });
+        sampleDiv.innerText = l10n.getConstant('CustomFormatTypeList') + ':';
         const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormatPlaceholder'), 'spellcheck': 'false' }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
         const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
@@ -2070,7 +2088,8 @@ export class Ribbon {
                 cell: { value: cell.value, format: format }, skipFormatCheck: isImported(this.parent) };
             this.parent.notify(getFormattedCellObject, eventArgs);
             const previewElem: HTMLElement = this.parent.createElement(
-                'span', { className: 'e-numformat-preview-text', styles: 'float:right;', innerHTML: eventArgs.formattedText });
+                'span', { className: 'e-numformat-preview-text', styles: 'float:right;' });
+            previewElem.innerText = eventArgs.formattedText;
             numElem.appendChild(previewElem);
         }
         args.element.appendChild(numElem);
@@ -2731,7 +2750,9 @@ export class Ribbon {
             [].slice.call(args.element.children).forEach((li: HTMLElement, index: number): void => {
                 wrapper = this.parent.createElement('div', { innerHTML: li.innerHTML });
                 li.innerHTML = '';
-                wrapper.appendChild(this.parent.createElement('span', { className: 'e-extension', innerHTML: contents[index as number] }));
+                const extension: HTMLElement = this.parent.createElement('span', { className: 'e-extension' });
+                extension.innerText = contents[index as number];
+                wrapper.appendChild(extension);
                 li.appendChild(wrapper);
             });
         }

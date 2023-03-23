@@ -505,6 +505,8 @@ export function decode(value: string): string {
 export function sanitizeHelper(value: string, parent?: IRichTextEditor): string {
     if (parent.enableHtmlSanitizer) {
         const item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+        if (item.selectors.tags[2] && item.selectors.tags[2].indexOf('iframe') > -1)
+        item.selectors.tags[2] = 'iframe:not(.e-rte-embed-url)';
         const beforeEvent: BeforeSanitizeHtmlArgs = {
             cancel: false,
             helper: null

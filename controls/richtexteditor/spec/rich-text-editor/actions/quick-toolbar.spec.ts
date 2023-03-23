@@ -88,9 +88,9 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(3);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Cut');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Copy');
-            expect((<HTMLElement>textTBItems.item(2)).title).toBe('Paste');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Cut (Ctrl + X)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Copy (Ctrl + C)');
+            expect((<HTMLElement>textTBItems.item(2)).title).toBe('Paste (Ctrl + V)');
         });
 
         it("Image quick popup - toolbar and default items testing", () => {
@@ -103,7 +103,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl + K)');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -121,7 +121,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl + K)');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -268,8 +268,8 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(2);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl + C)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl + V)');
         });
     });
 
@@ -331,8 +331,8 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(2);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl + C)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl + V)');
         });
 
         it("Image quick popup - toolbar and items testing", () => {
@@ -340,7 +340,7 @@ describe("Quick Toolbar - Actions Module", () => {
             let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(imgTBItems.length).toBe(2);
-            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link');
+            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link (Ctrl + K)');
             expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Remove');
         });
     });

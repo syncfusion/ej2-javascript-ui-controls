@@ -41,7 +41,7 @@ export class SvgRenderer {
     // method to get the attributes value
     // tslint:disable-next-line:no-any
     private getOptionValue<T>(options: any, key: string): T {
-        return options[key] as T;
+        return options[key as string] as T;
     } /* tslint:enable */
 
     /**
@@ -380,11 +380,11 @@ export class SvgRenderer {
         gradient = this.setElementAttributes(options as SVGCanvasAttributes, gradient);
         for (let i: number = 0; i < colors.length; i++) {
             const stop: Element = document.createElementNS(this.svgLink, 'stop');
-            stop.setAttribute('offset', colors[i].colorStop);
-            stop.setAttribute('stop-color', colors[i].color);
-            stop.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
-            if (!isNullOrUndefined(colors[i].style)) {
-                (stop as HTMLElement).style.cssText = colors[i].style;
+            stop.setAttribute('offset', colors[i as number].colorStop);
+            stop.setAttribute('stop-color', colors[i as number].color);
+            stop.setAttribute('stop-opacity', colors[i as number].opacity ? (colors[i as number].opacity) : '1');
+            if (!isNullOrUndefined(colors[i as number].style)) {
+                (stop as HTMLElement).style.cssText = colors[i as number].style;
             }
             gradient.appendChild(stop);
         }
@@ -434,10 +434,10 @@ export class SvgRenderer {
     public setElementAttributes(options: SVGCanvasAttributes, element: Element | HTMLElement): Element | HTMLElement {
         const keys: string[] = Object.keys(options);
         for (let i: number = 0; i < keys.length; i++) {
-            if (keys[i] === 'style') {
-                (element as HTMLElement).style.cssText = options[keys[i]];
+            if (keys[i as number] === 'style') {
+                (element as HTMLElement).style.cssText = options[keys[i as number]];
             } else {
-                element.setAttribute(keys[i], options[keys[i]]);
+                element.setAttribute(keys[i as number], options[keys[i as number]]);
             }
         }
         return element;

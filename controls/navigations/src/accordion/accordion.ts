@@ -9,6 +9,10 @@ import { AccordionModel, AccordionItemModel, AccordionAnimationSettingsModel, Ac
 
 /**
  * Specifies the option to expand single or multiple panel at a time.
+ * ```props
+ * Single :- Only one Accordion item can be expanded at a time.
+ * Multiple :- Multiple Accordion items can be expanded simultaneously.
+ * ```
  */
 export type ExpandMode = 'Single' | 'Multiple';
 
@@ -156,7 +160,7 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *   let accordionObj: Accordion = new Accordion( {
      *        items: [
      *          { header: 'Accordion Header', content: 'Accordion Content' },
-     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
+     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div>' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -174,7 +178,7 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *   let accordionObj: Accordion = new Accordion( {
      *        items: [
      *          { header: 'Accordion Header', content: 'Accordion Content' },
-     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
+     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div>' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -339,8 +343,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     /**
      * Specifies the options to expand single or multiple panel at a time.
      * The possible values are:
-     * - Single: Sets to expand only one Accordion item at a time.
-     * - Multiple: Sets to expand more than one Accordion item at a time.
+     * * `Single`: Sets to expand only one Accordion item at a time.
+     * * `Multiple`: Sets to expand more than one Accordion item at a time.
      *
      * @default 'Multiple'
      */

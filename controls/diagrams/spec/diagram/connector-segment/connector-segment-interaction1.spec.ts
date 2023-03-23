@@ -1728,12 +1728,12 @@ describe('Diagram Control', () => {
     describe('Check whether connector segment does not split while hover on source and target node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
+    
         beforeAll(() => {
-
+    
             ele = createElement('div', { id: 'diagramsegment' });
             document.body.appendChild(ele);
-
+    
             let nodes: NodeModel[] = [
                 {
                     id: 'node1',
@@ -1778,7 +1778,7 @@ describe('Diagram Control', () => {
                 width: '900px', height: '500px', nodes: nodes, connectors: connectors,
             });
             diagram.appendTo('#diagramsegment');
-
+    
         });
         afterAll(() => {
             diagram.destroy();
@@ -1798,7 +1798,7 @@ describe('Diagram Control', () => {
             expect(connector.segments.length === 3).toBe(true);
             done();
         });
-
+    
     });
 
 });

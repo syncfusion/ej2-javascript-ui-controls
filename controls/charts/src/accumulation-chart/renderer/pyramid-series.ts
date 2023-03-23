@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**

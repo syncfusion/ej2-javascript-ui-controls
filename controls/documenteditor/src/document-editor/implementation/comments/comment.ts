@@ -8,6 +8,7 @@ import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-nav
 import { DialogUtility, Dialog } from '@syncfusion/ej2-popups';
 import { Dictionary, ReviewTabType, CommentDeleteEventArgs, CommentActionEventArgs, beforeCommentActionEvent, commentEndEvent, commentBeginEvent, commentDeleteEvent } from '../../base/index';
 import { HelperMethods } from '../editor/editor-helper';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * @private
@@ -1071,7 +1072,7 @@ export class CommentView {
     }
 
     private postReply(): void {
-        const replyText: string = this.replyViewTextBox.value;
+        const replyText: string = SanitizeHtmlHelper.sanitize(this.replyViewTextBox.value);
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
@@ -1183,7 +1184,7 @@ export class CommentView {
         if (eventArgs.cancel && eventArgs.type === 'Post') {
             return;
         }
-        const updatedText: string = this.textArea.value;
+        const updatedText: string = SanitizeHtmlHelper.sanitize(this.textArea.value);
         this.commentText.innerText = updatedText;
         this.comment.text = updatedText;
         this.showCommentView();

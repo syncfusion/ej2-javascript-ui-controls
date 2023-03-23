@@ -1,13 +1,13 @@
-@include export-module('calendar-material3-icons') {
+@include export-module('calendar-Material3-icons') {
 
   /*! component icons */
   .e-calendar .e-header {
     #{if(&, '&', '*')} .e-date-icon-prev::before {
-      content: '\e776';
+      content: '\e765';
     }
 
     #{if(&, '&', '*')} .e-date-icon-next::before {
-      content: '\e729';
+      content: '\e748';
     }
   }
 }

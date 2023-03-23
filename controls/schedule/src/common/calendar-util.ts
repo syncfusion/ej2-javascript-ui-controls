@@ -4,6 +4,14 @@ import { HijriParser, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Calendar functionalities
  */
+
+/**
+ * Defines the calendar type of the scheduler.
+ * ```props
+ * Islamic :- Denotes the Islamic calendar.
+ * Gregorian :- Denotes the Gregorian calendar.
+ * ```
+ */
 export type CalendarType = 'Islamic' | 'Gregorian';
 
 /** @private */

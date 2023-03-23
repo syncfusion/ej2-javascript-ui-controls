@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';import { MaskPlaceholderModel } from '../common/maskplaceholder-model'
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { MaskPlaceholderModel } from '../common/maskplaceholder-model';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -285,14 +285,14 @@ export interface DatePickerModel extends CalendarModel{
      * Specifies whether it is a masked datepicker or not.
      * By default the datepicker component render without masked input.
      * If you need masked datepicker input then specify it as true.
-     * 
+     *
      * @default false
      */
     enableMask?: boolean;
 
     /**
      * Specifies the mask placeholder to be displayed on masked datepicker.
-     * 
+     *
      * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
      */
     maskPlaceholder?: MaskPlaceholderModel;

@@ -609,7 +609,7 @@ export class StampAnnotation {
             // eslint-disable-next-line max-len
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
             annotation.isPrint = this.pdfViewer.customStampSettings.isPrint;
-            this.customStampName = this.customStampName ? this.customStampName : this.currentStampAnnotation.signatureName ? this.currentStampAnnotation.signatureName : annotation.id;
+            this.customStampName = this.customStampName ? this.customStampName : (this.currentStampAnnotation && this.currentStampAnnotation.signatureName) ? this.currentStampAnnotation.signatureName : annotation.id;
             annotationObject = {
                 // eslint-disable-next-line max-len
                 stampAnnotationType: 'image', author: annotation.author, modifiedDate: annotation.modifiedDate, subject: '',
@@ -1097,6 +1097,9 @@ export class StampAnnotation {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
+                        if ((this.pdfViewer.nameTable as any)[pageAnnotationObject.annotations[z].randomId]) {
+                            pageAnnotationObject.annotations[z].wrapperBounds = (this.pdfViewer.nameTable as any)[pageAnnotationObject.annotations[z].randomId].wrapper.bounds;
+                        }
                     }
                     newArray = pageAnnotationObject.annotations;
                 }

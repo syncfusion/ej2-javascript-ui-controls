@@ -92,15 +92,15 @@ export class ExcelExport {
         const isFileNameSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.fileName);
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         /** Event trigerring */
-        let clonedValues: IPivotValues;
-        const currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
+        let clonedValues: IAxisSet[][];
+        const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
         const customFileName: string = isFileNameSet ? exportProperties.fileName : 'default.xlsx';
         if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
             const pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings, true);
             this.parent.applyFormatting(this.engine.pivotValues);
-            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
+            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
@@ -108,10 +108,10 @@ export class ExcelExport {
             clonedValues = currentPivotValues;
         }
         const args: BeforeExportEventArgs = {
-            fileName: customFileName, header: '', footer: '', dataCollections: [clonedValues], excelExportProperties: exportProperties
+            fileName: customFileName, header: '', footer: '', dataCollections: [clonedValues] as IAxisSet[][], excelExportProperties: exportProperties
         };
         let fileName: string; let header: string;
-        let footer: string; let dataCollections: IPivotValues[];
+        let footer: string; let dataCollections: IAxisSet[][];
         this.parent.trigger(events.beforeExport, args, (observedArgs: BeforeExportEventArgs) => {
             fileName = observedArgs.fileName; header = observedArgs.header;
             footer = observedArgs.footer; dataCollections = observedArgs.dataCollections;
@@ -126,7 +126,7 @@ export class ExcelExport {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const workSheets: any = [];
         for (let dataColl: number = 0; dataColl < dataCollections.length; dataColl++) {
-            const pivotValues: IPivotValues = dataCollections[dataColl as number]; let colLen: number = 0;
+            const pivotValues: IAxisSet[][] = dataCollections[dataColl as number] as IAxisSet[][]; let colLen: number = 0;
             const rowLen: number = pivotValues.length;
             const formatList: { [key: string]: string } = this.parent.renderModule.getFormatList();
             let maxLevel: number = 0;

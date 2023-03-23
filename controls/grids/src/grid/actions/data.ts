@@ -83,6 +83,7 @@ export class Data implements IDataProcessor {
      * The function is used to generate updated Query from Grid model.
      *
      * @param {boolean} skipPage - specifies the boolean to skip the page
+     * @param {boolean} isAutoCompleteCall - specifies for auto complete call
      * @returns {Query} returns the Query
      * @hidden
      */
@@ -301,7 +302,7 @@ export class Data implements IDataProcessor {
             for (const col of columns) {
                 const gridColumn: Column = col.isForeignKey ? gObj.getColumnByUid(col.uid) : gObj.getColumnByField(col.field);
                 if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
-                    col.type = col.isForeignKey ? gObj.getColumnByUid(col.uid).type :gObj.getColumnByField(col.field).type;
+                    col.type = col.isForeignKey ? gObj.getColumnByUid(col.uid).type : gObj.getColumnByField(col.field).type;
                 }
                 if (col.isForeignKey) {
                     foreignCols.push(col);

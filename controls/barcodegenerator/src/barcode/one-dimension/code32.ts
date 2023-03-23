@@ -49,8 +49,8 @@ export class Code32 extends OneDimension {
         const codes: object[] = this.getCodeValue();
         for (let i: number = 0; i <= givenChar.length; i++) {
             for (let j: number = 0; j < codes.length; j++) {
-                if (givenChar[i] === codes[j][0]) {
-                    code.push(codes[j][2][0]);
+                if (givenChar[parseInt(i.toString(), 10)] === codes[parseInt(j.toString(), 10)][0]) {
+                    code.push(codes[parseInt(j.toString(), 10)][2][0]);
                 }
             }
         }

@@ -6,7 +6,7 @@
 
     .e-kanban-table {
       .e-header-cells {
-        background-color: $kanban-column-bg-color;
+        background: $kanban-column-bg-color;
 
         .e-header-text {
           color: $kanban-header-text-color;
@@ -38,7 +38,7 @@
 
       &.e-content-table {
         .e-content-row:not(.e-swimlane-row) td {
-          background-color: $kanban-column-bg-color;
+          background: $kanban-column-bg-color;
         }
 
         .e-content-row {
@@ -53,7 +53,7 @@
           .e-show-add-button {
 
             &:hover {
-              background-color: $kanban-dropped-clone-bg-color;
+              background: $kanban-dropped-clone-bg-color;
             }
 
             .e-show-add-icon {
@@ -63,12 +63,12 @@
         }
 
         .e-card {
-          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5' or $kanban-skin == 'FluentUI') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
             background: $kanban-card-bg-color;
           }
 
           &.e-selection {
-            background-color: $kanban-card-selection-bg-color;
+            background: $kanban-card-selection-bg-color;
           }
 
           .e-card-header {
@@ -81,7 +81,7 @@
 
           .e-card-tag {
             &.e-card-label {
-              background-color: $kanban-tags-bg-color;
+              background: $kanban-tags-bg-color;
               color: $kanban-tags-color;
             }
           }
@@ -124,15 +124,15 @@
   .e-kanban-dialog.e-dialog {
     .e-kanban-form-wrapper table {
       textarea {
-        background-color: $kanban-text-area-bg-color;
+        background: $kanban-text-area-bg-color;
         color: $kanban-text-area-color;
         min-width: 70%;
 
-        @if $kanban-skin == 'fabric' or $kanban-skin == 'fabric-dark' or $kanban-skin == 'bootstrap5' or $kanban-skin == 'highcontrast' or $kanban-skin == 'tailwind' {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'tailwind' {
           font-weight: normal;
         }
 
-        @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           border-color: $kanban-dialog-text-areas-border-color;
           border-radius: 4px;
           outline: none;

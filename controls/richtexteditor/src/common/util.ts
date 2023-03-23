@@ -39,6 +39,7 @@ export function setEditFrameFocus(editableElement: Element, selector: string): v
 
 /**
  * @param {string} value - specifies the string value
+ * @param {string} enterAction - specifies the enter key action API
  * @returns {void}
  * @hidden
  */

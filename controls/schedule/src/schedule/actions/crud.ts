@@ -197,6 +197,7 @@ export class Crud {
             if (this.parent.currentAction !== 'EditFollowingEvents' && !this.isBlockEvent(eventData)
                 && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', eventData);
+                this.parent.crudModule.crudObj.isCrudAction = false;
                 return;
             }
             const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];

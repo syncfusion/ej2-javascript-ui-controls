@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 
 import { SeriesMarkerModel, SeriesMarkerBorderModel } from '../series/series-model';

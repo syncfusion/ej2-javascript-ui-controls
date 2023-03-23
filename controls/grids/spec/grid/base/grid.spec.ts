@@ -1,13 +1,14 @@
 /**
  * Grid base spec 
  */
-import { L10n, EmitType,EventHandler } from '@syncfusion/ej2-base';
+import { L10n, EmitType,EventHandler, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { GridLine } from '../../../src/grid/base/enum';
 import { Column, ColumnModel } from '../../../src/grid/models/column';
+import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { Page } from '../../../src/grid/actions/page';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
@@ -18,7 +19,8 @@ import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel, recordClick } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 import { getNumberFormat } from '../../../src/grid/base/util';
-Grid.Inject(Page, Edit, Toolbar);
+import { Group } from '../../../src/grid/actions/group';
+Grid.Inject(Page, Edit, Toolbar, Group);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -1767,7 +1769,7 @@ describe('Grid base module', () => {
             gridObj = null;
         });
     });
-
+    
     describe('EJ2-68404 - Missing Cancel icon in Reactive Aggregate sample in toolbar button.', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -1832,5 +1834,199 @@ describe('Grid base module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('EJ2-35549 - When dynamically change group Settings,sortSettings and columns causes the script error', () => {
+        let gridObj: Grid;
+        let column1: ColumnModel[] = [ { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                                        { headerText: 'CustomerID', field: 'CustomerID' },
+                                        { headerText: 'Freight', field: 'Freight' },
+                                        { headerText: 'EmployeeID', field: 'EmployeeID' }
+                                    ];
+        let column2:   ColumnModel[] = [{ headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                                        { headerText: 'ShipCity', field: 'ShipCity' },
+                                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                                        { headerText: 'ShipName', field: 'ShipName' }
+                                        ];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: column1,
+                }, done);
+        });
+        it('called the clear All Grid Actions', (done: Function) => {
+            let dataBound = (args: Object) => {
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.changeDataSource(filterData, column2);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = column1 = column2 = null;
+        });
+    });
+
+    describe('EJ2-35549 - When dynamically change group Settings,sortSettings and columns causes the script error', () => {
+        let gridObj: Grid;
+        let rows: Element[];
+        let column1: ColumnModel[] = [ { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                                        { headerText: 'CustomerID', field: 'CustomerID' },
+                                        { headerText: 'Freight', field: 'Freight' },
+                                        { headerText: 'EmployeeID', field: 'EmployeeID' }
+                                    ];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: column1,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    queryCellInfo: function (args: QueryCellInfoEventArgs) {
+                        if (args.column.field === 'Freight') {
+                            args.cell.classList.add('e-colour');
+                        }
+                    },
+                    filterSettings: { columns: [{ field: 'CustomerID', matchCase: false, operator: 'notequal', value: 'TOMSP' }] },
+                    sortSettings: { columns: [{ field: 'OrderID', direction: 'Ascending' }, { field: 'CustomerID', direction: 'Ascending' }] },
+                }, done);
+        });
+        it('check queryCellInfo class name - 1', () => {
+            rows = gridObj.getRows();
+            expect((rows[1] as HTMLTableRowElement).cells[3].classList.contains('e-colour')).toBeTruthy();
+        });
+        it('datasource changed ', (done: Function) => {
+            let newColumn: object[] = [
+                { 'field': 'OrderID', 'headerText': 'Order ID', 'width': 120, 'textAlign': 'Right' },
+                { 'field': 'CustomerID', 'headerText': 'Customer Name', 'width': 160 },
+                { 'field': 'OrderDate', 'headerText': 'Order Date', 'width': 130, 'format': 'yMd' },
+                { 'field': 'Freight', 'width': 120, 'format': 'C', 'textAlign': 'Right' },
+                { 'field': 'ShipName', 'headerText': 'Ship Name', 'width': '170' }];
+            let dataBound = (args: Object) => {
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.changeDataSource(filterData, newColumn);
+        });
+        it('check queryCellInfo class name - 2', () => {
+            rows = gridObj.getRows();
+            expect((rows[1] as HTMLTableRowElement).cells[2].classList.contains('e-colour')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = column1 = rows = null;
+        });
+    });
+
+    describe('Auto fit column =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    columns: [{ field: 'OrderID', headerText: 'Order ID', width: 200 },
+                    { field: 'CustomerID', headerText: 'CustomerID', visible: false },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 200 }],
+                    allowGrouping: true,
+                    groupSettings: { showDropArea: true, showGroupedColumn: true, columns: ['CustomerID'] },
+                }, done);
+        });
+        it('Enable autoFit', () => {
+            gridObj.autoFit = true;
+        });
+        it('Check table width by setting autoFit as true', () => {
+            expect((gridObj.getContentTable()as HTMLElement).style.width).toBe('430px');
+            gridObj.showColumns('CustomerID');
+        });
+        it('Check table width by visibling undefined width column', () => {
+            expect((gridObj.getContentTable()as HTMLElement).style.width).toBe('');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    describe('Provide XSS- security for Grid =>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [{
+                        OrderID: 10248,  ShipCity: 'Münster',
+                        ShipName: '<img id="target" src="x" onerror="alert(document.domain)">'
+                    },
+                    {
+                        OrderID: 10249, ShipCity: 'Luisenstr',
+                        ShipName: '<p><strong>Environmentally friendly</strong> or <strong>environment-friendly</strong>'
+                        
+                    },
+                    {
+                        OrderID: 10250,  ShipCity: 'Rio de Janeiro',
+                        ShipName: 'from the tow at \"low\" altitude and turned back toward the gliderport when the nose of the glider pointed “down,\" and the glider descended',
+                    }],
+                    enableHtmlSanitizer: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal'},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            isPrimaryKey: true,
+                            headerText: '<h1>Order ID<h1>',
+                            disableHtmlEncode: false,
+                            clipMode: "EllipsisWithTooltip",
+                            width: 120,
+                        },
+                        {
+                            field: 'ShipName',
+                            width: 150,
+                            disableHtmlEncode: false,
+                            headerText: 'Ship Name',
+                            clipMode: 'EllipsisWithTooltip',
+                        },
+                        {
+                            field: 'SupplierID',
+                            width: 150,
+                            disableHtmlEncode: false,
+                            headerText: 'Supplier ID',
+                        },
+                    ],
+                }, done);
+        });
+        it('test the html sanitizer' , () => {        
+            expect((gridObj.getRowByIndex(0) as any ).cells[1].innerHTML).toBe('<img id="target" src="x">');     
+        });
+        it('update cell test', function () {
+            gridObj.setCellValue(10249, 'ShipName', '<img id="target" src="x" onerror="alert(document.domain)">');
+            let selRow: any = gridObj.contentModule.getRows()[1];
+            expect((<any>selRow).data.ShipName).toEqual('<img id="target" src="x">');
+        });
+        it('Start Editing', () => {
+            gridObj.selectRow(2);
+            gridObj.startEdit();
+        });
+        it('Edited value check', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect((gridObj.currentViewData[2] as any).ShipName).toBe('<img id="target" src="x">');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (select('#' + gridObj.element.id + 'ShipName', gridObj.element) as any).value = '<img id="target" src="x" onerror="alert(document.domain)">';
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+  
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });

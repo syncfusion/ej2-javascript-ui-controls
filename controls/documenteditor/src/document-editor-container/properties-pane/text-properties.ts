@@ -7,6 +7,7 @@ import { DropDownButton, SplitButton, ItemModel, MenuEventArgs } from '@syncfusi
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { Query } from '@syncfusion/ej2-data';
 import { DocumentEditorContainer } from '../document-editor-container';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 /**
  * Text Properties
  *
@@ -316,6 +317,7 @@ export class Text {
             this.documentEditor.selection.characterFormat.highlightColor = null;
         }
         this.documentEditor.selection.characterFormat.highlightColor = hgltColor as HighlightColor;
+        this.documentEditor.focusIn();
     }
     private getHighLightColor(color: string): HighlightColor {
         switch (color) {
@@ -519,6 +521,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleBold();
+            this.documentEditor.focusIn();
         }
     }
     private italicAction(): void {
@@ -527,6 +530,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleItalic();
+            this.documentEditor.focusIn();
         }
     }
     private underlineAction(): void {
@@ -535,6 +539,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleUnderline('Single');
+            this.documentEditor.focusIn();
         }
     }
     private strikethroughAction(): void {
@@ -543,6 +548,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleStrikethrough();
+            this.documentEditor.focusIn();
         }
     }
     private clearFormatAction(): void {
@@ -559,6 +565,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleSubscript();
+            this.documentEditor.focusIn();
         }
     }
     private superscriptAction(): void {
@@ -567,6 +574,7 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleSuperscript();
+            this.documentEditor.focusIn();  
         }
     }
     private changeFontColor(arg: ColorPickerEventArgs): void {
@@ -586,8 +594,9 @@ export class Text {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.selection && this.fontFamily.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selection.characterFormat.fontFamily = this.fontFamily.value as string;
+                this.documentEditor.selection.characterFormat.fontFamily = SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
             }, 10);
+            this.documentEditor.focusIn();
         }
     }
     private changeFontSize(): void {
@@ -598,6 +607,7 @@ export class Text {
             setTimeout((): void => {
                 this.documentEditor.selection.characterFormat.fontSize = this.fontSize.value as number;
             }, 10);
+            this.documentEditor.focusIn();
         }
     }
     public onSelectionChange(): void {

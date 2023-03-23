@@ -1,8 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
 import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -40,8 +39,8 @@ export function sort(data: Object[], fields: string[], isDescending?: boolean): 
     const sortData: Object[] = <Object[]>extend([], data, null);
     for (let i: number = 0; i < sortData.length; i++) {
         for (let j: number = 0; j < fields.length; j++) {
-            if (sortData[i][fields[j]] instanceof Date) {
-                sortData[i][fields[j]] = sortData[i][fields[j]].getTime();
+            if (sortData[i as number][fields[j as number]] instanceof Date) {
+                sortData[i as number][fields[j as number]] = sortData[i as number][fields[j as number]].getTime();
             }
         }
     }
@@ -166,20 +165,20 @@ export function showTooltip(
     y = isTitleOrLegendEnabled ? (y - size.height / 2) : y + 15;
     if (!tooltip) {
         tooltip = createElement('div', {
-            innerHTML: text,
             id: id,
             styles: 'top:' + (y).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
+        tooltip.innerText = text;
         element.appendChild(tooltip);
         const left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
         if (left < 0) {
             tooltip.style.left = '0px';
         }
     } else {
-        tooltip.innerHTML = text;
+        tooltip.innerText = text;
         tooltip.style.top = (y).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
@@ -1097,6 +1096,7 @@ export function calculateShapes(
     case 'Waterfall':
     case 'BoxAndWhisker':
     case 'StepArea':
+    case 'RangeStepArea':
     case 'StackingStepArea':
     case 'Square':
     case 'Flag':
@@ -1783,7 +1783,7 @@ export function textElement(
     renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
     forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
-    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean
+    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean
 ): Element {
     let renderOptions: Object = {};
     let tspanElement: Element;
@@ -1791,9 +1791,19 @@ export function textElement(
     let height: number;
     let dy: number;
     let label: string;
+    let width: number = 0;
+    let dx: number;
+    let maxWidth: number = 0;
+    if (option.text.length > 1 && isDataLabelWrap) {
+        for (let i: number = 0, len: number = option.text.length; i < len; i++) {
+            maxWidth = Math.max(maxWidth, measureText(option.text[i as number], font).width);
+        }
+        width = measureText(option.text[0], font).width;
+    }
+    dx = (option.text.length > 1 && isDataLabelWrap) ? (option.x + maxWidth / 2 - width / 2) : option.x;
     renderOptions = {
         'id': option.id,
-        'x': option.x,
+        'x': dx,
         'y': option.y,
         'fill': color ? color : 'black',
         'font-size': font.size,
@@ -1819,14 +1829,16 @@ export function textElement(
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i as number], font).height);
+            width = measureText(option.text[i as number], font).width;
             dy = (option.y) + ((isMinus) ? -(i * height) : (i * height));
+            dx = isDataLabelWrap ? (option.x + maxWidth / 2 - width / 2) : option.x;
             label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i as number];
             if (isCanvas) {
                 tspanElement = renderer.createText(renderOptions, label, null, null, dy, true);
             } else {
                 tspanElement = (renderer as SvgRenderer).createTSpan(
                     {
-                        'x': option.x, 'id': option.id,
+                        'x': dx, 'id': option.id,
                         'y': dy
                     },
                     label
@@ -2175,6 +2187,7 @@ export class PolygonOption {
 export class ChartLocation {
     public x: number;
     public y: number;
+
 
     constructor(x: number, y: number) {
         this.x = x;

@@ -4,6 +4,7 @@ import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper, ElementBox } from '../viewer';
 import { FieldElementBox, CheckBoxFormField } from '../viewer/page';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Form field checkbox dialog is used to modify the value in checkbox form field.
@@ -276,8 +277,8 @@ export class CheckBoxFormFieldDialog {
         this.closeCheckBoxField();
         let checkBoxField: CheckBoxFormField = new CheckBoxFormField();
         checkBoxField.defaultValue = this.checkedButton.checked;
-        checkBoxField.name = (this.bookmarkInputText as HTMLInputElement).value;
-        checkBoxField.helpText = (this.tooltipInputText as HTMLInputElement).value;
+        checkBoxField.name = SanitizeHtmlHelper.sanitize((this.bookmarkInputText as HTMLInputElement).value);
+        checkBoxField.helpText = SanitizeHtmlHelper.sanitize((this.tooltipInputText as HTMLInputElement).value);
         checkBoxField.checked = checkBoxField.defaultValue;
         checkBoxField.enabled = this.checBoxEnableElement.checked;
         if (this.exactButton.checked) {

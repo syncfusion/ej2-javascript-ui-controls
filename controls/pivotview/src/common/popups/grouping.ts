@@ -8,7 +8,7 @@ import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { PivotUtil } from '../../base/util';
 import { PivotExportUtil } from '../../base/export-util';
-import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';
+import { DataSourceSettings } from '../../model/datasourcesettings';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { IAction } from '../../common/base/interface';
@@ -276,6 +276,7 @@ export class Grouping implements IAction {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 300,
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -329,8 +330,9 @@ export class Grouping implements IAction {
                         this.parent.engineModule.fieldList[actualField.name].caption + (newFieldName.match(/_custom_group/g).length + 1);
                 }
                 const captionInputTextDiv1: HTMLElement = createElement('div', {
-                    className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
+                    className: 'e-caption-option-text'
                 });
+                captionInputTextDiv1.innerText = this.parent.localeObj.getConstant('groupFieldCaption');
                 const captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-container' });
                 const captionInputField1: HTMLInputElement = createElement('input', {
                     id: this.parentElement.id + 'group_caption_option',
@@ -341,8 +343,9 @@ export class Grouping implements IAction {
                 captionInputDiv1.appendChild(captionInputField1);
                 groupWrapperDiv1.appendChild(captionInputDiv1);
                 const inputTextDiv1: HTMLElement = createElement('div', {
-                    className: 'e-input-option-text', innerHTML: this.parent.localeObj.getConstant('groupTitle')
+                    className: 'e-input-option-text'
                 });
+                inputTextDiv1.innerText = this.parent.localeObj.getConstant('groupTitle');
                 const inputDiv1: HTMLElement = createElement('div', { className: 'e-group-input-container' });
                 const inputField1: HTMLInputElement = createElement('input', {
                     id: this.parentElement.id + 'group_input_option',
@@ -411,8 +414,9 @@ export class Grouping implements IAction {
                     className: 'e-group-interval-option-container'
                 });
                 const intervalTextDiv1: HTMLElement = createElement('div', {
-                    className: 'e-group-inerval-option-text', innerHTML: this.parent.localeObj.getConstant('groupBy')
+                    className: 'e-group-inerval-option-text'
                 });
+                intervalTextDiv1.innerText = this.parent.localeObj.getConstant('groupBy');
                 const intervalInputField1: HTMLInputElement = createElement('input', {
                     id: this.parentElement.id + 'group_interval_input',
                     className: 'e-group_interval_input',
@@ -476,6 +480,7 @@ export class Grouping implements IAction {
                         filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
+                        enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                         cssClass: this.parent.cssClass,
                         select: () => {
                             groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
@@ -546,6 +551,7 @@ export class Grouping implements IAction {
                     checked: !(startAt === undefined),
                     enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: this.parent.cssClass,
                     change: (args: ChangeEventArgs) => {
                         const startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
@@ -562,6 +568,7 @@ export class Grouping implements IAction {
                     checked: !(endAt === undefined),
                     enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: this.parent.cssClass,
                     change: (args: ChangeEventArgs) => {
                         const endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?

@@ -219,7 +219,8 @@ export class Link {
             const eventArgs: NotifyArgs = {
                 args: event ? event.args : {
                     item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel,
-                    originalEvent: undefined
+                    originalEvent: undefined,
+                    name: !isInternal ? 'showDialog' : null
                 },
                 selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
             };
@@ -278,13 +279,13 @@ export class Link {
         });
         const htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
             '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '"aria-label="'+ this.i10n.getConstant('linkTitle') + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '"aria-label="' + this.i10n.getConstant('linkTitle') + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
             '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
             '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>' : '';
         const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '"aria-label="'+this.i10n.getConstant('linkWebUrl') + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '"aria-label="' + this.i10n.getConstant('linkWebUrl') + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
             '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
-            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '"aria-label="'+ this.i10n.getConstant('linkText') +'" placeholder="' + textPlace + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '"aria-label="' + this.i10n.getConstant('linkText') + '" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + htmlTextbox;
         const contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);

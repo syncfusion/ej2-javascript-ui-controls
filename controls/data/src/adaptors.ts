@@ -1,3 +1,6 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable prefer-rest-params */
+/* eslint-disable security/detect-object-injection */
 import { Ajax } from '@syncfusion/ej2-base';
 import { merge, extend, isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
 import { DataUtil, Aggregates, Group, GraphQLParams } from './util';
@@ -7,11 +10,13 @@ const consts: { [key: string]: string } = { GroupGuid: '{271bbba0-1ee7}' };
 /**
  * Adaptors are specific data source type aware interfaces that are used by DataManager to communicate with DataSource.
  * This is the base adaptor class that other adaptors can extend.
+ *
  * @hidden
  */
 export class Adaptor {
     /**
      * Specifies the datasource option.
+     *
      * @default null
      */
     public dataSource: DataOptions;
@@ -22,6 +27,7 @@ export class Adaptor {
 
     /**
      * It contains the datamanager operations list like group, searches, etc.,
+     *
      * @default null
      * @hidden
      */
@@ -29,7 +35,9 @@ export class Adaptor {
 
     /**
      * Constructor for Adaptor class
-     * @param  {DataOptions} ds?
+     *
+     * @param {DataOptions} ds?
+     * @param ds
      * @hidden
      * @returns aggregates
      */
@@ -38,7 +46,7 @@ export class Adaptor {
         this.pvt = {};
     }
 
-    // common options for all the adaptors 
+    // common options for all the adaptors
     protected options: RemoteOptions = {
         from: 'table',
         requestType: 'json',
@@ -56,10 +64,14 @@ export class Adaptor {
 
     /**
      * Returns the data from the query processing.
-     * @param  {Object} data
-     * @param  {DataOptions} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
+     *
+     * @param {Object} data
+     * @param {DataOptions} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param ds
+     * @param query
+     * @param xhr
      * @returns Object
      */
     public processResponse(data: Object, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest): Object {
@@ -68,6 +80,7 @@ export class Adaptor {
 
     /**
      * Specifies the type of adaptor.
+     *
      * @default Adaptor
      */
     public type: Object = Adaptor;
@@ -75,12 +88,14 @@ export class Adaptor {
 
 /**
  * JsonAdaptor is used to process JSON data. It contains methods to process the given JSON data based on the queries.
+ *
  * @hidden
  */
 export class JsonAdaptor extends Adaptor {
 
     /**
-     * Process the JSON data based on the provided queries. 
+     * Process the JSON data based on the provided queries.
+     *
      * @param  {DataManager} dataManager
      * @param  {Query} query
      * @returns Object
@@ -91,15 +106,15 @@ export class JsonAdaptor extends Adaptor {
         let countFlg: boolean = true;
         let ret: Object[];
         let key: QueryOptions;
-        let lazyLoad: object = {};
+        const lazyLoad: object = {};
         let keyCount: number = 0;
-        let group: object[] = [];
+        const group: object[] = [];
         let page: { pageIndex: number, pageSize: number };
         for (let i: number = 0; i < query.lazyLoad.length; i++) {
             keyCount++;
             lazyLoad[query.lazyLoad[i].key] = query.lazyLoad[i].value;
         }
-        let agg: { [key: string]: Object } = {};
+        const agg: { [key: string]: Object } = {};
         for (let i: number = 0; i < query.queries.length; i++) {
             key = query.queries[i];
             if ((key.fn === 'onPage' || key.fn === 'onGroup') && query.lazyLoad.length) {
@@ -126,10 +141,10 @@ export class JsonAdaptor extends Adaptor {
         }
 
         if (keyCount) {
-            let args: LazyLoadGroupArgs = {
+            const args: LazyLoadGroupArgs = {
                 query: query, lazyLoad: lazyLoad as LazyLoad, result: result as Object[], group: group, page: page
             };
-            let lazyLoadData: { result: Object[], count: number } = this.lazyLoadGroup(args);
+            const lazyLoadData: { result: Object[], count: number } = this.lazyLoadGroup(args);
             result = lazyLoadData.result;
             count = lazyLoadData.count;
         }
@@ -146,33 +161,34 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Perform lazy load grouping in JSON array based on the given query and lazy load details.
+     *
      * @param  {LazyLoadGroupArgs} args
      */
     public lazyLoadGroup(args: LazyLoadGroupArgs): { result: Object[], count: number } {
         let count: number = 0;
-        let agg: object[] = this.getAggregate(args.query);
+        const agg: object[] = this.getAggregate(args.query);
         let result: Object[] = args.result;
         if (!isNullOrUndefined(args.lazyLoad.onDemandGroupInfo)) {
-            let req: OnDemandGroupInfo = args.lazyLoad.onDemandGroupInfo;
+            const req: OnDemandGroupInfo = args.lazyLoad.onDemandGroupInfo;
             for (let i: number = req.where.length - 1; i >= 0; i--) {
                 result = this.onWhere(result, req.where[i]);
             }
             if (args.group.length !== req.level) {
-                let field: string = (<{ fieldName?: string }>args.group[req.level]).fieldName;
+                const field: string = (<{ fieldName?: string }>args.group[req.level]).fieldName;
                 result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
             }
             count = result.length;
-            let data: Object[] = result;
+            const data: Object[] = result;
             result = result.slice(req.skip);
             result = result.slice(0, req.take);
             if (args.group.length !== req.level) {
                 this.formGroupResult(result, data);
             }
         } else {
-            let field: string = (<{ fieldName?: string }>args.group[0]).fieldName;
+            const field: string = (<{ fieldName?: string }>args.group[0]).fieldName;
             result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
             count = result.length;
-            let data: Object[] = result;
+            const data: Object[] = result;
             if (args.page) {
                 result = this.onPage(result, args.page, args.query);
             }
@@ -183,8 +199,8 @@ export class JsonAdaptor extends Adaptor {
 
     private formGroupResult(result: Object[], data: Object[]): Object[] {
         if (result.length && data.length) {
-            let uid: string = 'GroupGuid'; let childLevel: string = 'childLevels'; let level: string = 'level';
-            let records: string = 'records';
+            const uid: string = 'GroupGuid'; const childLevel: string = 'childLevels'; const level: string = 'level';
+            const records: string = 'records';
             result[uid] = data[uid];
             result[childLevel] = data[childLevel];
             result[level] = data[level];
@@ -195,11 +211,12 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Separate the aggregate query from the given queries
+     *
      * @param  {Query} query
      */
     public getAggregate(query: Query): Object[] {
-        let aggQuery: QueryOptions[] = Query.filterQueries(query.queries, 'onAggregates') as QueryOptions[];
-        let agg: Object[] = [];
+        const aggQuery: QueryOptions[] = Query.filterQueries(query.queries, 'onAggregates') as QueryOptions[];
+        const agg: Object[] = [];
         if (aggQuery.length) {
             let tmp: QueryOptions;
             for (let i: number = 0; i < aggQuery.length; i++) {
@@ -211,14 +228,15 @@ export class JsonAdaptor extends Adaptor {
     }
 
     /**
-     * Performs batch update in the JSON array which add, remove and update records. 
+     * Performs batch update in the JSON array which add, remove and update records.
+     *
      * @param  {DataManager} dm
      * @param  {CrudOptions} changes
      * @param  {RemoteArgs} e
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs): CrudOptions {
         let i: number;
-        let deletedRecordsLen: number = changes.deletedRecords.length;
+        const deletedRecordsLen: number = changes.deletedRecords.length;
         for (i = 0; i < changes.addedRecords.length; i++) {
             this.insert(dm, changes.addedRecords[i]);
         }
@@ -233,8 +251,10 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Performs filter operation with the given data and where query.
-     * @param  {Object[]} ds
-     * @param  {{validate:Function}} e
+     *
+     * @param {Object[]} ds
+     * @param {{validate:Function}} e
+     * @param e.validate
      */
     public onWhere(ds: Object[], e: { validate: Function }): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -245,18 +265,22 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Returns aggregate function based on the aggregate type.
-     * @param  {Object[]} ds
-     * @param  {{field:string} e
-     * @param  {string}} type
+     *
+     * @param {Object[]} ds
+     * @param e
+     * @param {string} } type
+     * @param e.field
+     * @param e.type
      */
     public onAggregates(ds: Object[], e: { field: string, type: string }): Function {
-        let fn: Function = DataUtil.aggregates[e.type] as Function;
+        const fn: Function = DataUtil.aggregates[e.type] as Function;
         if (!ds || !fn || ds.length === 0) { return null; }
         return fn(ds, e.field);
     }
 
     /**
      * Performs search operation based on the given query.
+     *
      * @param  {Object[]} ds
      * @param  {QueryOptions} e
      */
@@ -279,9 +303,13 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Sort the data with given direction and field.
-     * @param  {Object[]} ds
-     * @param  {{comparer:(a:Object} e
-     * @param  {Object} b
+     *
+     * @param {Object[]} ds
+     * @param e
+     * @param {Object} b
+     * @param e.comparer
+     * @param e.fieldName
+     * @param query
      */
     public onSortBy(ds: Object[], e: { comparer: (a: Object, b: Object) => number, fieldName: string }, query: Query): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -312,36 +340,43 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Group the data based on the given query.
+     *
      * @param  {Object[]} ds
      * @param  {QueryOptions} e
      * @param  {Query} query
      */
     public onGroup(ds: Object[], e: QueryOptions, query: Query): Object[] {
         if (!ds || !ds.length) { return ds; }
-        let agg: Object[] = this.getAggregate(query);
+        const agg: Object[] = this.getAggregate(query);
         return DataUtil.group(ds, DataUtil.getValue(e.fieldName, query), agg, null, null, e.comparer as Function);
     }
 
     /**
      * Retrieves records based on the given page index and size.
-     * @param  {Object[]} ds
-     * @param  {{pageSize:number} e
-     * @param  {number}} pageIndex
-     * @param  {Query} query
+     *
+     * @param {Object[]} ds
+     * @param e
+     * @param {number} } pageIndex
+     * @param e.pageSize
+     * @param {Query} query
+     * @param e.pageIndex
      */
     public onPage(ds: Object[], e: { pageSize: number, pageIndex: number }, query: Query): Object[] {
-        let size: number = DataUtil.getValue(e.pageSize, query);
-        let start: number = (DataUtil.getValue(e.pageIndex, query) - 1) * size;
-        let end: number = start + size;
+        const size: number = DataUtil.getValue(e.pageSize, query);
+        const start: number = (DataUtil.getValue(e.pageIndex, query) - 1) * size;
+        const end: number = start + size;
         if (!ds || !ds.length) { return ds; }
         return ds.slice(start, end);
     }
 
     /**
-     * Retrieves records based on the given start and end index from query. 
-     * @param  {Object[]} ds
-     * @param  {{start:number} e
-     * @param  {number}} end
+     * Retrieves records based on the given start and end index from query.
+     *
+     * @param {Object[]} ds
+     * @param e
+     * @param {number} } end
+     * @param e.start
+     * @param e.end
      */
     public onRange(ds: Object[], e: { start: number, end: number }): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -350,8 +385,10 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Picks the given count of records from the top of the datasource.
-     * @param  {Object[]} ds
-     * @param  {{nos:number}} e
+     *
+     * @param {Object[]} ds
+     * @param {{nos:number}} e
+     * @param e.nos
      */
     public onTake(ds: Object[], e: { nos: number }): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -360,8 +397,10 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Skips the given count of records from the data source.
-     * @param  {Object[]} ds
-     * @param  {{nos:number}} e
+     *
+     * @param {Object[]} ds
+     * @param {{nos:number}} e
+     * @param e.nos
      */
     public onSkip(ds: Object[], e: { nos: number }): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -370,8 +409,10 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Selects specified columns from the data source.
-     * @param  {Object[]} ds
-     * @param  {{fieldNames:string}} e
+     *
+     * @param {Object[]} ds
+     * @param {{fieldNames:string}} e
+     * @param e.fieldNames
      */
     public onSelect(ds: Object[], e: { fieldNames: string[] | Function }): Object[] {
         if (!ds || !ds.length) { return ds; }
@@ -380,9 +421,12 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Inserts new record in the table.
-     * @param  {DataManager} dm
-     * @param  {Object} data
-     * @param  {number} position
+     *
+     * @param {DataManager} dm
+     * @param {Object} data
+     * @param tableName
+     * @param query
+     * @param {number} position
      */
     public insert(dm: DataManager, data: Object, tableName?: string, query?: Query, position?: number): Object {
         if (isNullOrUndefined(position)) {
@@ -394,14 +438,16 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Remove the data from the dataSource based on the key field value.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName?
+     * @param tableName
      * @returns null
      */
     public remove(dm: DataManager, keyField: string, value: Object, tableName?: string): Object {
-        let ds: Object[] = dm.dataSource.json;
+        const ds: Object[] = dm.dataSource.json;
         let i: number;
         if (typeof value === 'object' && !(value instanceof Date)) {
             value = DataUtil.getObject(keyField, value);
@@ -415,14 +461,16 @@ export class JsonAdaptor extends Adaptor {
 
     /**
      * Updates existing record and saves the changes to the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName?
+     * @param tableName
      * @returns null
      */
     public update(dm: DataManager, keyField: string, value: Object, tableName?: string): void {
-        let ds: Object[] = dm.dataSource.json;
+        const ds: Object[] = dm.dataSource.json;
         let i: number;
         let key: string;
         if (!isNullOrUndefined(keyField)) {
@@ -436,30 +484,33 @@ export class JsonAdaptor extends Adaptor {
 }
 
 /**
- * URL Adaptor of DataManager can be used when you are required to use remote service to retrieve data. 
+ * URL Adaptor of DataManager can be used when you are required to use remote service to retrieve data.
  * It interacts with server-side for all DataManager Queries and CRUD operations.
+ *
  * @hidden
  */
 export class UrlAdaptor extends Adaptor {
 
     /**
-     * Process the query to generate request body. 
-     * @param  {DataManager} dm
-     * @param  {Query} query
-     * @param  {Object[]} hierarchyFilters?
+     * Process the query to generate request body.
+     *
+     * @param {DataManager} dm
+     * @param {Query} query
+     * @param {Object[]} hierarchyFilters?
+     * @param hierarchyFilters
      * @returns p
      */
     // tslint:disable-next-line:max-func-body-length
     public processQuery(dm: DataManager, query: Query, hierarchyFilters?: Object[]): Object {
-        let queries: Requests = this.getQueryRequest(query);
-        let singles: QueryList = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
-        let params: ParamOption[] = query.params;
-        let url: string = dm.dataSource.url;
+        const queries: Requests = this.getQueryRequest(query);
+        const singles: QueryList = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
+        const params: ParamOption[] = query.params;
+        const url: string = dm.dataSource.url;
         let temp: QueryOptions;
         let skip: number;
         let take: number = null;
-        let options: RemoteOptions = this.options;
-        let request: Requests = { sorts: [], groups: [], filters: [], searches: [], aggregates: [] };
+        const options: RemoteOptions = this.options;
+        const request: Requests = { sorts: [], groups: [], filters: [], searches: [], aggregates: [] };
         // calc Paging & Range
         if ('onPage' in singles) {
             temp = singles.onPage;
@@ -490,11 +541,11 @@ export class UrlAdaptor extends Adaptor {
             if (((<{ getModuleName?: Function }>this).getModuleName &&
                 (<{ getModuleName?: Function }>this).getModuleName() === 'ODataV4Adaptor') &&
                 !isNullOrUndefined(queries.filters[i].e.key) && queries.filters.length > 1) {
-                res = "(" + res + ")";
+                res = '(' + res + ')';
             }
             request.filters.push(res);
-            let keys: string[] = typeof request.filters[i] === 'object' ? Object.keys(request.filters[i]) : [];
-            for (let prop of keys) {
+            const keys: string[] = typeof request.filters[i] === 'object' ? Object.keys(request.filters[i]) : [];
+            for (const prop of keys) {
                 if (DataUtil.isNull((request)[prop])) {
                     delete request[prop];
                 }
@@ -521,7 +572,7 @@ export class UrlAdaptor extends Adaptor {
             temp = queries.aggregates[i].e;
             request.aggregates.push({ type: temp.type, field: DataUtil.getValue(temp.field, query) });
         }
-        let req: { [key: string]: Object } = {};
+        const req: { [key: string]: Object } = {};
         this.getRequestQuery(options, query, singles, request, req);
         // Params
         DataUtil.callAdaptorFunction(this, 'addParams', { dm: dm, query: query, params: params, reqParams: req });
@@ -531,8 +582,8 @@ export class UrlAdaptor extends Adaptor {
             }
         }
         // cleanup
-        let keys: string[] = Object.keys(req);
-        for (let prop of keys) {
+        const keys: string[] = Object.keys(req);
+        for (const prop of keys) {
             if (DataUtil.isNull(req[prop]) || req[prop] === '' || (<Object[]>req[prop]).length === 0) {
                 delete req[prop];
             }
@@ -541,7 +592,7 @@ export class UrlAdaptor extends Adaptor {
             req[options.skip] = DataUtil.callAdaptorFunction(this, 'onSkip', skip, query);
             req[options.take] = DataUtil.callAdaptorFunction(this, 'onTake', take, query);
         }
-        let p: PvtOptions = this.pvt;
+        const p: PvtOptions = this.pvt;
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
@@ -562,8 +613,8 @@ export class UrlAdaptor extends Adaptor {
     private getRequestQuery(
         options: RemoteOptions, query: Query, singles: QueryList, request: Requests, request1: { [key: string]: Object }): void {
 
-        let param: string = 'param';
-        let req: { [key: string]: Object } = request1;
+        const param: string = 'param';
+        const req: { [key: string]: Object } = request1;
         req[options.from] = query.fromTable;
         if (options.apply && query.distincts.length) {
             req[options.apply] = 'onDistinct' in this ? DataUtil.callAdaptorFunction(this, 'onDistinct', query.distincts) : '';
@@ -595,9 +646,11 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Convert the object from processQuery to string which can be added query string.
-     * @param  {Object} req
-     * @param  {Query} query
-     * @param  {DataManager} dm
+     *
+     * @param {Object} req
+     * @param request
+     * @param {Query} query
+     * @param {DataManager} dm
      */
     public convertToQueryString(request: Object, query: Query, dm: DataManager): string {
         return '';
@@ -606,32 +659,38 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Return the data from the data manager processing.
-     * @param  {DataResult} data
-     * @param  {DataOptions} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Object} request?
-     * @param  {CrudOptions} changes?
+     *
+     * @param {DataResult} data
+     * @param {DataOptions} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Object} request?
+     * @param {CrudOptions} changes?
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
+     * @param changes
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Object, changes?: CrudOptions): DataResult {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
-            let handleTimeZone: boolean = DataUtil.timeZoneHandling;
+            const handleTimeZone: boolean = DataUtil.timeZoneHandling;
             if (ds && !ds.timeZoneHandling) {
                 DataUtil.timeZoneHandling = false;
             }
             data = DataUtil.parse.parseJson(data);
             DataUtil.timeZoneHandling = handleTimeZone;
         }
-        let requests: { pvtData?: Object, data?: string } = request;
-        let pvt: PvtOptions = requests.pvtData || {};
-        let groupDs: Object[] = data ? data.groupDs : [];
+        const requests: { pvtData?: Object, data?: string } = request;
+        const pvt: PvtOptions = requests.pvtData || {};
+        const groupDs: Object[] = data ? data.groupDs : [];
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('xml') !== -1) {
             return (query.isCountRequired ? { result: [], count: 0 } : []) as DataResult;
         }
-        let d: { action: string } = JSON.parse(requests.data);
+        const d: { action: string } = JSON.parse(requests.data);
         if (d && d.action === 'batch' && data && data.addedRecords) {
             changes.addedRecords = data.addedRecords;
             return changes;
@@ -639,19 +698,19 @@ export class UrlAdaptor extends Adaptor {
         if (data && data.d) {
             data = <DataResult>data.d;
         }
-        let args: DataResult = {};
+        const args: DataResult = {};
         if (data && 'count' in data) { args.count = data.count; }
         args.result = data && data.result ? data.result : data;
         let isExpand: boolean = false;
         if (Array.isArray(data.result) && data.result.length) {
-            let key: string = 'key'; let val: string = 'value'; let level: string = 'level';
+            const key: string = 'key'; const val: string = 'value'; const level: string = 'level';
             if (!isNullOrUndefined(data.result[0][key])) {
                 args.result = this.formRemoteGroupedData(args.result as Group[], 1, pvt.groups.length - 1);
             }
             if (query && query.lazyLoad.length && pvt.groups.length) {
                 for (let i: number = 0; i < query.lazyLoad.length; i++) {
                     if (query.lazyLoad[i][key] === 'onDemandGroupInfo') {
-                        let value: Object = query.lazyLoad[i][val][level];
+                        const value: Object = query.lazyLoad[i][val][level];
                         if (pvt.groups.length === value) {
                             isExpand = true;
                         }
@@ -673,8 +732,8 @@ export class UrlAdaptor extends Adaptor {
             }
         }
 
-        let uid: string = 'GroupGuid'; let childLvl: string = 'childLevels'; let lvl: string = 'level';
-        let records: string = 'records';
+        const uid: string = 'GroupGuid'; const childLvl: string = 'childLevels'; const lvl: string = 'level';
+        const records: string = 'records';
         data[uid] = consts[uid];
         data[lvl] = level;
         data[childLvl] = childLevel;
@@ -684,7 +743,7 @@ export class UrlAdaptor extends Adaptor {
 
     private getGroupedRecords(data: Group[], hasRecords: boolean): Object[] {
         let childGroupedRecords: Object[] = [];
-        let records: string = 'records';
+        const records: string = 'records';
         for (let i: number = 0; i < data.length; i++) {
             if (!hasRecords) {
                 for (let j: number = 0; j < data[i].items.length; j++) {
@@ -699,6 +758,7 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Add the group query to the adaptor`s option.
+     *
      * @param  {Object[]} e
      * @returns void
      */
@@ -709,6 +769,7 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Add the aggregate query to the adaptor`s option.
+     *
      * @param  {Aggregates[]} e
      * @returns void
      */
@@ -718,10 +779,13 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Prepare the request body based on the newly added, removed and updated records.
-     * The result is used by the batch request. 
-     * @param  {DataManager} dm
-     * @param  {CrudOptions} changes
-     * @param  {Object} e
+     * The result is used by the batch request.
+     *
+     * @param {DataManager} dm
+     * @param {CrudOptions} changes
+     * @param {Object} e
+     * @param query
+     * @param original
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: Object, query: Query, original?: Object): Object {
         let url: string;
@@ -743,8 +807,9 @@ export class UrlAdaptor extends Adaptor {
     }
 
     /**
-     * Method will trigger before send the request to server side. 
-     * Used to set the custom header or modify the request options. 
+     * Method will trigger before send the request to server side.
+     * Used to set the custom header or modify the request options.
+     *
      * @param  {DataManager} dm
      * @param  {XMLHttpRequest} request
      * @returns void
@@ -755,9 +820,11 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
-     * @param  {DataManager} dm
-     * @param  {Object} data
-     * @param  {string} tableName
+     *
+     * @param {DataManager} dm
+     * @param {Object} data
+     * @param {string} tableName
+     * @param query
      */
     public insert(dm: DataManager, data: Object, tableName: string, query: Query): Object {
         return {
@@ -772,10 +839,12 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Prepare and return request body which is used to remove record from the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {number|string} value
-     * @param  {string} tableName
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {number|string} value
+     * @param {string} tableName
+     * @param query
      */
     public remove(dm: DataManager, keyField: string, value: number | string, tableName: string, query: Query): Object {
         return {
@@ -792,10 +861,12 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * Prepare and return request body which is used to update record.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName
+     * @param query
      */
     public update(dm: DataManager, keyField: string, value: Object, tableName: string, query: Query): Object {
         return {
@@ -813,16 +884,17 @@ export class UrlAdaptor extends Adaptor {
 
     /**
      * To generate the predicate based on the filtered query.
+     *
      * @param  {Object[]|string[]|number[]} data
      * @param  {Query} query
      * @hidden
      */
     public getFiltersFrom(data: Object[] | string[] | number[], query: Query): Predicate {
-        let key: string = query.fKey;
+        const key: string = query.fKey;
         let value: string | number | boolean;
         let prop: string = key;
-        let pKey: string = query.key;
-        let predicats: Predicate[] = [];
+        const pKey: string = query.key;
+        const predicats: Predicate[] = [];
 
         if (typeof data[0] !== 'object') { prop = null; }
 
@@ -842,10 +914,10 @@ export class UrlAdaptor extends Adaptor {
         let pData: DataResult | Object[] = data;
         if (data && data.result) { pData = data.result; }
         if (pvt && pvt.aggregates && pvt.aggregates.length) {
-            let agg: Aggregates[] = pvt.aggregates;
+            const agg: Aggregates[] = pvt.aggregates;
             let fn: Function;
             let aggregateData: DataResult = pData;
-            let res: { [key: string]: Aggregates } = {};
+            const res: { [key: string]: Aggregates } = {};
             if (data.aggregate) { aggregateData = data.aggregate; }
             for (let i: number = 0; i < agg.length; i++) {
                 fn = DataUtil.aggregates[agg[i].type];
@@ -856,16 +928,16 @@ export class UrlAdaptor extends Adaptor {
             args.aggregates = res;
         }
 
-        let key: string = 'key';
-        let isServerGrouping: boolean = Array.isArray(data.result) && data.result.length && !isNullOrUndefined(data.result[0][key]);
+        const key: string = 'key';
+        const isServerGrouping: boolean = Array.isArray(data.result) && data.result.length && !isNullOrUndefined(data.result[0][key]);
         if (pvt && pvt.groups && pvt.groups.length && !isServerGrouping) {
-            let groups: string[] = (<string[]>pvt.groups);
+            const groups: string[] = (<string[]>pvt.groups);
             for (let i: number = 0; i < groups.length; i++) {
-                let level: number = null;
+                const level: number = null;
                 if (!isNullOrUndefined(groupDs)) {
                     groupDs = DataUtil.group(groupDs, groups[i]);
                 }
-                let groupQuery: QueryOptions = Query.filterQueries(query.queries, 'onGroup')[i].e;
+                const groupQuery: QueryOptions = Query.filterQueries(query.queries, 'onGroup')[i].e;
                 pData = DataUtil.group(<Object[]>pData, groups[i], pvt.aggregates, level, groupDs, groupQuery.comparer as Function);
             }
             args.result = pData;
@@ -874,7 +946,7 @@ export class UrlAdaptor extends Adaptor {
     }
 
     protected getQueryRequest(query: Query): Requests {
-        let req: Requests = { sorts: [], groups: [], filters: [], searches: [], aggregates: [] };
+        const req: Requests = { sorts: [], groups: [], filters: [], searches: [], aggregates: [] };
         req.sorts = Query.filterQueries(query.queries, 'onSortBy');
         req.groups = Query.filterQueries(query.queries, 'onGroup');
         req.filters = Query.filterQueries(query.queries, 'onWhere');
@@ -884,11 +956,11 @@ export class UrlAdaptor extends Adaptor {
     }
 
     public addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
-        let req: { params: Object } = options.reqParams as { params: Object };
+        const req: { params: Object } = options.reqParams as { params: Object };
         if (options.params.length) {
             req.params = {};
         }
-        for (let tmp of options.params) {
+        for (const tmp of options.params) {
             if (req[tmp.key]) {
                 throw new Error('Query() - addParams: Custom Param is conflicting other request arguments');
             }
@@ -903,7 +975,8 @@ export class UrlAdaptor extends Adaptor {
 }
 
 /**
- * OData Adaptor that is extended from URL Adaptor, is used for consuming data through OData Service. 
+ * OData Adaptor that is extended from URL Adaptor, is used for consuming data through OData Service.
+ *
  * @hidden
  */
 export class ODataAdaptor extends UrlAdaptor {
@@ -914,6 +987,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Specifies the root url of the provided odata url.
+     *
      * @hidden
      * @default null
      */
@@ -921,6 +995,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Specifies the resource name of the provided odata table.
+     *
      * @hidden
      * @default null
      */
@@ -953,15 +1028,19 @@ export class ODataAdaptor extends UrlAdaptor {
     }
     /**
      * Generate request string based on the filter criteria from query.
-     * @param  {Predicate} pred
-     * @param  {boolean} requiresCast?
+     *
+     * @param {Predicate} pred
+     * @param {boolean} requiresCast?
+     * @param predicate
+     * @param query
+     * @param requiresCast
      */
     public onPredicate(predicate: Predicate, query: Query | boolean, requiresCast?: boolean): string {
         let returnValue: string = '';
         let operator: string;
         let guid: string;
         let val: string | Date = <string | Date>predicate.value;
-        let type: string = typeof val;
+        const type: string = typeof val;
         let field: string = predicate.field ? ODataAdaptor.getField(predicate.field) : null;
 
         if (val instanceof Date) {
@@ -969,12 +1048,16 @@ export class ODataAdaptor extends UrlAdaptor {
         }
 
         if (type === 'string') {
-            val = val.replace(/'/g, "''");
+            val = val.replace(/'/g, '\'\'');
             if (predicate.ignoreCase) {
                 val = val.toLowerCase();
             }
-            val = encodeURIComponent(val);
-            val = '\'' + val + '\'';
+            if (predicate.operator !== 'like') {
+                val = encodeURIComponent(val);
+            }
+            if (predicate.operator !== 'wildcard' && predicate.operator !== 'like') {
+                val = '\'' + val + '\'';
+            }
 
             if (requiresCast) {
                 field = 'cast(' + field + ', \'Edm.String\')';
@@ -988,7 +1071,14 @@ export class ODataAdaptor extends UrlAdaptor {
             }
         }
 
-        operator = DataUtil.odBiOperator[predicate.operator];
+        if (predicate.operator === 'isempty' || predicate.operator === 'isnull' || predicate.operator === 'isnotempty' ||
+            predicate.operator === 'isnotnull') {
+            operator = predicate.operator.indexOf('isnot') !== -1 ? DataUtil.odBiOperator['notequal'] : DataUtil.odBiOperator['equal'];
+            val = predicate.operator === 'isnull' || predicate.operator === 'isnotnull' ? null : '\'\'';
+        }
+        else {
+            operator = DataUtil.odBiOperator[predicate.operator];
+        }
         if (operator) {
             returnValue += field;
             returnValue += operator;
@@ -1004,16 +1094,121 @@ export class ODataAdaptor extends UrlAdaptor {
             operator = DataUtil.odUniOperator[predicate.operator];
         }
 
-        if (operator === 'substringof') {
-            let temp: string = <string>val;
+        if (operator === 'like') {
+            val = <string>val;
+            if (val.indexOf('%') !== -1) {
+                if (val.charAt(0) === '%' && val.lastIndexOf('%') < 2) {
+                    val = val.substring(1, val.length);
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['startswith'] : DataUtil.odUniOperator['startswith'];
+                }
+                else if (val.charAt(val.length - 1) === '%' && val.indexOf('%') > val.length - 3) {
+                    val = val.substring(0, val.length - 1);
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['endswith'] : DataUtil.odUniOperator['endswith'];
+                }
+                else if (val.lastIndexOf('%') !== val.indexOf('%') && val.lastIndexOf('%') > val.indexOf('%') + 1) {
+                    val = val.substring(val.indexOf('%') + 1, val.lastIndexOf('%'));
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['contains'] : DataUtil.odUniOperator['contains'];
+                }
+                else {
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['contains'] : DataUtil.odUniOperator['contains'];
+                }
+            }
+            val = encodeURIComponent(val);
+            val = '\'' + val + '\'';
+        }
+        else if (operator === 'wildcard') {
+            val = <string>val;
+            if (val.indexOf('*') !== -1) {
+                const splittedStringValue: string[] = val.split('*');
+                let splittedValue: string;
+                let count: number = 0;
+                if (val.indexOf('*') !== 0 && splittedStringValue[0].indexOf('%3f') === -1 &&
+                    splittedStringValue[0].indexOf('?') === -1) {
+                    splittedValue = splittedStringValue[0];
+                    splittedValue = '\'' + splittedValue + '\'';
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['startswith'] : DataUtil.odUniOperator['startswith'];
+                    returnValue += operator + '(';
+                    returnValue += field + ',';
+                    if (guid) { returnValue += guid; }
+                    returnValue += splittedValue + ')';
+                    count++;
+                }
+                if (val.lastIndexOf('*') !== val.length - 1 && splittedStringValue[splittedStringValue.length - 1].indexOf('%3f') === -1 &&
+                    splittedStringValue[splittedStringValue.length - 1].indexOf('?') === -1) {
+                    splittedValue = splittedStringValue[splittedStringValue.length - 1];
+                    splittedValue = '\'' + splittedValue + '\'';
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['endswith'] : DataUtil.odUniOperator['endswith'];
+                    if (count > 0) {
+                        returnValue += ' and ';
+                    }
+                    returnValue += operator + '(';
+                    returnValue += field + ',';
+                    if (guid) { returnValue += guid; }
+                    returnValue += splittedValue + ')';
+                    count++;
+                }
+                if (splittedStringValue.length > 2) {
+                    for (let i: number = 1; i < splittedStringValue.length - 1; i++) {
+                        if (splittedStringValue[i].indexOf('%3f') === -1 && splittedStringValue[i].indexOf('?') === -1) {
+                            splittedValue = splittedStringValue[i];
+                            splittedValue = '\'' + splittedValue + '\'';
+                            operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                                DataUtil.odv4UniOperator['contains'] : DataUtil.odUniOperator['contains'];
+                            if (count > 0) {
+                                returnValue += ' and ';
+                            }
+                            if (operator === 'substringof' || operator === 'not substringof') {
+                                const temp: string = <string>splittedValue;
+                                splittedValue = field;
+                                field = temp;
+                            }
+                            returnValue += operator + '(';
+                            returnValue += field + ',';
+                            if (guid) { returnValue += guid; }
+                            returnValue += splittedValue + ')';
+                            count++;
+                        }
+                    }
+                }
+                if (count === 0) {
+                    operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                        DataUtil.odv4UniOperator['contains'] : DataUtil.odUniOperator['contains'];
+                    if (val.indexOf('?') !== -1 || val.indexOf('%3f') !== -1) {
+                        val = val.indexOf('?') !== -1 ? val.split('?').join('') : val.split('%3f').join('');
+                    }
+                    val = '\'' + val + '\'';
+                }
+                else {
+                    operator = 'wildcard';
+                }
+            }
+            else {
+                operator = !isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ?
+                    DataUtil.odv4UniOperator['contains'] : DataUtil.odUniOperator['contains'];
+                if (val.indexOf('?') !== -1 || val.indexOf('%3f') !== -1) {
+                    val = val.indexOf('?') !== -1 ? val.split('?').join('') : val.split('%3f').join('');
+                }
+                val = '\'' + val + '\'';
+            }
+        }
+        if (operator === 'substringof' || operator === 'not substringof') {
+            const temp: string = <string>val;
             val = field;
             field = temp;
         }
 
-        returnValue += operator + '(';
-        returnValue += field + ',';
-        if (guid) { returnValue += guid; }
-        returnValue += val + ')';
+        if (operator !== 'wildcard') {
+            returnValue += operator + '(';
+            returnValue += field + ',';
+            if (guid) { returnValue += guid; }
+            returnValue += val + ')';
+        }
 
         return returnValue;
     }
@@ -1025,11 +1220,15 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate request string based on the multiple filter criteria from query.
-     * @param  {Predicate} pred
-     * @param  {boolean} requiresCast?
+     *
+     * @param {Predicate} pred
+     * @param {boolean} requiresCast?
+     * @param predicate
+     * @param query
+     * @param requiresCast
      */
     public onComplexPredicate(predicate: Predicate, query: Query, requiresCast?: boolean): string {
-        let res: string[] = [];
+        const res: string[] = [];
         for (let i: number = 0; i < predicate.predicates.length; i++) {
             res.push('(' + this.onEachWhere(predicate.predicates[i], query, requiresCast) + ')');
         }
@@ -1038,8 +1237,11 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate query string based on the multiple filter criteria from query.
-     * @param  {Predicate} filter
-     * @param  {boolean} requiresCast?
+     *
+     * @param {Predicate} filter
+     * @param {boolean} requiresCast?
+     * @param query
+     * @param requiresCast
      */
     public onEachWhere(filter: Predicate, query: Query, requiresCast?: boolean): string {
         return filter.isComplex ? this.onComplexPredicate(filter, query, requiresCast) : this.onPredicate(filter, query, requiresCast);
@@ -1047,6 +1249,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate query string based on the multiple filter criteria from query.
+     *
      * @param  {string[]} filters
      */
     public onWhere(filters: string[]): string {
@@ -1058,17 +1261,22 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate query string based on the multiple search criteria from query.
-     * @param  {{fields:string[]} e
-     * @param  {string} operator
-     * @param  {string} key
-     * @param  {boolean}} ignoreCase
+     *
+     * @param e
+     * @param {string} operator
+     * @param {string} key
+     * @param {boolean} } ignoreCase
+     * @param e.fields
+     * @param e.operator
+     * @param e.key
+     * @param e.ignoreCase
      */
     public onEachSearch(e: { fields: string[], operator: string, key: string, ignoreCase: boolean }): void {
         if (e.fields && e.fields.length === 0) {
             DataUtil.throwError('Query() - Search : oData search requires list of field names to search');
         }
 
-        let filter: Object[] = (<Object[]>this.pvt.search) || [];
+        const filter: Object[] = (<Object[]>this.pvt.search) || [];
         for (let i: number = 0; i < e.fields.length; i++) {
             filter.push(new Predicate(e.fields[i], e.operator, e.key, e.ignoreCase));
         }
@@ -1077,6 +1285,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate query string based on the search criteria from query.
+     *
      * @param  {Object} e
      */
     public onSearch(e: Object): string {
@@ -1086,10 +1295,11 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Generate query string based on multiple sort criteria from query.
+     *
      * @param  {QueryOptions} e
      */
     public onEachSort(e: QueryOptions): string {
-        let res: string[] = [];
+        const res: string[] = [];
         if (e.name instanceof Array) {
             for (let i: number = 0; i < e.name.length; i++) {
                 res.push(ODataAdaptor.getField(e.name[i]) + (e.direction === 'descending' ? ' desc' : ''));
@@ -1102,6 +1312,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Returns sort query string.
+     *
      * @param  {string[]} e
      */
     public onSortBy(e: string[]): string {
@@ -1110,6 +1321,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Adds the group query to the adaptor option.
+     *
      * @param  {Object[]} e
      * @returns string
      */
@@ -1120,6 +1332,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Returns the select query string.
+     *
      * @param  {string[]} e
      */
     public onSelect(e: string[]): string {
@@ -1131,6 +1344,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Add the aggregate query to the adaptor option.
+     *
      * @param  {Object[]} e
      * @returns string
      */
@@ -1141,6 +1355,7 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Returns the query string which requests total count from the data source.
+     *
      * @param  {boolean} e
      * @returns string
      */
@@ -1149,11 +1364,13 @@ export class ODataAdaptor extends UrlAdaptor {
     }
 
     /**
-     * Method will trigger before send the request to server side. 
+     * Method will trigger before send the request to server side.
      * Used to set the custom header or modify the request options.
-     * @param  {DataManager} dm
-     * @param  {XMLHttpRequest} request
-     * @param  {Ajax} settings?
+     *
+     * @param {DataManager} dm
+     * @param {XMLHttpRequest} request
+     * @param {Ajax} settings?
+     * @param settings
      */
     public beforeSend(dm: DataManager, request: XMLHttpRequest, settings?: Ajax): void {
         if (DataUtil.endsWith(settings.url, this.options.batch) && settings.type.toLowerCase() === 'post') {
@@ -1169,26 +1386,32 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Returns the data from the query processing.
-     * @param  {DataResult} data
-     * @param  {DataOptions} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Ajax} request?
-     * @param  {CrudOptions} changes?
+     *
+     * @param {DataResult} data
+     * @param {DataOptions} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Ajax} request?
+     * @param {CrudOptions} changes?
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
+     * @param changes
      * @returns aggregateResult
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
-        let metaCheck: string = 'odata.metadata';
+        const metaCheck: string = 'odata.metadata';
         if ((request && request.type === 'GET') && !this.rootUrl && data[metaCheck]) {
-            let dataUrls: string[] = data[metaCheck].split('/$metadata#');
+            const dataUrls: string[] = data[metaCheck].split('/$metadata#');
             this.rootUrl = dataUrls[0];
             this.resourceTableName = dataUrls[1];
         }
-        let pvtData: string = 'pvtData';
+        const pvtData: string = 'pvtData';
         if (!isNullOrUndefined(data.d)) {
-            let dataCopy: Object[] = <Object[]>((query && query.isCountRequired) ? (<DataResult>data.d).results : data.d);
-            let metaData: string = '__metadata';
+            const dataCopy: Object[] = <Object[]>((query && query.isCountRequired) ? (<DataResult>data.d).results : data.d);
+            const metaData: string = '__metadata';
             if (!isNullOrUndefined(dataCopy)) {
                 for (let i: number = 0; i < dataCopy.length; i++) {
                     if (!isNullOrUndefined(dataCopy[i][metaData])) {
@@ -1197,19 +1420,19 @@ export class ODataAdaptor extends UrlAdaptor {
                 }
             }
         }
-        let pvt: PvtOptions = request && request[pvtData];
+        const pvt: PvtOptions = request && request[pvtData];
 
-        let emptyAndBatch: CrudOptions | DataResult = this.processBatchResponse(data, query, xhr, request, changes);
+        const emptyAndBatch: CrudOptions | DataResult = this.processBatchResponse(data, query, xhr, request, changes);
         if (emptyAndBatch) {
             return emptyAndBatch;
         }
 
-        let versionCheck: string = xhr && request.getResponseHeader('DataServiceVersion');
+        const versionCheck: string = xhr && request.getResponseHeader('DataServiceVersion');
         let count: number = null;
-        let version: number = (versionCheck && parseInt(versionCheck, 10)) || 2;
+        const version: number = (versionCheck && parseInt(versionCheck, 10)) || 2;
 
         if (query && query.isCountRequired) {
-            let oDataCount: string = '__count';
+            const oDataCount: string = '__count';
             if (data[oDataCount] || data['odata.count']) {
                 count = data[oDataCount] || data['odata.count'];
             }
@@ -1223,7 +1446,7 @@ export class ODataAdaptor extends UrlAdaptor {
         if (data.d) { data = <DataResult>data.d; }
         if (version < 3 && data.results) { data = data.results as DataResult; }
 
-        let args: DataResult = {};
+        const args: DataResult = {};
         args.count = count;
         args.result = data;
         this.getAggregateResult(pvt, data, args, null, query);
@@ -1233,23 +1456,25 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Converts the request object to query string.
-     * @param  {Object} req
-     * @param  {Query} query
-     * @param  {DataManager} dm
+     *
+     * @param {Object} req
+     * @param request
+     * @param {Query} query
+     * @param {DataManager} dm
      * @returns tableName
      */
     public convertToQueryString(request: Object, query: Query, dm: DataManager): string {
         let res: string[] | string = [];
-        let table: string = 'table';
-        let tableName: string = request[table] || '';
-        let format: string = '$format';
+        const table: string = 'table';
+        const tableName: string = request[table] || '';
+        const format: string = '$format';
         delete request[table];
 
         if (dm.dataSource.requiresFormat) {
             request[format] = 'json';
         }
-        let keys: string[] = Object.keys(request);
-        for (let prop of keys) {
+        const keys: string[] = Object.keys(request);
+        for (const prop of keys) {
             (<string[]>res).push(prop + '=' + request[prop]);
         }
         res = (<string[]>res).join('&');
@@ -1262,7 +1487,7 @@ export class ODataAdaptor extends UrlAdaptor {
     }
 
     private localTimeReplacer(key: string, convertObj: Object): Object {
-        for (let prop of !isNullOrUndefined(convertObj) ? Object.keys(convertObj) : []) {
+        for (const prop of !isNullOrUndefined(convertObj) ? Object.keys(convertObj) : []) {
             if ((convertObj[prop] instanceof Date)) {
                 convertObj[prop] = DataUtil.dateParse.toLocalTime(convertObj[prop]);
             }
@@ -1272,9 +1497,11 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
-     * @param  {DataManager} dm
-     * @param  {Object} data
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {Object} data
+     * @param {string} tableName?
+     * @param tableName
      */
     public insert(dm: DataManager, data: Object, tableName?: string): Object {
         return {
@@ -1285,10 +1512,12 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Prepare and return request body which is used to remove record from the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {number} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {number} value
+     * @param {string} tableName?
+     * @param tableName
      */
     public remove(dm: DataManager, keyField: string, value: number, tableName?: string): Object {
         let url: string;
@@ -1305,10 +1534,14 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Updates existing record and saves the changes to the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName?
+     * @param tableName
+     * @param query
+     * @param original
      * @returns this
      */
     public update(dm: DataManager, keyField: string, value: Object, tableName?: string, query?: Query, original?: Object): Object {
@@ -1331,18 +1564,21 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Prepare the request body based on the newly added, removed and updated records.
-     * The result is used by the batch request. 
-     * @param  {DataManager} dm
-     * @param  {CrudOptions} changes
-     * @param  {RemoteArgs} e
+     * The result is used by the batch request.
+     *
+     * @param {DataManager} dm
+     * @param {CrudOptions} changes
+     * @param {RemoteArgs} e
+     * @param query
+     * @param original
      * @returns {Object}
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs, query: Query, original?: CrudOptions): Object {
-        let initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
-        let url: string = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
-                                        dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        const initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
+        const url: string = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
+            dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
         e.url = this.resourceTableName ? this.resourceTableName : e.url;
-        let args: RemoteArgs = {
+        const args: RemoteArgs = {
             url: e.url,
             key: e.key,
             cid: 1,
@@ -1373,22 +1609,24 @@ export class ODataAdaptor extends UrlAdaptor {
     /**
      * Generate the string content from the removed records.
      * The result will be send during batch update.
-     * @param  {Object[]} arr
-     * @param  {RemoteArgs} e
+     *
+     * @param {Object[]} arr
+     * @param {RemoteArgs} e
+     * @param dm
      * @returns this
      */
     public generateDeleteRequest(arr: Object[], e: RemoteArgs, dm: DataManager): string {
         if (!arr) { return ''; }
         let req: string = '';
 
-        let stat: { method: string, url: Function, data: Function } = {
+        const stat: { method: string, url: Function, data: Function } = {
             'method': 'DELETE ',
             'url': (data: Object[], i: number, key: string): string => {
-                let url: object = DataUtil.getObject(key, data[i]);
+                const url: object = DataUtil.getObject(key, data[i]);
                 if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
                     return '(' + url as string + ')';
                 } else if (url instanceof Date) {
-                    let dateTime: Date = data[i][key];
+                    const dateTime: Date = data[i][key];
                     return '(' + dateTime.toJSON() + ')';
                 } else {
                     return `('${url}')`;
@@ -1404,14 +1642,16 @@ export class ODataAdaptor extends UrlAdaptor {
     /**
      * Generate the string content from the inserted records.
      * The result will be send during batch update.
-     * @param  {Object[]} arr
-     * @param  {RemoteArgs} e
+     *
+     * @param {Object[]} arr
+     * @param {RemoteArgs} e
+     * @param dm
      */
     public generateInsertRequest(arr: Object[], e: RemoteArgs, dm: DataManager): string {
         if (!arr) { return ''; }
         let req: string = '';
 
-        let stat: { method: string, url: Function, data: Function } = {
+        const stat: { method: string, url: Function, data: Function } = {
             'method': 'POST ',
             'url': (data: Object[], i: number, key: string): string => '',
             'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
@@ -1424,8 +1664,11 @@ export class ODataAdaptor extends UrlAdaptor {
     /**
      * Generate the string content from the updated records.
      * The result will be send during batch update.
-     * @param  {Object[]} arr
-     * @param  {RemoteArgs} e
+     *
+     * @param {Object[]} arr
+     * @param {RemoteArgs} e
+     * @param dm
+     * @param org
      */
     public generateUpdateRequest(arr: Object[], e: RemoteArgs, dm: DataManager, org?: Object[]): string {
         if (!arr) { return ''; }
@@ -1434,13 +1677,13 @@ export class ODataAdaptor extends UrlAdaptor {
             change, org.filter((o: Object) => DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change))[0],
             e.key)
         );
-        let stat: { method: string, url: Function, data: Function } = {
+        const stat: { method: string, url: Function, data: Function } = {
             'method': this.options.updateType + ' ',
             'url': (data: Object[], i: number, key: string): string => {
                 if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
                     return '(' + data[i][key] as string + ')';
                 } else if (data[i][key] instanceof Date) {
-                    let date: Date = data[i][key];
+                    const date: Date = data[i][key];
                     return '(' + date.toJSON() + ')';
                 } else {
                     return `('${data[i][key]}')`;
@@ -1500,10 +1743,10 @@ export class ODataAdaptor extends UrlAdaptor {
             if ((<string[]>d).length < 2) { return {}; }
 
             d = (<string[]>d)[1];
-            let exVal: RegExpExecArray = /(?:\bContent-Type.+boundary=)(changesetresponse.+)/i.exec(<string>d);
+            const exVal: RegExpExecArray = /(?:\bContent-Type.+boundary=)(changesetresponse.+)/i.exec(<string>d);
             if (exVal) { (<string>d).replace(exVal[0], ''); }
 
-            let changeGuid: string = exVal ? exVal[1] : '';
+            const changeGuid: string = exVal ? exVal[1] : '';
             d = (<string>d).split(changeGuid);
             for (let i: number = (<string[]>d).length; i > -1; i--) {
                 if (!/\bContent-ID:/i.test((<string[]>d)[i]) || !/\bHTTP.+201/.test((<string[]>d)[i])) {
@@ -1528,7 +1771,7 @@ export class ODataAdaptor extends UrlAdaptor {
             if (prop !== key && prop !== '@odata.etag') {
                 if (DataUtil.isPlainObject(data[prop])) {
                     this.compareAndRemove(data[prop], original[prop]);
-                    let final: string[] = Object.keys(data[prop]).filter((data: string) => data !== '@odata.etag');
+                    const final: string[] = Object.keys(data[prop]).filter((data: string) => data !== '@odata.etag');
                     if (final.length === 0) { delete data[prop]; }
                 } else if (data[prop] === original[prop]) {
                     delete data[prop];
@@ -1544,6 +1787,7 @@ export class ODataAdaptor extends UrlAdaptor {
 /**
  * The OData v4 is an improved version of OData protocols.
  * The DataManager uses the ODataV4Adaptor to consume OData v4 services.
+ *
  * @hidden
  */
 export class ODataV4Adaptor extends ODataAdaptor {
@@ -1587,6 +1831,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
      * Returns the query string which requests total count from the data source.
+     *
      * @param  {boolean} e
      * @returns string
      */
@@ -1596,22 +1841,26 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
      * Generate request string based on the filter criteria from query.
-     * @param  {Predicate} pred
-     * @param  {boolean} requiresCast?
+     *
+     * @param {Predicate} pred
+     * @param {boolean} requiresCast?
+     * @param predicate
+     * @param query
+     * @param requiresCast
      */
     public onPredicate(predicate: Predicate, query: Query | boolean, requiresCast?: boolean): string {
         let returnValue: string = '';
-        let val: string | number | Date | boolean | Predicate | Predicate[] = predicate.value;
-        let isDate: boolean = val instanceof Date;
+        const val: string | number | Date | boolean | Predicate | Predicate[] = predicate.value;
+        const isDate: boolean = val instanceof Date;
 
         if (query instanceof Query) {
-        let queries: Requests = this.getQueryRequest((query as Query));
-        for (let i: number = 0; i < queries.filters.length; i++) {
-            if (queries.filters[i].e.key === predicate.value) {
-                requiresCast = true;
+            const queries: Requests = this.getQueryRequest((query as Query));
+            for (let i: number = 0; i < queries.filters.length; i++) {
+                if (queries.filters[i].e.key === predicate.value) {
+                    requiresCast = true;
+                }
             }
         }
-    }
 
         returnValue = super.onPredicate.call(this, predicate, query, requiresCast);
 
@@ -1625,20 +1874,26 @@ export class ODataV4Adaptor extends ODataAdaptor {
     }
 
     /**
-     *  Generate query string based on the multiple search criteria from query.
-     * @param  {{fields:string[]} e
-     * @param  {string} operator
-     * @param  {string} key
-     * @param  {boolean}} ignoreCase
+     * Generate query string based on the multiple search criteria from query.
+     *
+     * @param e
+     * @param {string} operator
+     * @param {string} key
+     * @param {boolean} } ignoreCase
+     * @param e.fields
+     * @param e.operator
+     * @param e.key
+     * @param e.ignoreCase
      */
     public onEachSearch(e: { fields: string[], operator: string, key: string, ignoreCase: boolean }): void {
-        let search: Object[] = this.pvt.searches || [];
+        const search: Object[] = this.pvt.searches || [];
         search.push(e.key);
         this.pvt.searches = search;
     }
 
     /**
      *  Generate query string based on the search criteria from query.
+     *
      * @param  {Object} e
      */
     public onSearch(e: Object): string {
@@ -1647,18 +1902,21 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
      * Returns the expand query string.
-     * @param  {string} e
+     *
+     * @param {string} e
+     * @param e.selects
+     * @param e.expands
      */
     public onExpand(e: { selects: string[], expands: string[] }): string {
-        let selected: Object = {}; let expanded: Object = {};
-        let expands: string[] = e.expands.slice(); let exArr: string[] = [];
-        let selects: Object[] = e.selects.filter((item: string) => item.indexOf('.') > -1);
+        const selected: Object = {}; const expanded: Object = {};
+        const expands: string[] = e.expands.slice(); const exArr: string[] = [];
+        const selects: Object[] = e.selects.filter((item: string) => item.indexOf('.') > -1);
         selects.forEach((select: string) => {
-            let splits: string[] = select.split('.');
+            const splits: string[] = select.split('.');
             if (!(splits[0] in selected)) {
                 selected[splits[0]] = [];
             }
-            if(splits.length == 2){
+            if (splits.length === 2) {
                 if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1) {
                     if (selected[splits[0]][0].indexOf('$expand') !== -1 && selected[splits[0]][0].indexOf(';$select=') === -1) {
                         selected[splits[0]][0] = selected[splits[0]][0] + ';' + '$select=' + splits[1];
@@ -1668,17 +1926,17 @@ export class ODataV4Adaptor extends ODataAdaptor {
                 } else {
                     selected[splits[0]].push('$select=' + splits[1]);
                 }
-            } else{
-                let sel: string = '$select=' + splits[splits.length - 1];
+            } else {
+                const sel: string = '$select=' + splits[splits.length - 1];
                 let exp: string = ''; let close: string = '';
                 for (let i: number = 1; i < splits.length - 1; i++) {
                     exp = exp + '$expand=' + splits[i] + '(';
                     close = close + ')';
                 }
-                let combineVal: string = exp + sel + close;
-                if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1 && 
+                const combineVal: string = exp + sel + close;
+                if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1 &&
                     this.expandQueryIndex(selected[splits[0]], true)) {
-                    let idx: number | boolean = this.expandQueryIndex(selected[splits[0]]);
+                    const idx: number | boolean = this.expandQueryIndex(selected[splits[0]]);
                     selected[splits[0]][idx] = selected[splits[0]][idx] + combineVal.replace('$expand=', ',');
                 } else {
                     selected[splits[0]].push(combineVal);
@@ -1709,15 +1967,18 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
      * Returns the groupby query string.
-     * @param  {string} e
+     *
+     * @param {string} e
+     * @param distinctFields
      */
     public onDistinct(distinctFields: string[]): Object {
-        let fields: string = distinctFields.map((field: string) => ODataAdaptor.getField(field)).join(',');
+        const fields: string = distinctFields.map((field: string) => ODataAdaptor.getField(field)).join(',');
         return `groupby((${fields}))`;
     }
 
     /**
      * Returns the select query string.
+     *
      * @param  {string[]} e
      */
     public onSelect(e: string[]): string {
@@ -1725,8 +1986,9 @@ export class ODataV4Adaptor extends ODataAdaptor {
     }
 
     /**
-     * Method will trigger before send the request to server side. 
+     * Method will trigger before send the request to server side.
      * Used to set the custom header or modify the request options.
+     *
      * @param  {DataManager} dm
      * @param  {XMLHttpRequest} request
      * @param  {Ajax} settings
@@ -1741,38 +2003,44 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
      * Returns the data from the query processing.
-     * @param  {DataResult} data
-     * @param  {DataOptions} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Ajax} request?
-     * @param  {CrudOptions} changes?
+     *
+     * @param {DataResult} data
+     * @param {DataOptions} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Ajax} request?
+     * @param {CrudOptions} changes?
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
+     * @param changes
      * @returns aggregateResult
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
-        let metaName: string = '@odata.context';
+        const metaName: string = '@odata.context';
         if ((request && request.type === 'GET') && !this.rootUrl && data[metaName]) {
-            let dataUrl: string[] = data[metaName].split('/$metadata#');
+            const dataUrl: string[] = data[metaName].split('/$metadata#');
             this.rootUrl = dataUrl[0];
             this.resourceTableName = dataUrl[1];
         }
-        let pvtData: string = 'pvtData';
-        let pvt: PvtOptions = request && request[pvtData];
+        const pvtData: string = 'pvtData';
+        const pvt: PvtOptions = request && request[pvtData];
 
-        let emptyAndBatch: CrudOptions | DataResult = super.processBatchResponse(data, query, xhr, request, changes);
+        const emptyAndBatch: CrudOptions | DataResult = super.processBatchResponse(data, query, xhr, request, changes);
         if (emptyAndBatch) {
             return emptyAndBatch;
         }
 
         let count: number = null;
-        let dataCount: string = '@odata.count';
+        const dataCount: string = '@odata.count';
         if (query && query.isCountRequired) {
             if (dataCount in data) { count = data[dataCount]; }
         }
         data = !isNullOrUndefined(data.value) ? data.value : data;
 
-        let args: DataResult = {};
+        const args: DataResult = {};
         args.count = count;
         args.result = data;
 
@@ -1783,9 +2051,10 @@ export class ODataV4Adaptor extends ODataAdaptor {
 }
 
 /**
- * The Web API is a programmatic interface to define the request and response messages system that is mostly exposed in JSON or XML. 
+ * The Web API is a programmatic interface to define the request and response messages system that is mostly exposed in JSON or XML.
  * The DataManager uses the WebApiAdaptor to consume Web API.
  * Since this adaptor is targeted to interact with Web API created using OData endpoint, it is extended from ODataAdaptor
+ *
  * @hidden
  */
 export class WebApiAdaptor extends ODataAdaptor {
@@ -1796,9 +2065,11 @@ export class WebApiAdaptor extends ODataAdaptor {
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
-     * @param  {DataManager} dm
-     * @param  {Object} data
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {Object} data
+     * @param {string} tableName?
+     * @param tableName
      */
     public insert(dm: DataManager, data: Object, tableName?: string): Object {
         return {
@@ -1810,10 +2081,12 @@ export class WebApiAdaptor extends ODataAdaptor {
 
     /**
      * Prepare and return request body which is used to remove record from the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {number} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {number} value
+     * @param {string} tableName?
+     * @param tableName
      */
     public remove(dm: DataManager, keyField: string, value: number, tableName?: string): Object {
         return {
@@ -1825,10 +2098,12 @@ export class WebApiAdaptor extends ODataAdaptor {
 
     /**
      * Prepare and return request body which is used to update record.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName?
+     * @param tableName
      */
     public update(dm: DataManager, keyField: string, value: Object, tableName?: string): Object {
         return {
@@ -1839,14 +2114,14 @@ export class WebApiAdaptor extends ODataAdaptor {
     }
 
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs): Object {
-        let initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
-        let url: string = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        const initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
+        const url: string = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
         e.url = this.resourceTableName ? this.resourceTableName : e.url;
-        let req: string[] = [];
+        const req: string[] = [];
         //insertion
         for (let i: number = 0, x: number = changes.addedRecords.length; i < x; i++) {
             changes.addedRecords.forEach((j: number, d: number) => {
-                let stat: { method: string, url: Function, data: Function } = {
+                const stat: { method: string, url: Function, data: Function } = {
                     'method': 'POST ',
                     'url': (data: Object[], i: number, key: string): string => '',
                     'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
@@ -1860,10 +2135,10 @@ export class WebApiAdaptor extends ODataAdaptor {
                 req.push('', j ? JSON.stringify(j) : '');
             });
         }
-        //updation 
+        //updation
         for (let i: number = 0, x: number = changes.changedRecords.length; i < x; i++) {
             changes.changedRecords.forEach((j: number, d: number) => {
-                let stat: { method: string, url: Function, data: Function } = {
+                const stat: { method: string, url: Function, data: Function } = {
                     'method': this.options.updateType + ' ',
                     'url': (data: Object[], i: number, key: string): string => '',
                     'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
@@ -1880,14 +2155,14 @@ export class WebApiAdaptor extends ODataAdaptor {
         //deletion
         for (let i: number = 0, x: number = changes.deletedRecords.length; i < x; i++) {
             changes.deletedRecords.forEach((j: number, d: number) => {
-                let state: { mtd: string, url: Function, data: Function } = {
+                const state: { mtd: string, url: Function, data: Function } = {
                     'mtd': 'DELETE ',
                     'url': (data: Object[], i: number, key: string): string => {
-                        let url: object = DataUtil.getObject(key, data[i]);
+                        const url: object = DataUtil.getObject(key, data[i]);
                         if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
                             return '/' + url as string;
                         } else if (url instanceof Date) {
-                            let datTime: Date = data[i][key];
+                            const datTime: Date = data[i][key];
                             return '/' + datTime.toJSON();
                         } else {
                             return `/'${url}'`;
@@ -1913,8 +2188,9 @@ export class WebApiAdaptor extends ODataAdaptor {
         };
     }
     /**
-     * Method will trigger before send the request to server side. 
+     * Method will trigger before send the request to server side.
      * Used to set the custom header or modify the request options.
+     *
      * @param  {DataManager} dm
      * @param  {XMLHttpRequest} request
      * @param  {Ajax} settings
@@ -1926,23 +2202,29 @@ export class WebApiAdaptor extends ODataAdaptor {
 
     /**
      * Returns the data from the query processing.
-     * @param  {DataResult} data
-     * @param  {DataOptions} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Ajax} request?
-     * @param  {CrudOptions} changes?
+     *
+     * @param {DataResult} data
+     * @param {DataOptions} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Ajax} request?
+     * @param {CrudOptions} changes?
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
+     * @param changes
      * @returns aggregateResult
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
-        let pvtData: string = 'pvtData';
-        let pvt: PvtOptions = request && request[pvtData];
+        const pvtData: string = 'pvtData';
+        const pvt: PvtOptions = request && request[pvtData];
         let count: number = null;
-        let args: DataResult = {};
+        const args: DataResult = {};
         if (request && request.type.toLowerCase() !== 'post') {
-            let versionCheck: string = xhr && request.getResponseHeader('DataServiceVersion');
-            let version: number = (versionCheck && parseInt(versionCheck, 10)) || 2;
+            const versionCheck: string = xhr && request.getResponseHeader('DataServiceVersion');
+            const version: number = (versionCheck && parseInt(versionCheck, 10)) || 2;
 
             if (query && query.isCountRequired) {
                 if (!DataUtil.isNull(data.Count)) { count = data.Count; }
@@ -1963,6 +2245,7 @@ export class WebApiAdaptor extends ODataAdaptor {
 
 /**
  * WebMethodAdaptor can be used by DataManager to interact with web method.
+ *
  * @hidden
  */
 export class WebMethodAdaptor extends UrlAdaptor {
@@ -1970,28 +2253,30 @@ export class WebMethodAdaptor extends UrlAdaptor {
     /**
      * Prepare the request body based on the query.
      * The query information can be accessed at the WebMethod using variable named `value`.
-     * @param  {DataManager} dm
-     * @param  {Query} query
-     * @param  {Object[]} hierarchyFilters?
+     *
+     * @param {DataManager} dm
+     * @param {Query} query
+     * @param {Object[]} hierarchyFilters?
+     * @param hierarchyFilters
      * @returns application
      */
     public processQuery(dm: DataManager, query: Query, hierarchyFilters?: Object[]): Object {
-        let obj: Object = new UrlAdaptor().processQuery(dm, query, hierarchyFilters);
-        let getData: string = 'data';
-        let data: { param: Object[] } = DataUtil.parse.parseJson(obj[getData]);
-        let result: { [key: string]: Object } = {};
-        let value: string = 'value';
+        const obj: Object = new UrlAdaptor().processQuery(dm, query, hierarchyFilters);
+        const getData: string = 'data';
+        const data: { param: Object[] } = DataUtil.parse.parseJson(obj[getData]);
+        const result: { [key: string]: Object } = {};
+        const value: string = 'value';
 
         if (data.param) {
             for (let i: number = 0; i < data.param.length; i++) {
-                let param: Object = data.param[i];
-                let key: string = Object.keys(param)[0];
+                const param: Object = data.param[i];
+                const key: string = Object.keys(param)[0];
                 result[key] = param[key];
             }
         }
         result[value] = data;
-        let pvtData: string = 'pvtData';
-        let url: string = 'url';
+        const pvtData: string = 'pvtData';
+        const url: string = 'url';
         return {
             data: JSON.stringify(result),
             url: obj[url],
@@ -2003,8 +2288,9 @@ export class WebMethodAdaptor extends UrlAdaptor {
 }
 
 /**
- * RemoteSaveAdaptor, extended from JsonAdaptor and it is used for binding local data and performs all DataManager queries in client-side. 
+ * RemoteSaveAdaptor, extended from JsonAdaptor and it is used for binding local data and performs all DataManager queries in client-side.
  * It interacts with server-side only for CRUD operations.
+ *
  * @hidden
  */
 export class RemoteSaveAdaptor extends JsonAdaptor {
@@ -2060,7 +2346,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         data: CrudOptions, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions, e?: RemoteArgs):
         Object {
         let i: number;
-        let newData: CrudOptions = request ? JSON.parse((<{ data?: string }>request).data) : data;
+        const newData: CrudOptions = request ? JSON.parse((<{ data?: string }>request).data) : data;
         data = newData.action === 'batch' ? DataUtil.parse.parseJson(data) : data;
         if (this.updateType === 'add') {
             super.insert(ds as DataManager, data, null, null, this.pvt.position);
@@ -2090,10 +2376,13 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
     /**
      * Prepare the request body based on the newly added, removed and updated records.
      * Also perform the changes in the locally cached data to sync with the remote data.
-     * The result is used by the batch request. 
-     * @param  {DataManager} dm
-     * @param  {CrudOptions} changes
-     * @param  {RemoteArgs} e
+     * The result is used by the batch request.
+     *
+     * @param {DataManager} dm
+     * @param {CrudOptions} changes
+     * @param {RemoteArgs} e
+     * @param query
+     * @param original
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs, query?: Query, original?: Object): Object {
         return {
@@ -2113,13 +2402,14 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
     }
 
     public addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
-        let urlParams: UrlAdaptor = new UrlAdaptor();
+        const urlParams: UrlAdaptor = new UrlAdaptor();
         urlParams.addParams(options);
     }
 }
 
 /**
- * Ajax Adaptor that is extended from URL Adaptor, is used for handle data operations with user defined functions. 
+ * Ajax Adaptor that is extended from URL Adaptor, is used for handle data operations with user defined functions.
+ *
  * @hidden
  */
 export class CustomDataAdaptor extends UrlAdaptor {
@@ -2143,8 +2433,9 @@ export class CustomDataAdaptor extends UrlAdaptor {
 }
 
 /**
- * The GraphqlAdaptor that is extended from URL Adaptor, is used for retrieving data from the Graphql server. 
+ * The GraphqlAdaptor that is extended from URL Adaptor, is used for retrieving data from the Graphql server.
  * It interacts with the Graphql server with all the DataManager Queries and performs CRUD operations.
+ *
  * @hidden
  */
 export class GraphQLAdaptor extends UrlAdaptor {
@@ -2163,31 +2454,38 @@ export class GraphQLAdaptor extends UrlAdaptor {
         this.opt = options;
         this.schema = this.opt.response;
         this.query = this.opt.query;
+        /* eslint-disable @typescript-eslint/no-empty-function */
+        // tslint:disable-next-line:no-empty
         this.getVariables = this.opt.getVariables ? this.opt.getVariables : () => { };
+        /* eslint-enable @typescript-eslint/no-empty-function */
         this.getQuery = () => this.query;
     }
 
     /**
      * Process the JSON data based on the provided queries.
-     * @param  {DataManager} dm
-     * @param  {Query} query?
+     *
+     * @param {DataManager} dm
+     * @param {Query} query?
+     * @param datamanager
+     * @param query
      */
     public processQuery(datamanager: DataManager, query: Query): Object {
-        let urlQuery: { data: string } = super.processQuery.apply(this, arguments);        
-        let dm: { data: string } = JSON.parse(urlQuery.data);
+        const urlQuery: { data: string } = super.processQuery.apply(this, arguments);
+        const dm: { data: string } = JSON.parse(urlQuery.data);
 
         // constructing GraphQL parameters
-        let keys: string[] = ['skip', 'take', 'sorted', 'table', 'select', 'where',
+        const keys: string[] = ['skip', 'take', 'sorted', 'table', 'select', 'where',
             'search', 'requiresCounts', 'aggregates', 'params'];
-        let temp: GraphQLParams = {};
-        let str: string= 'searchwhereparams';
+        const temp: GraphQLParams = {};
+        const str: string = 'searchwhereparams';
         keys.filter((e: string) => {
             temp[e] = str.indexOf(e) > -1 ? JSON.stringify(dm[e]) : dm[e];
         });
 
-        let vars: Object = this.getVariables() || {};
+        const vars: Object = this.getVariables() || {};
+        // tslint:disable-next-line:no-string-literal
         vars['datamanager'] = temp;
-        let data: string = JSON.stringify({
+        const data: string = JSON.stringify({
             query:  this.getQuery(),
             variables: vars
         });
@@ -2197,11 +2495,17 @@ export class GraphQLAdaptor extends UrlAdaptor {
     /**
      * Returns the data from the query processing.
      * It will also cache the data for later usage.
-     * @param  {DataResult} data
-     * @param  {DataManager} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Object} request?
+     *
+     * @param {DataResult} data
+     * @param {DataManager} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Object} request?
+     * @param resData
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
      * @returns DataResult
      */
     public processResponse(resData: DataResult, ds?: DataManager, query?: Query, xhr?: XMLHttpRequest, request?: Object): DataResult {
@@ -2209,7 +2513,7 @@ export class GraphQLAdaptor extends UrlAdaptor {
         let count: number;
         let aggregates: Object;
 
-        let result: Object | String = getValue(this.schema.result, res.data);
+        const result: Object | string = getValue(this.schema.result, res.data);
 
         if (this.schema.count) {
             count = getValue(this.schema.count, res.data);
@@ -2219,21 +2523,21 @@ export class GraphQLAdaptor extends UrlAdaptor {
             aggregates = getValue(this.schema.aggregates, res.data);
             aggregates = !isNullOrUndefined(aggregates) ? DataUtil.parse.parseJson(aggregates) : aggregates;
         }
-        let pvt: PvtOptions = (request as { pvtData?: Object }).pvtData || {};
-        let args: DataResult = { result: result, aggregates: aggregates };
-        let data: DataResult = args;
+        const pvt: PvtOptions = (request as { pvtData?: Object }).pvtData || {};
+        const args: DataResult = { result: result, aggregates: aggregates };
+        const data: DataResult = args;
         if ( pvt && pvt.groups && pvt.groups.length) {
-        this.getAggregateResult(pvt, data, args, null, query);  
-        }      
+            this.getAggregateResult(pvt, data, args, null, query);
+        }
         return !isNullOrUndefined(count) ? { result: args.result, count: count, aggregates: aggregates } : args.result;
     }
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      */
-    
+
     public insert(): {data: string} {
-        let inserted: { data: string } = super.insert.apply(this, arguments);
+        const inserted: { data: string } = super.insert.apply(this, arguments);
         return this.generateCrudData(inserted, 'insert');
     }
 
@@ -2241,7 +2545,7 @@ export class GraphQLAdaptor extends UrlAdaptor {
      * Prepare and returns request body which is used to update a new record in the table.
      */
     public update(): {data: string} {
-        let inserted: { data: string } = super.update.apply(this, arguments);
+        const inserted: { data: string } = super.update.apply(this, arguments);
         return this.generateCrudData(inserted, 'update');
     }
 
@@ -2249,29 +2553,32 @@ export class GraphQLAdaptor extends UrlAdaptor {
      * Prepare and returns request body which is used to remove a new record in the table.
      */
     public remove(): {data: string} {
-        let inserted: { data: string }= super.remove.apply(this, arguments);
+        const inserted: { data: string } = super.remove.apply(this, arguments);
         return this.generateCrudData(inserted, 'remove');
     }
 
     /**
      * Prepare the request body based on the newly added, removed and updated records.
-     * The result is used by the batch request. 
-     * @param  {DataManager} dm
-     * @param  {CrudOptions} changes
-     * @param  {Object} e
-     * @param  {Query} query
-     * @param  {Object} original
+     * The result is used by the batch request.
+     *
+     * @param {DataManager} dm
+     * @param {CrudOptions} changes
+     * @param {Object} e
+     * @param e.key
+     * @param {Query} query
+     * @param {Object} original
      */
-     public batchRequest(dm: DataManager, changes: CrudOptions, e: {key: string}, query: Query, original?: Object): Object {
-        let batch: { data: string }= super.batchRequest.apply(this, arguments);
-        let bData = JSON.parse(batch.data);
+    public batchRequest(dm: DataManager, changes: CrudOptions, e: {key: string}, query: Query, original?: Object): Object {
+        const batch: { data: string } = super.batchRequest.apply(this, arguments);
+        // tslint:disable-next-line:typedef
+        const bData = JSON.parse(batch.data);
         bData.key = e.key;
         batch.data = JSON.stringify(bData);
         return this.generateCrudData(batch, 'batch');
     }
-    
+
     private generateCrudData(crudData: { data: string }, action: string): {data: string} {
-        let parsed: Object = JSON.parse(crudData.data);
+        const parsed: Object = JSON.parse(crudData.data);
         crudData.data = JSON.stringify({
             query: this.opt.getMutation(action),
             variables: parsed
@@ -2283,6 +2590,7 @@ export class GraphQLAdaptor extends UrlAdaptor {
 /**
  * Cache Adaptor is used to cache the data of the visited pages. It prevents new requests for the previously visited pages.
  * You can configure cache page size and duration of caching by using cachingPageSize and timeTillExpiration properties of the DataManager
+ *
  * @hidden
  */
 export class CacheAdaptor extends UrlAdaptor {
@@ -2294,9 +2602,13 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Constructor for CacheAdaptor class.
-     * @param  {CacheAdaptor} adaptor?
-     * @param  {number} timeStamp?
-     * @param  {number} pageSize?
+     *
+     * @param {CacheAdaptor} adaptor?
+     * @param {number} timeStamp?
+     * @param {number} pageSize?
+     * @param adaptor
+     * @param timeStamp
+     * @param pageSize
      * @hidden
      */
     constructor(adaptor?: CacheAdaptor, timeStamp?: number, pageSize?: number) {
@@ -2306,18 +2618,20 @@ export class CacheAdaptor extends UrlAdaptor {
         }
         this.pageSize = pageSize;
         this.guidId = DataUtil.getGuid('cacheAdaptor');
-        let obj: Object = { keys: [], results: [] };
+        const obj: Object = { keys: [], results: [] };
         window.localStorage.setItem(this.guidId, JSON.stringify(obj));
-        let guid: string = this.guidId;
+        const guid: string = this.guidId;
         if (!isNullOrUndefined(timeStamp)) {
             setInterval(
                 () => {
-                    let data: { results: { timeStamp: number }[], keys: string[] };
-                    data = DataUtil.parse.parseJson(window.localStorage.getItem(guid));
-                    let forDel: Object[] = [];
+                    const data: {
+                        results: { timeStamp: number }[],
+                        keys: string[]
+                    } = DataUtil.parse.parseJson(window.localStorage.getItem(guid));
+                    const forDel: Object[] = [];
                     for (let i: number = 0; i < data.results.length; i++) {
-                        let currentTime: number = +new Date();
-                        let requestTime: number = +new Date(data.results[i].timeStamp);
+                        const currentTime: number = +new Date();
+                        const requestTime: number = +new Date(data.results[i].timeStamp);
                         data.results[i].timeStamp = currentTime - requestTime;
                         if (currentTime - requestTime > timeStamp) {
                             forDel.push(i);
@@ -2336,15 +2650,17 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * It will generate the key based on the URL when we send a request to server.
-     * @param  {string} url
-     * @param  {Query} query?
+     *
+     * @param {string} url
+     * @param {Query} query?
+     * @param query
      * @hidden
      */
     public generateKey(url: string, query: Query): string {
-        let queries: Requests = this.getQueryRequest(query);
-        let singles: Object = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
+        const queries: Requests = this.getQueryRequest(query);
+        const singles: Object = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
         let key: string = url;
-        let page: string = 'onPage';
+        const page: string = 'onPage';
         if (page in singles) {
             key += singles[page].pageIndex;
         }
@@ -2359,9 +2675,9 @@ export class CacheAdaptor extends UrlAdaptor {
         });
 
         for (let filter: number = 0; filter < queries.filters.length; filter++) {
-            let currentFilter: QueryOptions = queries.filters[filter];
+            const currentFilter: QueryOptions = queries.filters[filter];
             if (currentFilter.e.isComplex) {
-                let newQuery: Query = query.clone();
+                const newQuery: Query = query.clone();
                 newQuery.queries = [];
                 for (let i: number = 0; i < currentFilter.e.predicates.length; i++) {
                     newQuery.queries.push({ fn: 'onWhere', e: currentFilter.e.predicates[i], filter: query.queries.filter });
@@ -2375,33 +2691,43 @@ export class CacheAdaptor extends UrlAdaptor {
     }
 
     /**
-     * Process the query to generate request body. 
-     * If the data is already cached, it will return the cached data. 
-     * @param  {DataManager} dm
-     * @param  {Query} query?
-     * @param  {Object[]} hierarchyFilters?
+     * Process the query to generate request body.
+     * If the data is already cached, it will return the cached data.
+     *
+     * @param {DataManager} dm
+     * @param {Query} query?
+     * @param {Object[]} hierarchyFilters?
+     * @param query
+     * @param hierarchyFilters
      */
     public processQuery(dm: DataManager, query?: Query, hierarchyFilters?: Object[]): Object {
-        let key: string = this.generateKey(dm.dataSource.url, query);
-        let cachedItems: DataResult;
-        cachedItems = DataUtil.parse.parseJson(window.localStorage.getItem(this.guidId));
-        let data: DataResult = cachedItems ? cachedItems.results[cachedItems.keys.indexOf(key)] : null;
+        const key: string = this.generateKey(dm.dataSource.url, query);
+        const cachedItems: DataResult = DataUtil.parse.parseJson(window.localStorage.getItem(this.guidId));
+        const data: DataResult = cachedItems ? cachedItems.results[cachedItems.keys.indexOf(key)] : null;
         if (data != null && !this.isCrudAction && !this.isInsertAction) {
             return data;
         }
         this.isCrudAction = null; this.isInsertAction = null;
+        /* eslint-disable prefer-spread */
         return this.cacheAdaptor.processQuery.apply(this.cacheAdaptor, [].slice.call(arguments, 0));
+        /* eslint-enable prefer-spread */
     }
 
     /**
      * Returns the data from the query processing.
      * It will also cache the data for later usage.
-     * @param  {DataResult} data
-     * @param  {DataManager} ds?
-     * @param  {Query} query?
-     * @param  {XMLHttpRequest} xhr?
-     * @param  {Ajax} request?
-     * @param  {CrudOptions} changes?
+     *
+     * @param {DataResult} data
+     * @param {DataManager} ds?
+     * @param {Query} query?
+     * @param {XMLHttpRequest} xhr?
+     * @param {Ajax} request?
+     * @param {CrudOptions} changes?
+     * @param ds
+     * @param query
+     * @param xhr
+     * @param request
+     * @param changes
      */
     public processResponse(
         data: DataResult, ds?: DataManager, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): DataResult {
@@ -2409,11 +2735,13 @@ export class CacheAdaptor extends UrlAdaptor {
             DataUtil.endsWith(request.url, this.cacheAdaptor.options.batch) && request.type.toLowerCase() === 'post')) {
             return this.cacheAdaptor.processResponse(data, ds, query, xhr, request, changes);
         }
+        /* eslint-disable prefer-spread */
         data = this.cacheAdaptor.processResponse.apply(this.cacheAdaptor, [].slice.call(arguments, 0));
-        let key: string = query ? this.generateKey(ds.dataSource.url, query) : ds.dataSource.url;
+        /* eslint-enable prefer-spread */
+        const key: string = query ? this.generateKey(ds.dataSource.url, query) : ds.dataSource.url;
         let obj: DataResult = {};
         obj = DataUtil.parse.parseJson(window.localStorage.getItem(this.guidId));
-        let index: number = obj.keys.indexOf(key);
+        const index: number = obj.keys.indexOf(key);
         if (index !== -1) {
             (<Object[]>obj.results).splice(index, 1);
             obj.keys.splice(index, 1);
@@ -2429,9 +2757,11 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Method will trigger before send the request to server side. Used to set the custom header or modify the request options.
-     * @param  {DataManager} dm
-     * @param  {XMLHttpRequest} request
-     * @param  {Ajax} settings?
+     *
+     * @param {DataManager} dm
+     * @param {XMLHttpRequest} request
+     * @param {Ajax} settings?
+     * @param settings
      */
     public beforeSend(dm: DataManager, request: XMLHttpRequest, settings?: Ajax): void {
         if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
@@ -2446,6 +2776,7 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Updates existing record and saves the changes to the table.
+     *
      * @param  {DataManager} dm
      * @param  {string} keyField
      * @param  {Object} value
@@ -2458,9 +2789,11 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
-     * @param  {DataManager} dm
-     * @param  {Object} data
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {Object} data
+     * @param {string} tableName?
+     * @param tableName
      */
     public insert(dm: DataManager, data: Object, tableName?: string): Object {
         this.isInsertAction = true;
@@ -2469,10 +2802,12 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Prepare and return request body which is used to remove record from the table.
-     * @param  {DataManager} dm
-     * @param  {string} keyField
-     * @param  {Object} value
-     * @param  {string} tableName?
+     *
+     * @param {DataManager} dm
+     * @param {string} keyField
+     * @param {Object} value
+     * @param {string} tableName?
+     * @param tableName
      */
     public remove(dm: DataManager, keyField: string, value: Object, tableName?: string): Object[] {
         this.isCrudAction = true;
@@ -2481,7 +2816,8 @@ export class CacheAdaptor extends UrlAdaptor {
 
     /**
      * Prepare the request body based on the newly added, removed and updated records.
-     * The result is used by the batch request. 
+     * The result is used by the batch request.
+     *
      * @param  {DataManager} dm
      * @param  {CrudOptions} changes
      * @param  {RemoteArgs} e
@@ -2646,8 +2982,8 @@ export interface LazyLoadGroupArgs {
 /**
  * @hidden
  */
-export type ReturnType = { 
-    result: Object[], 
-    count?: number, 
+export type ReturnType = {
+    result: Object[],
+    count?: number,
     aggregates?: string
-}
+};

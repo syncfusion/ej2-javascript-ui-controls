@@ -697,6 +697,7 @@ export class LayerPanel {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const bubbleDataSource: any[] = bubble.dataSource as any[];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.mapObject.bubbleModule.bubbleCollection = [];
                 bubbleDataSource.map((bubbleData: any, i: number) => {
                     this.renderBubble(
                         this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);

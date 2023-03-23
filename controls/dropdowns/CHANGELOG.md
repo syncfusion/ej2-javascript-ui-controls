@@ -2,90 +2,15 @@
 
 ## [Unreleased]
 
-## 20.4.53 (2023-03-07)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I429410` - The issue of facing a delay while unselecting large set of items using close icon in the Dropdown Tree component has been resolved.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I439556`, `I442336` - The issue "Script error throws after clear the selected value using clear icon" has been resolved.
-
-## 20.4.49 (2023-02-07)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I429410` - The issue of Select All/Unselect All taking an excessive amount of time and causing browser crashes in a Dropdown Tree with a large data source has been resolved.
-
-## 20.4.48 (2023-02-01)
-
-### DropDownList
-
-#### Bug Fixes
-
-- `#I429647` - Fixed an issue where a console error occurred while using the destroy method in the AutoComplete.
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I412684` - Resolved the issue "No Records Found" message is not showing in  Dropdown Tree while updating null data dynamically.
-
-- `#I430152` - Facing a console error while setting empty data to the Dropdown Tree has been resolved.
-
-- `#I420146` - The Placeholder alignment issue while setting the Dropdown Tree component as form control is resolved
+## 21.1.35 (2023-03-23)
 
 ### ListBox
 
 #### Bug Fixes
 
-- `#F38636` - Issue with "`selectItems` function doesn't work in listbox when values contain backslashes" has been resolved
-
-## 20.4.42 (2023-01-04)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I422992` - Now, the `cssClass` property works fine in the Mention component.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I423751` - The issue "MultiSelect height not being set properly in the tailwind theme" has been resolved.
-
-## 20.4.40 (2022-12-28)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#F178650` - Resolved the error after perform filtering in Dropdown Tree while updating data dynamically
-
-### ListBox
-
-#### Bug Fixes
-
+- `#F38636` - Issue with "`selectItems` function doesn't work in listbox when values contain backslashes" has been resolved.
 - `#F424252` - Issue with "Data source not update properly when we filtering and clicking move All button in listbox toolbar sample" has been resolved.
 - `#I423072` - Issue with "`actionBegin` event argument not passes the filtered item properly while filtering and clicking move All button in listbox toolbar sample" has been resolved.
-
-## 20.4.38 (2022-12-21)
-
-### Dropdown Tree
-
-#### New Features
-
-- `#I395558` - Provided enableHtmlSanitizer support for Dropdown Tree component.
-
-- `#F169154`, `#I424048` - Provided an option to prevent the parent node selection in the Dropdown Tree component.
 
 ### ListBox
 

@@ -92,8 +92,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         const content: HTMLElement = this.getScrollableElement() as HTMLElement;
         const header: HTMLElement = this.getDatesHeaderElement();
         const scrollerHeight: number = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight;
-        this.setColWidth(content);
         this.setContentHeight(content, timeCells, scrollerHeight);
+        this.setColWidth(content);
         const scrollBarWidth: number = util.getScrollBarWidth();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';

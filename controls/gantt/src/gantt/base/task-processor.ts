@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
     private constructResourceViewDataSource(resources: Object[], data: Object[], unassignedTasks: Object[]): void {
         for (let i: number = 0; i < data.length; i++) {
             const tempData: Object = data[i as number];
-            var child=this.parent.taskFields.child != null? this.parent.taskFields.child: 'Children';
+             const child: string = this.parent.taskFields.child != null? this.parent.taskFields.child: 'Children';
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
             if ((!tempData[child as string]  || tempData[child as string].length === 0) && resourceData && resourceData.length) {
@@ -240,7 +240,7 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             const ganttData: IGanttData = this.createRecord(tempData, level, parentItem, true);
-            if (!this.parent.enableValidation) {
+            if (!this.parent.enableValidation || !this.parent.autoCalculateDateScheduling) {
                 this.updateTaskLeftWidth(ganttData);
             }
             ganttData.index = this.recordIndex++;
@@ -277,6 +277,9 @@ export class TaskProcessor extends DateProcessor {
                 if (!parentProp.isAutoSchedule) {
                     this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
                     this.updateAutoWidthLeft(parentData);
+                }
+                if (!this.parent.allowParentDependency) {
+                   this.resetDependency(parentData);
                 }
                 this.updateWidthLeft(parentData);
                 this.updateTaskData(parentData);
@@ -388,6 +391,9 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(data[taskSettings.child]) && data[taskSettings.child].length > 0) {
             this.parent.setRecordValue('hasChildRecords', true, ganttData);
             this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+            if (!this.parent.allowParentDependency) {
+               this.resetDependency(ganttData);
+            }
         } else {
             this.parent.setRecordValue('hasChildRecords', false, ganttData);
         }
@@ -790,6 +796,16 @@ export class TaskProcessor extends DateProcessor {
                     this.parent.setRecordValue('startDate', this.getProjectStartDate(ganttProperties, isLoad), ganttProperties, true);
                     this.calculateEndDate(ganttData);
                 }
+            }
+        }
+        if (!this.parent.autoCalculateDateScheduling) {
+            if (!isNullOrUndefined(ganttData.ganttProperties.startDate)) {
+                ganttData[this.parent.taskFields.startDate] = ganttData.ganttProperties.startDate;
+                ganttData.taskData[this.parent.taskFields.startDate] = ganttData.ganttProperties.startDate;
+            }
+            if (!isNullOrUndefined(ganttData.ganttProperties.endDate)) {
+                ganttData[this.parent.taskFields.endDate] = ganttData.ganttProperties.endDate;
+                ganttData.taskData[this.parent.taskFields.endDate] = ganttData.ganttProperties.endDate;
             }
         }
         if (!isNullOrUndefined(segments)) {
@@ -1385,10 +1401,10 @@ export class TaskProcessor extends DateProcessor {
         let createData: any = [];
         let length = data.length;
         for (var i = 0; i < length; i++) {
-            let record = data[i];
+            let record = data[i as number];
             createData.push(record);
-            if (!(isNullOrUndefined(data[i][this.parent.taskFields.child]))) {
-                this.setDataSource(data[i][this.parent.taskFields.child]);
+            if (!(isNullOrUndefined(data[i as number][this.parent.taskFields.child as string]))) {
+                this.setDataSource(data[i as number][this.parent.taskFields.child as string]);
 
             }
         }
@@ -1404,14 +1420,14 @@ export class TaskProcessor extends DateProcessor {
         }
         this.parent.flatData.map((data) => {
             hierarchicalData.map((record: any) => {
-                if (data.ganttProperties.taskId === record[this.parent.taskFields.id]) {
+                if (data.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
                       if(!isNullOrUndefined( this.parent.taskFields.startDate)){
-                        task[this.parent.taskFields.endDate] = record[this.parent.taskFields.endDate];
+                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
                       }
-                      if(!isNullOrUndefined( this.parent.taskFields.endDate)){
-                        task[this.parent.taskFields.endDate] = record[this.parent.taskFields.endDate];
+                      if(!isNullOrUndefined(this.parent.taskFields.endDate)){
+                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
                       }
-                    
+
                 }
             })
         })
@@ -1754,7 +1770,7 @@ export class TaskProcessor extends DateProcessor {
                 const rangeObj: IWorkTimelineRanges = {};
                 if (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate)) {
                     if ((tStartDate.getTime() > cStartDate.getTime() && tStartDate.getTime() < cEndDate.getTime()
-                        && tEndDate.getTime() > cStartDate.getTime() && tEndDate.getTime() > cEndDate.getTime())
+                        && tEndDate.getTime() > cStartDate.getTime() && tEndDate.getTime() >= cEndDate.getTime())
                         || (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() <= tEndDate.getTime())) {
                         rangeObj.from = tStartDate;
                         rangeObj.to = cEndDate;
@@ -2025,7 +2041,7 @@ export class TaskProcessor extends DateProcessor {
      */
     private updateTaskLeftWidth(data: IGanttData): void {
         const task: ITaskData = data.ganttProperties;
-        if (!data.hasChildRecords) {
+        if (!data.hasChildRecords || !this.parent.autoCalculateDateScheduling) {
             this.updateWidthLeft(data);
         }
         this.parent.setRecordValue('baselineLeft', this.calculateBaselineLeft(task), task, true);
@@ -2037,7 +2053,12 @@ export class TaskProcessor extends DateProcessor {
             childData = parentItem.childRecords as IGanttData[];
         }
         if (parentItem && childData.indexOf(data) === childData.length - 1 && !data.hasChildRecords && this.parent.enableValidation) {
-            this.updateParentItems(parentItem);
+            if (this.parent.autoCalculateDateScheduling || this.parent.viewType === "ResourceView") {
+                this.updateParentItems(parentItem);
+            }
+            if (!this.parent.autoCalculateDateScheduling) {
+                this.updateWidthLeft(parentItem);
+            }
         } else if (parentItem && !this.parent.enableValidation) {
             this.updateWidthLeft(parentItem);
         }
@@ -2189,106 +2210,117 @@ export class TaskProcessor extends DateProcessor {
         const parentData: IGanttData = isParent ? cloneParent : this.parent.getParentTask(cloneParent);
         let deleteUpdate: boolean = false;
         const ganttProp: ITaskData = parentData.ganttProperties;
-        if (parentData.childRecords.length > 0) {
-            const previousStartDate: Date = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
-            const previousEndDate: Date = ganttProp.isAutoSchedule ? ganttProp.endDate :
-                ganttProp.autoEndDate;
-            const childRecords: Object[] = parentData.childRecords;
-            const childLength: number = childRecords.length;
-            let totalDuration: number = 0;
-            let progressValues: Object = {};
-            let minStartDate: Date = null; let maxEndDate: Date = null;
-            let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
-            let childData: IGanttData;
-            for (let count: number = 0; count < childLength; count++) {
-                childData = childRecords[count as number] as IGanttData;
-                if (this.parent.isOnDelete && childData.isDelete) {
-                    if (childLength === 1 && this.parent.viewType === 'ProjectView') {
-                        deleteUpdate = true;
+        if (this.parent.autoCalculateDateScheduling || this.parent.viewType === "ResourceView") {
+            if (parentData.childRecords.length > 0) {
+                const previousStartDate: Date = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
+                const previousEndDate: Date = ganttProp.isAutoSchedule ? ganttProp.endDate :
+                    ganttProp.autoEndDate;
+                const childRecords: Object[] = parentData.childRecords;
+                const childLength: number = childRecords.length;
+                let totalDuration: number = 0;
+                let progressValues: Object = {};
+                let minStartDate: Date = null; let maxEndDate: Date = null;
+                let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
+                let childData: IGanttData;
+                for (let count: number = 0; count < childLength; count++) {
+                    childData = childRecords[count as number] as IGanttData;
+                    if (this.parent.isOnDelete && childData.isDelete) {
+                        if (childLength === 1 && this.parent.viewType === 'ProjectView') {
+                            deleteUpdate = true;
+                        }
+                        continue;
                     }
-                    continue;
-                }
-                let startDate: Date = this.getValidStartDate(childData.ganttProperties);
-                if(parentData.hasChildRecords && !ganttProp.isAutoSchedule &&  !isNullOrUndefined( childData.ganttProperties.autoStartDate))
-                {
-                   startDate = childData.ganttProperties.autoStartDate;
-                }
-                let endDate: Date = this.getValidEndDate(childData.ganttProperties);
-                if(parentData.hasChildRecords && !ganttProp.isAutoSchedule &&  !isNullOrUndefined( childData.ganttProperties.autoEndDate))
-                {
-                   endDate = childData.ganttProperties.autoEndDate;
-                }
+                    let startDate: Date = this.getValidStartDate(childData.ganttProperties);
+                    if (parentData.hasChildRecords && !ganttProp.isAutoSchedule && !isNullOrUndefined(childData.ganttProperties.autoStartDate)) {
+                        startDate = childData.ganttProperties.autoStartDate;
+                    }
+                    let endDate: Date = this.getValidEndDate(childData.ganttProperties);
+                    if (parentData.hasChildRecords && !ganttProp.isAutoSchedule && !isNullOrUndefined(childData.ganttProperties.autoEndDate)) {
+                        endDate = childData.ganttProperties.autoEndDate;
+                    }
 
-                if (isNullOrUndefined(minStartDate)) {
-                    minStartDate = this.getDateFromFormat(startDate);
-                }
-                if (isNullOrUndefined(maxEndDate)) {
-                    maxEndDate = this.getDateFromFormat(endDate);
-                }
-                if (!isNullOrUndefined(endDate) && this.compareDates(endDate, maxEndDate) === 1) {
-                    maxEndDate = this.getDateFromFormat(endDate);
-                }
-                if (!isNullOrUndefined(startDate) && this.compareDates(startDate, minStartDate) === -1) {
-                    minStartDate = this.getDateFromFormat(startDate);
-                }
-                if (!childData.ganttProperties.isMilestone && isScheduledTask(childData.ganttProperties)) {
-                    progressValues = this.getParentProgress(childData);
-                    totalProgress += getValue('totalProgress', progressValues);
-                    if (childData[this.parent.taskFields.duration] < 1) {
+                    if (isNullOrUndefined(minStartDate)) {
+                        minStartDate = this.getDateFromFormat(startDate);
+                    }
+                    if (isNullOrUndefined(maxEndDate)) {
+                        maxEndDate = this.getDateFromFormat(endDate);
+                    }
+                    if (!isNullOrUndefined(endDate) && this.compareDates(endDate, maxEndDate) === 1) {
+                        maxEndDate = this.getDateFromFormat(endDate);
+                    }
+                    if (!isNullOrUndefined(startDate) && this.compareDates(startDate, minStartDate) === -1) {
+                        minStartDate = this.getDateFromFormat(startDate);
+                    }
+                    if (!childData.ganttProperties.isMilestone && isScheduledTask(childData.ganttProperties)) {
+                        progressValues = this.getParentProgress(childData);
+                        totalProgress += getValue('totalProgress', progressValues);
+                        if (childData[this.parent.taskFields.duration] < 1) {
                             totalDuration += getValue('totalDuration', progressValues);
                             totalDuration = Number(totalDuration.toFixed(4));
+                        } else {
+                            totalDuration += getValue('totalDuration', progressValues);
+                        }
+
                     } else {
-                        totalDuration += getValue('totalDuration', progressValues);
+                        milestoneCount++;
                     }
-                    
-                } else {
-                    milestoneCount++;
+                    childCompletedWorks += childData.ganttProperties.work;
                 }
-                childCompletedWorks += childData.ganttProperties.work;
+                if (!deleteUpdate) {
+                    let taskCount: number;
+                    if (this.parent.isOnDelete && childData.isDelete) {
+                        taskCount = childLength - milestoneCount - 1;
+                    } else {
+                        taskCount = childLength - milestoneCount;
+                    }
+                    const parentProgress: number = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
+                    const parentProp: ITaskData = parentData.ganttProperties;
+                    const milestone: boolean = (taskCount === 0) && minStartDate && maxEndDate &&
+                        minStartDate.getTime() === maxEndDate.getTime() ? true : false;
+                    if (this.compareDates(previousStartDate, minStartDate) !== 0) {
+                        this.parent.setRecordValue(
+                            ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate',
+                            minStartDate, parentData.ganttProperties, true);
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone) {
+                            this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+                        }
+                    }
+                    if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
+                        this.parent.setRecordValue(
+                            ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate',
+                            maxEndDate, parentData.ganttProperties, true);
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone) {
+                            this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
+                        }
+                    }
+                    this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
+                    if (parentProp.isAutoSchedule) {
+                        this.calculateDuration(parentData);
+                    }
+                    this.updateWorkWithDuration(parentData);
+                    let parentWork: number = parentProp.work;
+                    parentWork = this.parent.isOnEdit ? parentWork : (parentWork + childCompletedWorks);
+                    this.parent.setRecordValue('work', parentWork, parentProp, true);
+                    this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
+                    if (!isNullOrUndefined(this.parent.taskFields.type)) {
+                        this.updateMappingData(parentData, 'type');
+                    }
+                    this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                    this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
+                    this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                    if (!parentProp.isAutoSchedule) {
+                        this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
+                        this.updateAutoWidthLeft(parentData);
+                    }
+                    if (!this.parent.allowParentDependency) {
+                        this.resetDependency(parentData);
+                    }
+                    this.updateWidthLeft(parentData);
+                    this.updateTaskData(parentData);
+                }
             }
-            if (!deleteUpdate) {
-                if (this.compareDates(previousStartDate, minStartDate) !== 0) {
-                    this.parent.setRecordValue(
-                        ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate',
-                        minStartDate, parentData.ganttProperties, true);
-                }
-                if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
-                    this.parent.setRecordValue(
-                        ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate',
-                        maxEndDate, parentData.ganttProperties, true);
-                }
-                let taskCount: number;
-                if (this.parent.isOnDelete && childData.isDelete) {
-                    taskCount = childLength - milestoneCount - 1;
-                } else {
-                    taskCount = childLength - milestoneCount;
-                }
-                const parentProgress: number = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
-                const parentProp: ITaskData = parentData.ganttProperties;
-                const milestone: boolean = (taskCount === 0) && minStartDate && maxEndDate &&
-                    minStartDate.getTime() === maxEndDate.getTime() ? true : false;
-                this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
-                if (parentProp.isAutoSchedule) {
-                    this.calculateDuration(parentData);
-                }
-                this.updateWorkWithDuration(parentData);
-                let parentWork: number = parentProp.work;
-                parentWork = this.parent.isOnEdit ? parentWork : (parentWork + childCompletedWorks);
-                this.parent.setRecordValue('work', parentWork, parentProp, true);
-                this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
-                if (!isNullOrUndefined(this.parent.taskFields.type)) {
-                    this.updateMappingData(parentData, 'type');
-                }
-                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
-                this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
-                this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
-                if (!parentProp.isAutoSchedule) {
-                    this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
-                    this.updateAutoWidthLeft(parentData);
-                }
-                this.updateWidthLeft(parentData);
-                this.updateTaskData(parentData);
-            }
+        } else {
+            parentData.ganttProperties.endDate = parentData.taskData[this.parent.taskFields.endDate]
         }
         if (deleteUpdate && parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
             this.parent.setRecordValue('isMilestone', true, parentData.ganttProperties, true);
@@ -2297,7 +2329,9 @@ export class TaskProcessor extends DateProcessor {
         }
         const parentItem: IGanttData = this.parent.getParentTask(parentData.parentItem) as IGanttData;
         if (parentItem) {
-            this.updateParentItems(parentItem);
+            if (this.parent.autoCalculateDateScheduling || this.parent.viewType === "ResourceView") {
+                this.updateParentItems(parentItem);
+            }
         }
         deleteUpdate = false;
     }

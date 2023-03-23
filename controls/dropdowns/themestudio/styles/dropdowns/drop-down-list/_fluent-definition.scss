@@ -74,7 +74,7 @@ $ddl-filter-box-shadow: none !default;
   .e-bigger #{&}.e-popup.e-ddl {
     @at-root {
       #{if(&, '&', '*')} .e-list-item {
-        font-size: 16px;
+        font-size: $text-base;
         line-height: 32px;
         padding-left: 0;
         text-indent: 16px;
@@ -82,7 +82,7 @@ $ddl-filter-box-shadow: none !default;
 
       #{if(&, '&', '*')} .e-list-group-item,
       #{if(&, '&', '*')} .e-fixed-head {
-        font-size: 14px;
+        font-size: $text-sm;
         line-height: 32px;
         padding-left: 0;
         text-indent: 16px;
@@ -150,11 +150,11 @@ $ddl-filter-box-shadow: none !default;
   }
 
   .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
-    font-size: 14px;
+    font-size: $text-sm;
   }
 
   .e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
-    font-size: 16px;
+    font-size: $text-base;
   }
 
   .e-bigger.e-small .e-ddl#{&}.e-popup {
@@ -162,7 +162,7 @@ $ddl-filter-box-shadow: none !default;
       #{if(&, '&', '*')} .e-list-item,
       #{if(&, '&', '*')} .e-list-group-item,
       #{if(&, '&', '*')} .e-fixed-head {
-        font-size: 14px;
+        font-size: $text-sm;
         line-height: 34px;
         padding-left: 0;
         text-indent: 16px;

@@ -2,7 +2,7 @@ import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndef
 import { getInstance, closest, MouseEventArgs, selectAll, detach } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Popup } from '@syncfusion/ej2-popups';
+import { Popup, Tooltip } from '@syncfusion/ej2-popups';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
@@ -148,6 +148,14 @@ export class ToolbarRenderer implements IRenderer {
         args.rteToolbarObj.toolbarObj.isStringTemplate = true;
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
+        if (this.parent.showTooltip) {
+            const tooltip : Tooltip = new Tooltip({
+                target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
+                showTipPointer: true,
+                cssClass: this.parent.cssClass
+            });
+            tooltip.appendTo(args.target);
+        }
     }
 
     /**
@@ -253,6 +261,7 @@ export class ToolbarRenderer implements IRenderer {
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
+        args.element.setAttribute('role', 'button');
         const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         if (args.element.childElementCount === 1) {

@@ -71,8 +71,8 @@ export interface FieldsSettingsModel {
     query?: Query;
 
     /**
-     * Specifies whether the node can be selected by users or not 
-     * When set to false, the user interaction is prevented for the corresponding node. 
+     * Specifies whether the node can be selected by users or not
+     * When set to false, the user interaction is prevented for the corresponding node.
      */
     selectable?: string;
 
@@ -180,8 +180,8 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Enables or disables multi-selection of nodes. To select multiple nodes:
-     * * Select the nodes by holding down the CTRL key while clicking on the nodes.
-     * * Select consecutive nodes by clicking the first node to select and hold down the **SHIFT** key
+     * * Select the nodes by holding down the **Ctrl** key while clicking on the nodes.
+     * * Select consecutive nodes by clicking the first node to select and hold down the **Shift** key
      * and click the last node to select.
      *
      * For more information on multi-selection, refer to

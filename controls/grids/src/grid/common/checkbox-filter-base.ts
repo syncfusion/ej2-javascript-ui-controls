@@ -1,7 +1,7 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue } from '@syncfusion/ej2-base';
 import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates } from '../base/util';
-import { remove, debounce, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
+import { remove, debounce, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -603,7 +603,7 @@ export class CheckBoxFilterBase {
         foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
         let operator: string = this.options.isRemote ?
-            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'contains' : 'equal');
+            (this.options.type === 'string' ? 'wildcard' : 'equal') : (this.options.type ? 'wildcard' : 'equal');
         const matchCase: boolean = true;
         const ignoreAccent: boolean = this.options.ignoreAccent;
         const field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
@@ -966,8 +966,8 @@ export class CheckBoxFilterBase {
         const label: Element = elem.querySelector('.e-label');
         const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         const innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
-        label[`${innerText}`] = !isNullOrUndefined(value) && value.toString().length ? value :
-            this.getLocalizedLabel('Blanks');
+        label[`${innerText}`] = !isNullOrUndefined(value) && value.toString().length ?
+            this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(value) : value : this.getLocalizedLabel('Blanks');
         if (label.innerHTML === this.getLocalizedLabel('Blanks')) {
             this.isBlanks = true;
         }

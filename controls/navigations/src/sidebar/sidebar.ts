@@ -28,11 +28,36 @@ const SIDEBARABSOLUTE: string = 'e-sidebar-absolute';
 /**
  * Specifies the Sidebar types.
  */
-export type SidebarType = 'Slide' | 'Over' | 'Push' | 'Auto';
+ export type SidebarType = 
+ /**
+ * Specifies the animation sliding while opening the sidebar.
+ */
+ 'Slide' | 
+ /**
+ * Specifies the sidebar appearing over the main content.
+ */
+ 'Over' |
+ /**
+ * Specifies the sidebar pushing the main content.
+ */
+ 'Push' |
+ /**
+ * Specifies that the sidebar opens automatically.
+ */
+ 'Auto';
+ 
 /**
  * Specifies the Sidebar positions.
  */
-export type SidebarPosition = 'Left' | 'Right';
+ export type SidebarPosition =
+ /**
+ * Sidebar positions to the Left in relation to the main content.
+ */
+ 'Left' |
+ /**
+ * Sidebar positions to the Right in relation to the main content.
+ */
+ 'Right';
 
 /**
  * Sidebar is an expandable or collapsible
@@ -353,7 +378,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private addClass(): void {
-        if (this.element.tagName === "EJS-SIDEBAR") {
+        if (this.element.tagName === 'EJS-SIDEBAR') {
             addClass([this.element], DISPLAY);
         }
         const classELement: HTMLElement = <HTMLElement>document.querySelector('.e-main-content');
@@ -370,8 +395,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.enableDock) {
             addClass([this.element], DOCKER);
         }
-        if(!isNullOrUndefined(this.tabIndex)) {
-        this.element.setAttribute('tabindex', this.tabIndex);
+        if (!isNullOrUndefined(this.tabIndex)) {
+            this.element.setAttribute('tabindex', this.tabIndex);
         }
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();

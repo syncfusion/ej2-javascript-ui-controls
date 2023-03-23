@@ -1033,7 +1033,7 @@ describe('TreeView control', () => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
                     allowDragAndDrop: true,
-					allowMultiSelection: true
+                    allowMultiSelection: true
                 },'#tree1');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {

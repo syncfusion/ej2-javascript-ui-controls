@@ -7,14 +7,14 @@ $error-elem-color: $danger !default;
 // Layout
 
 $error-elem-content: '\e77e' !default;
-$treegrid-right-arrow-icon-font-size: 18px !default;
+$treegrid-right-arrow-icon-font-size: $text-lg !default;
 $treegrid-right-arrow-icon-padding: 0 !default;
 $treegrid-right-arrow-icon-vertical-align: unset;
 $treegrid-right-arrow-icon-height: 18px !default;
 $treegrid-right-arrow-icon-width: 16px !default;
 $treegrid-bigger-icon-size: 22px !default;
 $treegrid-smaller-icon-size: 16px !default;
-$treegrid-bigger-icon-font-size: 22px !default;
+$treegrid-bigger-icon-font-size: $font-icon-22 !default;
 $treegrid-frame-bigger-icon-height: 18px !default;
 $treegrid-frame-bigger-icon-width: 18px !default;
 $treegrid-frame-icon-height: 16px !default;

@@ -109,6 +109,9 @@
   }
 
   .e-de-para-dlg-container {
+    @if $skin-name == 'Material3' {
+      padding: 8px;
+    }
     height: $de-para-dlg-height;
     width: $de-para-dlg-width;
   }

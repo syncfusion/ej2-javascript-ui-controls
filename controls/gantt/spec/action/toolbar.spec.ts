@@ -765,7 +765,7 @@ describe('Gantt toolbar support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        it('Zoom in', () => {
+        it('Zoom out', () => {
             ganttObj.zoomingLevels = customZoomingLevels;
             let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
             triggerMouseEvent(zoomIn, 'click');
@@ -773,7 +773,7 @@ describe('Gantt toolbar support', () => {
             triggerMouseEvent(zoomIn, 'click');
             triggerMouseEvent(zoomIn, 'click');
             triggerMouseEvent(zoomIn, 'click');
-            expect(document.getElementsByClassName('e-toolbar-item e-overlay')[0]['ariaDisabled']).toBe("true");
+            expect(document.getElementsByClassName('e-toolbar-item e-overlay')[0].firstElementChild['ariaDisabled']).toBe("true");
         });
     });
     describe('Perform outdent in immutable mode', () => {

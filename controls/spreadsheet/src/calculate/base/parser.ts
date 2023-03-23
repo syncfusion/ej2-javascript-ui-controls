@@ -1053,8 +1053,8 @@ export class Parser {
                 }
                 if (j > 0) {
                     if (fSubstr[id + 1] !== '{' && fSubstr[j - 1] !== '}') {
-                        fSubstr = fSubstr.substr(0, j) + '}' + fSubstr.substr(j);
-                        fSubstr = fSubstr.substr(0, id + 1) + '{' + fSubstr.substr(id + 1);
+                        fSubstr = fSubstr.substr(0, j).trim() + '}' + fSubstr.substr(j);
+                        fSubstr = fSubstr.substr(0, id + 1) + '{' + fSubstr.substr(id + 1).trim();
                     }
                 }
                 id = fSubstr.substr(0, id).lastIndexOf(this.parent.getParseArgumentSeparator());

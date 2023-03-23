@@ -83,7 +83,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#111827',
             tooltipBoldLabel: '#D1D5DB',
             tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#6B7280',
+            tooltipHeaderLine: '#6B7280'
         };
         break;
     case 'TailwindDark':
@@ -91,7 +91,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#F9FAFB',
             tooltipBoldLabel: '#6B7280',
             tooltipLightLabel: '#1F2937',
-            tooltipHeaderLine: '#9CA3AF',
+            tooltipHeaderLine: '#9CA3AF'
         };
         break;
     case 'Bootstrap5':
@@ -99,7 +99,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#212529',
             tooltipBoldLabel: '#F9FAFB',
             tooltipLightLabel: '#F9FAFB',
-            tooltipHeaderLine: '#9CA3AF',
+            tooltipHeaderLine: '#9CA3AF'
         };
         break;
     case 'Bootstrap5Dark':
@@ -107,7 +107,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#E9ECEF',
             tooltipBoldLabel: '#212529',
             tooltipLightLabel: '#212529',
-            tooltipHeaderLine: '#ADB5BD',
+            tooltipHeaderLine: '#ADB5BD'
         };
         break;
     case 'Fluent':
@@ -115,7 +115,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#FFFFFF',
             tooltipBoldLabel: '#323130',
             tooltipLightLabel: '#323130',
-            tooltipHeaderLine: '#D2D0CE',
+            tooltipHeaderLine: '#D2D0CE'
         };
         break;
     case 'FluentDark':
@@ -123,7 +123,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipFill: '#252423',
             tooltipBoldLabel: '#F3F2F1',
             tooltipLightLabel: '#F3F2F1',
-            tooltipHeaderLine: '#3B3A39',
+            tooltipHeaderLine: '#3B3A39'
         };
         break;
     default:

@@ -1,7 +1,5 @@
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * AccumulationChart base file
  */

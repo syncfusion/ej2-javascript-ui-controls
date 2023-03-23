@@ -498,6 +498,7 @@
       font-size: $card-content-font-size;
       line-height: $card-content-line-height;
       padding: $card-nrml-content-padding;
+      word-wrap: break-word;
 
       + :not(.e-card-content),
       + .e-card-actions.e-card-vertical {

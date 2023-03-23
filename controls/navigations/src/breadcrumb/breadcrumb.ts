@@ -19,7 +19,38 @@ const DOT: string = '.';
 /**
  * Defines the Breadcrumb overflow modes.
  */
-export type BreadcrumbOverflowMode = 'Hidden' | 'Collapsed' | 'Menu' | 'Wrap' | 'Scroll' | 'None';
+export enum BreadcrumbOverflowMode {
+    /**
+     * Hidden mode shows the maximum number of items possible in the container space and hides the remaining items.
+     * Clicking on a previous item will make the hidden item visible.
+     */
+    Hidden  = 'Hidden',
+
+    /**
+     * Collapsed mode shows the first and last Breadcrumb items and hides the remaining items with a collapsed icon.
+     * When the collapsed icon is clicked, all items become visible and navigable.
+     */
+    Collapsed = 'Collapsed',
+
+    /**
+     * Menu mode shows the number of Breadcrumb items that can be accommodated within the container space and creates a submenu with the remaining items.
+     */
+    Menu = 'Menu',
+
+    /**
+     * Wrap mode wraps the items to multiple lines when the Breadcrumb’s width exceeds the container space.
+     */
+    Wrap = 'Wrap',
+    /**
+     * Scroll mode shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
+     */
+    Scroll = 'Scroll',
+
+    /**
+     * None mode shows all the items in a single line.
+     */
+    None = 'None'
+}
 
 export class BreadcrumbItem extends ChildProperty<BreadcrumbItem> {
     /**
@@ -156,10 +187,12 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
      * - None: Shows all the items on a single line.
      *
-     * @default 'Menu'
+     * @isenumeration true
+     * @default BreadcrumbOverflowMode.Menu
+     * @asptype BreadcrumbOverflowMode
      */
     @Property('Menu')
-    public overflowMode: BreadcrumbOverflowMode;
+    public overflowMode: string | BreadcrumbOverflowMode;
 
     /**
      * Defines class/multiple classes separated by a space in the Breadcrumb element.

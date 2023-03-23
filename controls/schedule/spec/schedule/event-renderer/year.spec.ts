@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, TimelineViews, TimelineYear, EventRenderedArgs } from '../../../src/schedule/index';
 import { yearDataGenerator, timelineResourceData, defaultData, timelineData } from '../base/datasource.spec';
 import * as util from '../util.spec';
@@ -207,8 +207,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             ];
             const model: ScheduleModel = {
                 width: '900px', height: '800px', selectedDate: new Date(2018, 0, 1),
-                views: [{ option: 'TimelineYear' },
-                { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
+                views: [{ option: 'TimelineYear' }, { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
             };
             schObj = util.createGroupSchedule(1, model, yearData, done);
         });
@@ -218,7 +217,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
 
         it('Horizontal year checking', (done: Function) => {
-            schObj.dataBound = function () {
+            schObj.dataBound = () => {
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
                 expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
@@ -238,7 +237,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             done();
         });
         it('Vertical year checking', (done: Function) => {
-            schObj.dataBound = function () {
+            schObj.dataBound = () => {
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
                 expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
@@ -281,8 +280,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             }];
             const model: ScheduleModel = {
                 width: '900px', height: '1000px', selectedDate: new Date(2022, 0, 1),
-                views: [{ option: 'TimelineYear' },
-                { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
+                views: [{ option: 'TimelineYear' }, { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
             };
             schObj = util.createSchedule(model, yearData, done);
         });
@@ -293,7 +291,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
 
         it('Horizontal year checking', (done: Function) => {
-            schObj.dataBound = function () {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[0].childNodes.length).toEqual(0);
                 expect(schObj.element.querySelectorAll('.e-work-cells')[106].classList.contains('e-disable-dates')).toBe(true);
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_3"]'), 'click');
@@ -314,7 +312,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             done();
         });
         it('Vertical year checking', (done: Function) => {
-            schObj.dataBound = function () {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[0].childNodes.length).toEqual(0);
                 expect(schObj.element.querySelectorAll('.e-work-cells')[106].classList.contains('e-disable-dates')).toBe(true);
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_3"]'), 'click');
@@ -421,7 +419,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
 
         it('Spanned appointment checking in mobile mode', () => {
-            const spannedApp: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement
+            const spannedApp: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
             expect(spannedApp.offsetWidth).toEqual(700);
             expect(spannedApp.offsetTop).toEqual(327);
         });
@@ -792,6 +790,442 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(schObj.eventsData.length).toEqual(1);
             expect(schObj.eventsProcessed.length).toEqual(1);
             schObj.refreshEvents();
+        });
+    });
+
+    describe('EJ2-70151 - Event misalignment in timeline year view', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Bering Sea Gold',
+                StartTime: new Date(2023, 0, 10),
+                EndTime: new Date(2023, 0, 12),
+                IsAllDay: true,
+                TaskId: 1
+            }, {
+                Id: 2,
+                Subject: 'Guitar Class',
+                StartTime: new Date(2023, 0, 10),
+                EndTime: new Date(2023, 0, 11),
+                IsAllDay: false,
+                TaskId: 2
+            }, {
+                Id: 3,
+                Subject: 'Meeting',
+                StartTime: new Date(2023, 0, 11),
+                EndTime: new Date(2023, 0, 13),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 4,
+                Subject: 'Brazil - Mexico',
+                StartTime: new Date(2023, 1, 9),
+                EndTime: new Date(2023, 1, 11),
+                IsAllDay: true,
+                TaskId: 4
+            }, {
+                Id: 5,
+                Subject: 'Traveling',
+                StartTime: new Date(2023, 1, 9),
+                EndTime: new Date(2023, 1, 11),
+                IsAllDay: false,
+                TaskId: 5
+            }, {
+                Id: 6,
+                Subject: 'Maintenance',
+                StartTime: new Date(2023, 1, 10),
+                EndTime: new Date(2023, 1, 12),
+                IsAllDay: false,
+                TaskId: 1
+            }, {
+                Id: 7,
+                Subject: 'Wedding Anniversary',
+                StartTime: new Date(2023, 2, 8),
+                EndTime: new Date(2023, 2, 10),
+                IsAllDay: true,
+                TaskId: 2
+            }, {
+                Id: 8,
+                Subject: 'Farewell Celebration',
+                StartTime: new Date(2023, 2, 8),
+                EndTime: new Date(2023, 2, 10),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 9,
+                Subject: 'Birthday Celebration',
+                StartTime: new Date(2023, 2, 9),
+                EndTime: new Date(2023, 2, 11),
+                IsAllDay: false,
+                TaskId: 4
+            }, {
+                Id: 10,
+                Subject: 'Deadliest Catch',
+                StartTime: new Date(2023, 3, 4),
+                EndTime: new Date(2023, 3, 6),
+                IsAllDay: true,
+                TaskId: 5
+            }, {
+                Id: 11,
+                Subject: 'Sports Day',
+                StartTime: new Date(2023, 3, 4),
+                EndTime: new Date(2023, 3, 6),
+                IsAllDay: false,
+                TaskId: 1
+            }, {
+                Id: 12,
+                Subject: 'MoonShiners',
+                StartTime: new Date(2023, 3, 5),
+                EndTime: new Date(2023, 3, 7),
+                IsAllDay: false,
+                TaskId: 2
+            }, {
+                Id: 13,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 4, 11),
+                EndTime: new Date(2023, 4, 13),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 14,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 4, 11),
+                EndTime: new Date(2023, 4, 13),
+                IsAllDay: false,
+                TaskId: 4
+            }, {
+                Id: 15,
+                Subject: 'Opening ceremony',
+                StartTime: new Date(2023, 4, 12),
+                EndTime: new Date(2023, 4, 14),
+                IsAllDay: false,
+                TaskId: 5
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 0, 1),
+                views: [{ option: 'TimelineYear' }, { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }],
+                height: '100%', width: '100%',
+                rowAutoHeight: true,
+                resources: [
+                    {
+                        field: 'TaskId', title: 'Category',
+                        name: 'Categories',
+                        dataSource: [
+                            { text: 'Nancy', id: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, color: '#7fa900' },
+                            { text: 'Robert', id: 3, color: '#ea7a57' },
+                            { text: 'Smith', id: 4, color: '#5978ee' },
+                            { text: 'Michael', id: 5, color: '#df5286' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }
+                ],
+                eventSettings: { dataSource: sampleData },
+                dataBound: () => {
+                    util.disableScheduleAnimation(schObj);
+                    done();
+                }
+            };
+            const parentElement: HTMLElement = createElement('div', { id: 'ScheduleParent', styles: 'height: 1297px' });
+            const schEle: HTMLElement = createElement('div', { id: 'Schedule' });
+            parentElement.appendChild(schEle);
+            schObj = new Schedule(model, schEle);
+            document.body.appendChild(parentElement);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('ScheduleParent'));
+        });
+        it('checking events misalignment based on cell height and appointment top position', () => {
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElements[11].offsetTop).toEqual(407);
+            expect(eventElements[3].offsetTop).toEqual(139);
+            expect(eventElements[6].offsetTop).toEqual(251);
+            expect(eventElements[14].offsetTop).toEqual(519);
+        });
+        it('checking events misalignment based on cell height and appointment top position in vertical orientation', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElements[0].offsetTop).toEqual(702);
+                expect(eventElements[10].offsetTop).toEqual(836);
+                expect(eventElements[19].offsetTop).toEqual(926);
+                expect(eventElements[28].offsetTop).toEqual(1128);
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-views')[1] as HTMLElement).click();
+        });
+    });
+    describe('EJ2-70151 - Event misalignment in timeline year view with resources', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Bering Sea Gold',
+                StartTime: new Date(2023, 0, 10),
+                EndTime: new Date(2023, 0, 12),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 2,
+                Subject: 'Guitar Class',
+                StartTime: new Date(2023, 0, 10),
+                EndTime: new Date(2023, 0, 11),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 3,
+                Subject: 'Meeting',
+                StartTime: new Date(2023, 0, 11),
+                EndTime: new Date(2023, 0, 13),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 4,
+                Subject: 'Brazil - Mexico',
+                StartTime: new Date(2023, 1, 9),
+                EndTime: new Date(2023, 1, 11),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 5,
+                Subject: 'Traveling',
+                StartTime: new Date(2023, 1, 9),
+                EndTime: new Date(2023, 1, 11),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 6,
+                Subject: 'Maintenance',
+                StartTime: new Date(2023, 1, 10),
+                EndTime: new Date(2023, 1, 12),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 7,
+                Subject: 'Wedding Anniversary',
+                StartTime: new Date(2023, 2, 8),
+                EndTime: new Date(2023, 2, 10),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 8,
+                Subject: 'Farewell Celebration',
+                StartTime: new Date(2023, 2, 8),
+                EndTime: new Date(2023, 2, 10),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 9,
+                Subject: 'Birthday Celebration',
+                StartTime: new Date(2023, 2, 9),
+                EndTime: new Date(2023, 2, 11),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 10,
+                Subject: 'Deadliest Catch',
+                StartTime: new Date(2023, 3, 4),
+                EndTime: new Date(2023, 3, 6),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 11,
+                Subject: 'Sports Day',
+                StartTime: new Date(2023, 3, 4),
+                EndTime: new Date(2023, 3, 6),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 12,
+                Subject: 'MoonShiners',
+                StartTime: new Date(2023, 3, 5),
+                EndTime: new Date(2023, 3, 7),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 13,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 4, 11),
+                EndTime: new Date(2023, 4, 13),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 14,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 4, 11),
+                EndTime: new Date(2023, 4, 13),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 15,
+                Subject: 'Opening ceremony',
+                StartTime: new Date(2023, 4, 12),
+                EndTime: new Date(2023, 4, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 16,
+                Subject: 'Alaska: The Last Frontier',
+                StartTime: new Date(2023, 4, 12),
+                EndTime: new Date(2023, 4, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 17,
+                Subject: 'Close Encounters',
+                StartTime: new Date(2023, 5, 12),
+                EndTime: new Date(2023, 5, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 18,
+                Subject: 'Basketball Practice',
+                StartTime: new Date(2023, 5, 12),
+                EndTime: new Date(2023, 5, 14),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 19,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 5, 12),
+                EndTime: new Date(2023, 5, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 19,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 5, 12),
+                EndTime: new Date(2023, 5, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 20,
+                Subject: 'Basketball Practice',
+                StartTime: new Date(2023, 3, 12),
+                EndTime: new Date(2023, 3, 14),
+                IsAllDay: true,
+                TaskId: 3
+            }, {
+                Id: 21,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 3, 12),
+                EndTime: new Date(2023, 3, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 22,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 3, 12),
+                EndTime: new Date(2023, 3, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 23,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 2, 12),
+                EndTime: new Date(2023, 2, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 24,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 2, 12),
+                EndTime: new Date(2023, 2, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 25,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 1, 12),
+                EndTime: new Date(2023, 1, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 26,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 1, 12),
+                EndTime: new Date(2023, 1, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 27,
+                Subject: 'Rugby Match',
+                StartTime: new Date(2023, 0, 12),
+                EndTime: new Date(2023, 0, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 28,
+                Subject: 'Daily Planet',
+                StartTime: new Date(2023, 0, 12),
+                EndTime: new Date(2023, 0, 14),
+                IsAllDay: false,
+                TaskId: 3
+            }, {
+                Id: 29,
+                Subject: 'Basketball Practice',
+                StartTime: new Date(2023, 0, 12),
+                EndTime: new Date(2023, 0, 14),
+                IsAllDay: true,
+                TaskId: 4
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 0, 1),
+                views: [{ option: 'TimelineYear' }],
+                height: '100%', width: '100%',
+                rowAutoHeight: true,
+                group: {
+                    resources: ['Categories']
+                },
+                resources: [
+                    {
+                        field: 'TaskId', title: 'Category',
+                        name: 'Categories',
+                        dataSource: [
+                            { text: 'Nancy', id: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, color: '#7fa900' },
+                            { text: 'Robert', id: 3, color: '#ea7a57' },
+                            { text: 'Smith', id: 4, color: '#5978ee' },
+                            { text: 'Michael', id: 5, color: '#df5286' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }
+                ],
+                dataBound: () => {
+                    util.disableScheduleAnimation(schObj);
+                    done();
+                }
+            };
+            const parentElement: HTMLElement = createElement('div', { id: 'ScheduleParent', styles: 'height: 1297px; width: 1250px;' });
+            const schEle: HTMLElement = createElement('div', { id: 'Schedule' });
+            parentElement.appendChild(schEle);
+            schObj = new Schedule(model, schEle);
+            document.body.appendChild(parentElement);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('ScheduleParent'));
+        });
+        it('Checking  vertical scrollbar presence with rowAutoHeight in horizontal orientation', () => {
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(conWrap.offsetWidth > conWrap.clientWidth).toBeFalsy();
+        });
+        it('Checking rowAutoHeight with dynamic adding of vertical scrollbar in horizontal orientation', () => {
+            schObj.dataBound = () => {
+                const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                expect(eventElements[5].offsetLeft).toEqual(workCells[3].offsetLeft);
+                expect(eventElements[5].offsetWidth).toEqual(workCells[3].offsetWidth);
+                expect(eventElements[7].offsetLeft).toEqual(workCells[7].offsetLeft);
+                expect(eventElements[7].offsetWidth).toEqual(workCells[7].offsetWidth);
+            };
+            schObj.eventSettings.dataSource = sampleData;
+            schObj.dataBind();
         });
     });
 

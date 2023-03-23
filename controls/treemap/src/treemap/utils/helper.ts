@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
-import { createElement, compile, merge, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { createElement, compile, merge, isNullOrUndefined, remove, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Alignment, LabelPosition } from '../utils/enum';
 import { TreeMap } from '../treemap';
 import { IShapes } from '../model/interface';
 import { ExportType } from '../utils/enum';
 /**
- * Create the class for size
+ * Specifies the size parameters.
  */
 export class Size {
     /**
-     * height of the size
+     * Defines the height in the size object.
      */
     public height: number;
     /**
-     * width of the size
+     * Defines the width in the size object.
      */
     public width: number;
     constructor(width: number, height: number) {
@@ -123,7 +123,7 @@ export function measureText(text: string, font: FontModel): Size {
         measureObject = createElement('text', { id: 'treeMapMeasureText' });
         document.body.appendChild(measureObject);
     }
-    measureObject.innerHTML = text;
+    measureObject.innerHTML = SanitizeHtmlHelper.sanitize(text);
     measureObject.style.position = 'absolute';
     measureObject.style.fontSize = font.size;
     measureObject.style.fontWeight = font.fontWeight;
@@ -197,16 +197,16 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
 }
 
 /**
- * Map internal class for Point
+ * Specifies the location parameters.
  */
 
 export class Location {
     /**
-     * To calculate x value for location
+     * Defines the horizontal position.
      */
     public x: number;
     /**
-     * To calculate y value for location
+     * Defines the vertical position.
      */
     public y: number;
     constructor(x: number, y: number) {
@@ -223,6 +223,7 @@ export class Location {
  * @param {Size} textSize - Specifies the size of the text.
  * @param {type} type - Specifies whether the provided text is title or subtitle.
  * @returns {Location} - Returns the location of text.
+ * @private
  */
 export function findPosition(location: Rect, alignment: Alignment, textSize: Size, type: string): Location {
     let x: number;
@@ -898,6 +899,7 @@ export function textWrap(maxWidth: number, label: string, font: FontModel): stri
  * @param {string} text - Specifies the text.
  * @param {FontModel} font - Specifies the font.
  * @returns {string} - Returns the hidden text.
+ * @private
  */
 export function hide(maxWidth: number, maxHeight: number, text: string, font: FontModel): string {
     let hideText: string = text;
@@ -1229,18 +1231,18 @@ export function isParentItem(data: any[], item: any): boolean {
     return isParentItem;
 }
 /**
- * Ajax support for treemap
+ * Specifies the data to be received through Ajax request for treemap.
  */
 export class TreeMapAjax {
-    /** options for data */
+    /** Defines the options for the data for treemap. */
     public dataOptions: string | any;
-    /** type of data */
+    /** Defines the type of the data. */
     public type: string;
-    /** async value */
+    /** Specifies whether the request is asynchronous or not. */
     public async: boolean;
-    /** type of the content */
+    /** Defines the type of the content. */
     public contentType: string;
-    /** sending data */
+    /** Defines the data to be sent through the request. */
     public sendData: string | any;
     constructor(options: string | any, type?: string, async?: boolean, contentType?: string, sendData?: string | any) {
         this.dataOptions = options;
@@ -1364,6 +1366,7 @@ export function pushCollection(
  * @param {string} url - Specifies the url
  * @param {boolean} isDownload - Specifies the boolean value
  * @returns {void}
+ * @private
  */
 export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
     createElement('a', {

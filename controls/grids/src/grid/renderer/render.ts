@@ -59,7 +59,6 @@ export class Render {
      * @hidden
      */
     public vgenerator: VirtualRowModelGenerator;
-
     /**
      * Constructor for render module
      *
@@ -326,7 +325,7 @@ export class Render {
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow', attrs: { role: 'row' } });
+        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
             attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }
@@ -516,6 +515,9 @@ export class Render {
                         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
                         this.parent.trigger(events.actionComplete, args);
                     }
+                }
+                if (this.parent.autoFit) {
+                    this.parent.preventAdjustColumns();
                 }
                 this.parent.hideSpinner();
             }

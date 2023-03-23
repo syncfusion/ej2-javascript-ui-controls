@@ -99,9 +99,9 @@ export class ErrorCorrectionCodewords {
     constructor(version: QRCodeVersion, correctionLevel: ErrorCorrectionLevel) {
         this.mQrBarcodeValues = new PdfQRBarcodeValues(version, correctionLevel);
         let variable: string = 'DataCapacity';
-        this.mLength = this.mQrBarcodeValues[variable];
+        this.mLength = this.mQrBarcodeValues[`${variable}`];
         variable = 'NumberOfErrorCorrectingCodeWords';
-        this.eccw = this.mQrBarcodeValues[variable];
+        this.eccw = this.mQrBarcodeValues[`${variable}`];
     }
 
 
@@ -181,7 +181,7 @@ export class ErrorCorrectionCodewords {
      */
     private toDecimal(inString: string[]): void {
         for (let i: number = 0; i < inString.length; i++) {
-            this.decimalValue[i] = parseInt(inString[i], 2);
+            this.decimalValue[parseInt(i.toString(), 10)] = parseInt(inString[parseInt(i.toString(), 10)], 2);
         }
     }
 
@@ -197,13 +197,13 @@ export class ErrorCorrectionCodewords {
         const toBinary: string[] = [];
         for (let i: number = 0; i < this.eccw; i++) {
             let str: string = '';
-            const temp: string = decimalRepresentation[i].toString(2);
+            const temp: string = decimalRepresentation[parseInt(i.toString(), 10)].toString(2);
             if (temp.length < 8) {
                 for (let j: number = 0; j < 8 - temp.length; j++) {
                     str += '0';
                 }
             }
-            toBinary[i] = str + temp;
+            toBinary[parseInt(i.toString(), 10)] = str + temp;
         }
         return toBinary;
     }
@@ -218,16 +218,16 @@ export class ErrorCorrectionCodewords {
     private divide(): number[] {
         let messagePolynom: { [key: number]: number } = {};
         for (let i: number = 0; i < this.decimalValue.length; i++) {
-            messagePolynom[this.decimalValue.length - 1 - i] = this.decimalValue[i];
+            messagePolynom[this.decimalValue.length - 1 - i] = this.decimalValue[parseInt(i.toString(), 10)];
         }
 
         let generatorPolynom: { [key: number]: number } = {};
         for (let i: number = 0; i < this.gx.length; i++) {
-            generatorPolynom[this.gx.length - 1 - i] = this.findElement(this.gx[i], this.alpha);
+            generatorPolynom[this.gx.length - 1 - i] = this.findElement(this.gx[parseInt(i.toString(), 10)], this.alpha);
         }
         let tempMessagePolynom: { [key: number]: number } = {};
         for (const poly of Object.keys(messagePolynom)) {
-            tempMessagePolynom[Number(poly) + this.eccw] = messagePolynom[poly];
+            tempMessagePolynom[Number(poly) + this.eccw] = messagePolynom[`${poly}`];
         }
         messagePolynom = tempMessagePolynom;
 
@@ -235,16 +235,16 @@ export class ErrorCorrectionCodewords {
 
         tempMessagePolynom = {};
         for (const poly of Object.keys(generatorPolynom)) {
-            tempMessagePolynom[Number(poly) + genLeadtermFactor] = generatorPolynom[poly];
+            tempMessagePolynom[Number(poly) + genLeadtermFactor] = generatorPolynom[`${poly}`];
         }
         generatorPolynom = tempMessagePolynom;
 
         let leadTermSource: { [key: number]: number } = messagePolynom;
         for (let i: number = 0; i < Object.keys(messagePolynom).length; i++) {
             const largestExponent: number = this.findLargestExponent(leadTermSource);
-            if (leadTermSource[largestExponent] === 0) {
+            if (leadTermSource[parseInt(largestExponent.toString(), 10)] === 0) {
                 // First coefficient is already 0, simply remove it and continue
-                delete leadTermSource[largestExponent];
+                delete leadTermSource[parseInt(largestExponent.toString(), 10)];
             } else {
                 const alphaNotation: { [key: number]: number } = this.convertToAlphaNotation(leadTermSource);
                 let resPoly: { [key: number]: number } = this.multiplyGeneratorPolynomByLeadterm(
@@ -259,7 +259,7 @@ export class ErrorCorrectionCodewords {
         this.eccw = Object.keys(leadTermSource).length;
         const returnValue: number[] = [];
         for (const temp of Object.keys(leadTermSource)) {
-            returnValue.push(leadTermSource[temp]);
+            returnValue.push(leadTermSource[`${temp}`]);
         }
         return returnValue.reverse();
     }
@@ -281,12 +281,12 @@ export class ErrorCorrectionCodewords {
         const shortPolyExponent: number = this.findLargestExponent(shortPoly);
         let i: number = Object.keys(longPoly).length - 1;
         for (const longPolySingle of Object.keys(longPoly)) {
-            resultPolynom[messagePolyExponent - i] = longPoly[longPolySingle] ^ (Object.keys(shortPoly).length > i ?
+            resultPolynom[messagePolyExponent - i] = longPoly[`${longPolySingle}`] ^ (Object.keys(shortPoly).length > i ?
                 shortPoly[shortPolyExponent - i] : 0);
             i--;
         }
         const resultPolyExponent: number = this.findLargestExponent(resultPolynom);
-        delete resultPolynom[resultPolyExponent];
+        delete resultPolynom[parseInt(resultPolyExponent.toString(), 10)];
         return resultPolynom;
     }
     private multiplyGeneratorPolynomByLeadterm(
@@ -294,7 +294,7 @@ export class ErrorCorrectionCodewords {
         const tempPolynom: { [key: number]: number } = {};
 
         for (const treeNode of Object.keys(genPolynom)) {
-            tempPolynom[Number(treeNode) - lowerExponentBy] = (genPolynom[treeNode] + leadTermCoefficient) % 255;
+            tempPolynom[Number(treeNode) - lowerExponentBy] = (genPolynom[`${treeNode}`] + leadTermCoefficient) % 255;
         }
         return tempPolynom;
     }
@@ -302,7 +302,7 @@ export class ErrorCorrectionCodewords {
     private convertToDecNotation(poly: { [key: number]: number }): { [key: number]: number } {
         const tempPolynom: { [key: number]: number } = {};
         for (const treeNode of Object.keys(poly)) {
-            tempPolynom[treeNode] = this.getIntValFromAlphaExp(poly[treeNode], this.alpha);
+            tempPolynom[`${treeNode}`] = this.getIntValFromAlphaExp(poly[`${treeNode}`], this.alpha);
         }
         return tempPolynom;
     }
@@ -310,8 +310,8 @@ export class ErrorCorrectionCodewords {
     private convertToAlphaNotation(polynom: { [key: number]: number }): { [key: number]: number } {
         const tempPolynom: { [key: number]: number } = {};
         for (const poly of Object.keys(polynom)) {
-            if (polynom[poly] !== 0) {
-                tempPolynom[poly] = this.findElement(polynom[poly], this.alpha);
+            if (polynom[`${poly}`] !== 0) {
+                tempPolynom[`${poly}`] = this.findElement(polynom[`${poly}`], this.alpha);
             }
         }
         return tempPolynom;
@@ -331,7 +331,7 @@ export class ErrorCorrectionCodewords {
         if (element > 255) {
             element = element - 255;
         }
-        return alpha[element];
+        return alpha[parseInt(element.toString(), 10)];
     }
 
 
@@ -347,7 +347,7 @@ export class ErrorCorrectionCodewords {
     private findElement(element: number, alpha: number[]): number {
         let j: number;
         for (j = 0; j < alpha.length; j++) {
-            if (element === alpha[j]) { break; }
+            if (element === alpha[parseInt(j.toString(), 10)]) { break; }
         }
         return j;
     }
@@ -366,10 +366,10 @@ export class ErrorCorrectionCodewords {
     private getElement(element: number[], alpha: number[]): number[] {
         const gx: number[] = [element.length];
         for (let i: number = 0; i < element.length; i++) {
-            if (element[i] > 255) {
-                element[i] = element[i] - 255;
+            if (element[parseInt(i.toString(), 10)] > 255) {
+                element[parseInt(i.toString(), 10)] = element[parseInt(i.toString(), 10)] - 255;
             }
-            gx[i] = alpha[element[i]];
+            gx[parseInt(i.toString(), 10)] = alpha[element[parseInt(i.toString(), 10)]];
         }
         return gx;
     }

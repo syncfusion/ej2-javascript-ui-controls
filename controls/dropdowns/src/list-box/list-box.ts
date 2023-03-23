@@ -13,15 +13,27 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 /**
- * Defines the selection mode of List Box.
+ * Defines the selection mode in ListBox component.
+ * ```props
+ * Multiple :- Specifies that the ListBox should allow multiple item selection.
+ * Single :- Specifies that the ListBox should allow single item selection.
+ * ```
  */
 export type SelectionMode = 'Multiple' | 'Single';
 /**
- * Defines the toolbar position of List Box.
+ * Defines the position of the toolbar in ListBox component.
+ * ```props
+ * Left :- Specifies that the toolbar should be positioned to the left of the ListBox.
+ * Right :- Specifies that the toolbar should be positioned to the right of the ListBox.
+ * ```
  */
 export type ToolBarPosition = 'Left' | 'Right';
 /**
- * Defines the checkbox position of List Box.
+ * Defines the position of the checkbox in ListBox component.
+ * ```props
+ * Left :- Specifies that the checkbox should be positioned to the left of the ListBox.
+ * Right :- Specifies that the checkbox should be positioned to the right of the ListBox.
+ * ```
  */
 export type CheckBoxPosition = 'Left' | 'Right';
 
@@ -575,7 +587,7 @@ export class ListBox extends DropDownBase {
     private setCssClass(): void {
         const wrap: Element = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
         if (this.cssClass) {
-            addClass([wrap], this.cssClass.split(' '));
+            addClass([wrap], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.enableRtl) {
             addClass([this.list], 'e-rtl');
@@ -2175,7 +2187,7 @@ export class ListBox extends DropDownBase {
                     text = value;
                 }
                 if (typeof(text) === 'string') {
-                    text = text.split("\\").join("\\\\");
+                    text = text.split('\\').join('\\\\');
                 }
                 li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
@@ -2378,7 +2390,7 @@ export class ListBox extends DropDownBase {
                     removeClass([wrap], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([wrap], newProp.cssClass.split(' '));
+                    addClass([wrap], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':

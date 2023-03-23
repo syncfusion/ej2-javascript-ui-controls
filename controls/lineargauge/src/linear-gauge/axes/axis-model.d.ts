@@ -7,6 +7,8 @@ export interface LineModel {
 
     /**
      * Sets and gets the dash-array of the axis line.
+     * 
+     * @default ''
      */
 
     dashArray?: string;
@@ -15,6 +17,7 @@ export interface LineModel {
      * Sets and gets the height of the axis line.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     height?: number;
 
@@ -27,12 +30,15 @@ export interface LineModel {
 
     /**
      * Sets and gets the color for the axis line.
+     * 
+     * @default null
      */
     color?: string;
 
     /**
-     * Sets and gets the offset to position the axis line in linear gauge.
+     * Sets and gets the offset value from where the axis line must be placed in linear gauge.
      *
+     * @default 0
      */
     offset?: number;
 
@@ -50,7 +56,7 @@ export interface LabelModel {
     font?: FontModel;
 
     /**
-     * Enables or disables the color of the label to use the color of the ranges in linear gauge.
+     * Enables or disables to use the color of the ranges in the labels of the linear gauge.
      *
      * @default false
      */
@@ -60,12 +66,14 @@ export interface LabelModel {
     /**
      * Sets and gets the format for the axis label. This property accepts any global format string like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
+     * 
+     * @default ''
      */
 
     format?: string;
 
     /**
-     * Sets and gets the value to position the axis labels in linear gauge.
+     * Sets and gets the offset value from where the labels must be placed from the axis in linear gauge.
      *
      * @default 0
      */
@@ -123,32 +131,34 @@ export interface RangeModel {
 
     /**
      * Sets and gets the color of the axis range.
+     * 
+     * @default ''
      */
     color?: string;
 
     /**
-     * Sets and gets the width of the start of the range in axis.
+     * Sets and gets the width for the start of the range in axis.
      *
      * @default 10
      */
     startWidth?: number;
 
     /**
-     * Sets and gets the width of the end of the range in axis.
+     * Sets and gets the width for the end of the range in axis.
      *
      * @default 10
      */
     endWidth?: number;
 
     /**
-     * Sets and gets the value to position the range in the axis.
+     * Sets and gets the offset value from where the range must be placed from the axis in linear gauge.
      *
      * @default '0'
      */
     offset?: number | string;
 
     /**
-     * Sets and gets the options to customize the color and width of the border for the axis range.
+     * Sets and gets the options to customize the style properties of the border for the axis range.
      */
     border?: BorderModel;
 
@@ -160,13 +170,12 @@ export interface RangeModel {
 export interface TickModel {
 
     /**
-     * Sets and gets the height of the tick line in the axis.
+     * Sets and gets the height of the tick line in the axis. The default value is 20 for major ticks and 10 for minor ticks.
      */
     height?: number;
 
     /**
-     * Sets and gets the width of the tick line in the axis.
-     *
+     * Sets and gets the width of the tick line in the axis. The default value is 2 for major ticks and 1 for minor ticks.
      * @default 2
      */
     width?: number;
@@ -175,20 +184,24 @@ export interface TickModel {
      * Sets and gets the gap between the ticks in the axis.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     interval?: number;
 
     /**
      * Sets and gets the color for the major or minor tick line. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
+     * 
+     * @default null
      */
 
     color?: string;
 
     /**
-     * Sets and gets the value to move the ticks from the axis.
+     * Sets and gets the offset value from where the ticks must be placed from the axis in linear gauge.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     offset?: number;
 
@@ -207,7 +220,7 @@ export interface TickModel {
 export interface PointerModel {
 
     /**
-     * Sets and gets the type of pointer in axis.
+     * Sets and gets the type of pointer in axis. There are two types of pointers: Marker and Bar.
      *
      * @default Marker
      */
@@ -244,14 +257,14 @@ export interface PointerModel {
     markerType?: MarkerType;
 
     /**
-     * Sets and gets the URL path for the image in marker when the marker type is chosen as image.
+     * Sets and gets the URL path for the image in marker when the marker type is set as image.
      *
      * @default null
      */
     imageUrl?: string;
 
     /**
-     * Sets and gets the options to optimize the color and width of the border for pointers.
+     * Sets and gets the options to customize the style properties of the border for pointers.
      */
     border?: BorderModel;
 
@@ -285,6 +298,8 @@ export interface PointerModel {
 
     /**
      * Sets and gets the color of the pointer.
+     * 
+     * @default null
      */
     color?: string;
 
@@ -303,7 +318,7 @@ export interface PointerModel {
     animationDuration?: number;
 
     /**
-     * Enables or disables the drag movement of pointer.
+     * Enables or disables the drag movement of pointer to update the pointer value.
      *
      * @default false
      */
@@ -355,23 +370,29 @@ export interface AxisModel {
 
     /**
      * Enables or disables the inversed axis.
+     * 
+     * @default false
      */
 
     isInversed?: boolean;
 
     /**
      * Shows or hides the last label in the axis of the linear gauge.
+     * 
+     * @default false
      */
 
     showLastLabel?: boolean;
 
     /**
      * Enables or disables the opposed position of the axis in the linear gauge.
+     * 
+     * @default false
      */
     opposedPosition?: boolean;
 
     /**
-     * Sets and gets the options for customizing the axis line.
+     * Sets and gets the options for customizing the appearance of the axis line.
      */
     line?: LineModel;
 

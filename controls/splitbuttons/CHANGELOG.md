@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
+## 20.4.50 (2023-02-14)
+
+### SplitButton
+
+#### Bug Fixes
+
+- `#I434642` - Issue in Script error thrown when we add items in before open event with enable createPopupOnClick property has been resolved.
 
 ### DropDownButton
 
@@ -10,25 +16,12 @@
 
 - `#I436217` - Issue in dynamically change cssClass with "e-vertical" class in DropDownButton has been resolved.
 
-## 20.4.48 (2023-02-01)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- `#I428125` - DropDownButton items selection overlay getting darker for multiple clicking has been resolved.
-- `#I428636` - DropDownButton control throws errors when changing multiple properties together using setProperties method has been resolved.
-
-## 20.4.40 (2022-12-28)
-
 ### DropDownButton
 
 #### Bug Fixes
 
 - `#F31632` - Accessibility issue in DropDownButton has been resolved.
 - `#I422250` - Keyboard navigation not working properly when we set arguments cancel property as true in `beforeClose` event of DropDownButton has been resolved.
-
-## 20.4.38 (2022-12-21)
 
 ### DropDownButton
 

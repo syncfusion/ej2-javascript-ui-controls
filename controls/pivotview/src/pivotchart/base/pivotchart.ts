@@ -19,7 +19,7 @@ import {
     RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
     DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs
 } from '../../common';
-import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
+import { DrillOptionsModel } from '../../model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
 import { OlapEngine, ITupInfo, IDrillInfo } from '../../base/olap/engine';
 import { SummaryTypes } from '../../base/types';
@@ -169,7 +169,7 @@ export class PivotChart {
         }
         this.columnGroupObject = {};
         this.accEmptyPoint = false;
-        const pivotValues: IPivotValues = this.engineModule.pivotValues;
+        const pivotValues: IAxisSet[][] = this.engineModule.pivotValues;
         this.currentMeasure = (chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ? this.measureList[0] :
             (((chartSettings.value === '' || this.dataSourceSettings.values.filter((item: IFieldOptions) => {
                 return item.name === chartSettings.value;
@@ -1001,7 +1001,7 @@ export class PivotChart {
 
     /** @hidden */
 
-    public getColumnTotalIndex(pivotValues: IPivotValues): INumberIndex {
+    public getColumnTotalIndex(pivotValues: IAxisSet[][]): INumberIndex {
         const colIndexColl: INumberIndex = {};
         const rKeys: string[] = Object.keys(pivotValues);
         for (const rowIndex of rKeys) {

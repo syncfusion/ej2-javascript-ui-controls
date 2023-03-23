@@ -17,6 +17,7 @@ export class IsFormatted {
         'code',
         'dfn',
         'em',
+        'font',
         'i',
         'kbd',
         'label',

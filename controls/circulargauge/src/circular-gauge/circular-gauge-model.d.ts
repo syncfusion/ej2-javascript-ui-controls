@@ -25,7 +25,7 @@ export interface CircularGaugeModel extends ComponentModel{
     height?: string;
 
     /**
-     * Sets and gets the options for customizing the color and width of the gauge border.
+     * Sets and gets the options for customizing the style properties of the gauge border.
      */
     border?: BorderModel;
 
@@ -99,7 +99,7 @@ export interface CircularGaugeModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
-     * Sets and gets the X coordinate of the circular gauge.
+     * Sets and gets the X coordinate of the center of the circular gauge.
      *
      * @default null
      */
@@ -107,7 +107,7 @@ export interface CircularGaugeModel extends ComponentModel{
     centerX?: string;
 
     /**
-     * Sets and gets the Y coordinate of the circular gauge.
+     * Sets and gets the Y coordinate of the center of the circular gauge.
      *
      * @default null
      */
@@ -115,14 +115,14 @@ export interface CircularGaugeModel extends ComponentModel{
     centerY?: string;
 
     /**
-     * Enables and disables to place the half or quarter circle in center position, if values not specified for centerX and centerY.
+     * Enables and disables placing the half or quarter circle in center, if `centerX` and `centerY` properties are not specified.
      *
      * @default false
      */
     moveToCenter?: boolean;
 
     /**
-     * Sets and gets the themes supported for circular gauge.
+     * Sets and gets the theme styles supported for circular gauge. When the theme is set, the styles associated with the theme will be set in the gauge.
      *
      * @default Material
      */
@@ -150,7 +150,7 @@ export interface CircularGaugeModel extends ComponentModel{
     tabIndex?: number;
 
     /**
-     * Enables and disables left, right, top and bottom spacing in the circular gauge.
+     * Enables or disables the ability of the gauge to be rendered to the complete width. The left, right, top and bottom spacing will not be considered in the gauge when this property is disabled.
      *
      * @default true
      */
@@ -267,7 +267,7 @@ export interface CircularGaugeModel extends ComponentModel{
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers on mouse up.
+     * Triggers when mouse up action is performed over the circular gauge.
      *
      * @event gaugeMouseUp
      */
@@ -275,7 +275,7 @@ export interface CircularGaugeModel extends ComponentModel{
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers after window resize.
+     * Triggers to notify the resize of the circular gauge when the window is resized.
      *
      * @event resized
      */

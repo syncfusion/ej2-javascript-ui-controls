@@ -38,7 +38,7 @@ import { Print } from './model/print';
 import { Gradient } from './axes/gradient';
 
 /**
- * Represents the circular gauge control.
+ * Represents the circular gauge control. This is used to customize the properties of the circular gauge to visualize the data in circular scale.
  * ```html
  * <div id="gauge"/>
  * <script>
@@ -54,6 +54,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Sets and gets the module that is used to add annotation in the circular gauge.
+     * 
+     * @private
      */
     public annotationsModule: Annotations;
 
@@ -80,11 +82,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Sets and gets the module that is used to show the tooltip in the circular gauge.
+     * 
+     * @private
      */
     public tooltipModule: GaugeTooltip;
 
     /**
      * Sets and gets the module that is used to manipulate and add legend to the circular gauge.
+     * 
+     * @private
      */
     public legendModule: Legend;
 
@@ -116,7 +122,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public height: string;
 
     /**
-     * Sets and gets the options for customizing the color and width of the gauge border.
+     * Sets and gets the options for customizing the style properties of the gauge border.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
     public border: BorderModel;
@@ -206,7 +212,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public allowPdfExport: boolean;
 
     /**
-     * Sets and gets the X coordinate of the circular gauge.
+     * Sets and gets the X coordinate of the center of the circular gauge.
      *
      * @default null
      */
@@ -215,7 +221,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public centerX: string;
 
     /**
-     * Sets and gets the Y coordinate of the circular gauge.
+     * Sets and gets the Y coordinate of the center of the circular gauge.
      *
      * @default null
      */
@@ -224,7 +230,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public centerY: string;
 
     /**
-     * Enables and disables to place the half or quarter circle in center position, if values not specified for centerX and centerY.
+     * Enables and disables placing the half or quarter circle in center, if `centerX` and `centerY` properties are not specified.
      *
      * @default false
      */
@@ -232,7 +238,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public moveToCenter: boolean;
 
     /**
-     * Sets and gets the themes supported for circular gauge.
+     * Sets and gets the theme styles supported for circular gauge. When the theme is set, the styles associated with the theme will be set in the gauge.
      *
      * @default Material
      */
@@ -264,7 +270,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public tabIndex: number;
 
     /**
-     * Enables and disables left, right, top and bottom spacing in the circular gauge.
+     * Enables or disables the ability of the gauge to be rendered to the complete width. The left, right, top and bottom spacing will not be considered in the gauge when this property is disabled.
      *
      * @default true
      */
@@ -399,7 +405,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public gaugeMouseDown: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers on mouse up.
+     * Triggers when mouse up action is performed over the circular gauge.
      *
      * @event gaugeMouseUp
      */
@@ -408,7 +414,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public gaugeMouseUp: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers after window resize.
+     * Triggers to notify the resize of the circular gauge when the window is resized.
      *
      * @event resized
      */
@@ -1387,9 +1393,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      *
      * @param {ExportType} type - Specifies the type of the export.
      * @param {string} fileName - Specifies the file name for the exported file.
-     * @param {PdfPageOrientation}  orientation - Specified the orientation for the exported pdf document.
+     * @param {PdfPageOrientation}  orientation - Specifies the orientation for the exported PDF document.
      * @param {boolean} allowDownload - Specifies whether to download as a file.
-     * @returns {string} - Specifies the base64 string of the exported image which is returned when the allowDownload is set to false.
+     * @returns {Promise<string>} - Specifies the base64 string of the exported image which is returned when the allowDownload is set to false.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
         if (isNullOrUndefined(allowDownload)) {
@@ -1441,7 +1447,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @param {number} axisIndex - Specifies the index value for the axis in circular gauge.
      * @param {number} rangeIndex - Specifies the index value for the range in circular gauge.
      * @param {number} start - Specifies the start value for the current range in circular gauge.
-     * @param {number} end - Specifies the end value for the current range i circular gauge.
+     * @param {number} end - Specifies the end value for the current range in circular gauge.
      */
     public setRangeValue(axisIndex: number, rangeIndex: number, start: number, end: number): void {
         const element: Element = getElement(
@@ -1511,7 +1517,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     }
 
     /**
-     * To destroy the widget
+     * This method destroys the circular gauge. This method removes the events associated with the circular gauge and disposes the objects created for rendering and updating the circular gauge.
      *
      * @method destroy
      * @return {void}

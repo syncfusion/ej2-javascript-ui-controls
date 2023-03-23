@@ -76,7 +76,6 @@ export class Open {
         const impArgs: OpenOptions = {
             file: filesData
         };
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         this.parent.open(impArgs);
         (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
     }
@@ -93,7 +92,6 @@ export class Open {
         const openCancelFn: Function = (action: string): void => {
             (this.parent.serviceLocator.getService(dialog) as Dialog).hide(true);
             const file: File = new File([], response.guid, { type: action.toLowerCase() });
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.parent.open(
                 <OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password, orginalFile: response.eventArgs.file });
         };
@@ -104,16 +102,12 @@ export class Open {
                     this.parent.notify(importProtectWorkbook, response.eventArgs);
                 }
             } else if (openError[3] === response.data) {
-                const alertSpan: Element = this.parent.createElement('span', {
-                    className: 'e-importprotectpwd-alert-span',
-                    innerHTML: l10n.getConstant('IncorrectPassword')
-                });
+                const alertSpan: HTMLElement = this.parent.createElement('span', { className: 'e-importprotectpwd-alert-span' });
+                alertSpan.innerText = l10n.getConstant('IncorrectPassword');
                 (this.parent.element.querySelector('.e-importprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
             } else if (openError[4] === response.data) {
-                const alertSpan: Element = this.parent.createElement('span', {
-                    className: 'e-unprotectsheetpwd-alert-span',
-                    innerHTML: l10n.getConstant('IncorrectPassword')
-                });
+                const alertSpan: HTMLElement = this.parent.createElement('span', { className: 'e-unprotectsheetpwd-alert-span' });
+                alertSpan.innerText = l10n.getConstant('IncorrectPassword');
                 (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
             } else if (openError[5] === response.data){
                 this.parent.isOpen = false;

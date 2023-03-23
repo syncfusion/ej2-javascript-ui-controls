@@ -99,7 +99,7 @@
         height: 16px;
         width: 16px;
       }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         border: $tooltip-close-icon-border;
       }
     }

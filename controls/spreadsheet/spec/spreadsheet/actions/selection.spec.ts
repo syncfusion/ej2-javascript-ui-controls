@@ -305,7 +305,7 @@ describe('Selection ->', () => {
         });
         it('Navigate to other cell selection with select locked cells as false and select unlocked cells as false checking', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.unprotectSheet('Price Details');
+            spreadsheet.unprotectSheet('Sheet1');
             setTimeout(() => {
                 helper.click('#' + helper.id + '_protect');
                 setTimeout(() => {
@@ -326,7 +326,7 @@ describe('Selection ->', () => {
         });
         it('Apply autofill using ctrl + selection in mouse event', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.unprotectSheet('Price Details');
+            spreadsheet.unprotectSheet('Sheet1');
             setTimeout(() => {
                 helper.invoke('selectRange', ['A1']);
                 const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');

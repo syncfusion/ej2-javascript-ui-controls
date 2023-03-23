@@ -435,7 +435,8 @@ export class ContextMenu implements IContextMenu {
      * @returns {void}
      */
     public open(top: number, left: number, target: HTMLElement): void {
-        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+        /* eslint-disable */
         this.contextMenuObj.open(top, left, target);
+        /* eslint-enable */
     }
 }

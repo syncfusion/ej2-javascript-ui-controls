@@ -227,8 +227,9 @@ export class Table {
             if (((event as KeyboardEventArgs).keyCode === 8 || (event as KeyboardEventArgs).keyCode === 46) ||
             (event.ctrlKey && (event as KeyboardEventArgs).keyCode === 88)) {
                 if (ele && ele.tagName === 'TBODY') {
-                    if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule)
-                    selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+                    if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+                        selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+                    }
                     event.preventDefault();
                     proxy.removeTable(selection, event as KeyboardEventArgs, true);
                 } else if (ele && ele.querySelectorAll('table').length > 0) {
@@ -241,8 +242,9 @@ export class Table {
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
             if (ele && (ele.tagName === 'TD' || ele.tagName === 'TH')) {
-                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule)
-                selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+                    selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+                }
                 switch ((event as KeyboardEventArgs).keyCode) {
                 case 9:
                 case 37:
@@ -283,7 +285,8 @@ export class Table {
                 item: {
                     command: 'Table',
                     subCommand: 'CreateTable'
-                }
+                },
+                name: !isInternal ? 'showDialog' : null
             };
             this.insertTableDialog({ self: this, args: args, selection: selection } as NotifyArgs);
         }
@@ -508,9 +511,17 @@ export class Table {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
-                const pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + this.parent.element.getBoundingClientRect().left + args.clientX : args.pageX;
-                const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
+                let pageX : number;
+                let pageY : number;
+                if (Browser.isDevice && (e.args as TouchEvent).touches) {
+                    pageX = (e.args as TouchEvent).changedTouches[0].pageX;
+                    pageY = (e.args as TouchEvent).changedTouches[0].pageY;
+                } else {
+                    pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset
+                    + this.parent.element.getBoundingClientRect().left + args.clientX : args.pageX;
+                    pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
                     this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
+                }
                 this.quickToolObj.tableQTBar.showPopup(pageX, pageY, target as Element);
                 this.parent.formatter.editorManager.nodeSelection.restore();
             } else {
@@ -968,8 +979,8 @@ export class Table {
                                     (this.curTable.rows[i as number].cells[index - 1] as HTMLTableDataCellElement).style.width =
                                     this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                 }
-                                if (!isNOU(this.curTable.rows[i as number].cells[index])) {
-                                    (this.curTable.rows[i as number].cells[index] as HTMLTableDataCellElement).style.width =
+                                if (!isNOU(this.curTable.rows[i as number].cells[index as number])) {
+                                    (this.curTable.rows[i as number].cells[index as number] as HTMLTableDataCellElement).style.width =
                                     this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                                 }
                             }

@@ -1,8 +1,8 @@
 //layout variables
 $tooltip-drop-shadow: $shadow-sm !default;
-$tooltip-close-icon-border: 1px solid $secondary-bg-color !default;
+$tooltip-close-icon-border: 1px solid $tooltip-text-color !default;
 $tooltip-icon-box-shadow: $shadow-sm !default;
-$tooltip-font-size: $text-xs !default;
+$tooltip-font-size: $text-sm !default;
 $tooltip-border-radius: 4px !default;
 $border-size: 1px !default;
 $border-type: solid !default;
@@ -11,7 +11,7 @@ $tooltip-arrow-outer-border: 8px !default;
 $tooltip-arrow-inner-border: 7px !default;
 $tooltip-horizontal-padding: 4px !default;
 $tooltip-vertical-padding: 8px !default;
-$tooltip-line-height: 18px !default;
+$tooltip-line-height: 20px !default;
 $tooltip-arrow-icon-font-size: 16px !default;
 $tooltip-tip-bottom-height: 8px !default;
 $tooltip-tip-bottom-left: 50% !default;
@@ -33,17 +33,17 @@ $tooltip-tip-right-left: 100% !default;
 $tooltip-tip-right-top: 50% !default;
 $tooltip-tip-right-width: 8px !default;
 
-$tooltip-mobile-font-size: $text-sm !default;
-$tooltip-mobile-horizontal-padding: 4px !default;
-$tooltip-mobile-vertical-padding: 8px !default;
+$tooltip-mobile-font-size: $text-base !default;
+$tooltip-mobile-horizontal-padding: 6px !default;
+$tooltip-mobile-vertical-padding: 13px !default;
 
 //color variables
 $tooltip-content-bg-color: $tooltip-bg-color !default;
 $tooltip-content-border-color: $tooltip-border !default;
-$tooltip-content-font-color: $toooltip-text-color !default;
-$tooltip-default-icon-color: $secondary-text-color !default;
-$tooltip-icon-bg-normal: $secondary-bg-color !default;
+$tooltip-content-font-color: $tooltip-text-color !default;
+$tooltip-default-icon-color: $tooltip-text-color !default;
+$tooltip-icon-bg-normal: $tooltip-bg-color !default;
 $tooltip-hover-icon-color:  $secondary-text-color !default;
-$tooltip-icon-bg-hover: $secondary-bg-color-hover !default;
+$tooltip-icon-bg-hover: $tooltip-text-color !default;
 $tooltip-icon-border-color: $secondary-bg-color !default;
 $tooltip-close-icon-border-hover: $secondary-border-color-hover !default;

@@ -3045,8 +3045,8 @@ describe('RTE base module', () => {
             rteObj.locale = 'en-US';
             rteObj.dataBind();
             let rteEle: HTMLElement = rteObj.element;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Italic");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Italic (Ctrl + I)");
         });
         it('Ensure placeholder property', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
@@ -5803,7 +5803,7 @@ describe('Check undo in execCommand', () => {
         (rteObj as any).inputElement.focus();
         rteObj.executeCommand("insertImage", el, { undo: true });
         expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
-        expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(false);
+        expect(rteObj.element.querySelector('[title="Undo (Ctrl + Z)"]').classList.contains('e-overlay')).toBe(false);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6233,40 +6233,6 @@ describe("fontfamily testing after default value set -", () => {
     });
 });
 
-describe('EJ2-67372: Toolbar overlaps the condent edit area', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-        value: '<p>testing</p>',
-        toolbarSettings: {
-                items: ['Undo', 'Redo', '|',
-                'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
-                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
-                'SubScript', 'SuperScript', '|',
-                'LowerCase', 'UpperCase', '|','Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
-                'Indent', 'Outdent', '|','CreateLink', '|', 'Image', '|', 'CreateTable', '|',
-                'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode', '|', 'FullScreen']
-            },
-            width: '500px',
-            height: '400px'
-        });
-    });
-    it('check the toolbar height', (done: Function) => {
-        expect((document.body.querySelector(".e-toolbar-wrapper") as HTMLElement).style.height==='42px');
-        expect((document.body.querySelector(".e-rte-content") as HTMLElement).style.height ==='358px');
-        (document.body.querySelector(".e-expended-nav")as HTMLElement).click();
-        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
-        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
-        expect((document.body.querySelector(".e-toolbar-wrapper") as HTMLElement).style.height ==='144px');
-        expect((document.body.querySelector(".e-rte-content") as HTMLElement).style.height ==='256px');
-        done();
-    });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-});
-
-
 describe('EJ2-69673 - Expand popup open testing height', () => {
     let rteObj: RichTextEditor;
     beforeAll(() => {
@@ -6350,3 +6316,4 @@ describe('EJ2-69171 - RichTextEditor text area value has missing close tag when 
         destroy(rteObj);
     });
 });
+

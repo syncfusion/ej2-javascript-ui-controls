@@ -9,7 +9,7 @@ import { lineCapRadius, completeAngle } from '../model/constant';
  */
 export class ProgressAnimation {
 
-    /** Linear Animation. */
+    /** Linear Animation */
     public doLinearAnimation(element: Element, progress: ProgressBar, delay: number, previousWidth?: number, active?: Element): void {
         const animation: Animation = new Animation({});
         const linearPath: HTMLElement = <HTMLElement>element;
@@ -81,7 +81,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** Linear Indeterminate. */
+    /** Linear Indeterminate */
     public doLinearIndeterminate(
         element: Element, progressWidth: number, thickness: number, progress: ProgressBar, clipPath: Element
     ): void {
@@ -129,7 +129,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** Linear striped. */
+    /** Linear striped */
     public doStripedAnimation(element: Element, progress: ProgressBar, value: number): void {
         const animation: Animation = new Animation({});
         const point: number = 1000 / progress.animation.duration;
@@ -148,7 +148,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** Circular animation. */
+    /** Circular animation */
     public doCircularAnimation(
         x: number, y: number, radius: number, progressEnd: number, totalEnd: number,
         element: Element, progress: ProgressBar, thickness: number, delay: number, startValue?: number,
@@ -206,7 +206,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** Circular indeterminate. */
+    /** Circular indeterminate */
     public doCircularIndeterminate(
         circularProgress: Element, progress: ProgressBar,
         start: number, end: number, x: number, y: number, radius: number, thickness: number, clipPath: Element
@@ -233,7 +233,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** To do the label animation for progress bar. */
+    /** To do the label animation for progress bar */
     public doLabelAnimation(labelPath: Element, start: number, end: number, progress: ProgressBar, delay: number, textSize?: number): void {
         const animation: Animation = new Animation({});
         const label: Animation = new Animation({});
@@ -303,7 +303,7 @@ export class ProgressAnimation {
         });
     }
 
-    /** To do the annotation animation for circular progress bar. */
+    /** To do the annotation animation for circular progress bar */
     public doAnnotationAnimation(circularPath: Element, progress: ProgressBar, previousEnd?: number, previousTotal?: number): void {
         const animation: Animation = new Animation({});
         let value: number = 0;

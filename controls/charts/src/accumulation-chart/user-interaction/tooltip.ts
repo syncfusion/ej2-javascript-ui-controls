@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**
@@ -64,6 +64,7 @@ export class AccumulationTooltip extends BaseTooltip {
 
     /**
      * Renders the tooltip.
+     *
      * @param  {PointerEvent} event - Mouse move event.
      * @return {void}
      */

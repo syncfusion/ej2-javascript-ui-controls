@@ -35,7 +35,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         this.cellType = cellType;
         this.serviceLocator = serviceLocator;
         this.parent = parent;
-        this.element = this.parent.createElement('tr', { attrs: { role: 'row' } });
+        this.element = this.parent.createElement('tr');
     }
 
     /* eslint-disable */

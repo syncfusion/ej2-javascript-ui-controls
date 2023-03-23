@@ -31,16 +31,16 @@ export class NumberFormat {
         if (cellElem) {
             const repeatCharWidth: number = getTextWidth(args.repeatChar, args.cell.style, this.parent.cellStyle);
             let cellWidth: number = getExcludedColumnWidth(this.parent.getActiveSheet(), args.rowIdx, args.colIdx);
+            cellElem.innerText = '';
             if (args.beforeFillText) {
-                cellElem.innerHTML = args.beforeFillText;
+                cellElem.innerText = args.beforeFillText;
                 cellWidth -= getTextWidth(args.beforeFillText, args.cell.style, this.parent.cellStyle);
-            } else {
-                cellElem.innerHTML = '';
             }
             const repeatCharSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill' });
             cellElem.appendChild(repeatCharSpan);
             if (args.afterFillText) {
-                const textSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill-sec', innerHTML: args.afterFillText });
+                const textSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill-sec' });
+                textSpan.innerText = args.afterFillText;
                 cellElem.appendChild(textSpan);
                 cellWidth -= getTextWidth(args.afterFillText, args.cell.style, this.parent.cellStyle);
             }

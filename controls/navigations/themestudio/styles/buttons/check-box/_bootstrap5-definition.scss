@@ -1,6 +1,6 @@
 //layout variables
 $cbox-bigger-check-fontsize: 10px !default;
-$cbox-bigger-font-size: 16px !default;
+$cbox-bigger-font-size: $text-base !default;
 $cbox-bigger-height: 16px !default;
 $cbox-bigger-indeterminate-fontsize: 10px !default;
 $cbox-bigger-indeterminate-lineheight: 14px !default;
@@ -15,7 +15,7 @@ $cbox-bigger-small-lineheight: 15px !default;
 $cbox-bigger-small-width: 16px !default;
 $cbox-bigger-width: 16px !default;
 $cbox-border: 1px solid !default;
-$cbox-font-size: 14px !default;
+$cbox-font-size: $text-sm !default;
 $cbox-height: 14px !default;
 $cbox-border-radius: 4px !default;
 $cbox-check-fontsize: 8px !default;
@@ -37,7 +37,7 @@ $cbox-ripple-bigger-small-size: -16px !default;
 $cbox-ripple-bigger-small-height: 38px !default;
 $cbox-ripple-bigger-small-width: 38px !default;
 $cbox-small-check-fontsize: 8px !default;
-$cbox-small-font-size: 12px !default;
+$cbox-small-font-size: $text-xs !default;
 $cbox-small-height: 14px !default;
 $cbox-small-indeterminate-fontsize: 8px !default;
 $cbox-small-indeterminate-lineheight: 13px !default;

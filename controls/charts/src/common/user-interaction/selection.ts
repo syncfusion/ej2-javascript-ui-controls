@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Selection src file
  */
@@ -46,19 +44,19 @@ export class BaseSelection {
                 if ((this.styleId.indexOf('highlight') > 0 && (<Chart>this.control).highlightColor !== '') || (!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
                     (selectionPattern !== 'None' || highlightPattern !== 'None')) {
                     const patternName: SelectionPattern = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
-                    if (visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
-                    visibleSeries.type as AccumulationType === 'Pyramid'&& (this.control as AccumulationChart).highlightColor !== 'transparent') {
+                    if ((visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
+                    visibleSeries.type as AccumulationType === 'Pyramid') && (this.control as AccumulationChart).highlightColor !== 'transparent') {
                         for (let i: number = 0; i < visibleSeries.points.length; i++) {
                             opacity = visibleSeries.opacity;
-                            fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i]).color, series.points[i].index, patternName, opacity);
+                            fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color, series.points[i as number].index, patternName, opacity);
                             pattern = '{ fill:' + fill + '}';
-                            seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i].index + ',' + '.' +
-                                this.styleId + '_series_' + series.index + '_point_' + series.points[i].index + '> *';
+                            seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + ',' + '.' +
+                                this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + '> *';
                             if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight) {
-                                style.innerHTML += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                                style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
                             }
                             pattern = (pattern.indexOf('None') > -1) ? '{fill:' + this.control.highlightColor + '!important}' : pattern;
-                            style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
+                            style.innerText += series.selectionStyle ? '' : '.' + seriesclass + pattern;
                         }
                     } else if (visibleSeries.type as ChartSeriesType && (this.control as Chart).highlightColor !== 'transparent') {
                         opacity = visibleSeries.opacity;
@@ -72,16 +70,16 @@ export class BaseSelection {
                 seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
                 if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight) {
-                    style.innerHTML += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
                 }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
-                style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
+                style.innerText += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
-            let unSelectOpacity: number =(this.control).highlightColor !== 'transparent' ? 0.3 : opacity;
+            let unSelectOpacity: number = (this.control).highlightColor !== 'transparent' ? 0.3 : opacity;
             if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
                 unSelectOpacity = 1;
             }
-            style.innerHTML += '.' + this.unselected + ' { opacity:' + (unSelectOpacity) + ';} ';
+            style.innerText += '.' + this.unselected + ' { opacity:' + (unSelectOpacity) + ';} ';
             document.body.appendChild(style);
         }
     }
@@ -418,7 +416,6 @@ export class BaseSelection {
     private loadPattern(chart: Chart, options: { [x: string]: unknown }[], pattern: Element, svgRenderer: SvgRenderer): void {
         let i: number;
         for (i = 0; i < options.length; i++) {
-            // eslint-disable-next-line @typescript-eslint/ban-types
             const path: Element = svgRenderer.createPattern(options[i as number], (<object>options)[i as number].name);
             pattern.appendChild(path);
         }

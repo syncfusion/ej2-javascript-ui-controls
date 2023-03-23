@@ -425,8 +425,9 @@ export class Image {
                 if (this.parent.iframeSettings.enable){
                     img.setAttribute('width', (img.width + this.mouseX).toString());
                 }
-                else{
-                    img.setAttribute('width', (img.offsetWidth + this.mouseX).toString());
+                else {
+                    const currentWidth: number = img.offsetWidth === 0 ? img.width + this.mouseX + parseInt(img.style.outlineWidth.split('p')[0]) : img.offsetWidth + this.mouseX;
+                    img.setAttribute('width', (currentWidth).toString());
                 }
             }
         } else if (height > width) {
@@ -497,7 +498,7 @@ export class Image {
         const pageX: number = this.getPointX(e);
         const pageY: number = this.getPointY(e);
         const mouseX: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
-        const mouseY: number = (this.resizeBtnStat.topLeft || this.resizeBtnStat.topRight) ? -(pageY - this.pageY) : (pageY - this.pageY);
+        const mouseY: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageY - this.pageY) : (pageY - this.pageY);
         const width: number = parseInt(this.imgDupPos.width as string, 10) + mouseX;
         const height: number = parseInt(this.imgDupPos.height as string, 10) + mouseY;
         this.mouseX = mouseX;
@@ -671,8 +672,8 @@ export class Image {
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
-                if(!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-                save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+                {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -728,8 +729,8 @@ export class Image {
             }
             break;
         case 'insert-image':
-            if(!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+            if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+            {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;
@@ -755,7 +756,8 @@ export class Image {
             this.insertImage({
                 args: {
                     item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
-                    originalEvent: event
+                    originalEvent: event,
+                    name: !isInternal ? 'showDialog' : null
                 },
                 selectNode: selectNodeEle,
                 selection: save,
@@ -765,7 +767,8 @@ export class Image {
             this.insertImage({
                 args: {
                     item: { command: 'Images', subCommand: 'Image' } as IToolbarItemModel,
-                    originalEvent: event
+                    originalEvent: event,
+                    name: !isInternal ? 'showDialog' : null
                 },
                 member: 'image',
                 text: this.parent.formatter.editorManager.markdownSelection.getSelectedText(

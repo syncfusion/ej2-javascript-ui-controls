@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Interface for Accumulation chart
  */

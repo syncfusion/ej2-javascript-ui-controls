@@ -55,7 +55,7 @@ export class EnterKeyAction {
             isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         if ((e.args as KeyboardEventArgs).which === 13 && (e.args as KeyboardEventArgs).code === 'Enter') {
-            if (isNOU(this.startNode.closest('LI,UL,OL')) && isNOU(this.endNode.closest('LI,UL,OL')) && isTableEnter &&
+            if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE'))) {
                 const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
                 const actionBeginArgs: ActionBeginEventArgs = {
@@ -131,11 +131,6 @@ export class EnterKeyAction {
                         }
                         if (this.range.startContainer === this.range.endContainer &&
                             this.range.startOffset === this.range.endOffset && this.range.startContainer === this.parent.inputElement) {
-                            if (!isNOU(this.range.startContainer.childNodes[this.range.startOffset]) &&
-                            !isNOU((this.range.startContainer.childNodes[this.range.startOffset] as Element).previousElementSibling) &&
-                            (this.range.startContainer.childNodes[this.range.startOffset] as Element).previousElementSibling.nodeName === 'TABLE') {
-                                this.parent.tableModule.removeResizeElement();
-                            }
                             if (!(this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE')) {
                                 if (isNOU(this.range.startContainer.childNodes[this.range.startOffset] as Element)) {
                                     let currentLastElem: Element = this.range.startContainer.childNodes[this.range.startOffset - 1] as Element;
@@ -173,7 +168,7 @@ export class EnterKeyAction {
                                 let isFocusedFirst: boolean = false;
                                 if (this.range.startOffset !== 0 && this.range.endOffset !== 0 &&
                                     this.range.startContainer === this.range.endContainer && !(!isNOU(nearBlockNode.childNodes[0])
-                                    && nearBlockNode.childNodes[0].nodeName === 'IMG' && nearBlockNode.querySelectorAll('img,audio,video').length > 0  )) {
+                                    && nearBlockNode.childNodes[0].nodeName === 'IMG' && nearBlockNode.querySelectorAll('img, audio, video').length > 0)) {
                                     const startNodeText: string = this.range.startContainer.textContent;
                                     const splitFirstText: string = startNodeText.substring(0, this.range.startOffset);
                                     // eslint-disable-next-line max-len
@@ -193,8 +188,8 @@ export class EnterKeyAction {
                                     (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                     let isNearBlockLengthZero: boolean;
                                     let newElem: Node;
-                                    if ( !isNOU( this.range.startContainer.childNodes) && this.range.startContainer.textContent.length ===0 && 
-                                    ( (this.range.startContainer as HTMLElement).querySelectorAll('img,audio,video').length > 0 || 
+                                    if ( !isNOU( this.range.startContainer.childNodes) && this.range.startContainer.textContent.length === 0
+                                    && ( (this.range.startContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0 ||
                                     this.range.startContainer.nodeName === 'IMG' || this.range.startContainer.nodeName === 'TABLE' )) {
                                         newElem = this.createInsertElement(shiftKey);
                                         isMediaNode = true;
@@ -202,7 +197,7 @@ export class EnterKeyAction {
                                     } else {
                                         if ((nearBlockNode.textContent.trim().length !== 0 ||
                                         nearBlockNode.childNodes[0].nodeName === 'IMG' ||
-                                        (nearBlockNode.textContent.trim() === '' && nearBlockNode.querySelectorAll('img,audio,video').length > 0))) {
+                                        (nearBlockNode.textContent.trim() === '' && nearBlockNode.querySelectorAll('img, audio, video').length > 0))) {
                                             if ((this.range.startOffset === this.range.endOffset && this.range.startOffset !== 0)) {
                                                 newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                                     this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
@@ -270,11 +265,11 @@ export class EnterKeyAction {
                                     if (nearBlockNode.textContent.trim().length > 0) {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), true);
-                                        let audioVideoElem: Node = !isNOU((newElem.previousSibling as HTMLElement).querySelector('.e-video-wrap')) ?
-                                        (newElem.previousSibling as HTMLElement).querySelector('.e-video-wrap') : (newElem.previousSibling as HTMLElement).querySelector('.e-audio-wrap');
+                                        const audioVideoElem: Node = !isNOU((newElem.previousSibling as HTMLElement).querySelector('.e-video-wrap')) ?
+                                            (newElem.previousSibling as HTMLElement).querySelector('.e-video-wrap') : (newElem.previousSibling as HTMLElement).querySelector('.e-audio-wrap');
                                         let isBRInserted: boolean = false;
-                                        let lastNode = audioVideoElem.previousSibling;
-                                        while(!isNOU(lastNode) && lastNode.nodeName !== '#text') {
+                                        let lastNode: Node = audioVideoElem.previousSibling;
+                                        while (!isNOU(lastNode) && lastNode.nodeName !== '#text') {
                                             lastNode = lastNode.lastChild;
                                         }
                                         if (isNOU(lastNode)) {
@@ -293,8 +288,8 @@ export class EnterKeyAction {
                                     } else {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), true);
-                                        let focusElem: Node = newElem.previousSibling;
-                                        while(!isNOU(focusElem.firstChild)) {
+                                        const focusElem: Node = newElem.previousSibling;
+                                        while (!isNOU(focusElem.firstChild)) {
                                             detach(focusElem.firstChild);
                                         }
                                         const brElm: HTMLElement = this.parent.createElement('br');
@@ -375,7 +370,7 @@ export class EnterKeyAction {
                                   || currentParentLastChild.nodeName === 'IMG')) {
                                 currentParentLastChild = currentParentLastChild.lastChild;
                             }
-                            const isLastNodeLength : number = this.range.startContainer === currentParentLastChild ?
+                            const isLastNodeLength: number = this.range.startContainer === currentParentLastChild ?
                                 this.range.startContainer.textContent.length : currentParent.textContent.length;
                             const isImageElement: boolean = (this.range.startContainer.nodeName === 'IMG' || (this.range.startContainer.childNodes.length > 0
                                 && this.range.startContainer.childNodes[this.range.startOffset].nodeName === 'IMG'));
@@ -461,7 +456,7 @@ export class EnterKeyAction {
     private insertBRElement(): void {
         let isEmptyBrInserted: boolean = false;
         let isFocusTextNode: boolean = true;
-        if ( this.range.endContainer.textContent.length === 0 && this.range.startContainer.nodeName === 'BR' ){
+        if ( this.range.endContainer.textContent.length === 0 && this.range.startContainer.nodeName === 'BR') {
             isFocusTextNode = false;
         }
         const brElm: HTMLElement = this.parent.createElement('br');

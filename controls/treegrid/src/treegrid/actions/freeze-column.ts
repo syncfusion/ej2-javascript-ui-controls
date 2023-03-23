@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
+import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeContentRender, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../models/column';
 import { Grid, Freeze as FreezeColumn  } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';
@@ -93,13 +93,16 @@ export class Freeze {
             rows = args.detailrows;
         }
         for (let i: number = 0; i < rows.length; i++) {
-            let row :HTMLTableRowElement= rows[parseInt(i.toString(),10)];
+            const row : HTMLTableRowElement = rows[parseInt(i.toString(), 10)];
             const rData: ITreeData = this.parent.grid.getRowObjectFromUID(row.getAttribute('data-Uid')).data;
-            if(!isNullOrUndefined(movableRows) && row.parentElement.firstElementChild.clientHeight>0)
+            if (!isNullOrUndefined(movableRows) && row.parentElement.firstElementChild.clientHeight > 0)
             {
                 row.style.height = row.parentElement.firstElementChild.clientHeight + 'px';
             }
             row.style.display = args.action;
+            if (freeze && frozenRightRows.length) {
+                frozenRightRows[parseInt(i.toString(), 10)].style.display = args.action;
+            }
             const queryselector: string = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
                 : '.e-treecolumn-container .e-treegridexpand';
             if (frozenrows[row.rowIndex].querySelector(queryselector)) {

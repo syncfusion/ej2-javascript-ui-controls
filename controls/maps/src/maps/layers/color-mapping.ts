@@ -37,6 +37,7 @@ export class ColorMapping {
      * @param {number} colorValue - Specifies the color value
      * @param {string} equalValue - Specifies the equal value.
      * @returns {any} - Returns the color mapping values.
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public getColorByValue(colorMapping: ColorMappingSettingsModel[], colorValue: number, equalValue: string): any {

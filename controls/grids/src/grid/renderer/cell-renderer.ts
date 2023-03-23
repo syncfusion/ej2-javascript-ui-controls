@@ -27,7 +27,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.localizer = locator.getService<L10n>('localization');
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
-        this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
+        this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { tabindex: '-1' } });
         this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox',
             'aria-label': this.localizer.getConstant('CheckBoxLabel') } });
     }
@@ -207,7 +207,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
         node.setAttribute('aria-label', innerHtml + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
-            this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
+            this.appendHtml(node, this.parent.sanitize(innerHtml), column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
             node.classList.add(literals.gridChkBox);
             node.setAttribute('aria-label', this.localizer.getConstant('CheckBoxLabel'));

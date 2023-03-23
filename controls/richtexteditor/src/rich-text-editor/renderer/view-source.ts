@@ -97,7 +97,7 @@ export class ViewSource {
             break;
         case 'toolbar-focus':
             if (this.parent.toolbarSettings.enable) {
-                const selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                const selector: string = '.e-toolbar-item[title] [tabindex]';
                 (this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
             }
             break;

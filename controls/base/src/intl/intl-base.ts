@@ -6,6 +6,8 @@ import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
 import { isUndefined } from '../util';
 
+const regExp: RegExpConstructor = RegExp;
+
 export const blazorCultureFormats: Object = {
     'en-US': {
         'd': 'M/d/y',
@@ -32,7 +34,8 @@ export const blazorCultureFormats: Object = {
  */
 // eslint-disable-next-line
 export namespace IntlBase {
-    // tslint:disable-next-line:max-line-length
+    /* eslint-disable */
+    // tslint:disable-next-line:max-line-length.
     export const negativeDataRegex: RegExp = /^(('[^']+'|''|[^*#@0,.E])*)(\*.)?((([#,]*[0,]*0+)(\.0*[0-9]*#*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     export const customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*[0#\ ]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     export const latnParseRegex: RegExp = /0|1|2|3|4|5|6|7|8|9/g;
@@ -86,8 +89,8 @@ export namespace IntlBase {
         minimumFraction?: number;
         maximumFraction?: number;
     }
-    export const formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
-    export const currencyFormatRegex: RegExp = /(^[ca]{1})([0-1]?[0-9]|20)?$/i;
+    export const formatRegex: RegExp = new regExp("(^[ncpae]{1})([0-1]?[0-9]|20)?$", "i");
+    export const currencyFormatRegex: RegExp = new regExp("(^[ca]{1})([0-1]?[0-9]|20)?$", "i");
     export const curWithoutNumberRegex: RegExp = /(c|a)$/ig;
     const typeMapper: Object = {
         '$': 'isCurrency',

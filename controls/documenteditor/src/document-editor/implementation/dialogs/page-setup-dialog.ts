@@ -500,6 +500,9 @@ export class PageSetupDialog {
             cols.push(colFormat);
         }
         sectionFormat.columns = cols;
+        if (currentSectionFormat.pageHeight === sectionFormat.pageHeight && currentSectionFormat.pageWidth === sectionFormat.pageWidth) {
+            sectionFormat.breakCode = currentSectionFormat.breakCode;
+        }
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
         this.documentHelper.hideDialog();
     };

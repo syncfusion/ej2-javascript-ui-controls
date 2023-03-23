@@ -254,7 +254,7 @@ describe('FileManager control single selection Grid view', () => {
                             field: 'isFile', headerText: 'Is File', minWidth: 90, width: '110', headerTextAlign: "Center", allowResizing: false, allowSorting: false
                         },
                         {
-                            field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
+                            field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>', format: 'n2'
                         }
                     ]
                 }

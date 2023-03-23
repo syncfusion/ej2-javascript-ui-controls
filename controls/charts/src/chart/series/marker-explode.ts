@@ -1,7 +1,7 @@
+/* eslint-disable jsdoc/check-param-names */
 /* eslint-disable jsdoc/require-param-type */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-param-description */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { drawSymbol, ChartLocation } from '../../common/utils/helper';
 import { PathOption, Size } from '@syncfusion/ej2-svg-base';
@@ -106,7 +106,6 @@ export class MarkerExplode extends ChartData {
             }
             if (chart.tooltip.enable) {
                 const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
-                const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
                 for (const chartSeries of chart.visibleSeries) {
                     if (!chartSeries.enableTooltip || chartSeries.category === 'Indicator') {
                         continue;

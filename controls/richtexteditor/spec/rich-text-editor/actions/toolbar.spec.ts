@@ -1031,30 +1031,30 @@ describe("Toolbar - Actions Module", () => {
         it("Maximize, minimize button click testing", () => {
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[1];
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize (Ctrl + Shift + F)");
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
             rteObj.fullScreenModule.hideFullScreen();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
         });
 
@@ -1074,11 +1074,11 @@ describe("Toolbar - Actions Module", () => {
             (<HTMLElement>select('#rteWrapper', document.body)).style.overflow = 'auto';
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[1];
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize (Ctrl + Shift + F)");
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
         });
     });
@@ -1104,30 +1104,30 @@ describe("Toolbar - Actions Module", () => {
         it("Maximize, minimize button click testing", () => {
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[1];
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize (Ctrl + Shift + F)");
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
             rteObj.fullScreenModule.hideFullScreen();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
             trgEle.click();
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
         });
     });
@@ -1256,8 +1256,8 @@ describe("Toolbar - Actions Module", () => {
             });
             rteEle = rteObj.element;
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize (Ctrl + Shift + F)");
             trg = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[1];
             trg.click();
             setTimeout(() => {
@@ -1284,8 +1284,8 @@ describe("Toolbar - Actions Module", () => {
             });
             rteEle = rteObj.element;
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize (Ctrl + Shift + F)");
             trg = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[1];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
@@ -1508,17 +1508,17 @@ describe("Toolbar - Actions Module", () => {
         });
 
         it("Preventing the SourceCode view while updating the enableFloating dynamically", () => {
-            expect(document.querySelector(".e-bold").parentElement.parentElement.attributes[1].value).toBe("false");
-            expect(document.querySelector(".e-italic").parentElement.parentElement.attributes[1].value).toBe("false");
-            expect(document.querySelector(".e-source-code").parentElement.parentElement.attributes[1].value).toBe("false");
+            expect(document.querySelector(".e-bold").parentElement.attributes[6].value).toBe("false");
+            expect(document.querySelector(".e-italic").parentElement.attributes[6].value).toBe("false");
+            expect(document.querySelector(".e-source-code").parentElement.attributes[6].value).toBe("false");
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
             item.click();
             expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
             rteObj.toolbarSettings.enableFloating = true;
             rteObj.dataBind();
-            expect(document.querySelector(".e-bold").parentElement.parentElement.attributes[1].value).toBe("true");
-            expect(document.querySelector(".e-italic").parentElement.parentElement.attributes[1].value).toBe("true");
-            expect(document.querySelector(".e-preview").parentElement.parentElement.attributes[1].value).toBe("false");
+            expect(document.querySelector(".e-bold").parentElement.attributes[6].value).toBe("true");
+            expect(document.querySelector(".e-italic").parentElement.attributes[6].value).toBe("true");
+            expect(document.querySelector(".e-preview").parentElement.attributes[6].value).toBe("false");
             expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
         });
     });
@@ -2104,7 +2104,7 @@ describe("Toolbar - Actions Module", () => {
             document.getElementById('custom_tbar').click();
             setTimeout(() => {
                 expect(clickEventSpy).toHaveBeenCalled();
-                expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(true);
+                expect(rteObj.element.querySelector('[title="Undo (Ctrl + Z)"]').classList.contains('e-overlay')).toBe(true);
                 done();
             }, 500);
         });
@@ -2167,7 +2167,7 @@ describe("Toolbar - Actions Module", () => {
         it("Testing custom toolbar event", (done) => {
             document.getElementById('custom_tbar').click();
             setTimeout(() => {
-                expect(rteObj.element.querySelector('[title="Undo"]').classList.contains('e-overlay')).toBe(false);
+                expect(rteObj.element.querySelector('[title="Undo (Ctrl + Z)"]').classList.contains('e-overlay')).toBe(false);
                 done();
             }, 500);
         });

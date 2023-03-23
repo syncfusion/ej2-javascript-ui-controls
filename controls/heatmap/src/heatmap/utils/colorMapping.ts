@@ -6,22 +6,20 @@ import { PaletteCollectionModel, FillColorModel } from '../model/base-model';
 import { PaletterColor, LegendRange } from './helper';
 
 /**
- * Configures the color property in Heatmap.
+ * Sets and gets the options to customize the color palette of heatmap.
  */
 export class PaletteSettings extends ChildProperty<PaletteSettings> {
 
     /**
-     * Specifies the color collection for heat map cell.
-     *
-     * @default ''
+     * Sets and gets the color palette collection for heatmap cell.
      */
     @Collection<PaletteCollectionModel>([{}], PaletteCollection)
     public palette: PaletteCollectionModel[];
 
     /**
-     * Specifies the color style
-     * * Gradient - Render a HeatMap cells with linear gradient color.
-     * * Fixed - Render a HeatMap cells with fixed color.
+     * Specifies the style in which the color is to be applied to the cells.
+     * * Gradient - Renders the heatmap cells with linear gradient colors.
+     * * Fixed - Renders the heatmap cells with fixed colors.
      *
      * @default 'Gradient'
      */
@@ -29,14 +27,14 @@ export class PaletteSettings extends ChildProperty<PaletteSettings> {
     public type: PaletteType;
 
     /**
-     * Specifies the color for empty points in Heatmap.
+     * Specifies the color for the empty points in heatmap.
      *
      * @default ''
      */
     @Property('')
     public emptyPointColor: string;
     /**
-     * Specifies the colorGradientMode in Heatmap.
+     * Specifies the color gradient mode in heatmap. This property is used to set the minimum and maximum values for colors based on row and column.
      *
      * @default 'Table'
      */
@@ -44,7 +42,7 @@ export class PaletteSettings extends ChildProperty<PaletteSettings> {
     public colorGradientMode: ColorGradientMode;
 
     /**
-     * Options to set fill colors.
+     * Specifies the options to set fill colors.
      */
 
     @Complex<FillColorModel>({}, FillColor)

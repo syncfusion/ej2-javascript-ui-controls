@@ -217,9 +217,11 @@ export interface FormatObject {
     skeleton?: string;
 }
 /**
- * Specifies the fieldMode as DropDownList or DropDownTree.
- * Default: To Specifies the fieldMode as DropDownList.
- * DropdownTree: To Specifies the fieldMode as DropdownTree.
+ * Defines the fieldMode of Dropdown control.
+ * ```props
+ * Default :- To Specifies the fieldMode as DropDownList.
+ * DropdownTree :- To Specifies the fieldMode as DropdownTree.
+ * ```
  */
 export declare type FieldMode = 
 /** Display the DropdownList */
@@ -227,9 +229,11 @@ export declare type FieldMode =
 /** Display the DropdownTree */
 'DropdownTree';
 /**
- * Specifies the displayMode as Horizontal or Vertical.
- * Horizontal: To Display the Horizontal UI.
- * Vertical: To Display the Vertical UI.
+ * Defines the display mode of the control.
+ * ```props
+ * Horizontal :- To display the control in a horizontal UI.
+ * Vertical :- To display the control in a vertical UI.
+ * ```
  */
 export declare type DisplayMode = 
 /**  Display the Horizontal UI */
@@ -237,10 +241,12 @@ export declare type DisplayMode =
 /**  Display the Vertical UI */
 'Vertical';
 /**
- * Specifies the sort direction of the field names. They are
- * Default: Show the field names in default .
- * Ascending: Show the field names in Ascending.
- * Descending: Show the field names in Descending
+ * Defines the sorting direction of the field names in a control.
+ * ```props
+ * Default :- Specifies the field names in default sorting order.
+ * Ascending :- Specifies the field names in ascending order.
+ * Descending :- Specifies the field names in descending order.
+ * ```
  */
 export declare type SortDirection = 
 /**  Show the field names in default */

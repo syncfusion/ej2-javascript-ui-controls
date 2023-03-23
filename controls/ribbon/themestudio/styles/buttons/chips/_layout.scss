@@ -1,0 +1,360 @@
+/* stylelint-disable property-no-vendor-prefix */
+@include export-module('chip-layout') {
+  .e-chip-list {
+    display: flex;
+    padding: $chip-list-padding;
+
+    &.e-chip,
+    .e-chip {
+      -webkit-tap-highlight-color: transparent;
+      align-items: center;
+      border: $chip-border-size solid;
+      border-radius: $chip-border-radius;
+      box-shadow: $chip-box-shadow;
+      box-sizing: border-box;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: $chip-font-size;
+      font-weight: $chip-font-weight;
+      height: $chip-height;
+      justify-content: center;
+      line-height: $chip-line-height;
+      margin: $chip-margin;
+      outline: none;
+      overflow: $chip-overflow;
+      padding: $chip-padding;
+      position: relative;
+      transition: box-shadow 300ms cubic-bezier(.4, 0, .2, 1);
+      user-select: none;
+
+      .e-chip-avatar {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-avatar-border-radius;
+        display: flex;
+        font-size: $chip-avatar-content-font-size;
+        height: $chip-avatar-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-avatar-margin;
+        overflow: hidden;
+        width: $chip-avatar-size;
+      }
+
+      .e-chip-avatar-wrap,
+      &.e-chip-avatar-wrap {
+        border-radius: $chip-avatar-wrapper-border-radius;
+      }
+
+      .e-chip-icon {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-leading-icon-border-radius;
+        display: flex;
+        font-size: $chip-leading-icon-font-size;
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-leading-icon-margin;
+        overflow: hidden;
+        width: $chip-leading-icon-size;
+      }
+
+      .e-chip-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5dark') {
+          height: $chip-text-height;
+        }
+      }
+
+      .e-chip-delete {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-delete-icon-border-radius;
+        display: flex;
+        font-size: $chip-delete-icon-font-size;
+        height: $chip-delete-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-delete-icon-margin;
+        overflow: hidden;
+        width: $chip-delete-icon-size;
+
+        &.e-dlt-btn::before {
+          font-family: 'e-icons';
+        }
+      }
+
+      .image-url {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-leading-icon-border-radius;
+        display: flex;
+        font-size: $chip-leading-icon-font-size;
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-leading-icon-margin;
+        overflow: hidden;
+        width: $chip-leading-icon-size;
+      }
+
+      .trailing-icon-url {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-delete-icon-border-radius;
+        display: flex;
+        font-family: 'e-icons';
+        font-size: $chip-delete-icon-font-size;
+        height: $chip-delete-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-delete-icon-margin;
+        overflow: hidden;
+        width: $chip-delete-icon-size;
+      }
+    }
+
+    .e-chip.e-outline {
+      .e-chip-avatar {
+        @if ($skin-name == 'FluentUI') {
+          border-radius: $chip-avatar-wrapper-border-radius;
+          height: $chip-outline-avatar-size;
+          width: $chip-outline-avatar-size;
+        }
+      }
+    }
+
+    &:not(.e-chip) {
+      flex-wrap: wrap;
+    }
+
+    &.e-multi-selection .e-chip {
+      &::before {
+        align-items: center;
+        display: flex;
+        font-family: 'e-icons';
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-multi-selection-icon-margin;
+        margin-top: $chip-multi-selection-icon-margin-top;
+        overflow: hidden;
+        transition: width 300ms cubic-bezier(.4, 0, .2, 1);
+        width: $chip-leading-icon-size;
+      }
+
+      &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+        &::before {
+          width: 0;
+        }
+      }
+
+      &.e-chip-icon-wrap,
+      &.e-chip-avatar-wrap {
+        &::before {
+          display: none;
+        }
+      }
+
+      &.e-chip-avatar-wrap {
+        &::before {
+          height: $chip-avatar-size;
+          margin: $chip-avatar-margin;
+          margin-top: $chip-multi-selection-icon-margin-top;
+          width: $chip-avatar-size;
+        }
+      }
+
+      &.e-active {
+        & .e-chip-icon,
+        & .e-chip-avatar {
+          display: none;
+        }
+
+        &.e-chip-icon-wrap,
+        &.e-chip-avatar-wrap {
+          &::before {
+            display: flex;
+          }
+        }
+
+        &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+          &::before {
+            width: $chip-leading-icon-size;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-chip,
+      & .e-chip {
+        .e-chip-avatar {
+          margin: $chip-rtl-avatar-margin;
+        }
+
+        .e-chip-icon {
+          margin: $chip-rtl-leading-icon-margin;
+        }
+
+        .e-chip-delete {
+          margin: $chip-rtl-delete-icon-margin;
+        }
+
+        .e-chip-avatar-wrap,
+        &.e-chip-avatar-wrap {
+          border-radius: $chip-rtl-avatar-wrapper-border-radius;
+        }
+
+        .trailing-icon-url {
+          margin: $chip-rtl-delete-icon-margin;
+        }
+      }
+
+      &.e-multi-selection .e-chip {
+        &::before {
+          margin: $chip-rtl-leading-icon-margin;
+          margin-top: $chip-multi-selection-icon-margin-top;
+        }
+
+        &.e-chip-avatar-wrap {
+          &::before {
+            margin: $chip-rtl-avatar-margin;
+            margin-top: $chip-multi-selection-icon-margin-top;
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-chip-list,
+  .e-bigger.e-chip-list {
+    &.e-chip,
+    & .e-chip {
+      border-radius: $chip-touch-border-radius;
+      font-size: $chip-touch-font-size;
+      height: $chip-touch-height;
+      padding: $chip-touch-padding;
+    }
+
+    .e-chip-text {
+      @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5dark' ) {
+        height: $chip-touch-text-height;
+      }
+    }
+
+    .e-chip-avatar {
+      font-size: $chip-touch-avatar-content-font-size;
+      height: $chip-touch-avatar-size;
+      margin: $chip-touch-avatar-margin;
+      width: $chip-touch-avatar-size;
+    }
+
+    .e-chip-avatar-wrap,
+    &.e-chip-avatar-wrap {
+      border-radius: $chip-touch-avatar-wrapper-border-radius;
+    }
+
+    .e-chip-icon {
+      font-size: $chip-touch-leading-icon-font-size;
+      height: $chip-touch-leading-icon-size;
+      margin: $chip-touch-leading-icon-margin;
+      width: $chip-touch-leading-icon-size;
+    }
+
+    .e-chip-delete {
+      font-size: $chip-touch-delete-icon-font-size;
+      height: $chip-touch-delete-icon-size;
+      margin: $chip-touch-delete-icon-margin;
+      width: $chip-touch-delete-icon-size;
+
+      @if $skin-name == 'bootstrap4' {
+        &.e-dlt-btn::before {
+          font-size: small;
+        }
+      }
+
+      @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5dark') {
+        &.e-dlt-btn::before {
+          font-size: 13px;
+        }
+      }
+    }
+
+    .trailing-icon-url {
+      font-size: $chip-touch-delete-icon-font-size;
+      height: $chip-touch-delete-icon-size;
+      margin: $chip-touch-delete-icon-margin;
+      width: $chip-touch-delete-icon-size;
+    }
+
+    &.e-multi-selection .e-chip {
+      &::before {
+        height: $chip-touch-leading-icon-size;
+        margin: $chip-touch-multi-selection-icon-margin;
+        margin-top: $chip-multi-selection-icon-margin-top;
+        width: $chip-touch-leading-icon-size;
+      }
+
+      &.e-chip-avatar-wrap {
+        &::before {
+          height: $chip-touch-avatar-size;
+          margin: $chip-touch-avatar-margin;
+          margin-top: $chip-multi-selection-icon-margin-top;
+          width: $chip-touch-avatar-size;
+        }
+      }
+
+      &.e-active {
+        &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
+          &::before {
+            width: $chip-touch-leading-icon-size;
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-chip,
+      & .e-chip {
+        .e-chip-avatar {
+          margin: $chip-touch-rtl-avatar-margin;
+        }
+
+        .e-chip-icon {
+          margin: $chip-touch-rtl-leading-icon-margin;
+        }
+
+        .e-chip-delete {
+          margin: $chip-touch-rtl-delete-icon-margin;
+        }
+
+        .e-chip-avatar-wrap,
+        &.e-chip-avatar-wrap {
+          border-radius: $chip-touch-rtl-avatar-wrapper-border-radius;
+        }
+      }
+
+      &.e-multi-selection .e-chip {
+        &::before {
+          margin: $chip-touch-rtl-leading-icon-margin;
+          margin-top: $chip-multi-selection-icon-margin-top;
+        }
+
+        &.e-chip-avatar-wrap {
+          &::before {
+            margin: $chip-touch-rtl-avatar-margin;
+            margin-top: $chip-multi-selection-icon-margin-top;
+          }
+        }
+      }
+
+      .trailing-icon-url {
+        margin: $chip-touch-rtl-delete-icon-margin;
+      }
+    }
+  }
+}

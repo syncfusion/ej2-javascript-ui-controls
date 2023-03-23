@@ -91,7 +91,8 @@ export class StringFilterUI implements IFilterMUI {
                 autofill: true,
                 placeholder: args.localizeText.getConstant('EnterValue'),
                 actionBegin: function () : void {
-                    if (this.query.queries.length && this.query.queries[0].fn === 'onWhere') {
+                    if (this.query.queries.length && this.query.queries[0].fn === 'onWhere' && this.query.queries[0].e
+                        && this.query.queries[0].e.predicates) {
                         for (let i : number = 0; i < this.query.queries[0].e.predicates.length; i++) {
                             if (this.properties.fields.value === this.query.queries[0].e.predicates[`${i}`].field) {
                                 this.query.queries[0].e.predicates.splice(i, 1);

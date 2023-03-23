@@ -2,11 +2,25 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I442919` - Now, when focusing out of the Rich Text Editor, the embed YouTube video will not be removed.
+
+#### New Features
+
+- **Tooltip Integration**: The Rich Text Editor tooltip has been redesigned to more clearly display the keyboard shortcut information, making it easier for users to understand the functions of each toolbar item.
+
 ## 20.4.53 (2023-03-07)
 
 ### RichTextEditor
 
 #### Bug Fixes
+
+- `#F180013` - Resolved issue where pasting from Word with `enterKey` configuration set to `BR` did not work properly in the RichTextEditor.
 
 - `#I440490` - Now, the inline toolbar will be shown while selecting text in the Rich Text Editor using the keyboard.
 
@@ -41,8 +55,6 @@
 ### RichTextEditor
 
 #### Bug Fixes
-
-- `#F180013` - Resolved issue where pasting from Word with `enterKey` configuration set to `BR` did not work properly in the RichTextEditor.
 
 - `#I431289` - Fixed issue where pasting text from MS Word into the Rich Text Editor and pressing enter caused bullet point text to be removed.
 

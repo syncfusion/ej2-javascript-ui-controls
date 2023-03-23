@@ -232,7 +232,7 @@ export interface LegendSettingsModel {
     /**
      * Options to customize the legend title.
      */
-    
+
     titleStyle?: FontModel;
 
     /**
@@ -290,6 +290,7 @@ export interface LegendSettingsModel {
 
     /**
      * If `isInversed` set to true, then it inverses legend item content (image and text).
+     *
      * @default false.
      */
 

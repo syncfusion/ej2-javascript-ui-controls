@@ -29,6 +29,11 @@
           height: 16px;
           width: 16px;
         }
+        @else if ($skin-name == 'Material3') {
+          height: 24px;
+          width: 24px;
+          padding: 4px;
+        }
         @else {
           height: 18px;
           width: 18px;
@@ -183,7 +188,7 @@
       }
 
       .e-range {
-        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5') {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'Material3') {
           background-color: $slider-range-bar-hover-color;
         }
       }

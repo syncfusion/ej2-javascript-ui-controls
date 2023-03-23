@@ -19,7 +19,7 @@
     }
 
     .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
         border: 1px dashed $gridline-border;
       }
       @else {
@@ -53,7 +53,7 @@
           border: $panel-hover-border;
         }
 
-        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
           box-shadow: $panel-hover-box-shadow;
         }
 

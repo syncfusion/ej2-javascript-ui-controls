@@ -32,10 +32,12 @@ export class EditSettings extends ChildProperty<EditSettings> {
 
     /**
      * Defines the mode to edit. The available editing modes are:
-     * * Cell
-     * * Row
-     * * Dialog
-     * * Batch
+     * ```props
+     * * Cell :- Defines the editing mode as Cell.
+     * * Row :- Defines the editing mode as Row.
+     * * Dialog :- Defines the editing mode as Dialog.
+     * * Batch :- Defines the editing mode as Batch.
+     * ```
      *
      * @default Cell
      * @isEnumeration true
@@ -44,11 +46,13 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public mode: EditMode;
     /**
      * Defines the row position for new records. The available row positions are:
-     * * Top
-     * * Bottom
-     * * Above
-     * * Below
-     * * Child
+     * ```props
+     * * Top :- Defines the row position as Top.
+     * * Bottom :- Defines the row position as Bottom.
+     * * Above :- Defines the row position as Above.
+     * * Below :- Defines the row position as Below.
+     * * Child :- Defines the row position as Child.
+     * ```
      * {% codeBlock src='treegrid/newRowPosition/index.md' %}{% endcodeBlock %}
      *
      * @default Top

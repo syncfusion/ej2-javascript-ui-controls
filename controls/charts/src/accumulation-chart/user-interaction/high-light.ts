@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**
@@ -14,12 +13,14 @@ import { AccumulationSelection } from './selection';
 // tslint:disable:no-string-literal
 /**
  * `AccumulationHighlight` module handles the selection for chart.
+ *
  * @private
  */
 export class AccumulationHighlight extends AccumulationSelection {
 
     /**
      * Constructor for selection module.
+     *
      * @private.
      */
 
@@ -54,6 +55,7 @@ export class AccumulationHighlight extends AccumulationSelection {
     }
     /**
      * Method to select the point and series.
+     *
      * @return {void}
      */
     public invokeHighlight(accumulation: AccumulationChart): void {
@@ -65,6 +67,7 @@ export class AccumulationHighlight extends AccumulationSelection {
 
     /**
      * Get module name.
+     *
      * @private
      */
     public getModuleName(): string {
@@ -72,6 +75,7 @@ export class AccumulationHighlight extends AccumulationSelection {
     }
     /**
      * To destroy the highlight.
+     *
      * @return {void}
      * @private
      */

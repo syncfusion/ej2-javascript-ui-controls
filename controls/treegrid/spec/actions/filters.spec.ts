@@ -597,7 +597,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       it('Check the AND of custom filter- Mouseover', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType === 'filterchoicerequest') {
-            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 9).toBe(true);
+            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 10).toBe(true);
             done();
           }
           if (args.requestType === 'filterafteropen') {
@@ -650,7 +650,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       it('Check the OR of custom filter- Mouseover', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType === 'filterchoicerequest') {
-            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 9).toBe(true);
+            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 10).toBe(true);
             done();
           }
           if (args.requestType == 'filterafteropen') {
@@ -707,7 +707,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       it('Check the custom filter of excel filter', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType === 'filterchoicerequest') {
-            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 9).toBe(true);
+            expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 10).toBe(true);
             done();
           }
           if (args.requestType === 'filterafteropen') {

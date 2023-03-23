@@ -23,3 +23,4 @@ export * from './plugin/clearformat-exec';
 export * from './plugin/undo';
 export * from './plugin/table';
 export * from './plugin/toolbar-status';
+export * from './plugin/format-painter-actions';

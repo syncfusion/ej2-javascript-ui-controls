@@ -12,7 +12,12 @@
     }
 
     #{if(&, '&', '*')} .e-calendar {
-      background-color: $datepicker-popup-bg-color;
+      @if $skin-name != 'Material3' {
+        background-color: $datepicker-popup-bg-color;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datepicker-popup-bg-color;
+      }
       border: $datepicker-calendar-border-style;
     }
   }
@@ -37,6 +42,11 @@
         }
         @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
           color: $datepicker-active-icon-color;
+        }
+        @if $skin-name == 'Material3' {
+          border: $datepicker-icon-active-border;
+          border-radius: $datepicker-icon-active-border-radius;
+          background: $datepicker-icon-active-bg-color;
         }
       }
     }

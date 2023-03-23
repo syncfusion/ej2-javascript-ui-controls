@@ -213,7 +213,7 @@ describe('Chart', () => {
                 let stroke: string = seriesElements.getAttribute('stroke-width');
                 expect(stroke == '2' || stroke == '0').toBe(true);
                 let labelElement: HTMLElement = document.getElementById('container0_AxisLabel_3');
-                expect(labelElement.textContent == '26 Tue' || labelElement.textContent == '26').toBe(true);
+                expect(labelElement.textContent == '26 Tue' || labelElement.textContent == 'Jun 26').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

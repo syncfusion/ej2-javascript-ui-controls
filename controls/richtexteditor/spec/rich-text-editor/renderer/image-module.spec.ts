@@ -1493,11 +1493,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Image"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl + Shift + I)"]'), preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Image"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl + Shift + I)"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
         });

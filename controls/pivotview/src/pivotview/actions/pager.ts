@@ -335,9 +335,9 @@ export class Pager {
         });
         const pagerString: HTMLElement = createElement('span', {
             id: this.parent.element.id + '_' + axis + '_pagerString',
-            className: axis === 'row' ? cls.PIVOT_ROW_PAGER_STRING : cls.PIVOT_COLUMN_PAGER_STRING,
-            innerHTML: axis === 'row' ? this.parent.localeObj.getConstant('rowPage') : this.parent.localeObj.getConstant('columnPage')
+            className: axis === 'row' ? cls.PIVOT_ROW_PAGER_STRING : cls.PIVOT_COLUMN_PAGER_STRING
         });
+        pagerString.innerText = axis === 'row' ? this.parent.localeObj.getConstant('rowPage') : this.parent.localeObj.getConstant('columnPage');
         const pagerTextBoxDiv: HTMLElement = createElement('input', {
             id: this.parent.element.id + '_' + axis + '_textbox',
             className: axis === 'row' ? cls.PIVOT_ROW_DROPDOWN : cls.PIVOT_COLUMN_DROPDOWN
@@ -348,14 +348,14 @@ export class Pager {
         });
         const ofString: HTMLElement = createElement('span', {
             id: this.parent.element.id + '_' + axis + '_ofString',
-            innerHTML: this.parent.localeObj.getConstant('of') + ' ',
             className: axis === 'row' ? cls.PIVOT_ROW_OF_STRING : cls.PIVOT_COLUMN_OF_STRING
         });
+        ofString.innerText = this.parent.localeObj.getConstant('of') + ' ';
         const pagerNumber: HTMLElement = createElement('span', {
             id: this.parent.element.id + '_' + axis + '_pagerNumber',
-            className: axis === 'row' ? cls.PIVOT_ROW_PAGER_NUMBER : cls.PIVOT_COLUMN_PAGER_NUMBER,
-            innerHTML: (axis === 'row' ? this.parent.engineModule.rowPageCount : this.parent.engineModule.columnPageCount).toString()
+            className: axis === 'row' ? cls.PIVOT_ROW_PAGER_NUMBER : cls.PIVOT_COLUMN_PAGER_NUMBER
         });
+        pagerNumber.innerText = (axis === 'row' ? this.parent.engineModule.rowPageCount : this.parent.engineModule.columnPageCount).toString();
         const nextIcon: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_' + axis + '_nextIcon',
             attrs: {
@@ -378,9 +378,9 @@ export class Pager {
         });
         const pageSize: HTMLElement = createElement('span', {
             id: this.parent.element.id + '_' + axis + '_size',
-            className: axis === 'row' ? cls.PIVOT_ROW_SIZE : cls.PIVOT_COLUMN_SIZE,
-            innerHTML: axis === 'row' ? this.parent.localeObj.getConstant('rowPerPage') : this.parent.localeObj.getConstant('columnPerPage')
+            className: axis === 'row' ? cls.PIVOT_ROW_SIZE : cls.PIVOT_COLUMN_SIZE
         });
+        pageSize.innerText = axis === 'row' ? this.parent.localeObj.getConstant('rowPerPage') : this.parent.localeObj.getConstant('columnPerPage');
         const pageSizeDropDownMainDiv: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_' + axis + '_size_list_maindiv',
             className: cls.PIVOT_PAGE_SIZE_LIST_MAINDIV + ' ' + cls.PIVOT_PAGER_CONTAINER

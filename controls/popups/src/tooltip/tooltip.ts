@@ -11,21 +11,163 @@ import { TooltipModel, AnimationModel } from './tooltip-model';
 /**
  * Set of open modes available for Tooltip.
  */
-export type OpenMode = 'Auto' | 'Hover' | 'Click' | 'Focus' | 'Custom';
+export type OpenMode = 
+    /**
+     * The tooltip opens automatically when the trigger element is hovered over.
+     */
+    'Auto' | 
+    /**
+     * The tooltip opens when the trigger element is hovered over.
+     */
+    'Hover' | 
+    /**
+     * The tooltip opens when the trigger element is clicked.
+     */
+    'Click' | 
+    /**
+     * The tooltip opens when the trigger element is focused.
+     */
+    'Focus' | 
+    /**
+     * The tooltip opens when the trigger element is triggered by a custom event.
+     */
+    'Custom';
 /**
  * Applicable positions where the Tooltip can be displayed over specific target elements.
  */
-export type Position = 'TopLeft' | 'TopCenter' | 'TopRight' | 'BottomLeft' | 'BottomCenter' | 'BottomRight' |
-'LeftTop' | 'LeftCenter' | 'LeftBottom' | 'RightTop' | 'RightCenter' | 'RightBottom';
+export type Position = 
+    /**
+     * The tooltip is positioned at the top-left corner of the trigger element.
+     */
+    'TopLeft' | 
+    /**
+     *  The tooltip is positioned at the top-center of the trigger element.
+     */
+    'TopCenter' | 
+    /**
+     * The tooltip is positioned at the top-right corner of the trigger element.
+     */
+    'TopRight' | 
+    /**
+     * The tooltip is positioned at the bottom-left corner of the trigger element.
+     */
+    'BottomLeft' | 
+    /**
+     * The tooltip is positioned at the bottom-center of the trigger element.
+     */
+    'BottomCenter' | 
+    /**
+     * The tooltip is positioned at the bottom-right corner of the trigger element.
+     */
+    'BottomRight' |
+    /**
+     * The tooltip is positioned at the left-top corner of the trigger element.
+     */
+    'LeftTop' | 
+    /**
+     * The tooltip is positioned at the left-center of the trigger element.
+     */
+    'LeftCenter' | 
+    /**
+     * The tooltip is positioned at the left-bottom corner of the trigger element.
+     */
+    'LeftBottom' | 
+    /**
+     * The tooltip is positioned at the right-top corner of the trigger element.
+     */
+    'RightTop' | 
+    /**
+     * The tooltip is positioned at the right-center of the trigger element.
+     */
+    'RightCenter' | 
+    /**
+     * The tooltip is positioned at the right-bottom corner of the trigger element.
+     */
+    'RightBottom';
 /**
  * Applicable tip positions attached to the Tooltip.
  */
-export type TipPointerPosition = 'Auto' | 'Start' | 'Middle' | 'End';
+export type TipPointerPosition = 
+    /**
+     * The tip pointer position is automatically calculated based on the available space.
+     */
+    'Auto' | 
+    /**
+     * The tip pointer is positioned at the start of the tooltip.
+     */
+    'Start' | 
+    /**
+     * The tip pointer is positioned at the middle of the tooltip.
+     */
+    'Middle' | 
+    /**
+     * The tip pointer is positioned at the end of the tooltip.
+     */
+    'End';
 /**
  * Animation effects that are applicable for Tooltip.
  */
-export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'FlipXDownIn' | 'FlipXDownOut' |
-'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'ZoomIn' | 'ZoomOut' | 'None';
+export type Effect = 
+    /**
+    * A fade-in animation effect where the tooltip gradually increases in opacity from 0 to full.
+    */
+    'FadeIn' | 
+    /**
+    * A fade-out animation effect where the tooltip gradually decreases in opacity from full to 0.
+    */
+    'FadeOut' | 
+    /**
+    * A fade-in animation effect combined with a zoom-in effect.
+    */
+    'FadeZoomIn' | 
+    /**
+    * A fade-out animation effect combined with a zoom-out effect.
+    */
+    'FadeZoomOut' | 
+    /**
+    *  A flip-down animation effect where the tooltip starts upside down and flips down to become fully visible.
+    */
+    'FlipXDownIn' | 
+    /**
+    * A flip-down animation effect where the tooltip starts fully visible and flips down to become invisible.
+    */
+    'FlipXDownOut' |
+    /**
+    * A flip-up animation effect where the tooltip starts upside down and flips up to become fully visible.
+    */
+    'FlipXUpIn' | 
+    /**
+    * A flip-up animation effect where the tooltip starts fully visible and flips up to become invisible.
+    */
+    'FlipXUpOut' | 
+    /**
+    * A flip-left animation effect where the tooltip starts from the right side and flips left to become fully visible.
+    */
+    'FlipYLeftIn' | 
+    /**
+    * A flip-left animation effect where the tooltip starts from the left side and flips left to become invisible.
+    */
+    'FlipYLeftOut' | 
+    /**
+    * A flip-right animation effect where the tooltip starts from the left side and flips right to become fully visible.
+    */
+    'FlipYRightIn' | 
+    /**
+    * A flip-right animation effect where the tooltip starts from the right side and flips right to become invisible.
+    */
+    'FlipYRightOut' | 
+    /**
+    *  zoom-in animation effect where the tooltip starts small and gradually grows in size to become fully visible.
+    */
+    'ZoomIn' | 
+    /**
+    * A zoom-out animation effect where the tooltip starts full size and gradually decreases in size to become invisible.
+    */
+    'ZoomOut' | 
+    /**
+    * No animation effect, the tooltip simply appears or disappears without any animation.
+    */
+    'None';
 
 const TOUCHEND_HIDE_DELAY: number = 1500;
 const TAPHOLD_THRESHOLD: number = 500;
@@ -267,6 +409,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * Refer the documentation
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
+     * 
      * {% codeBlock src="tooltip/tippointerposition/index.md" %}{% endcodeBlock %}
      *
      * @default 'Auto'
@@ -277,6 +420,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to determine the device mode to display the Tooltip content.
      * If it is in desktop, it will show the Tooltip content when hovering on the target element.
      * If it is in touch device, it will show the Tooltip content when tap and holding on the target element.
+     * 
      * {% codeBlock src="tooltip/openson/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/opensOn-api/index.ts" %}{% endcodeBlock %}
      *
@@ -288,6 +432,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It allows the Tooltip to follow the mouse pointer movement over the specified target element.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/position/#mouse-trailing)
      *  to know more about this property with demo.
+     * 
      * {% codeBlock src="tooltip/mousetrail/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
      *
@@ -299,6 +444,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to display the Tooltip in an open state until closed by manually.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode/#sticky-mode)
      *  to know more about this property with demo.
+     * 
      * {% codeBlock src="tooltip/issticky/index.md" %}{% endcodeBlock %}
      *
      * @default false
@@ -309,6 +455,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * We can set the same or different animation option to Tooltip while it is in open or close state.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/animation/)
      *  to know more about this property with demo.
+     * 
      * {% codeBlock src="tooltip/animation/index.md" %}{% endcodeBlock %}
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
      *
@@ -346,6 +493,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(false)
     public enableHtmlSanitizer: boolean;
     /**
+     * Allows additional HTML attributes such as tabindex, title, name, etc. to root element of the Tooltip popup, and
+     * accepts n number of attributes in a key-value pair format.
+     * 
+     * {% codeBlock src='tooltip/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    @Property('')
+    public htmlAttributes: { [key: string]: string };
+    /**
      * We can trigger `beforeRender` event before the Tooltip and its contents are added to the DOM.
      * When one of its arguments `cancel` is set to true, the Tooltip can be prevented from rendering on the page.
      * This event is mainly used for the purpose of customizing the Tooltip before it shows up on the screen.
@@ -363,6 +520,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * When one of its arguments `cancel` is set to true, the Tooltip display can be prevented.
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
+     * 
      * {% codeBlock src="tooltip/beforeOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
@@ -371,6 +529,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public beforeOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
+     * 
      * {% codeBlock src="tooltip/afterOpen/index.md" %}{% endcodeBlock %}
      *
      * @event
@@ -379,6 +538,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public afterOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
+     * 
      * {% codeBlock src="tooltip/beforeClose/index.md" %}{% endcodeBlock %}
      *
      * @event
@@ -387,6 +547,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public beforeClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
+     * 
      * {% codeBlock src="tooltip/afterClose/index.md" %}{% endcodeBlock %}
      *
      * @event
@@ -395,6 +556,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public afterClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
+     * 
      * {% codeBlock src="tooltip/beforeCollision/index.md" %}{% endcodeBlock %}
      *
      * @event
@@ -406,7 +568,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
     /* eslint-enable */
@@ -415,7 +576,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
     /* eslint-enable */
@@ -433,7 +593,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private initialize(): void {
         this.formatPosition();
         addClass([this.element], ROOT);
-        this.element.setAttribute('tabindex', '0');
     }
 
     private formatPosition(): void {
@@ -503,8 +662,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEventArgs = null;
     }
     private closePopupHandler(): void {
-        if ((this as any).isReact && !(this.opensOn === "Click" && typeof (this.content) === 'function')) {
-        this.clearTemplate(['content']);
+        if ((this as any).isReact && !(this.opensOn === 'Click' && typeof (this.content) === 'function')) {
+            this.clearTemplate(['content']);
         }
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
@@ -611,9 +770,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
                 } else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
                     leftValue = POINTER_ADJUST + 'px';
-                } else if ((tipPosExclude) && (this.tipPointerPosition === 'End'||this.tipPointerPosition === 'Start')){
+                } else if ((tipPosExclude) && (this.tipPointerPosition === 'End' || this.tipPointerPosition === 'Start')){
                     leftValue = (this.tipPointerPosition === 'End') ? ((target.offsetWidth + ((this.tooltipEle.offsetWidth - target.offsetWidth) / 2)) - (tipWidth / 2)) - POINTER_ADJUST + 'px'
-                    : ((this.tooltipEle.offsetWidth - target.offsetWidth) / 2) - (tipWidth / 2) + POINTER_ADJUST + 'px';
+                        : ((this.tooltipEle.offsetWidth - target.offsetWidth) / 2) - (tipWidth / 2) + POINTER_ADJUST + 'px';
                 } else {
                     leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
                 }
@@ -657,7 +816,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.enableHtmlSanitizer) {
                     this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                 }
-                // eslint-disable-next-line
                 const tempFunction: Function = compile(this.content);
                 const tempArr: Element[] = tempFunction(
                     {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
@@ -672,7 +830,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             } else {
-                // eslint-disable-next-line
                 const templateFunction: Function = compile(this.content);
                 const tempArr: Element[] = templateFunction(
                     {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
@@ -695,25 +852,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.appendChild(tipClose);
         EventHandler.add(tipClose, Browser.touchStartEvent, this.onStickyClose, this);
     }
-    private addDescribedBy(target: HTMLElement, id: string): void {
-        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
-        if (describedby.indexOf(id) < 0) { describedby.push(id); }
-        attributes(target, { 'aria-describedby': describedby.join(' ').trim(), 'data-tooltip-id': id });
+    private addDataTooltipId(target: HTMLElement, id: string): void {
+        attributes(target, { 'data-tooltip-id': id });
     }
-    private removeDescribedBy(target: HTMLElement): void {
-        const id: string = target.getAttribute('data-tooltip-id');
-        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
-        const index: number = describedby.indexOf(id);
-        if (index !== -1) {
-            describedby.splice(index, 1);
-        }
+    private removeDataTooltipId(target: HTMLElement): void {
         target.removeAttribute('data-tooltip-id');
-        const orgdescribedby: string = describedby.join(' ').trim();
-        if (orgdescribedby) {
-            target.setAttribute('aria-describedby', orgdescribedby);
-        } else {
-            target.removeAttribute('aria-describedby');
-        }
     }
     private tapHoldHandler(evt: TapEventArgs): void {
         clearTimeout(this.autoCloseTimer);
@@ -723,7 +866,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.isSticky) {
             return;
         }
-        // eslint-disable-next-line
         const close: Function = (): void => {
             this.close();
         };
@@ -757,7 +899,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         for (const target of targetList) {
             this.restoreElement(target as HTMLElement);
         }
-        // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
         this.showTooltip(target, this.animation.open, e);
     }
 
@@ -782,7 +923,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
             element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
         };
-        // eslint-disable-next-line
         const observeCallback: Function = (beforeRenderArgs: TooltipEventArgs) => {
             this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
         };
@@ -809,12 +949,22 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }, styles: 'width:' +
                         formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
                 });
+                if (Object.keys(this.htmlAttributes).length !== 0) {
+                    for (const attr in this.htmlAttributes) {
+                        if (attr === "class") {
+                            this.tooltipEle.classList.add(this.htmlAttributes[`${attr}`]);
+                        }
+                        else {
+                            this.tooltipEle.setAttribute(attr, this.htmlAttributes[`${attr}`]);
+                        }
+                    }
+                }
                 this.tooltipBeforeRender(target, this);
                 this.tooltipAfterRender(target, e, showAnimation, this);
             } else {
                 if (target) {
                     this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.addDataTooltipId(target, this.ctrlId + '_content');
                     this.renderContent(target);
                     PopupAnimation.stop(this.tooltipEle);
                     this.reposition(target);
@@ -854,7 +1004,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
             this.appendContainer(ctrlObj);
             removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
-            ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
+            ctrlObj.addDataTooltipId(target, ctrlObj.ctrlId + '_content');
             ctrlObj.renderContent(target);
             addClass([ctrlObj.tooltipEle], POPUP_OPEN);
             if (ctrlObj.showTipPointer) {
@@ -879,7 +1029,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
-            // eslint-disable-next-line
             const observeCallback: Function = (observedArgs: TooltipEventArgs) => {
                 ctrlObj.beforeOpenCallback(observedArgs, target, showAnimation, e);
             };
@@ -898,7 +1047,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.mouseMoveBeforeRemove();
             this.restoreElement(target);
         } else {
-            // eslint-disable-next-line
             let openAnimation: Object = {
                 name: showAnimation.effect,
                 duration: showAnimation.duration,
@@ -909,7 +1057,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 openAnimation = undefined;
             }
             if (this.openDelay > 0) {
-                // eslint-disable-next-line
                 const show: Function = (): void => {
                     if (this.mouseTrail) {
                         EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
@@ -1029,7 +1176,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.closeDelay > 0) {
             clearTimeout(this.hideTimer);
             clearTimeout(this.showTimer);
-            // eslint-disable-next-line
             const hide: Function = (): void => {
                 if (this.closeDelay && this.tooltipEle && this.isTooltipOpen) { return; }
                 this.tooltipHide(hideAnimation, e, targetElement);
@@ -1066,7 +1212,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
-        // eslint-disable-next-line
         let closeAnimation: Object = {
             name: hideAnimation.effect,
             duration: hideAnimation.duration,
@@ -1084,7 +1229,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             target.setAttribute('title', target.getAttribute('data-content'));
             target.removeAttribute('data-content');
         }
-        this.removeDescribedBy(target);
+        this.removeDataTooltipId(target);
     }
     private clear(): void {
         if (this.tooltipEle) {
@@ -1262,7 +1407,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
             this.targetsList = targetList;
             for (const target of targetList) {
-                target.setAttribute('tabindex', '0');
                 EventHandler.add(target, 'focus', this.targetHover, this);
             }
         } else {
@@ -1286,7 +1430,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.mouseTrail && this.openDelay === 0) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
-            target.setAttribute("tabindex", "0");
         }
     }
     /**
@@ -1327,7 +1470,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
             for (const target of targetList) {
-                target.removeAttribute('tabindex');
                 EventHandler.remove(target, 'focus', this.targetHover);
             }
         } else {

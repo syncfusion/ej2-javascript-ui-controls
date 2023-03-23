@@ -429,7 +429,7 @@ export class SheetRender implements IRenderer {
         let tHead: Element;
         tHead = this.parent.element.querySelector('.e-column-header thead');
         tHead = hFrag.appendChild(tHead.cloneNode(true) as Element);
-        const hRow: Element = tHead.querySelector('tr'); hRow.innerHTML = '';
+        const hRow: HTMLElement = tHead.querySelector('tr'); hRow.innerText = '';
         const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
         if (frozenRow) { hTBody = hFrag.appendChild(hTBody.cloneNode(true) as Element); }
         const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
@@ -449,7 +449,7 @@ export class SheetRender implements IRenderer {
                     row = tBody.children[count as number];
                 }
                 if (row) {
-                    row.innerHTML = '';
+                    (row as HTMLElement).innerText = '';
                     count++;
                 } else {
                     return;

@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { StockChart } from '../stock-chart';
 import { PeriodsModel, FontModel } from '../../common/model/base-model';
 import { titlePositionX, textElement, appendChildElement, getElement } from '../../common/utils/helper';

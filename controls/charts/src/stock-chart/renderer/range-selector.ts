@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Render range navigator for financial chart
  */

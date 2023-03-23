@@ -5,7 +5,7 @@ import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-
 
 
 /**
- * This module enables the export to PDF functionality in Maps control.
+ * This module enables the export to PDF functionality in maps.
  *
  * @hidden
  */
@@ -25,7 +25,7 @@ export class PdfExport {
      * @param {ExportType} type - Specifies the type of the document.
      * @param {string} fileName - Specifies the name of the PDF document.
      * @param {boolean} allowDownload - Specifies whether to download the document or not.
-     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the maps.
      * @returns {Promise<string>} - Returns "null" value when the allowDownload is set to false.
      * @private
      */

@@ -8,11 +8,27 @@
 
         &:hover,
         &:focus {
-          color: $breadcrumb-item-hover-color;
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-hover-color;
+          }
+          @else {
+            color: $breadcrumb-item-hover-color;
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-focus-color;
+          }
         }
 
         &:active {
-          color: $breadcrumb-item-active-color;
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-active-color;
+          }
+          @else {
+            color: $breadcrumb-item-active-color;
+          }
         }
       }
 

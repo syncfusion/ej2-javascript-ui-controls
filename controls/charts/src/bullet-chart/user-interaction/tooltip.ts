@@ -2,10 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable prefer-const */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { compile as templateComplier } from '@syncfusion/ej2-base';
 import { stringToNumber } from '../../common/utils/helper';
@@ -128,9 +126,9 @@ export class BulletTooltip {
                         elem.appendChild(templateElement[0]);
                     }
                 }
-                argsData.template = elem.innerHTML;
+                argsData.template = (<HTMLElement>elem).innerHTML;
                 this.control.trigger(tooltipRender, argsData);
-                elem.innerHTML = argsData.template;
+                (<HTMLElement>elem).innerHTML = argsData.template;
                 tooltipdiv.appendChild(elem);
             } else {
                 let argsText: string = 'Value : ' + argsData.value;

@@ -414,10 +414,7 @@ export class AutoFill {
                     return;
                 }
                 this.performAutoFillAction(eventArgs, autofillRange, isLockedCell);
-                if (this.isMergedRange(getRangeIndexes(eventArgs.dataRange))) {
-                    this.parent.renderModule.refreshSheet();
-                }
-                this.positionAutoFillElement({ isautofill: !this.isMergedRange(getRangeIndexes(eventArgs.fillRange)) });
+                this.positionAutoFillElement({ isautofill: true });
             }
 
         } else {

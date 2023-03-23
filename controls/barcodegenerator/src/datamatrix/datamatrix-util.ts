@@ -75,7 +75,7 @@ export class DataMatrix {
 
     private fillZero(destinationArray: number[]): number[] {
         for (let i: number = 0; i < destinationArray.length; i++) {
-            destinationArray[i] = 0;
+            destinationArray[parseInt(i.toString(), 10)] = 0;
         }
         return destinationArray;
     }
@@ -95,9 +95,9 @@ export class DataMatrix {
         for (let i: number = 0; i < result.length; i++) {
 
             if (!isEven && i === result.length - 1) {
-                result[i] = (destinationArray[2 * i] + 1);
+                result[parseInt(i.toString(), 10)] = (destinationArray[2 * i] + 1);
             } else {
-                result[i] = ((((destinationArray[2 * i] - 48) * 10) + (destinationArray[(2 * i) + 1] - 48)) + 130);
+                result[parseInt(i.toString(), 10)] = ((((destinationArray[2 * i] - 48) * 10) + (destinationArray[(2 * i) + 1] - 48)) + 130);
             }
 
         }
@@ -132,7 +132,7 @@ export class DataMatrix {
         }
         result = this.copy(dataCodeword, 0, result, 1 + num, dataCodeword.length);
         for (let i: number = 1; i < result.length; i++) {
-            result[i] = this.ComputeBase256Codeword(result[i], i);
+            result[parseInt(i.toString(), 10)] = this.ComputeBase256Codeword(result[parseInt(i.toString(), 10)], i);
         }
 
         return result;
@@ -157,14 +157,14 @@ export class DataMatrix {
         let index: number = 0;
         for (let i: number = 0; i < dataCodeword.length; i++) {
             //checks the codeword is digit or not.
-            if (dataCodeword[i] >= 48 && dataCodeword[i] <= 57) {
+            if (dataCodeword[parseInt(i.toString(), 10)] >= 48 && dataCodeword[parseInt(i.toString(), 10)] <= 57) {
                 let prevIndex: number = 0;
 
                 if (i !== 0) {
                     prevIndex = index - 1;
                 }
 
-                const prevValue: number = (result[prevIndex] - 1);
+                const prevValue: number = (result[parseInt(prevIndex.toString(), 10)] - 1);
 
                 let priorValue: number = 0;
                 if (i !== 0 && index !== 1) {
@@ -174,16 +174,16 @@ export class DataMatrix {
                 //Check the prevValue is digit or non convertable value
                 //if it is true ,then combine the 2 digits
                 if (priorValue !== 235 && prevValue >= 48 && prevValue <= 57) {
-                    result[prevIndex] = (10 * (prevValue - 0) + (dataCodeword[i] - 0) + 130);
+                    result[parseInt(prevIndex.toString(), 10)] = (10 * (prevValue - 0) + (dataCodeword[parseInt(i.toString(), 10)] - 0) + 130);
 
                 } else {
-                    result[index++] = (dataCodeword[i] + 1);
+                    result[index++] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
                 }
-            } else if (dataCodeword[i] < 127) {
-                result[index++] = (dataCodeword[i] + 1);
+            } else if (dataCodeword[parseInt(i.toString(), 10)] < 127) {
+                result[index++] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
             } else {
-                result[index] = 235;
-                result[index++] = (((dataCodeword[i] - 127)));
+                result[parseInt(index.toString(), 10)] = 235;
+                result[index++] = (((dataCodeword[parseInt(i.toString(), 10)] - 127)));
             }
         }
         let encodedData: number[] = Array(index);
@@ -203,7 +203,7 @@ export class DataMatrix {
             const data: number[] = dataCodeword;
             let encoding: string = 'ASCII';
             for (let i: number = 0; i < data.length; i++) {
-                if ((data[i] < 48) || (data[i] > 57)) {
+                if ((data[parseInt(i.toString(), 10)] < 48) || (data[parseInt(i.toString(), 10)] > 57)) {
                     number = false;
                 }
             }
@@ -293,7 +293,7 @@ export class DataMatrix {
         let l: number = temp.length;
         const ms: number[] = [];
         for (let i: number = 0; i < l; i++) {
-            ms.push(temp[i]);
+            ms.push(temp[parseInt(i.toString(), 10)]);
         }
         if (l < dataCWLength) {
             ms.push(129);
@@ -320,7 +320,7 @@ export class DataMatrix {
         mLog = this.CreateLogArrays(true);
         let mALog: number[] = Array(256);
         mALog = this.CreateLogArrays(false);
-        return mALog[(mLog[a] + mLog[b]) % 255];
+        return mALog[(mLog[parseInt(a.toString(), 10)] + mLog[parseInt(b.toString(), 10)]) % 255];
     }
 
     /**
@@ -345,7 +345,7 @@ export class DataMatrix {
         if (!this.size) {
             mSymbolAttributes = this.getmSymbolAttributes();
             for (let i: number = 0; i < mSymbolAttributes.length; i++) {
-                const attr: PdfDataMatrixSymbolAttribute = mSymbolAttributes[i];
+                const attr: PdfDataMatrixSymbolAttribute = mSymbolAttributes[parseInt(i.toString(), 10)];
                 if (attr.DataCodewords >= dataLength) {
                     this.mSymbolAttribute = attr;
                     break;
@@ -383,12 +383,12 @@ export class DataMatrix {
         b = this.create1DMatrixArray(mBlockLength, b);
         for (let block: number = 0; block < step; block++) {
             for (let bI: number = 0; bI < b.length; bI++) {
-                b[bI] = 0;
+                b[parseInt(bI.toString(), 10)] = 0;
             }
             for (let i: number = block; i < symbolDataWords; i += step) {
-                const val: number = this.EccSum(b[blockErrorWords - 1], (this.encodedCodeword[i] as number));
+                const val: number = this.EccSum(b[blockErrorWords - 1], (this.encodedCodeword[parseInt(i.toString(), 10)] as number));
                 for (let j: number = blockErrorWords - 1; j > 0; j--) {
-                    b[j] = this.EccSum(b[j - 1], this.EccProduct(mrsPolynomial[j], val));
+                    b[parseInt(j.toString(), 10)] = this.EccSum(b[j - 1], this.EccProduct(mrsPolynomial[parseInt(j.toString(), 10)], val));
                 }
                 b[0] = this.EccProduct(mrsPolynomial[0], val);
             }
@@ -399,7 +399,7 @@ export class DataMatrix {
                 blockDataWords = this.mSymbolAttribute.InterleavedDataBlock;
                 let bIndex: number = blockErrorWords;
                 for (let i: number = block + (step * blockDataWords); i < total; i += step) {
-                    ctArray[i] = b[--bIndex];
+                    ctArray[parseInt(i.toString(), 10)] = b[--bIndex];
 
                 }
                 if (bIndex !== 0) {
@@ -415,7 +415,7 @@ export class DataMatrix {
             let z: number = 0;
 
             for (let i: number = tmp.length - 1; i > this.mSymbolAttribute.DataCodewords; i--) {
-                ctArray[z++] = tmp[i];
+                ctArray[z++] = tmp[parseInt(i.toString(), 10)];
             }
         }
         return ctArray.reverse();
@@ -429,13 +429,13 @@ export class DataMatrix {
         maLog[0] = 1;
 
         for (let i: number = 1; i <= 255; i++) {
-            maLog[i] = maLog[i - 1] * 2;
+            maLog[parseInt(i.toString(), 10)] = maLog[i - 1] * 2;
 
-            if (maLog[i] >= 256) {
-                maLog[i] = maLog[i] ^ 301;
+            if (maLog[parseInt(i.toString(), 10)] >= 256) {
+                maLog[parseInt(i.toString(), 10)] = maLog[parseInt(i.toString(), 10)] ^ 301;
             }
 
-            mLog[maLog[i]] = i;
+            mLog[maLog[parseInt(i.toString(), 10)]] = i;
 
         }
         if (value) {
@@ -458,7 +458,7 @@ export class DataMatrix {
         mLog = this.CreateLogArrays(true);
         let maLog: number[] = Array(256);
         maLog = this.CreateLogArrays(false);
-        return maLog[(mLog[a] + b) % 255];
+        return maLog[(mLog[parseInt(a.toString(), 10)] + b) % 255];
     }
 
 
@@ -468,13 +468,13 @@ export class DataMatrix {
         const mrsPolynomial: number[] = Array(mBlockLength);
         const blockErrorWords: number = mSymbolAttribute.CorrectionCodewords / step;
         for (let i: number = 0; i < mrsPolynomial.length; i++) {
-            mrsPolynomial[i] = 0x01;
+            mrsPolynomial[parseInt(i.toString(), 10)] = 0x01;
         }
         for (let i: number = 1; i <= blockErrorWords; i++) {
             for (let j: number = i - 1; j >= 0; j--) {
-                mrsPolynomial[j] = this.EccDoublify(mrsPolynomial[j], i);
+                mrsPolynomial[parseInt(j.toString(), 10)] = this.EccDoublify(mrsPolynomial[parseInt(j.toString(), 10)], i);
                 if (j > 0) {
-                    mrsPolynomial[j] = this.EccSum(mrsPolynomial[j], mrsPolynomial[j - 1]);
+                    mrsPolynomial[parseInt(j.toString(), 10)] = this.EccSum(mrsPolynomial[parseInt(j.toString(), 10)], mrsPolynomial[j - 1]);
                 }
             }
         }
@@ -506,7 +506,7 @@ export class DataMatrix {
 
     private copyArray(array: number[], index: number, correctCodeword: number[]): void {
         for (let i: number = 0; i < correctCodeword.length; i++) {
-            array[index + i] = correctCodeword[i];
+            array[index + i] = correctCodeword[parseInt(i.toString(), 10)];
         }
 
     }
@@ -653,22 +653,22 @@ export class DataMatrix {
         this.mDataMatrixArray = this.create2DMartixArray(w, h, this.mDataMatrixArray);
         // Top quietzone.
         for (let i: number = 0; i < h; i++) {
-            this.mDataMatrixArray[0][i] = 0;
+            this.mDataMatrixArray[0][parseInt(i.toString(), 10)] = 0;
         }
         for (let i: number = quietZone; i < w - quietZone; i++) {
             // Left quietzone.
-            this.mDataMatrixArray[i][0] = 0;
+            this.mDataMatrixArray[parseInt(i.toString(), 10)][0] = 0;
 
             for (let j: number = quietZone; j < h - quietZone; j++) {
-                this.mDataMatrixArray[i][j] = tempArray2[i - quietZone][j - quietZone];
+                this.mDataMatrixArray[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = tempArray2[i - quietZone][j - quietZone];
             }
 
             // Right quietzone.
-            this.mDataMatrixArray[i][h - quietZone] = 0;
+            this.mDataMatrixArray[parseInt(i.toString(), 10)][h - quietZone] = 0;
         }
         //Bottom quietzone.
         for (let i: number = 0; i < h; i++) {
-            this.mDataMatrixArray[w - quietZone][i] = 0;
+            this.mDataMatrixArray[w - quietZone][parseInt(i.toString(), 10)] = 0;
         }
     }
 
@@ -680,7 +680,7 @@ export class DataMatrix {
         // render image for the datamtrix generator
         const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
-            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
+            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[parseInt(i.toString(), 10)]);
         }
     }
 
@@ -729,14 +729,14 @@ export class DataMatrix {
         tempArray = this.create2DMartixArray(w, h, tempArray);
         for (let x1: number = 0; x1 < w; x1++) {
             for (let y1: number = 0; y1 < h; y1++) {
-                tempArray[x1][y1] = matrix[w * y1 + x1];
+                tempArray[parseInt(x1.toString(), 10)][parseInt(y1.toString(), 10)] = matrix[w * y1 + x1];
             }
         }
         let tempArray2: number[][] = [];
         tempArray2 = this.create2DMartixArray(w, h, tempArray2);
         for (let i: number = 0; i < h; i++) {
             for (let j: number = 0; j < w; j++) {
-                tempArray2[h - 1 - i][j] = tempArray[j][i];
+                tempArray2[h - 1 - i][parseInt(j.toString(), 10)] = tempArray[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)];
             }
         }
         this.AddQuiteZone(tempArray2);
@@ -744,7 +744,7 @@ export class DataMatrix {
 
     private create1DMatrixArray(w: number, tempArray: number[]): number[] {
         for (let i: number = 0; i < w; i++) {
-            tempArray[i] = 0;
+            tempArray[parseInt(i.toString(), 10)] = 0;
         }
         return tempArray;
     }
@@ -753,7 +753,7 @@ export class DataMatrix {
         for (let i: number = 0; i < w; i++) {
             tempArray.push([i]);
             for (let j: number = 0; j < h; j++) {
-                tempArray[i][j] = 0;
+                tempArray[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = 0;
             }
         }
         return tempArray;
@@ -922,7 +922,7 @@ export class DataMatrix {
         for (let i: number = 0; i < w; i++) {
             for (let j: number = 0; j < h; j++) {
                 let color: string;
-                if (this.mDataMatrixArray[i][j] === 1) {
+                if (this.mDataMatrixArray[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === 1) {
                     color = this.foreColor;
                 } else {
                     color = 'white';

@@ -329,7 +329,7 @@ describe('Gantt virtual scroll', () => {
         });
         it('Critical path with virtualization', () => {
             expect(ganttObj.criticalPathModule.criticalTasks.length).toBe(450);
-            
+
         });
     });
     describe('Virtual scroll shimmer with RTL', () => {

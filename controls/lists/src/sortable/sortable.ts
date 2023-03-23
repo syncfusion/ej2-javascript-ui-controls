@@ -1,4 +1,3 @@
-﻿﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
 import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
@@ -62,35 +61,33 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
      * @event 'object'
      */
 
- 
+
     @Event()
     public drag: (e: any) => void;
-    /* es-lint enable  */
     /**
      * Specifies the callback function for beforeDragStart event.
      *
      *  @event 'object'
      */
- 
+
     @Event()
     public beforeDragStart: (e: any) => void;
-    /* es-lint enable  */
     /**
      * Specifies the callback function for dragStart event.
      *
      *  @event 'object'
      */
+
     @Event()
     public dragStart: (e: any) => void;
-    /* es-lint enable  */
     /**
      * Specifies the callback function for beforeDrop event.
      *
      *  @event 'object'
      */
+
     @Event()
     public beforeDrop: (e: any) => void;
-    /* es-lint enable  */
     /**
      * Specifies the callback function for drop event.
      *
@@ -99,7 +96,6 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
 
     @Event()
     public drop: (e: any) => void;
-    /* es-lint enable  */
     constructor(element: HTMLElement, options?: SortableModel) {
         super(options, element);
         this.bind();
@@ -136,7 +132,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         }
         return null;
     }
-    // eslint-disable-next-line
+
     private getHelper: Function = (e: { sender: MouseEventArgs, element: HTMLElement }) => {
         // eslint-disable-next-line prefer-const
         let target: HTMLElement = this.getSortableElement(e.sender.target as HTMLElement);
@@ -160,12 +156,11 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     }
     // eslint-disable-next-line
     private onDrag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
-        if (!e.target) return;
+        if (!e.target) { return; }
         this.trigger('drag', { event: e.event, element: this.element, target: e.target });
         let newInst: Sortable = this.getSortableInstance(e.target); let target: HTMLElement = this.getSortableElement(e.target, newInst);
         if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||
-            !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target :
-                true)) {
+            !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
             if (e.target.className.indexOf('e-list-group-item') > -1) {
                 target = e.target;
             }
@@ -182,11 +177,11 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                 if (isPlaceHolderPresent) { remove(newInst.placeHolderElement); }
                 newInst.placeHolderElement = placeHolder;
                 if (e.target.className.indexOf('e-list-group-item') > -1) {
-                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
+                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx as number]);
                 } else if (newInst.element !== this.element && newIdx === newInst.element.childElementCount) {
                     newInst.element.appendChild(newInst.placeHolderElement);
                 } else {
-                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
+                    newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx as number]);
                 }
                 this.refreshDisabled(oldIdx, newIdx, newInst);
             } else {
@@ -195,7 +190,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                 newIdx = this.getIndex(target, newInst);
                 const idx: number = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 this.updateItemClass(newInst);
-                newInst.element.insertBefore(this.target, newInst.element.children[idx]);
+                newInst.element.insertBefore(this.target, newInst.element.children[idx as number]);
                 this.refreshDisabled(oldIdx, newIdx, newInst);
                 this.curTarget = this.target;
                 this.trigger('drop', {
@@ -242,7 +237,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             let element: Element; const increased: boolean = oldIdx < newIdx; let disabledIdx: number;
             let start: number = increased ? oldIdx : newIdx; const end: number = increased ? newIdx : oldIdx;
             while (start <= end) {
-                element = this.element.children[start];
+                element = this.element.children[start as number];
                 if (element.classList.contains('e-disabled')) {
                     disabledIdx = this.getIndex(element);
                     this.element.insertBefore(element, this.element.children[increased ? disabledIdx + 2 : disabledIdx - 1]);
@@ -396,16 +391,16 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     public onPropertyChanged(newProp: SortableModel, oldProp: SortableModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'itemClass':
-                    [].slice.call(this.element.children).forEach((element: HTMLElement): void => {
-                        if (element.classList.contains(oldProp.itemClass)) {
-                            element.classList.remove(oldProp.itemClass);
-                        }
-                        if (newProp.itemClass) {
-                            element.classList.add(newProp.itemClass);
-                        }
-                    });
-                    break;
+            case 'itemClass':
+                [].slice.call(this.element.children).forEach((element: HTMLElement): void => {
+                    if (element.classList.contains(oldProp.itemClass)) {
+                        element.classList.remove(oldProp.itemClass);
+                    }
+                    if (newProp.itemClass) {
+                        element.classList.add(newProp.itemClass);
+                    }
+                });
+                break;
             }
         }
     }
@@ -422,7 +417,7 @@ export function moveTo(from: HTMLElement, to?: HTMLElement, targetIndexes?: numb
     if (!to) { to = from; }
     if (targetIndexes && targetIndexes.length) {
         targetIndexes.forEach((index: number): void => {
-            targetElements.push(from.children[index]);
+            targetElements.push(from.children[index as number]);
         });
     } else {
         targetElements = [].slice.call(from.children);
@@ -432,7 +427,7 @@ export function moveTo(from: HTMLElement, to?: HTMLElement, targetIndexes?: numb
             to.appendChild(target);
         });
     } else {
-        const insertElement: HTMLElement = to.children[insertBefore] as HTMLElement;
+        const insertElement: HTMLElement = to.children[insertBefore as number] as HTMLElement;
         targetElements.forEach((target: Element): void => {
             to.insertBefore(target, insertElement);
         });

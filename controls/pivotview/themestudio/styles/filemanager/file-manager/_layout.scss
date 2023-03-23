@@ -80,6 +80,30 @@
         border-width: 0 0 1px;
       }
 
+      @if ($fm-skin-name == 'Material3') {
+        height: $fe-tb-height;
+        min-height: $fe-tb-height;
+      }
+
+      @if ($fm-skin-name == 'Material3') {
+        .e-toolbar-item {
+          .e-tbar-btn {
+            .e-tbar-btn-text {
+              line-height: 18px;
+              padding: 7px 8px;
+            }
+
+            .e-icons.e-btn-icon {
+              padding: 7px 8px;
+            }
+          }
+        }
+
+        .e-toolbar-item:not(.e-separator) {
+          padding: 0;
+        }
+      }
+
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         border: 0;
         box-shadow: none;
@@ -251,6 +275,9 @@
             @if $skin-name == 'material' {
               height: 30px;
             }
+            @if $fm-skin-name == 'Material3' {
+              height: $fe-search-input-height;
+            }
           }
 
           .e-clear-icon {
@@ -263,11 +290,14 @@
       }
 
       .e-fe-search {
-        font-size: 14px;
+        font-size: $fe-search-icon-font-size;
         margin: $fe-search-icon-margin;
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           margin-right: 4px;
           padding: 3px;
+        }
+        @if ($fm-skin-name == 'Material3') {
+          padding: $fe-search-input-padding;
         }
         @else {
           padding: 5px;
@@ -322,7 +352,7 @@
 
       .e-address-list-item {
         display: inline-block;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'Material3' {
           height: $fe-bc-li-item-height;
         }
 
@@ -429,8 +459,13 @@
             padding: 8px;
           }
 
-          .e-fe-text {
-            font-size: $fe-grid-content-name-font-size;
+          @if $fm-skin-name == 'Material3' {
+            padding: 8px 12px;
+
+            .e-fe-text {
+              font-size: $fe-grid-content-name-font-size;
+              line-height: 20px;
+            }
           }
         }
 
@@ -492,7 +527,7 @@
       .e-empty-inner-content {
         font-size: $fe-grid-empty-inner-content-font-size;
         margin: $fe-grid-empty-inner-content-margin;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           line-height: 22px;
         }
         @else {
@@ -520,8 +555,11 @@
         }
 
         .e-fe-grid-icon {
-          @if $fm-skin-name != 'tailwind' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'Material3' {
             padding: 0 0 0 12px;
+          }
+          @if $fm-skin-name == 'Material3' {
+            padding: $fe-grid-icon-padding;
           }
 
           .e-headercelldiv {
@@ -544,7 +582,7 @@
 
         &.e-focused {
           box-shadow: none;
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' and $fm-skin-name != 'Material3' {
             td {
               box-shadow: $fe-grid-row-ie-box-shadow;
             }
@@ -633,7 +671,7 @@
       .e-empty-inner-content {
         font-size: $fe-lg-icon-empty-inner-content-font-size;
         margin: $fe-lg-icon-empty-inner-content-margin;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           line-height: 22px;
         }
         @else {
@@ -662,7 +700,7 @@
       }
 
       .e-list-item {
-        border: 1px solid;
+        border: $fe-lg-item-border solid;
         float: left;
         height: $fe-lg-item-height;
         margin: $fe-lg-item-margin;
@@ -679,7 +717,7 @@
             border: 2px dashed $fe-drop-folder-bg-color;
           }
         }
-        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $skin-name == 'Material3' {
           border-radius: 4px;
         }
 
@@ -707,7 +745,7 @@
 
       .e-list-img {
         border: 2px solid;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'Material3' {
           box-shadow: $fe-img-box-shadow;
         }
         display: block;
@@ -870,7 +908,7 @@
       .e-grid.e-rtl {
 
         .e-row.e-focused {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' and $fm-skin-name != 'Material3' {
             td:first-child {
               box-shadow: $fe-grid-row-lc-ie-box-shadow;
             }
@@ -1448,6 +1486,15 @@
 
     .e-toolbar {
 
+      @if ($fm-skin-name == 'Material3') {
+        height: $fe-big-tb-height;
+        min-height: $fe-big-tb-height;
+
+        .e-toolbar-item:not(.e-separator) {
+          min-height: $fe-big-tb-height;
+        }
+      }
+
       .e-toolbar-items .e-toolbar-item .e-btn-icon.e-icons {
         font-size: $fe-mobile-icon-font-size;
       }
@@ -1549,7 +1596,9 @@
       }
 
       .e-address-list-item {
-        height: $fe-big-bc-li-item-height;
+        @if ($fm-skin-name != 'Material3') {
+          height: $fe-big-bc-li-item-height;
+        }
 
         .e-icons {
           font-size: $fe-big-bc-icon-font-size;
@@ -1584,6 +1633,11 @@
             @if ($fm-skin-name == 'FluentUI') {
               height: 30px;
             }
+
+            @if ($fm-skin-name == 'Material3') {
+              margin: $fe-big-search-input-margin;
+              height: $fe-big-search-input-height;
+            }
           }
 
           .e-clear-icon::before {
@@ -1610,8 +1664,15 @@
         @else if $fm-skin-name == 'FluentUI' {
           margin: 3px;
         }
+        @else if($fm-skin-name == 'Material3') {
+          margin: $fe-search-icon-margin;
+        }
         @else {
           margin: 7px 0;
+        }
+
+        @if ($fm-skin-name == 'Material3') {
+          padding: $fe-big-search-input-padding;
         }
       }
     }

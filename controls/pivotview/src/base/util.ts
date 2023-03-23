@@ -773,8 +773,9 @@ export class PivotUtil {
         return fList;
     }
 
-    public static frameContent(pivotValues: IPivotValues, type: string, rowPosition: number,
-                               control: PivotView | PivotFieldList): IGridValues {
+    public static frameContent(
+        pivotValues: IAxisSet[][], type: string, rowPosition: number, control: PivotView | PivotFieldList
+        ): IGridValues {
         const dataContent: IGridValues = [];
         const pivot: PivotView | PivotFieldList = control;
         if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
@@ -909,8 +910,10 @@ export class PivotUtil {
      * @returns {IAxisSet[]} - It returns the sorted data as IAxisSet[].
      * @hidden
      */
-    public static applyCustomSort(sortDetails: HeadersSortEventArgs, sortMembersOrder: IAxisSet[], type: string | boolean,
-                                  hasMembersOrder?: boolean, isOlap?: boolean): IAxisSet[] {
+    public static applyCustomSort(
+        sortDetails: HeadersSortEventArgs, sortMembersOrder: IAxisSet[], type: string | boolean,
+        hasMembersOrder?: boolean, isOlap?: boolean
+        ): IAxisSet[] {
         let grandTotal: IAxisSet;
         let order: string[] | number[] = [];
         if (sortDetails.IsOrderChanged) {

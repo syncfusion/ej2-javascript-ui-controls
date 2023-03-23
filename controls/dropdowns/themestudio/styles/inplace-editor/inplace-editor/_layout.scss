@@ -137,7 +137,7 @@
         font-size: $editor-nrml-value-text-font-size;
         margin: $editor-nrml-value-margin;
 
-        @if $inplace-skin == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           line-height: 24px;
         }
       }
@@ -205,7 +205,7 @@
         font-size: $editor-nrml-value-text-font-size;
         margin: $editor-nrml-value-margin;
 
-        @if $inplace-skin == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           line-height: 24px;
         }
       }
@@ -330,7 +330,7 @@
 
     .e-input-group + .e-editable-loading {
 
-      @if $inplace-skin == 'material' {
+      @if $skin-name == 'material' {
         .e-spinner-inner {
           top: 45%;
         }
@@ -344,7 +344,7 @@
 
         .e-btn-icon.e-icons {
 
-          @if $inplace-skin == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             font-size: 16px;
           }
         }
@@ -357,7 +357,7 @@
 
     .e-input-group + .e-editable-loading {
 
-      @if $inplace-skin == 'material' {
+      @if $skin-name == 'material' {
         .e-spinner-inner {
           top: 35%;
         }
@@ -373,7 +373,7 @@
 
     .e-input-group + .e-editable-loading {
 
-      @if $inplace-skin == 'material' {
+      @if $skin-name == 'material' {
         .e-spinner-inner {
           top: 35%;
         }
@@ -485,7 +485,7 @@
     &.e-tooltip-wrap {
 
       .e-tip-content {
-        @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' $inplace-skin == 'FluentUI' {
+        @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' $skin-name == 'FluentUI' {
           padding: 0;
         }
 
@@ -628,7 +628,7 @@
     min-height: 70px;
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
+  @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
     .e-control .e-inplaceeditor,
     .e-tooltip-wrap.e-popup.e-inplaceeditor-tip.e-popup-open,
     .e-inplaceeditor .e-input-group.e-control-wrapper.e-editable-elements {
@@ -636,7 +636,7 @@
     }
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
+  @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
     .e-control.e-inplaceeditor .e-editable-value-wrapper {
       min-height: 30px;
     }

@@ -792,7 +792,7 @@ export class UndoRedo {
                 cellElem = this.parent.getCell(cells[i as number].rowIndex, cells[i as number].colIndex);
                 if (args.eventArgs.type === 'Clear All' || args.eventArgs.type === 'Clear Hyperlinks') {
                     this.parent.addHyperlink(cells[i as number].hyperlink, args.eventArgs.range, cells[i as number].value);
-                } else if (args.eventArgs.type === 'Clear Formats') {
+                } else if (args.eventArgs.type === 'Clear Formats' && cellElem) {
                     addClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
                 }
             }

@@ -3,8 +3,8 @@ $btn-grp-margin: -1px !default;
 $btn-grp-margin-left: -1px !default;
 $btn-grp-wrapper-border: 4px !default;
 $btn-grp-round-radius: 20px !default;
-$btn-grp-icon-font-size: 16px !default;
-$btn-grp-icon-font-size-bigger: 20px !default;
+$btn-grp-icon-font-size: $text-base !default;
+$btn-grp-icon-font-size-bigger: $text-xl !default;
 
 //Normal Outline GroupButton
 $btn-grp-outline-focus-border-color: $secondary-border-color !default;

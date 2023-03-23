@@ -110,6 +110,15 @@
         pointer-events: $calendar-none-style;
         touch-action: $calendar-none-style;
       }
+      #{if(&,'&','*')} td.e-disabled.e-today {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'highcontrast' or $skin-name == 'Material3' {
+          opacity: 1;
+          #{if(&,'&','*')} span.e-day {
+            box-shadow: $calendar-disabled-today-box-shadow;
+            color: $calendar-disabled-today-font-color;
+          }
+        }
+      }
       #{if(&, '&', '*')} td {
         cursor: pointer;
         padding: $calendar-yeardeacde-span-padding;
@@ -164,7 +173,12 @@
       }
       #{if(&, '&', '*')} td.e-week-number:hover span.e-day,
       #{if(&, '&', '*')} td.e-week-number:hover {
-        background-color: $calendar-bg-color;
+        @if $skin-name != 'Material3' {
+          background-color: $calendar-bg-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $calendar-bg-color;
+        }
         cursor: $calendar-cursor-default-style;
         @if $skin-name == 'FluentUI' {
           background-color: $calendar-week-number-bg-color;
@@ -277,6 +291,13 @@
     #{if(&, '&', '*')} .e-content.e-month td.e-today span.e-day {
       line-height: $calendar-normal-month-view-line-height;
     }
+    #{if(&, '&', '*')} .e-content td.e-today span.e-day {
+      @if $skin-name == 'FluentUI' {
+        height: 25px;
+        width: 25px;
+        line-height: 25px;
+      }
+    }
     #{if(&, '&', '*')} .e-content.e-year table,
     #{if(&, '&', '*')} .e-content.e-decade table {
       border-spacing: 0;
@@ -324,7 +345,12 @@
       }
     }
     #{if(&, '&', '*')} .e-footer-container {
-      background-color: $calendar-footer-background;
+      @if $skin-name != 'Material3' {
+        background-color: $calendar-footer-background;
+      }
+      @if $skin-name == 'Material3' {
+        background: $calendar-footer-background;
+      }
       border-top: $calendar-footer-border;
       cursor: $calendar-cursor-default-style;
       display: $calendar-display-style;
@@ -506,6 +532,13 @@
     #{if(&, '&', '*')} .e-content.e-month td.e-today span.e-day {
       line-height: $calendar-bigger-month-view-line-height;
     }
+    #{if(&, '&', '*')} .e-content td.e-today span.e-day {
+      @if $skin-name == 'FluentUI' {
+        height: 29px;
+        width: 29px;
+        line-height: 29px;
+      }
+    }
     #{if(&, '&', '*')} .e-content.e-month td {
       height: $calendar-bigger-month-view-padding;
       padding: $calendar-bigger-month-view-padding;
@@ -568,6 +601,11 @@
       max-width: $calendar-lg-day-header-format-max-width;
       min-width: $calendar-lg-day-header-format-min-width;
     }
+    #{if(&, '&', '*')}.e-week-number .e-content table {
+      @if $skin-name == 'FluentUI' {
+        padding: 0 5px;
+      }
+    }
     #{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} span.e-day {
         font-size: $calendar-small-date-font-size;
@@ -579,6 +617,13 @@
       #{if(&, '&', '*')}.e-month td.e-today span.e-day {
         line-height: $calendar-small-month-view-line-height;
       }
+      #{if(&, '&', '*')} td.e-today span.e-day {
+        @if $skin-name == 'FluentUI' {
+          height: 21px;
+          width: 21px;
+          line-height: 21px;
+        }
+      }
     }
 
     #{if(&, '&', '*')} .e-content.e-month td {
@@ -587,10 +632,12 @@
 
     #{if(&, '&', '*')} .e-header {
       height: $calendar-small-header-height;
-
-      #{if(&, '&', '*')} span {
-        font-size: $calendar-small-icon-font-size-style;
-        padding: $calendar-small-icon-padding;
+      #{if(&, '&', '*')} button{
+        #{if(&, '&', '*')} span {
+          font-size: $calendar-small-icon-font-size-style;
+          padding: $calendar-small-icon-padding;
+          line-height: 14px;
+        }
       }
 
       #{if(&, '&', '*')} .e-title {

@@ -44,6 +44,7 @@ export class Highlight {
     // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for highlight module
+     * @private
      */
     public addHighlight(layerIndex: number, name: string, enable: boolean): void {
         const targetEle: Element = getTargetElement(layerIndex, name, enable, this.maps);

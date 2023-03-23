@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Chart, Alignment } from '..';
 import { AxisModel } from '../axis/axis-model';
 import { Axis, VisibleRangeModel } from '../axis/axis';

@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Chart } from '../chart';
 import { Series } from '../series/chart-series';
 import { ColumnBase } from './column-base';

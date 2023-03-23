@@ -59,7 +59,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const options: { number?: string[], date?: string[], string?: string[], datetime?: string[] } = {
             number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
                 'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
-            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter']
+            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', 'NotContains', '', 'CustomFilter']
         };
         options.date = options.number;
         options.datetime = options.number;
@@ -581,7 +581,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     // eslint-disable-next-line max-len
     private renderOperatorUI(column: string, table: HTMLElement, elementID: string, predicates: PredicateModel[], isFirst?: boolean): { fieldElement: HTMLElement, operator: string } {
 
-        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields', attrs: { role: 'row' } });
+        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
         table.appendChild(fieldElement);
 
         const xlfloptr: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-optr' });
@@ -701,7 +701,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
 
-        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate', attrs: { role: 'row' } });
+        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
         table.appendChild(predicate);
 
         //Renders first radion button

@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-maps/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-maps)
-
 # JavaScript Maps Control
 
 The [JavaScript Maps](https://www.syncfusion.com/javascript-ui-controls/js-maps-library?utm_source=npm&utm_medium=listing&utm_campaign=javascript-map-npm) control is used to visualize geographical data and represent statistical data of a specific geographical area on earth with user interactivity, and it provides a wide range of customization options.

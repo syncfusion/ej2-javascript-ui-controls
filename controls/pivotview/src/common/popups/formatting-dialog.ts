@@ -1,11 +1,11 @@
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { createElement, remove, extend, select } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
+import { FormatSettingsModel } from '../../model/datasourcesettings-model';
 import { IFormatSettings } from '../../base/engine';
 import { PivotUtil } from '../../base/util';
 
@@ -66,6 +66,7 @@ export class NumberFormatting implements IAction {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -91,7 +92,7 @@ export class NumberFormatting implements IAction {
         });
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo(valueDialog);
-        this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).innerHTML = this.parent.localeObj.getConstant('numberFormat');
+        (this.dialog.element.querySelector('.' + cls.DIALOG_HEADER) as HTMLElement).innerText = this.parent.localeObj.getConstant('numberFormat');
         let formatObject: FormatSettingsModel;
         this.newFormat = [{ name: this.parent.localeObj.getConstant('AllValues'), format: 'N0', useGrouping: true, type: undefined }];
         const format: string[] = [];
@@ -133,9 +134,9 @@ export class NumberFormatting implements IAction {
         let tValue: HTMLElement = createElement('td');
         const valueLable: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FormatValueLable',
-            className: cls.FORMATTING_VALUE_LABLE,
-            innerHTML: this.parent.localeObj.getConstant('values')
+            className: cls.FORMATTING_VALUE_LABLE
         });
+        valueLable.innerText = this.parent.localeObj.getConstant('values');
         const valueDrop: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FormatValueDrop'
         });
@@ -147,9 +148,9 @@ export class NumberFormatting implements IAction {
         tValue = createElement('td');
         const formatLable: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FormatLable',
-            className: cls.FORMATTING_FORMAT_LABLE,
-            innerHTML: this.parent.localeObj.getConstant('formatType')
+            className: cls.FORMATTING_FORMAT_LABLE
         });
+        formatLable.innerText = this.parent.localeObj.getConstant('formatType');
         const formatDrop: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FormatDrop'
         });
@@ -161,9 +162,9 @@ export class NumberFormatting implements IAction {
         tValue = createElement('td');
         const groupingLable: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_GroupingLable',
-            className: cls.FORMATTING_GROUPING_LABLE,
-            innerHTML: this.parent.localeObj.getConstant('grouping')
+            className: cls.FORMATTING_GROUPING_LABLE
         });
+        groupingLable.innerText = this.parent.localeObj.getConstant('grouping');
         const groupingDrop: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_GroupingDrop'
         });
@@ -175,9 +176,9 @@ export class NumberFormatting implements IAction {
         tValue = createElement('td');
         const decimalLable: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_DecimalLable',
-            className: cls.FORMATTING_DECIMAL_LABLE,
-            innerHTML: this.parent.localeObj.getConstant('decimalPlaces')
+            className: cls.FORMATTING_DECIMAL_LABLE
         });
+        decimalLable.innerText = this.parent.localeObj.getConstant('decimalPlaces');
         const decimalDrop: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_DecimalDrop'
         });
@@ -189,9 +190,9 @@ export class NumberFormatting implements IAction {
         tValue = createElement('td');
         this.customLable = createElement('div', {
             id: this.parent.element.id + '_CustomLable',
-            className: cls.FORMATTING_CUSTOM_LABLE,
-            innerHTML: this.parent.localeObj.getConstant('customFormatString')
+            className: cls.FORMATTING_CUSTOM_LABLE
         });
+        this.customLable.innerText = this.parent.localeObj.getConstant('customFormatString');
         this.customText = createElement('input', {
             id: this.parent.element.id + '_CustomText',
             attrs: {
@@ -216,9 +217,11 @@ export class NumberFormatting implements IAction {
                 index: 0, name: this.parent.localeObj.getConstant('AllValues'), field: this.parent.localeObj.getConstant('AllValues')
             });
             for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+                let caption: string = this.parent.dataSourceSettings.values[i as number].caption ||
+                this.parent.dataSourceSettings.values[i as number].name;
+                caption = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(caption) : caption;
                 valueFields.push({
-                    index: i + 1, name: this.parent.dataSourceSettings.values[i as number].caption ||
-                    this.parent.dataSourceSettings.values[i as number].name,
+                    index: i + 1, name: caption,
                     field: this.parent.dataSourceSettings.values[i as number].name
                 });
             }

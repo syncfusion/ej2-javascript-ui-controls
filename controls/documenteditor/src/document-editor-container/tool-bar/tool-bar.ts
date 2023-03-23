@@ -2,13 +2,14 @@ import { createElement, L10n, isNullOrUndefined, EventHandler, classList, Browse
 import { Toolbar as EJ2Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
-import { DropDownButton, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, MenuEventArgs, ItemModel, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
-import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType } from './../../index';
+import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType } from './../../index';
+import { ListView, SelectEventArgs as ListSelectEventArgs } from '@syncfusion/ej2-lists';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -29,11 +30,13 @@ const FOOTER_ID: string = '_footer';
 const PAGE_SET_UP_ID: string = '_page_setup';
 const PAGE_NUMBER_ID: string = '_page_number';
 const BREAK_ID: string = '_break';
+const LISTVIEW_ID: string = '_listView';
 const FIND_ID: string = '_find';
 const CLIPBOARD_ID: string = '_use_local_clipboard';
 const RESTRICT_EDITING_ID: string = '_restrict_edit';
 const PAGE_BREAK: string = '_page_break';
 const SECTION_BREAK: string = '_section_break';
+const SECTION_BREAK_CONTINUOUS: string = '_section_break_continuous';
 const COLUMN_BREAK: string = '_column_break';
 const READ_ONLY: string = '_read_only';
 const PROTECTIONS: string = '_protections';
@@ -82,6 +85,7 @@ export class Toolbar {
     private restrictDropDwn: DropDownButton;
     private imgDropDwn: DropDownButton;
     private breakDropDwn: DropDownButton;
+    private breakListView: ListView;
     private formFieldDropDown: DropDownButton;
     private toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     private toolbarTimer: number;
@@ -191,15 +195,25 @@ export class Toolbar {
                 this.PageSetUpDropDwn.appendTo('#' + id + PAGE_SET_UP_ID);
             }
             if (this.toolbarItems.indexOf('Break') >= 0) {
-                this.breakDropDwn = new DropDownButton({
-                    items: [
-                        { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
-                        { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK },
-                        { text: locale.getConstant('Column Break'), iconCss: 'e-icons e-de-ctnr-page-break-column', id: id + COLUMN_BREAK }],
-                    cssClass: 'e-caret-hide',
-                    select: this.onDropDownButtonSelect.bind(this)
+                let break_dataSource = [
+                    { text: locale.getConstant('Page'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-page-break', id: PAGE_BREAK, category: locale.getConstant('Page Breaks') },
+                    { text: locale.getConstant('Column'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-page-break-column', id: COLUMN_BREAK, category: locale.getConstant('Page Breaks') },
+                    { text: locale.getConstant('Next Page'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-section-break', id: SECTION_BREAK, category: locale.getConstant('Section Breaks') },
+                    { text: locale.getConstant('Continuous'), iconCss: 'e-de-listview e-de-listview-icon e-icons e-de-ctnr-section-break-continuous', id: SECTION_BREAK_CONTINUOUS, category: locale.getConstant('Section Breaks') }
+                ];
+                let ddbOption: DropDownButtonModel = {
+                    target: '#' + id + BREAK_ID + LISTVIEW_ID,
+                    cssClass: 'e-caret-hide'
+                };
+                this.breakDropDwn = new DropDownButton(ddbOption, '#' + id + BREAK_ID);
+                this.breakListView = new ListView({
+                    dataSource: break_dataSource,
+                    width: '170px',
+                    fields: { iconCss: 'iconCss', groupBy: 'category' },
+                    showIcon: true,
+                    select: this.onListViewSelection.bind(this)
                 });
-                this.breakDropDwn.appendTo('#' + id + BREAK_ID);
+                this.breakListView.appendTo('#' + id + BREAK_ID + LISTVIEW_ID);
             }
 
 
@@ -251,6 +265,20 @@ export class Toolbar {
                 this.formFieldDropDown.appendTo('#' + id + FORM_FIELDS_ID);
             }
         }
+    }
+    private onListViewSelection(args: ListSelectEventArgs ): void {
+        const parentId: string = this.container.element.id + TOOLBAR_ID;
+        const id: string = args.item.id;
+        if (id === parentId + BREAK_ID + LISTVIEW_ID + '_' + PAGE_BREAK) {
+            this.container.documentEditor.editorModule.insertPageBreak();
+        } else if (id === parentId + BREAK_ID + LISTVIEW_ID + '_' + SECTION_BREAK) {
+            this.container.documentEditor.editorModule.insertSectionBreak();
+        } else if (id === parentId + BREAK_ID + LISTVIEW_ID + '_' + SECTION_BREAK_CONTINUOUS) {
+            this.container.documentEditor.editorModule.insertSectionBreak(SectionBreakType.Continuous);
+        } else if (id === parentId + BREAK_ID + LISTVIEW_ID + '_' + COLUMN_BREAK) {
+            this.container.documentEditor.editorModule.insertColumnBreak();
+        }
+        args.item.classList.remove('e-active');
     }
     private onBeforeRenderRestrictDropdown(args: MenuEventArgs, id: string): void {
         const selectedIcon: HTMLElement = args.element.getElementsByClassName('e-menu-icon')[0] as HTMLElement;
@@ -505,7 +533,7 @@ export class Toolbar {
                     break;
                 case 'Break':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button><div id="' + id + BREAK_ID + LISTVIEW_ID +'"></div>',
                         id: id + BREAK_ID, htmlAttributes:{'aria-label':locale.getConstant('Break')}
                     });
                     break;
@@ -583,10 +611,12 @@ export class Toolbar {
         switch (args.item.id) {
             case id + NEW_ID:
                 this.container.documentEditor.openBlank();
+                this.documentEditor.focusIn();
                 break;
             case id + OPEN_ID:
                 this.filePicker.value = '';
                 this.filePicker.click();
+                this.documentEditor.focusIn();
                 break;
             case id + UNDO_ID:
                 this.container.documentEditor.editorHistory.undo();
@@ -694,13 +724,7 @@ export class Toolbar {
     private onDropDownButtonSelect(args: MenuEventArgs): void {
         const parentId: string = this.container.element.id + TOOLBAR_ID;
         const id: string = args.item.id;
-        if (id === parentId + PAGE_BREAK) {
-            this.container.documentEditor.editorModule.insertPageBreak();
-        } else if (id === parentId + SECTION_BREAK) {
-            this.container.documentEditor.editorModule.insertSectionBreak();
-        } else if (id === parentId + COLUMN_BREAK) {
-            this.container.documentEditor.editorModule.insertColumnBreak();
-        } else if (id === parentId + INSERT_IMAGE_LOCAL_ID) {
+        if (id === parentId + INSERT_IMAGE_LOCAL_ID) {
             this.imagePicker.value = '';
             this.imagePicker.click();
         } else if(id === parentId + PAGE_SET_UP){
@@ -1036,6 +1060,10 @@ export class Toolbar {
         }
         if (this.propertiesPaneButton) {
             this.propertiesPaneButton.destroy();
+        }
+        if (this.breakListView) {
+            this.breakListView.destroy();
+            this.breakListView = undefined;
         }
         this.propertiesPaneButton = undefined;
         this.toolbarItems = [];

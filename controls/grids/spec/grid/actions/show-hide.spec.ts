@@ -825,7 +825,7 @@ describe('ShowHide module testing', () => {
         afterAll(() => {
             destroy(gridObj);
         });
-    });    
+    });
         
     describe('EJ2-69504 - Copy not working properly when using hideColumns property', () => {
         let gridObj: Grid;
@@ -857,4 +857,3 @@ describe('ShowHide module testing', () => {
         });
     });
 });
-

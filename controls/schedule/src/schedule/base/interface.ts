@@ -129,15 +129,15 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
     /**
      * Returns the type of the popup which is currently being opted to open.
      * The available type values are as follows,
-     * * DeleteAlert
-     * * EditEventInfo
-     * * Editor
-     * * EventContainer
-     * * QuickInfo
-     * * RecurrenceAlert
-     * * RecurrenceValidationAlert
-     * * ValidationAlert
-     * * ViewEventInfo
+     * * `DeleteAlert`: Denotes the popup showing delete confirmation message.
+     * * `EditEventInfo`: Denotes the quick popup on the events in responsive mode.
+     * * `Editor`: Denotes the detailed editor window.
+     * * `EventContainer`: Denotes the more indicator popup.
+     * * `QuickInfo`: Denotes the quick popup.
+     * * `RecurrenceAlert`: Denotes the popup showing recurrence alerts.
+     * * `RecurrenceValidationAlert`: Denotes the popup showing recurrence validation alerts.
+     * * `ValidationAlert`: Denotes the popup showing validation alerts.
+     * * `ViewEventInfo`: Denotes the quick popup on the cells in responsive mode.
      */
     type: PopupType;
     /** Returns the cell or event data. */
@@ -162,15 +162,15 @@ export interface PopupCloseEventArgs extends BaseEventArgs {
     /**
      * Returns the type of the popup which is currently being opted to open.
      * The available type values are as follows,
-     * * DeleteAlert
-     * * EditEventInfo
-     * * Editor
-     * * EventContainer
-     * * QuickInfo
-     * * RecurrenceAlert
-     * * RecurrenceValidationAlert
-     * * ValidationAlert
-     * * ViewEventInfo
+     * * `DeleteAlert`: Denotes the popup showing delete confirmation message.
+     * * `EditEventInfo`: Denotes the quick popup on the events in responsive mode.
+     * * `Editor`: Denotes the detailed editor window.
+     * * `EventContainer`: Denotes the more indicator popup.
+     * * `QuickInfo`: Denotes the quick popup.
+     * * `RecurrenceAlert`: Denotes the popup showing recurrence alerts.
+     * * `RecurrenceValidationAlert`: Denotes the popup showing recurrence validation alerts.
+     * * `ValidationAlert`: Denotes the popup showing validation alerts.
+     * * `ViewEventInfo`: Denotes the quick popup on the cells in responsive mode.
      */
     type: PopupType;
     /** Returns the cell or event data. */
@@ -335,7 +335,7 @@ export interface ResourceDetails {
 export interface TimezoneFields {
     /** Assigns the timezone display text. */
     Text: string;
-    /** Assigns the IANA timezone value. */
+    /** Assigns the [`IANA`](https://docs.actian.com/ingres/11.0/index.html#page/Ing_Install/IANA_World_Regions_and_Time_Zone_Names.htm) timezone value. */
     Value: string;
 }
 
@@ -351,6 +351,11 @@ export interface DataBindingEventArgs extends BaseEventArgs {
     result: Record<string, any>[];
     count?: number;
     aggregates?: Record<string, any>;
+}
+
+/** An interface that holds the custom sort comparer function. */
+export interface SortComparerFunction {
+    (param: Record<string, any>[]): Record<string, any>[];
 }
 
 /** @private */
@@ -631,8 +636,4 @@ export interface CallbackFunction extends Function {
     bind<T, A0, A1, A2, A3, A extends any[], R>(this: (this: T, args0: A0, args1: A1, args2: A2, args3: A3, ...args: A[]) => R, thisArgs: T, args0: A0, args1: A1, args2: A2, args3: A3): (...args: A[]) => R;
 }
 
-/** @private */
-export interface SortComparerFunction {
-    (param: Record<string, any>[]): Record<string, any>[];
-}
 

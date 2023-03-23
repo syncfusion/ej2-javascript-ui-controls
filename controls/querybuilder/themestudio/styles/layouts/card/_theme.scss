@@ -5,7 +5,7 @@
 
   .e-card {
     -webkit-tap-highlight-color: $card-highlight-color;
-    background-color: $card-bg-color;
+    background: $card-bg-color;
     border: $card-brdr-size $card-brdr-type $card-brdr-color;
     box-shadow: $card-box-shadow;
     color: $card-font-color;

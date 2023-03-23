@@ -1,68 +1,71 @@
 /**
- * Defines the Alignment. They are
- * * near - Align the element to the left.
- * * center - Align the element to the center.
- * * far - Align the element to the right.
+ * Defines the alignment in the heatmap. They are,
+ * * Near - Aligns the element to the left.
+ * * Center - Aligns the element to the center.
+ * * Far - Aligns the element to the right.
  * *
  */
 
 export type Alignment =
-    /** Define the left alignment. */
+    /** Aligns the element to the left. */
     'Near' |
-    /** Define the center alignment. */
+    /** Aligns the element to the center. */
     'Center' |
-    /** Define the right alignment. */
+    /** Aligns the element to the right. */
     'Far';
 
 /**
- * Export Type
+ * Defines the type of exporting the rendered heatmap.
  */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Used to export the rendered heatmap as image with PNG format. */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Used to export the rendered heatmap as image with JPEG format. */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Used to export the rendered heatmap as image with SVG format. */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Used to export the rendered heatmap as image with PDF format. */
     'PDF';
 
 
 /**
- * Defines Theme of the heatmap.
+ * Defines the theme of the heatmap.
  */
 export type HeatMapTheme =
-    /**  Render a HeatMap with Material theme. */
+    /**  Render a heatmap with Material theme. */
     'Material' |
-    /**  Render a HeatMap with Fabric theme. */
+    /**  Render a heatmap with Fabric theme. */
     'Fabric' |
-    /**  Render a HeatMap with Bootstrap theme. */
+    /**  Render a heatmap with Bootstrap theme. */
     'Bootstrap' |
-    /**  Render a HeatMap with Bootstrap4 theme. */
+    /**  Render a heatmap with Bootstrap4 theme. */
     'Bootstrap4' |
-    /**  Render a HeatMap with Highcontrast Light theme. */
+    /**  Render a heatmap with Highcontrast Light theme. */
     'HighContrastLight'|
-    /**  Render a HeatMap with Material Dark theme. */
+    /**  Render a heatmap with Material Dark theme. */
     'MaterialDark' |
-    /**  Render a HeatMap with Fabric Dark theme. */
+    /**  Render a heatmap with Fabric Dark theme. */
     'FabricDark' |
-    /**  Render a HeatMap with HighContrast theme. */
+    /**  Render a heatmap with HighContrast theme. */
     'HighContrast'|
-    /**  Render a HeatMap with Bootstrap Dark theme. */
+    /**  Render a heatmap with Bootstrap Dark theme. */
     'BootstrapDark'|
-    /**  Render a HeatMap with TailwindDark theme. */
+    /**  Render a heatmap with TailwindDark theme. */
     'TailwindDark'|
-    /**  Render a HeatMap with Tailwind theme. */
+    /**  Render a heatmap with Tailwind theme. */
     'Tailwind' |
-    /**  Render a HeatMap with Bootstrap5 theme. */
+    /**  Render a heatmap with Bootstrap5 theme. */
     'Bootstrap5' |
-    /**  Render a HeatMap with Bootstrap5Dark theme. */
+    /**  Render a heatmap with Bootstrap5Dark theme. */
     'Bootstrap5Dark' |
-    /**  Render a HeatMap with Fluent theme. */
+    /**  Render a heatmap with Fluent theme. */
     'Fluent' |
-    /**  Render a HeatMap with Fluent Dark theme. */
+    /**  Render a heatmap with Fluent Dark theme. */
     'FluentDark';
 
+/**
+ * @private
+ */
 export type Orientation =
     /**  Horizontal Axis. */
     'Horizontal' |
@@ -70,212 +73,215 @@ export type Orientation =
     'Vertical';
 
 /**
- * Defines the type of axis. They are
- * * double -  Renders a numeric axis.
- * * dateTime - Renders a dateTime axis.
- * * category - Renders a category axis.
+ * Defines the type of the data to be handled in the axis. The available types are
+ * * Numeric -  Renders a numeric axis.
+ * * DateTime - Renders a axis that handles date and time.
+ * * Category - Renders a axis that renders user provided labels.
  */
 export type ValueType =
-    /** Define the numeric axis. */
+    /** Renders a numeric axis. */
     'Numeric' |
-    /** Define the DateTime axis. */
+    /** Renders a axis that handles date and time. */
     'DateTime' |
-    /** Define the Category axis . */
+    /** Renders a axis that renders user provided labels. */
     'Category';
 
 /**
- * Defines Color type for heat map cell.
- * * Gradient - Render a HeatMap cells with linear gradient color.
- * * Fixed - Render a HeatMap cells with fixed color.
+ * Defines the style in which the color is to be applied to the cells.
+ * * Gradient - Renders the heatmap cells with linear gradient colors.
+ * * Fixed - Renders the heatmap cells with fixed colors.
  */
 export type PaletteType =
-    /** Define the graident type color. */
+    /** Renders the heatmap cells with linear gradient colors. */
     'Gradient' |
-    /** Define the Fixed type color */
+    /** Renders the heatmap cells with fixed colors. */
     'Fixed';
 
 /**
- * Defines cell Type. They are
- * * Rect - Render a HeatMap cells in rectangle shape.
- * * Bubble - Render a HeatMap cells in bubble shape.
+ * Defines the type of the cells in heatmap. The available types are,
+ * * Rect - Renders the heatmap cells in rectangle shape.
+ * * Bubble - Renders the heatmap cells in bubble shape.
  */
 export type CellType =
-    /**  Render a HeatMap cells in rectangle shape. */
+    /** Renders the heatmap cells in rectangle shape. */
     'Rect' |
-    /**  Render a HeatMap cells in bubble shape. */
+    /** Renders the heatmap cells in bubble shape. */
     'Bubble';
 
 /**
- * Defines Bubble Type. They are
- * * Size - Define the bubble type is size.
- * * Color - Define the bubble type is color.
+ * Defines the type of the bubble heatmap. The available types are,
+ * * Size - The bubble heatmap will be rendered in size variations based on the provided data.
+ * * Color - The bubble heatmap will be rendered in color variations based on the provided data.
  * * Sector - Define the bubble type is sector.
  * * SizeAndColor - Define the bubble type is sizeandcolor.
  */
 export type BubbleType =
-    /**  Define the bubble type is size. */
+    /**  The bubble heatmap will be rendered in size variations based on the provided data. */
     'Size' |
-    /**  Define the bubble type is color. */
+    /**  The bubble heatmap will be rendered in color variations based on the provided data. */
     'Color' |
-    /**  Define the bubble type is sector. */
+    /**  The bubble heatmap will be rendered as sectors based on the provided data. */
     'Sector' |
-    /**  SizeAndColor - Define the bubble type is sizeandcolor. */
+    /**  The bubble heatmap will be rendered in size and color variations based on the provided data. */
     'SizeAndColor';
 /**
- * Defines the interval type of datetime axis. They are
- * * years - Define the interval of the axis in years.
- * * months - Define the interval of the axis in months.
- * * days - Define the interval of the axis in days.
- * * hours - Define the interval of the axis in hours.
- * * minutes - Define the interval of the axis in minutes.
+ * Defines the type of the interval between the axis labels in date time axis.The available types are,
+ * * years - Defines the interval of the axis labels in years.
+ * * months - Defines the interval of the axis labels in months.
+ * * days - Defines the interval of the axis labels in days.
+ * * hours - Defines the interval of the axis labels in hours.
+ * * minutes - Defines the interval of the axis labels in minutes.
  */
 export type IntervalType =
-    /** Define the interval of the axis in years. */
+    /** Defines the interval of the axis labels in years. */
     'Years' |
-    /** Define the interval of the axis in months. */
+    /** Defines the interval of the axis labels in months. */
     'Months' |
-    /** Define the interval of the axis in days. */
+    /** Defines the interval of the axis labels in days. */
     'Days' |
-    /** Define the interval of the axis in hours. */
+    /** Defines the interval of the axis labels in hours. */
     'Hours' |
-    /** Define the interval of the axis in minutes. */
+    /** Defines the interval of the axis labels in minutes. */
     'Minutes';
 
 /**
- * Defines the Legend position
- * Left - Legend in the left position
- * Right - Legend in the left right  position
- * Up - Legend in the left up  position
- * Down -Legend in the left down position
+ * the position of the legend.
+ * Left - Renders legend at the left of the heatmap.
+ * Right - Renders legend at the right of the heatmap.
+ * Top - Renders legend at the top of the heatmap.
+ * Bottom -Renders legend at the bottom of the heatmap.
  */
-export type LegendPosition = 'Left' | 'Right' | 'Top' | 'Bottom';
+export type LegendPosition =
+    /**Renders legend at the left of the heatmap. */
+    'Left' |
+    /**Renders legend at the right of the heatmap. */
+    'Right' |
+    /**Renders legend at the top of the heatmap. */
+    'Top' |
+    /**Renders legend at the bottom of the heatmap. */
+    'Bottom';
 
 /**
- * Defines the text over flow
- * None - Used to show the heat map text with overlap to other element
- * Wrap - Used to show the heat map text with Wrap support
- * Trim - Used to show the heat map text with Trim
+ * Defines the overflow style of the text in heatmap.
+ * None - No action is taken when the text overflows.
+ * Wrap - Wraps the multi-level labels when the text overflows.
+ * Trim - Trims the multi-level labels when the text overflows.
  */
 export type TextOverflow =
-    /** Used to show the heat map text with overlap to other element */
+    /** No action is taken when the text overflows. */
     'None' |
-    /** Used to show the heat map text with Wrap support */
+    /** Wraps the multi-level labels when the text overflows. */
     'Wrap' |
-    /** Used to show the heat map text with Wrap support */
+    /** Trims the multi-level labels when the text overflows. */
     'Trim';
 
 /**
- * specify the adapter type in heat map
- * Cell - Heat map is rendering using cell type data source
- * Table - Heat map is rendering using table type data source
+ * Specifies the type of the adaptor to process the data set in the heatmap.
+ * Cell - This adaptor type processes the cell type data source.
+ * Table - This adaptor type processes the table type data source.
+ * None - No adaptor type will be used for the data source.
  */
 export type AdaptorType =
-    /** Defines the data source type is cell */
+    /** This adaptor type processes the cell type data source. */
     'Cell' |
-    /** Defines the data source type is table */
+    /** This adaptor type processes the table type data source. */
     'Table' |
-    /** Defines no adaptor type is used for data source */
+    /** No adaptor type will be used for the data source. */
     'None';
 
 /**
- * specify the rendering mode
- * SVG - Heat map is render using SVG draw mode.
- * Canvas - Heat map is render using Canvas draw mode.
- * Auto - Automatically switch the draw mode based on number of records in data source.
+ * Defines the rendering mode of heatmap. The following are the available rendering modes.
+ * SVG - Heatmap is rendered using SVG element.
+ * Canvas - Heatmap is rendered using Canvas element.
+ * Auto - Automatically switches the rendering mode based on number of records in the data source.
  */
 export type DrawType =
-    /** Heat map is render using SVG draw mode. */
+    /** Heatmap is rendered using SVG element. */
     'SVG' |
-    /** Heat map is render using Canvas draw mode */
+    /** Heatmap is rendered using Canvas element. */
     'Canvas' |
-    /** Automatically switch the draw mode based on number of records in data source. */
+    /** Automatically switches the rendering mode based on number of records in the data source. */
     'Auto';
 
 /**
- * specify the label intersect action for axis
- * None - Shows all the labels with overlap.
- * Trim - Trim the label when it intersect.
- * Rotate45 - Rotate the label to 45 degree when it intersect.
- * MultipleRows - Shows all the labels in multiple rows when it intersect.
+ * Defines the actions when the axis labels intersect with each other.The actions available are,
+ * None - Shows all the labels.
+ * Trim - Trims the label when label text intersects with other labels.
+ * Rotate45 - Rotates the label to 45 degree when it intersects other labels.
+ * MultipleRows - Shows all the labels as multiple rows when it intersects other labels.
  */
 export type LabelIntersectAction =
     /** Shows all the labels. */
     'None' |
-    /** Trim the label when it intersect. */
+    /** Trims the label when label text intersects with other labels. */
     'Trim' |
-    /** Rotate the label to 45 degree when it intersect. */
+    /** Rotates the label to 45 degree when it intersects other labels. */
     'Rotate45' |
-    /** Multiple row when intersect. */
+    /** Shows all the labels as multiple rows when it intersects other labels. */
     'MultipleRows';
 
 /**
- * Specifies the type of label display for smart legend.
- * * All:  All labels are displayed.
+ * Specifies the display mode for label for smart legend. The available display types are,
+ * * All:  All the labels in the legend are displayed.
  * * Edge: Labels will be displayed only at the edges of the legend.
  * * None: No labels are displayed.
  */
 export type LabelDisplayType =
-/**  All labels are displayed */
+/** All the labels in the legend are displayed. */
 'All' |
-/** Labels will be displayed only at the edges of the legend */
+/** Labels will be displayed only at the edges of the legend. */
 'Edge' |
-/** No labels are displayed */
+/** No labels are displayed. */
 'None';
 
 /**
- * Defines the axis label display type for date time axis.  They are
- * * None: Axis labels displayed based on the value type
- * * years - Define the axis labels display in every year.
- * * months - Define the axis labels display in every month.
- * * days - Define the axis labels display in every days.
- * * hours - Define the axis labels display in every hours.
+ * Specifies the axis label display type for the date time axis. The following are available types,
+ * * None - Axis labels displayed based on the value type.
+ * * years - Displays the axis labels for every year.
+ * * months - Displays the axis labels for every month.
+ * * days - Displays the axis labels for every day.
+ * * hours - Displays the axis labels for every hour.
  */
 
 export type LabelType =
-    /** Axis labels displayed based on the value type */
+    /** Axis labels displayed based on the value type. */
     'None' |
-    /** Define the axis labels display in every year. */
+    /** Displays the axis labels for every year. */
     'Years' |
-    /** Define the axis labels display in every month. */
+    /** Displays the axis labels for every month. */
     'Months' |
-    /**  Define the axis labels display in every day. */
+    /** Displays the axis labels for every day. */
     'Days' |
-    /** Define the axis labels display in every hour. */
+    /** Displays the axis labels for every hour. */
     'Hours';
 
 
 /**
- * Defines border type for multi level labels.
- *  * Rectangle
- *  * Brace
- *  * WithoutBorder
- *  * Without top Border
- *  * Without top and bottom border
- *  * Without bottom Border
+ * Defines the type of the border for the axis labels. The following are the available types.
  */
 export type BorderType =
-    /** Rectangle */
+    /** Renders all the borders around the rectangle. */
     'Rectangle' |
-    /** WithoutTopBorder */
+    /** Renders all the borders except the top border. */
     'WithoutTopBorder' |
-    /** WithoutBottomBorder */
+    /** Renders all the borders except the bottom border. */
     'WithoutBottomBorder' |
-    /** WithoutBorder */
+    /** Renders without borders. */
     'WithoutBorder' |
-    /** WithoutTopandBottomBorder */
+    /** Renders all the borders except the top and bottom borders. */
     'WithoutTopandBottomBorder' |
-    /** CurlyBrace */
+    /** Renders the borders as brace shape. */
     'Brace';
 /**
- * Specifies the type of label display for smart legend.
- * * Table:  Calculated Minimum and Maximum for Overall dataSource.
- * * Row: Calculated Minimum and Maximum for Every Row.
- * * Column : Calculated Minimum and Maximum for Every Column.
+ * Specifies the color gradient mode in heatmap.
+ * * Table: The minimum and maximum value colors calculated for overall data.
+ * * Row: The minimum and maximum value colors calculated for each row of data.
+ * * Column : The minimum and maximum value colors calculated for each column of data.
  */
 export type ColorGradientMode =
-    /**  Calculate minimum and maximum for overall datasource */
+    /** The minimum and maximum value colors calculated for overall data. */
     'Table' |
-    /** Calculate minimum and maximum for each row */
+    /** The minimum and maximum value colors calculated for each row of data. */
     'Row' |
-    /** Calculate minimum and maximum for each column */
+    /** The minimum and maximum value colors calculated for each column of data. */
     'Column';

@@ -182,12 +182,40 @@ export interface AnimationSettings {
 /**
  * An enum type that denotes the effects of the ListView. Available options are as follows None, SlideLeft, SlideDown, Zoom, Fade;
  */
-export type ListViewEffect = 'None' | 'SlideLeft' | 'SlideDown' | 'Zoom' | 'Fade';
+export type ListViewEffect = 
+    /**
+     * No animation is applied when items are added or removed from the ListView.
+     */
+    'None' | 
+    /**
+     * Items slide in from the left when added and slide out to the left when removed.
+     */
+    'SlideLeft' | 
+    /**
+     * Items slide in from the top when added and slide out to the top when removed.
+     */
+    'SlideDown' | 
+    /**
+     * Items zoom in or out when added or removed.
+     */
+    'Zoom' | 
+    /**
+     *  Items fade in or out when added or removed.
+     */
+    'Fade';
 
 /**
  * An enum type that denotes the position of checkbox of the ListView. Available options are as follows Left and Right;
  */
-export type checkBoxPosition = 'Left' | 'Right';
+export type checkBoxPosition = 
+    /**
+     *  The checkbox is positioned on the left side of the ListView item.
+     */
+    'Left' | 
+    /**
+     *  The checkbox is positioned on the right side of the ListView item.
+     */
+    'Right';
 
 
 /**
@@ -722,7 +750,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 anim = (this.enableRtl ? effectsRTLConfig[this.animation.effect] : effectsConfig[this.animation.effect]);
             } else {
                 const slideLeft: string = 'SlideLeft';
-                anim = effectsConfig[slideLeft];
+                anim = effectsConfig[`${slideLeft}`];
                 reverse = this.enableRtl;
                 duration = 0;
             }
@@ -925,15 +953,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private toggleAllCheckBase(checked: boolean): void {
         if (this.showCheckBox) {
             for (let i: number = 0; i < this.liCollection.length; i++) {
-                const checkIcon: Element = this.liCollection[i].querySelector('.' + classNames.checkboxIcon);
+                const checkIcon: Element = this.liCollection[i as number].querySelector('.' + classNames.checkboxIcon);
                 if (checkIcon) {
                     if (checked) {
                         if (!checkIcon.classList.contains(classNames.checked)) {
-                            this.checkItem(this.liCollection[i]);
+                            this.checkItem(this.liCollection[i as number]);
                         }
                     } else {
                         if (checkIcon.classList.contains(classNames.checked)) {
-                            this.uncheckItem(this.liCollection[i]);
+                            this.uncheckItem(this.liCollection[i as number]);
                         }
                     }
                 }
@@ -953,7 +981,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 options: undefined, text: ''
             };
             for (let i: number = 0; i < liCollection.length; i++) {
-                const element: HTMLElement = liCollection[i];
+                const element: HTMLElement = liCollection[i as number];
                 args.item = element;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 args.curData = this.getItemData(element) as { [key: string]: Object } as any;
@@ -968,7 +996,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             const liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
             for (let i: number = 0; i < liCollection.length; i++) {
-                const element: HTMLElement = liCollection[i];
+                const element: HTMLElement = liCollection[i as number];
                 element.classList.remove(classNames.selected);
                 element.firstElementChild.classList.remove(classNames.checkbox);
                 this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
@@ -1083,13 +1111,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             const index: number = !end ? 0 : li.length - 1;
-            if (li[index].classList.contains(classNames.hasChild) || this.showCheckBox) {
-                li[index].classList.add(classNames.focused);
+            if (li[index as number].classList.contains(classNames.hasChild) || this.showCheckBox) {
+                li[index as number].classList.add(classNames.focused);
             } else {
-                this.setSelectLI(li[index], e);
+                this.setSelectLI(li[index as number], e);
             }
-            if (li[index]) {
-                this.element.setAttribute('aria-activedescendant', (<HTMLElement>li[index]).id.toString());
+            if (li[index as number]) {
+                this.element.setAttribute('aria-activedescendant', (<HTMLElement>li[index as number]).id.toString());
             } else {
                 this.element.removeAttribute('aria-activedescendant');
             }
@@ -1289,7 +1317,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
                 if (!this.showCheckBox) {
-                    this.selectedLI.classList.add(classNames.selected);
+                   this.selectedLI.classList.add(classNames.selected);
                 }
             }
         }
@@ -1336,7 +1364,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else {
-            li.classList.remove(classNames.selected);            
+            li.classList.remove(classNames.selected);
         }
     }
 
@@ -1539,12 +1567,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (!this.query) {
             // eslint-disable-next-line
             for (const column of Object.keys((this.fields as any & { properties: object }).properties)) {
-                if (column !== 'tableName' && !!((this.fields as DataSource)[column]) &&
-                    (this.fields as DataSource)[column] !==
-                    (ListBase.defaultMappedFields as DataSource)[column]
-                    && columns.indexOf((this.fields as { [key: string]: string })[column]) === -1) {
+                if (column !== 'tableName' && !!((this.fields as DataSource)[`${column}`]) &&
+                    (this.fields as DataSource)[`${column}`] !==
+                    (ListBase.defaultMappedFields as DataSource)[`${column}`]
+                    && columns.indexOf((this.fields as { [key: string]: string })[`${column}`]) === -1) {
 
-                    columns.push((this.fields as { [key: string]: string })[column]);
+                    columns.push((this.fields as { [key: string]: string })[`${column}`]);
 
                 }
             }

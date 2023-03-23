@@ -108,6 +108,18 @@ export const markerClusterRendering: string = 'markerClusterRendering';
  */
 export const markerClick: string = 'markerClick';
 /**
+ * Specifies the maps marker drag start event name.
+ *
+ * @private
+ */
+export const markerDragStart: string = 'markerDragStart';
+/**
+ * Specifies the maps marker drag end event name.
+ *
+ * @private
+ */
+export const markerDragEnd: string = 'markerDragEnd';
+/**
  * Specifies the maps cluster click event name.
  *
  * @private

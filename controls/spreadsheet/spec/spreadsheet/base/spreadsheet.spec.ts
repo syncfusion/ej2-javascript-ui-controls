@@ -1172,6 +1172,7 @@ describe('Spreadsheet base module ->', () => {
             spreadsheet.protectSheet(4, { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false }, '123');
             setTimeout(() => {
                 expect(spreadsheet.sheets[4].isProtected).toBeTruthy();
+                expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
                 done();
             });
         });
@@ -1180,6 +1181,46 @@ describe('Spreadsheet base module ->', () => {
             spreadsheet.unprotectSheet(4);
             setTimeout(() => {
                 expect(spreadsheet.sheets[4].isProtected).toBeFalsy();
+                done();
+            });
+        });
+        it('Protect Sheet with invalid sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet(7, { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false }, '123');
+            setTimeout(() => {
+                expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[1].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[2].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[3].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[4].isProtected).toBeFalsy();
+                done();
+            });
+        });
+        it('Protect Sheet with name as empty string', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet("", { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false }, '123');
+            setTimeout(() => {
+                expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[1].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[2].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[3].isProtected).toBeFalsy();
+                expect(spreadsheet.sheets[4].isProtected).toBeFalsy();
+                done();
+            });
+        });
+        it('Protect Sheet the active sheet when the sheet is null or undefined', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet(null, { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false }, '123');
+            setTimeout(() => {
+                expect(spreadsheet.getActiveSheet().isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('UnProtect the active sheet when sheet is not given', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet();
+            setTimeout(() => {
+                expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy;
                 done();
             });
         });

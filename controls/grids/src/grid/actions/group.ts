@@ -437,6 +437,8 @@ export class Group implements IAction {
             const target: Element = (e.target as HTMLElement).classList.contains('e-grouptext') ?
                 (e.target as Element).parentElement.parentElement : e.target as Element;
             if (e.type === 'focusin') {
+                this.parent.focusModule.currentInfo.element = e.target as HTMLElement;
+                this.parent.focusModule.currentInfo.elementToFocus = e.target as HTMLElement;
                 addClass([target as Element], ['e-focused', 'e-focus']);
                 (e.target as HTMLElement).tabIndex = 0;
             } else {
@@ -620,7 +622,7 @@ export class Group implements IAction {
                 if (this.isAppliedCaptionRowBorder) {
                     const borderCells: NodeListOf<Element> = table.querySelectorAll('.e-lastrowcell');
                     for (let i: number = 0, len: number = borderCells.length; i < len; i++) {
-                        removeClass([borderCells[i]], 'e-lastrowcell');
+                        removeClass([borderCells[parseInt(i.toString(), 10)]], 'e-lastrowcell');
                     }
                     this.isAppliedCaptionRowBorder = false;
                 }
@@ -633,12 +635,13 @@ export class Group implements IAction {
                     }
                 } else {
                     for (let i: number = rowNodes.length - 1, len: number = 0; i > len; i--) {
-                        if((rowNodes[i] as HTMLTableRowElement).style.display !== 'none' && rowNodes[i].classList.contains('e-groupcaptionrow')) {
-                            if (rowNodes[i].querySelector('.e-recordpluscollapse')) {
-                                addClass(rowNodes[i].childNodes, 'e-lastrowcell');
+                        if ((rowNodes[parseInt(i.toString(), 10)] as HTMLTableRowElement).style.display !== 'none'
+                            && rowNodes[parseInt(i.toString(), 10)].classList.contains('e-groupcaptionrow')) {
+                            if (rowNodes[parseInt(i.toString(), 10)].querySelector('.e-recordpluscollapse')) {
+                                addClass(rowNodes[parseInt(i.toString(), 10)].childNodes, 'e-lastrowcell');
                                 this.isAppliedCaptionRowBorder = true;
                                 break;
-                            } 
+                            }
                         }
                     }
                 }

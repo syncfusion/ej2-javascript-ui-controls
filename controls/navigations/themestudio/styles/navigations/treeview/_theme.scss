@@ -325,6 +325,9 @@
     &.e-drag-item {
       background-color: $treeview-drag-item-bg;
       font-family: $treeview-font-family;
+      @if ($skin-name == 'Material3') {
+        background: $treeview-drag-item-bg;
+      }
 
       .e-icon-collapsible::before,
       .e-icon-expandable::before {

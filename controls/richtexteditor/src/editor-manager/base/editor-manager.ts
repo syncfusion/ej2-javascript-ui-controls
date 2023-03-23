@@ -23,6 +23,7 @@ import { NotifyArgs } from './../../rich-text-editor/base/interface';
 import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
 import { NodeCutter } from '../plugin/nodecutter';
+import { FormatPainterActions } from '../plugin/format-painter-actions';
 /**
  * EditorManager internal component
  *
@@ -50,6 +51,7 @@ export class EditorManager {
     public clearObj: ClearFormatExec;
     public undoRedoManager: UndoRedoManager;
     public msWordPaste: MsWordPaste;
+    public formatPaintetrObj: FormatPainterActions;
     public editableElement: Element;
     /**
      * Constructor for creating the component
@@ -80,6 +82,7 @@ export class EditorManager {
         this.tableObj = new TableCommand(this);
         this.undoRedoManager = new UndoRedoManager(this, options.options);
         this.msWordPaste = new MsWordPaste(this);
+        this.formatPaintetrObj = new FormatPainterActions(this, options.formatPainterSettings);
         this.wireEvents();
     }
     private wireEvents(): void {
@@ -226,6 +229,9 @@ export class EditorManager {
             break;
         case 'actions':
             this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });
+            break;
+        case 'formatpainter':
+            this.observer.notify(EVENTS.FORMAT_PAINTER_ACTIONS, { item: exeValue, subCommand: value, event: event, callBack: callBack });
             break;
         }
     }

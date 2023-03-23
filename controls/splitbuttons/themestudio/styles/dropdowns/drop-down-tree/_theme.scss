@@ -68,7 +68,7 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and  $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'FluentUI' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and  $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' {
           background-color: $ddt-icon-bg-color;
         }
       }

@@ -114,7 +114,7 @@ describe('Virtual scroll', () => {
         it('TimelineYear view - checking elements with rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(eventElementList.length).toEqual(7);
+                expect(eventElementList.length).toEqual(5);
                 const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
@@ -125,7 +125,7 @@ describe('Virtual scroll', () => {
         it('TimelineYear view - checking elements without rowAutoHeight property', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(eventElementList.length).toEqual(5);
+                expect(eventElementList.length).toEqual(3);
                 const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
                 expect(moreIndicatorList.length).toEqual(1);
                 done();

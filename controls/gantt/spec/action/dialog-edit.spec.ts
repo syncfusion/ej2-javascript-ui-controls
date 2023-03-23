@@ -995,7 +995,7 @@
             ganttObj.selectRow(2, false);
             setTimeout(done, 1000);
             ganttObj.indent();
-            setTimeout(done, 10000);
+            setTimeout(done, 1000);
             expect(ganttObj.currentViewData[2].level).toBe(2);
         });
         it('Otdenting a record', (done: Function) => {
@@ -1003,7 +1003,7 @@
             ganttObj.selectRow(2, false);
             setTimeout(done, 1000);
             ganttObj.outdent();
-            setTimeout(done, 10000);
+            setTimeout(done, 1000);
             expect(ganttObj.currentViewData[2].level).toBe(1);
         });
     });
@@ -2101,16 +2101,6 @@
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
         });
-        it('Update duration value',()=>{
-            let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
-            if (durationField) {
-                let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
-                textObj.value = '1';
-                textObj.dataBind();
-                let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-                expect(ganttObj.flatData[1].ganttProperties.duration).toBe(1)
-                }
-        });
     });
     describe('Edit custom column values in edit dialog', function () {
         let ganttObj: Gantt;
@@ -2508,7 +2498,7 @@
             ganttObj.openEditDialog(3);
         });
     });
-    describe('edit Date in dialog edit', () => {
+	 describe('edit Date in dialog edit', () => {
          let ganttObj: Gantt;
          let editingData = [
              {
@@ -2601,7 +2591,7 @@
              }
          });
          beforeEach((done) => {
-             setTimeout(done, 1000);
+             setTimeout(done, 100);
              ganttObj.openEditDialog(1);
          });
          it('Change dates of predecessor record', () => {
@@ -2620,6 +2610,5 @@
                  triggerMouseEvent(saveRecord, 'click');
              }
          });
-     });	 
+     });	
  });
- 

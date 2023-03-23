@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -524,7 +524,75 @@ describe('Context-', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
         });
     });
-    
+    describe('Milestone indent', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: customScheduleModeData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Manual',
+                enableContextMenu: true,
+                splitterSettings: {
+                    columnIndex: 8
+                },
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Milestone indent on manual mode', () => {
+            (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[1];
+            let e1: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e1);
+            ganttObj.selectionModule.selectRow(2);
+            let indent: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+            expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
+        });
+    });
      describe('Modifying segments using custom context menu', () => {
         let ganttObj: Gantt;
         let contextMenuItems: (string | ItemModel)[] = [

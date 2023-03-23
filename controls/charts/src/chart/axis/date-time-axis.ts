@@ -1,6 +1,5 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable no-case-declarations */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { DateFormatOptions } from '@syncfusion/ej2-base';
@@ -311,7 +310,7 @@ export class DateTime extends NiceInterval {
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));
             if (withIn(tempInterval, axis.visibleRange)) {
-                let interval: number = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();
+                const interval: number = this.increaseDateTimeInterval(axis, tempInterval, axis.visibleRange.interval).getTime();
                 if (interval > axis.visibleRange.max) {
                     axis.endLabel = axis.format(new Date(tempInterval));
                 }

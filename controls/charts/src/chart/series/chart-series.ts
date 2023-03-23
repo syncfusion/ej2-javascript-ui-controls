@@ -1,4 +1,3 @@
-/* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-returns */
@@ -369,7 +368,7 @@ export class Points {
     /** point average value. */
     public average: number;
     /** point error value. */
-    public error: number;
+    public error: number | string;
     /** point interior value. */
     public interior: string;
     /** To know the point is selected. */
@@ -384,6 +383,21 @@ export class Points {
      * @private
      */
     public isPointInRange: boolean = true;
+
+    /** Color for the point error bar. */
+    public errorBarColor: string;
+    /** vertical error value for the point. */
+    public verticalError: number = null;
+    /** vertical negative error value for the point. */
+    public verticalNegativeError: number = null;
+    /** horizontal error value for the point. */
+    public horizontalError: number = null;
+    /** horizontal negative error value for the point. */
+    public horizontalNegativeError: number = null;
+    /** vertical positive error value for the point. */
+    public verticalPositiveError: number = null;
+    /** horizontal positive error value for the point. */
+    public horizontalPositiveError: number = null;
 }
 
 /**
@@ -692,13 +706,14 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public color: string;
 
     /**
-     * The vertical error of the error bar.
+     * The vertical error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
     @Property(1)
-    public verticalError: number;
+    public verticalError: number | string;
 
     /**
      * The stroke width of the error bar..
@@ -710,55 +725,68 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public width: number;
 
     /**
-     * The horizontal error of the error bar.
+     * The horizontal error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
     @Property(1)
-    public horizontalError: number;
+    public horizontalError: number | string;
 
     /**
-     * The vertical positive error of the error bar.
+     * The vertical positive error of the point can be mapped from the data source as well.
      *
      * @default 3
+     * @aspType Object
      */
 
     @Property(3)
-    public verticalPositiveError: number;
+    public verticalPositiveError: number | string;
 
     /**
-     * The vertical negative error of the error bar.
+     * The vertical negative error of the point can be mapped from the data source as well.
      *
      * @default 3
+     * @aspType Object
      */
 
     @Property(3)
-    public verticalNegativeError: number;
+    public verticalNegativeError: number | string;
 
     /**
-     * The horizontal positive error of the error bar.
+     * The horizontal positive error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
     @Property(1)
-    public horizontalPositiveError: number;
+    public horizontalPositiveError: number | string;
 
     /**
-     * The horizontal negative error of the error bar.
+     * The horizontal negative error of the point can be mapped from the data source as well.
      *
      * @default 1
+     * @aspType Object
      */
 
     @Property(1)
-    public horizontalNegativeError: number;
+    public horizontalNegativeError: number | string;
 
     /**
      * Options for customizing the cap of the error bar.
      */
     @Complex<ErrorBarCapSettingsModel>(null, ErrorBarCapSettings)
     public errorBarCap: ErrorBarCapSettingsModel;
+
+    /**
+     * Defines the color for the error bar, which is mapped with the mapping name of the data source.
+     *
+     * @default ''
+     */
+    @Property('')
+    public errorBarColorMapping: string;
 
 }
 
@@ -1140,6 +1168,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         point.volume = getObjectValueByMappingString(this.volume, currentViewData);
         point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData) as string;
         if (this instanceof Series) {
+            if (this.errorBar.visible) {
+                point.errorBarColor = getObjectValueByMappingString(this.errorBar.errorBarColorMapping, currentViewData) as string;
+                point.verticalError = typeof this.errorBar.verticalError == 'string' ? getObjectValueByMappingString(this.errorBar.verticalError, currentViewData) : this.errorBar.verticalError;
+                point.horizontalError = typeof this.errorBar.horizontalError == 'string' ? getObjectValueByMappingString(this.errorBar.horizontalError, currentViewData) : this.errorBar.horizontalError;
+                point.verticalNegativeError = typeof this.errorBar.verticalNegativeError == 'string' ? getObjectValueByMappingString(this.errorBar.verticalNegativeError, currentViewData) : this.errorBar.verticalNegativeError;
+                point.verticalPositiveError = typeof this.errorBar.verticalPositiveError == 'string' ? getObjectValueByMappingString(this.errorBar.verticalPositiveError, currentViewData) : this.errorBar.verticalPositiveError;
+                point.horizontalNegativeError = typeof this.errorBar.horizontalNegativeError == 'string' ? getObjectValueByMappingString(this.errorBar.horizontalNegativeError, currentViewData) : this.errorBar.horizontalNegativeError;
+                point.horizontalPositiveError = typeof this.errorBar.horizontalPositiveError == 'string' ? getObjectValueByMappingString(this.errorBar.horizontalPositiveError, currentViewData) : this.errorBar.horizontalPositiveError;
+            }
             point.y = getObjectValueByMappingString(this.yName, currentViewData);
             point.size = getObjectValueByMappingString(this.size, currentViewData);
             point.text = getObjectValueByMappingString(textMappingName, currentViewData) as string;
@@ -1313,6 +1350,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 switch (seriesType) {
                 case 'RangeColumn':
                 case 'RangeArea':
+                case 'RangeStepArea':
                 case 'SplineRangeArea':
                 case 'Hilo':
                     type = 'HighLow';
@@ -1725,6 +1763,7 @@ export class Series extends SeriesBase {
      * * InvertedTriangle
      * * SeriesType
      * * Image
+     *
      * @default 'SeriesType'
      */
 
@@ -1733,6 +1772,7 @@ export class Series extends SeriesBase {
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
 

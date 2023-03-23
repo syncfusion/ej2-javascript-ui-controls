@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
@@ -68,7 +67,7 @@ export class DataPoint {
     /** point visibility. */
     public visible?: boolean;
 
-    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+
     constructor(x: Object, y: Object, xValue?: number, yValue?: number, visible: boolean = true) {
         this.x = x;
         this.y = y;

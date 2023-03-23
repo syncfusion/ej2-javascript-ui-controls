@@ -225,7 +225,8 @@ export class DateParser {
                     parseOptions.evalposition[`${charKey}`] = { isNumber: isNumber, pos: i + 1 + gmtCorrection, hourOnly: hourOnly };
                 }
                 if (i === length - 1 && !isNullOrUndefined(regexString)) {
-                    parseOptions.parserRegex = new RegExp('^' + regexString + '$', 'i');
+                    const regExp: RegExpConstructor = RegExp;
+                    parseOptions.parserRegex = new regExp('^' + regexString + '$', 'i');
                 }
             }
         }

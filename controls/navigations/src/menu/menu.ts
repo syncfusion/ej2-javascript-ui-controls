@@ -13,7 +13,11 @@ const SCROLLABLE: string = 'e-scrollable';
 const HAMBURGER: string = 'e-hamburger';
 
 /**
- * Specifies the option for orientation mode of Menu. By default, component rendered in Horizontal orientation mode.
+ * Defines the different types of orientation option available in the Menu.
+ * ```props
+ * Horizontal - It renders the menu in a horizontal orientation mode.
+ * Vertical - It renders the menu in a vertical orientation mode.
+ * ```
  */
 export type Orientation = 'Horizontal' | 'Vertical';
 
@@ -141,7 +145,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
             } catch (e) {
                 /* action on catch */
             }
-			this.updateMenuItems(this.items);
+            this.updateMenuItems(this.items);
         } else {
             this.updateMenuItems(this.items);
         }

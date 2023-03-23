@@ -15,6 +15,12 @@ $header-cell-color: $content-text-color-alt2 !default;
 $spreadsheet-border-color: $border-light !default;
 $spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
 $select-all-bg-color: $spreadsheet-border-color !default;
+$spreadsheet-tbar-btn-icon-font-size: 16px !default;
+$spreadsheet-cpicker-font-color-font-size: 13px !default;
+$spreadsheet-cpicker-fill-color-font-size: 14px !default;
+$aggregate-list-font-size: 16px !default;
+$bigger-spreadsheet-tbar-btn-icon-font-size: 18px !default;
+$spreadsheet-drop-icon-font-size: 12px !default;
 
 //enddefault
 //selection
@@ -53,6 +59,12 @@ $formula-bar-color: $content-text-color-alt2 !default;
 $mformula-bar-height: 42px !default;
 $expand-icon-margin: 4px !default;
 $formula-bar-bg-color: $content-bg-color !default;
+$formula-submit-btn-icon-font-size: 16px !default;
+$formula-bar-drop-icon-font-size: 10px !default;
+$formula-bar-btn-icon-font-size: 18px !default;
+$bigger-name-box-ddl-icon-font-size: 20px !default;
+$bigger-insert-function-btn-icon-font-size: 18px !default;
+$bigger-formula-bar-drop-icon-font-size: 18px !default;
 
 //End formula bar
 //Insert dialog box
@@ -71,16 +83,16 @@ $align-ddb-ul-padding: 8px !default;
 $align-ddb-item-padding: 0 7px !default;
 $align-ddb-item-margin: 0 !default;
 $ctrl-btn-padding: 16px !default;
-$ribbon-btn-width: 30px !default;
-$ribbon-btn-height: 30px !default;
-$ribbon-btn-padding: 1.5px !default;
-$bigger-ribbon-btn-height: 34px !default;
-$bigger-ribbon-btn-padding: 6px !default;
+$spreadsheet-ribbon-btn-width: 30px !default;
+$spreadsheet-ribbon-btn-height: 30px !default;
+$spreadsheet-ribbon-btn-padding: 1.5px !default;
+$bigger-spreadsheet-ribbon-btn-height: 34px !default;
+$bigger-spreadsheet-ribbon-btn-padding: 6px !default;
 $cpicker-btn-width: 32px !default;
 $bigger-cpicker-btn-width: 36px !default;
 $menu-extension-padding: 12px !default;
-$ribbon-item-hover-border-color: transparent !default;
-$ribbon-item-active-border-color: transparent !default;
+$spreadsheet-ribbon-item-hover-border-color: transparent !default;
+$spreadsheet-ribbon-item-active-border-color: transparent !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 
@@ -99,6 +111,7 @@ $filter-icon-margin-bottom: 0 !default;
 $filter-icon-bigger-margin-bottom: 12px !default;
 $filter-selectall-padding: 25px !default;
 $filter-selectall-bigger-padding: 29px !default;
+$filter-icon-before-font-size: 20px !default;
 
 //End Filtering
 //Find And Replace
@@ -122,6 +135,7 @@ $ele-color: $content-bg-color-alt3;
 $ele-hover-color: $content-bg-color-hover;
 $dark-ele-color: $flyout-bg-color;
 $dark-ele-hover-color: $flyout-bg-color-hover;
+$cf-menu-icon-font-size: 16px !default;
 
 //End Conditional Formatting
 //Formula selection
@@ -149,3 +163,9 @@ $expand-icon-color: $icon-color !default;
 $open-dlg-width: 340px !default;
 
 //File Name Dialog
+//Chart
+$spreadsheet-switch-row-column-icon-font-size: 18px !default;
+$spreadsheet-addchart-icon-font-size: 18px !default;
+$spreadsheet-chart-icon-font-size: 32px !default;
+
+//End Chart

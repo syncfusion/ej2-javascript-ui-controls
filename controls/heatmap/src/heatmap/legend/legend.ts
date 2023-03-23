@@ -14,11 +14,11 @@ import { CurrentRect } from '../utils/helper';
 import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
 import { ILegendRenderEventArgs } from '../model/interface';
 /**
- * Configures the Legend
+ * Gets and sets the options to customize the legend in the heatmap.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
-     * Specifies the height of Legend.
+     * Sets and gets the height of the legend.
      *
      * @default ''
      */
@@ -26,21 +26,21 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public height: string;
 
     /**
-     * Specifies the width of Legend.
+     * Sets and gets the width of the legend.
      *
      * @default ''
      */
     @Property('')
     public width: string;
     /**
-     * Specifies title of Legend.
+     * Sets and gets the options to customize the title of the legend.
      *
      * @default ''
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.titleFont }, Title)
     public title: TitleModel;
     /**
-     * Specifies the position of Legend to render.
+     * Sets and gets the position of the legend.
      *
      * @default 'Right'
      */
@@ -48,7 +48,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public position: LegendPosition;
 
     /**
-     * Specifies whether the Legend should be visible or not.
+     * Specifies whether the legend should be visible or not.
      *
      * @default true
      */
@@ -56,7 +56,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public visible: boolean;
 
     /**
-     * Specifies the alignment of the legend
+     * Specifies the alignment of the legend.
      *
      * @default 'Center'
      */
@@ -64,7 +64,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public alignment: Alignment;
 
     /**
-     * Specifies whether the label should be visible or not.
+     * Specifies whether the labels in the legend should be visible or not.
      *
      * @default true
      */
@@ -72,7 +72,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public showLabel: boolean;
 
     /**
-     * Specifies whether the gradient pointer should be visible or not.
+     * Enables or disables the visibility of the gradient pointer in the gradient legend.
      *
      * @default true
      */
@@ -88,8 +88,8 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public enableSmartLegend: boolean;
 
     /**
-     * Specifies the type of label display for smart legend.
-     * * All:  All labels are displayed.
+     * Specifies the display mode for label for smart legend. The available display types are,
+     * * All: All the labels in the legend are displayed.
      * * Edge: Labels will be displayed only at the edges of the legend.
      * * None: No labels are displayed.
      *
@@ -99,7 +99,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public labelDisplayType: LabelDisplayType;
 
     /**
-     * Specifies the legend label style.
+     * Sets and gets the options to customize the font style of the legend label.
      *
      * @default ''
      */
@@ -107,7 +107,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textStyle: FontModel;
 
     /**
-     * Specifies the formatting options for the legend label.
+     * Used to format the legend label.
      *
      * @default ''
      */
@@ -116,7 +116,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public labelFormat: string;
 
     /**
-     * To toggle the visibility of heatmap cells based on legend range selection
+     * Enables or disables the toggle visibility of heatmap cells based on legend item selection.
      *
      * @default true
      */
@@ -586,8 +586,7 @@ export class Legend {
                 }
                 textWrapWidth = heatMap.horizontalGradient ? (heatMap.legendSettings.textStyle.textOverflow === 'None' ?
                     this.segmentCollections[i as number] : this.textWrapCollections[i as number]) :
-                    this.width - (this.legendRectScale.width +
-                    this.labelPadding + this.legendRectPadding);
+                    this.width - (this.legendRectScale.width + this.labelPadding + this.legendRectPadding);
                 text = getTitle(this.labelCollections[i as number], heatMap.legendSettings.textStyle, textWrapWidth);
                 elementSize = measureText(text[0], heatMap.legendSettings.textStyle);
 

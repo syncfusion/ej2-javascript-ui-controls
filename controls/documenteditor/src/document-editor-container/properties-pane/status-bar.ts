@@ -80,10 +80,12 @@ export class StatusBar {
         this.pageButton.addEventListener('click', (): void => {
             this.documentEditor.layoutType = 'Pages';
             this.addRemoveClass(this.pageButton, this.webButton);
+            this.documentEditor.focusIn();
         });
         this.webButton.addEventListener('click', (): void => {
             this.documentEditor.layoutType = 'Continuous';
             this.addRemoveClass(this.webButton, this.pageButton);
+            this.documentEditor.focusIn();
         });
         const zoomBtn: HTMLButtonElement = createElement('button', {
             className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
@@ -240,6 +242,7 @@ export class StatusBar {
                 } else {
                     if (this.documentEditor.selection) {
                         this.documentEditor.selection.goToPage(parseInt(this.pageNumberInput.value, 10));
+                        this.documentEditor.focusIn();
                     } else {
                         this.documentEditor.scrollToPage(parseInt(this.pageNumberInput.value, 10));
                     }

@@ -43,7 +43,12 @@
   }
 
   .e-chips.e-mob-chip.e-chip-selected .e-chipcontent {
-    background-color: $ddl-chip-mobile-bg;
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      background: $ddl-chip-mobile-bg;
+    }
+    @if $ddl-multiselect-skin-name != 'Material3' {
+      background-color: $ddl-chip-mobile-bg;
+    }
     color: $ddl-chip-mobile-font;
     padding: $ddl-chip-selected-padding;
   }
@@ -105,7 +110,7 @@
     flex-direction: row;
     margin-top: $ddl-clear-margin-top;
     @if $ddl-multiselect-skin-name == 'tailwind' {
-      margin-top: -1.45em;
+      margin-top: -1.55em;
     }
     outline: 0;
     padding: 0;
@@ -127,6 +132,9 @@
     margin-right: 0;
     margin-top: $ddl-icon-margin-top;
     right: 0;
+    @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'tailwind-dark'{
+      min-width: 30px;
+    }
   }
 
   .e-multi-select-wrapper.e-delimiter {
@@ -227,6 +235,15 @@
   white-space: nowrap;
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     line-height: 1.5;
+  }
+}
+
+.e-small .e-multi-select-wrapper .e-chips {
+  @if $ddl-multiselect-skin-name == 'highcontrast' {
+    margin: $ddl-chip-small-margin;
+    #{if(&, '&', '*')} > .e-chipcontent {
+      padding: $ddl-chip-small-content-padding;
+    }
   }
 }
 
@@ -494,21 +511,21 @@
 
 // Outline bootstrap modal search wrapper width
 .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-search-wrapper-width;
   }
 }
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-bigger-search-wrapper-width;
   }
 }
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-small-search-wrapper-width;
   }
 }
@@ -517,7 +534,7 @@
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: $ddl-bigger-small-search-wrapper-width;
   }
 }
@@ -915,14 +932,14 @@
 }
 
 .e-multiselect .e-ddl-icon::before {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     transform: rotate(0deg);
     transition: transform 300ms ease;
   }
 }
 
 .e-multiselect.e-icon-anim .e-ddl-icon::before {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     transform: rotate(180deg);
     transition: transform 300ms ease;
   }
@@ -935,14 +952,14 @@
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus .e-input-filter {
-  @if $skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
+  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
     padding: $ddl-filterbar-padding;
   }
 }
 
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus {
-  @if $skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
+  @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' {
     padding: $ddl-bigger-filterbar-padding;
   }
 }
@@ -950,7 +967,7 @@
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon,
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group:not(.e-control-container) .e-clear-icon {
   padding-left: 8px;
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-right: 8px;
   }
 }
@@ -1149,7 +1166,7 @@ ejs-multiselect {
 
 .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
   color: inherit;
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: inherit;
     min-height: $outline-multiselect-inner-input-height;
     padding: 8px 12px 9px;
@@ -1157,14 +1174,14 @@ ejs-multiselect {
 }
 
 .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: 8px 12px 9px;
   }
 }
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: inherit;
     min-height: $outline-multiselect-small-inner-input-height;
     padding: 7px 10px;
@@ -1173,7 +1190,7 @@ ejs-multiselect {
 
 .e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: 7px 10px;
   }
 }
@@ -1182,7 +1199,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: inherit;
     min-height: $outline-multiselect-inner-input-height;
     padding: 8px 12px 9px;
@@ -1193,14 +1210,14 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-bigger.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: 8px 12px 9px;
   }
 }
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: inherit;
     min-height: $outline-multiselect-bigger-inner-input-height;
   }
@@ -1211,7 +1228,7 @@ ejs-multiselect {
 .e-bigger {
   .e-multiselect.e-outline .e-multi-select-wrapper,
   #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-    @if $ddl-multiselect-skin-name == 'material' {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
       min-height: $outline-multiselect-bigger-height;
       padding: $outline-multiselect-bigger-overall-padding;
     }
@@ -1219,7 +1236,7 @@ ejs-multiselect {
 
   .e-small {
     #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' {
+      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
       }
@@ -1229,7 +1246,7 @@ ejs-multiselect {
   #{if(&, '&', '*')}.e-small {
     .e-multiselect.e-outline .e-multi-select-wrapper,
     #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' {
+      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
       }
@@ -1240,7 +1257,7 @@ ejs-multiselect {
 .e-small {
   .e-multiselect.e-outline .e-multi-select-wrapper,
   #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-    @if $ddl-multiselect-skin-name == 'material' {
+    @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
       min-height: $outline-multiselect-small-height;
       padding: $outline-multiselect-overall-padding;
     }
@@ -1248,7 +1265,7 @@ ejs-multiselect {
 
   .e-bigger {
     #{if(&, '&', '*')}.e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' {
+      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
       }
@@ -1257,7 +1274,7 @@ ejs-multiselect {
 
   #{if(&, '&', '*')}.e-bigger {
     .e-multiselect.e-outline .e-multi-select-wrapper {
-      @if $ddl-multiselect-skin-name == 'material' {
+      @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
         min-height: $ddl-outline-multiselect-height;
         padding: $outline-multiselect-overall-padding;
       }
@@ -1266,7 +1283,7 @@ ejs-multiselect {
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-outline-multiselect-height;
     padding: $outline-multiselect-overall-padding;
   }
@@ -1278,7 +1295,7 @@ ejs-multiselect {
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-bigger .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-right: 0;
   }
 }
@@ -1311,7 +1328,7 @@ ejs-multiselect {
 .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
 .e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-left: 0;
   }
 }
@@ -1327,7 +1344,7 @@ ejs-multiselect {
 .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-overall-padding;
   }
 }
@@ -1335,7 +1352,7 @@ ejs-multiselect {
 .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper,
 .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-bigger-overall-padding;
   }
 }
@@ -1354,7 +1371,7 @@ ejs-multiselect {
 .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-left: 0;
   }
 }
@@ -1368,7 +1385,7 @@ ejs-multiselect {
 .e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide,
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-close-icon-hide {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding-right: 0;
   }
 }
@@ -1376,21 +1393,21 @@ ejs-multiselect {
 // Delimeter padding and left
 
 .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-outline-multiselect-height;
   }
 }
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-bigger-height;
   }
 }
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-small-height;
   }
 }
@@ -1399,13 +1416,13 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-outline-multiselect-height;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
     line-height: $ddl-outline-multiselect-height;
     padding: $outline-multiselect-delimeter-padding;
@@ -1414,7 +1431,7 @@ ejs-multiselect {
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 16px;
     line-height: $outline-multiselect-bigger-height;
     padding: $outline-multiselect-bigger-delimeter-padding;
@@ -1423,7 +1440,7 @@ ejs-multiselect {
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 13px;
     line-height: $outline-multiselect-small-height;
     padding: $outline-multiselect-small-delimeter-padding;
@@ -1434,7 +1451,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
     line-height: $ddl-outline-multiselect-height;
     padding: $outline-multiselect-delimeter-padding;
@@ -1442,7 +1459,7 @@ ejs-multiselect {
 }
 
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-delimeter-padding;
   }
 }
@@ -1453,7 +1470,7 @@ ejs-multiselect {
 .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-bigger-delimeter-padding;
   }
 }
@@ -1464,7 +1481,7 @@ ejs-multiselect {
 .e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-small .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-rtl .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-small-delimeter-padding;
   }
 }
@@ -1481,7 +1498,7 @@ ejs-multiselect {
 .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values,
 .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: $outline-rtl-multiselect-delimeter-padding;
   }
 }
@@ -1489,7 +1506,7 @@ ejs-multiselect {
 // Chip size configuration
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-chip-height;
     margin: $outline-multiselect-chip-margin;
     padding: $outline-multiselect-chip-padding;
@@ -1498,14 +1515,14 @@ ejs-multiselect {
 
 .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     margin: $outline-rtl-multiselect-chip-margin;
   }
 }
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-bigger-chip-height;
     padding: $outline-multiselect-bigger-chip-padding;
   }
@@ -1513,7 +1530,7 @@ ejs-multiselect {
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-small-chip-height;
     padding: $outline-multiselect-chip-padding;
   }
@@ -1523,21 +1540,21 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $outline-multiselect-chip-height;
     padding: $outline-multiselect-chip-padding;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: 0 8px 0 0;
   }
 }
 
 .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     padding: 0 0 0 8px;
   }
 }
@@ -1547,21 +1564,21 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $outline-multiselect-chip-font-size;
   }
 }
 
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $outline-multiselect-bigger-chip-font-size;
   }
 }
 
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $outline-multiselect-small-chip-font-size;
   }
 }
@@ -1575,7 +1592,7 @@ ejs-multiselect {
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
   }
 }
@@ -1584,7 +1601,7 @@ ejs-multiselect {
 .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 16px;
   }
 }
@@ -1593,7 +1610,7 @@ ejs-multiselect {
 .e-small .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 13px;
   }
 }
@@ -1606,7 +1623,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
   }
 }
@@ -1665,7 +1682,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-input-min-height;
     padding-right: 10px;
   }
@@ -1673,14 +1690,14 @@ ejs-multiselect {
 
 .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-input-min-height-small;
   }
 }
 
 .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'],
 .e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-min-height-small;
     min-height: $ddl-multiselect-filled-float-input-min-height-small;
     padding: 2px;
@@ -1689,48 +1706,48 @@ ejs-multiselect {
 
 .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-input-min-height-bigger;
   }
 }
 
 .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'],
 .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper input[type = 'text'] {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-float-input-min-height-bigger;
   }
 }
 
 .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-input-min-height;
   }
 }
 
 .e-small.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-input-min-height-small;
   }
 }
 
 .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-min-height-small;
   }
 }
 
 .e-bigger.e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-bigger .e-filled:not(.e-small).e-multiselect:not(.e-float-input) .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-input-min-height-bigger;
   }
 }
 
 .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-min-height-bigger;
   }
 }
@@ -1738,7 +1755,7 @@ ejs-multiselect {
 .e-bigger.e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher .e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher,
 .e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-min-height;
   }
 }
@@ -1753,7 +1770,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
 .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase,
 .e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-searcher .e-dropdownbase {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     min-height: $ddl-multiselect-filled-float-input-min-height;
   }
 }
@@ -1765,7 +1782,7 @@ ejs-multiselect {
 .e-small.e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 13px;
     line-height: $ddl-multiselect-filled-input-min-height;
   }
@@ -1776,7 +1793,7 @@ ejs-multiselect {
 .e-small.e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-small .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 14px;
     line-height: $ddl-multiselect-filled-float-input-min-height;
   }
@@ -1786,7 +1803,7 @@ ejs-multiselect {
 .e-bigger .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: 16px;
     line-height: $ddl-multiselect-filled-input-min-height-bigger;
   }
@@ -1794,7 +1811,7 @@ ejs-multiselect {
 
 .e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-bigger .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     line-height: $ddl-multiselect-filled-float-input-min-height-bigger;
   }
 }
@@ -1803,7 +1820,7 @@ ejs-multiselect {
 .e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-delim-values,
 .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $ddl-delim-bigger-small-font-size;
     line-height: $ddl-multiselect-filled-input-min-height-small;
   }
@@ -1811,7 +1828,7 @@ ejs-multiselect {
 
 .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values,
 .e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-delim-values {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     line-height: $ddl-multiselect-filled-float-input-min-height-small;
   }
 }
@@ -1909,7 +1926,7 @@ ejs-multiselect {
 .e-bigger.e-small .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
 .e-bigger .e-small.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
 .e-small .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
     width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
   }
@@ -1963,7 +1980,7 @@ ejs-multiselect {
 
 .e-bigger.e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-bigger .e-filled.e-multiselect:not(.e-float-input) .e-multi-select-wrapper .e-chips > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     font-size: $ddl-multiselect-filled-chip-clear-icon-size;
   }
 }

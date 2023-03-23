@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel , FormatPainterSettingsModel} from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';import { FormatPainter } from '../actions/format-painter';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -93,12 +93,31 @@ export interface RichTextEditorModel extends ComponentModel{
     pasteCleanupSettings?: PasteCleanupSettingsModel;
 
     /**
+     * Specifies the format painter options in Rich Text Editor with the following properties.
+     * * allowedContext - Sets the context or contexts in which styles will be copied.
+     * * allowedFormats - Sets the tag name selectors  for elements from which the formats  can be copied.
+     * * deniedFormats - Sets the selectors  for elements from which formats  cannot be copied.
+     *
+     * {% codeBlock src='rich-text-editor/format-painter-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default
+     * {
+     * allowedContext: ['Text', 'List', 'Table'],
+     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
+     * deniedFormats: null
+     * }
+     * @aspignore
+     * @private
+     */
+    formatPainterSettings?: FormatPainterSettingsModel
+
+    /**
      * Specifies the items to be rendered in an iframe mode, and it has the following properties.
      * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
      * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
      * * resources - we can add both styles and scripts to the iframe.
-     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content.
-     * 2. scripts[] - An array of JS script files to inject inside the iframe.
+     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
+     * 2. scripts[] - An array of JS script files to inject inside the iframe
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -286,6 +305,13 @@ export interface RichTextEditorModel extends ComponentModel{
      * @default false.
      */
     enablePersistence?: boolean;
+
+    /**
+     * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
+     *
+     * @default false.
+     */
+    showTooltip?: boolean;
 
     /**
      * Enables or disables the resizing option in the editor.
@@ -948,7 +974,7 @@ export interface RichTextEditorModel extends ComponentModel{
      *
      * @event 'afterPasteCleanup'
      */
-    afterPasteCleanup?: EmitType<Object>;
+    afterPasteCleanup?: EmitType<object>;
 
     /**
      * Triggers before drop the image.

@@ -4,7 +4,7 @@
 
   .e-upload {
     border: $upload-border;
-    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
       border-radius: $upload-border-radius;
     }
 
@@ -54,7 +54,12 @@
           }
 
           #{if(&, '&', '*')} .e-progress-inner-wrap {
-            background-color: $progress-background-color;
+            @if $skin-name != 'Material3' {
+              background-color: $progress-background-color;
+            }
+            @if $skin-name == 'Material3' {
+              background: $progress-background-color;
+            }
 
             #{if(&, '&', '*')} .e-upload-progress-bar {
 
@@ -101,7 +106,12 @@
       #{if(&, '&', '*')} .e-file-reload-btn.e-icons:focus,
       #{if(&, '&', '*')} .e-file-abort-btn.e-icons:not(.e-disabled):focus,
       #{if(&, '&', '*')} .e-clear-icon-focus {
-        background-color: $clear-icon-focus-color;
+        @if $skin-name != 'Material3' {
+          background-color: $clear-icon-focus-color;
+        }
+        @if $skin-name == 'Material3' {
+          background: $clear-icon-focus-color;
+        }
         border-color: transparent;
         box-shadow: 0 0 0 transparent;
       }

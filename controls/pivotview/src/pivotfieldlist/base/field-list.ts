@@ -21,8 +21,8 @@ import { AxisTableRenderer } from '../renderer/axis-table-renderer';
 import { AxisFieldRenderer } from '../renderer/axis-field-renderer';
 import { PivotButton } from '../../common/actions/pivot-button';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';
-import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';
+import { DataSourceSettingsModel, FieldOptionsModel } from '../../model/datasourcesettings-model';
+import { DataSourceSettings } from '../../model/datasourcesettings';
 import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 import { PivotContextMenu } from '../../common/popups/context-menu';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -206,6 +206,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Property('')
     public cssClass: string;
+
+    /**
+     * Allows to restrict the cross-site scripting while using cell template, meaning it will remove the unwanted scripts,styles or HTML in your cell template.
+     * > In general, the cross-site scripting known as XSS is a type of computer security vulnerability typically found in web applications.
+     * It attacks enable attackers to inject client-side scripts into web pages viewed by other users.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Allows the built-in calculated field dialog to be displayed in the component.
@@ -736,6 +746,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         const pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
         const isPaging: boolean = this.pivotGridModule ? this.pivotGridModule.enablePaging : false;
         const isVirtualization: boolean = this.pivotGridModule ? this.pivotGridModule.enableVirtualization : false;
+        const enableHtmlSanitizer: boolean = this.pivotGridModule ? this.pivotGridModule.enableHtmlSanitizer : this.enableHtmlSanitizer;
         const localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         const isDrillThrough: boolean = this.pivotGridModule ?
@@ -765,7 +776,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 globalize: this.globalize,
                 currenyCode: this.currencyCode,
                 enablePaging: isPaging,
-                enableVirtualization: isVirtualization
+                enableVirtualization: isVirtualization,
+                enableHtmlSanitizer: enableHtmlSanitizer
             };
         }
         return customProperties;
@@ -1276,6 +1288,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             element: document.getElementById(this.element.id + '_Container'),
             moduleName: this.getModuleName(),
             enableRtl: this.enableRtl,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             isAdaptive: this.isAdaptive as boolean,
             renderMode: this.renderMode,
             localeObj: this.localeObj,
@@ -1289,7 +1302,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (this.dataType === 'olap') {
                 this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
             }
-            this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+            this.clonedFieldList = PivotUtil.getClonedFieldList(this.pivotFieldList);
         }
     }
     private getFieldCaption(dataSourceSettings: DataSourceSettingsModel): void {
@@ -1399,7 +1412,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
                             } else {
-                                pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                                pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo, pivot.dataSourceSettings);
                             }
                             pivot.lastCalcFieldInfo = {};
                         }
@@ -1416,15 +1429,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             } else {
                                 control.getEngine('onDrop', null, null, null, null, null, null);
                             }
-                            pivot.lastSortInfo = {};
-                            pivot.lastAggregationInfo = {};
-                            pivot.lastCalcFieldInfo = {};
-                            pivot.lastFilterInfo = {};
                         } else {
                             pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties,
                                                             pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined,
                                                             pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
                         }
+                        pivot.lastSortInfo = {};
+                        pivot.lastAggregationInfo = {};
+                        pivot.lastCalcFieldInfo = {};
+                        pivot.lastFilterInfo = {};
                     }
                 } else {
                     isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
@@ -1465,7 +1478,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     if (this.dataType === 'olap') {
                         this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
                     }
-                    pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
+                    pivot.clonedFieldList = PivotUtil.getClonedFieldList(pivot.pivotFieldList);
                 }
                 pivot.updateView(pivot.pivotGridModule);
             } else if (this.isPopupView && pivot.allowDeferLayoutUpdate) {
@@ -1556,7 +1569,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 if (this.dataType === 'olap') {
                     this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
                 }
-                this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
+                this.clonedFieldList = PivotUtil.getClonedFieldList(this.pivotFieldList);
             }
         }
     }
@@ -1570,6 +1583,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public updateView(control: PivotView): void {
         if (control) {
+            if (control.element.querySelector('.e-spin-hide')) {
+                control.showWaitingPopup();
+            }
             control.clonedDataSet = this.clonedDataSet;
             control.clonedReport = this.clonedReport;
             control.setProperties({ dataSourceSettings: this.dataSourceSettings, showValuesButton: this.showValuesButton }, true);

@@ -9,7 +9,7 @@ import { OverviewModel } from '../../src/overview/overview-model';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
-    RadialTree, DataBinding, DiagramTools, HierarchicalTree, StackPanel, Container, TextElement, TreeInfo, ZoomOptions
+    RadialTree, DataBinding,HierarchicalTree, DiagramTools, StackPanel, Container, TextElement, ZoomOptions, TreeInfo
 } from '../../src/diagram/index';
 Diagram.Inject(RadialTree, DataBinding,HierarchicalTree);
 
@@ -1606,7 +1606,7 @@ describe('Overview', () => {
                 },
             ];
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
-            
+
             diagram = new Diagram({
                 snapSettings: { constraints: 0 },
                 layout: {
@@ -1621,7 +1621,7 @@ describe('Overview', () => {
                 dataSourceSettings: {
                     id: 'Id', parentId: 'ReportingPerson', dataSource: items
                 },
-            
+
                 getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
                     obj.height = 50;
                     obj.backgroundColor = 'lightgrey';
@@ -1632,7 +1632,7 @@ describe('Overview', () => {
                     connector.type = 'Orthogonal';
                     return connector;
                 },
-            
+
                 setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
                     let content: StackPanel = new StackPanel();
                     content.id = (obj as NodeModel).id + '_outerstack';
@@ -1643,15 +1643,15 @@ describe('Overview', () => {
                     innerStack.style.strokeColor = 'none';
                     innerStack.margin = { left: 5, right: 0, top: 0, bottom: 0 };
                     innerStack.id = (obj as NodeModel).id + '_innerstack';
-            
+
                     let text: TextElement = new TextElement();
                     text.content = (obj as NodeModel).data['Name'];
-            
+
                     text.style.color = 'blue';
                     text.style.strokeColor = 'none';
                     text.style.fill = 'none';
                     text.id = (obj as NodeModel).id + '_text1';
-            
+
                     let desigText: TextElement = new TextElement();
                     desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
                     desigText.content = (obj as NodeModel).data['Designation'];
@@ -1661,9 +1661,9 @@ describe('Overview', () => {
                     desigText.style.textWrapping = 'Wrap';
                     desigText.id = (obj as NodeModel).id + '_desig';
                     innerStack.children = [text, desigText];
-            
+
                     content.children = [ innerStack];
-            
+
                     return content;
                 }
             });

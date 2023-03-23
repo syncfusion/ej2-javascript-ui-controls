@@ -1191,6 +1191,6 @@ describe('Row Drag and Drop module', () => {
             destroy(gridObj);
             gridObj = null;
         });
-    });
+    })
 
 });

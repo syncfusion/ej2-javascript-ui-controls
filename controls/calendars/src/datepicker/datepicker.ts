@@ -2,12 +2,12 @@
 /// <reference path='../calendar/calendar-model.d.ts'/>
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';
-import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';
+import { detach, addClass, removeClass, closest, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';
-import { MaskPlaceholderModel } from '../common/maskplaceholder-model'
+import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
+import { MaskPlaceholderModel } from '../common/maskplaceholder-model';
 import { DatePickerModel } from './datepicker-model';
 
 
@@ -372,7 +372,7 @@ export class DatePicker extends Calendar implements IInput {
      * Specifies whether it is a masked datepicker or not.
      * By default the datepicker component render without masked input.
      * If you need masked datepicker input then specify it as true.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -380,10 +380,10 @@ export class DatePicker extends Calendar implements IInput {
 
     /**
      * Specifies the mask placeholder to be displayed on masked datepicker.
-     * 
+     *
      * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
      */
-     @Property({day:'day' , month:'month', year: 'year', hour:'hour', minute:'minute', second:'second', dayOfTheWeek: 'day of the week'})
+    @Property({day: 'day' , month: 'month', year: 'year', hour: 'hour', minute: 'minute', second: 'second', dayOfTheWeek: 'day of the week'})
     public maskPlaceholder: MaskPlaceholderModel;
 
 
@@ -462,7 +462,7 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
         }
-        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+        if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
         this.renderComplete();
@@ -508,28 +508,28 @@ export class DatePicker extends Calendar implements IInput {
     private initialize(): void {
         this.checkInvalidValue(this.value);
         if (this.enableMask) {
-            this.notify("createMask", {
-              module: "MaskedDateTime",
+            this.notify('createMask', {
+                module: 'MaskedDateTime'
             });
         }
         this.createInput();
         this.updateHtmlAttributeToWrapper();
         this.setAllowEdit();
         this.updateInput(true);
-        if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+        if (this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType === 'Always' || !this.floatLabelType || !this.placeholder)){
             this.updateInputValue(this.maskedDateValue);
         }
         this.previousElementValue = this.inputElement.value;
         this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;
         this.inputElement.setAttribute('value', this.inputElement.value);
-        
+
         this.inputValueCopy = this.value;
     }
 
     private createInput(): void {
         const ariaAttrs: object = {
-            'aria-atomic': 'true', 'aria-expanded': 'false', 
-            'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off', 
+            'aria-atomic': 'true', 'aria-expanded': 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off',
             'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
@@ -542,7 +542,7 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
-        let isBindClearAction: boolean = this.enableMask ? false : true;
+        const isBindClearAction: boolean = this.enableMask ? false : true;
         this.inputWrapper = Input.createInput(
             {
                 element: this.inputElement,
@@ -623,15 +623,15 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
         if (isNullOrUndefined(this.value) && this.strictMode) {
-            if(!this.enableMask)
+            if (!this.enableMask)
             {
-            this.updateInputValue('');
+                this.updateInputValue('');
             }
             else
             {
                 this.updateInputValue(this.maskedDateValue);
-                this.notify("createMask", {
-                  module: "MaskedDateTime",
+                this.notify('createMask', {
+                    module: 'MaskedDateTime'
                 });
             }
         }
@@ -751,11 +751,11 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected bindEvents(): void {
         EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
-        EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler,this);
+        EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-        if(this.enableMask){
-        EventHandler.add(this.inputElement, 'keydown',this.keydownHandler,this);
+        if (this.enableMask){
+            EventHandler.add(this.inputElement, 'keydown', this.keydownHandler, this);
         }
         this.bindInputEvent();
         // To prevent the twice triggering.
@@ -777,7 +777,7 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     private keydownHandler(e: KeyboardEventArgs): void{
-        switch(e.code)
+        switch (e.code)
         {
         case 'ArrowLeft':
         case 'ArrowRight' :
@@ -786,36 +786,36 @@ export class DatePicker extends Calendar implements IInput {
         case 'Home':
         case 'End':
         case 'Delete':
-            if(this.enableMask && !this.popupObj && !this.readonly)
+            if (this.enableMask && !this.popupObj && !this.readonly)
             {
-           if(e.code !== 'Delete')
-           {
-            e.preventDefault();
-           }
-            this.notify("keyDownHandler", {
-                module: "MaskedDateTime" ,
-                e: e
-              });
+                if (e.code !== 'Delete')
+                {
+                    e.preventDefault();
+                }
+                this.notify('keyDownHandler', {
+                    module: 'MaskedDateTime' ,
+                    e: e
+                });
             }
             break;
-        
+
         default:
             break;
         }
     }
 
     protected unBindEvents() : void {
-        if(!isNullOrUndefined(this.inputWrapper))
+        if (!isNullOrUndefined(this.inputWrapper))
         {
-        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
         }
         EventHandler.remove(this.inputElement, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-        if(this.enableMask){
-            EventHandler.remove(this.inputElement, 'keydown',this.keydownHandler);
-            }
+        if (this.enableMask){
+            EventHandler.remove(this.inputElement, 'keydown', this.keydownHandler);
+        }
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
         }
@@ -860,7 +860,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
-        }
+    }
     protected resetHandler(e?: MouseEvent): void {
         if (!this.enabled) {
             return;
@@ -869,19 +869,19 @@ export class DatePicker extends Calendar implements IInput {
         this.clear(e);
     }
     private mouseUpHandler(e? : MouseEvent): void{
-        if(this.enableMask)
+        if (this.enableMask)
         {
             e.preventDefault();
-            this.notify("setMaskSelection", {
-                module: "MaskedDateTime"
-              });
+            this.notify('setMaskSelection', {
+                module: 'MaskedDateTime'
+            });
         }
     }
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);
-        if(!this.enableMask)
+        if (!this.enableMask)
         {
-        this.updateInputValue('');
+            this.updateInputValue('');
         }
         const clearedArgs: ClearedEventArgs = {
             event: event
@@ -891,15 +891,15 @@ export class DatePicker extends Calendar implements IInput {
         this.updateInput();
         this.popupUpdate();
         this.changeEvent(event);
-        if(this.enableMask)
+        if (this.enableMask)
         {
-            this.notify("clearHandler", {
-                module: "MaskedDateTime"
+            this.notify('clearHandler', {
+                module: 'MaskedDateTime'
             });
         }
         if (closest(this.element, 'form')) {
-            let element: Element = this.element;
-            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            const element: Element = this.element;
+            const keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
             keyupEvent.initEvent('keyup', false, true);
             element.dispatchEvent(keyupEvent);
         }
@@ -1024,9 +1024,9 @@ export class DatePicker extends Calendar implements IInput {
         if (!this.enabled) {
             return;
         }
-        if(this.enableMask && !this.inputElement.value && this.placeholder)
+        if (this.enableMask && !this.inputElement.value && this.placeholder)
         {
-            if(this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
+            if (this.maskedDateValue && !this.value && (this.floatLabelType === 'Auto' || this.floatLabelType === 'Never' || this.placeholder))
             {
                 this.updateInputValue(this.maskedDateValue);
                 this.inputElement.selectionStart =  0;
@@ -1045,11 +1045,11 @@ export class DatePicker extends Calendar implements IInput {
     }
     private inputHandler(): void {
         this.isPopupClicked = false;
-        if(this.enableMask)
+        if (this.enableMask)
         {
-            this.notify("inputHandler", {
-                module: "MaskedDateTime"
-              });
+            this.notify('inputHandler', {
+                module: 'MaskedDateTime'
+            });
         }
     }
     private inputBlurHandler(e: MouseEvent): void {
@@ -1064,11 +1064,11 @@ export class DatePicker extends Calendar implements IInput {
         this.updateInput();
         this.popupUpdate();
         this.changeTrigger(e);
-        if(this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
+        if (this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
         {
-            if(this.inputElement.value == this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
+            if (this.inputElement.value === this.maskedDateValue && !this.value && (this.floatLabelType === 'Auto' || this.floatLabelType === 'Never' || this.placeholder))
             {
-            this.updateInputValue('');
+                this.updateInputValue('');
             }
         }
         this.errorClass();
@@ -1097,7 +1097,7 @@ export class DatePicker extends Calendar implements IInput {
             e.preventDefault();
         }
         const target: HTMLElement = <HTMLElement>e.target;
-        if (!(closest(target, '.e-datepicker.e-popup-wrapper')) && !isNullOrUndefined(this.inputWrapper) 
+        if (!(closest(target, '.e-datepicker.e-popup-wrapper')) && !isNullOrUndefined(this.inputWrapper)
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
             && (!target.classList.contains('e-day'))) {
             this.hide(e);
@@ -1155,34 +1155,36 @@ export class DatePicker extends Calendar implements IInput {
             break;
         case 'tab':
         case 'shiftTab':
+        {
             let start: number = this.inputElement.selectionStart;
             let end: number = this.inputElement.selectionEnd;
             if (this.enableMask && !this.popupObj && !this.readonly)
             {
-                let length: number = this.inputElement.value.length;
-                if((start == 0 && end == length) || (end !== length && e.action == 'tab') || (start !== 0 && e.action == 'shiftTab'))
+                const length: number = this.inputElement.value.length;
+                if ((start === 0 && end === length) || (end !== length && e.action === 'tab') || (start !== 0 && e.action === 'shiftTab'))
                 {
-                e.preventDefault();
+                    e.preventDefault();
                 }
-                this.notify("keyDownHandler", {
-                module: "MaskedDateTime" ,
-                e: e
-              });
-              start = this.inputElement.selectionStart;
-              end = this.inputElement.selectionEnd;
+                this.notify('keyDownHandler', {
+                    module: 'MaskedDateTime' ,
+                    e: e
+                });
+                start = this.inputElement.selectionStart;
+                end = this.inputElement.selectionEnd;
             }
             this.strictModeUpdate();
             this.updateInput();
             this.popupUpdate();
             this.changeTrigger(e);
             this.errorClass();
-            if(this.enableMask)
+            if (this.enableMask)
             {
                 this.inputElement.selectionStart = start ;
-               this.inputElement.selectionEnd = end;
+                this.inputElement.selectionEnd = end;
             }
             this.hide(e);
             break;
+        }
         default:
             this.defaultAction(e);
             // Fix for close the popup when select the previously selected value.
@@ -1459,7 +1461,7 @@ export class DatePicker extends Calendar implements IInput {
             this.errorClass();
         }
         else if (event) {
-            this.hide(event); 
+            this.hide(event);
         }
     }
 
@@ -1468,13 +1470,13 @@ export class DatePicker extends Calendar implements IInput {
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
-        if(this.enableMask)
+        if (this.enableMask)
         {
             modules.push({args: [this], member: 'MaskedDateTime'});
         }
         return modules;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     protected selectCalendar(e?: MouseEvent | KeyboardEvent | Event): void {
         let date: string;
         let tempFormat: string;
@@ -1501,18 +1503,18 @@ export class DatePicker extends Calendar implements IInput {
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
             if (this.enableMask) {
-                this.notify("createMask", {
-                  module: "MaskedDateTime",
+                this.notify('createMask', {
+                    module: 'MaskedDateTime'
                 });
-              }
+            }
         }
         if (!isNullOrUndefined(date)) {
             this.updateInputValue(date);
-            if(this.enableMask)
+            if (this.enableMask)
             {
-            this.notify("setMaskSelection", {
-                module: "MaskedDateTime"
-              });
+                this.notify('setMaskSelection', {
+                    module: 'MaskedDateTime'
+                });
             }
         }
     }
@@ -1544,7 +1546,8 @@ export class DatePicker extends Calendar implements IInput {
         } else {
             let prevent: boolean = true;
             let outOfRange: Date;
-            if (!isNullOrUndefined(this.value) && !(+this.value >= +new Date(this.checkValue(this.min)) && +this.value <= +new Date(this.checkValue(this.max)))) {
+            if (!isNullOrUndefined(this.value) && !(+this.value >= +new Date(this.checkValue(this.min))
+             && +this.value <= +new Date(this.checkValue(this.max)))) {
                 outOfRange = new Date(this.checkValue(this.value));
                 this.setProperties({ 'value': null }, true);
             } else {
@@ -1726,15 +1729,15 @@ export class DatePicker extends Calendar implements IInput {
     public destroy(): void {
         this.unBindEvents();
         super.destroy();
-        if(!isNullOrUndefined(this.keyboardModules))
+        if (!isNullOrUndefined(this.keyboardModules))
         {
-        this.keyboardModules.destroy();
+            this.keyboardModules.destroy();
         }
         if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
             super.destroy();
         }
         const ariaAttrs: object = {
-            'aria-atomic': 'true', 'aria-disabled': 'true', 
+            'aria-atomic': 'true', 'aria-disabled': 'true',
             'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         };
@@ -1758,16 +1761,16 @@ export class DatePicker extends Calendar implements IInput {
         }
         if (this.ngTag === null) {
             if (this.inputElement) {
-                if(!isNullOrUndefined(this.inputWrapper))
+                if (!isNullOrUndefined(this.inputWrapper))
                 {
-                this.inputWrapper.container.insertAdjacentElement('afterend', this.inputElement);
+                    this.inputWrapper.container.insertAdjacentElement('afterend', this.inputElement);
                 }
                 removeClass([this.inputElement], [INPUTROOT]);
             }
             removeClass([this.element], [ROOT]);
-            if(!isNullOrUndefined(this.inputWrapper))
+            if (!isNullOrUndefined(this.inputWrapper))
             {
-            detach(this.inputWrapper.container);
+                detach(this.inputWrapper.container);
             }
         }
         if (this.formElement) {
@@ -2004,7 +2007,7 @@ export class DatePicker extends Calendar implements IInput {
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
         if (!isDynamic || (isDynamic && !isNullOrUndefined(this.renderDayCell))) {
-        super.render(); }
+            super.render(); }
         this.previousDate = previousValCopy;
         const date: number = valueCopy && +(valueCopy);
         const dateIdString: string = '*[id^="/id"]'.replace('/id', '' + date);
@@ -2044,11 +2047,11 @@ export class DatePicker extends Calendar implements IInput {
         }
         if (!this.popupObj) {
             this.updateInputValue(inputVal);
-            if(this.enableMask)
+            if (this.enableMask)
             {
-            this.updateInputValue(this.maskedDateValue);
-                this.notify("createMask", {
-                  module: "MaskedDateTime",
+                this.updateInputValue(this.maskedDateValue);
+                this.notify('createMask', {
+                    module: 'MaskedDateTime'
                 });
             }
         }
@@ -2057,7 +2060,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.isCalendar()) {
             Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
             attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options'});
-            if(this.value)
+            if (this.value)
             {
                 attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
             }
@@ -2072,7 +2075,10 @@ export class DatePicker extends Calendar implements IInput {
         const isDisabledDate: boolean = this.calendarElement &&
             this.calendarElement.querySelectorAll(dateIdString)[0] &&
             this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled');
-            if ((!isNullOrUndefined(this.value) && !isNullOrUndefined(this.min) && !isNullOrUndefined(this.max) && !(new Date(this.value as any).setMilliseconds(0) >= new Date(this.min as any).setMilliseconds(0)
+        if ((!isNullOrUndefined(this.value) && !isNullOrUndefined(this.min) &&
+         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         !isNullOrUndefined(this.max) && !(new Date(this.value as any).setMilliseconds(0) >= new Date(this.min as any).setMilliseconds(0)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as any).setMilliseconds(0)))
             || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
@@ -2111,20 +2117,20 @@ export class DatePicker extends Calendar implements IInput {
                 this.isInteracted = true;
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 if (this.enableMask) {
-                    this.notify("createMask", {
-                      module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
-                  }
+                }
                 break;
             case 'format':
                 this.checkFormat();
                 this.bindInputEvent();
                 this.updateInput();
                 if (this.enableMask) {
-                    this.notify("createMask", {
-                        module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
-                    if(!this.value)
+                    if (!this.value)
                     {
                         this.updateInputValue(this.maskedDateValue);
                     }
@@ -2155,10 +2161,10 @@ export class DatePicker extends Calendar implements IInput {
                 Input.setPlaceholder(this.placeholder, this.inputElement);
                 this.updateInput();
                 if (this.enableMask) {
-                    this.notify("createMask", {
-                        module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
-                    }
+                }
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
@@ -2202,19 +2208,19 @@ export class DatePicker extends Calendar implements IInput {
                 break;
             case 'enableMask':
                 if (this.enableMask) {
-                    this.notify("createMask", {
-                      module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
                     this.updateInputValue(this.maskedDateValue);
                     this.bindInputEvent();
-                  }
-                  else
-                  {
-                      if(this.inputElement.value === this.maskedDateValue)
-                      {
-                          this.updateInputValue('');
-                      }
-                  }
+                }
+                else
+                {
+                    if (this.inputElement.value === this.maskedDateValue)
+                    {
+                        this.updateInputValue('');
+                    }
+                }
                 break;
             default:
                 if (this.calendarElement && this.isCalendar()) {

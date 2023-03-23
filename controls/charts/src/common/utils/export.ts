@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { print as printWindow, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart/chart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';

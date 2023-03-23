@@ -13,6 +13,8 @@ import { CircularGauge } from '../circular-gauge';
  * @param {number} pageY - Specifies the pageY value.
  * @param {Element} element - Specifies the element.
  * @returns {GaugeLocation} - Returns the location.
+ * 
+ * @private
  */
 export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
     const elementRect: ClientRect = element.getBoundingClientRect();
@@ -31,6 +33,8 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
  * @param {CircularGauge} gauge - Specifies the gauge instance.
  * @param {HTMLElement} parent - specifies the element.
  * @returns {Size} - Return the size of the element
+ * 
+ * @private
  */
 export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
     let elementSize: Size; let element: HTMLElement;

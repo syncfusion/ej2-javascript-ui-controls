@@ -5,6 +5,7 @@ import { DocumentHelper } from '../viewer';
 import { FieldElementBox, ElementBox, DropDownFormField } from '../viewer/page';
 import { ListView } from '@syncfusion/ej2-lists';
 import { TextBox } from '@syncfusion/ej2-inputs';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Form field drop-down dialog is used to modify the value in drop-down form field.
@@ -258,8 +259,8 @@ export class DropDownFormFieldDialog {
      * @returns {void}
      */
     public addItemtoList = (): void => {
-        this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
-        this.currentSelectedItem = (this.drpDownItemsInput as HTMLInputElement).value;
+        this.dropDownItems.push(SanitizeHtmlHelper.sanitize((this.drpDownItemsInput as HTMLInputElement).value));
+        this.currentSelectedItem = SanitizeHtmlHelper.sanitize((this.drpDownItemsInput as HTMLInputElement).value);
         (this.drpDownItemsInput as HTMLInputElement).value = '';
         this.enableOrDisableButton();
         this.updateList();
@@ -386,8 +387,8 @@ export class DropDownFormFieldDialog {
         let dropDownField: DropDownFormField = new DropDownFormField();
         dropDownField.dropdownItems = this.dropDownItems;
         dropDownField.selectedIndex = 0;
-        dropDownField.name = this.bookmarkInput.value;
-        dropDownField.helpText = this.tooltipInput.value;
+        dropDownField.name = SanitizeHtmlHelper.sanitize(this.bookmarkInput.value);
+        dropDownField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipInput.value);
         dropDownField.enabled = this.dropDownEnable.checked;
         this.owner.editor.editFormField('DropDown', dropDownField);
         this.closeDropDownField();

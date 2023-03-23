@@ -3,7 +3,7 @@
   /*! timepicker theme */
   .e-time-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
-      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
+      @if $timepicker-skin-name == 'bootstrap4' or $timepicker-skin-name == 'bootstrap5' {
         background: $timepicker-icon-active-bg-color;
         border-color: $timepicker-active-border-color;
       }
@@ -12,17 +12,32 @@
 
     #{if(&, '&', '*')}.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
       color: $timepicker-list-popup-icon-active-color;
+      @if $timepicker-skin-name == 'Material3' {
+        border: $timepicker-icon-active-border;
+        border-radius: $timepicker-icon-active-border-radius;
+        background: $timepicker-icon-active-bg-color;
+      }
     }
   }
 
   #{&}.e-timepicker.e-popup {
-    background-color: $timepicker-list-bg-color;
+    @if $timepicker-skin-name != 'Material3' {
+      background-color: $timepicker-list-bg-color;
+    }
+    @if $timepicker-skin-name == 'Material3' {
+      background: $timepicker-list-bg-color;
+    }
     border: $timepicker-list-border-color;
     border-radius: $timepicker-popup-border-radius;
     box-shadow: $timepicker-popup-shadow;
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
-      background-color: $timepicker-list-bg-color;
+      @if $timepicker-skin-name != 'Material3' {
+        background-color: $timepicker-list-bg-color;
+      }
+      @if $timepicker-skin-name == 'Material3' {
+        background: $timepicker-list-bg-color;
+      }
 
       #{if(&, '&', '*')} li.e-list-item {
         border: $timepicker-list-default-border-style;
@@ -39,18 +54,33 @@
       #{if(&, '&', '*')} .e-list-item.e-hover,
       #{if(&, '&', '*')} .e-list-item.e-navigation,
       #{if(&, '&', '*')} .e-list-item:focus {
-        background-color: $timepicker-list-hover-bg-color;
+        @if $timepicker-skin-name != 'Material3' {
+          background-color: $timepicker-list-hover-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-hover-bg-color;
+        }
         border: $timepicker-list-hover-border-color;
         color: $timepicker-list-hover-font-color;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active {
-        background-color: $timepicker-list-active-bg-color;
+        @if $timepicker-skin-name != 'Material3' {
+          background-color: $timepicker-list-active-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-active-bg-color;
+        }
         color: $timepicker-list-active-font-color;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
-        background-color: $timepicker-list-active-hover-bg-color;
+        @if $timepicker-skin-name != 'Material3' {
+          background-color: $timepicker-list-active-hover-bg-color;
+        }
+        @if $timepicker-skin-name == 'Material3' {
+          background: $timepicker-list-active-hover-bg-color;
+        }
         color: $timepicker-list-active-hover-font-color;
       }
     }

@@ -121,6 +121,12 @@
         top: -17px;
         width: 52px;
         z-index: 1;
+        @if $skin-name == 'Material3' {
+          height: $switch-ripple-height;
+          left: $switch-ripple-left;
+          top: $switch-ripple-top;
+          width: $switch-ripple-width;
+        }
       }
 
       &.e-rtl {
@@ -241,6 +247,10 @@
     & .e-switch-handle {
       height: $switch-small-handle-height;
       width: $switch-small-handle-width;
+      @if $skin-name == 'Material3' {
+        left: $switch-small-handle-left;
+        top: $switch-small-handle-top;
+      }
     }
 
     & .e-ripple-container {

@@ -444,15 +444,16 @@ export class KeyboardInteraction {
             const args: SelectEventArgs = {
                 element: target, requestType: cellSelect
             };
-            const cellData: Record<string, any> = {};
-            const cellDetails: CellClickEventArgs = this.parent.getCellDetails(target);
-            if (this.parent.eventWindow && cellDetails) {
-                if (this.parent.activeCellsData.element !== cellDetails.element) {
-                    this.parent.activeCellsData = cellDetails;
-                }
-                this.parent.eventWindow.convertToEventData(this.parent.activeCellsData as unknown as Record<string, any>, cellData);
-                args.data = cellData;
-            }
+            // activeCellsData is not reset on schedule property changed(group properties)
+            // const cellData: Record<string, any> = {};
+            // const cellDetails: CellClickEventArgs = this.parent.getCellDetails(target);
+            // if (this.parent.eventWindow && cellDetails) {
+            //     if (this.parent.activeCellsData.element !== cellDetails.element) {
+            //         this.parent.activeCellsData = cellDetails;
+            //     }
+            //     this.parent.eventWindow.convertToEventData(this.parent.activeCellsData as unknown as Record<string, any>, cellData);
+            //     args.data = cellData;
+            // }
             this.parent.trigger(event.select, args, () => {
                 this.initialTarget = target;
                 this.selectedCells = [target];

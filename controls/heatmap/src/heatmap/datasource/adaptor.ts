@@ -13,12 +13,12 @@ import { BubbleDataModel } from '../model/base-model';
 import { BubbleData } from '../model/base';
 import { Axis } from '../axis/axis';
 /**
- * Configures the Adaptor Property in the Heatmap.
+ * Configures the adaptor in the heatmap.
  */
 export class Data extends ChildProperty<Data> {
 
     /**
-     * Specifies the provided datasource is an JSON data.
+     * Specifies whether the provided data source is a JSON data or not.
      *
      * @default false
      */
@@ -27,7 +27,7 @@ export class Data extends ChildProperty<Data> {
     public isJsonData: boolean;
 
     /**
-     * specifies Adaptor type
+     * Specifies the type of the adaptor to process the data set in the heatmap.
      *
      * @default None
      */
@@ -35,7 +35,7 @@ export class Data extends ChildProperty<Data> {
     public adaptorType: AdaptorType;
 
     /**
-     * Specifies xAxis mapping.
+     * Specifies the field name in the JSON data that maps to the labels on the x-axis.
      *
      * @default ''
      */
@@ -44,7 +44,7 @@ export class Data extends ChildProperty<Data> {
     public xDataMapping: string;
 
     /**
-     * Specifies yAxis mapping.
+     * Specifies the field name in the JSON data that maps to the labels on the y-axis.
      *
      * @default ''
      */
@@ -53,7 +53,7 @@ export class Data extends ChildProperty<Data> {
     public yDataMapping: string;
 
     /**
-     * Specifies value mapping.
+     * Specifies the field name in the JSON data that maps to the value in the heatmap cell.
      *
      * @default ''
      */
@@ -62,7 +62,7 @@ export class Data extends ChildProperty<Data> {
     public valueMapping: string;
 
     /**
-     * Specifies data mapping for size and color bubble type.
+     * Specifies the options to configure the data mapping for size and color bubble types.
      */
     @Complex<BubbleDataModel>({}, BubbleData)
     public bubbleDataMapping: BubbleDataModel;

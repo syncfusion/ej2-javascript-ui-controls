@@ -1,0 +1,205 @@
+@include export-module('splitter-theme') {
+  .e-splitter {
+
+    &.e-splitter-horizontal,
+    &.e-splitter-vertical {
+      border: solid 1px $splitter-border-color;
+
+      .e-pane {
+        color: $splitpane-font-color;
+
+        // sass-lint:disable nesting-depth
+        &.e-splitter {
+
+          &.e-splitter-horizontal,
+          &.e-splitter-vertical {
+            border: transparent;
+          }
+        }
+      }
+    }
+
+    .e-split-bar {
+
+      &.e-split-bar-horizontal {
+        background: $splitbar-border-color;
+        border-left: $split-bar-border-left;
+        border-right: $split-bar-border-right;
+
+        .e-resize-handler {
+          background: $resize-icon-bg-color;
+          color: $splitbar-icon-color;
+        }
+
+        .e-navigate-arrow:not(.e-icon-hidden) {
+          background-color: transparent;
+          border-color: transparent;
+          color: transparent;
+          transition: background-color 500ms ease-out;
+
+          &::before,
+          &::after {
+            background-color: $navigation-icon-background-hover;
+            opacity: 0;
+            transition-duration: .3s;
+            transition-timing-function: cubic-bezier(.25, .1, .25, 1);
+          }
+        }
+
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+          border-left: $split-bar-hover-border-left;
+          border-right: $split-bar-hover-border-right;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+
+          .e-navigate-arrow {
+            &.e-arrow-left,
+            &.e-arrow-right {
+              background-color: $navigation-arrow-background;
+              border-color: $navigation-icon-border-hover;
+              border-width: 1px;
+              opacity: .9;
+            }
+          }
+
+          &.e-split-bar-hover,
+          &.e-split-bar-active {
+            .e-navigate-arrow::before {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(40deg);
+            }
+
+            .e-navigate-arrow::after {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(-40deg);
+            }
+          }
+        }
+
+        // left-arrow hover/active styles
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
+          .e-navigate-arrow.e-arrow-right::before {
+            background-color: $navigation-icon-background-hover;
+            opacity: 1;
+            transform: rotate(-40deg);
+          }
+
+          .e-navigate-arrow.e-arrow-right::after {
+            background-color: $navigation-icon-background-hover;
+            opacity: 1;
+            transform: rotate(40deg);
+          }
+        }
+
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+      }
+
+      &.e-split-bar-vertical {
+        background: $splitbar-border-color;
+
+        .e-resize-handler {
+          background: $resize-icon-bg-color;
+          color: $splitbar-icon-color;
+        }
+
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+          border-left: $split-bar-hover-border-left;
+          border-right: $split-bar-hover-border-right;
+
+          .e-navigate-arrow {
+            &.e-arrow-up,
+            &.e-arrow-down {
+              background-color: $navigation-arrow-background;
+              border-color: $navigation-icon-border-hover;
+              border-width: 1px;
+              opacity: .9;
+            }
+          }
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
+          .e-navigate-arrow.e-arrow-up {
+
+            &::before {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(125deg);
+            }
+
+            &::after {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(50deg);
+            }
+          }
+
+          .e-navigate-arrow.e-arrow-down {
+            &::before {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(55deg);
+            }
+
+            &::after {
+              background-color: $navigation-icon-background-hover;
+              opacity: 1;
+              transform: rotate(125deg);
+            }
+          }
+        }
+
+        .e-navigate-arrow {
+          background-color: transparent;
+          border-color: transparent;
+          color: transparent;
+          transition: background-color 300ms ease-out;
+
+          &::before,
+          &::after {
+            background-color: $navigation-icon-background-hover;
+            opacity: 0;
+            transition-duration: .3s;
+            transition-timing-function: cubic-bezier(.25, .1, .25, 1);
+          }
+        }
+
+        &.e-split-bar-active {
+          background: $splitbar-hover-border-color;
+
+          .e-resize-handler {
+            background: $resize-icon-bg-color;
+            color: $splitbar-hover-border-color;
+          }
+        }
+      }
+    }
+
+    &.e-disabled {
+      opacity: .4;
+      pointer-events: none;
+    }
+  }
+}

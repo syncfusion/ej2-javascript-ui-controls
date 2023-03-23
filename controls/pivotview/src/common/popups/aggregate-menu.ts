@@ -1,5 +1,5 @@
 import { createElement, remove, extend, getInstance, select } from '@syncfusion/ej2-base';
-import { MouseEventArgs } from '@syncfusion/ej2-base';
+import { MouseEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -192,6 +192,7 @@ export class AggregateMenu {
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -217,7 +218,7 @@ export class AggregateMenu {
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
-        // this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
+        // this.valueDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('valueFieldSettings');
     }
     private createFieldOptions(buttonElement: HTMLElement, type?: string): HTMLElement {
         const fieldCaption: string = buttonElement.getAttribute('data-caption');
@@ -272,20 +273,26 @@ export class AggregateMenu {
         const optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
         const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
-        const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
-        const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.getAttribute('data-uid') });
+        const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
+        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
+        const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
+        textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid')) : buttonElement.getAttribute('data-uid');
         const inputTextDiv1: HTMLElement = createElement('div', {
-            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('sourceCaption')
+            className: 'e-type-option-text'
         });
+        inputTextDiv1.innerText = this.parent.localeObj.getConstant('sourceCaption');
         const optionTextDiv1: HTMLElement = createElement('div', {
-            className: 'e-base-field-option-text', innerHTML: this.parent.localeObj.getConstant('summarizeValuesBy')
+            className: 'e-base-field-option-text'
         });
+        optionTextDiv1.innerText = this.parent.localeObj.getConstant('summarizeValuesBy');
         const optionTextDiv2: HTMLElement = createElement('div', {
-            className: 'e-base-item-option-text', innerHTML: this.parent.localeObj.getConstant('baseField')
+            className: 'e-base-item-option-text'
         });
+        optionTextDiv2.innerText = this.parent.localeObj.getConstant('baseField');
         const optionTextDiv3: HTMLElement = createElement('div', {
-            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('baseItem')
+            className: 'e-type-option-text'
         });
+        optionTextDiv3.innerText = this.parent.localeObj.getConstant('baseItem');
         const inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-container' });
         const dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
         const dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
@@ -390,9 +397,10 @@ export class AggregateMenu {
                     const field: string = buttonElement.getAttribute('data-uid');
                     const valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
                     const contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-                    const captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
+                    let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
                         this.parent.engineModule.fieldList[field as string].caption;
-                    contentElement.innerHTML = captionName;
+                    captionName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(captionName) : captionName;
+                    contentElement.innerText = captionName;
                     contentElement.setAttribute('title', captionName);
                     buttonElement.setAttribute('data-type', type as string);
                     for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
@@ -443,9 +451,10 @@ export class AggregateMenu {
         }
         if (buttonElement) {
             const contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-            const captionName: string = this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' +
+            let captionName: string = this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' +
                 this.parent.localeObj.getConstant('of') + ' ' + captionInstance.value;
-            contentElement.innerHTML = captionName;
+            captionName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(captionName) : captionName;
+            contentElement.innerText = captionName;
             contentElement.setAttribute('title', captionName);
             buttonElement.setAttribute('data-type', summaryInstance.value as string);
             buttonElement.setAttribute('data-caption', captionInstance.value);

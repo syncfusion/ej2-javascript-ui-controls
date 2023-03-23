@@ -1,7 +1,12 @@
 @include export-module('message-theme') {
   .e-message {
-    background-color: $msg-bg-color;
-    border-color: $msg-border-color;
+    background: $msg-bg-color;
+    @if ($skin-name == 'Material3') {
+      border-image: $msg-border-color;
+    }
+    @else {
+      border-color: $msg-border-color;
+    }
     color: $msg-color;
 
     .e-msg-icon {
@@ -70,7 +75,10 @@
     }
 
     &.e-outlined {
-      background-color: $msg-outline-bg-color;
+      background: $msg-outline-bg-color;
+      @if ($skin-name == 'Material3') {
+        border-image: none;
+      }
       border-color: $msg-outline-border-color;
       color: $msg-outline-color;
 
@@ -136,7 +144,10 @@
     }
 
     &.e-filled {
-      background-color: $msg-filled-bg-color;
+      background: $msg-filled-bg-color;
+      @if ($skin-name == 'Material3') {
+        border-image: none;
+      }
       border-color: $msg-filled-border-color;
       color: $msg-filled-color;
 

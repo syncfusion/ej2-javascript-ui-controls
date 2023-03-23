@@ -343,7 +343,7 @@ export class RowDD {
                     if (this.dropPosition === 'middleSegment') {
                         parentUniqueID = this.droppedRecord.uniqueID;
                     } else {
-                        parentUniqueID = this.droppedRecord.parentItem.uniqueID;
+                        parentUniqueID = this.droppedRecord.parentItem ? this.droppedRecord.parentItem.uniqueID: this.droppedRecord.uniqueID;
                     }
                     const droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(parentUniqueID);
                     const editedObj: Object = {};
@@ -368,7 +368,7 @@ export class RowDD {
                         this.updateSharedResourceTask();
                     }
                 }
-                if (this.parent.taskFields.dependency) {
+                if (this.parent.taskFields.dependency && this.parent.allowParentDependency) {
                     let isValidPredecessor: boolean = true;
                     let draggedParent: IGanttData;
                     let toParent: IGanttData;

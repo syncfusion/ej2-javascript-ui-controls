@@ -123,6 +123,7 @@ export class QuickPopups {
             cssClass: cls.QUICK_DIALOG_CLASS,
             closeOnEscape: true,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             beforeClose: this.beforeQuickDialogClose.bind(this),
             isModal: true,
             position: { X: 'center', Y: 'center' },
@@ -155,6 +156,7 @@ export class QuickPopups {
             cssClass: className,
             disabled: isDisabled,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             iconCss: iconName
         });
         buttonObj.appendTo(element);
@@ -354,7 +356,8 @@ export class QuickPopups {
                     templateElement = this.parent.getAppointmentTemplate()(eventData, this.parent, 'eventTemplate', tempId, false);
                     append(templateElement, appointmentElement);
                 } else {
-                    appointmentElement.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
+                    appointmentElement.appendChild(createElement('div', { className: cls.SUBJECT_CLASS }));
+                    (appointmentElement.firstElementChild as HTMLElement).innerText = this.parent.sanitize(eventText);
                 }
                 if (!isNullOrUndefined(groupIndex)) {
                     appointmentElement.setAttribute('data-group-index', groupIndex);
@@ -602,10 +605,14 @@ export class QuickPopups {
                     `<button class="${cls.DELETE_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
                     `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
                     `<div class="${cls.SUBJECT_WRAP}"><div class="${cls.SUBJECT_CLASS} ${cls.TEXT_ELLIPSIS}" ` +
-                    `title="${args.eventSubject ? args.eventSubject.replaceAll('"', '\'') : args.eventSubject}">${args.eventSubject}</div></div >`;
+                    `title="${args.eventSubject ? args.eventSubject.replaceAll('"', '\'') : args.eventSubject}"></div></div >`;
                 break;
             }
             const templateWrapper: HTMLElement = createElement('div', { innerHTML: header });
+            if (headerType === 'Event') {
+                const subjectText: HTMLElement = templateWrapper.querySelector('.' + cls.SUBJECT_CLASS);
+                subjectText.innerText = this.parent.sanitize(args.eventSubject);
+            }
             append([].slice.call(templateWrapper.childNodes), headerTemplate);
         }
         return headerTemplate;
@@ -635,7 +642,7 @@ export class QuickPopups {
                     `${cls.TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
                     `${this.parent.activeViewOptions.group.resources.length > 0 ? `<div class="${cls.RESOURCE_CLASS}">` +
                         `<div class="${cls.RESOURCE_ICON_CLASS} ${cls.ICON} "></div><div class="${cls.RESOURCE_DETAILS_CLASS} ` +
-                        `${cls.TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}</td></tr></tbody></table>`;
+                        `${cls.TEXT_ELLIPSIS}"></div></div>` : ''}</td></tr></tbody></table>`;
                 break;
             case 'Event':
                 argsData = this.getFormattedString(data);
@@ -649,8 +656,7 @@ export class QuickPopups {
                 content += '</div></div>';
                 if (data[this.parent.eventFields.location]) {
                     content += '<div class="' + cls.LOCATION_CLASS + '"><div class="' + cls.LOCATION_ICON_CLASS + ' ' +
-                        cls.ICON + '"></div><div class="' + cls.LOCATION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
-                        data[this.parent.eventFields.location] + '</div></div>';
+                    cls.ICON + '"></div><div class="' + cls.LOCATION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"></div></div>';
                 }
                 if (data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone]) {
                     content += '<div class="' + cls.TIME_ZONE_CLASS + '"><div class="' + cls.TIME_ZONE_ICON_CLASS + ' ' + cls.ICON +
@@ -659,17 +665,33 @@ export class QuickPopups {
                 }
                 if (data[this.parent.eventFields.description]) {
                     content += '<div class="' + cls.DESCRIPTION_CLASS + '"><div class="' + cls.DESCRIPTION_ICON_CLASS + ' ' + cls.ICON +
-                        '"></div><div class="' + cls.DESCRIPTION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
-                        data[this.parent.eventFields.description] + '</div></div>';
+                    '"></div><div class="' + cls.DESCRIPTION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"></div></div>';
                 }
                 if (this.parent.resourceCollection.length > 0) {
                     content += '<div class="' + cls.RESOURCE_CLASS + '"><div class="' + cls.RESOURCE_ICON_CLASS + ' ' + cls.ICON +
-                        '"></div><div class="' + cls.RESOURCE_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
-                        resourceText + '</div></div>';
+                    '"></div><div class="' + cls.RESOURCE_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"></div></div>';
                 }
                 break;
             }
             const templateWrapper: HTMLElement = createElement('div', { innerHTML: content });
+            if (data[this.parent.eventFields.location]) {
+                const locationDetails: HTMLElement = templateWrapper.querySelector('.' + cls.LOCATION_DETAILS_CLASS);
+                if (!isNullOrUndefined(locationDetails)) {
+                    locationDetails.innerText = this.parent.sanitize(data[this.parent.eventFields.location]);
+                }
+            }
+            if (data[this.parent.eventFields.description]) {
+                const descriptionDetails: HTMLElement = templateWrapper.querySelector('.' + cls.DESCRIPTION_DETAILS_CLASS);
+                if (!isNullOrUndefined(descriptionDetails)) {
+                    descriptionDetails.innerText = this.parent.sanitize(data[this.parent.eventFields.description]);
+                }
+            }
+            if (resourceText) {
+                const resourceDetails: HTMLElement = templateWrapper.querySelector('.' + cls.RESOURCE_DETAILS_CLASS);
+                if (!isNullOrUndefined(resourceDetails)) {
+                    resourceDetails.innerText = this.parent.sanitize(resourceText);
+                }
+            }
             append([].slice.call(templateWrapper.childNodes), contentTemplate);
         }
         return contentTemplate;
@@ -1201,7 +1223,7 @@ export class QuickPopups {
 
     private quickPopupClose(): void {
         this.parent.eventBase.focusElement();
-        this.quickPopup.relateTo = cls.WORK_CELLS_CLASS;
+        this.quickPopup.relateTo = '.' + cls.WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();

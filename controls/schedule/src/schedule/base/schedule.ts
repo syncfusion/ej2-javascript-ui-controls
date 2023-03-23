@@ -2,7 +2,7 @@
 import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
-import { getElement, removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';
+import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -210,18 +210,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
      *  view options. The view option specified in this property will be initially loaded on the schedule.
-     * * Day
-     * * Week
-     * * WorkWeek
-     * * Month
-     * * Year
-     * * Agenda
-     * * MonthAgenda
-     * * TimelineDay
-     * * TimelineWeek
-     * * TimelineWorkWeek
-     * * TimelineMonth
-     * * TimelineYear
+     * * `Day`: Denotes Day view of the scheduler.
+     * * `Week`: Denotes Week view of the scheduler.
+     * * `WorkWeek`: Denotes Work Week view of the scheduler.
+     * * `Month`: Denotes Month view of the scheduler.
+     * * `Year`: Denotes Year view of the scheduler.
+     * * `Agenda`: Denotes Agenda view of the scheduler.
+     * * `MonthAgenda`: Denotes Month Agenda view of the scheduler.
+     * * `TimelineDay`: Denotes Timeline Day view of the scheduler.
+     * * `TimelineWeek`: Denotes Timeline Week view of the scheduler.
+     * * `TimelineWorkWeek`: Denotes Timeline Work Week view of the scheduler.
+     * * `TimelineMonth`: Denotes Timeline Month view of the scheduler.
+     * * `TimelineYear`: Denotes Timeline Year view of the scheduler.
      *
      * {% codeBlock src='schedule/currentView/index.md' %}{% endcodeBlock %}
      *
@@ -236,13 +236,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Schedule displays all the views namely `Day`, `Week`, `Work Week`, `Month` and `Agenda`.
      *
      * Example for array of views:
-     * {% codeBlock src="schedule/view-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="schedule/views/index.md" %}{% endcodeBlock %}
      *
      * Example for array of view objects:
-     * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
-     * {% codeBlock src='schedule/views/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/viewOption/index.md' %}{% endcodeBlock %}
      *
-     * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
+     * @default '["Day", "Week", "WorkWeek", "Month", "Agenda"]'
      */
     @Property(['Day', 'Week', 'WorkWeek', 'Month', 'Agenda'])
     public views: View[] | ViewsModel[];
@@ -340,9 +339,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It allows the Scheduler to display week numbers based on following available week options. The week
      *  option specified in this property will be initially loaded on the schedule.
-     * * FirstDay
-     * * FirstFourDayWeek
-     * * FirstFullWeek
+     * * `FirstDay`: Denotes that the first week of the year starts on the first day of the year and ends before the following designated first day of the week.
+     * * `FirstFourDayWeek`:Denotes that the first week of the year is the first week with four or more days before the designated first day of the week.
+     * * `FirstFullWeek`:  Denotes that the first week of the year begins on the first occurrence of the designated first day of the week on or after the first day of the year.
      *
      * {% codeBlock src='schedule/weekRule/index.md' %}{% endcodeBlock %}
      *
@@ -405,6 +404,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(null)
     public timeFormat: string;
+
+    /**
+     * Specifies whether to enable the rendering of untrusted HTML values in the Schedule component.
+     * When this property is enabled, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * When set to `true`, If valid, the scroll on the all day row is activated when the all day row
@@ -538,9 +546,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
-     * * date
-     * * groupIndex
-     * * type
+     * * `date`: Returns the date of the cell.
+     * * `groupIndex`: Returns the group index of the cell.
+     * * `type`: Returns the type of the work cell.
      *
      * Refer to the below code snippet.
      *
@@ -746,8 +754,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Template option to customize the resource header bar. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the resource header cells.
      * The following can be accessible via template.
-     * * resource - All the resource fields.
-     * * resourceData - object collection of current resource.
+     * * `resource` - All the resource fields.
+     * * `resourceData` - Object collection of current resource.
      *
      * Refer to the below code snippet.
      *
@@ -784,7 +792,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Allows defining the collection of resources to be displayed on the Schedule. The resource collection needs to be defined
-     *  with unique resource names to identify it along with the respective dataSource and field mapping options.
+     * with unique resource names to identify it along with the respective dataSource and field mapping options.
      *
      * {% codeBlock src='schedule/resources/index.md' %}{% endcodeBlock %}
      *
@@ -795,7 +803,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Allows defining the collection of custom header rows to display the year, month, week, date and hour label as an individual row
-     *  on the timeline view of the scheduler.
+     * on the timeline view of the scheduler.
      *
      * {% codeBlock src='schedule/headerRows/index.md' %}{% endcodeBlock %}
      *
@@ -1122,7 +1130,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Method to render react templates
      *
-     * @param {Function} callBack - specifies the callBack method
+     * @param {Function} callback - Specifies the callBack method
      * @returns {void}
      * @private
      */
@@ -1145,6 +1153,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if ((this as any).isAngular || (this as any).isReact) {
             this.clearTemplate(templates);
         }
+    }
+
+    /**
+     * Method to sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @param {string} value - A string value representing the HTML string value to be sanitized.
+     * @returns {string} A sanitized Html string.
+     * @private
+     */
+    public sanitize(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            return SanitizeHtmlHelper.sanitize(value);
+        }
+        return value;
     }
 
     private initializeResources(isSetModel: boolean = false): void {
@@ -1358,7 +1380,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             followingID: this.eventSettings.fields.followingID
         };
         this.setEditorTitles();
-        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
+        this.dataModule = new Data(this, this.eventSettings.dataSource, this.eventSettings.query);
         this.crudModule = new Crud(this);
     }
 
@@ -1789,7 +1811,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public removeSelectedClass(): void {
         const selectedCells: Element[] = this.getSelectedCells();
         for (const cell of selectedCells) {
-            cell.setAttribute('aria-selected', 'false');
+            if (this.currentView !== 'Year') {
+                cell.setAttribute('aria-selected', 'false');
+            }
             cell.removeAttribute('tabindex');
         }
         removeClass(selectedCells, cls.SELECTED_CELL_CLASS);
@@ -1808,8 +1832,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public addSelectedClass(cells: HTMLTableCellElement[], focusCell: HTMLTableCellElement, isPreventScroll?: boolean): void {
-        for (const cell of cells) {
-            cell.setAttribute('aria-selected', 'true');
+        if (this.currentView !== 'Year') {
+            for (const cell of cells) {
+                cell.setAttribute('aria-selected', 'true');
+            }
         }
         addClass(cells, cls.SELECTED_CELL_CLASS);
         if (focusCell) {
@@ -2662,6 +2688,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'dataSource':
             case 'query':
             case 'fields':
+            case 'includeFiltersInQuery':
                 this.initializeDataModule();
                 state.isDataManager = true;
                 break;
@@ -3072,6 +3099,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public addEvent(data: Record<string, any> | Record<string, any>[]): void {
         this.crudModule.addEvent(data);
+    }
+
+    /**
+     * Generates the occurrences of a single recurrence event based on the provided event.
+     *
+     * @function generateEventOccurrences
+     * @param {Object} event Accepts the parent recurrence event from which the occurrences are generated.
+     * @param {Date} startDate Accepts the start date for the event occurrences. If not provided, the event's start date will be used.
+     * @returns {Object[]} Returns the collection of occurrence event objects.
+     */
+    public generateEventOccurrences(event: Record<string, any>, startDate?: Date): Record<string, any>[] {
+        return (this.eventBase) ? this.eventBase.generateOccurrence(event, startDate) : [];
     }
 
     /**

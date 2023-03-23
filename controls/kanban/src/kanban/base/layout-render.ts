@@ -77,7 +77,7 @@ export class LayoutRender extends MobileLayout {
         header.appendChild(headerWrap);
         const headerTable: HTMLElement = createElement('table', {
             className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS,
-            attrs: { 'role': 'presentation' }
+            attrs: { 'role': 'table' }
         });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
@@ -134,7 +134,7 @@ export class LayoutRender extends MobileLayout {
                     const name: string = (isExpand) ? cls.COLUMN_EXPAND_CLASS : cls.COLUMN_COLLAPSE_CLASS;
                     const icon: HTMLElement = createElement('div', {
                         className: cls.HEADER_ICON_CLASS + ' ' + cls.ICON_CLASS + ' ' + name,
-                        attrs: { 'tabindex': '0' }
+                        attrs: { 'tabindex': '0', 'role': 'button' }
                     });
                     icon.setAttribute('aria-label', isExpand ? column.keyField + ' Expand' : column.keyField + ' Collapse');
                     th.setAttribute('aria-expanded', isExpand.toString());
@@ -163,6 +163,7 @@ export class LayoutRender extends MobileLayout {
         contentWrap.appendChild(contentTable);
         this.renderColGroup(contentTable);
         const tBody: HTMLElement = createElement('tbody');
+        tBody.setAttribute('role', 'rowgroup');
         contentTable.appendChild(tBody);
         let isCollaspsed: boolean = false;
         this.swimlaneRow = this.kanbanRows;
@@ -181,7 +182,7 @@ export class LayoutRender extends MobileLayout {
 
     private renderSingleContent(tBody: HTMLElement, row: HeaderArgs, isCollaspsed: boolean): void {
         const className: string = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
-        const tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
+        const tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true', 'role': 'row' }});
         for (const column of this.parent.columns) {
             if (this.isColumnVisible(column)) {
                 const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
@@ -190,8 +191,8 @@ export class LayoutRender extends MobileLayout {
                     + ' ' + cls.DROPPABLE_CLASS : '');
                 const td: HTMLElement = createElement('td', {
                     className: className + dragClass,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'aria-expanded': 'true',
-                        'tabindex': '0', 'role': 'navigation' }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(),
+                        'tabindex': '0', 'role': 'treegrid', 'aria-label': column.keyField.toString() }
                 });
                 if (column.allowToggle && !column.isExpanded || index !== -1) {
                     addClass([td], cls.COLLAPSED_CLASS);
@@ -233,7 +234,7 @@ export class LayoutRender extends MobileLayout {
         const name: string = cls.CONTENT_ROW_CLASS + ' ' + cls.SWIMLANE_ROW_CLASS;
         const className: string = isCollapsed ? ' ' + cls.COLLAPSED_CLASS : '';
         const tr: HTMLElement = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField as string, 'aria-expanded': (!isCollapsed).toString() }
+            className: name + className, attrs: { 'data-key': row.keyField as string , 'aria-expanded': (!isCollapsed).toString(), 'role': 'row' }
         });
         const col: number = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         const td: HTMLElement = createElement('td', {
@@ -245,6 +246,7 @@ export class LayoutRender extends MobileLayout {
         const iconDiv: HTMLElement = createElement('div', {
             className: cls.ICON_CLASS + ' ' + iconClass, attrs: {
                 'tabindex': '0',
+                'role': 'button',
                 'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
             }
         });
@@ -302,7 +304,7 @@ export class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const cardWrapper: HTMLElement = createElement('div', {
-                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox' }
+                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox', 'tabindex': '0' }
                     });
                     if (column.transitionColumns.length > 0) {
                         columnTransition = true;

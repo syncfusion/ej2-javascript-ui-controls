@@ -2,27 +2,7 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I445343` - The issue "Connectors are hidden in swimlane at initial rendering" has been fixed.
-
-## 20.4.53 (2023-03-07)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I422049` - Now, calling doLayout after injecting line routing module working fine.
-- `#F180577` - Now, Send to back command is working when there is single node in layer.
-- `#I436649` - Now, connector segment does not get split into multiple segment for top to bottom approach.
-
-## [Unreleased]
-
-## 20.4.52 (2023-02-28)
+## 21.1.35 (2023-03-23)
 
 ### Diagram
 
@@ -31,7 +11,9 @@
 - `#F180478` - Now, the performance of diagram while enabling virtualization is improved.
 - `#F180478` - Now, Overview is updated properly while enabling virtualization.
 - `#I422299` - Now, swimlane child nodes is selectable after save and load.
-- `#I437322` - Now, drag the connector end thumb is working, while we increase handleSize value.
+- `#I436649` - Now, connector segment does not get split into multiple segment for top to bottom approach.
+- `#I440967` - Now, Free hand connector segment collection restored after save and load the diagram.
+- `#I441075` - Now, position change event does not get triggered while click on the swimlane header.
 
 ## 20.4.50 (2023-02-14)
 
@@ -71,6 +53,8 @@
 
 - `#I421800` - Now, bezier connector rendered properly while save and load the diagram.
 - `#I417240` - Now, dropping bpmn text annotation node inside the swimlane is working properly.
+
+## 20.4.38 (2022-12-22)
 
 ### Diagram
 

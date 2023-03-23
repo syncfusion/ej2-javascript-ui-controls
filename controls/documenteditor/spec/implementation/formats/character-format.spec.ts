@@ -205,3 +205,35 @@ describe('Check the characterFormat for field while selection', () => {
         expect(container.selection.characterFormat.fontFamily).toBe(undefined);
     });
 });
+describe('Check the characterFormat for arbic format apply', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the arbic fontFamily ', function () {
+        console.log('apply the font family for arial');
+        container.openBlank();
+        container.editor.insertText("اثممخ");
+        container.selection.select('0;0;0','0;0;4');
+        container.editorModule.onApplyCharacterFormat('fontFamily','Arial');
+        expect(container.selection.characterFormat.fontFamilyBidi).toBe('Arial');
+    });
+});

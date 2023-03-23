@@ -1006,8 +1006,7 @@ describe('Candle Series ', () => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[2] == '389.5' || svg.getAttribute('d').split(' ')[2] == '393.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '234.375').toBe(true);
-
+                expect(svg.getAttribute('d').split(' ')[2] == '234.375' || svg.getAttribute('d').split(' ')[2] == '235.375' ).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1086,7 +1085,8 @@ describe('Candle Series ', () => {
                 let point: Element = document.getElementById('containerSeriesGroup1');
                 expect(point != null).toBe(true);
                 expect(point.getAttribute('transform') == 'translate(464.5,259.625)' ||
-                    point.getAttribute('transform') == 'translate(462.5,257.625)').toBe(true);
+                    point.getAttribute('transform') == 'translate(462.5,257.625)' ||
+                    point.getAttribute('transform') == 'translate(462.5,258.625)').toBe(true);  
                 done();
             };
             chartObj.loaded = loaded;

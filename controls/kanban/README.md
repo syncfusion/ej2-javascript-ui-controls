@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-kanban/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-kanban)
-
 # JavaScript Kanban Control
 
 The [JavaScript Kanban](https://www.syncfusion.com/javascript-ui-controls/js-kanban-board?utm_source=npm&utm_medium=listing&utm_campaign=javascript-kanban-npm) is a popular tool for visualizing and managing work in a variety of contexts, including software development, project management, and personal productivity. The control supports necessary features to design task scheduling applications. The key features are swimlanes, customizable cards, binding from local and remote data sources, columns mapping, stacked headers, WIP validation, templating, responsiveness, filtering, and editing.

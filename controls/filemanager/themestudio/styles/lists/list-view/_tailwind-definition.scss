@@ -28,7 +28,7 @@ $listview-border-size: 1px !default;
 $listview-font-size: $text-sm !default;
 $listview-back-padding-right: 8px !default;
 $listview-back-icon-size: 20px !default;
-$listview-back-icon-font-size: 16px !default;
+$listview-back-icon-font-size: $text-base !default;
 $listview-touch-item-height: 48px !default;
 $listview-touch-item-line-height: 24px !default;
 $listview-touch-item-size: 24px !default;

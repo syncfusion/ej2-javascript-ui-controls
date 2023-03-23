@@ -3,6 +3,7 @@ import { L10n, createElement } from '@syncfusion/ej2-base';
 import { RestrictEditing } from './restrict-editing-pane';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { TextBox } from '@syncfusion/ej2-inputs';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 /**
  * @private
  */
@@ -90,7 +91,7 @@ export class EnforceProtectionDialog {
         if (this.passwordTextBox.value !== this.confirmPasswordTextBox.value) {
             DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
         } else {
-            this.password = this.passwordTextBox.value;
+            this.password = SanitizeHtmlHelper.sanitize(this.passwordTextBox.value);
             this.viewer.owner.editor.addProtection(this.password, this.owner.protectionType);
         }
     };

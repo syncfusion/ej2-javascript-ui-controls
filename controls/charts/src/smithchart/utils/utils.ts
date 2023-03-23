@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Property, ChildProperty, Browser } from '@syncfusion/ej2-base';
 import { SmithchartFontModel } from './utils-model';
 

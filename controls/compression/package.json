@@ -1,15 +1,7 @@
 {
 	"name": "@syncfusion/ej2-compression",
-	"version": "17.2.48",
-	"description": "Essential Javascript 2 Compression library",
-	"keywords": [
-		"ej2",
-		"syncfusion",
-		"Javascript",
-		"TypeScript",
-		"js",
-		"compression"
-	],
+	"version": "0.17.0",
+	"description": "Essential JS 2 Compression library",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
@@ -40,15 +32,12 @@
 		"nedb": "^1.8.0",
 		"simple-odata-server": "^0.3.1"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
-	},
 	"main": "./dist/ej2-compression.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-compression.es2015.js",
+	"es2015": "./dist/es6/ej2-compression.es5.js",
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

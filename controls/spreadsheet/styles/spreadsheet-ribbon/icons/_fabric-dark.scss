@@ -1,0 +1,9 @@
+@include export-module('spreadsheet-ribbon-fabric-icons') {
+  .e-spreadsheet .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e36a';
+      }
+    }
+  }
+}

@@ -741,7 +741,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
         }
-        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+        if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
         this.renderComplete();
@@ -929,7 +929,8 @@ export class DateRangePicker extends CalendarBase {
         let attributes: { [key: string]: string } = {};
         if (!isDynamic) {
             for (let i: number = 0; i < this.element.attributes.length; i++) {
-                attributes[this.element.attributes[i as number].name] = this.element.getAttribute(this.element.attributes[i as number].name);
+                attributes[this.element.attributes[i as number].name] =
+                this.element.getAttribute(this.element.attributes[i as number].name);
             }
         } else {
             attributes = this.htmlAttributes;
@@ -1136,8 +1137,8 @@ export class DateRangePicker extends CalendarBase {
         this.clearRange();
         this.hide(e);
         if (closest(this.element, 'form')) {
-            let element: Element = this.firstHiddenChild;
-            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            const element: Element = this.firstHiddenChild;
+            const keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
             keyupEvent.initEvent('keyup', false, true);
             element.dispatchEvent(keyupEvent);
         }
@@ -1355,7 +1356,8 @@ export class DateRangePicker extends CalendarBase {
         this.createControl();
         this.bindCalendarEvents();
         this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
-        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) &&
+         !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
             this.disabledDateRender();
         }
         this.updateHeader();
@@ -1530,8 +1532,8 @@ export class DateRangePicker extends CalendarBase {
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     const start : Date = new Date(range[0]);
                     const end : Date = new Date(range[1]);
-                    const startDate = this.getStartEndDate(start, false, range, dateOptions);
-                    const endDate = this.getStartEndDate(end, true, range, dateOptions);
+                    const startDate: Date = this.getStartEndDate(start, false, range, dateOptions);
+                    const endDate: Date = this.getStartEndDate(end, true, range, dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
@@ -1600,6 +1602,7 @@ export class DateRangePicker extends CalendarBase {
         }
         this.updateHiddenInput();
     }
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private getStartEndDate(date : Date, isEnd : boolean, range : string[], dateOptions : object) {
         if (this.depth === 'Month') {
             return this.globalize.parseDate(range[isEnd ? 1 : 0].trim(), dateOptions);
@@ -1730,7 +1733,7 @@ export class DateRangePicker extends CalendarBase {
             if (this.tabKeyValidation(ele, LEFTCALENDER)) {
                 ele = this.keyCalendarUpdate(false, ele, false);
                 this.currentDate = this.firstCellToFocus(this.rightCalendar);
-                view = this.getViewNumber(this.currentView())
+                view = this.getViewNumber(this.currentView());
                 this.keyboardNavigate(0, view, e, max, min);
                 this.keyNavigation(ele, e);
             }
@@ -1963,7 +1966,8 @@ export class DateRangePicker extends CalendarBase {
         const isLeftYear: boolean = leftHeader ? leftHeader.classList.contains('e-year') : false;
         const isRightDecade: boolean = rightHeader ? rightHeader.classList.contains('e-decade') : false;
         const isLeftDecade: boolean = leftHeader ? leftHeader.classList.contains('e-decade') : false;
-        return isLeftCalendar && (isLeftMonth || isLeftYear || isLeftDecade) && (isRightMonth || isRightYear || isRightDecade) && !this.isMobile;
+        return isLeftCalendar && (isLeftMonth || isLeftYear || isLeftDecade) &&
+         (isRightMonth || isRightYear || isRightDecade) && !this.isMobile;
     }
     private keyNavigation(calendar: HTMLElement, e: KeyboardEventArgs): void {
         this.bindCalendarCellEvents(calendar);
@@ -3387,7 +3391,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
             this.presetElement = this.createElement('div', { className: PRESETS, attrs: { 'tabindex': '0' } });
             const listTag: HTMLElement = ListBase.createList(this.createElement, this.presetsItem, null, true);
-            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options','tabindex':'0' });
+            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options', 'tabindex': '0' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
             const customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
@@ -3448,7 +3452,7 @@ export class DateRangePicker extends CalendarBase {
             zIndex: this.zIndex,
             open: () => {
                 attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.inputElement.id + '_options' });
-                if(this.value){
+                if (this.value){
                     attributes(this.inputElement, { 'aria-activedescendant': this.inputElement.id});
                 }
                 else{
@@ -3810,7 +3814,7 @@ export class DateRangePicker extends CalendarBase {
             this.createElement
         );
         attributes(this.inputElement, {
-            'tabindex': '0', 'aria-expanded': 'false','role': 'combobox', 
+            'tabindex': '0', 'aria-expanded': 'false', 'role': 'combobox',
             'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
@@ -3871,7 +3875,8 @@ export class DateRangePicker extends CalendarBase {
             this.clearRange();
 
         }
-        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isDisabled && !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) &&
+         !isDisabled && !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
             this.disabledDateRender();
         }
         this.errorClass();
@@ -4225,7 +4230,7 @@ export class DateRangePicker extends CalendarBase {
         this.unBindEvents();
         this.hide(null);
         const ariaAttrs: object = {
-            'tabindex': '0', 'aria-expanded': 'false','role': 'combobox', 
+            'tabindex': '0', 'aria-expanded': 'false', 'role': 'combobox',
             'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
         };
@@ -4588,6 +4593,7 @@ export class DateRangePicker extends CalendarBase {
             this.updateHeader();
         }
     }
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private getStartEndValue(date : Date, isEnd : boolean) {
         if (this.depth === 'Month') {
             return this.checkDateValue(new Date(this.checkValue(date)));

@@ -1029,6 +1029,7 @@ export class ColumnsDialog {
                 cols.push(colFormat);
             }
             sectionFormat.columns = cols;
+            sectionFormat.breakCode = currentSectionFormat.breakCode;
             this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
             this.documentHelper.hideDialog();
         };

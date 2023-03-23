@@ -6,56 +6,56 @@ import { Property, ChildProperty, Complex, Browser, createElement, isNullOrUndef
 export interface LegendSettingsModel {
 
     /**
-     * Specifies the height of Legend.
+     * Sets and gets the height of the legend.
      *
      * @default ''
      */
     height?: string;
 
     /**
-     * Specifies the width of Legend.
+     * Sets and gets the width of the legend.
      *
      * @default ''
      */
     width?: string;
 
     /**
-     * Specifies title of Legend.
+     * Sets and gets the options to customize the title of the legend.
      *
      * @default ''
      */
     title?: TitleModel;
 
     /**
-     * Specifies the position of Legend to render.
+     * Sets and gets the position of the legend.
      *
      * @default 'Right'
      */
     position?: LegendPosition;
 
     /**
-     * Specifies whether the Legend should be visible or not.
+     * Specifies whether the legend should be visible or not.
      *
      * @default true
      */
     visible?: boolean;
 
     /**
-     * Specifies the alignment of the legend
+     * Specifies the alignment of the legend.
      *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Specifies whether the label should be visible or not.
+     * Specifies whether the labels in the legend should be visible or not.
      *
      * @default true
      */
     showLabel?: boolean;
 
     /**
-     * Specifies whether the gradient pointer should be visible or not.
+     * Enables or disables the visibility of the gradient pointer in the gradient legend.
      *
      * @default true
      */
@@ -69,8 +69,8 @@ export interface LegendSettingsModel {
     enableSmartLegend?: boolean;
 
     /**
-     * Specifies the type of label display for smart legend.
-     * * All:  All labels are displayed.
+     * Specifies the display mode for label for smart legend. The available display types are,
+     * * All: All the labels in the legend are displayed.
      * * Edge: Labels will be displayed only at the edges of the legend.
      * * None: No labels are displayed.
      *
@@ -79,14 +79,14 @@ export interface LegendSettingsModel {
     labelDisplayType?: LabelDisplayType;
 
     /**
-     * Specifies the legend label style.
+     * Sets and gets the options to customize the font style of the legend label.
      *
      * @default ''
      */
     textStyle?: FontModel;
 
     /**
-     * Specifies the formatting options for the legend label.
+     * Used to format the legend label.
      *
      * @default ''
      */
@@ -94,7 +94,7 @@ export interface LegendSettingsModel {
     labelFormat?: string;
 
     /**
-     * To toggle the visibility of heatmap cells based on legend range selection
+     * Enables or disables the toggle visibility of heatmap cells based on legend item selection.
      *
      * @default true
      */

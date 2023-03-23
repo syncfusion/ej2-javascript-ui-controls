@@ -229,19 +229,21 @@ export class Reorder implements IAction {
         const flatColumns: Column[] = stackedHdrColumn.length && stackedCols.length ?
             this.getColumnsModel(stackedCols) : this.getColumnsModel(cols, true);
         const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
+
         cols = parent ? parent.columns as Column[] : cols;
         return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
+
     }
-    
+
     private getAllStackedheaderParentColumns(headers: Element[]): Column[] {
-        let stackedCols: Column[] = [];
+        const stackedCols: Column[] = [];
         for (let i: number = 0; i < headers.length; i++) {
-            if (headers[i].classList.contains('e-hide')) {
+            if (headers[parseInt(i.toString(), 10)].classList.contains('e-hide')) {
                 headers.splice(i, 1);
                 i--;
             }
-            else if (headers[i].closest('thead').firstChild === headers[i].parentElement) {
-                stackedCols.push(this.parent.getColumnByUid(headers[i].firstElementChild.getAttribute('e-mappinguid')));
+            else if (headers[parseInt(i.toString(), 10)].closest('thead').firstChild === headers[parseInt(i.toString(), 10)].parentElement) {
+                stackedCols.push(this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].firstElementChild.getAttribute('e-mappinguid')));
             }
         }
         return stackedCols;

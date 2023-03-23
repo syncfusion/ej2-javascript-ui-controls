@@ -1351,9 +1351,9 @@ export class SpreadsheetChart {
 
     private titleDlgContent(addChartEle: string, chartComp: Chart): HTMLElement {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const dlgText: string = l10n.getConstant('EnterTitle');
         const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-title-dlg-content' });
-        const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
+        const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header' });
+        value1Text.innerText = l10n.getConstant('EnterTitle');
         const value1Inp: HTMLInputElement =
             this.parent.createElement('input', { className: 'e-input', id: 'titleInput', attrs: { type: 'text' } });
         dlgContent.appendChild(value1Text);

@@ -584,7 +584,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private isFirstFileOnSelection: boolean = false;
     private dragCounter : number = 0;
     private isPreloadFiles: boolean;
-    private isAngular:boolean=false;
+    private isAngular: boolean = false;
     /**
      * Get the file item(li) which are shown in file list.
      *
@@ -617,7 +617,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * 
+     *
      * {% codeBlock src='uploader/htmlAttributes/index.md' %}{% endcodeBlock %}
      *
      * @default {}
@@ -1367,7 +1367,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.uploadWrapper.appendChild(this.actionButtons);
         this.browseButton.blur();
         if (!this.isPreloadFiles) {
-            this.uploadButton.focus();   
+            this.uploadButton.focus();  
         }
         this.wireActionButtonEvents();
     }
@@ -1615,7 +1615,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private sequenceUpload(fileData: FileInfo[]): void {
         if ( this.filesData.length - fileData.length === 0 ||
             this.filesData[(this.filesData.length - fileData.length - 1)].statusCode !== '1' ) {
-            if(this.multiple || this.count < 0){
+            if (this.multiple || this.count < 0){
                 ++this.count;
             }
             const isFileListCreated: boolean =  this.showFileList ? false : true;
@@ -1821,7 +1821,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /* istanbul ignore next */
     private onPasteFile(event: ClipboardEvent): void {
         const item: DataTransferItemList = event.clipboardData.items;
-        if (event.type == 'paste' && this.browserName !== 'msie' && this.browserName !== 'edge' && this.browserName !== 'safari') {
+        if (event.type === 'paste' && this.browserName !== 'msie' && this.browserName !== 'edge' && this.browserName !== 'safari') {
             this.element.files = event.clipboardData.files;
         }
         if (item.length !== 1) {
@@ -2187,17 +2187,17 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (this.allowedExtensions.indexOf('*') > -1) {
             this.allTypes = true;
         }
-        if(this.enableHtmlSanitizer){
-            for (let i:number = 0; i < fileData.length; i++) {
-                let sanitizeFile = SanitizeHtmlHelper.beforeSanitize();
-                let sanitizeFileName = SanitizeHtmlHelper.serializeValue(sanitizeFile, fileData[i].name);
-                if (sanitizeFileName != fileData[i].name) {
-                    let encodedFileName = targetFiles[i].name.replace(/[\u00A0-\u9999<>\&]/g, function (i:any) {
+        if (this.enableHtmlSanitizer){
+            for (let i: number = 0; i < fileData.length; i++) {
+                const sanitizeFile = SanitizeHtmlHelper.beforeSanitize();
+                const sanitizeFileName = SanitizeHtmlHelper.serializeValue(sanitizeFile, fileData[parseInt(i.toString())].name);
+                if (sanitizeFileName !== fileData[parseInt(i.toString())].name) {
+                    const encodedFileName = targetFiles[parseInt(i.toString())].name.replace(/[\u00A0-\u9999<>\&]/g, function (i: any) {
                         return '&#' + i.charCodeAt(0) + ';';
                     });
-                    fileData[i].name = encodedFileName;
-                    fileData[i].status = this.localizedTexts('invalidFileName');
-                    fileData[i].statusCode = '0';
+                    fileData[parseInt(i.toString())].name = encodedFileName;
+                    fileData[parseInt(i.toString())].status = this.localizedTexts('invalidFileName');
+                    fileData[parseInt(i.toString())].statusCode = '0';
                 }
             }
         }
@@ -3447,13 +3447,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.updateStatus(metaData.file, this.localizedTexts('fileUploadCancel'), '5');
             this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
             this.removeProgressbar(liElement, 'failure');
-            deleteIcon && deleteIcon.classList.remove(ABORT_ICON);
-            deleteIcon && deleteIcon.classList.add(REMOVE_ICON);
-            deleteIcon && deleteIcon.setAttribute('title', this.localizedTexts('remove'));
+            (deleteIcon && deleteIcon.classList.remove(ABORT_ICON));
+            (deleteIcon && deleteIcon.classList.add(REMOVE_ICON));
+            (deleteIcon && deleteIcon.setAttribute('title', this.localizedTexts('remove')));
             const pauseIcon: Element = liElement.querySelector('.' + PAUSE_UPLOAD);
-            pauseIcon && pauseIcon.classList.add(RETRY_ICON);
-            pauseIcon && pauseIcon.classList.remove(PAUSE_UPLOAD);
-            pauseIcon && pauseIcon.setAttribute('title', this.localizedTexts('retry'));
+            (pauseIcon && pauseIcon.classList.add(RETRY_ICON));
+            (pauseIcon && pauseIcon.classList.remove(PAUSE_UPLOAD));
+            (pauseIcon && pauseIcon.setAttribute('title', this.localizedTexts('retry')));
             if (!isNullOrUndefined(liElement) && !isNullOrUndefined(deleteIcon)
             && !isNullOrUndefined(liElement.querySelector('.e-spinner-pane'))) {
                 hideSpinner(spinnerTarget);
@@ -3711,9 +3711,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
             if (!isNaN(Math.round((e.loaded / e.total) * 100)) && isNullOrUndefined(this.template) && metaData.file.statusCode !== '4' ) {
                 let progressVal: number;
-                let totalChunks: number = Math.ceil(metaData.file.size / this.asyncSettings.chunkSize) - 1;
+                const totalChunks: number = Math.ceil(metaData.file.size / this.asyncSettings.chunkSize) - 1;
                 if (this.asyncSettings.chunkSize && totalChunks) {
-                    progressVal = Math.round(metaData.chunkIndex / totalChunks * 100)
+                    progressVal = Math.round(metaData.chunkIndex / totalChunks * 100);
                     this.changeProgressValue(liElement, progressVal.toString() + '%');
                 }
             }

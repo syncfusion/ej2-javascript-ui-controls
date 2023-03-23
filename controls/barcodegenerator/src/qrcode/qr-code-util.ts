@@ -159,7 +159,7 @@ export class QRCode {
         // render image for the qrcode generator
         const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
-            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
+            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[parseInt(i.toString(), 10)]);
         }
     }
 
@@ -233,10 +233,10 @@ export class QRCode {
             for (let i: number = 0; i < w; i++) {
                 for (let j: number = 0; j < h; j++) {
                     let color: string;
-                    color = (this.mModuleValue[i][j].isBlack) ? foreColor : 'white';
+                    color = (this.mModuleValue[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack) ? foreColor : 'white';
 
-                    if (this.mDataAllocationValues[j][i].isFilled) {
-                        if (this.mDataAllocationValues[j][i].isBlack) {
+                    if (this.mDataAllocationValues[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].isFilled) {
+                        if (this.mDataAllocationValues[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)].isBlack) {
                             color = foreColor;
                         }
                     }
@@ -318,7 +318,7 @@ export class QRCode {
             // eslint-disable-next-line
             this.mModuleValue.push([0] as any);
             for (let j: number = 0; j < this.mNoOfModules; j++) {
-                this.mModuleValue[i][j] = new ModuleValue();
+                this.mModuleValue[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = new ModuleValue();
             }
         }
         this.drawPDP(0, 0);
@@ -329,8 +329,8 @@ export class QRCode {
             const allignCoOrdinates: number[] = this.getAlignmentPatternCoOrdinates();
             for (const i of Object.keys(allignCoOrdinates)) {
                 for (const j of Object.keys(allignCoOrdinates)) {
-                    if (!this.mModuleValue[allignCoOrdinates[i]][allignCoOrdinates[j]].isPdp) {
-                        this.drawAlignmentPattern(allignCoOrdinates[i], allignCoOrdinates[j]);
+                    if (!this.mModuleValue[allignCoOrdinates[`${i}`]][allignCoOrdinates[`${j}`]].isPdp) {
+                        this.drawAlignmentPattern(allignCoOrdinates[`${i}`], allignCoOrdinates[`${j}`]);
                     }
                 }
             }
@@ -371,40 +371,40 @@ export class QRCode {
     private drawPDP(x: number, y: number): void {
         let i: number; let j: number;
         for (i = x, j = y; i < x + 7; i++ , j++) {
-            this.mModuleValue[i][y].isBlack = true;
-            this.mModuleValue[i][y].isFilled = true;
-            this.mModuleValue[i][y].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[i][y + 6].isBlack = true;
-            this.mModuleValue[i][y + 6].isFilled = true;
-            this.mModuleValue[i][y + 6].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 6].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 6].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 6].isPdp = true;
 
             if (y + 7 < this.mNoOfModules) {
-                this.mModuleValue[i][y + 7].isBlack = false;
-                this.mModuleValue[i][y + 7].isFilled = true;
-                this.mModuleValue[i][y + 7].isPdp = true;
+                this.mModuleValue[parseInt(i.toString(), 10)][y + 7].isBlack = false;
+                this.mModuleValue[parseInt(i.toString(), 10)][y + 7].isFilled = true;
+                this.mModuleValue[parseInt(i.toString(), 10)][y + 7].isPdp = true;
             } else if (y - 1 >= 0) {
-                this.mModuleValue[i][y - 1].isBlack = false;
-                this.mModuleValue[i][y - 1].isFilled = true;
-                this.mModuleValue[i][y - 1].isPdp = true;
+                this.mModuleValue[parseInt(i.toString(), 10)][y - 1].isBlack = false;
+                this.mModuleValue[parseInt(i.toString(), 10)][y - 1].isFilled = true;
+                this.mModuleValue[parseInt(i.toString(), 10)][y - 1].isPdp = true;
             }
 
-            this.mModuleValue[x][j].isBlack = true;
-            this.mModuleValue[x][j].isFilled = true;
-            this.mModuleValue[x][j].isPdp = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[x + 6][j].isBlack = true;
-            this.mModuleValue[x + 6][j].isFilled = true;
-            this.mModuleValue[x + 6][j].isPdp = true;
+            this.mModuleValue[x + 6][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[x + 6][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[x + 6][parseInt(j.toString(), 10)].isPdp = true;
 
             if (x + 7 < this.mNoOfModules) {
-                this.mModuleValue[x + 7][j].isBlack = false;
-                this.mModuleValue[x + 7][j].isFilled = true;
-                this.mModuleValue[x + 7][j].isPdp = true;
+                this.mModuleValue[x + 7][parseInt(j.toString(), 10)].isBlack = false;
+                this.mModuleValue[x + 7][parseInt(j.toString(), 10)].isFilled = true;
+                this.mModuleValue[x + 7][parseInt(j.toString(), 10)].isPdp = true;
             } else if (x - 1 >= 0) {
-                this.mModuleValue[x - 1][j].isBlack = false;
-                this.mModuleValue[x - 1][j].isFilled = true;
-                this.mModuleValue[x - 1][j].isPdp = true;
+                this.mModuleValue[x - 1][parseInt(j.toString(), 10)].isBlack = false;
+                this.mModuleValue[x - 1][parseInt(j.toString(), 10)].isFilled = true;
+                this.mModuleValue[x - 1][parseInt(j.toString(), 10)].isPdp = true;
             }
 
         }
@@ -425,40 +425,40 @@ export class QRCode {
 
         x++; y++;
         for (i = x, j = y; i < x + 5; i++ , j++) {
-            this.mModuleValue[i][y].isBlack = false;
-            this.mModuleValue[i][y].isFilled = true;
-            this.mModuleValue[i][y].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isBlack = false;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[i][y + 4].isBlack = false;
-            this.mModuleValue[i][y + 4].isFilled = true;
-            this.mModuleValue[i][y + 4].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 4].isBlack = false;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 4].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 4].isPdp = true;
 
-            this.mModuleValue[x][j].isBlack = false;
-            this.mModuleValue[x][j].isFilled = true;
-            this.mModuleValue[x][j].isPdp = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isBlack = false;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[x + 4][j].isBlack = false;
-            this.mModuleValue[x + 4][j].isFilled = true;
-            this.mModuleValue[x + 4][j].isPdp = true;
+            this.mModuleValue[x + 4][parseInt(j.toString(), 10)].isBlack = false;
+            this.mModuleValue[x + 4][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[x + 4][parseInt(j.toString(), 10)].isPdp = true;
         }
 
         x++; y++;
         for (i = x, j = y; i < x + 3; i++ , j++) {
-            this.mModuleValue[i][y].isBlack = true;
-            this.mModuleValue[i][y].isFilled = true;
-            this.mModuleValue[i][y].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][parseInt(y.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[i][y + 2].isBlack = true;
-            this.mModuleValue[i][y + 2].isFilled = true;
-            this.mModuleValue[i][y + 2].isPdp = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 2].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 2].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 2].isPdp = true;
 
-            this.mModuleValue[x][j].isBlack = true;
-            this.mModuleValue[x][j].isFilled = true;
-            this.mModuleValue[x][j].isPdp = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(x.toString(), 10)][parseInt(j.toString(), 10)].isPdp = true;
 
-            this.mModuleValue[x + 2][j].isBlack = true;
-            this.mModuleValue[x + 2][j].isFilled = true;
-            this.mModuleValue[x + 2][j].isPdp = true;
+            this.mModuleValue[x + 2][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[x + 2][parseInt(j.toString(), 10)].isFilled = true;
+            this.mModuleValue[x + 2][parseInt(j.toString(), 10)].isPdp = true;
         }
         this.mModuleValue[x + 1][y + 1].isBlack = true;
         this.mModuleValue[x + 1][y + 1].isFilled = true;
@@ -476,14 +476,14 @@ export class QRCode {
     private drawTimingPattern(): void {
 
         for (let i: number = 8; i < this.mNoOfModules - 8; i += 2) {
-            this.mModuleValue[i][6].isBlack = true;
-            this.mModuleValue[i][6].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][6].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][6].isFilled = true;
 
             this.mModuleValue[i + 1][6].isBlack = false;
             this.mModuleValue[i + 1][6].isFilled = true;
 
-            this.mModuleValue[6][i].isBlack = true;
-            this.mModuleValue[6][i].isFilled = true;
+            this.mModuleValue[6][parseInt(i.toString(), 10)].isBlack = true;
+            this.mModuleValue[6][parseInt(i.toString(), 10)].isFilled = true;
 
             this.mModuleValue[6][i + 1].isBlack = false;
             this.mModuleValue[6][i + 1].isFilled = true;
@@ -508,9 +508,9 @@ export class QRCode {
             if (this.text.charCodeAt(i) < 58 && this.text.charCodeAt(i) > 47) {
 
             } else if ((this.text.charCodeAt(i) < 91 && this.text.charCodeAt(i) > 64) ||
-                this.text[i] === '$' || this.text[i] === '%' || this.text[i] === '*' ||
-                this.text[i] === '+' || this.text[i] === '-' || this.text[i] === '.' ||
-                this.text[i] === '/' || this.text[i] === ':' || this.text[i] === ' ') {
+                this.text[parseInt(i.toString(), 10)] === '$' || this.text[parseInt(i.toString(), 10)] === '%' || this.text[parseInt(i.toString(), 10)] === '*' ||
+                this.text[parseInt(i.toString(), 10)] === '+' || this.text[parseInt(i.toString(), 10)] === '-' || this.text[parseInt(i.toString(), 10)] === '.' ||
+                this.text[parseInt(i.toString(), 10)] === '/' || this.text[parseInt(i.toString(), 10)] === ':' || this.text[parseInt(i.toString(), 10)] === ' ') {
                 mode = 'AlphaNumericMode';
             } else if ((this.text.charCodeAt(i) >= 65377 && this.text.charCodeAt(i) <= 65439) ||
                 (this.text.charCodeAt(i) >= 97 && this.text.charCodeAt(i) <= 122)) {
@@ -618,7 +618,7 @@ export class QRCode {
                 }
                 let i: number;
                 for (i = 0; i < dataCapacityOfVersions.length; i++) {
-                    if (dataCapacityOfVersions[i] > this.text.length) {
+                    if (dataCapacityOfVersions[parseInt(i.toString(), 10)] > this.text.length) {
                         break;
                     }
                 }
@@ -710,61 +710,61 @@ export class QRCode {
             // eslint-disable-next-line
             tempValue2.push([0] as any);
             for (let j: number = 0; j < h; j++) {
-                tempValue1[i][j] = new ModuleValue();
-                tempValue2[i][j] = new ModuleValue();
+                tempValue1[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = new ModuleValue();
+                tempValue2[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = new ModuleValue();
             }
         }
 
 
         // Top quietzone.
         for (let i: number = 0; i < h; i++) {
-            tempValue1[0][i] = new ModuleValue();
-            tempValue1[0][i].isBlack = false;
-            tempValue1[0][i].isFilled = false;
-            tempValue1[0][i].isPdp = false;
-            tempValue2[0][i] = new ModuleValue();
-            tempValue2[0][i].isBlack = false;
-            tempValue2[0][i].isFilled = false;
-            tempValue2[0][i].isPdp = false;
+            tempValue1[0][parseInt(i.toString(), 10)] = new ModuleValue();
+            tempValue1[0][parseInt(i.toString(), 10)].isBlack = false;
+            tempValue1[0][parseInt(i.toString(), 10)].isFilled = false;
+            tempValue1[0][parseInt(i.toString(), 10)].isPdp = false;
+            tempValue2[0][parseInt(i.toString(), 10)] = new ModuleValue();
+            tempValue2[0][parseInt(i.toString(), 10)].isBlack = false;
+            tempValue2[0][parseInt(i.toString(), 10)].isFilled = false;
+            tempValue2[0][parseInt(i.toString(), 10)].isPdp = false;
         }
 
         for (let i: number = quietZone; i < w - quietZone; i++) {
             // Left quietzone.
-            tempValue1[i][0] = new ModuleValue();
-            tempValue1[i][0].isBlack = false;
-            tempValue1[i][0].isFilled = false;
-            tempValue1[i][0].isPdp = false;
-            tempValue2[i][0] = new ModuleValue();
-            tempValue2[i][0].isBlack = false;
-            tempValue2[i][0].isFilled = false;
-            tempValue2[i][0].isPdp = false;
+            tempValue1[parseInt(i.toString(), 10)][0] = new ModuleValue();
+            tempValue1[parseInt(i.toString(), 10)][0].isBlack = false;
+            tempValue1[parseInt(i.toString(), 10)][0].isFilled = false;
+            tempValue1[parseInt(i.toString(), 10)][0].isPdp = false;
+            tempValue2[parseInt(i.toString(), 10)][0] = new ModuleValue();
+            tempValue2[parseInt(i.toString(), 10)][0].isBlack = false;
+            tempValue2[parseInt(i.toString(), 10)][0].isFilled = false;
+            tempValue2[parseInt(i.toString(), 10)][0].isPdp = false;
 
             for (let j: number = quietZone; j < h - quietZone; j++) {
-                tempValue1[i][j] = this.mModuleValue[i - quietZone][j - quietZone];
-                tempValue2[i][j] = this.mDataAllocationValues[i - quietZone][j - quietZone];
+                tempValue1[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = this.mModuleValue[i - quietZone][j - quietZone];
+                tempValue2[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = this.mDataAllocationValues[i - quietZone][j - quietZone];
             }
 
             // Right quietzone.
-            tempValue1[i][h - quietZone] = new ModuleValue();
-            tempValue1[i][h - quietZone].isBlack = false;
-            tempValue1[i][h - quietZone].isFilled = false;
-            tempValue1[i][h - quietZone].isPdp = false;
-            tempValue2[i][h - quietZone] = new ModuleValue();
-            tempValue2[i][h - quietZone].isBlack = false;
-            tempValue2[i][h - quietZone].isFilled = false;
-            tempValue2[i][h - quietZone].isPdp = false;
+            tempValue1[parseInt(i.toString(), 10)][h - quietZone] = new ModuleValue();
+            tempValue1[parseInt(i.toString(), 10)][h - quietZone].isBlack = false;
+            tempValue1[parseInt(i.toString(), 10)][h - quietZone].isFilled = false;
+            tempValue1[parseInt(i.toString(), 10)][h - quietZone].isPdp = false;
+            tempValue2[parseInt(i.toString(), 10)][h - quietZone] = new ModuleValue();
+            tempValue2[parseInt(i.toString(), 10)][h - quietZone].isBlack = false;
+            tempValue2[parseInt(i.toString(), 10)][h - quietZone].isFilled = false;
+            tempValue2[parseInt(i.toString(), 10)][h - quietZone].isPdp = false;
         }
 
         //Bottom quietzone.
         for (let i: number = 0; i < h; i++) {
-            tempValue1[w - quietZone][i] = new ModuleValue();
-            tempValue1[w - quietZone][i].isBlack = false;
-            tempValue1[w - quietZone][i].isFilled = false;
-            tempValue1[w - quietZone][i].isPdp = false;
-            tempValue2[w - quietZone][i] = new ModuleValue();
-            tempValue2[w - quietZone][i].isBlack = false;
-            tempValue2[w - quietZone][i].isFilled = false;
-            tempValue2[w - quietZone][i].isPdp = false;
+            tempValue1[w - quietZone][parseInt(i.toString(), 10)] = new ModuleValue();
+            tempValue1[w - quietZone][parseInt(i.toString(), 10)].isBlack = false;
+            tempValue1[w - quietZone][parseInt(i.toString(), 10)].isFilled = false;
+            tempValue1[w - quietZone][parseInt(i.toString(), 10)].isPdp = false;
+            tempValue2[w - quietZone][parseInt(i.toString(), 10)] = new ModuleValue();
+            tempValue2[w - quietZone][parseInt(i.toString(), 10)].isBlack = false;
+            tempValue2[w - quietZone][parseInt(i.toString(), 10)].isFilled = false;
+            tempValue2[w - quietZone][parseInt(i.toString(), 10)].isPdp = false;
         }
 
         this.mModuleValue = tempValue1;
@@ -785,9 +785,9 @@ export class QRCode {
         for (let i: number = 0; i < 7; i++) {
             //Draw from 14 to 8
             if (i === 6) {
-                this.mModuleValue[i + 1][8].isBlack = formatInformation[count] === 1 ? true : false;
+                this.mModuleValue[i + 1][8].isBlack = formatInformation[parseInt(count.toString(), 10)] === 1 ? true : false;
             } else {
-                this.mModuleValue[i][8].isBlack = formatInformation[count] === 1 ? true : false;
+                this.mModuleValue[parseInt(i.toString(), 10)][8].isBlack = formatInformation[parseInt(count.toString(), 10)] === 1 ? true : false;
             }
             this.mModuleValue[8][this.mNoOfModules - i - 1].isBlack = formatInformation[count++] === 1 ? true : false;
 
@@ -797,9 +797,9 @@ export class QRCode {
         for (let i: number = 0; i < 7; i++) {
             //Draw from 0 to 6
             if (i === 6) {
-                this.mModuleValue[8][i + 1].isBlack = formatInformation[count] === 1 ? true : false;
+                this.mModuleValue[8][i + 1].isBlack = formatInformation[parseInt(count.toString(), 10)] === 1 ? true : false;
             } else {
-                this.mModuleValue[8][i].isBlack = formatInformation[count] === 1 ? true : false;
+                this.mModuleValue[8][parseInt(i.toString(), 10)].isBlack = formatInformation[parseInt(count.toString(), 10)] === 1 ? true : false;
             }
             this.mModuleValue[this.mNoOfModules - i - 1][8].isBlack = formatInformation[count--] === 1 ? true : false;
         }
@@ -823,36 +823,36 @@ export class QRCode {
             // eslint-disable-next-line
             this.mDataAllocationValues.push([0] as any);
             for (let j: number = 0; j < this.mNoOfModules; j++) {
-                this.mDataAllocationValues[i][j] = new ModuleValue();
+                this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = new ModuleValue();
             }
         }
         let point: number = 0;
 
         for (let i: number = this.mNoOfModules - 1; i >= 0; i -= 2) {
             for (let j: number = this.mNoOfModules - 1; j >= 0; j--) {
-                if (!(this.mModuleValue[i][j].isFilled && this.mModuleValue[i - 1][j].isFilled)) {
-                    if (!this.mModuleValue[i][j].isFilled) {
+                if (!(this.mModuleValue[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isFilled && this.mModuleValue[i - 1][parseInt(j.toString(), 10)].isFilled)) {
+                    if (!this.mModuleValue[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isFilled) {
                         if (point + 1 < data.length) {
-                            this.mDataAllocationValues[i][j].isBlack = data[point++];
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack = data[point++];
                         }
                         if ((i + j) % 3 === 0) {
-                            this.mDataAllocationValues[i][j].isBlack = (this.mDataAllocationValues[i][j].isBlack) ? true : false;
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack = (this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack) ? true : false;
                         } else {
-                            this.mDataAllocationValues[i][j].isBlack = (this.mDataAllocationValues[i][j].isBlack) ? false : true;
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack = (this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack) ? false : true;
                         }
-                        this.mDataAllocationValues[i][j].isFilled = true;
+                        this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isFilled = true;
                     }
 
-                    if (!this.mModuleValue[i - 1][j].isFilled) {
+                    if (!this.mModuleValue[i - 1][parseInt(j.toString(), 10)].isFilled) {
                         if (point + 1 < data.length) {
-                            this.mDataAllocationValues[i - 1][j].isBlack = data[point++];
+                            this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isBlack = data[point++];
                         }
                         if ((i - 1 + j) % 3 === 0) {
-                            this.mDataAllocationValues[i - 1][j].isBlack = (this.mDataAllocationValues[i - 1][j].isBlack) ? true : false;
+                            this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isBlack = (this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isBlack) ? true : false;
                         } else {
-                            this.mDataAllocationValues[i - 1][j].isBlack = (this.mDataAllocationValues[i - 1][j].isBlack) ? false : true;
+                            this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isBlack = (this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isBlack) ? false : true;
                         }
-                        this.mDataAllocationValues[i - 1][j].isFilled = true;
+                        this.mDataAllocationValues[i - 1][parseInt(j.toString(), 10)].isFilled = true;
                     }
                 }
             }
@@ -860,40 +860,40 @@ export class QRCode {
             if (i === 6) { i--; }
 
             for (let k: number = 0; k < this.mNoOfModules; k++) {
-                if (!(this.mModuleValue[i][k].isFilled && this.mModuleValue[i - 1][k].isFilled)) {
-                    if (!this.mModuleValue[i][k].isFilled) {
+                if (!(this.mModuleValue[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isFilled && this.mModuleValue[i - 1][parseInt(k.toString(), 10)].isFilled)) {
+                    if (!this.mModuleValue[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isFilled) {
                         if (point + 1 < data.length) {
-                            this.mDataAllocationValues[i][k].isBlack = data[point++];
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isBlack = data[point++];
                         }
                         if ((i + k) % 3 !== 0) {
-                            this.mDataAllocationValues[i][k].isBlack = (this.mDataAllocationValues[i][k].isBlack) ? false : true;
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isBlack = (this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isBlack) ? false : true;
                         } else {
-                            this.mDataAllocationValues[i][k].isBlack = (this.mDataAllocationValues[i][k].isBlack) ? true : false;
+                            this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isBlack = (this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isBlack) ? true : false;
                         }
-                        this.mDataAllocationValues[i][k].isFilled = true;
+                        this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].isFilled = true;
                     }
-                    if (!this.mModuleValue[i - 1][k].isFilled) {
+                    if (!this.mModuleValue[i - 1][parseInt(k.toString(), 10)].isFilled) {
                         if (point + 1 < data.length) {
-                            this.mDataAllocationValues[i - 1][k].isBlack = data[point++];
+                            this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isBlack = data[point++];
                         }
                         if ((i - 1 + k) % 3 !== 0) {
-                            this.mDataAllocationValues[i - 1][k].isBlack = (this.mDataAllocationValues[i - 1][k].isBlack) ? false : true;
+                            this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isBlack = (this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isBlack) ? false : true;
                         } else {
-                            this.mDataAllocationValues[i - 1][k].isBlack = (this.mDataAllocationValues[i - 1][k].isBlack) ? true : false;
+                            this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isBlack = (this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isBlack) ? true : false;
                         }
-                        this.mDataAllocationValues[i - 1][k].isFilled = true;
+                        this.mDataAllocationValues[i - 1][parseInt(k.toString(), 10)].isFilled = true;
                     }
                 }
             }
         }
         for (let i: number = 0; i < this.mNoOfModules; i++) {
             for (let j: number = 0; j < this.mNoOfModules; j++) {
-                if (!this.mModuleValue[i][j].isFilled) {
-                    const flag: boolean = this.mDataAllocationValues[i][j].isBlack;
+                if (!this.mModuleValue[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isFilled) {
+                    const flag: boolean = this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack;
                     if (flag) {
-                        this.mDataAllocationValues[i][j].isBlack = false;
+                        this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack = false;
                     } else {
-                        this.mDataAllocationValues[i][j].isBlack = true;
+                        this.mDataAllocationValues[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].isBlack = true;
                     }
                 }
             }
@@ -910,23 +910,23 @@ export class QRCode {
      */
     private allocateFormatAndVersionInformation(): void {
         for (let i: number = 0; i < 9; i++) {
-            this.mModuleValue[8][i].isFilled = true;
-            this.mModuleValue[i][8].isFilled = true;
+            this.mModuleValue[8][parseInt(i.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][8].isFilled = true;
         }
         for (let i: number = this.mNoOfModules - 8; i < this.mNoOfModules; i++) {
-            this.mModuleValue[8][i].isFilled = true;
-            this.mModuleValue[i][8].isFilled = true;
+            this.mModuleValue[8][parseInt(i.toString(), 10)].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][8].isFilled = true;
         }
         if (this.mVersion > 6) {
             const versionInformation: number[] = this.mQrBarcodeValues.VersionInformation;
             let count: number = 0;
             for (let i: number = 0; i < 6; i++) {
                 for (let j: number = 2; j >= 0; j--) {
-                    this.mModuleValue[i][this.mNoOfModules - 9 - j].isBlack = versionInformation[count] === 1 ? true : false;
-                    this.mModuleValue[i][this.mNoOfModules - 9 - j].isFilled = true;
+                    this.mModuleValue[parseInt(i.toString(), 10)][this.mNoOfModules - 9 - j].isBlack = versionInformation[parseInt(count.toString(), 10)] === 1 ? true : false;
+                    this.mModuleValue[parseInt(i.toString(), 10)][this.mNoOfModules - 9 - j].isFilled = true;
 
-                    this.mModuleValue[this.mNoOfModules - 9 - j][i].isBlack = versionInformation[count++] === 1 ? true : false;
-                    this.mModuleValue[this.mNoOfModules - 9 - j][i].isFilled = true;
+                    this.mModuleValue[this.mNoOfModules - 9 - j][parseInt(i.toString(), 10)].isBlack = versionInformation[count++] === 1 ? true : false;
+                    this.mModuleValue[this.mNoOfModules - 9 - j][parseInt(i.toString(), 10)].isFilled = true;
                 }
             }
         }
@@ -944,34 +944,34 @@ export class QRCode {
     private drawAlignmentPattern(x: number, y: number): void {
         let i: number; let j: number;
         for (i = x - 2, j = y - 2; i < x + 3; i++ , j++) {
-            this.mModuleValue[i][y - 2].isBlack = true;
-            this.mModuleValue[i][y - 2].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y - 2].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y - 2].isFilled = true;
 
-            this.mModuleValue[i][y + 2].isBlack = true;
-            this.mModuleValue[i][y + 2].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 2].isBlack = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 2].isFilled = true;
 
-            this.mModuleValue[x - 2][j].isBlack = true;
-            this.mModuleValue[x - 2][j].isFilled = true;
+            this.mModuleValue[x - 2][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[x - 2][parseInt(j.toString(), 10)].isFilled = true;
 
-            this.mModuleValue[x + 2][j].isBlack = true;
-            this.mModuleValue[x + 2][j].isFilled = true;
+            this.mModuleValue[x + 2][parseInt(j.toString(), 10)].isBlack = true;
+            this.mModuleValue[x + 2][parseInt(j.toString(), 10)].isFilled = true;
         }
 
         for (i = x - 1, j = y - 1; i < x + 2; i++ , j++) {
-            this.mModuleValue[i][y - 1].isBlack = false;
-            this.mModuleValue[i][y - 1].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y - 1].isBlack = false;
+            this.mModuleValue[parseInt(i.toString(), 10)][y - 1].isFilled = true;
 
-            this.mModuleValue[i][y + 1].isBlack = false;
-            this.mModuleValue[i][y + 1].isFilled = true;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 1].isBlack = false;
+            this.mModuleValue[parseInt(i.toString(), 10)][y + 1].isFilled = true;
 
-            this.mModuleValue[x - 1][j].isBlack = false;
-            this.mModuleValue[x - 1][j].isFilled = true;
+            this.mModuleValue[x - 1][parseInt(j.toString(), 10)].isBlack = false;
+            this.mModuleValue[x - 1][parseInt(j.toString(), 10)].isFilled = true;
 
-            this.mModuleValue[x + 1][j].isBlack = false;
-            this.mModuleValue[x + 1][j].isFilled = true;
+            this.mModuleValue[x + 1][parseInt(j.toString(), 10)].isBlack = false;
+            this.mModuleValue[x + 1][parseInt(j.toString(), 10)].isFilled = true;
         }
-        this.mModuleValue[x][y].isBlack = true;
-        this.mModuleValue[x][y].isFilled = true;
+        this.mModuleValue[parseInt(x.toString(), 10)][parseInt(y.toString(), 10)].isBlack = true;
+        this.mModuleValue[parseInt(x.toString(), 10)][parseInt(y.toString(), 10)].isFilled = true;
     }
 
 
@@ -1090,7 +1090,7 @@ export class QRCode {
                 const numberInBool: boolean[] = this.stringToBoolArray(this.mEciAssignmentNumber.toString(), 8);
                 // eslint-disable-next-line
                 for (let x of Object.keys(numberInBool)) {
-                    encodeData.push(numberInBool[x]);
+                    encodeData.push(numberInBool[`${x}`]);
                 }
             }
             encodeData.push(false); encodeData.push(true); encodeData.push(false); encodeData.push(false);
@@ -1132,14 +1132,14 @@ export class QRCode {
             this.text.length, numberOfBitsInCharacterCountIndicator);
 
         for (let i: number = 0; i < numberOfBitsInCharacterCountIndicator; i++) {
-            encodeData.push(numberOfBitsInCharacterCountIndicatorInBool[i]);
+            encodeData.push(numberOfBitsInCharacterCountIndicatorInBool[parseInt(i.toString(), 10)]);
         }
         if (this.mInputMode === 'NumericMode') {
             const dataStringArray: string[] = this.text.split('');
             let number: string = '';
             for (let i: number = 0; i < dataStringArray.length; i++) {
                 let numberInBool: boolean[];
-                number += dataStringArray[i];
+                number += dataStringArray[parseInt(i.toString(), 10)];
 
                 if (i % 3 === 2 && i !== 0 || i === dataStringArray.length - 1) {
                     if (number.toString().length === 3) {
@@ -1150,7 +1150,7 @@ export class QRCode {
                         numberInBool = this.stringToBoolArray(number, 4);
                     }
                     number = '';
-                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[`${x}`]); }
                 }
             }
         } else if (this.mInputMode === 'AlphaNumericMode') {
@@ -1159,24 +1159,24 @@ export class QRCode {
             let number: number = 0;
             for (let i: number = 0; i < dataStringArray.length; i++) {
                 let numberInBool: boolean[];
-                numberInString += dataStringArray[i];
+                numberInString += dataStringArray[parseInt(i.toString(), 10)];
 
                 if (i % 2 === 0 && i + 1 !== dataStringArray.length) {
-                    number = 45 * this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
+                    number = 45 * this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[parseInt(i.toString(), 10)]);
                 }
                 if (i % 2 === 1 && i !== 0) {
-                    number += this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
+                    number += this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[parseInt(i.toString(), 10)]);
                     numberInBool = this.intToBoolArray(number, 11);
                     number = 0;
-                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                    for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[`${x}`]); }
                     numberInString = '';
                 }
                 if (i !== 1 && numberInString !== '') {
                     if (i + 1 === dataStringArray.length && numberInString.length === 1) {
-                        number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[i]);
+                        number = this.mQrBarcodeValues.getAlphaNumericValues(dataStringArray[parseInt(i.toString(), 10)]);
                         numberInBool = this.intToBoolArray(number, 6);
                         number = 0;
-                        for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[x]); }
+                        for (const x of Object.keys(numberInBool)) { encodeData.push(numberInBool[`${x}`]); }
                     }
                 }
             }
@@ -1186,11 +1186,11 @@ export class QRCode {
                 let number: number = 0;
                 if ((this.text.charCodeAt(i) >= 32 && this.text.charCodeAt(i) <= 126) || (this.text.charCodeAt(i) >= 161 &&
                     this.text.charCodeAt(i) <= 255 || (this.text.charCodeAt(i) === 10 || this.text.charCodeAt(i) === 13))) {
-                    number = dataStringArray[i].charCodeAt(0);
+                    number = dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0);
                 } else if (this.text.charCodeAt(i) >= 65377 && this.text.charCodeAt(i) <= 65439) {
-                    number = dataStringArray[i].charCodeAt(0) - 65216;
+                    number = dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0) - 65216;
                 } else if ((this.text.charCodeAt(i) >= 1025 && this.text.charCodeAt(i) <= 1119)) {
-                    number = dataStringArray[i].charCodeAt(0) - 864;
+                    number = dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0) - 864;
                 } else {
                     this.validInput = false;
                 }
@@ -1245,7 +1245,7 @@ export class QRCode {
                 const dataCodeWordLength: number = blocks[0] * blocks[2] * 8;
                 testEncodeData = [];
                 for (let i: number = 0; i < dataCodeWordLength; i++) {
-                    testEncodeData.push(encodeData[i]);
+                    testEncodeData.push(encodeData[parseInt(i.toString(), 10)]);
                 }
             }
 
@@ -1253,20 +1253,20 @@ export class QRCode {
             dsOne = this.createBlocks(testEncodeData, blocks[0]);
 
             for (let i: number = 0; i < blocks[0]; i++) {
-                ds1[i] = this.splitCodeWord(dsOne, i, testEncodeData.length / 8 / blocks[0]);
+                ds1[parseInt(i.toString(), 10)] = this.splitCodeWord(dsOne, i, testEncodeData.length / 8 / blocks[0]);
             }
 
             if (blocks.length === 6) {
                 testEncodeData = [];
                 for (let i: number = blocks[0] * blocks[2] * 8; i < encodeData.length; i++) {
-                    testEncodeData.push(encodeData[i]);
+                    testEncodeData.push(encodeData[parseInt(i.toString(), 10)]);
                 }
 
                 let dsTwo: string[][] = [];
                 dsTwo = this.createBlocks(testEncodeData, blocks[3]);
 
                 for (let i: number = blocks[0], count: number = 0; i < totalBlockSize; i++) {
-                    ds1[i] = this.splitCodeWord(dsTwo, count++, testEncodeData.length / 8 / blocks[3]);
+                    ds1[parseInt(i.toString(), 10)] = this.splitCodeWord(dsTwo, count++, testEncodeData.length / 8 / blocks[3]);
                 }
             }
             encodeData = null;
@@ -1274,8 +1274,8 @@ export class QRCode {
             for (let i: number = 0; i < 125; i++) {
                 for (let k: number = 0; k < totalBlockSize; k++) {
                     for (let j: number = 0; j < 8; j++) {
-                        if (i < ds1[k].length) {
-                            encodeData.push(ds1[k][i][j] === '1' ? true : false);
+                        if (i < ds1[parseInt(k.toString(), 10)].length) {
+                            encodeData.push(ds1[parseInt(k.toString(), 10)][parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === '1' ? true : false);
                         }
                     }
                 }
@@ -1298,14 +1298,14 @@ export class QRCode {
             let count: number = 0;
 
             for (let i: number = 0; i < blocks[0]; i++) {
-                ec.DC = ds1[count];
+                ec.DC = ds1[parseInt(count.toString(), 10)];
                 polynomial[count++] = ec.getErcw();
             }
             if (blocks.length === 6) {
                 ec.DataBits = (dataBits - blocks[0] * blocks[2]) / blocks[3];
 
                 for (let i: number = 0; i < blocks[3]; i++) {
-                    ec.DC = ds1[count];
+                    ec.DC = ds1[parseInt(count.toString(), 10)];
                     polynomial[count++] = ec.getErcw();
                 }
             }
@@ -1313,8 +1313,8 @@ export class QRCode {
                 for (let i: number = 0; i < polynomial[0].length; i++) {
                     for (let k: number = 0; k < blocks[0]; k++) {
                         for (let j: number = 0; j < 8; j++) {
-                            if (i < polynomial[k].length) {
-                                encodeData.push(polynomial[k][i][j] === '1' ? true : false);
+                            if (i < polynomial[parseInt(k.toString(), 10)].length) {
+                                encodeData.push(polynomial[parseInt(k.toString(), 10)][parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === '1' ? true : false);
                             }
                         }
                     }
@@ -1323,8 +1323,8 @@ export class QRCode {
                 for (let i: number = 0; i < polynomial[0].length; i++) {
                     for (let k: number = 0; k < totalBlockSize; k++) {
                         for (let j: number = 0; j < 8; j++) {
-                            if (i < polynomial[k].length) {
-                                encodeData.push(polynomial[k][i][j] === '1' ? true : false);
+                            if (i < polynomial[parseInt(k.toString(), 10)].length) {
+                                encodeData.push(polynomial[parseInt(k.toString(), 10)][parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === '1' ? true : false);
                             }
                         }
                     }
@@ -1349,7 +1349,7 @@ export class QRCode {
         const dataStringArray: string[] = numberInString.split('');
         let number: number = 0;
         for (let i: number = 0; i < dataStringArray.length; i++) {
-            number = number * 10 + dataStringArray[i].charCodeAt(0) - 48;
+            number = number * 10 + dataStringArray[parseInt(i.toString(), 10)].charCodeAt(0) - 48;
         }
 
         for (let i: number = 0; i < noOfBits; i++) {
@@ -1388,7 +1388,7 @@ export class QRCode {
      */
     private splitCodeWord(ds: string[][], blk: number, count: number): string[] {
         const ds1: string[] = [];
-        for (let i: number = 0; i < count; i++) { ds1.push(ds[blk][i]); }
+        for (let i: number = 0; i < count; i++) { ds1.push(ds[parseInt(blk.toString(), 10)][parseInt(i.toString(), 10)]); }
         return ds1;
     }
 
@@ -1414,13 +1414,13 @@ export class QRCode {
             // eslint-disable-next-line
             ret.push([0] as any);
             for (let j: number = 0; j < cols; j++) {
-                ret[i][j] = '';
+                ret[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] = '';
             }
         }
 
         for (let j: number = 0; j < encodeData.length; j++) {
             if (j % 8 === 0 && j !== 0) {
-                ret[blockNumber][i] = stringValue;
+                ret[parseInt(blockNumber.toString(), 10)][parseInt(i.toString(), 10)] = stringValue;
                 stringValue = '';
                 i++;
                 if (i === (encodeData.length / noOfBlocks / 8)) {
@@ -1428,9 +1428,9 @@ export class QRCode {
                     i = 0;
                 }
             }
-            stringValue += encodeData[j] ? '1' : '0';
+            stringValue += encodeData[parseInt(j.toString(), 10)] ? '1' : '0';
         }
-        ret[blockNumber][i] = stringValue;
+        ret[parseInt(blockNumber.toString(), 10)][parseInt(i.toString(), 10)] = stringValue;
         return ret;
     }
 }

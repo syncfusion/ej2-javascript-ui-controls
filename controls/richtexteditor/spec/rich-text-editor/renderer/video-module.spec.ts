@@ -2843,5 +2843,61 @@ client side. Customer easy to edit the contents and get the HTML content for
              }, 100);
          });
      });
+    
+    describe ('EJ2-65777 Not able to insert Embed video using Keyboard Shortcut', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: true,
+            shiftKey: true,
+            key: 'v',
+            keyCode: 86,
+            which: 86,
+            code: 86,
+            action : 'insert-video'
+        };
+        beforeEach ( () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video'],
+                }
+            });
+        });
+
+        afterEach ((done: Function)  => {
+            destroy( rteObj );
+            done();
+        });
+
+        it ('Should insert Embed video in the RTE content editable div', (done: Function) => {
+            (rteObj as any).videoModule.onKeyDown({ args: keyboardEventArgs });
+            const inputElem: HTMLElement = document.querySelector( '.e-embed-video-url' );
+            const embedURL: string = `<iframe width="560" height="315" src="https://www.youtube.com/embed/j898RGRw0b4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            inputElem.innerHTML = embedURL;
+            const insertBtn: HTMLElement = document.querySelector( '.e-insertVideo' );
+            insertBtn.removeAttribute( 'disabled' );
+            insertBtn.click();
+            setTimeout ( () => {
+                expect(rteObj.element.childElementCount).toEqual(3);
+                done();
+            }, 1000);
+        });
+
+        it ('Should insert Web video in the RTE content editable div', (done: Function) => {
+            (rteObj as any).videoModule.onKeyDown({ args: keyboardEventArgs });
+            document.getElementById('webURL').click()
+            const inputElem: HTMLElement = document.querySelector( '.e-video-url' );
+            const embedURL: string = `https://www.w3schools.com/tags/movie.mp4`;
+            inputElem.innerHTML = embedURL;
+            const insertBtn: HTMLElement = document.querySelector( '.e-insertVideo' );
+            insertBtn.removeAttribute( 'disabled' );
+            insertBtn.click();
+            setTimeout ( () => {
+                expect(rteObj.element.childElementCount).toEqual(5);
+                done();
+            }, 1000);
+        });
+    });
  });
  

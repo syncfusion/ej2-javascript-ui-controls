@@ -870,11 +870,87 @@ describe('Map marker properties tesing', () => {
                         { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                         { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }
                     ]
+                },
+                {
+                    visible: true,
+                    tooltipSettings: {
+                        visible: true
+                    },
+                    template: '<div id="marker1" class="markerTemplate">Asia' +
+                        '</div>',
+                    dataSource: [
+                        { latitude: 50.32087157990324, longitude: 90.015625 }
+                    ],
+                }
+            ];
+            map.zoomSettings.enable = true;
+            map.refresh();
+        });
+        it('Checking with Zoom in with latitudevaluePath', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                for (let i: number = 0; i < 1; i++) {
+                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                }
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    shapeValuePath: 'shape',
+                    imageUrlValuePath: 'imageurl',
+                    latitudeValuePath: 'latitude',
+                    longitudeValuePath: 'longitude',
+                    shape: 'Circle',
+                    dataSource: [
+                        { Name: "USA", latitude: 38.8833, longitude: -77.0167, imageurl: 'images/weather-clear.png', shape: 'Image' },
+                        { Name: "Brazil", latitude: -15.7833, longitude: -47.8667 },
+                        { Name: "India", latitude: 21.0000, longitude: 78.0000 },
+                        { Name: "China", latitude: 35.0000, longitude: 103.0000 },
+                        { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }
+                    ]
                 }];
             map.zoomSettings.enable = true;
             map.refresh();
         });
-
+        it('Checking with Zoom in with Latitude', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                for (let i: number = 0; i < 1; i++) {
+                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                }
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    shapeValuePath: 'shape',
+                    imageUrlValuePath: 'imageurl',
+                    shape: 'Circle',
+                    dataSource: [
+                        { Name: "USA", Latitude: 38.8833, Longitude: -77.0167, imageurl: 'images/weather-clear.png', shape: 'Image' },
+                        { Name: "Brazil", Latitude: -15.7833, Longitude: -47.8667 },
+                        { Name: "India", Latitude: 21.0000, Longitude: 78.0000 },
+                        { Name: "China", Latitude: 35.0000, Longitude: 103.0000 },
+                        { Name: "Indonesia", Latitude: -6.1750, Longitude: 106.8283 }
+                    ]
+                }
+            ];
+            map.zoomSettings.enable = true;
+            map.refresh();
+        });
     });
 
     describe('Marker Checking with bing and osm ', () => {
@@ -1651,6 +1727,7 @@ describe('Map marker properties tesing', () => {
         let prevent: Function = (): void => {
         };
         let spec: Element;
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
@@ -1800,6 +1877,26 @@ describe('Map marker properties tesing', () => {
         ];
             map.layers[0].layerType = 'GoogleStaticMap';
             map.layers[0].key='AIzaSyBhIDLGwyY8654k7_Ziss1Nx-mKO6kwvcw';
+            map.refresh();
+        });
+        it('Enable Marker Drag', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0');
+                trigger.dragAndDropEvent(spec, 250, 250, 250, 280, 'touch', map);
+                expect(spec.getAttribute('stroke-width')).toBe('1');
+            };
+            map.layers[0].markerSettings = [{
+                enableDrag: true,
+                visible: true,
+                height: 30,
+                width: 30,
+                dataSource: [{ Name: "Chennai", latitude: 13.018410, longitude: 80.223068 },
+                { Name: "Mumbai", latitude: 19.076090, longitude: 72.877426 },
+                { Name: "Kolakata", latitude: 22.572645, longitude: 88.363892 },
+                { Name: "Gujarath", latitude: 22.140547, longitude: 73.184296 }
+                ]
+            }];
+            map.layers[0].layerType = 'Google';
             map.refresh();
         });
     });

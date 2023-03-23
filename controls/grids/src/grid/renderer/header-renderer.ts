@@ -299,7 +299,7 @@ export class HeaderRender implements IRenderer {
         const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide', attrs: { role: 'rowgroup' } });
         this.caption = this.parent.createElement('caption', { innerHTML: this.parent.element.id + '_header_table', className: 'e-hide' });
         const colGroup: Element = this.parent.createElement(literals.colGroup);
-        const rowBody: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
+        const rowBody: Element = this.parent.createElement('tr');
         let bodyCell: Element;
         const rows: Row<Column>[] = this.rows = findHeaderRow.rows;
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
@@ -342,7 +342,7 @@ export class HeaderRender implements IRenderer {
         const frozenMode: freezeMode = gObj.getFrozenMode();
         const columns: Column[] = <Column[]>gObj.getColumns();
         const thead: Element = this.parent.createElement('thead', { attrs: { 'role': 'rowgroup' } });
-        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader', attrs: { role: 'row' } });
+        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader' });
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, CellType.Header, gObj);
         rowRenderer.element = colHeader;
         let rows: Row<Column>[] = [];

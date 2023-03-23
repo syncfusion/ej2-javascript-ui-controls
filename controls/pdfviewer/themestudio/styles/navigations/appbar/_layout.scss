@@ -62,6 +62,9 @@
       &.e-sticky {
         position: fixed;
         top: auto;
+        max-width: inherit;
+        left: auto;
+        right: auto;
       }
     }
 

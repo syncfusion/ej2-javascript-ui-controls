@@ -1,6 +1,5 @@
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */

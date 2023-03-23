@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint } from '../../common/utils/helper';
@@ -29,7 +28,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
         const segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
         for (const point of visiblePoints) {
             point.regions = [];
-            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) { 
+            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 lastPoint = point;
                 direction += this.getLineDirection(previous, point, series, isInverted, getPoint, startPoint);
                 if (previous != null) {

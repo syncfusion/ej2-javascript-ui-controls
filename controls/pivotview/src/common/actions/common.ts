@@ -40,6 +40,7 @@ export class Common implements IAction {
                 element: this.parent.element,
                 moduleName: this.parent.getModuleName(),
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 isAdaptive: Browser.isDevice as boolean,
                 renderMode: 'Popup',
                 localeObj: this.parent.localeObj,

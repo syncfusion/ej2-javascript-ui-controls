@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Cartesian chart renderer for financial chart
  */

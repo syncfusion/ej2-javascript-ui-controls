@@ -349,7 +349,7 @@ export class ContextMenu {
                 this.parent.selectionModule.selectRow(rowIndex);
             }
             if (!args.parentItem) {
-                this.rowData = this.parent.updatedRecords[rowIndex];
+                this.rowData = this.parent.updatedRecords[parseInt(rowIndex.toString(), 10)];
             }
             for (const item of args.items) {
                 // let target: EventTarget = target;
@@ -476,7 +476,7 @@ export class ContextMenu {
                                 this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
                             const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
                             if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
+                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[parseInt(index.toString(), 10)].level - prevRecord.level === 1) {
                                 this.updateItemVisibility(item.text);
                             }
                         }
@@ -491,7 +491,7 @@ export class ContextMenu {
                             const isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
                                 this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
                             if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
-                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[ind].level === 0) {
+                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[parseInt(ind.toString(), 10)].level === 0) {
                                 this.updateItemVisibility(item.text);
                             }
                         }
@@ -501,7 +501,7 @@ export class ContextMenu {
                     {
                         const taskSettings: TaskFieldsModel = this.parent.taskFields;
                         if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
-                            this.parent.currentViewData[rowIndex].hasChildRecords) {
+                            this.parent.currentViewData[parseInt(rowIndex.toString(), 10)].hasChildRecords) {
                             this.updateItemVisibility(item.text);
                         }
                         break;
@@ -739,7 +739,7 @@ export class ContextMenu {
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
         const parent: string = 'parentObj';
-        if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
+        if (args.items.length > 0 && args.items[0][`${parent}`] instanceof Menu) {
             this.revertItemStatus();
         }
     }

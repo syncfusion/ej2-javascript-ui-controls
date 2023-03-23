@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
@@ -277,7 +277,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Options to customize the legend title.
      */
-    
+
     @Complex<FontModel>(Theme.legendTitleFont, Font)
     public titleStyle: FontModel;
 
@@ -342,6 +342,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * If `isInversed` set to true, then it inverses legend item content (image and text).
+     *
      * @default false.
      */
 
@@ -624,7 +625,7 @@ export class BaseLegend {
             legendBounds.y = rect.y + padding + this.legend.margin.top;
             legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
             !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
-            legendHeight -= (isBulletChart) ? -padding * 2 : 0;
+            legendHeight -= (isBulletChart || this.isChartControl) ? -padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         } else if (position === 'Right') {
             legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;
@@ -798,7 +799,6 @@ export class BaseLegend {
                 legendOption = this.legendCollections[i as number];
                 legendIndex = !this.isReverse ? count : (this.legendCollections.length - 1) -  count;
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    // eslint-disable-next-line max-len
                     legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
                 if (this.chart.getModuleName() === 'stockChart'){
@@ -1178,7 +1178,6 @@ export class BaseLegend {
             shape = legendOption.type === <AccumulationType>'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === <AccumulationType>'Doughnut' ? '#FFFFFF' : symbolOption.fill;
             if (!isCanvas) {
-                // eslint-disable-next-line max-len
                 group.appendChild(drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
                                              '', symbolOption, this.accessbilityText, null, null,
                                              this.isBulletChartControl, control));
@@ -1281,7 +1280,7 @@ export class BaseLegend {
         const paginggroup: Element = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         const isCanvas: boolean = this.isStockChartControl ? false : (chart as Chart).enableCanvas;
         const titleHeight: number = this.isBulletChartControl ? 0 : this.legendTitleSize.height;
-        const grayColor: string = this.chart.theme.indexOf('Dark') > -1 ? '#FFFFFF' : '#545454';
+        const grayColor: string = (this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('Contrast') > -1) ? '#FFFFFF' : '#545454';
         const legend: LegendSettingsModel = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         const padding: number = 8; // const padding for paging elements
         const pageUp: string = this.legendID + (!this.isRtlEnable ? '_pageup' : '_pagedown');
@@ -1361,7 +1360,7 @@ export class BaseLegend {
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = !this.isRtlEnable ? '1/' + this.totalPages : this.totalPages + '/1';
-        const color: string = this.chart.theme.indexOf('Dark') > -1 ? '#FFFFFF' : legend.textStyle.color;
+        const color: string = (this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('Contrast') > -1) ? '#FFFFFF' : legend.textStyle.color;
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = !this.isRtlEnable ? this.currentPageNumber  + '/' + this.totalNoOfPages : this.totalNoOfPages + '/' +  this.currentPageNumber;
         }

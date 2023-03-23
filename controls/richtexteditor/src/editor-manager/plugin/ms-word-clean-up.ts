@@ -82,12 +82,12 @@ export class MsWordPaste {
             if (pattern4.test(tempHTMLContent)) {
                 this.addTableBorderClass(elm);
             }
-            // Removing the margin for list items 
+            // Removing the margin for list items
             const liChildren: NodeList = elm.querySelectorAll('li');
             if (liChildren.length > 0){
                 for (let i: number = 0; i < liChildren.length; i++){
-                    if (!isNOU((liChildren[i] as HTMLElement).style.marginLeft)){
-                        (liChildren[i] as HTMLElement).style.marginLeft = '';
+                    if (!isNOU((liChildren[i as number] as HTMLElement).style.marginLeft)){
+                        (liChildren[i as number] as HTMLElement).style.marginLeft = '';
                     }
                 }
             }
@@ -262,11 +262,11 @@ export class MsWordPaste {
     private breakLineAddition(elm: HTMLElement): void {
         const allElements: NodeListOf<Element> = elm.querySelectorAll('*');
         for (let i: number = 0; i < allElements.length; i++) {
-            if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;' &&
-            (allElements[i].innerHTML === '&nbsp;' && !allElements[i].closest('li')) &&
-            !allElements[i].closest('td') && (allElements[i].nodeName !== 'SPAN' ||
-            allElements[i].nodeName === 'SPAN' && (isNOU(allElements[i].previousElementSibling) &&
-            isNOU(allElements[i].nextElementSibling)))) {
+            if (allElements[i as number].children.length === 0 && allElements[i as number].innerHTML === '&nbsp;' &&
+            (allElements[i as number].innerHTML === '&nbsp;' && !allElements[i as number].closest('li')) &&
+            !allElements[i as number].closest('td') && (allElements[i as number].nodeName !== 'SPAN' ||
+            allElements[i as number].nodeName === 'SPAN' && (isNOU(allElements[i as number].previousElementSibling) &&
+            isNOU(allElements[i as number].nextElementSibling)))) {
                 const detachableElement: HTMLElement = this.findDetachElem(allElements[i as number]);
                 const brElement: HTMLElement = createElement('br') as HTMLElement;
                 if (!isNOU(detachableElement.parentElement)) {
@@ -535,12 +535,12 @@ export class MsWordPaste {
                 listStyleType = this.getlistStyleType(this.listContents[0], type);
                 if (type === 'ol' && (i === 0 || listNodes[i as number - 1] === null)) {
                     const startString: string = this.listContents[0].split('.')[0];
-                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '1-']; // Add '1-' for rare list type. 
-                    if (listTypes.indexOf(startString) === -1) {
+                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '1-']; // Add '1-' for rare list type.
+                    if (listTypes.indexOf(startString) === -1){
                         if (listStyleType === 'decimal') {
                             // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
-                            if (!isNaN(parseInt(startString))) {
-                                startAttr = parseInt(startString);
+                            if (!isNaN(parseInt(startString, 10))) {
+                                startAttr = parseInt(startString, 10);
                             }
                         } else if (listStyleType === 'upper-alpha') {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 64);

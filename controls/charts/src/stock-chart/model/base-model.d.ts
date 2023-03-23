@@ -512,6 +512,7 @@ export interface StockSeriesModel {
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
      * * Image -Render a image.     *
+     *
      * @default 'SeriesType'
      */
 
@@ -519,6 +520,7 @@ export interface StockSeriesModel {
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
     legendImageUrl?: string;

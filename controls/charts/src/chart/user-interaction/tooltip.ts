@@ -1,8 +1,6 @@
 /* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
@@ -221,9 +219,6 @@ export class Tooltip extends BaseTooltip {
     }
 
     private findMarkerHeight(pointData: PointData): number {
-        if (!this.chart.tooltip.enableMarker) {
-            return 0;
-        }
         let markerHeight: number = 0;
         const series: Series = <Series>pointData.series;
         markerHeight = ((series.marker.visible || (this.chart.tooltip.shared &&
@@ -252,6 +247,7 @@ export class Tooltip extends BaseTooltip {
         case 'Waterfall':
             return this.getWaterfallRegion(data, location);
         case 'RangeArea':
+        case 'RangeStepArea':
         case 'SplineRangeArea':
         case 'RangeColumn':
             return this.getRangeArea(data, location);
@@ -266,6 +262,9 @@ export class Tooltip extends BaseTooltip {
                 location.y = data.point.regions[0].y + data.point.regions[0].height / 2;
             } else {
                 location.x = data.point.regions[0].x + data.point.regions[0].width / 2;
+            }
+            if (data.series.type === 'RangeStepArea'){
+                location.y = data.point.regions[0].y + data.point.regions[0].height / 2 + data.point.regions[0].width;
             }
         }
         return location;
@@ -337,7 +336,7 @@ export class Tooltip extends BaseTooltip {
     private renderGroupedTooltip(chart: Chart, isFirst: boolean, tooltipDiv: Element): void {
         let data: PointData;
         const dataCollection: PointData[] = [];
-        let lastData: PointData; 
+        let lastData: PointData;
         const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
         this.removeHighlight();
@@ -417,7 +416,7 @@ export class Tooltip extends BaseTooltip {
         };
         const borderWidth : number = this.chart.border.width;
         const padding : number = 3;
-        let currentPoints: PointData[] = [];
+        const currentPoints: PointData[] = [];
         const sharedTooltip: Function = (argsData: ISharedTooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 if (point.series.type === 'BoxAndWhisker') {
@@ -425,7 +424,7 @@ export class Tooltip extends BaseTooltip {
                     isFirst = true;
                 }
                 for (let i: number = 0; i < argsData.text.length; i++) {
-                    if (argsData.text[i]) { currentPoints.push(this.currentPoints[i] as PointData); }
+                    if (argsData.text[i as number]) { currentPoints.push(this.currentPoints[i as number] as PointData); }
                 }
                 this.currentPoints = currentPoints;
                 this.formattedText = this.formattedText.concat(argsData.text);

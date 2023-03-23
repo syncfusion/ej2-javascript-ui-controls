@@ -115,7 +115,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_RightSlider');
                 // eslint-disable-next-line 
-                expect(element.childNodes.length === 4).toBe(true);
+                expect(element.childNodes.length === 3).toBe(true);
                 // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();
@@ -154,7 +154,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_LeftSlider');
                 // eslint-disable-next-line 
-                expect(element.childNodes.length === 4).toBe(true);
+                expect(element.childNodes.length === 3).toBe(true);
                 // eslint-disable-next-line 
                 expect(element.getAttribute('d') !== '').toBe(true);
                 done();

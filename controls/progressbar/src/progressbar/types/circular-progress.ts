@@ -5,7 +5,7 @@ import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
 import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
 import { ITextRenderEventArgs } from '../model/progress-interface';
-import { stringToNumber, getPathArc } from '../utils/helper';
+import { stringToNumber, getPathArc, degreeToLocation, ProgressLocation } from '../utils/helper';
 import { Segment } from './segment-progress';
 import { TextOption } from '../utils/helper';
 import { ModeType } from '../utils';
@@ -16,7 +16,7 @@ import { ModeType } from '../utils';
  */
 export class Circular {
     private progress: ProgressBar;
-    private delay: number;
+    public delay: number;
     private segment: Segment = new Segment();
     private animation: ProgressAnimation = new ProgressAnimation();
     private isRange: boolean;
@@ -25,10 +25,14 @@ export class Circular {
     private maxThickness: number;
     private availableSize: number;
     private trackEndAngle: number;
+    // Defines end position of circular progress.
+    public endPosition: ProgressLocation;
+    // Defines buffer end position of circular progress.
+    public bufferEndPosition: ProgressLocation;
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the circular track. */
+    /** To render the circular track */
     public renderCircularTrack(): void {
         const progress: ProgressBar = this.progress;
         const circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
@@ -108,6 +112,7 @@ export class Circular {
         );
         progress.progressWidth = (<SVGPathElement>progress.renderer.drawPath(option)).getTotalLength();
         progress.segmentSize = this.validateSegmentSize(progress, thickness);
+        this.endPosition =  degreeToLocation(this.centerX, this.centerY, radius, endAngle);
         if (progress.secondaryProgress !== null && !progress.isIndeterminate) {
             this.renderCircularBuffer(progress, radius, progressTotalAngle);
         }
@@ -184,10 +189,12 @@ export class Circular {
         const circularPath: string = getPathArc(
             this.centerX, this.centerY, radius, progress.startAngle, endAngle, progress.enableRtl, progress.enablePieProgress
         );
-        const stroke: string = this.checkingCircularProgressColor();
+        this.bufferEndPosition =  degreeToLocation(this.centerX, this.centerY, radius, endAngle);
+        const stroke: string = progress.secondaryProgressColor ? progress.secondaryProgressColor : this.checkingCircularProgressColor();
         const fill: string = (progress.enablePieProgress) ? stroke : 'none';
         const strokeWidth: number = (progress.enablePieProgress) ? 0 :
-            (progress.progressThickness || progress.themeStyle.circularProgressThickness);
+            (progress.secondaryProgressThickness ? progress.secondaryProgressThickness :
+                (progress.progressThickness || progress.themeStyle.circularProgressThickness));
         const option: PathOption = new PathOption(
             progress.element.id + '_Circularbuffer', fill, strokeWidth, stroke,
             progress.themeStyle.bufferOpacity, '0', circularPath
@@ -221,7 +228,7 @@ export class Circular {
         progress.svgObject.appendChild(circularBufferGroup);
     }
 
-    /** To render the circular Label. */
+    /** To render the circular Label */
     public renderCircularLabel(isProgressRefresh: boolean = false): void {
         let end: number;
         let circularLabel: Element;

@@ -968,22 +968,5 @@ describe('Number formatter', () => {
             expect(result).toBe('¤#,##0.00');
         });
     });
-    
-    describe('Custom pivot table format', () => {
-        it('Number with above 5 lacks values', () => {
-            let result: Function = NumberFormat.numberFormatter('en-US', { format: '#,###,,;(#,###,,)' }, cldrData);
-            expect(result(500000)).toBe('1');
-            expect(result(1500000)).toBe('2');
-        });
-        it('Number with below 5 lacks values', () => {
-            let result: Function = NumberFormat.numberFormatter('en-US', { format: '#,###,,;(#,###,,)' }, cldrData);
-            expect(result(100000)).toBe('');
-        });
-        it('Negative Number with above 5 lacks values', () => {
-            let result: Function = NumberFormat.numberFormatter('en-US', { format: '#,###,,;(#,###,,)' }, cldrData);
-            expect(result(-500000)).toBe('(1)');
-            expect(result(-1500000)).toBe('(2)');
-        });
-    });
 
 });

@@ -121,7 +121,11 @@ export class TableProperties {
     }
     private onTabSelection(): void {
         this.documentEditor.resize();
-        this.documentEditor.focusIn();
+        if(this.documentEditor.enableAutoFocus)
+        {   
+            this.documentEditor.focusIn();
+        }
+        
     }
     private wireEvent(): void {
         this.shadingBtn.addEventListener('change', this.changeBackgroundColor.bind(this));
@@ -298,9 +302,11 @@ export class TableProperties {
     }
     private onDeleteRow(): void {
         this.documentEditor.editor.deleteRow();
+        this.documentEditor.focusIn();
     }
     private onDeleteColumn(): void {
         this.documentEditor.editor.deleteColumn();
+        this.documentEditor.focusIn();
     }
     public onSelectionChange(): void {
         if (this.documentEditor.selection) {

@@ -251,18 +251,18 @@
       border-right-color: $frozen-border-color;
     }
 
-    &.e-gridhover tr[role = 'row']:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
-    &.e-gridhover tr[role = 'row']:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
-    &.e-gridhover tr[role = 'row']:not(.e-disable-gridhover):hover .e-rowdragdrop,
-    &.e-rtl .e-gridhover tr[role = 'row']:not(.e-disable-gridhover):hover .e-rowdragdrop,
-    &.e-gridhover tr[role = 'row']:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+    &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+    &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: $grid-hover-bg-color;
         color: $grid-hover-content-font-color;
       }
     }
 
-    & tr[role = 'row']:hover .e-rowdragdrop {
+    & .e-row:hover .e-rowdragdrop {
       cursor: move;
     }
 
@@ -549,7 +549,8 @@
       }
     }
 
-    .e-ftrchk.e-chkfocus {
+    .e-ftrchk.e-chkfocus,
+    li.e-cclist.e-colfocus {
       background-color: $grid-hover-bg-color;
     }
   }

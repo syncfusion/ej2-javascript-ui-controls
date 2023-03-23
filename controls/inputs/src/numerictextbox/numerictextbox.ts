@@ -351,7 +351,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     input.innerHTML = this.element.innerHTML;
                 }
                 else if (attributeName === 'class') {
-                    input.setAttribute(attributeName, this.element.className.split(' ').filter((item: string)=> item.indexOf('ng-') !== 0).join(' '));
+                    input.setAttribute(attributeName, this.element.className.split(' ').filter((item: string) => item.indexOf('ng-') !== 0).join(' '));
                 }
             }
             if (this.element.hasAttribute('name')) {
@@ -425,7 +425,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (this.element.hasAttribute('data-val')) {
                 this.element.setAttribute('data-val', 'false');
             }
-            if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
                 this.enabled = false;
             }
             this.renderComplete();
@@ -954,7 +954,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             const previous: number = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
             //EJ2-54963-if type "." or ".0" or "-.0" it converts to "0" automatically when binding v-model
-            const nonZeroRegex = new RegExp('[^0-9]+$');
+            const nonZeroRegex: RegExp = new RegExp('[^0-9]+$');
             if (nonZeroRegex.test(this.element.value) || ((this.elementPrevValue.indexOf('.') !== -1 || this.elementPrevValue.indexOf('-') !== -1) && this.element.value[this.element.value.length - 1] === '0')) {
                 current = this.value;
             }
@@ -1139,8 +1139,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             return true;
         }
         let currentChar: string = String.fromCharCode(event.which);
-        let decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
-        let isAlterNumPadDecimalChar: boolean = event.code === "NumpadDecimal" && currentChar !== decimalSeparator;
+        const decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
+        const isAlterNumPadDecimalChar: boolean = event.code === 'NumpadDecimal' && currentChar !== decimalSeparator;
         //EJ2-59813-replace the culture decimal separator value with numberpad decimal separator value when culture decimal separator and numberpad decimal separator are different
         if (isAlterNumPadDecimalChar) {
             currentChar = decimalSeparator;
@@ -1177,7 +1177,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.decimals && this.validateDecimalOnType) {
             fractionRule = '{0,' + this.decimals + '}';
         }
-        // eslint-disable-next-line detect-non-literal-regexp
+         /* eslint-disable-next-line security/detect-non-literal-regexp */
         return new RegExp('^(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
             ')?)|(' + decimalSeparator + '\\d' + fractionRule + ')))?$');
     }
@@ -1290,9 +1290,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private touchMoveOnSpinner(event: MouseEvent | TouchEvent): void {
-        let target: Element
-        if (event.type === "touchmove") {
-            let touchEvent: TouchList = (event as TouchEvent).touches;
+        let target: Element;
+        if (event.type === 'touchmove') {
+            const touchEvent: TouchList = (event as TouchEvent).touches;
             target = touchEvent.length && document.elementFromPoint(touchEvent[0].pageX, touchEvent[0].pageY);
         } else {
             target = document.elementFromPoint((event as MouseEvent).clientX, (event as MouseEvent).clientY);
@@ -1399,7 +1399,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             detach(this.spinDown);
         }
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'aria-disabled', 'autocapitalize','spellcheck', 'aria-autocomplete', 'tabindex', 
+            'aria-disabled', 'autocapitalize', 'spellcheck', 'aria-autocomplete', 'tabindex',
             'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
             this.element.removeAttribute(attrArray[i as number]);

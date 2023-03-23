@@ -30,7 +30,7 @@ import { ImageExport } from './model/image-export';
 import { Gradient } from './axes/gradient';
 
 /**
- * Represents the EJ2 Linear gauge control.
+ * Represents the linear gauge control. This is used to customize the properties of the linear gauge to visualize the data in linear scale.
  * ```html
  * <div id="container"/>
  * <script>
@@ -44,30 +44,34 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     //Module declaration for gauge
     /**
      * Specifies the module that is used to place any text or images as annotation into the linear gauge.
+     * 
+     * @private
      */
     public annotationsModule: Annotations;
 
     /**
      * Specifies the module that is used to display the pointer value in tooltip.
+     * 
+     * @private
      */
     public tooltipModule: GaugeTooltip;
 
     /**
-     * This module enables the print functionality in linear gauge control.
+     * This module enables the print functionality in linear gauge.
      *
      * @private
      */
     public printModule: Print;
 
     /**
-     * This module enables the export to PDF functionality in linear gauge control.
+     * This module enables the export to PDF functionality in linear gauge.
      *
      * @private
      */
     public pdfExportModule: PdfExport;
 
     /**
-     * This module enables the export to image functionality in linear gauge control.
+     * This module enables the export to image functionality in linear gauge.
      *
      * @private
      */
@@ -98,7 +102,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public width: string;
 
     /**
-     * Enables or disables the gauge to be rendered to the complete width.
+     * Enables or disables the ability of the gauge to be rendered to the complete width. The left, right, top and bottom spacing will not be considered in the gauge when this property is disabled.
      *
      * @default true
      */
@@ -163,7 +167,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public margin: MarginModel;
 
     /**
-     * Specifies the options for customizing the color and width of the border for linear gauge.
+     * Specifies the options for customizing the style properties of the border for linear gauge.
      */
 
     @Complex<BorderModel>({ color: '', width: 0 }, Border)
@@ -235,7 +239,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public useGroupingSeparator: boolean;
 
     /**
-     * Specifies the description for linear gauge.
+     * Sets and gets the information about gauge for assistive technology.
      *
      * @default null
      */
@@ -259,7 +263,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public format: string;
 
     /**
-     * Specifies the theme supported for the linear gauge.
+     * Sets and gets the theme styles supported for linear gauge. When the theme is set, the styles associated with the theme will be set in the gauge.
      *
      * @default Material
      */
@@ -389,7 +393,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public valueChange: EmitType<IValueChangeEventArgs>;
 
     /**
-     * Triggers after window resize.
+     * Triggers to notify the resize of the linear gauge when the window is resized.
      *
      * @event resized
      */
@@ -398,7 +402,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public resized: EmitType<IResizeEventArgs>;
 
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the print functionality gets started.
      *
      * @event beforePrint
      */
@@ -428,6 +432,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public isDrag: boolean = false;
     /** @private */
     public isPropertyChange: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resizeEvent: any;
     /**
      * Calculate the axes bounds for gauge.
      *
@@ -720,7 +726,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         EventHandler.remove(
             <HTMLElement & Window>window,
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.gaugeResize.bind(this)
+            this.resizeEvent
         );
     }
 
@@ -738,10 +744,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.element,
             (Browser.isPointer ? 'pointerleave' : 'mouseleave'), this.mouseLeave, this
         );
+        this.resizeEvent = this.gaugeResize.bind(this);
         EventHandler.add(
             <HTMLElement & Window>window,
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.gaugeResize, this
+            this.resizeEvent
         );
         this.setStyle(<HTMLElement>this.element);
     }
@@ -792,7 +799,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To destroy the gauge element from the DOM.
+     * This method destroys the linear gauge. This method removes the events associated with the linear gauge and disposes the objects created for rendering and updating the linear gauge.
      */
     public destroy(): void {
         this.unWireEvents();
@@ -1357,9 +1364,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * This method is used to set the pointer value in the linear gauge.
      *
-     * @param axisIndex - Specifies the index of the axis.
-     * @param pointerIndex - Specifies the index of the pointer.
-     * @param value - Specifies the pointer value.
+     * @param {number} axisIndex - Specifies the index of the axis.
+     * @param {number} pointerIndex - Specifies the index of the pointer.
+     * @param {number} value - Specifies the pointer value.
      */
 
     public setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
@@ -1396,8 +1403,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * This method is used to set the annotation value in the linear gauge.
      *
-     * @param annotationIndex - Specifies the index of the annotation.
-     * @param content - Specifies the text of the annotation.
+     * @param {number} annotationIndex - Specifies the index value for the annotation in linear gauge.
+     * @param {string} content - Specifies the content for the annotation in linear gauge.
+     * @param {number} axisValue - Specifies the axis value to which the annotation must be positioned.
      */
 
     public setAnnotationValue(annotationIndex: number, content: string, axisValue?: number): void {
@@ -1494,6 +1502,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Get component name
+     * @private
      */
 
     public getModuleName(): string {

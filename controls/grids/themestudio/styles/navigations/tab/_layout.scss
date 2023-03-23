@@ -363,7 +363,7 @@
           &::before {
             font-size: $tab-big-nav-icon-size;
             line-height: $tab-big-nav-icon-container-size;
-            top: $tab-bgr-scroll-nav-arrow-before-top;
+            top: 0;
             vertical-align: initial;
 
             @media screen and (max-width: 480px) {
@@ -376,7 +376,7 @@
 
             &::before {
               line-height: $tab-bgr-hor-pop-lineheight;
-              top: $tab-bgr-hor-pop-hover-top;
+              top: 0;
             }
           }
         }
@@ -389,7 +389,7 @@
 
             &::before {
               line-height: $tab-bgr-hor-pop-lineheight;
-              top: $tab-bgr-scroll-nav-arrow-before-top;
+              top: 0;
             }
 
             &:hover {
@@ -1776,7 +1776,7 @@
             font-size: $tab-nrml-nav-icon-size;
             line-height: $tab-nrml-nav-icon-container-size;
             position: relative;
-            top: $tab-nrml-scroll-nav-arrow-before-top;
+            top: 0;
             vertical-align: initial;
 
             @media screen and (max-width: 480px) {
@@ -1789,7 +1789,7 @@
 
             &::before {
               line-height: $tab-nrml-hor-pop-lineheight;
-              top: $tab-nrml-scroll-nav-arrow-before-top;
+              top: 0;
 
               @media screen and (max-width: 480px) {
                 line-height: $tab-nrml-mob-hor-pop-lineheight;
@@ -1826,7 +1826,7 @@
 
             &::before {
               line-height: $tab-nrml-hor-focus-pop-lineheight;
-              top: $tab-nrml-scroll-nav-arrow-before-top;
+              top: 0;
 
               @media screen and (max-width: 480px) {
                 line-height: $tab-nrml-mob-hor-pop-lineheight;
@@ -1981,6 +1981,8 @@
 
         .e-toolbar-items {
           height: inherit;
+          flex-direction: column;
+          align-items: normal;
 
           &.e-vscroll:not(.e-scroll-device) {
             padding: $tab-vscroll-nrml-padding;

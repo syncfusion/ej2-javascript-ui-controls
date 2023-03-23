@@ -12,7 +12,11 @@ import { Slider, SliderChangeEventArgs } from './../slider/slider';
 import { ColorPickerModel } from './color-picker-model';
 
 /**
- * ColorPicker Mode
+ * Defines the ColorPicker Mode
+ * ```props
+ * Picker :- Specifies that the ColorPicker component should be rendered with the picker mode.
+ * Palette :- Specifies that the ColorPicker component should be rendered with the palette mode.
+ * ```
  */
 export type ColorPickerMode = 'Picker' | 'Palette';
 
@@ -344,7 +348,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             wrapper.classList.add(RTL);
         }
         if (this.cssClass) {
-            addClass([wrapper], this.cssClass.split(' '));
+            addClass([wrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         this.tileRipple = rippleEffect(this.container, { selector: '.' + TILE });
         this.ctrlBtnRipple = rippleEffect(this.container, { selector: '.e-btn' });
@@ -406,7 +410,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         const popupEle: HTMLElement = this.getPopupEle();
         addClass([popupEle], 'e-colorpicker-popup');
         if (this.cssClass) {
-            addClass([popupEle], this.cssClass.split(' '));
+            addClass([popupEle], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (Browser.isDevice) {
             const popupInst: Popup = this.getPopupInst();
@@ -1067,6 +1071,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (this.isPicker()) {
             const dragHandler: HTMLElement = this.getDragHandler();
             EventHandler.add(dragHandler, 'keydown', this.pickerKeyDown, this);
+            const ctrlBtn: HTMLElement = select('.' + CTRLBTN, this.container) as HTMLElement;
+            if (ctrlBtn) {
+                EventHandler.add(ctrlBtn, 'keydown', this.ctrlBtnKeyDown, this);
+            }
             EventHandler.add(this.getHsvContainer(), 'mousedown touchstart', this.handlerDown, this);
             if (this.modeSwitcher || this.showButtons) {
                 this.addCtrlSwitchEvent();
@@ -1086,6 +1094,17 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private addCtrlSwitchEvent(): void {
         const ctrlSwitchBtn: Element = select('.' + CTRLSWITCH, this.container);
         if (ctrlSwitchBtn) { EventHandler.add(ctrlSwitchBtn, 'click', this.btnClickHandler, this); }
+    }
+
+    private ctrlBtnKeyDown(e: KeyboardEvent): void {
+        if (e.keyCode === 13) {
+            const applyBtn: HTMLElement = select('.' + APPLY, this.container) as HTMLElement
+            if (applyBtn) { 
+                const cValue: string = this.rgbToHex(this.rgb);
+                this.triggerChangeEvent(cValue);
+            }
+            this.splitBtn.element.focus();
+        }
     }
 
     private pickerKeyDown(e: KeyboardEvent): void {
@@ -1113,7 +1132,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private enterKeyHandler(value: string, e: MouseEvent | KeyboardEvent): void {
         this.triggerChangeEvent(value);
         if (!this.inline) {
-            this.closePopup(e);
             this.splitBtn.element.focus();
         }
     }
@@ -1639,6 +1657,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (this.isPicker()) {
             const dragHandler: HTMLElement = this.getDragHandler();
             EventHandler.remove(dragHandler, 'keydown', this.pickerKeyDown);
+            const ctrlBtn: HTMLElement = select('.' + CTRLBTN, this.container) as HTMLElement;
+            if (ctrlBtn) {
+                EventHandler.remove(ctrlBtn, 'keydown', this.ctrlBtnKeyDown);
+            }
             EventHandler.remove(this.getHsvContainer(), 'mousedown touchstart', this.handlerDown);
             if (this.modeSwitcher || this.showButtons) {
                 EventHandler.remove(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler);
@@ -1838,7 +1860,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             removeClass([wrapper, popupWrapper], oldProp.split(' '));
         }
         if (newProp) {
-            addClass([wrapper, popupWrapper], newProp.split(' '));
+            addClass([wrapper, popupWrapper], newProp.replace(/\s+/g, ' ').trim().split(' '));
         }
     }
 

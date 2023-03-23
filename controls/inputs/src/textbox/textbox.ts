@@ -386,13 +386,15 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.updateHTMLAttrToElement();
         this.checkAttributes(false);
-        if(( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) && this.element.value !== '') {
+        if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) && this.element.value !== '') {
             this.setProperties({value: this.element.value}, true);
         }
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
-        this.element.setAttribute('role', 'textbox');
+        if (this.type === 'text'){
+            this.element.setAttribute('role', 'textbox');
+        }
         this.globalize = new Internationalization(this.locale);
         const localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('textbox', localeText, this.locale);
@@ -525,7 +527,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.inputPreviousValue = this.value;
         this.respectiveElement.defaultValue = this.respectiveElement.value;
         Input.setWidth(this.width, this.textboxWrapper.container);
-        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+        if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
         this.renderComplete();
@@ -694,7 +696,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.previousValue = this.value;
         //EJ2CORE-738:For this task we update the textarea value to the input when input tag with multiline is present
         if (this.element.tagName === 'INPUT' && this.multiline && Browser.info.name === 'mozilla') {
-            this.element.value = this.respectiveElement.value; 
+            this.element.value = this.respectiveElement.value;
         }
     }
 
@@ -726,8 +728,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.inputPreviousValue = this.respectiveElement.value;
             this.raiseChangeEvent(event, true);
             if (closest(this.element, 'form')) {
-                let element: Element = this.element;
-                let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+                const element: Element = this.element;
+                const keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
                 keyupEvent.initEvent('keyup', false, true);
                 element.dispatchEvent(keyupEvent);
             }

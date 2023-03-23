@@ -25,7 +25,7 @@ $dialog-overlay-bg-color: rgba($shadow, .8) !default;
 $dialog-closeicon-btn-hover-color: transparent !default;
 $dialog-closeicon-btn-active-color: transparent !default;
 $dialog-footer-content-border-top: 1px solid $grey-99 !default;
-$dialog-alert-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: 1px solid $grey-99 !default;
 $dialog-btn-border-color: transparent !default;
 $dialog-btn-bg-color: transparent !default;
 $dialog-overlay-opacity: .5 !default;

@@ -607,6 +607,7 @@ export class RowDD {
     private addErrorElem(): void {
         const dragelem: Element = document.getElementsByClassName('e-cloneproperties')[0];
         const errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
+        const sanitize: string = 'sanitize';
         if (!errorelem && !this.parent.rowDropSettings.targetID) {
             const ele: HTMLElement = document.createElement('div');
             classList(ele, ['e-errorcontainer'], []);
@@ -614,14 +615,14 @@ export class RowDD {
             const errorVal: Element = dragelem.querySelector('.errorValue');
             let content: string = dragelem.querySelector('.e-rowcell').innerHTML;
             if (errorVal) {
-                content = errorVal.innerHTML;
+                content = this.parent[`${sanitize}`](errorVal.innerHTML);
                 errorVal.parentNode.removeChild(errorVal);
             }
             dragelem.querySelector('.e-rowcell').innerHTML = '';
             const spanContent: HTMLElement = document.createElement('span');
             spanContent.className = 'errorValue';
             spanContent.style.paddingLeft = '16px';
-            spanContent.innerHTML = content;
+            spanContent.innerHTML = this.parent[`${sanitize}`](content);
             dragelem.querySelector('.e-rowcell').appendChild(ele);
             dragelem.querySelector('.e-rowcell').appendChild(spanContent);
             const dropItemSpan: HTMLElement = document.querySelector('.e-dropitemscount');

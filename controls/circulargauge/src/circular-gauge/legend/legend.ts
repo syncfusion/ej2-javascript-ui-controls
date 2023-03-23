@@ -48,7 +48,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public visible: boolean;
 
     /**
-     * Enables and disables the ranges visibility collapses based on the legend visibility.
+     * Enables and disables the visibility of the ranges. When the legend is clicked, the visibility of the legend will be toggled.
      *
      * @default true
      */
@@ -64,14 +64,14 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public alignment: Alignment;
 
     /**
-     * Sets and gets the options to customize the border settings of the legend.
+     * Sets and gets the options to customize the style properties of the border of the legend.
      *
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
     /**
-     * Sets and gets the options to customize the border for the shape of the legend in the circular gauge.
+     * Sets and gets the options to customize the style properties of the border for the shape of the legend in the circular gauge.
      */
     @Complex<BorderModel>({}, Border)
     public shapeBorder: BorderModel;
@@ -125,7 +125,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public width: string;
 
     /**
-     * Sets and gets the options to customize the text of the legend.
+     * Sets and gets the options to customize the text of the legend item.
      */
     @Complex<FontModel>(Theme.legendLabelFont, Font)
     public textStyle: FontModel;
@@ -380,7 +380,7 @@ export class Legend {
             let legendAxisGroup: Element; // legendItem group for each series group element
             // starting shape center x,y position && to resolve lint error used new line for declaration
             const start: GaugeLocation = new GaugeLocation(
-                legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2
+                (!this.gauge.enableRtl) ? legendBounds.x + padding + (legend.shapeWidth / 2) :  (!this.isVertical) ? legendBounds.width + legendBounds.x - (padding) -(legend.shapeWidth): legendBounds.x +  this.maxWidth - padding - legend.shapeWidth / 2, legendBounds.y + padding + this.maxItemHeight / 2
             );
             const textOptions: TextOption = new TextOption('', start.x, start.y, 'start');
             const textPadding: number = (2 * legend.shapePadding) + (2 * padding) + legend.shapeWidth;
@@ -457,15 +457,15 @@ export class Legend {
             ),
             paginggroup, this.gauge, 'Path'
         );
-        this.pagingRegions.push(new Rect(
-            x + bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5,
+        this.pagingRegions.push(new Rect(!this.gauge.enableRtl ?
+            x + bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5 : x,
             y - iconSize * 0.5, iconSize, iconSize)
         );
         // Page numbering rendering calculation started here
         textOption.x = x + (iconSize / 2) + padding;
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
-        textOption.text = '1/' + this.totalPages;
+        textOption.text = !this.gauge.enableRtl ? '1/' + this.totalPages : this.totalPages + '/1';
         const pageTextElement: Element = textElement(textOption, legend.textStyle, grayColor, paginggroup);
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
@@ -476,13 +476,13 @@ export class Legend {
             ),
             paginggroup, this.gauge, 'Path'
         );
-        this.pagingRegions.push(new Rect(
-            x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5),
+        this.pagingRegions.push(new Rect(!this.gauge.enableRtl ?
+            x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5) : x ,
             y - iconSize * 0.5, iconSize, iconSize
         ));
         //placing the navigation buttons and page numbering in legend right corner
-        paginggroup.setAttribute('transform', 'translate(' + (bounds.width - (2 * (iconSize + padding) +
-            padding + size.width)) + ', ' + 0 + ')');
+        const translateX: number = (this.gauge.enableRtl) ?  legend.border.width + (iconSize / 2) :  bounds.width - (2 * (iconSize + padding) + padding + size.width) ;
+        paginggroup.setAttribute('transform', 'translate(' + translateX + ', ' + 0 + ')');
         this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage);
     }
     /**
@@ -497,12 +497,13 @@ export class Legend {
         let size: number = (this.clipPathHeight) * page;
         let translate: string = 'translate(0,-' + size + ')';
         if (this.isVertical) {
-            size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
+            const pageX : number = this.pageXCollections[page * this.maxColumns];
+            size = (!this.gauge.enableRtl) ? pageX- this.legendBounds.x : (this.legendBounds.x + this.maxWidth) - pageX;
             size = size < 0 ? 0 : size; // to avoid small pixel variation
-            translate = 'translate(-' + size + ',0)';
+            translate = ((!this.gauge.enableRtl) ? 'translate(-' : 'translate(') + size + ',0)';
         }
         this.legendTranslateGroup.setAttribute('transform', translate);
-        pagingText.textContent = (pageNumber) + '/' + this.totalPages;
+        pagingText.textContent = !this.gauge.enableRtl ? (pageNumber) + '/' + this.totalPages : this.totalPages + '/' + pageNumber;
         this.currentPage = pageNumber;
         return size;
     }
@@ -526,7 +527,8 @@ export class Legend {
         const fontcolor: string = legendOption.visible ? legend.textStyle.color || this.gauge.themeStyle.labelColor : hiddenColor;
         legend.textStyle.fontFamily = legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily;
         textOptions.text = legendOption.text;
-        textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
+        textOptions.x = this.gauge.enableRtl ? (legendOption.location.x - (measureText(legendOption.text, legend.textStyle).width +
+            legend.shapeWidth / 2 + legend.shapePadding)) : (legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding);
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
         textElement(textOptions, legend.textStyle, fontcolor, group, '');
     }
@@ -573,17 +575,19 @@ export class Legend {
         const padding: number = this.legend.padding;
         if (this.isVertical) {
             if (count === firstLegend || (prevLegend.location.y + (this.maxItemHeight * 1.5) + (padding * 2) > rect.y + rect.height)) {
-                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : this.maxColumnWidth);
+                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : (!this.gauge.enableRtl) ?
+                this.maxColumnWidth : -this.maxColumnWidth - (4 * this.legend.shapePadding) / 3);
                 legendOption.location.y = start.y;
-                this.pageXCollections.push(legendOption.location.x - (this.legend.shapeWidth / 2) - padding);
+                const textStartLoc: number = (this.legend.shapeWidth / 2) + padding;
+                this.pageXCollections.push(legendOption.location.x + ((!this.gauge.enableRtl) ? -textStartLoc : textStartLoc));
                 this.totalPages++;
             } else {
                 legendOption.location.x = prevLegend.location.x;
                 legendOption.location.y = prevLegend.location.y + this.maxItemHeight + padding;
             }
         } else {
-            const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
-            if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2)) {
+            const previousBound: number = (prevLegend.location.x + ((!this.gauge.enableRtl) ? prevLegend.textSize.width + textPadding: -prevLegend.textSize.width - textPadding));
+            if (this.isWithinBounds(previousBound,(legendOption.textSize.width + textPadding) - padding , rect , this.legend.shapeWidth / 2)) {
                 legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                     prevLegend.location.y + this.maxItemHeight + padding;
                 legendOption.location.x = start.x;
@@ -595,12 +599,23 @@ export class Legend {
         }
         const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
+    } 
+
+    private isWithinBounds(previousBound: number, textWidth: number, legendBounds: Rect, shapeWidth: number): boolean {
+        if (!this.gauge.enableRtl) {
+            return (previousBound + textWidth) > (legendBounds.x + legendBounds.width + shapeWidth);
+        }
+        else {
+            return (previousBound - textWidth) < (legendBounds.x - shapeWidth);
+        }
     }
     /**
      * To show or hide the legend on clicking the legend.
      *
      * @param {Event} event - Specifies the event argument.
      * @returns {void}
+     * 
+     * @private
      */
     public click(event: Event): void {
         const targetId: string = (<HTMLElement>event.target).id;
@@ -640,9 +655,9 @@ export class Legend {
             }
         }
         if (targetId.indexOf(this.legendID + '_pageup') > -1) {
-            this.changePage(event, true);
+            this.changePage(event, !this.gauge.enableRtl ? true : false);
         } else if (targetId.indexOf(this.legendID + '_pagedown') > -1) {
-            this.changePage(event, false);
+            this.changePage(event, !this.gauge.enableRtl ? false : true);
         }
     }
     /**
@@ -708,7 +723,7 @@ export class Legend {
      */
     protected changePage(event: Event, pageUp: boolean): void {
         const pageText: Element = document.getElementById(this.legendID + '_pagenumber');
-        const page: number = parseInt(pageText.textContent.split('/')[0], 10);
+        const page: number = parseInt(pageText.textContent.split('/')[!this.gauge.enableRtl ? 0 : 1], 10);
         if (pageUp && page > 1) {
             this.translatePage(pageText, (page - 2), (page - 1));
         } else if (!pageUp && page < this.totalPages) {

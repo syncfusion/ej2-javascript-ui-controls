@@ -44,7 +44,8 @@ export interface FieldModel {
     endTime?: FieldOptionsModel;
 
     /**
-     * It maps the `startTimezone` field from the dataSource and usually accepts the valid IANA timezone names.
+     * It maps the `startTimezone` field from the dataSource and usually accepts the valid
+     * [`IANA timezone names`](https://docs.actian.com/ingres/11.0/index.html#page/Ing_Install/IANA_World_Regions_and_Time_Zone_Names.htm).
      *  It is assumed that the value provided for this field is taken into consideration while processing
      *  the `startTime` field. When this field is not mapped with any timezone names,
      *  then the events will be processed based on the timezone assigned to the Schedule.
@@ -54,7 +55,8 @@ export interface FieldModel {
     startTimezone?: FieldOptionsModel;
 
     /**
-     * It maps the `endTimezone` field from the dataSource and usually accepts the valid IANA timezone names.
+     * It maps the `endTimezone` field from the dataSource and usually accepts the valid
+     * [`IANA timezone names`](https://docs.actian.com/ingres/11.0/index.html#page/Ing_Install/IANA_World_Regions_and_Time_Zone_Names.htm).
      *  It is assumed that the value provided for this field is taken into consideration while processing the `endTime` field.
      *  When this field is not mapped with any timezone names, then the events will be processed based on the timezone assigned
      *  to the Schedule.

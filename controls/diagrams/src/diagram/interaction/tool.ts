@@ -231,122 +231,120 @@ export class ToolBase {
         const width: number = (shape instanceof TextElement) ? shape.actualSize.width : shape.width;
         const height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.height;
         switch (corner) {
-        case 'ResizeWest':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            deltaHeight = 1;
-            difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                difx;
-            dify = 0; deltaWidth = (initialBounds.width - difx) / width; break;
-        case 'ResizeEast':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
-            difx = diff.x;
-            dify = diff.y;
-            difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                difx;
-            dify = 0;
-            deltaWidth = (initialBounds.width + difx) / width;
-            deltaHeight = 1;
-            break;
-        case 'ResizeNorth':
-            deltaWidth = 1;
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                dify;
-            deltaHeight = (initialBounds.height - dify) / height; break;
-        case 'ResizeSouth':
-            deltaWidth = 1;
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                dify;
-            deltaHeight = (initialBounds.height + dify) / height; break;
-        case 'ResizeNorthEast':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                difx;
-            dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
-                dify;
-            deltaWidth = (initialBounds.width + difx) / width; deltaHeight = (initialBounds.height - dify) / height;
-            break;
-        case 'ResizeNorthWest':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapTop(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-            difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapLeft(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-            deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height - dify) / height;
-            break;
-        case 'ResizeSouthEast':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapBottom(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-            difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapRight(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
-            deltaHeight = (initialBounds.height + dify) / height; deltaWidth = (initialBounds.width + difx) / width;
-            break;
-        case 'ResizeSouthWest':
-            diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
-            dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
-                endPoint === startPoint, initialBounds) : dify;
-            difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
-                horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
-                endPoint === startPoint, initialBounds) : difx;
-            deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height + dify) / height; break;
+            case 'ResizeWest':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                deltaHeight = 1;
+                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    difx;
+                dify = 0; deltaWidth = (initialBounds.width - difx) / width; break;
+            case 'ResizeEast':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify }));
+                difx = diff.x;
+                dify = diff.y;
+                difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    difx;
+                dify = 0;
+                deltaWidth = (initialBounds.width + difx) / width;
+                deltaHeight = 1;
+                break;
+            case 'ResizeNorth':
+                deltaWidth = 1;
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    dify;
+                deltaHeight = (initialBounds.height - dify) / height; break;
+            case 'ResizeSouth':
+                deltaWidth = 1;
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    dify;
+                deltaHeight = (initialBounds.height + dify) / height; break;
+            case 'ResizeNorthEast':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                difx = snapEnabled ? this.commandHandler.snappingModule.snapRight(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    difx;
+                dify = snapEnabled ? this.commandHandler.snappingModule.snapTop(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds) :
+                    dify;
+                deltaWidth = (initialBounds.width + difx) / width; deltaHeight = (initialBounds.height - dify) / height;
+                break;
+            case 'ResizeNorthWest':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapTop(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+                difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapLeft(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+                deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height - dify) / height;
+                break;
+            case 'ResizeSouthEast':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                dify = !snapEnabled ? dify : this.commandHandler.snappingModule.snapBottom(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+                difx = !snapEnabled ? difx : this.commandHandler.snappingModule.snapRight(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel, endPoint === startPoint, initialBounds);
+                deltaHeight = (initialBounds.height + dify) / height; deltaWidth = (initialBounds.width + difx) / width;
+                break;
+            case 'ResizeSouthWest':
+                diff = transformPointByMatrix(matrix, ({ x: difx, y: dify })); difx = diff.x; dify = diff.y;
+                dify = snapEnabled ? this.commandHandler.snappingModule.snapBottom(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                    endPoint === startPoint, initialBounds) : dify;
+                difx = snapEnabled ? this.commandHandler.snappingModule.snapLeft(
+                    horizontalsnap, verticalsnap, snapLine, difx, dify, shape as SelectorModel,
+                    endPoint === startPoint, initialBounds) : difx;
+                deltaWidth = (initialBounds.width - difx) / width; deltaHeight = (initialBounds.height + dify) / height; break;
         }
         return { width: deltaWidth, height: deltaHeight } as Rect;
     }
 
     protected getPivot(corner: string): PointModel {
         switch (corner) {
-        case 'ResizeWest':
-            return { x: 1, y: 0.5 };
-        case 'ResizeEast':
-            return { x: 0, y: 0.5 };
-        case 'ResizeNorth':
-            return { x: 0.5, y: 1 };
-        case 'ResizeSouth':
-            return { x: 0.5, y: 0 };
-        case 'ResizeNorthEast':
-            return { x: 0, y: 1 };
-        case 'ResizeNorthWest':
-            return { x: 1, y: 1 };
-        case 'ResizeSouthEast':
-            return { x: 0, y: 0 };
-        case 'ResizeSouthWest':
-            return { x: 1, y: 0 };
+            case 'ResizeWest':
+                return { x: 1, y: 0.5 };
+            case 'ResizeEast':
+                return { x: 0, y: 0.5 };
+            case 'ResizeNorth':
+                return { x: 0.5, y: 1 };
+            case 'ResizeSouth':
+                return { x: 0.5, y: 0 };
+            case 'ResizeNorthEast':
+                return { x: 0, y: 1 };
+            case 'ResizeNorthWest':
+                return { x: 1, y: 1 };
+            case 'ResizeSouthEast':
+                return { x: 0, y: 0 };
+            case 'ResizeSouthWest':
+                return { x: 1, y: 0 };
         }
         return { x: 0.5, y: 0.5 };
     }
 
     //method to get node shape name
-    public getShapeType():string{
-        let shape:string;
-        if(this.commandHandler.diagram.drawingObject.shape.type === "Image" || "HTML" || "Native" ||"Path" )
-        {
-        shape = this.commandHandler.diagram.drawingObject.shape.type;
+    public getShapeType(): string {
+        let shape: string;
+        if (this.commandHandler.diagram.drawingObject.shape.type === "Image" || "HTML" || "Native" || "Path") {
+            shape = this.commandHandler.diagram.drawingObject.shape.type;
         }
-        else
-        {
-        shape = (this.commandHandler.diagram.drawingObject.shape as BasicShapeModel).shape;
+        else {
+            shape = (this.commandHandler.diagram.drawingObject.shape as BasicShapeModel).shape;
         }
         return shape;
-        }
+    }
 
     //EJ2-52203-Method to trigger ElementDraw Event when we draw node or connector with the drawing Tool
-    public triggerElementDrawEvent(source:NodeModel|ConnectorModel,state:State,objectType:string,elementType:string,isMouseDownAction:boolean):void{
-        let arg : IElementDrawEventArgs = {
-            source: source , state:state,objectType:objectType,cancel:false,elementType:elementType
+    public triggerElementDrawEvent(source: NodeModel | ConnectorModel, state: State, objectType: string, elementType: string, isMouseDownAction: boolean): void {
+        let arg: IElementDrawEventArgs = {
+            source: source, state: state, objectType: objectType, cancel: false, elementType: elementType
         };
-        this.commandHandler.triggerEvent(DiagramEvent.elementDraw,arg);
-        if(isMouseDownAction && arg.cancel){
+        this.commandHandler.triggerEvent(DiagramEvent.elementDraw, arg);
+        if (isMouseDownAction && arg.cancel) {
             {
-            this.commandHandler.diagram.resetTool();
+                this.commandHandler.diagram.resetTool();
             }
         }
     }
@@ -409,7 +407,7 @@ export class SelectTool extends ToolBase {
                     this.commandHandler.clearSelection(args.source === null ? true : false);
                     if (this.action === 'LabelSelect') {
                         this.commandHandler.labelSelect(args.source, args.sourceWrapper);
-                    } 
+                    }
                     else if (args.source) {
                         this.commandHandler.selectObjects([args.source], false, arrayNodes);
                     }
@@ -666,11 +664,11 @@ export class ConnectTool extends ToolBase {
         this.canCancel = undefined; this.tempArgs = undefined;
         //(EJ2-66201) - Exception occurs when mouse-hover on ports in node
         if (args.source && (args.source as SelectorModel).connectors) {
-        let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
-        if ((connector as Connector).isBezierEditing) {
-            (connector as Connector).isBezierEditing = false;
+            let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
+            if ((connector as Connector).isBezierEditing) {
+                (connector as Connector).isBezierEditing = false;
+            }
         }
-    }
         super.mouseUp(args);
     }
 
@@ -751,7 +749,7 @@ export class ConnectTool extends ToolBase {
             }
             if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
                 // EJ2-65331 - The condition checks whether the cancel argument is true or false
-                if(!arg.cancel){
+                if (!arg.cancel) {
                     this.blocked = !this.commandHandler.dragConnectorEnds(
                         this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
                     this.commandHandler.updateSelector();
@@ -816,8 +814,8 @@ export class ConnectTool extends ToolBase {
             return true;
         } else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
             return true;
-        } else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target) 
-        && (target.constraints == undefined || (target.constraints & (PortConstraints.Default & ~(PortConstraints.InConnect | PortConstraints.OutConnect))) > 0)) {
+        } else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target)
+            && (target.constraints == undefined || (target.constraints & (PortConstraints.Default & ~(PortConstraints.InConnect | PortConstraints.OutConnect))) > 0)) {
             return true;
         }
         return false;
@@ -843,7 +841,7 @@ export class MoveTool extends ToolBase {
     private initialOffset: PointModel;
 
     /**   @private  */
-    public currentTarget:IElement = null;
+    public currentTarget: IElement = null;
 
     private objectType: ObjectTypes;
 
@@ -853,6 +851,7 @@ export class MoveTool extends ToolBase {
 
     private canCancel: boolean = false;
     private tempArgs: IDraggingEventArgs | IBlazorDraggingEventArgs;
+    private canTrigger: boolean = false;
     constructor(commandHandler: CommandHandler, objType?: ObjectTypes) {
         super(commandHandler, true);
         this.objectType = objType;
@@ -900,7 +899,7 @@ export class MoveTool extends ToolBase {
         }
         super.mouseDown(args);
         this.initialOffset = { x: 0, y: 0 };
-       }
+    }
 
     /* tslint:disable */
     /**
@@ -955,8 +954,7 @@ export class MoveTool extends ToolBase {
                 obj = cloneObject(args.source);
             }
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
-            if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
-                || ((object as Node).id !== 'helper')) {
+            if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {
                 if ((((object instanceof Selector && Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
                     // eslint-disable-next-line max-len
@@ -978,9 +976,18 @@ export class MoveTool extends ToolBase {
                     if (isBlazor()) {
                         arg = this.getBlazorPositionChangeEventArgs(arg, this.currentTarget);
                     }
+                    //EJ2-69852): Position Change event trigger for clicking second time in swimlane header issue
                     if (!isBlazor()) {
-                        this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
-                        this.connectorEndPointChangeEvent(arg);
+                        if ((object as Node).id === 'helper') {
+                            if (this.canTrigger) {
+                                this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                                this.connectorEndPointChangeEvent(arg);
+                            }
+                        } else {
+
+                            this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                            this.connectorEndPointChangeEvent(arg);
+                        }
                     }
                     if (!isPreventHistory) {
                         this.commandHandler.startGroupAction(); historyAdded = true;
@@ -1004,18 +1011,18 @@ export class MoveTool extends ToolBase {
             if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget)) {
                 this.commandHandler.drop(this.currentElement, this.currentTarget, this.currentPosition);
-                if(this.currentTarget && this.currentTarget instanceof Connector){               
-                    if(this.commandHandler.diagram.enableConnectorSplit == true){
-                        if(this.currentElement){
+                if (this.currentTarget && this.currentTarget instanceof Connector) {
+                    if (this.commandHandler.diagram.enableConnectorSplit == true) {
+                        if (this.currentElement) {
                             if (this.currentElement && this.currentElement instanceof Node) {
-                                this.commandHandler.connectorSplit(this.currentElement,this.currentTarget)
+                                this.commandHandler.connectorSplit(this.currentElement, this.currentTarget)
                             }
                             else if (this.currentElement instanceof Selector && !(this.commandHandler.PreventConnectorSplit)) {
                                 if (this.currentElement.nodes.length > 0) {
-                                    this.commandHandler.connectorSplit(this.currentElement.nodes[0],this.currentTarget);
+                                    this.commandHandler.connectorSplit(this.currentElement.nodes[0], this.currentTarget);
                                     this.commandHandler.PreventConnectorSplit = false;
                                 }
-                            } 
+                            }
                         }
                     }
                 }
@@ -1043,7 +1050,7 @@ export class MoveTool extends ToolBase {
                     for (let i: number = 0; i < nodes.length; i++) {
                         if (!nodes[parseInt(i.toString(), 10)].container && temp) {
                             isEndGroup = true;
-                            this.commandHandler.updateLaneChildrenZindex(nodes[parseInt(i.toString(), 10)] as Node,this.currentTarget);
+                            this.commandHandler.updateLaneChildrenZindex(nodes[parseInt(i.toString(), 10)] as Node, this.currentTarget);
                             this.commandHandler.dropChildToContainer(this.currentTarget, nodes[parseInt(i.toString(), 10)]);
                             this.commandHandler.renderContainerHelper(nodes[parseInt(i.toString(), 10)]);
                         }
@@ -1075,19 +1082,19 @@ export class MoveTool extends ToolBase {
     }
 
     //EJ2-59309-While drag the connected node the connector endPointChange event does not get trigger
-    private connectorEndPointChangeEvent(arg: any, snappedPoint?: PointModel): void { 
+    private connectorEndPointChangeEvent(arg: any, snappedPoint?: PointModel): void {
         let selectedElement: any = arg.source;
         if (selectedElement instanceof Selector && selectedElement.nodes.length > 0) {
             for (let i: number = 0; i < selectedElement.nodes.length; i++) {
                 let node: NodeModel = selectedElement.nodes[parseInt(i.toString(), 10)];
-                if(node && (node as any).inEdges.length > 0) {
-                    for (let j: number =0; j < (node as any).inEdges.length; j++) {
+                if (node && (node as any).inEdges.length > 0) {
+                    for (let j: number = 0; j < (node as any).inEdges.length; j++) {
                         let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).inEdges[parseInt(j.toString(), 10)]);
                         this.triggerEndPointEvent(connector, arg, snappedPoint, 'targetPointChange');
                     }
                 }
-                if(node && (node as any).outEdges.length > 0) {
-                    for (let j: number =0; j < (node as any).outEdges.length; j++) {
+                if (node && (node as any).outEdges.length > 0) {
+                    for (let j: number = 0; j < (node as any).outEdges.length; j++) {
                         let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).outEdges[parseInt(j.toString(), 10)]);
                         this.triggerEndPointEvent(connector, arg, snappedPoint, 'sourcePointChange');
                     }
@@ -1099,10 +1106,10 @@ export class MoveTool extends ToolBase {
     private triggerEndPointEvent(connector: ConnectorModel, arg: any, snappedPoint: PointModel, eventName: string): void {
         let args: IEndChangeEventArgs = {
             connector: connector, state: arg.state, targetNode: connector.targetID, targetPort: connector.targetPortID,
-            sourceNode: connector.sourceID, sourcePort: connector.sourcePortID, oldValue: {x: connector.targetPoint.x, y: connector.targetPoint.y}, 
-            newValue: {x: connector.targetPoint.x + (snappedPoint?snappedPoint.x:0), y: connector.targetPoint.y + (snappedPoint?snappedPoint.y:0)}, cancel: arg.cancel, 
+            sourceNode: connector.sourceID, sourcePort: connector.sourcePortID, oldValue: { x: connector.targetPoint.x, y: connector.targetPoint.y },
+            newValue: { x: connector.targetPoint.x + (snappedPoint ? snappedPoint.x : 0), y: connector.targetPoint.y + (snappedPoint ? snappedPoint.y : 0) }, cancel: arg.cancel,
         };
-        this.commandHandler.triggerEvent((eventName === 'targetPointChange')? DiagramEvent.targetPointChange: DiagramEvent.sourcePointChange, args);
+        this.commandHandler.triggerEvent((eventName === 'targetPointChange') ? DiagramEvent.targetPointChange : DiagramEvent.sourcePointChange, args);
     }
 
     private isSelectionHasConnector(args: any): boolean {
@@ -1157,11 +1164,11 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-        if (isSame && !isBlazor()) { 
-            this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg); 
+        if (isSame && !isBlazor()) {
+            this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
             this.connectorEndPointChangeEvent(arg);
         }
-        this.currentPosition = args.position; 
+        this.currentPosition = args.position;
         if (this.objectType !== 'Port') {
             const x: number = this.currentPosition.x - this.prevPosition.x; const y: number = this.currentPosition.y - this.prevPosition.y;
             const diffX: number = this.initialOffset.x + (this.currentPosition.x - this.prevPosition.x);
@@ -1194,6 +1201,7 @@ export class MoveTool extends ToolBase {
             }
             if (!isBlazor()) {
                 this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                this.canTrigger = true;
                 this.connectorEndPointChangeEvent(arg, snappedPoint);
             }
             if (!arg.cancel && !this.canCancel) {
@@ -1340,8 +1348,7 @@ export class RotateTool extends ToolBase {
                 source: args.source, state: 'Completed', oldValue: oldValue,
                 newValue: oldValue, cancel: false
             };
-            if (!isBlazor())
-            {this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);}
+            if (!isBlazor()) { this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg); }
             let obj: SelectorModel;
             obj = cloneObject(args.source);
             const entry: HistoryEntry = {
@@ -1433,8 +1440,8 @@ export class ResizeTool extends ToolBase {
      * Sets/Gets the previous mouse position
      */
     public prevPosition: PointModel;
-    
-    /** @private */  
+
+    /** @private */
     public corner: string;
 
     /**   @private  */
@@ -1631,22 +1638,22 @@ export class ResizeTool extends ToolBase {
 
     private getChanges(change: PointModel): PointModel {
         switch (this.corner) {
-        case 'ResizeEast':
-            return { x: change.x, y: 0 };
-        case 'ResizeSouthEast':
-            return change;
-        case 'ResizeSouth':
-            return { x: 0, y: change.y };
-        case 'ResizeNorth':
-            return { x: 0, y: -change.y };
-        case 'ResizeNorthEast':
-            return { x: change.x, y: -change.y };
-        case 'ResizeNorthWest':
-            return { x: -change.x, y: -change.y };
-        case 'ResizeWest':
-            return { x: - change.x, y: 0 };
-        case 'ResizeSouthWest':
-            return { x: - change.x, y: change.y };
+            case 'ResizeEast':
+                return { x: change.x, y: 0 };
+            case 'ResizeSouthEast':
+                return change;
+            case 'ResizeSouth':
+                return { x: 0, y: change.y };
+            case 'ResizeNorth':
+                return { x: 0, y: -change.y };
+            case 'ResizeNorthEast':
+                return { x: change.x, y: -change.y };
+            case 'ResizeNorthWest':
+                return { x: -change.x, y: -change.y };
+            case 'ResizeWest':
+                return { x: - change.x, y: 0 };
+            case 'ResizeSouthWest':
+                return { x: - change.x, y: change.y };
         }
         return change;
     }
@@ -1745,12 +1752,12 @@ export class NodeDrawingTool extends ToolBase {
     public drawingObject: Node | Connector;
     /** @private */
     public sourceObject: Node | Connector;
-    
+
     constructor(commandHandler: CommandHandler, sourceObject: Node | Connector) {
         super(commandHandler, true);
         this.sourceObject = sourceObject;
     }
-    
+
     /**
      * @param args
      * @private
@@ -1759,8 +1766,8 @@ export class NodeDrawingTool extends ToolBase {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
-        this.triggerElementDrawEvent(args.source,"Start","Node",this.getShapeType(),true);
-}
+        this.triggerElementDrawEvent(args.source, "Start", "Node", this.getShapeType(), true);
+    }
     /**
      * @param args
      * @private
@@ -1775,7 +1782,7 @@ export class NodeDrawingTool extends ToolBase {
         if (!this.drawingObject) {
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         }
-        this.triggerElementDrawEvent(this.drawingObject,"Progress","Node",this.getShapeType(),false);
+        this.triggerElementDrawEvent(this.drawingObject, "Progress", "Node", this.getShapeType(), false);
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
             checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
@@ -1797,7 +1804,7 @@ export class NodeDrawingTool extends ToolBase {
         checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
         if (this.drawingObject && this.drawingObject instanceof Node) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
-            this.triggerElementDrawEvent(this.drawingObject,"Completed","Node",this.getShapeType(),false);
+            this.triggerElementDrawEvent(this.drawingObject, "Completed", "Node", this.getShapeType(), false);
             this.drawingObject = null;
         }
         this.commandHandler.updateBlazorSelector();
@@ -1829,7 +1836,7 @@ export class ConnectorDrawingTool extends ConnectTool {
     public drawingObject: Node | Connector;
     /** @private */
     public sourceObject: Node | Connector;
-     
+
     constructor(commandHandler: CommandHandler, endPoint: string, sourceObject: Node | Connector) {
         super(commandHandler, endPoint);
         this.sourceObject = sourceObject;
@@ -1843,7 +1850,7 @@ export class ConnectorDrawingTool extends ConnectTool {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
-        this.triggerElementDrawEvent(args.source,"Start","Connector",(this.commandHandler.diagram.drawingObject as ConnectorModel).type,true);
+        this.triggerElementDrawEvent(args.source, "Start", "Connector", (this.commandHandler.diagram.drawingObject as ConnectorModel).type, true);
     }
     /**
      * @param args
@@ -1859,7 +1866,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
-            this.triggerElementDrawEvent(args.source,"Progress","Connector",(this.drawingObject as ConnectorModel).type,false);
+            this.triggerElementDrawEvent(args.source, "Progress", "Connector", (this.drawingObject as ConnectorModel).type, false);
             if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.connect(this.endPoint, args);
@@ -1883,12 +1890,12 @@ export class ConnectorDrawingTool extends ConnectTool {
      * @private
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
-        
+
         this.commandHandler.enableServerDataBinding(false);
         this.checkPropertyValue();
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
-            this.triggerElementDrawEvent(this.drawingObject,"Completed","Connector",(this.drawingObject as ConnectorModel).type,false);
+            this.triggerElementDrawEvent(this.drawingObject, "Completed", "Connector", (this.drawingObject as ConnectorModel).type, false);
             this.drawingObject = null;
         }
         this.commandHandler.updateBlazorSelector();
@@ -1911,7 +1918,7 @@ export class ConnectorDrawingTool extends ConnectTool {
             this.mouseUp(args);
         }
     }
-   
+
 }
 
 export class TextDrawingTool extends ToolBase {
@@ -2106,22 +2113,19 @@ export class LabelTool extends ToolBase {
      */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        let tab : string='_blank';
-        let windowOption:string = '';
+        let tab: string = '_blank';
+        let windowOption: string = '';
         let windowHeight = window.innerHeight
         let windowWidth = window.innerWidth
         let screenTop = window.screenTop
         let screenLeft = window.screenLeft
-        if((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState=='CurrentTab')
-        {
-            tab='_self';
+        if ((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState == 'CurrentTab') {
+            tab = '_self';
         }
-        else if((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState=='NewWindow')
-        { 
-            windowOption = 'height='+windowHeight+',width='+windowWidth+',top='+screenTop+',left='+screenLeft;  
+        else if ((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState == 'NewWindow') {
+            windowOption = 'height=' + windowHeight + ',width=' + windowWidth + ',top=' + screenTop + ',left=' + screenLeft;
         }
-        // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
-        const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link,tab,windowOption);
+        const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link, tab, windowOption);
         win.focus();
         super.mouseUp(args);
     }
@@ -2520,12 +2524,12 @@ export class LabelRotateTool extends ToolBase {
  * EJ2-33302 - Freehand drawing support in diagram control.
  */
 export class FreeHandTool extends ToolBase {
-     /** @private */
-     public drawingObject: Node | Connector;
+    /** @private */
+    public drawingObject: Node | Connector;
     public startPoint: PointModel;
-     constructor(commandHandler: CommandHandler) {
-         super(commandHandler, true);
-     }
+    constructor(commandHandler: CommandHandler) {
+        super(commandHandler, true);
+    }
     /**
      * mouseMove - Collect the points using current mouse position and convert it into pathData. 
      * @param args
@@ -2536,11 +2540,11 @@ export class FreeHandTool extends ToolBase {
         if (this.inAction) {
             const obj: PathModel = (this.drawingObject.shape as PathModel);
             if (this.drawingObject && this.currentPosition) {
-                let pt:PointModel = this.currentPosition as PointModel;
+                let pt: PointModel = this.currentPosition as PointModel;
                 (obj as BasicShapeModel).points.push(pt);
                 (this.drawingObject.wrapper.children[0] as PathElement).data = getFreeHandPath(
                     (this.drawingObject.shape as BasicShapeModel).points);
-                    (obj as PathModel).data = getFreeHandPath((obj as BasicShapeModel).points);
+                (obj as PathModel).data = getFreeHandPath((obj as BasicShapeModel).points);
                 if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
                     const region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
                     this.commandHandler.updateNodeDimension(this.drawingObject, region);
@@ -2549,11 +2553,11 @@ export class FreeHandTool extends ToolBase {
         }
         return true;
     }
-     /**
-     * @param args
-     * @private
-     */
-       public mouseDown(args: MouseEventArgs): void {
+    /**
+    * @param args
+    * @private
+    */
+    public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
         if (!this.drawingObject) {
@@ -2562,7 +2566,7 @@ export class FreeHandTool extends ToolBase {
                 offsetX: this.currentPosition.x,
                 offsetY: this.currentPosition.y,
                 width: 5, height: 5,
-                style: { strokeColor: 'black', strokeWidth: 1, fill:'transparent'},
+                style: { strokeColor: 'black', strokeWidth: 1, fill: 'transparent' },
                 shape: {
                     type: 'Path',
                     points:
@@ -2570,94 +2574,84 @@ export class FreeHandTool extends ToolBase {
                 }
             };
             this.drawingObject = this.commandHandler.drawObject(node as Node);
-        } 
+        }
     }
-     /**
-     * mouseUp - Remove the drawn object. Reduce and smoothen the collected points and create
-     * a bezier connector using the smoothened points.
-     * @param args
-     * @private
-     */
-      public mouseUp(args: MouseEventArgs): void 
-      {
+    /**
+    * mouseUp - Remove the drawn object. Reduce and smoothen the collected points and create
+    * a bezier connector using the smoothened points.
+    * @param args
+    * @private
+    */
+    public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         super.mouseMove(args);
-        let tolerance:number = 10;
-        let smoothValue:number = 0.5;
-        if (this.inAction) 
-        {
+        let tolerance: number = 10;
+        let smoothValue: number = 0.5;
+        if (this.inAction) {
             this.inAction = false;
-            if (this.drawingObject) 
-            {
-                let obj :PathModel = (this.drawingObject.shape as PathModel);
+            if (this.drawingObject) {
+                let obj: PathModel = (this.drawingObject.shape as PathModel);
                 let points = (obj as BasicShapeModel).points;
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
-                let prevId:string = this.drawingObject.id;
+                let prevId: string = this.drawingObject.id;
                 let prevObj = this.commandHandler.diagram.nameTable[`${prevId}`];
                 this.commandHandler.diagram.remove(prevObj);
-                points = this.pointReduction(points,tolerance);
+                points = this.pointReduction(points, tolerance);
                 const newObj: ConnectorModel = {
-                    id:'newConnector'+ randomId(),type:'Bezier',
-                    sourcePoint : {x:points[0].x,y:points[0].y},targetPoint: {x:points[points.length-1].x,y:points[points.length-1].y},
-                    segments:[],targetDecorator:{shape:'None'}
+                    id: 'newConnector' + randomId(), type: 'Bezier',
+                    sourcePoint: { x: points[0].x, y: points[0].y }, targetPoint: { x: points[points.length - 1].x, y: points[points.length - 1].y },
+                    segments: [], targetDecorator: { shape: 'None' }, bezierSettings: { allowSegmentsReset: false }
                 };
                 this.drawingObject = this.commandHandler.drawObject(newObj as Connector);
-                this.drawingObject = this.bezierCurveSmoothness(points,smoothValue,this.drawingObject,obj);
+                this.drawingObject = this.bezierCurveSmoothness(points, smoothValue, this.drawingObject, obj);
                 this.commandHandler.updateConnectorPoints(this.drawingObject);
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
             }
         }
-    this.endAction();
-}
+        this.endAction();
+    }
     /**
      * Reduce the collected points based on tolerance value.
      * @param points 
      * @param tolerance 
      * @returns points 
      */
-    public pointReduction(points:PointModel[],tolerance:number)
-    {
-        if(points === null || points.length<3)
-        {
+    public pointReduction(points: PointModel[], tolerance: number) {
+        if (points === null || points.length < 3) {
             return points
         }
-        let firstPoint:number = 0;
-        let lastPoint:number = points.length-1;
-        let pointIndex:number[]=[];
+        let firstPoint: number = 0;
+        let lastPoint: number = points.length - 1;
+        let pointIndex: number[] = [];
         pointIndex.push(firstPoint);
         pointIndex.push(lastPoint);
-       
-        while(points[parseInt(firstPoint.toString(), 10)]===(points[parseInt(lastPoint.toString(), 10)]))
-        {
+
+        while (points[parseInt(firstPoint.toString(), 10)] === (points[parseInt(lastPoint.toString(), 10)])) {
             lastPoint--;
         }
         this.reduction(points, firstPoint, lastPoint, tolerance, pointIndex);
-        let returnedPoints:PointModel[]=[];
-        pointIndex.sort(function(a, b){return a-b});
+        let returnedPoints: PointModel[] = [];
+        pointIndex.sort(function (a, b) { return a - b });
         pointIndex.forEach(element => {
-        returnedPoints.push(points[parseInt(element.toString(), 10)]);
-       });
-       return returnedPoints;
+            returnedPoints.push(points[parseInt(element.toString(), 10)]);
+        });
+        return returnedPoints;
     }
 
-    public reduction(points:PointModel[], firstPoint:number, lastPoint:number, tolerance:number, pointIndex:number[])
-    {
-        let maxDistance:number = 0;
-        let largestPointIndex:number = 0;
-        for(let i:number = firstPoint; i < lastPoint; i++)
-        {
-            let distance:number = this.perpendicularDistance(points[parseInt(firstPoint.toString(), 10)] as Point,points[parseInt(lastPoint.toString(), 10)] as Point,points[parseInt(i.toString(), 10)] as Point);
-            if (distance > maxDistance)
-                {
-                    maxDistance = distance;
-                    largestPointIndex = i;
-                }
+    public reduction(points: PointModel[], firstPoint: number, lastPoint: number, tolerance: number, pointIndex: number[]) {
+        let maxDistance: number = 0;
+        let largestPointIndex: number = 0;
+        for (let i: number = firstPoint; i < lastPoint; i++) {
+            let distance: number = this.perpendicularDistance(points[parseInt(firstPoint.toString(), 10)] as Point, points[parseInt(lastPoint.toString(), 10)] as Point, points[parseInt(i.toString(), 10)] as Point);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                largestPointIndex = i;
+            }
         }
-        if (maxDistance > tolerance && largestPointIndex !== 0)
-        {
+        if (maxDistance > tolerance && largestPointIndex !== 0) {
             pointIndex.push(largestPointIndex);
             this.reduction(points, firstPoint, largestPointIndex, tolerance, pointIndex);
-            this.reduction(points, largestPointIndex, lastPoint, tolerance,  pointIndex);
+            this.reduction(points, largestPointIndex, lastPoint, tolerance, pointIndex);
         }
     }
     /**
@@ -2667,10 +2661,9 @@ export class FreeHandTool extends ToolBase {
      * @param point3 
      * @returns 
      */
-    public perpendicularDistance(point1:Point, point2:Point, point3:Point):number
-    {
-        let area:number = Math.abs(.5 * ((point1.x * point2.y - point2.x * point1.y) +
-                (point2.x * point3.y - point3.x * point2.y) + (point3.x * point1.y - point1.x * point3.y)));
+    public perpendicularDistance(point1: Point, point2: Point, point3: Point): number {
+        let area: number = Math.abs(.5 * ((point1.x * point2.y - point2.x * point1.y) +
+            (point2.x * point3.y - point3.x * point2.y) + (point3.x * point1.y - point1.x * point3.y)));
         let base = Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
         let height = area / base * 2;
         return height;
@@ -2683,86 +2676,79 @@ export class FreeHandTool extends ToolBase {
      * @param obj 
      * @returns drawingObject
      */
-   private bezierCurveSmoothness(points:PointModel[],smoothValue:number,drawingObject:Connector | Node,obj:PathModel): Node | Connector
-    {
-        if(points.length < 3)
-        {
+    private bezierCurveSmoothness(points: PointModel[], smoothValue: number, drawingObject: Connector | Node, obj: PathModel): Node | Connector {
+        if (points.length < 3) {
             return drawingObject
         };
-        for(let i:number = 0; i<points.length - 1 ; i++)
-        {
-            let pointx1:number = points[parseInt(i.toString(), 10)].x;
-            let pointy1:number = points[parseInt(i.toString(), 10)].y;
-            let pointx2:number = points[i + 1].x;
-            let pointy2:number = points[i + 1].y;
-            let pointx0:number;
-            let pointy0:number;
-            if (i === 0)
-            {
+        for (let i: number = 0; i < points.length - 1; i++) {
+            let pointx1: number = points[parseInt(i.toString(), 10)].x;
+            let pointy1: number = points[parseInt(i.toString(), 10)].y;
+            let pointx2: number = points[i + 1].x;
+            let pointy2: number = points[i + 1].y;
+            let pointx0: number;
+            let pointy0: number;
+            if (i === 0) {
                 var previousPoint = points[parseInt(i.toString(), 10)];
                 pointx0 = previousPoint.x;
                 pointy0 = previousPoint.y;
             }
-            else
-            {
+            else {
                 pointx0 = points[i - 1].x;
                 pointy0 = points[i - 1].y;
             }
-            let pointx3,pointy3:number;
-            if (i === points.length - 2)
-            {
+            let pointx3, pointy3: number;
+            if (i === points.length - 2) {
                 var nextPoint = points[i + 1];
                 pointx3 = nextPoint.x;
                 pointy3 = nextPoint.y;
             }
-            else
-            {
+            else {
                 pointx3 = points[i + 2].x;
                 pointy3 = points[i + 2].y;
             }
-            let xc1:number = (pointx0 + pointx1) / 2.0;
-            let yc1:number = (pointy0 + pointy1) / 2.0;
-            let xc2:number = (pointx1 + pointx2) / 2.0;
-            let yc2:number = (pointy1 + pointy2) / 2.0;
-            let xc3:number = (pointx2 + pointx3) / 2.0;
-            let yc3:number = (pointy2 + pointy3) / 2.0;
-            let point0:PointModel={}; let point1:PointModel={}; let point2:PointModel={};let point3:PointModel={};
+            let xc1: number = (pointx0 + pointx1) / 2.0;
+            let yc1: number = (pointy0 + pointy1) / 2.0;
+            let xc2: number = (pointx1 + pointx2) / 2.0;
+            let yc2: number = (pointy1 + pointy2) / 2.0;
+            let xc3: number = (pointx2 + pointx3) / 2.0;
+            let yc3: number = (pointy2 + pointy3) / 2.0;
+            let point0: PointModel = {}; let point1: PointModel = {}; let point2: PointModel = {}; let point3: PointModel = {};
             point0.x = pointx0; point0.y = pointy0;
             point1.x = pointx1; point1.y = pointy1;
             point2.x = pointx2; point2.y = pointy2;
             point3.x = pointx3; point3.y = pointy3;
-            let len1:number = Point.findLength(point0,point1);
-            let len2:number = Point.findLength(point1,point2);
-            let len3:number = Point.findLength(point2,point3);
-            let k1:number = len1 / (len1 + len2);
-            let k2:number = len2 / (len2 + len3);
-            let xm1:number = xc1 + (xc2 - xc1) * k1;
-            let ym1:number = yc1 + (yc2 - yc1) * k1;
-            let xm2:number = xc2 + (xc3 - xc2) * k2;
-            let ym2:number = yc2 + (yc3 - yc2) * k2;
-            let Controlpointx1:number = xm1 + (xc2 - xm1) * smoothValue + pointx1 - xm1;
-            let Controlpointy1:number = ym1 + (yc2 - ym1) * smoothValue + pointy1 - ym1;
-            let Controlpointx2:number = xm2 + (xc2 - xm2) * smoothValue + pointx2 - xm2;
-            let Controlpointy2:number = ym2 + (yc2 - ym2) * smoothValue + pointy2 - ym2;
+            let len1: number = Point.findLength(point0, point1);
+            let len2: number = Point.findLength(point1, point2);
+            let len3: number = Point.findLength(point2, point3);
+            let k1: number = len1 / (len1 + len2);
+            let k2: number = len2 / (len2 + len3);
+            let xm1: number = xc1 + (xc2 - xc1) * k1;
+            let ym1: number = yc1 + (yc2 - yc1) * k1;
+            let xm2: number = xc2 + (xc3 - xc2) * k2;
+            let ym2: number = yc2 + (yc3 - yc2) * k2;
+            let Controlpointx1: number = xm1 + (xc2 - xm1) * smoothValue + pointx1 - xm1;
+            let Controlpointy1: number = ym1 + (yc2 - ym1) * smoothValue + pointy1 - ym1;
+            let Controlpointx2: number = xm2 + (xc2 - xm2) * smoothValue + pointx2 - xm2;
+            let Controlpointy2: number = ym2 + (yc2 - ym2) * smoothValue + pointy2 - ym2;
 
             let segment = new BezierSegment(obj, 'segments', { type: 'Bezier' }, true);
-            let cnPt1:PointModel = {x:Controlpointx1,y:Controlpointy1};
-            let cnPt2:PointModel = {x:Controlpointx2,y:Controlpointy2};
-            let segSourcePoint:PointModel = {x:pointx1,y:pointy1};
-            let segTargetPoint:PointModel = {x:pointx2,y:pointy2};
+            let cnPt1: PointModel = { x: Controlpointx1, y: Controlpointy1 };
+            let cnPt2: PointModel = { x: Controlpointx2, y: Controlpointy2 };
+            let segSourcePoint: PointModel = { x: pointx1, y: pointy1 };
+            let segTargetPoint: PointModel = { x: pointx2, y: pointy2 };
 
             segment.type = 'Bezier';
             (drawingObject as Connector).segments[parseInt(i.toString(), 10)] = segment;
-            if(i=== 0){
-                cnPt1 = {x:pointx1,y:pointy1}
+            if (i === 0) {
+                cnPt1 = { x: pointx1, y: pointy1 }
             };
-            if(i === points.length-2){
-                cnPt2 = {x:pointx2,y:pointy2}
+            if (i === points.length - 2) {
+                cnPt2 = { x: pointx2, y: pointy2 }
             };
-            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector1 = {angle:findAngle(segSourcePoint,cnPt1),distance:Point.findLength(segSourcePoint,cnPt1)};
-            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector2 = {angle:findAngle(segTargetPoint,cnPt2),distance:Point.findLength(segTargetPoint,cnPt2)};
+            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector1 = { angle: findAngle(segSourcePoint, cnPt1), distance: Point.findLength(segSourcePoint, cnPt1) };
+            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector2 = { angle: findAngle(segTargetPoint, cnPt2), distance: Point.findLength(segTargetPoint, cnPt2) };
             ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).point = segTargetPoint;
         }
-        return drawingObject;   
+        return drawingObject;
     }
 }

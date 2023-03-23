@@ -65,7 +65,7 @@
 
       & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
       & .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
-        @if ($skin-name != 'tailwind') {
+        @if ($skin-name != 'tailwind' and $skin-name != 'Material3') {
           background-color: $checkmark-bgcolor;
           border-color: $checkmark-border-color;
           color: $checkmark-color;

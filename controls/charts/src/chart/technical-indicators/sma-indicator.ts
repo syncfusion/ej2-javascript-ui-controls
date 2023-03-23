@@ -1,12 +1,10 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
-import { Chart } from '../chart';
 
 /**
  * `SmaIndicator` module is used to render SMA indicator.
@@ -18,7 +16,7 @@ export class SmaIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         const smaPoints: Points[] = [];
         const points: Points[] = indicator.points;
         if (points && points.length) {

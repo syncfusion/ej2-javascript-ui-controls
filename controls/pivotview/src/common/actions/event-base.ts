@@ -1,4 +1,4 @@
-import { isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, addClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { ISort, IFilter, IAxisSet, IMembers, PivotEngine, IField } from '../../base/engine';
@@ -572,16 +572,19 @@ export class EventBase {
         }
         const modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (const member of members) {
-            const memberName: string = engineModule.formatFields[fieldName as string] ? member.formattedText : member.actualText.toString();
-            const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': member.actualText.toString() };
+            let memberName: string = engineModule.formatFields[fieldName as string] ? member.formattedText : member.actualText.toString();
+            memberName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(memberName) : memberName;
+            const actualText: string | number = this.parent.enableHtmlSanitizer ?
+                SanitizeHtmlHelper.sanitize(member.actualText as string) : member.actualText;
+            const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': actualText.toString() };
             const obj: { [key: string]: Object } = {
                 id: modifiedFieldName + '_' + memberCount,
                 htmlAttributes: nodeAttr,
-                actualText: member.actualText,
+                actualText: actualText,
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
-            if (filterObj[member.actualText as string] !== undefined) {
+            if (filterObj[actualText as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
@@ -592,7 +595,7 @@ export class EventBase {
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[member.actualText] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
+            this.parent.currentTreeItemsPos[actualText] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
             memberCount++;
         }
         this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);

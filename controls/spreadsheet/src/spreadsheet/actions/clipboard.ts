@@ -382,7 +382,7 @@ export class Clipboard {
                                             cfRule);
                                     }
                                     prevCell = getCell(x + l, y + k, curSheet, false, true);
-                                    if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {
+                                    if (!isExternal && (!isNullOrUndefined(prevCell.colSpan) || !isNullOrUndefined(prevCell.rowSpan))) {
                                         if (isRowSelected || isColSelected) { continue; }
                                         mergeArgs = { range: [x + l, y + k, x + l, y + k] };
                                         const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
@@ -735,6 +735,10 @@ export class Clipboard {
                     width: (pictureElements[0] as HTMLElement).offsetWidth,
                     chartInfo: this.getChartElemInfo(pictureElements[0] as HTMLElement)
                 };
+                if (!pictureElements[0].classList.contains('e-datavisualization-chart')) {
+                    const imgURL: string = window.getComputedStyle(pictureElements[0]).backgroundImage.slice(5, -2);
+                    this.addImgToClipboard(imgURL, this.copiedShapeInfo.height, this.copiedShapeInfo.width);
+                }
                 this.hidePaste(true);
                 if (isCut) {
                     if (pictureElements[0].classList.contains('e-datavisualization-chart')) {
@@ -776,6 +780,30 @@ export class Clipboard {
                 'aria-label', `${sheet.selectedRange} ${this.parent.serviceLocator.getService<L10n>(locale).getConstant(
                     isCut ? 'Cut' : 'Copy')}`);
         }
+    }
+
+    private imageToCanvas(src: string, height: number, width: number): Promise<Blob> {
+        return new Promise((res) => {
+            const canvas: HTMLCanvasElement = document.createElement('canvas');
+            const canvasCtx: CanvasRenderingContext2D = canvas.getContext('2d');
+            const img: HTMLImageElement = new Image();
+            img.src = src;
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                canvas.width = width;
+                canvas.height = height;
+                canvasCtx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    res(blob);
+                }, 'image/png');
+            };
+        });
+    }
+    
+    private async addImgToClipboard(src: string, height: number, width: number): Promise<void> {
+        let navigator: any = window.navigator;
+        const imageBlob: Blob = await this.imageToCanvas(src, height, width);
+        await navigator.clipboard.write([new ClipboardItem({ [imageBlob.type]: imageBlob })]);
     }
 
     private checkForUncalculatedFormula(range: number[], sheetId: number): void {
@@ -1272,4 +1300,11 @@ interface ClipboardInfo {
     invokeCopy?: boolean;
     isPublic?: boolean;
     promise?: Promise<Object>;
+}
+
+/**
+* @hidden
+ */
+declare class ClipboardItem {
+    constructor(data: { [mimeType: string]: Blob | string | ArrayBuffer });
 }

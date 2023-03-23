@@ -1,8 +1,6 @@
 /* eslint-disable radix */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';

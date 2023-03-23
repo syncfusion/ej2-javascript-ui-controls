@@ -16,7 +16,7 @@ import { refreshAggregateCell } from '../base/constant';
 export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<AggregateColumnModel> {
 
     public element: HTMLElement = this.parent
-        .createElement('TD', { className: 'e-summarycell', attrs: { role: 'gridcell', tabindex: '-1' } });
+        .createElement('TD', { className: 'e-summarycell', attrs: { tabindex: '-1' } });
 
     public getValue(field: string, data: Object, column: AggregateColumnModel): Object {
         const key: string = !isNullOrUndefined(column.type) ?

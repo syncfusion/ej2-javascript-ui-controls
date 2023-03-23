@@ -930,7 +930,7 @@ describe('Scrollbar Chart ', () => {
         });
         it('Shadow Element Check', (done: Function) => {
             let shadowEle: Element = document.getElementById( 'container_' + chartObj.axisCollections[0].name + '_thumb_shadow');
-            expect(shadowEle.childElementCount).toBe(2);
+            expect(shadowEle.childElementCount).toBe(0);
             done();
         });
         it('Checking Circle fill in Material Dark theme', (done: Function) => {

@@ -16,28 +16,31 @@ const CLS_INHERIT: string = 'e-inherit';
 
 /**
  * Specifies the height mode of the AppBar component which defines the height of the AppBar.
- *
- * * `Regular` - Specifies default height for the AppBar.
- * * `Prominent` - Specifies longer height for the AppBar to show the longer titles and images, or to provide a stronger presence.
- * * `Dense` - Specifies compressed (short) height for the AppBar to accommodate all the app bar content in a denser layout.
+ * ```props
+ * Regular :- Specifies default height for the AppBar.
+ * Prominent :- Specifies longer height for the AppBar to show the longer titles and images, or to provide a stronger presence.
+ * Dense :- Specifies compressed (short) height for the AppBar to accommodate all the app bar content in a denser layout.
+ * ```
  */
 export type AppBarMode = 'Regular' | 'Prominent' | 'Dense';
 
 /**
  * Specifies the position of the AppBar.
- *
- * * `Top` - Position the AppBar at the top.
- * * `Bottom` - Position the AppBar at the bottom.
+ * ```props
+ * Top :- Position the AppBar at the top.
+ * Bottom :- Position the AppBar at the bottom.
+ * ```
  */
 export type AppBarPosition = 'Top' | 'Bottom';
 
 /**
  * Specifies the color of the AppBar component.
- *
- * * `Light` - Specifies the AppBar in light color.
- * * `Dark` - Specifies the AppBar in dark color.
- * * `Primary` - Specifies the AppBar in a primary color.
- * * `Inherit` - Inherit color from parent for AppBar. AppBar background and colors are inherited from its parent element.
+ * ```props
+ * Light :- Specifies the AppBar in light color.
+ * Dark :- Specifies the AppBar in dark color.
+ * Primary :- Specifies the AppBar in a primary color.
+ * Inherit :- Inherit color from parent for AppBar. AppBar background and colors are inherited from its parent element.
+ * ```
  */
 export type AppBarColor = 'Light' | 'Dark' | 'Primary' | 'Inherit';
 
@@ -51,9 +54,9 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
-     * * Regular
-     * * Prominent
-     * * Dense
+     * * `Regular`: Specifies default height for the AppBar.
+     * * `Prominent`: Specifies longer height for the AppBar to show the longer titles and images, or to provide a stronger presence.
+     * * `Dense`: Specifies compressed (short) height for the AppBar to accommodate all the app bar content in a denser layout.
      *
      * @default 'Regular'
      */
@@ -62,8 +65,8 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Specifies the position of the AppBar. The possible values for this property are as follows:
-     * * Top
-     * * Bottom
+     * * `Top`: Position the AppBar at the top.
+     * * `Bottom`: Position the AppBar at the bottom.
      *
      * @default 'Top'
      */
@@ -97,10 +100,10 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
-     * * Light
-     * * Dark
-     * * Primary
-     * * Inherit
+     * * `Light`: Specifies the AppBar in light color.
+     * * `Dark`: Specifies the AppBar in dark color.
+     * * `Primary`: Specifies the AppBar in a primary color.
+     * * `Inherit`: Inherit color from parent for AppBar. AppBar background and colors are inherited from its parent element.
      *
      * @default 'Light'
      */

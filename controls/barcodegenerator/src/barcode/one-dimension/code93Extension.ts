@@ -90,8 +90,8 @@ export class Code93Extension extends Code93 {
         this.extendedText = '';
         for (let i: number = 0; i < code.length; i++) {
             for (let j: number = string.length - 1; j > 0; j--) {
-                if (string[j] && string[j].value && string[j].character === code[i]) {
-                    extcodes = string[j];
+                if (string[parseInt(j.toString(), 10)] && string[parseInt(j.toString(), 10)].value && string[parseInt(j.toString(), 10)].character === code[parseInt(i.toString(), 10)]) {
+                    extcodes = string[parseInt(j.toString(), 10)];
                     break;
                 }
             }
@@ -116,7 +116,7 @@ export class Code93Extension extends Code93 {
         this.GetExtendedText(string);
         const checkDigit: string[] = this.CalculateCheckDigit();
         for (let i: number = 0; i < checkDigit.length; i++) {
-            this.extendedText += checkDigit[i];
+            this.extendedText += checkDigit[parseInt(i.toString(), 10)];
         }
         temp[0] = '*' + this.extendedText + 'ÿ';
         let encodingValue: string[] = [];
@@ -138,8 +138,8 @@ export class Code93Extension extends Code93 {
                 num4 = 20;
             }
             for (let j: number = 0; j < this.barcodeSymbols.length; j++) {
-                if (dataToEncode[i] === this.barcodeSymbols[j].value) {
-                    numi = this.barcodeSymbols[j].checkDigit;
+                if (dataToEncode[parseInt(i.toString(), 10)] === this.barcodeSymbols[parseInt(j.toString(), 10)].value) {
+                    numi = this.barcodeSymbols[parseInt(j.toString(), 10)].checkDigit;
                 }
             }
 
@@ -148,8 +148,8 @@ export class Code93Extension extends Code93 {
         checkValue = checkValue % 0x2f;
         let char1: string = '';
         for (let k: number = 0; k < this.barcodeSymbols.length; k++) {
-            if (checkValue === this.barcodeSymbols[k].checkDigit) {
-                char1 = this.barcodeSymbols[k].value;
+            if (checkValue === this.barcodeSymbols[parseInt(k.toString(), 10)].checkDigit) {
+                char1 = this.barcodeSymbols[parseInt(k.toString(), 10)].value;
                 break;
             }
         }
@@ -166,8 +166,8 @@ export class Code93Extension extends Code93 {
                 num4 = 15;
             }
             for (let m: number = 0; m < this.barcodeSymbols.length; m++) {
-                if (dataToEncode[i] === this.barcodeSymbols[m].value) {
-                    const tempi: number = this.barcodeSymbols[m].checkDigit;
+                if (dataToEncode[parseInt(i.toString(), 10)] === this.barcodeSymbols[parseInt(m.toString(), 10)].value) {
+                    const tempi: number = this.barcodeSymbols[parseInt(m.toString(), 10)].checkDigit;
                     checkValue += tempi * num4;
                 }
             }
@@ -178,8 +178,8 @@ export class Code93Extension extends Code93 {
 
         let char2: string = ' ';
         for (let i: number = 0; i < this.barcodeSymbols.length; i++) {
-            if (checkValue === this.barcodeSymbols[i].checkDigit) {
-                char2 = this.barcodeSymbols[i].value;
+            if (checkValue === this.barcodeSymbols[parseInt(i.toString(), 10)].checkDigit) {
+                char2 = this.barcodeSymbols[parseInt(i.toString(), 10)].value;
                 break;
             }
         }
@@ -193,7 +193,7 @@ export class Code93Extension extends Code93 {
         let checkValue: number = 0;
         for (let i: number = 0; i < code.length; i++) {
             for (let j: number = 0; j < this.barcodeSymbols.length; j++) {
-                if (code[i] === this.barcodeSymbols[j].value) {
+                if (code[parseInt(i.toString(), 10)] === this.barcodeSymbols[parseInt(j.toString(), 10)].value) {
                     // eslint-disable-next-line
                     checkValue += this.barcodeSymbols[j].checkDigit;
                 }
@@ -341,10 +341,10 @@ export class Code93Extension extends Code93 {
     private encoding(string: string[]): string[] {
         const temp: string[] = [];
         for (let j: number = 0; j < string.length; j++) {
-            for (let k: number = 0; k < string[j].length; k++) {
+            for (let k: number = 0; k < string[parseInt(j.toString(), 10)].length; k++) {
                 for (let i: number = 0; i < this.barcodeSymbols.length; i++) {
-                    if (string[j][k] === this.barcodeSymbols[i].value) {
-                        temp[k] = this.barcodeSymbols[i].bars;
+                    if (string[parseInt(j.toString(), 10)][parseInt(k.toString(), 10)] === this.barcodeSymbols[parseInt(i.toString(), 10)].value) {
+                        temp[parseInt(k.toString(), 10)] = this.barcodeSymbols[parseInt(i.toString(), 10)].bars;
                     }
                 }
             }

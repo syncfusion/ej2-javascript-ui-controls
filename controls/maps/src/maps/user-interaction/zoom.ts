@@ -11,7 +11,7 @@ import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { pan } from '../model/constants';
 import { getValueFromObject } from '../utils/helper';
 import { PanDirection } from '../utils/enum';
-import { FontModel, DataLabelSettingsModel, BorderModel } from '../model/base-model';
+import { FontModel, DataLabelSettingsModel, BorderModel, ZoomToolbarButtonSettingsModel, ZoomToolbarTooltipSettingsModel, ZoomToolbarSettingsModel } from '../model/base-model';
 import { MapsTooltip } from './tooltip';
 
 /**
@@ -19,36 +19,60 @@ import { MapsTooltip } from './tooltip';
  */
 export class Zoom {
     private maps: Maps;
+    /** @private */
     public toolBarGroup: Element;
     private currentToolbarEle: Element;
+    /** @private */
     public zoomingRect: Rect;
+    /** @private */
     public selectionColor: string;
     private fillColor: string;
     private zoomElements: Element;
     private panElements: Element;
+    /** @private */
     public isPanning: boolean = false;
+    /** @private */
     public mouseEnter: boolean = false;
+    /** @private */
     public baseTranslatePoint: Point;
     private wheelEvent: string;
     private cancelEvent: string;
+    /** @private */
     public currentScale: number;
+    /** @private */
     public isTouch: boolean = false;
+    /** @private */
     public rectZoomingStart: boolean = false;
+    /** @private */
     public touchStartList: ITouches[] | TouchList;
+    /** @private */
     public touchMoveList: ITouches[] | TouchList;
+    /** @private */
     public previousTouchMoveList: ITouches[] | TouchList;
+    /** @private */
     public mouseDownPoints: Point;
+    /** @private */
     public mouseMovePoints: Point;
+    /** @private */
     public isDragZoom: boolean;
+    /** @private */
     public currentLayer: LayerSettings;
     private panColor: string;
+    private clearTimeout: number;
+    /** @private */
     public zoomColor: string;
+    /** @private */
     public browserName: string = Browser.info.name;
     // eslint-disable-next-line @typescript-eslint/ban-types
+    /** @private */
     public isPointer: Boolean = Browser.isPointer;
     private handled: boolean = false;
     private fingers: number;
+    /** @private */
     public firstMove: boolean;
+    private isPan: boolean = false;
+    private isZoomFinal: boolean = false;
+    private isZoomSelection: boolean = false;
     private interaction: string;
     private lastScale: number;
     private pinchFactor: number = 1;
@@ -58,17 +82,18 @@ export class Zoom {
     private zoomshapewidth: any;
     private index: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /** @private */
     public intersect: any[] = [];
     private templateCount: number;
     private distanceX: number;
     private distanceY: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /** @private */
     public mouseDownLatLong: any = { x: 0, y: 0 };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /** @private */
     public mouseMoveLatLong: any = { x: 0, y: 0 };
-    /**
-     * @private
-     */
+    /** @private */
     public isSingleClick: boolean = false;
     /** @private */
     public layerCollectionEle: Element;
@@ -76,8 +101,10 @@ export class Zoom {
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
-        this.selectionColor = this.maps.zoomSettings.selectionColor;
-        this.fillColor = this.maps.zoomSettings.color;
+        this.selectionColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.selectionColor == null ?
+            this.maps.zoomSettings.selectionColor : this.maps.zoomSettings.toolbarSettings.buttonSettings.selectionColor;
+        this.fillColor = this.maps.zoomSettings.toolbarSettings.buttonSettings.color == null ? this.maps.zoomSettings.color :
+            this.maps.zoomSettings.toolbarSettings.buttonSettings.color;
         this.addEventListener();
     }
 
@@ -88,6 +115,7 @@ export class Zoom {
      * @param {number} newZoomFactor - Specifies the zoom factor.
      * @param {string} type - Specifies the type.
      * @returns {void}
+     * @private
      */
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         const map: Maps = this.maps;
@@ -101,6 +129,7 @@ export class Zoom {
         const maxZoom: number = map.zoomSettings.maxZoom;
         const minZoom: number = map.zoomSettings.minZoom;
         newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
+        newZoomFactor = maxZoom >= newZoomFactor ? newZoomFactor : maxZoom;
         const prevTilePoint: Point = map.tileTranslatePoint;
         if ((!map.isTileMap) && ((type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)
             || map.isReset)) {
@@ -185,6 +214,9 @@ export class Zoom {
             }
         }
         this.maps.zoomNotApplied = false;
+        if (this.maps.isDevice) {
+            this.removeToolbarOpacity(map.isTileMap ? Math.round(map.tileZoomLevel) : map.scale, map.element.id + '_Zooming_');
+        }
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private calculateInitalZoomTranslatePoint(newZoomFactor: number, mapTotalWidth: number, mapTotalHeight: number, availSize: Rect, minBounds: any, map: Maps): Point {
@@ -230,6 +262,9 @@ export class Zoom {
             position.y - ((y * totalSize) / 100);
     }
 
+    /**
+     * @private
+     */
     public performRectZooming(): void {
         this.isDragZoom = true;
         const map: Maps = this.maps;
@@ -248,11 +283,14 @@ export class Zoom {
             if (!map.isTileMap) {
                 const scale: number = map.previousScale = map.scale;
                 zoomCalculationFactor = scale + Math.round((((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2));
+                zoomCalculationFactor = zoomCalculationFactor < this.maps.zoomSettings.maxZoom ? zoomCalculationFactor : this.maps.zoomSettings.maxZoom;
                 const translatePoint: Point = map.previousPoint = map.translatePoint;
-                const translatePointX: number = translatePoint.x - (((size.width / scale) - (size.width / zoomCalculationFactor)) / (size.width / x));
-                const translatePointY: number = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
-                map.translatePoint = new Point(translatePointX, translatePointY);
-                map.scale = zoomCalculationFactor;
+                if (zoomCalculationFactor <= maxZoom) {
+                    const translatePointX: number = translatePoint.x - (((size.width / scale) - (size.width / zoomCalculationFactor)) / (size.width / x));
+                    const translatePointY: number = translatePoint.y - (((size.height / scale) - (size.height / zoomCalculationFactor)) / (size.height / y));
+                    map.translatePoint = new Point(translatePointX, translatePointY);
+                }
+                map.scale = zoomCalculationFactor < this.maps.zoomSettings.maxZoom ? zoomCalculationFactor : this.maps.zoomSettings.maxZoom;
                 isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
                 if (isZoomCancelled) {
                     map.translatePoint = map.previousPoint;
@@ -284,6 +322,8 @@ export class Zoom {
                 this.zoomingRect = null;
             }
         }
+        this.isZoomFinal = this.isZoomSelection && Math.round(map.scale) === this.maps.zoomSettings.maxZoom;
+        this.removeToolbarOpacity(map.scale, this.maps.element.id + '_Zooming_');
     }
 
     private setInteraction(newInteraction: string): void {
@@ -299,6 +339,9 @@ export class Zoom {
         }
     }
 
+    /**
+     * @private
+     */
     public performPinchZooming(e: PointerEvent | TouchEvent): void {
         const map: Maps = this.maps;
         const prevLevel: number = map.tileZoomLevel;
@@ -370,8 +413,14 @@ export class Zoom {
         if (!isZoomCancelled) {
             this.applyTransform(map);
         }
+        if (Browser.isDevice) {
+            this.removeToolbarOpacity(map.isTileMap ? Math.round(map.tileZoomLevel) : map.scale, map.element.id + '_Zooming_');
+        }
     }
 
+    /**
+     * @private
+     */
     public drawZoomRectangle(): void {
         const map: Maps = this.maps;
         const down: Point = this.mouseDownPoints;
@@ -389,7 +438,8 @@ export class Zoom {
             const rectSVGObject: Element = map.renderer.createSvg({
                 id: map.element.id + '_Selection_Rect_Zooming',
                 width: map.availableSize.width,
-                height: map.availableSize.height
+                height: map.availableSize.height,
+                style: 'position: absolute;'
             });
             const rectOption: RectOption = new RectOption(
                 map.element.id + '_ZoomRect', '#d3d3d3', border, 0.5, this.zoomingRect, 0, 0, '', '3'
@@ -419,6 +469,9 @@ export class Zoom {
         }
     }
 
+    /**
+     * @private
+     */
     public applyTransform(maps: Maps, animate?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
@@ -575,7 +628,7 @@ export class Zoom {
                                         if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1 && !isNullOrUndefined(maps.zoomLabelPositions[labelIndex as number])) {
                                             const labelX: number = ((maps.zoomLabelPositions[labelIndex as number]['location']['x'] + x) * scale);
                                             const labelY: number = ((maps.zoomLabelPositions[labelIndex as number]['location']['y'] + y) * scale);
-                                            const zoomtext: string = currentEle.childNodes[k as number]['innerHTML'];
+                                            const zoomtext: string = currentEle.childNodes[k as number]['textContent'];
                                             const style: FontModel = maps.layers[this.index].dataLabelSettings.textStyle;
                                             const zoomtextSize: Size = measureText(zoomtext, style);
                                             const padding: number = 5;
@@ -722,7 +775,7 @@ export class Zoom {
             const datalabelTemplateElemement: HTMLElement = <HTMLElement>getElementByID(maps.element.id + '_LayerIndex_'
                 + i + '_Label_Template_Group');
             if ((!isNullOrUndefined(markerTemplateElement)) && markerTemplateElement.childElementCount > 0) {
-                markerTemplateElement.style.visibility = "visible";
+                markerTemplateElement.style.visibility = 'visible';
                 for (let k: number = 0; k < markerTemplateElement.childElementCount; k++) {
                     this.markerTranslate(<HTMLElement>markerTemplateElement.childNodes[k as number], factor, x, y, scale, 'Template');
                 }
@@ -790,19 +843,19 @@ export class Zoom {
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
                         if (scale > 1) {
                             text = ((this.maps.dataLabelShape[l as number] * scale) >= zoomtextSize['width']) ? zoomtext : '';
-                            element.innerHTML = text;
+                            element.textContent = text;
                         } else {
                             text = (this.maps.dataLabelShape[l as number] >= zoomtextSize['width']) ? zoomtext : '';
-                            element.innerHTML = text;
+                            element.textContent = text;
                         }
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
                         if (scale > 1) {
                             zoomtrimLabel = textTrim((this.maps.dataLabelShape[l as number] * scale), zoomtext, style);
-                            text = zoomtrimLabel; element.innerHTML = text;
+                            text = zoomtrimLabel; element.textContent = text;
                         } else {
                             zoomtrimLabel = textTrim(this.maps.dataLabelShape[l as number], zoomtext, style);
-                            text = zoomtrimLabel; element.innerHTML = text;
+                            text = zoomtrimLabel; element.textContent = text;
                         }
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
@@ -813,9 +866,9 @@ export class Zoom {
                                     || textLocations['heightTop'] > this.intersect[m as number]['heightBottom']
                                     || textLocations['heightBottom'] < this.intersect[m as number]['heightTop']) {
                                     text = !isNullOrUndefined(text) ? text : zoomtext;
-                                    element.innerHTML = text;
+                                    (element as HTMLElement).textContent = text;
                                 } else {
-                                    text = ''; element.innerHTML = text;
+                                    text = ''; element.textContent = text;
                                     break;
                                 }
                             }
@@ -833,14 +886,14 @@ export class Zoom {
                                     if (scale > 1) {
                                         trimmedLable = textTrim((this.maps.dataLabelShape[l as number] * scale), trimmedLable, style);
                                     }
-                                    element.innerHTML = trimmedLable;
+                                    element.textContent = trimmedLable;
                                 } else {
                                     if (textLocations['leftWidth'] > this.intersect[j as number]['leftWidth']) {
                                         const width: number = this.intersect[j as number]['rightWidth'] - textLocations['leftWidth'];
                                         const difference: number = width - (textLocations['rightWidth'] - textLocations['leftWidth']);
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
-                                        element.innerHTML = trimmedLable;
+                                        element.textContent = trimmedLable;
                                         break;
                                     }
                                     if (textLocations['leftWidth'] < this.intersect[j as number]['leftWidth']) {
@@ -848,7 +901,7 @@ export class Zoom {
                                         const difference: number = Math.abs(width - (textLocations['rightWidth'] - textLocations['leftWidth']));
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
-                                        element.innerHTML = trimmedLable;
+                                        element.textContent = trimmedLable;
                                         break;
                                     }
                                 }
@@ -857,7 +910,7 @@ export class Zoom {
                         this.intersect.push(textLocations);
                         if (isNullOrUndefined(trimmedLable)) {
                             trimmedLable = textTrim((this.maps.dataLabelShape[l as number] * scale), zoomtext, style);
-                            element.innerHTML = trimmedLable;
+                            element.textContent = trimmedLable;
                         }
                     }
                     if (animate || duration > 0) {
@@ -1047,6 +1100,9 @@ export class Zoom {
         this.applyTransform(this.maps, false);
     }
 
+    /**
+     * @private
+     */
     public toolBarZooming(zoomFactor: number, type: string): void {
         const map: Maps = this.maps;
         map.initialCheck = false;
@@ -1064,10 +1120,10 @@ export class Zoom {
         const prevTilePoint: Point = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
-        zoomFactor = (type === 'Reset') ? 1 : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
+        zoomFactor = (type === 'Reset') ? minZoom : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         let zoomArgs: IMapZoomEventArgs;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom
+        if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && Math.round(zoomFactor) <= maxZoom : zoomFactor >= minZoom
         || map.isReset)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const min: any = map.baseMapRectBounds['min'] as any;
@@ -1153,6 +1209,9 @@ export class Zoom {
         }
     }
 
+    /**
+     * @private
+     */
     public createZoomingToolbars(): void {
         const map: Maps = this.maps;
         let zoomInElements: Element;
@@ -1161,40 +1220,64 @@ export class Zoom {
             id: map.element.id + '_Zooming_KitCollection',
             opacity: map.theme.toLowerCase() === 'fluentdark' ? 0.6 : 0.3
         });
-        const kitHeight: number = 16; const kitWidth: number = 16;
         let xSpacing: number = 15; let ySpacing: number = 15;
-        const padding: number = 20;
-        const orientation: Orientation = map.zoomSettings.toolBarOrientation;
-        const toolbarsCollection: string[] = map.zoomSettings.toolbars;
+        const toolbar: ZoomToolbarSettingsModel = map.zoomSettings.toolbarSettings;
+        const button: ZoomToolbarButtonSettingsModel = map.zoomSettings.toolbarSettings.buttonSettings;
+        this.maps.toolbarProperties = {
+            toolBarOrientation: toolbar.orientation === 'Horizontal' ? map.zoomSettings.toolBarOrientation : toolbar.orientation,
+            highlightColor: button.highlightColor == null ? map.zoomSettings.highlightColor : button.highlightColor,
+            selectionColor: button.selectionColor == null ? map.zoomSettings.selectionColor : button.selectionColor,
+            horizontalAlignment: toolbar.horizontalAlignment === 'Far' ? map.zoomSettings.horizontalAlignment : toolbar.horizontalAlignment,
+            verticalAlignment: toolbar.verticalAlignment === 'Near' ? map.zoomSettings.verticalAlignment : toolbar.verticalAlignment,
+            color: button.color == null ? map.zoomSettings.color : button.color,
+            shapeOpacity: button.opacity !== 1 ? button.opacity : 1,
+            borderOpacity: button.borderOpacity !== 1 ? button.borderOpacity : 1
+        };
+        const cx: number = button.radius / 4;
+        const cy: number = button.radius / 4;
+        const radius: number = button.radius / 2;
+        const padding: number = button.padding;
+        const orientation: Orientation = this.maps.toolbarProperties.toolBarOrientation;
+        const toolbarCollection: string[] = map.zoomSettings.toolbarSettings.buttonSettings.toolbarItems.map((value: string) => { return value; });
+        const toolbarsCollection: string[] = toolbarCollection.length === 3 ? map.zoomSettings.toolbars : toolbarCollection;
+        xSpacing = (button.radius / 4) + (button.borderWidth / 2) + padding;
+        ySpacing = (button.radius / 4) + (button.borderWidth / 2) + padding;
         let shadowElement: string = '<filter id="chart_shadow" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/>';
         shadowElement += '<feOffset dx="-3" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="1"/>';
         shadowElement += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-        const toolBarLength: number = map.zoomSettings.toolbars.length;
-        const toolWidth: number = (map.zoomSettings.toolBarOrientation === 'Horizontal') ? (toolBarLength * kitWidth) + (toolBarLength * padding) : (kitWidth * 2);
-        const toolHeight: number = (map.zoomSettings.toolBarOrientation === 'Horizontal') ? (kitHeight * 2) : (toolBarLength * kitHeight) + (toolBarLength * padding);
+        const toolBarLength: number = toolbarCollection.length;
+        const toolWidth: number = (orientation === 'Horizontal') ? ((toolBarLength * button.radius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth)) : (button.radius + button.borderWidth + (2 * padding));
+        const toolHeight: number = (orientation === 'Horizontal') ? (button.radius + button.borderWidth + (2 * padding)) : ((toolBarLength * button.radius) + (toolBarLength * padding) + padding + (toolBarLength * button.borderWidth));
         const defElement: Element = map.renderer.createDefs();
         defElement.innerHTML = shadowElement;
         this.toolBarGroup.appendChild(defElement);
         const outerElement: Element = map.renderer.drawRectangle(new RectOption(
-            map.element.id + '_Zooming_Rect', 'transparent', { color: 'transparent', width: 1 },
-            0.1, new Rect(0, 0, toolWidth, toolHeight), 0, 0
+            map.element.id + '_Zooming_Rect', toolbar.backgroundColor, { color: toolbar.borderColor, width: toolbar.borderWidth, opacity: toolbar.borderOpacity },
+            toolbar.borderOpacity, new Rect((toolbar.borderWidth / 2), (toolbar.borderWidth / 2), (toolWidth - toolbar.borderWidth), (toolHeight - toolbar.borderWidth)), 0, 0
         ));
-        outerElement.setAttribute('filter', 'url(#chart_shadow)');
         this.toolBarGroup.appendChild(outerElement);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let performFunction: any;
+        const scaleX: number = (button.radius - (button.borderWidth / 2)) / 30;
         for (let i: number = 0; i < toolbarsCollection.length; i++) {
+            if (i !== 0) {
+                xSpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? (xSpacing + (button.radius + padding) + button.borderWidth) : xSpacing;
+                ySpacing = (map.toolbarProperties.toolBarOrientation === 'Horizontal') ? ySpacing : (ySpacing + (button.radius + padding) + button.borderWidth);
+            }
             const toolbar: string = toolbarsCollection[i as number];
-            let pathOptions: PathOption; let polyOptions: PolygonOption;
+            const pathStroke: string = !isNullOrUndefined(this.maps.toolbarProperties.color) ? this.maps.toolbarProperties.color : this.maps.themeStyle.zoomFillColor;
+            const borderColor: string = button.borderColor || this.maps.themeStyle.zoomFillColor;
             this.currentToolbarEle = map.renderer.createGroup({
                 id: map.element.id + '_Zooming_ToolBar_' + toolbar + '_Group',
                 transform: 'translate( ' + xSpacing + ' ' + ySpacing + ' ) '
             });
             this.currentToolbarEle.setAttribute('class', 'e-maps-toolbar');
+            this.currentToolbarEle.appendChild(map.renderer.drawCircle(
+                new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', button.fill, { color: borderColor, width: button.borderWidth, opacity: button.borderOpacity }, button.opacity, cx, cy, radius, '')
+            ) as SVGRectElement);
             const fillColor: string = '';
-            const fill: string = 'transparent';
+            let opacity: number = 1;
             let direction: string = ''; const polygonDirection: string = '';
-            this.selectionColor = this.maps.zoomSettings.selectionColor || this.maps.themeStyle.zoomSelectionColor;
+            const fill: string = button.fill;
+            this.selectionColor = this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor;
             switch (toolbar.toLowerCase()) {
             case 'zoom': {
                 let fillColor: string;
@@ -1202,40 +1285,53 @@ export class Zoom {
                 direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                 direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                 direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
+                this.currentToolbarEle.setAttribute('class', (this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : ''));
                 if (this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
                     fillColor = fill;
-                    strokeColor = this.maps.themeStyle.zoomFillColor;
-                } else if (this.maps.zoomSettings.enablePanning && this.maps.zoomSettings.enableSelectionZooming){
+                    strokeColor = pathStroke;
+                } else if (this.maps.zoomSettings.enablePanning && this.maps.zoomSettings.enableSelectionZooming) {
                     fillColor = fill;
-                    strokeColor = this.maps.themeStyle.zoomFillColor;
+                    strokeColor = pathStroke;
                 } else if (!this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
                     fillColor = fill;
-                    strokeColor = this.maps.themeStyle.zoomFillColor;
+                    strokeColor = pathStroke;
+                } else if (!this.maps.zoomSettings.enablePanning && this.maps.zoomSettings.enableSelectionZooming) {
+                    fillColor = this.maps.themeStyle.zoomFillColor;
+                    strokeColor = pathStroke;
+                } else if (!this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
+                    fillColor = fill;
+                    strokeColor = pathStroke;
                 } else {
                     fillColor = this.selectionColor;
                     strokeColor = this.selectionColor;
-                }
-                this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, 1, 1, null,
+                }                
+                const zoomPath: Element = map.renderer.drawPath(new PathOption(
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, opacity, opacity, null,
                     direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')
-                ) as SVGPathElement);
+                );
+                zoomPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
+                this.currentToolbarEle.appendChild(zoomPath);
                 this.zoomElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             }
             case 'zoomin':
-                direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';
-                this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
-                ) as SVGPathElement);
+                direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';                
+                const zoomInPath: Element = map.renderer.drawPath(new PathOption(
+                    map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, pathStroke, 1, 1, null, direction)
+                );
+                zoomInPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
+                this.currentToolbarEle.appendChild(zoomInPath);
                 zoomInElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             case 'zoomout':
-                direction = 'M 0, 8 L 16, 8';
-                this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
-                ) as SVGPathElement);
+                direction = 'M 0, 8 L 16, 8';                
+                const zoomOutPath: Element = map.renderer.drawPath(new PathOption(
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, pathStroke, 1, 1, null, direction)
+                );
+                zoomOutPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
+                this.currentToolbarEle.appendChild(zoomOutPath);
                 zoomOutElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
@@ -1243,18 +1339,22 @@ export class Zoom {
                 let color: string;
                 direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
                 direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
+                this.currentToolbarEle.setAttribute('class', (this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : ''));
                 if (this.maps.zoomSettings.enablePanning && this.maps.zoomModule.isDragZoom) {
-                    color = '#737373';
+                    color = this.selectionColor || this.maps.themeStyle.zoomFillColor;
                 } else if (!this.maps.zoomSettings.enablePanning) {
-                    color = '#737373';
+                    color = this.selectionColor || this.maps.themeStyle.zoomFillColor;
                     this.currentToolbarEle.setAttribute('class', '');
-                } else {
-                    color = this.selectionColor;
-                }
-                this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, color, 1, 1, null,
+                } 
+                else {
+                    color = fill || this.maps.themeStyle.zoomFillColor;
+                }                
+                const panPath: Element = map.renderer.drawPath(new PathOption(
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, pathStroke, opacity, opacity, null,
                     direction)
-                ) as SVGPathElement);
+                );
+                panPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
+                this.currentToolbarEle.appendChild(panPath);
                 this.panColor = color;
                 this.panElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
@@ -1264,22 +1364,22 @@ export class Zoom {
                 direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
                 direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                 direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
-                this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, this.maps.themeStyle.zoomFillColor,
+                const resetPath: Element = map.renderer.drawPath(new PathOption(
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, pathStroke,
                     1, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
-                ) as HTMLElement);
+                );
+                resetPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
+                this.currentToolbarEle.appendChild(resetPath);
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
-            }
-            this.currentToolbarEle.appendChild(map.renderer.drawCircle(
-                new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', fill, { color: this.maps.themeStyle.zoomFillColor, width: 1 }, 1, 8, 8, 16, '')
-            ) as SVGRectElement);
-            xSpacing = (orientation === 'Horizontal') ? (xSpacing + (kitWidth + padding)) : xSpacing;
-            ySpacing = (orientation === 'Horizontal') ? ySpacing : (ySpacing + (kitHeight + padding));
+            }            
             this.toolBarGroup.appendChild(this.currentToolbarEle);
         }
     }
 
+    /**
+     * @private
+     */
     public performToolBarAction(e: PointerEvent): void {
         const target: Element = <Element>e.target;
         e.stopImmediatePropagation();
@@ -1304,27 +1404,29 @@ export class Zoom {
     public performZoomingByToolBar(type: string): void {
         const map: Maps = this.maps;
         map.isReset = false;
+        let scale: number = 0;
+        const stateColor: string = this.fillColor || this.maps.themeStyle.zoomFillColor;
         switch (type.toLowerCase()) {
         case 'zoom':
-            this.panColor = this.fillColor;
-            this.zoomColor = this.selectionColor;
-            this.applySelection(this.zoomElements, this.selectionColor);
-            this.applySelection(this.panElements, this.fillColor);
+            this.panColor = stateColor;
+            this.zoomColor = this.maps.zoomSettings.enableSelectionZooming ? this.selectionColor : stateColor;
+            this.applySelection(this.zoomElements, this.zoomColor);
+            this.applySelection(this.panElements, this.panColor);
+            this.isPan = false;
+            this.isZoomSelection = this.maps.zoomSettings.enableSelectionZooming;
             break;
         case 'pan':
-            if (!this.maps.zoomSettings.enablePanning) {
-                this.panColor = '#737373';
-            } else {
-                this.panColor = this.selectionColor;
-            }
-            this.zoomColor = this.fillColor;
+            this.panColor = this.maps.zoomSettings.enablePanning ?  this.selectionColor : stateColor;
+            this.zoomColor = stateColor;
             if (!this.maps.zoomSettings.enablePanning) {
                 this.applySelection(this.zoomElements, this.selectionColor);
                 this.applySelection(this.panElements, this.panColor);
             } else {
-                this.applySelection(this.zoomElements, this.fillColor);
+                this.applySelection(this.zoomElements, (this.fillColor || stateColor));
                 this.applySelection(this.panElements, this.panColor);
             }
+            this.isPan = this.maps.zoomSettings.enablePanning;
+            this.isZoomSelection = false;
             break;
         case 'zoomin':
             map.staticMapZoom = map.tileZoomLevel;
@@ -1332,24 +1434,55 @@ export class Zoom {
                 map.staticMapZoom += 1;
             }
             this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
+            scale = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+            if (!this.isZoomSelection) {
+                if (scale === map.zoomSettings.maxZoom || scale > 1 || (scale === 1 && this.maps.isTileMap)) {
+                    this.applySelection(this.zoomElements, stateColor);
+                    this.applySelection(this.panElements, map.zoomSettings.enablePanning ? this.selectionColor : stateColor);
+                } else if (scale === 1 && !this.maps.isTileMap) {
+                    this.applySelection(this.zoomElements, stateColor);
+                    this.applySelection(this.panElements, stateColor);
+                } 
+            }
             break;
         case 'zoomout':
             map.staticMapZoom = map.tileZoomLevel;
             map.markerCenterLatitude = null;
             map.markerCenterLongitude = null;
             this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');
+            scale = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+            if (!this.isPan && this.isZoomSelection) {
+                this.panColor = stateColor;
+                this.zoomColor = this.selectionColor;
+                this.applySelection(this.zoomElements, this.selectionColor);
+                this.applySelection(this.panElements, this.panColor);
+            } else {
+                if (scale <= 1 && !map.isTileMap) {
+                    this.applySelection(this.panElements, stateColor);
+                } else {
+                    this.applySelection(this.panElements, map.zoomSettings.enablePanning ? this.selectionColor : stateColor);
+                }
+            }
             break;
         case 'reset':
             map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
             map.markerCenterLatitude = null;
             map.markerCenterLongitude = null;
-            this.toolBarZooming(1, 'Reset');
-            if (!this.maps.zoomSettings.enablePanning) {
-                this.applySelection(this.zoomElements, this.selectionColor);
-                this.applySelection(this.panElements, '#737373');
-            } else {
-                this.applySelection(this.zoomElements, this.fillColor);
-                this.applySelection(this.panElements, this.selectionColor);
+            this.isZoomSelection = false;
+            this.isPan = this.isPanning = map.zoomSettings.enablePanning;
+            this.toolBarZooming(map.zoomSettings.minZoom, 'Reset');
+            if ((this.isPan && !this.isZoomSelection) || (!this.isPan && this.isZoomSelection)) {
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.applySelection(this.zoomElements, this.selectionColor);
+                    this.applySelection(this.panElements, stateColor);
+                }
+                else {
+                    this.applySelection(this.zoomElements, stateColor);
+                    this.applySelection(this.panElements, this.selectionColor);
+                }
+            } else if (!this.isPan && !this.isZoomSelection) {
+                this.applySelection(this.zoomElements, stateColor);
+                this.applySelection(this.panElements, stateColor);
             }
         }
         this.panningStyle(type.toLowerCase());
@@ -1357,7 +1490,7 @@ export class Zoom {
 
     private panningStyle(toolbar: string): void {
         const svg: Element = getElementByID(this.maps.element.id + '_svg');
-        if (toolbar === 'pan' || this.isPanning) {
+        if (toolbar === 'pan' || (this.isPanning && toolbar !== 'reset')) {
             svg.setAttribute('class', 'e-maps-panning');
         } else {
             svg.setAttribute('class', '');
@@ -1371,24 +1504,52 @@ export class Zoom {
         for (let i: number = 0; i < elements.childElementCount; i++) {
             childElement = elements.childNodes[i as number] as HTMLElement;
             if (childElement.tagName !== 'circle') {
-                childElement.setAttribute('fill', color);
+                childElement.setAttribute('fill', (elements.id.indexOf('Pan') > -1 ? color : 'transparent'));
                 childElement.setAttribute('stroke', color);
             }
         }
     }
 
+    /**
+     * @private
+     */
     public showTooltip(e: PointerEvent): void {
         const text: string = (<Element>e.target).id.split('_Zooming_ToolBar_')[1].split('_')[0];
+        const tooltip: ZoomToolbarTooltipSettingsModel = this.maps.zoomSettings.toolbarSettings.tooltipSettings;
+        const tooltipSettings: ZoomToolbarTooltipSettingsModel = {
+            visible: tooltip.visible,
+            fill: tooltip.fill,
+            borderOpacity: tooltip.borderOpacity,
+            borderWidth: tooltip.borderWidth,
+            borderColor: tooltip.borderColor,
+            fontColor: tooltip.fontColor,
+            fontFamily: tooltip.fontFamily,
+            fontStyle: tooltip.fontStyle,
+            fontWeight: tooltip.fontWeight,
+            fontSize: tooltip.fontSize || '10px',
+            fontOpacity: tooltip.fontOpacity
+        };
+        tooltipSettings.fontFamily = this.maps.themeStyle.fontFamily;
         if (!this.isTouch) {
-            createTooltip('EJ2_Map_Toolbar_Tip', this.maps.getLocalizedLabel(text), (e.pageY + 10), (e.pageX + 10), '10px');
+            createTooltip('EJ2_Map_Toolbar_Tip', this.maps.getLocalizedLabel(text), (e.pageY + 10), (e.pageX + 10), tooltipSettings);
+            if (this.maps.isDevice) {
+                clearTimeout(this.clearTimeout);
+                this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            }
         }
     }
 
+    /**
+     * @private
+     */
     public removeTooltip(): void {
         if (getElementByID('EJ2_Map_Toolbar_Tip')) {
             remove(getElementByID('EJ2_Map_Toolbar_Tip'));
         }
     }
+    /**
+     * @private
+     */
     public alignToolBar(): void {
         const map: Maps = this.maps;
         const padding: number = 10;
@@ -1403,11 +1564,11 @@ export class Zoom {
             getElementByID(map.element.id + '_Secondary_Element').appendChild(element);
         }
         const toolBarSize: ClientRect = this.toolBarGroup.getBoundingClientRect();
-        rectSVGObject.setAttribute('height', (toolBarSize.height + padding / 2).toString());
-        rectSVGObject.setAttribute('width', (toolBarSize.width + padding / 2).toString());
+        rectSVGObject.setAttribute('height', (toolBarSize.height + map.zoomSettings.toolbarSettings.borderWidth).toString());
+        rectSVGObject.setAttribute('width', (toolBarSize.width + map.zoomSettings.toolbarSettings.borderWidth).toString());
         const size: Rect = !isNullOrUndefined(map.totalRect) ? map.totalRect : map.mapAreaRect;
         let x: number = 0; let y: number = 0;
-        switch (map.zoomSettings.verticalAlignment) {
+        switch (map.toolbarProperties.verticalAlignment) {
         case 'Near':
             y = size.y;
             break;
@@ -1418,7 +1579,7 @@ export class Zoom {
             y = (size.height - toolBarSize.height) - padding;
             break;
         }
-        switch (map.zoomSettings.horizontalAlignment) {
+        switch (map.toolbarProperties.horizontalAlignment) {
         case 'Near':
             x = size.x;
             break;
@@ -1436,13 +1597,162 @@ export class Zoom {
         const extraPosition: Point = map.getExtraPosition();
         element.style.left = x + extraPosition.x + 'px';
         element.style.top = y + extraPosition.y + 'px';
-        const color: string = this.maps.zoomSettings.highlightColor || this.maps.themeStyle.zoomSelectionColor;
+        const color: string = this.maps.toolbarProperties.highlightColor || this.maps.themeStyle.zoomSelectionColor;
         const css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
             '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +
             '.e-maps-popup-close { display: block; opacity: 0; }';
         const style: HTMLStyleElement = document.createElement('style');
         style.appendChild(document.createTextNode(css));
         element.appendChild(style);
+    }
+
+    /**
+     * @private
+     */
+    public removeToolbarOpacity(factor: number, id: string): void {
+        if (this.maps.zoomModule && this.maps.zoomSettings.enable) {
+            if (getElementByID(this.maps.element.id + '_Zooming_KitCollection') && id.indexOf(this.maps.element.id + '_Zooming_') > -1) {
+                if (this.maps.isDevice) {
+                    getElementByID(this.maps.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
+                    this.removeToolbarClass('', '', '', '', '');
+                } else {
+                    this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', 'e-maps-toolbar',
+                        this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
+                }
+                let toolbarShapeOpacity: number = this.maps.toolbarProperties.shapeOpacity;
+                let toolbarButtonOpacity: number = this.maps.toolbarProperties.borderOpacity;
+
+                if (this.maps.isTileMap && (factor <= 1.1 || this.maps.zoomSettings.minZoom === factor)) {
+                    if (!this.maps.isDevice) {
+                        this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', '',
+                            this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', '');
+                    }
+                    if (this.maps.zoomSettings.enablePanning) {
+                        this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
+                    }
+                    if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming && !this.maps.isReset) {
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    }
+                    this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
+                        (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                        0.3, 0.3, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
+                        (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), 0.3, 0.3);
+
+                } else if ((factor <= 1.1 || this.maps.zoomSettings.minZoom === factor)) {
+                    if (!this.maps.isDevice) {
+                        this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', '', '', '');
+                    }
+                    if (!this.isZoomSelection && this.maps.zoomSettings.enablePanning) {
+                        this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    }
+                    if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming && !this.maps.isReset) {
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    }
+                    this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
+                        (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                        0.3, 0.3, 0.3, 0.3, 0.3, 0.3);
+
+                } else if (factor < this.maps.zoomSettings.maxZoom) {
+                    if (!this.maps.isDevice) {
+                        this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', 'e-maps-toolbar',
+                            this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
+                    }
+                    if (!this.maps.zoomModule.isZoomFinal) {
+                        this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
+                            (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                            toolbarShapeOpacity, toolbarButtonOpacity, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
+                            (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity);
+                    } else {
+                        this.maps.zoomModule.isZoomFinal = false;
+                    }
+                    if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming) {
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        if (this.maps.zoomModule.isPan && this.maps.zoomSettings.enablePanning) {
+                            this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                        }
+                    } else if (!this.isZoomSelection && this.maps.zoomSettings.enablePanning) {
+                        this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        if (this.maps.zoomSettings.enableSelectionZooming) {
+                            this.removeZoomColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                        }
+                    }
+                } else {
+                    if (!this.maps.isDevice) {
+                        this.removeToolbarClass('', '', 'e-maps-toolbar', this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
+                    }
+                    this.removeZoomOpacity(0.3, 0.3, 0.3, 0.3, toolbarShapeOpacity, toolbarButtonOpacity,
+                        (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3), (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3),
+                        toolbarShapeOpacity, toolbarButtonOpacity);
+                    if (this.maps.zoomSettings.enableSelectionZooming) {
+                        this.removeZoomColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    }
+                    if (!this.isZoomSelection && this.maps.zoomSettings.enablePanning) {
+                        this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
+                    }
+                }
+            }
+            else {
+                if (!this.maps.isDevice) {
+                    this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    this.removeZoomColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
+                    this.removeZoomOpacity(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+                }
+            }
+        }
+    }
+    private setOpacity(circleId: string, pathId: string, circleOpacity: number, pathOpacity: number): void {
+        if (getElementByID(this.maps.element.id + circleId)) {
+            getElementByID(this.maps.element.id + circleId).setAttribute('stroke-opacity', circleOpacity.toString());
+            getElementByID(this.maps.element.id + circleId).setAttribute('fill-opacity', circleOpacity.toString());
+            getElementByID(this.maps.element.id + pathId).setAttribute('stroke-opacity', pathOpacity.toString());
+            getElementByID(this.maps.element.id + pathId).setAttribute('fill-opacity', pathOpacity.toString());
+        }
+    }
+
+    private removeZoomOpacity(zoomOpacity: number, zoomStrokeOpacity: number, zoomInOpacity: number, zoomInStrokeOpacity: number, zoomOutOpacity: number,
+        zoomOutStrokeOpacity: number, panOpacity: number, panStrokeOpacity: number, resetOpacity: number, resetStrokeOpacity: number): void {
+        this.setOpacity('_Zooming_ToolBar_Zoom_Rect', '_Zooming_ToolBar_Zoom', zoomStrokeOpacity, zoomOpacity);
+        this.setOpacity('_Zooming_ToolBar_ZoomIn_Rect', '_Zooming_ToolBar_ZoomIn_Path', zoomInStrokeOpacity, zoomInOpacity);
+        this.setOpacity('_Zooming_ToolBar_ZoomOut_Rect', '_Zooming_ToolBar_ZoomOut', zoomOutStrokeOpacity, zoomOutOpacity);
+        this.setOpacity('_Zooming_ToolBar_Pan_Rect', '_Zooming_ToolBar_Pan', panStrokeOpacity, panOpacity);
+        this.setOpacity('_Zooming_ToolBar_Reset_Rect', '_Zooming_ToolBar_Reset', resetStrokeOpacity, resetOpacity);        
+    }
+    /**
+     * @private 
+     */
+    public removeToolbarClass(zoomClassStyle: string, zoomInClassStyle: string, zoomOutClassStyle: string,
+        panClassStyle: string, resetClassStyle: string): void {
+        if (getElementByID(this.maps.element.id + '_Zooming_KitCollection')) {
+            if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_ZoomIn_Group')) {
+                getElementByID(this.maps.element.id + '_Zooming_ToolBar_ZoomIn_Group').setAttribute('class', zoomInClassStyle);
+            }
+            if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_ZoomOut_Group')) {
+                getElementByID(this.maps.element.id + '_Zooming_ToolBar_ZoomOut_Group').setAttribute('class', zoomOutClassStyle);
+            }
+            if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_Reset_Group')) {
+                getElementByID(this.maps.element.id + '_Zooming_ToolBar_Reset_Group').setAttribute('class', resetClassStyle);
+            }
+            if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_Zoom_Group') && this.maps.zoomSettings.enableSelectionZooming) {
+                getElementByID(this.maps.element.id + '_Zooming_ToolBar_Zoom_Group').setAttribute('class', zoomClassStyle);
+            }
+            if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_Pan_Group') && this.maps.zoomSettings.enablePanning) {
+                getElementByID(this.maps.element.id + '_Zooming_ToolBar_Pan_Group').setAttribute('class', panClassStyle);
+            }
+        }
+    }
+    private removePanColor(selectionColor: string): void {
+        if (getElementByID(this.maps.element.id + '_Zooming_ToolBar_Pan_Rect') && this.maps.zoomSettings.enablePanning) {
+            getElementByID(this.maps.element.id + '_Zooming_ToolBar_Pan').setAttribute('fill', selectionColor);
+            getElementByID(this.maps.element.id + '_Zooming_ToolBar_Pan').setAttribute('stroke', selectionColor);
+        }
+    }
+    private removeZoomColor(selectionColor: string): void {
+        if (getElementByID(this.maps.element.id + '_Zooming_ToolBar_Zoom_Rect') && this.maps.zoomSettings.enableSelectionZooming) {
+            getElementByID(this.maps.element.id + '_Zooming_ToolBar_Zoom').setAttribute('fill', 'transparent');
+            getElementByID(this.maps.element.id + '_Zooming_ToolBar_Zoom').setAttribute('stroke', selectionColor);
+        }
     }
 
     /**
@@ -1460,6 +1770,9 @@ export class Zoom {
         EventHandler.add(element, 'mouseout', this.removeTooltip, this);
     }
 
+    /**
+     * @private
+     */
     public mapMouseWheel(e: WheelEvent): void {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
             const map: Maps = this.maps;
@@ -1499,9 +1812,14 @@ export class Zoom {
                     this.performZooming(position, (value - delta), direction);
                 }
             }
+            this.removeToolbarOpacity(map.mapScaleValue, (!this.maps.isDevice ? (!isNullOrUndefined(e.target) ?  e.target['id'] :
+            this.maps.element.id) : this.maps.element.id + '_Zooming_'));
         }
     }
 
+    /**
+     * @private
+     */
     public doubleClick(e: PointerEvent): void {
         const pageX: number = e.pageX;
         const pageY: number = e.pageY;
@@ -1522,6 +1840,9 @@ export class Zoom {
         }
     }
 
+    /**
+     * @private
+     */
     public mouseDownHandler(e: PointerEvent | TouchEvent): void {
         let pageX: number;
         let pageY: number;
@@ -1540,14 +1861,14 @@ export class Zoom {
             target = <Element>e.target;
         }
         if (!this.maps.zoomSettings.enablePanning) {
-            this.isPanning = this.panColor !== this.selectionColor ? this.maps.zoomSettings.enablePanning
+            this.isPan = this.isPanning = this.panColor !== this.selectionColor ? this.maps.zoomSettings.enablePanning
                 : this.zoomColor === this.selectionColor;
         } else {
-            this.isPanning = this.panColor === this.selectionColor ? this.maps.zoomSettings.enablePanning
-                : this.zoomColor !== this.selectionColor;
+            this.isPan = this.isPanning = !this.isZoomSelection;
         }
-        this.mouseDownLatLong = { x: pageX, y: pageY };
-        this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
+        this.mouseDownLatLong = { x: pageX, y: pageY };        
+        let scale: number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+        this.rectZoomingStart = ((this.isZoomSelection && scale < this.maps.zoomSettings.maxZoom) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
         if (this.isTouch) {
             this.firstMove = true;
@@ -1557,6 +1878,9 @@ export class Zoom {
         this.isSingleClick = true;
     }
 
+    /**
+     * @private
+     */
     public mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         let pageX: number;
         let pageY: number;
@@ -1579,21 +1903,9 @@ export class Zoom {
         if (getElementByID(map.element.id + '_Zooming_KitCollection')) {
             if (target.id.indexOf('_Zooming_') > -1) {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
-                if (document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
-                    if (!this.maps.zoomSettings.enablePanning) {
-                        if (target.id.indexOf('_Zooming_ToolBar') > -1 || target.id.indexOf('_Zooming_Rect') > -1) {
-                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
-                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
-                        }
-                    }
-                }
             }
-            else {
-                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
-                if (!this.maps.zoomSettings.enablePanning && document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
-                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '1');
-                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '1');
-                }
+            else if (!map.isDevice) {
+                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');                
             }
         }
         if (this.isTouch) {
@@ -1614,7 +1926,7 @@ export class Zoom {
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
         const targetId: string = e.target['id'];
         const targetEle: Element = <Element>e.target;
-        if (zoom.enable && this.isPanning && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
+        if (zoom.enable && this.isPanning && this.maps.markerDragId.indexOf('_MarkerIndex_') == -1 && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
@@ -1628,12 +1940,20 @@ export class Zoom {
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
-            if (this.maps.zoomSettings.enableSelectionZooming) {
+            let scale : number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+            if (this.maps.zoomSettings.enableSelectionZooming && scale < this.maps.zoomSettings.maxZoom) {
                 this.drawZoomRectangle();
+            }
+            else {
+                this.rectZoomingStart = false;
+                this.isPan = true;
             }
         }
     }
 
+    /**
+     * @private
+     */
     public mouseUpHandler(e: PointerEvent | TouchEvent): void {
         let isDragZoom: boolean;
         const map: Maps = this.maps;
@@ -1659,6 +1979,9 @@ export class Zoom {
         this.mouseDownLatLong = { x: 0, y: 0 };
     }
 
+    /**
+     * @private
+     */
     public mouseCancelHandler(e: PointerEvent): void {
         this.isPanning = false;
         this.isTouch = false;
@@ -1674,6 +1997,7 @@ export class Zoom {
      *
      * @param {PointerEvent} e - Specifies the pointer event.
      * @returns {void}
+     * @private
      */
     public click(e: PointerEvent): void {
         const map: Maps = this.maps;
@@ -1697,6 +2021,9 @@ export class Zoom {
         }
     }
 
+    /**
+     * @private
+     */
     public getMousePosition(pageX: number, pageY: number): Point {
         const map: Maps = this.maps;
         const elementRect: ClientRect = map.element.getBoundingClientRect();
@@ -1709,6 +2036,9 @@ export class Zoom {
         return new Point(Math.abs(pageX - positionX), Math.abs(pageY - positionY));
     }
 
+    /**
+     * @private
+     */
     public addEventListener(): void {
         if (this.maps.isDestroyed) {
             return;
@@ -1722,6 +2052,9 @@ export class Zoom {
         EventHandler.add(this.maps.element, this.cancelEvent, this.mouseCancelHandler, this);
     }
 
+    /**
+     * @private
+     */
     public removeEventListener(): void {
         if (this.maps.isDestroyed) {
             return;

@@ -113,6 +113,9 @@ $pivotgrid-gtot-background-color: $content-bg-color-alt1 !default;
 $pivotgrid-gtot-font-color: $content-text-color-alt1 !default;
 $pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
 $pivotgrid-drillthrough-header-font-color: $content-text-color-alt1 !default;
+$pivotgrid-drillthrough-header-value-font-color: $pivotview-grid-header-font-color !default;
+$pivotgrid-group-button-icon-wrapper-padding-top: 2px !default;
+$pivotgrid-group-button-icon-wrapper-marigin-top: 4px !default;
 
 /*! component's common definitions and variables */
 $pivotgrid-editor-search-padding-size: 20px !default;
@@ -142,8 +145,8 @@ $pivotpager-single-title-font-size: 14px !default;
 $pivotpager-touch-single-title-font-size: 16px !default;
 $pivotpager-single-title-line-height: 2.4em !default;
 $pivotpager-touch-single-title-line-height: 2.8em !default;
-$pivotpager-axis-title-font-color: $grey-500 !default;
-$pivotpager-size-title-font-color: $grey-800 !default;
+$pivotpager-axis-title-font-color: $content-text-color-disabled !default;
+$pivotpager-size-title-font-color: $content-text-color-alt1 !default;
 $pivotpager-string-font-touch-size: 14px !default;
 $pivotpager-pager-number-font-weight: 600 !default;
 $pivotpager-v-separator-margin: 8px 16px !default;

@@ -28,14 +28,14 @@ export interface TreeMapModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
-     * Sets and gets the width of the treemap component.
+     * Sets and gets the width of the treemap.
      *
      * @default null
      */
     width?: string;
 
     /**
-     * Sets and gets the height of the treemap component.
+     * Sets and gets the height of the treemap.
      *
      * @default null
      */
@@ -47,32 +47,38 @@ export interface TreeMapModel extends ComponentModel{
     border?: BorderModel;
 
     /**
-     * Sets and gets the options for customizing the margin in the treemap component.
+     * Sets and gets the options for customizing the margin in the treemap.
      */
     margin?: MarginModel;
 
     /**
      * Sets and gets the background color of the treemap.
+     * 
+     * @default null
      */
     background?: string;
 
     /**
-     * Sets and gets the options for customizing the theme of the treemap component.
+     * Sets and gets the theme styles supported for treemap. When the theme is set, the styles associated with the theme will be set in the treemap.
+     * 
+     * @default Material
      */
     theme?: TreeMapTheme;
 
     /**
-     * Sets and gets the options for customizing the title of the treemap component.
+     * Sets and gets the options for customizing the title of the treemap.
      */
     titleSettings?: TitleSettingsModel;
 
     /**
-     * Specifies the rendering type of layout of the treemap component.
+     * Specifies the rendering type for the layout of the treemap.
+     * 
+     * @default 'Squarified'
      */
     layoutType?: LayoutMode;
 
     /**
-     * Sets and gets the data source for the treemap component.
+     * Sets and gets the data source for the treemap.
      *
      * @isGenericType true
      * @isObservable true
@@ -89,27 +95,39 @@ export interface TreeMapModel extends ComponentModel{
     query?: Query;
 
     /**
-     * Sets and gets the value path of the weight from the data source, based on which the map item is rendered.
+     * Sets and gets the value path of the weight from the data source, based on which the treemap item is rendered.
+     * 
+     * @default null
      */
     weightValuePath?: string;
 
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * This property is used when range color mapping is set in the treemap.
+     * 
+     * @default ''
      */
     rangeColorValuePath?: string;
 
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * This property is used when equal color mapping is set in the treemap.
+     * 
+     * @default ''
      */
     equalColorValuePath?: string;
 
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * 
+     * @default null
      */
     colorValuePath?: string;
 
     /**
-     * Sets and gets the set of colors to apply in the treemap items.
+     * Sets and gets a set of colors to apply in the treemap items.
+     * 
+     * @default []
      */
     palette?: string[];
 
@@ -122,21 +140,29 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Enables or disables the drill down functionality in treemap.
+     * 
+     * @default false
      */
     enableDrillDown?: boolean;
 
     /**
-     * Enables or disables the connection text in the header of the treemap.
+     * Enables or disables the connection text in the header of the treemap when drill down is enabled.
+     * 
+     * @default false
      */
     enableBreadcrumb?: boolean;
 
     /**
-     * Specifies the connection between the two words.
+     * Specifies the symbol to show connection between the two words in the header of the treemap during drill down.
+     * 
+     * @default ' - '
      */
     breadcrumbConnector?: string;
 
     /**
      * Enables or disables the initial drill in the treemap.
+     * 
+     * @default false
      */
     drillDownView?: boolean;
 
@@ -151,17 +177,17 @@ export interface TreeMapModel extends ComponentModel{
     leafItemSettings?: LeafItemSettingsModel;
 
     /**
-     * Sets and gets the options for customizing the levels of the treemap.
+     * Sets and gets the options to configure and customize the levels of treemap items.
      */
     levels?: LevelSettingsModel[];
 
     /**
-     * Sets and gets the options for customizing the highlight of the treemap item on mouse over on the treemap component.
+     * Sets and gets the options to customize the highlight functionality of the treemap.
      */
     highlightSettings?: HighlightSettingsModel;
 
     /**
-     * Sets and gets the options for customizing the selection of the treemap item on click event on the treemap component.
+     * Sets and gets the options for customizing the selection functionality of the treemap.
      */
     selectionSettings?: SelectionSettingsModel;
 
@@ -197,21 +223,21 @@ export interface TreeMapModel extends ComponentModel{
     tabIndex?: number;
 
     /**
-     * Sets and gets format for the texts in the treemap.
+     * Sets and gets format for the texts in the treemap. This property accepts any global string format like 'C', 'N1', 'P' etc.
      *
      * @default null
      */
     format?: string;
 
     /**
-     * Triggers when the treemap is on load.
+     * Triggers before the treemap is rendered.
      *
      * @event load
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the print gets started.
      *
      * @event beforePrint
      */
@@ -225,7 +251,7 @@ export interface TreeMapModel extends ComponentModel{
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before item rendering in the treemap component.
+     * Triggers before item rendering in the treemap.
      *
      * @event itemRendering
      */
@@ -260,7 +286,7 @@ export interface TreeMapModel extends ComponentModel{
     itemHighlight?: EmitType<IItemHighlightEventArgs>;
 
     /**
-     * Triggers on rendering of the tooltip in the treemap component.
+     * Triggers on rendering of the tooltip in the treemap.
      *
      * @event tooltipRendering
      */
@@ -309,7 +335,7 @@ export interface TreeMapModel extends ComponentModel{
     mouseMove?: EmitType<IMouseMoveEventArgs>;
 
     /**
-     * Triggers after resizing the treemap component.
+     * Triggers to notify the resize of the treemap when the window is resized.
      *
      * @event resize
      */

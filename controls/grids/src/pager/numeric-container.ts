@@ -74,8 +74,9 @@ export class NumericContainer implements IRender {
             link = createElement('a', {
                 className: 'e-link e-numericitem e-spacing e-pager-default',
                 attrs: { role: 'link', tabindex: '-1', 'aria-label': pagerObj.getLocalizedLabel('Page') + i + pagerObj.getLocalizedLabel('Of') +
-                    pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'), href: 'javascript:void(0);' , name: 'Goto page' + i }
+                    pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'), href: '#' , name: 'Goto page' + i }
             });
+            link.setAttribute('onclick', 'event.preventDefault()');
             if (pagerObj.currentPage === i) {
                 classList(link, ['e-currentitem', 'e-active'], ['e-pager-default']);
                 link.setAttribute('aria-selected', 'true');
@@ -174,9 +175,10 @@ export class NumericContainer implements IRender {
                     'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     tabindex: '-1',
                     name: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
-                    href: 'javascript:void(0);'
+                    href: '#'
                 }
             });
+        this.PP.setAttribute('onclick', 'event.preventDefault()');
         prevPager.appendChild(this.PP);
         pagerContainer.appendChild(prevPager);
     }
@@ -191,9 +193,10 @@ export class NumericContainer implements IRender {
                     'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     tabindex: '-1',
                     name: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
-                    href: 'javascript:void(0);'
+                    href: '#'
                 }
             });
+        this.NP.setAttribute('onclick', 'event.preventDefault()');
         nextPager.appendChild(this.NP);
         pagerContainer.appendChild(nextPager);
     }

@@ -34,6 +34,7 @@ export interface IXLFilter extends Component<HTMLElement> {
     cssClass?: string;
     loadingIndicator?: LoadingIndicatorModel;
     showMaskRow?: Function;
+    enableHtmlSanitizer?: boolean;
 }
 /** @hidden */
 export interface FilterStateObj {

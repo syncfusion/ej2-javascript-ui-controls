@@ -37,11 +37,21 @@ import { ExportUtils } from '../heatmap/utils/export';
 import { ExportType } from '../heatmap/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
+/**
+ * Represents the heatmap control. This is used to customize the properties of the heatmap in order to visualize two-dimensional data, with values represented by gradient or solid color variations.
+ * ```html
+ * <div id="container"/>
+ * <script>
+ *   var heatmapObj = new HeatMap();
+ *   heatmapObj.appendTo("#container");
+ * </script>
+ * ```
+ */
 @NotifyPropertyChanges
 export class HeatMap extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /**
-     * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
+     * Sets and gets the width of the heatmap. The width of the heatmap accepts pixel or percentage values given in string format.
      *
      * If specified as '100%, heatmap renders to the full width of its parent element.
      *
@@ -52,7 +62,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public width: string;
 
     /**
-     * The height of the heatmap accepts pixel values given in string format.
+     * Sets and gets the height of the heatmap. The height of the heatmap accepts pixel or percentage values given in string format.
      *
      * @default null
      */
@@ -61,7 +71,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public height: string;
 
     /**
-     * Enable or disable the tool tip for heatmap
+     * Enable or disable the visibility of the tooltip for heatmap.
      *
      * @default true
      */
@@ -70,7 +80,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public showTooltip: boolean;
 
     /**
-     * Triggers when click the heat map cell.
+     * Triggers before the tooltip of the heatmap is rendered on the heatmap cell.
      *
      * {% codeBlock src='heatmap/tooltipRender/index.md' %}{% endcodeBlock %}
      *
@@ -80,7 +90,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public tooltipRender: EmitType<ITooltipEventArgs>;
 
     /**
-     * Triggers after resizing of Heatmap.
+     * Triggers to notify the resize of the heatmap when the window is resized.
      *
      * @event 'object'
      */
@@ -106,7 +116,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public cellRender: EmitType<ICellEventArgs>;
 
     /**
-     * Triggers when multiple cells gets selected.
+     * Triggers when heatmap cell gets selected.
      *
      * @event 'object'
      */
@@ -114,10 +124,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public cellSelected: EmitType<ISelectedEventArgs>;
 
     /**
-     * Specifies the rendering mode of heat map.
-     * * SVG - Heat map is render using SVG draw mode.
-     * * Canvas - Heat map is render using Canvas draw mode.
-     * * Auto - Automatically switch the draw mode based on number of records in data source.
+     * Specifies the rendering mode of heatmap. The following are the available rendering modes.
+     * * SVG - Heatmap is rendered using SVG element.
+     * * Canvas - Heatmap is rendered using Canvas element.
+     * * Auto - Automatically switches the rendering mode based on number of records in the data source.
      *
      * @default SVG
      */
@@ -125,7 +135,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public renderingMode: DrawType;
 
     /**
-     * Specifies the datasource for the heat map.
+     * Sets and gets the data to visualize in the heatmap.
      *
      * @isDataManager false
      * @default null
@@ -135,7 +145,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public dataSource: Object ;
 
     /**
-     * Specifies the datasource settings for heat map.
+     * Sets and gets the options to customize the data mapping for the data in the heatmap.
      * {% codeBlock src='heatmap/dataSourceSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<DataModel>({}, Data)
@@ -150,7 +160,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public backgroundColor: string;
 
     /**
-     *  Specifies the theme for heatmap.
+     *  Sets and gets the theme styles supported for heatmap. When the theme is set, the styles associated with the theme will be set in the heatmap.
      *
      * @default 'Material'
      */
@@ -158,7 +168,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public theme: HeatMapTheme;
 
     /**
-     * Enable or disable the selection of multiple cells in heatmap
+     * Enable or disable the selection of cells in heatmap.
      * {% codeBlock src='heatmap/allowSelection/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -177,60 +187,56 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public enableMultiSelect: boolean;
 
     /**
-     * Options to customize left, right, top and bottom margins of the heat map.
+     * Sets and gets the options to customize left, right, top and bottom margins of the heatmap.
      */
 
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
-     * Title of heat map
+     * Sets and gets the options to customize the title of the heatmap.
      * {% codeBlock src='heatmap/titleSettings/index.md' %}{% endcodeBlock %}
-     *
-     * @default ''
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.heatMapTitleFont }, Title)
     public titleSettings: TitleModel;
 
     /**
-     * Options to configure the horizontal axis.
+     * Sets and gets the options to configure the horizontal axis.
      */
 
     @Complex<AxisModel>({}, Axis)
     public xAxis: AxisModel;
 
     /**
-     * Options for customizing the legend of the heat map
+     * Sets and gets the options for customizing the legend of the heatmap.
      * {% codeBlock src='heatmap/legendSettings/index.md' %}{% endcodeBlock %}
-     *
-     * @default ''
      */
     @Complex<LegendSettingsModel>({ position: 'Right'}, LegendSettings)
     public legendSettings: LegendSettingsModel;
 
     /**
-     * Options for customizing the cell color of the heat map
+     * Sets and gets the options for customizing the cell color of the heatmap.
      * {% codeBlock src='heatmap/paletteSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<PaletteSettingsModel>({}, PaletteSettings)
     public paletteSettings: PaletteSettingsModel;
 
     /**
-     * Options for customizing the ToolTipSettings property  of the heat map
+     * Sets and gets the options for customizing the tooltip of the heatmap.
      * {% codeBlock src='heatmap/tooltipSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
 
     /**
-     * Options to configure the vertical axis.
+     * Sets and gets the options to configure the vertical axis.
      */
 
     @Complex<AxisModel>({}, Axis)
     public yAxis: AxisModel;
 
     /**
-     * Options to customize the heat map cell
+     * Sets and gets the options to customize the heatmap cells.
      * {% codeBlock src='heatmap/cellSettings/index.md' %}{% endcodeBlock %}
      */
 
@@ -238,7 +244,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public cellSettings: CellSettingsModel;
 
     /**
-     * Triggers after heat map rendered.
+     * Triggers after heatmap is completely rendered.
      *
      * @event 'object'
      */
@@ -246,7 +252,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public created: EmitType<Object>;
 
     /**
-     * Triggers before heat map load.
+     * Triggers before heatmap gets loaded.
      * {% codeBlock src='heatmap/load/index.md' %}{% endcodeBlock %}
      *
      * @event 'object'
@@ -255,7 +261,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public load: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers when click the heat map cell.
+     * Triggers when clicking on the heatmap cell.
      *
      * @event 'object'
      */
@@ -468,11 +474,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Handles the export method for heatmap control.
+     * This method is used to perform the export functionality for the heatmap.
      *
-     * @param type
-     * @param fileName
-     * @param orientation
+     * @param {ExportType} type - Specifies the type of the exported file.
+     * @param {string} fileName - Specifies the file name for the exported file.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation for the exported PDF document.
      */
 
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
@@ -637,6 +643,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Get component name
+     * @private
      */
 
     public getModuleName(): string {
@@ -875,7 +882,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To destroy the widget
+     * This method destroys the heatmap. This method removes the events associated with the heatmap and disposes the objects created for rendering and updating the heatmap.
      * {% codeBlock src='heatmap/destroy/index.md' %}{% endcodeBlock %}
      *
      * @function destroy
@@ -1182,7 +1189,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Method to print the heatmap.
+     * This method is used to print the rendered heatmap.
      */
 
     public print(): void {
@@ -1879,7 +1886,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To clear the multi cell selection
+     * This method is used to clear the cell selection in the heatmap.
      * {% codeBlock src='heatmap/clearSelection/index.md' %}{% endcodeBlock %}
      */
 
@@ -1929,6 +1936,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         (document.getElementById(this.element.id + '_canvas') as HTMLElement).style.cursor = 'Pointer';
                     } else {
                         (document.getElementById(this.element.id + '_svg') as HTMLElement).style.cursor = 'Pointer';
+                        const legendLabelTooltipContainer: HTMLElement = document.getElementById(this.element.id + 'legendLabelTooltipContainer');
+                        if (!isNullOrUndefined(legendLabelTooltipContainer)) {
+                        legendLabelTooltipContainer.style.cursor = 'Pointer';
+                        }
                     }
                     loop = false;
                 } else if (loop) {

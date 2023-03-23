@@ -2,52 +2,7 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I427734` - Resolved the issue where resizing did not work when persistence was enabled for both individual and stacked columns.
-- `#I439120`, `#I441663` - Resolved script error when using frozen columns with batch editing.
-- `#I442974` - Resolved expand/collapse icon not shown after editing when row drag and drop enabled with batch editing.
-
-## 20.4.49 (2023-02-07)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I427734` - Resolved column width(resizing) was not persisted while using stacked columns in case of `enablePersistence` property enabled in the tree grid.
-- `#I430564` - Resolved child records disappearing on Expand/Collapse action while using Observables.
-
-## 20.4.48 (2023-02-01)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I425048` - Resolved issue with last row border being invisible when the height was set to 100% on collapsing.
-
-## 20.4.44 (2023-01-18)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I425556` - Resolved the data hiding issue while expanding child parent records in the case of observable binding.
-- `#I422337` - Resolved improper selection after an expanding or collapsing the records.
-
-## 20.4.38 (2022-12-21)
-
-### Tree Grid
-
-#### Features
-
-- Provided the shimmer effect for tree grid while loading, refreshing and data processing. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/loading-animation.html).
-- `#I307202`, `#FB20655` - Provided support to load child records on demand while virtual scrolling in remote data binding. Find more details in the documentation [here](https://ej2.syncfusion.com/documentation/treegrid/data-binding/remote-data/#loadchildondemand-with-virtualization).
-
-## 20.3.47 (2022-09-29)
+## 21.1.35 (2023-03-23)
 
 ### Tree Grid
 

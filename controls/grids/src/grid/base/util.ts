@@ -1509,28 +1509,29 @@ export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], ta
 /**
  * @param {IGrid} gObj - Defines the grid object.
  * @param {boolean} visibleOnly - Defines to return only visible columns.
- * @returns {Column[], Column[], Column[]} Returns all frozenLeft, movable and frozenRight Columns as object.
+ * @returns {{frozenLeft: Column[], movable: Column[], frozenRight: Column[]}} - Returns all frozenLeft, movable and frozenRight Columns as object.
  * @hidden
  */
-export function getExactFrozenMovableColumn(gObj: IGrid, visibleOnly?: boolean): { frozenLeft:Column[], movable:Column[], frozenRight: Column[] } {
-    let columnModel: Column[] = gObj.getColumns();
-    let movableColumns: Column[] = [];
-    let frozenLeftColumns: Column[] = [];
-    let frozenRightColumns: Column[] = [];
-    for (let i:number = 0; i < columnModel.length; i++) {
-        if (isNullOrUndefined(visibleOnly) || !visibleOnly || visibleOnly === columnModel[i].visible) {
-            if (columnModel[i].freeze === 'Left' || columnModel[i].freezeTable === 'frozen-left') {
-                frozenLeftColumns.push(columnModel[i]);
+export function getExactFrozenMovableColumn(gObj: IGrid, visibleOnly?: boolean): {
+    frozenLeft: Column[], movable: Column[], frozenRight: Column[] } {
+    const columnModel: Column[] = gObj.getColumns();
+    const movableColumns: Column[] = [];
+    const frozenLeftColumns: Column[] = [];
+    const frozenRightColumns: Column[] = [];
+    for (let i: number = 0; i < columnModel.length; i++) {
+        if (isNullOrUndefined(visibleOnly) || !visibleOnly || visibleOnly === columnModel[parseInt(i.toString(), 10)].visible) {
+            if (columnModel[parseInt(i.toString(), 10)].freeze === 'Left' || columnModel[parseInt(i.toString(), 10)].freezeTable === 'frozen-left') {
+                frozenLeftColumns.push(columnModel[parseInt(i.toString(), 10)]);
             }
-            else if (columnModel[i].freeze === 'Right' || columnModel[i].freezeTable === 'frozen-right') {
-                frozenRightColumns.push(columnModel[i]);
+            else if (columnModel[parseInt(i.toString(), 10)].freeze === 'Right' || columnModel[parseInt(i.toString(), 10)].freezeTable === 'frozen-right') {
+                frozenRightColumns.push(columnModel[parseInt(i.toString(), 10)]);
             }
             else {
-                movableColumns.push(columnModel[i]);
+                movableColumns.push(columnModel[parseInt(i.toString(), 10)]);
             }
         }
     }
-    return { frozenLeft: frozenLeftColumns, movable :movableColumns, frozenRight: frozenRightColumns };
+    return { frozenLeft: frozenLeftColumns, movable: movableColumns, frozenRight: frozenRightColumns };
 }
 
 // eslint-disable-next-line
@@ -1720,7 +1721,6 @@ export function setRowsInTbody(
  * @param {string} numberFormat - Format
  * @param {string} type - Value type
  * @param {boolean} isExcel - Boolean property
- * @param {string} currencyCode - Currency code property from grid instance.
  * @returns {string} returns formated value
  * @hidden
  */

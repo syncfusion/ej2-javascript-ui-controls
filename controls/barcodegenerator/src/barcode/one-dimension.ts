@@ -70,16 +70,16 @@ export abstract class OneDimension extends BarcodeBase {
         } else if (type === 'Code93Extension') {
             let count: number = 0;
             for (let i: number = 0; i < code.length; i++) {
-                const numberOfDigits: string = code[i];
+                const numberOfDigits: string = code[parseInt(i.toString(), 10)];
                 for (let j: number = 0; j < numberOfDigits.length; j++) {
-                    count += Number(numberOfDigits[j]);
+                    count += Number(numberOfDigits[parseInt(j.toString(), 10)]);
                 }
             }
             return widthValue / count;
         } else {
             let lineCount: number = 0;
             for (let i: number = 0; i < code.length; i++) {
-                const numberOfDigits: number = code[i].length;
+                const numberOfDigits: number = code[parseInt(i.toString(), 10)].length;
                 lineCount += numberOfDigits;
             }
             let additionalValue: number;
@@ -94,7 +94,7 @@ export abstract class OneDimension extends BarcodeBase {
 
     private multipleWidth(codeValue: string, k: number, value: number): number {
         let number: number;
-        if (codeValue[k] === '1' && codeValue[k + 1] === '1') {
+        if (codeValue[parseInt(k.toString(), 10)] === '1' && codeValue[k + 1] === '1') {
             number = value + 1;
             return this.multipleWidth(codeValue, k + 1, number);
         }
@@ -218,7 +218,7 @@ export abstract class OneDimension extends BarcodeBase {
             const position: string = this.displayText.position; const scaleValue: number = this.isSvgMode ? 1 : 1.5;
             let textOptions: BaseAttributes; let textSize: Size; let textHeight: number; let textProperty: DisplayTextModel;
             for (let j: number = 0; j < code.length; j++) {
-                const codeValue: string = code[j] as string;
+                const codeValue: string = code[parseInt(j.toString(), 10)] as string;
                 const check: boolean = (type !== 'UpcA' && type !== 'UpcE' && type !== 'Code11' && type !== 'Code93' && type !== 'Code93Extension');
                 const barType: string = this.barCodeType(this.type);
                 const extraHeight: boolean = this.checkExtraHeight(j, type, code);
@@ -236,8 +236,8 @@ export abstract class OneDimension extends BarcodeBase {
                         renderText = true;
                     }
                     const canDrawCheck: boolean = (type === 'Code39' || type === 'Code93Extension' || type === 'Code32' || type === 'Code11' || type === 'Code39Extension');
-                    const candraw: boolean = canDrawCheck ? (k % 2 ? false : true) : (codeValue[k] === '1' ? true : false);
-                    const string: string = codeValue.toString(); const number: number = Number(string[k]); let width: number;
+                    const candraw: boolean = canDrawCheck ? (k % 2 ? false : true) : (codeValue[parseInt(k.toString(), 10)] === '1' ? true : false);
+                    const string: string = codeValue.toString(); const number: number = Number(string[parseInt(k.toString(), 10)]); let width: number;
                     width = this.getWidthValue(number, width, type); width = width * ratio; textProperty = this.displayText;
                     const text: string = this.getDisplayText(j, textProperty);
                     textOptions = this.getBaseAttributes(
@@ -397,7 +397,7 @@ export abstract class OneDimension extends BarcodeBase {
         : void {
         const barcodeRenderer: BarcodeRenderer = this.getInstance(canvas.id);
         for (let i: number = 0; i < options.length; i++) {
-            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[i]);
+            barcodeRenderer.renderRectElement(canvas as HTMLCanvasElement, options[parseInt(i.toString(), 10)]);
         }
     }
 

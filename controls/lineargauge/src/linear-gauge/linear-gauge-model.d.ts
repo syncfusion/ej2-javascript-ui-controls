@@ -16,7 +16,7 @@ export interface LinearGaugeModel extends ComponentModel{
     width?: string;
 
     /**
-     * Enables or disables the gauge to be rendered to the complete width.
+     * Enables or disables the ability of the gauge to be rendered to the complete width. The left, right, top and bottom spacing will not be considered in the gauge when this property is disabled.
      *
      * @default true
      */
@@ -73,7 +73,7 @@ export interface LinearGaugeModel extends ComponentModel{
     margin?: MarginModel;
 
     /**
-     * Specifies the options for customizing the color and width of the border for linear gauge.
+     * Specifies the options for customizing the style properties of the border for linear gauge.
      */
 
     border?: BorderModel;
@@ -135,7 +135,7 @@ export interface LinearGaugeModel extends ComponentModel{
     useGroupingSeparator?: boolean;
 
     /**
-     * Specifies the description for linear gauge.
+     * Sets and gets the information about gauge for assistive technology.
      *
      * @default null
      */
@@ -156,7 +156,7 @@ export interface LinearGaugeModel extends ComponentModel{
     format?: string;
 
     /**
-     * Specifies the theme supported for the linear gauge.
+     * Sets and gets the theme styles supported for linear gauge. When the theme is set, the styles associated with the theme will be set in the gauge.
      *
      * @default Material
      */
@@ -270,7 +270,7 @@ export interface LinearGaugeModel extends ComponentModel{
     valueChange?: EmitType<IValueChangeEventArgs>;
 
     /**
-     * Triggers after window resize.
+     * Triggers to notify the resize of the linear gauge when the window is resized.
      *
      * @event resized
      */
@@ -278,7 +278,7 @@ export interface LinearGaugeModel extends ComponentModel{
     resized?: EmitType<IResizeEventArgs>;
 
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the print functionality gets started.
      *
      * @event beforePrint
      */

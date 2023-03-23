@@ -200,5 +200,8 @@ export class ShowHide {
             }
         }
         );
+        if (this.parent.autoFit && !this.parent.groupSettings.columns.length) {
+            this.parent.preventAdjustColumns();
+        }
     }
 }

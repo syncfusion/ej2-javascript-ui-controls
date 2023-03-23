@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';
 import { Theme } from '../../common/model/theme';

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Specifies smithchart animationComplete event name.
  *

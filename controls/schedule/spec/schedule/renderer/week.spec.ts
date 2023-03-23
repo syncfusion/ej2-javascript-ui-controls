@@ -331,8 +331,8 @@ describe('Schedule Week view', () => {
                 maxDate: new Date(2017, 9, 12)
             };
             schObj = util.createSchedule(model, []);
-            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
@@ -390,8 +390,8 @@ describe('Schedule Week view', () => {
                 maxDate: new Date(2017, 9, 12)
             };
             schObj = util.createSchedule(model, []);
-            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             schObj.minDate = new Date(2017, 9, 1);

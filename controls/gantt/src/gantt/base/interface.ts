@@ -151,6 +151,8 @@ export interface ITaskData {
     workTimelineRanges?: IWorkTimelineRanges[];
     /** Defines overlap index. */
     eOverlapIndex?: number;
+    /** Defines whether overlapped with other taskbar or not. */
+    eOverlapped?: boolean;
     /** Defines task segments. */
     segments?: ITaskSegment[];
     /**

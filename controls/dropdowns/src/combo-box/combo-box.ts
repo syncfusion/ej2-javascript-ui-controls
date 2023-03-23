@@ -435,7 +435,7 @@ export class ComboBox extends DropDownList {
         }
         if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped) {
             setTimeout(() => {
-            this.inlineSearch();   
+                this.inlineSearch();
             });
         }
     }
@@ -452,8 +452,9 @@ export class ComboBox extends DropDownList {
             const inputValue: string = this.inputElement.value;
             const dataSource: { [key: string]: Object }[] = this.sortedData as { [key: string]: Object }[];
             const type: string = this.typeOfData(dataSource).typeof as string;
-            const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
-            var activeElement : Element = activeItem.item as Element;
+            const activeItem: { [key: string]: Element | number } =
+                Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
+            const activeElement: Element = activeItem.item as Element;
             if (!isNullOrUndefined(activeElement)) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
                 const height: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
@@ -631,7 +632,7 @@ export class ComboBox extends DropDownList {
             const inputValue: string = value + currentValue.substr(value.length, currentValue.length);
             Input.setValue(inputValue, this.inputElement, this.floatLabelType, this.showClearButton);
             this.inputElement.setSelectionRange(selection.start, this.inputElement.value.length);
-        } else if(isKeyNavigate) {
+        } else if (isKeyNavigate) {
             Input.setValue(currentValue, this.inputElement, this.floatLabelType, this.showClearButton);
             this.inputElement.setSelectionRange(0, this.inputElement.value.length);
         }
@@ -753,7 +754,7 @@ export class ComboBox extends DropDownList {
         value: string | Object,
         eventArgs: { [key: string]: Object | string | number },
         previousValue: string | number | boolean,
-        e?: MouseEvent| KeyboardEventArgs| TouchEvent): void {
+        e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         const fields: FieldSettingsModel = this.fields;
         const item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
         let dataItem: { [key: string]: string | Object } = {};
@@ -791,37 +792,37 @@ export class ComboBox extends DropDownList {
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'readonly':
-                Input.setReadonly(this.readonly, this.inputElement as HTMLInputElement);
-                if (this.readonly) {
-                    EventHandler.remove(this.inputElement, 'input', this.onInput);
-                    EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-                    EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-                } else {
-                    EventHandler.add(this.inputElement, 'input', this.onInput, this);
-                    EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
-                    EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
+                case 'readonly':
+                    Input.setReadonly(this.readonly, this.inputElement as HTMLInputElement);
+                    if (this.readonly) {
+                        EventHandler.remove(this.inputElement, 'input', this.onInput);
+                        EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                        EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                    } else {
+                        EventHandler.add(this.inputElement, 'input', this.onInput, this);
+                        EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
+                        EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
+                    }
+                    this.setReadOnly();
+                    break;
+                case 'allowFiltering':
+                    this.setSearchBox();
+                    if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
+                        super.renderList();
+                    }
+                    break;
+                case 'allowCustom':
+                    break;
+                default: {
+                    // eslint-disable-next-line max-len
+                    const comboProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);
+                    super.onPropertyChanged(comboProps.newProperty, comboProps.oldProperty);
+                    if (this.isFiltering() && prop === 'dataSource' && isNullOrUndefined(this.list) && this.itemTemplate &&
+                        this.getModuleName() === 'combobox') {
+                        super.renderList();
+                    }
+                    break;
                 }
-                this.setReadOnly();
-                break;
-            case 'allowFiltering':
-                this.setSearchBox();
-                if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
-                    super.renderList();
-                }
-                break;
-            case 'allowCustom':
-                break;
-            default: {
-                // eslint-disable-next-line max-len
-                const comboProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);
-                super.onPropertyChanged(comboProps.newProperty, comboProps.oldProperty);
-                if (this.isFiltering() && prop === 'dataSource' && isNullOrUndefined(this.list) && this.itemTemplate &&
-                this.getModuleName() === 'combobox') {
-                    super.renderList();
-                }
-                break;
-            }
             }
         }
     }
@@ -876,6 +877,7 @@ export class ComboBox extends DropDownList {
         query?: Query, fields?: FieldSettingsModel): void {
         super.filter(dataSource, query, fields);
     }
+    /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**
      * Opens the popup that displays the list of items.
      *
@@ -883,6 +885,7 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     public showPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        /* eslint-enable valid-jsdoc, jsdoc/require-param */
         super.showPopup(e);
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-param */

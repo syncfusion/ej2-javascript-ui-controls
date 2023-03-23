@@ -3131,8 +3131,9 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
   });
 });
 
-describe('EJ2-67148 - collapsing a record after editing throws script error', () => {
+describe('EJ2-69973 - script error throws while collapsing a record after editing any parent row', () => {
   let gridObj: TreeGrid;
+  let actionComplete: () => void;
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
@@ -3148,7 +3149,7 @@ describe('EJ2-67148 - collapsing a record after editing throws script error', ()
             newRowPosition: 'Below'
 
         },
-        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
         columns: [
             {
                 field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
@@ -3166,11 +3167,20 @@ describe('EJ2-67148 - collapsing a record after editing throws script error', ()
       done
     );
   });
-  it('Collapsing after editing the parent record', (done: Function) => {
-      gridObj.updateRow(0,{taskName:'test'});
-      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-      expect(gridObj.dataSource[0].taskName).toBe('test');
-      done();
+  it('collapsing a record after editing any parent row', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "save") {
+        expect(gridObj.dataSource[0].taskName).toBe('test');
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.selectRow(0);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test';
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
   afterAll(() => {
     destroy(gridObj);

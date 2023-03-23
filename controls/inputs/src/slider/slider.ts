@@ -18,6 +18,7 @@ export class TicksData extends ChildProperty<TicksData> {
      *  * both - Ticks are placed on the both side of the Slider bar.
      *  * none - Ticks are not shown.
      * {% codeBlock src='slider/placement/index.md' %}{% endcodeBlock %}
+     *
      * @default 'None'
      */
     @Property('None')
@@ -25,6 +26,7 @@ export class TicksData extends ChildProperty<TicksData> {
     /**
      * It is used to denote the distance between two major (large) ticks from the scale of the Slider.
      * {% codeBlock src='slider/largestep/index.md' %}{% endcodeBlock %}
+     *
      * @default 10
      */
     @Property(10)
@@ -32,12 +34,14 @@ export class TicksData extends ChildProperty<TicksData> {
     /**
      * It is used to denote the distance between two minor (small) ticks from the scale of the Slider.
      * {% codeBlock src='slider/smallstep/index.md' %}{% endcodeBlock %}
+     *
      * @default 1
      */
     @Property(1)
     public smallStep: number;
     /**
      * We can show or hide the small ticks in the Slider, which will be appeared in between the largeTicks.
+     *
      * @default false
      */
     @Property(false)
@@ -57,6 +61,7 @@ export class TicksData extends ChildProperty<TicksData> {
 export interface SliderTooltipEventArgs {
     /**
      * It is used to get the value of the Slider.
+     *
      * @isGenericType true
      */
     value: number | number[];
@@ -72,11 +77,13 @@ export interface SliderTooltipEventArgs {
 export interface SliderChangeEventArgs {
     /**
      * It is used to get the current value of the Slider.
+     *
      * @isGenericType true
      */
     value: number | number[];
     /**
      * It is used to get the previous value of the Slider.
+     *
      * @isGenericType true
      */
     previousValue: number | number[];
@@ -133,6 +140,7 @@ export interface SliderTickRenderedEventArgs {
 export class ColorRangeData extends ChildProperty<ColorRangeData> {
     /**
      * It is used to set the color in the slider bar.
+     *
      * @default ''
      */
     @Property(null)
@@ -140,6 +148,7 @@ export class ColorRangeData extends ChildProperty<ColorRangeData> {
 
     /**
      * It is used to get the starting value for applying color.
+     *
      * @default null
      */
     @Property(null)
@@ -147,6 +156,7 @@ export class ColorRangeData extends ChildProperty<ColorRangeData> {
 
     /**
      * It is used to get the end value for applying color.
+     *
      * @default null
      */
     @Property(null)
@@ -160,6 +170,7 @@ export class ColorRangeData extends ChildProperty<ColorRangeData> {
 export class LimitData extends ChildProperty<LimitData> {
     /**
      * It is used to enable the limit in the slider.
+     *
      * @default false
      */
     @Property(false)
@@ -167,6 +178,7 @@ export class LimitData extends ChildProperty<LimitData> {
 
     /**
      * It is used to set the minimum start limit value.
+     *
      * @default null
      */
     @Property(null)
@@ -174,6 +186,7 @@ export class LimitData extends ChildProperty<LimitData> {
 
     /**
      * It is used to set the minimum end limit value.
+     *
      * @default null
      */
     @Property(null)
@@ -181,6 +194,7 @@ export class LimitData extends ChildProperty<LimitData> {
 
     /**
      * It is used to set the maximum start limit value.
+     *
      * @default null
      */
     @Property(null)
@@ -188,6 +202,7 @@ export class LimitData extends ChildProperty<LimitData> {
 
     /**
      * It is used to set the maximum end limit value.
+     *
      * @default null
      */
     @Property(null)
@@ -196,6 +211,7 @@ export class LimitData extends ChildProperty<LimitData> {
     /**
      * It is used to lock the first handle.
      * {% codeBlock src='slider/limitStartHandleFixed/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
     @Property(false)
@@ -204,6 +220,7 @@ export class LimitData extends ChildProperty<LimitData> {
     /**
      * It is used to lock the second handle.
      * {% codeBlock src='slider/limitEndHandleFixed/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
     @Property(false)
@@ -217,6 +234,7 @@ export class TooltipData extends ChildProperty<TooltipData> {
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that define
      *  specific user-defined styles and themes to be applied on the Tooltip element.
+     *
      * @default ''
      */
     @Property('')
@@ -235,6 +253,7 @@ export class TooltipData extends ChildProperty<TooltipData> {
      * If it is in desktop, it will show the Tooltip content when hovering on the target element.
      * If it is in touch device. It will show the Tooltip content when tap and holding on the target element.
      * {% codeBlock src='slider/tooltipShowOn/index.md' %}{% endcodeBlock %}
+     *
      * @default 'Auto'
      */
     @Property('Focus')
@@ -259,27 +278,87 @@ export class TooltipData extends ChildProperty<TooltipData> {
 /**
  * Ticks Placement.
  */
-export type Placement = 'Before' | 'After' | 'Both' | 'None';
+ export type Placement = 
+ /**
+ * Ticks are placed in the top of the horizontal slider bar or at the left of the vertical slider bar.
+ */
+ 'Before' | 
+ /**
+ * Ticks are placed in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
+ */
+ 'After' | 
+ /**
+ * Ticks are placed on the both side of the slider bar.
+ */
+ 'Both' | 
+ /**
+ * Ticks are not shown.
+ */
+ 'None';
 
 /**
  * Tooltip Placement.
  */
-export type TooltipPlacement = 'Before' | 'After';
+ export type TooltipPlacement = 
+ /**
+ * Tooltip is shown in the top of the horizontal slider bar or at the left of the vertical slider bar.
+ */
+ 'Before' | 
+ /**
+ * Tooltip is shown in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
+ */
+ 'After';
 
 /**
  * Tooltip ShowOn.
  */
-export type TooltipShowOn = 'Focus' | 'Hover' | 'Always' | 'Auto';
+ export type TooltipShowOn = 
+ /**
+ * Tooltip is shown while focusing the Slider handle.
+ */
+ 'Focus' | 
+ /**
+ * Tooltip is shown while hovering the Slider handle.
+ */
+ 'Hover' | 
+ /**
+ * Tooltip is shown always.
+ */
+ 'Always' | 
+ /**
+ * Tooltip is shown while hovering the Slider handle in desktop and tap and hold in touch devices.
+ */
+ 'Auto';
 
 
 /**
  * Slider type.
  */
-export type SliderType = 'Default' | 'MinRange' | 'Range';
+ export type SliderType = 
+ /**
+ * Allows to select a single value in the Slider.
+ */
+ 'Default' | 
+ /**
+ * Allows to select a single value in the Slider, it display’s a shadow from the start to the current value.
+ */
+ 'MinRange' | 
+ /**
+ * Allows to select a range of values in the Slider.
+ */
+ 'Range';
 /**
  * Slider orientation.
  */
-export type SliderOrientation = 'Horizontal' | 'Vertical';
+ export type SliderOrientation = 
+ /**
+ * Renders the slider in horizontal orientation.
+ */
+ 'Horizontal' | 
+ /**
+ * Renders the slider in vertical orientation.
+ */
+ 'Vertical';
 
 type SliderHandleNumber = 1 | 2;
 
@@ -441,6 +520,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * The value should be specified in array of number when render Slider type as range.
      *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      * @isGenericType true
      */
@@ -450,6 +530,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Specifies an array of slider values in number or string type.
      * The min and max step values are not considered.
+     *
      * @default null
      */
     @Property(null)
@@ -457,11 +538,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Specifies the step value for each value change when the increase / decrease
-     *  button is clicked or on arrow keys press or on dragging the thumb. 
+     *  button is clicked or on arrow keys press or on dragging the thumb.
      *  Refer the documentation [here](../../slider/ticks#step)
      *  to know more about this property.
      *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 1
      */
     @Property(1)
@@ -469,6 +551,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Specifies the width of the Slider.
+     *
      * @default null
      */
     @Property(null)
@@ -478,6 +561,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * Gets/Sets the minimum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 0
      */
     @Property(0)
@@ -487,6 +571,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * Gets/Sets the maximum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default 100
      */
     @Property(100)
@@ -495,6 +580,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Specifies whether the render the slider in read-only mode to restrict any user interaction.
      * The slider rendered with user defined values and can’t be interacted with user actions.
+     *
      * @default false
      */
     @Property(false)
@@ -506,6 +592,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *  * minRange - Allows to select a single value in the Slider. It display’s a shadow from the start to the current value.
      *  * range - Allows to select a range of values in the Slider. It displays shadow in-between the selection range.
      * {% codeBlock src='slider/types/index.md' %}{% endcodeBlock %}
+     *
+     * @default 'Default'
      */
     @Property('Default')
     public type: SliderType;
@@ -522,6 +610,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *  to know more about this property with demo.
      * {% codeBlock src='slider/ticks/index.md' %}{% endcodeBlock %}
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { placement: 'before' }
      */
     @Complex<TicksDataModel>({}, TicksData)
@@ -533,13 +622,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *  to know more about this property.
      *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { enabled: false }
      */
     @Complex<LimitDataModel>({}, LimitData)
     public limits: LimitDataModel;
 
     /**
-     * Enables or Disables the slider.
+     * Enable or Disable the slider.
+     *
      * @default true
      */
     @Property(true)
@@ -549,25 +640,28 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * Specifies the visibility, position of the tooltip over the slider element.
      *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default { placement: 'Before', isVisible: false, showOn: 'Focus', format: null }
      */
     @Complex<TooltipDataModel>({}, TooltipData)
     public tooltip: TooltipDataModel;
 
     /**
-     * Specifies whether to show or hide the increase/decrease buttons 
+     * Specifies whether to show or hide the increase/decrease buttons
      * of Slider to change the slider value.
      * Refer the documentation [here](../../slider/getting-started#buttons)
      *  to know more about this property.
      *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default false
      */
     @Property(false)
     public showButtons: boolean;
 
     /**
-     * Enables/Disables the animation for slider movement.
+     * Enable or Disable the animation for slider movement.
+     *
      * @default true
      */
     @Property(true)
@@ -575,8 +669,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      *  Specifies whether to render the slider in vertical or horizontal orientation.
-     *  Refer the documentation [here](../../slider/getting-started#orientation)
+     *  Refer the documentation [here](../../slider/orientation/)
      *  to know more about this property.
+     *
      * @default 'Horizontal'
      */
     @Property('Horizontal')
@@ -585,18 +680,21 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Specifies the custom classes to be added to the element used to customize the slider.
      * {% codeBlock src='slider/cssClass/index.md' %}{% endcodeBlock %}
+     *
      * @default ''
      */
     @Property('')
     public cssClass: string;
     /**
      * Defines whether to allow the cross-scripting site or not.
+     *
      * @default false
      */
     @Property(false)
     public enableHtmlSanitizer: boolean;
     /**
      * Triggers when the Slider is successfully created.
+     *
      * @event
      */
     @Event()
@@ -620,7 +718,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     public changed: EmitType<SliderChangeEventArgs>;
 
     /**
-     * Triggers on rendering the ticks element in the Slider, 
+     * Triggers on rendering the ticks element in the Slider,
      * which is used to customize the ticks labels dynamically.
      * {% codeBlock src='slider/renderingticksEvent/index.md' %}{% endcodeBlock %}
      * @event
@@ -732,6 +830,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * To Initialize the control rendering
+     *
      * @private
      */
     public render(): void {
@@ -741,7 +840,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.setZindex();
         this.renderComplete();
         if (this.element.tagName === 'EJS-SLIDER') {
-            if (this.getTheme(this.sliderContainer) == "none") {
+            if (this.getTheme(this.sliderContainer) == 'none') {
                 setTimeout(() => {
                     this.refresh();
                 }, 0);
@@ -796,6 +895,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Initialize the rendering
+     *
      * @private
      */
     private initRender(): void {
@@ -831,7 +931,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.previousVal = this.type !== 'Range' ? this.checkHandleValue(parseFloat(formatUnit(this.value.toString()))) :
             [this.checkHandleValue(parseFloat(formatUnit((this.value as number[])[0].toString()))),
-            this.checkHandleValue(parseFloat(formatUnit((this.value as number[])[1].toString())))];
+                this.checkHandleValue(parseFloat(formatUnit((this.value as number[])[1].toString())))];
         this.previousChanged = this.previousVal;
         if (!isNullOrUndefined(this.element.hasAttribute('name'))) {
             this.element.removeAttribute('name');
@@ -934,7 +1034,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         } else {
             const range: string[][] = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
                 [[min.toString(), (this.customValues[(this.value as number[])[1]]).toString()],
-                [(this.customValues[(this.value as number[])[0]]).toString(), max.toString()]] :
+                    [(this.customValues[(this.value as number[])[0]]).toString(), max.toString()]] :
                 [[min.toString(), (this.value as number[])[1].toString()], [(this.value as number[])[0].toString(), max.toString()]];
             range.forEach((range: string[], index: number) => {
                 const element: Element = index === 0 ? this.firstHandle : this.secondHandle;
@@ -949,7 +1049,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createSecondHandle(): void {
         this.secondHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label':'slider'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label': 'slider'
             }
         });
         this.secondHandle.classList.add(classNames.sliderSecondHandle);
@@ -959,7 +1059,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createFirstHandle(): void {
         this.firstHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label':'slider'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label': 'slider'
             }
         });
         this.firstHandle.classList.add(classNames.sliderFirstHandle);
@@ -1114,16 +1214,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.setTooltipContent();
             args.text = text = this.tooltipObj.content as string;
             this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
-            this.addTooltipClass(observedArgs.text);
-            if (text !== observedArgs.text) {
-                this.customAriaText = observedArgs.text;
-                this.tooltipObj.content = observedArgs.text;
-                this.setAriaAttrValue(this.firstHandle);
-                if (this.type === 'Range') {
-                    this.setAriaAttrValue(this.secondHandle);
+                this.addTooltipClass(observedArgs.text);
+                if (text !== observedArgs.text) {
+                    this.customAriaText = observedArgs.text;
+                    this.tooltipObj.content = observedArgs.text;
+                    this.setAriaAttrValue(this.firstHandle);
+                    if (this.type === 'Range') {
+                        this.setAriaAttrValue(this.secondHandle);
+                    }
                 }
-            }
-         });
+            });
             if (this.isMaterialTooltip) {
                 this.setPreviousVal('change', this.value);
             }
@@ -1227,21 +1327,21 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
             const tooltipOffsetValue: number = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
             switch (position) {
-                case 'TopCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
-                    break;
+            case 'TopCenter':
+                this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
+                break;
 
-                case 'BottomCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
-                    break;
+            case 'BottomCenter':
+                this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
+                break;
 
-                case 'LeftCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
-                    break;
+            case 'LeftCenter':
+                this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
+                break;
 
-                case 'RightCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
-                    break;
+            case 'RightCenter':
+                this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
+                break;
             }
         }
     }
@@ -1265,20 +1365,20 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private tooltipPositionCalculation(position: string): string {
         let cssClass: string;
         switch (position) {
-            case 'TopCenter':
-                cssClass = classNames.horizontalTooltipBefore;
-                break;
+        case 'TopCenter':
+            cssClass = classNames.horizontalTooltipBefore;
+            break;
 
-            case 'BottomCenter':
-                cssClass = classNames.horizontalTooltipAfter;
-                break;
-            case 'LeftCenter':
-                cssClass = classNames.verticalTooltipBefore;
-                break;
+        case 'BottomCenter':
+            cssClass = classNames.horizontalTooltipAfter;
+            break;
+        case 'LeftCenter':
+            cssClass = classNames.verticalTooltipBefore;
+            break;
 
-            case 'RightCenter':
-                cssClass = classNames.verticalTooltipAfter;
-                break;
+        case 'RightCenter':
+            cssClass = classNames.verticalTooltipAfter;
+            break;
         }
         return cssClass;
     }
@@ -1399,7 +1499,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.sliderContainer.classList.add(classNames.materialSlider);
             this.tooltipValue();
             this.tooltipObj.animation.close.effect = 'None';
-            // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
             this.tooltipObj.open(this.firstHandle);
         }
     }
@@ -1549,7 +1648,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             tickWidth = 5;
         }
         for (let i: number = 0, y: number = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
-            this.customValues.length - 1 : 0, k: number = 0; i <= count; i++) {
+                this.customValues.length - 1 : 0, k: number = 0; i <= count; i++) {
             li = (this.createElement('li', {
                 attrs: {
                     class: classNames.tick, role: 'presentation', tabIndex: '-1',
@@ -2226,6 +2325,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to reposition slider.
+     *
      * @returns void
      */
     public reposition(): void {
@@ -2721,7 +2821,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private openTooltip(target?: HTMLElement): void {
         if (this.tooltip.isVisible && this.tooltipObj && !this.isMaterialTooltip) {
             this.tooltipValue();
-            // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
             this.tooltipObj.open(target);
             this.tooltipTarget = target;
         }
@@ -2737,17 +2836,17 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private keyDown(event: KeyboardEvent): void {
         switch (event.keyCode) {
-            case 37:
-            case 38:
-            case 39:
-            case 40:
-            case 33:
-            case 34:
-            case 36:
-            case 35:
-                event.preventDefault();
-                this.buttonClick(event);
-                break;
+        case 37:
+        case 38:
+        case 39:
+        case 40:
+        case 33:
+        case 34:
+        case 36:
+        case 35:
+            event.preventDefault();
+            this.buttonClick(event);
+            break;
         }
 
     }
@@ -2805,7 +2904,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private elementClick(event: MouseEvent & TouchEvent): void {
         if (this.isDragComplete) {
-            this.isDragComplete = false; 
+            this.isDragComplete = false;
             return;
         }
         event.preventDefault();
@@ -2899,7 +2998,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.sliderContainer.classList.add(classNames.sliderHover);
             } else {
                 this.sliderContainer.classList.remove(classNames.sliderHover);
-                const curTarget = event.currentTarget as HTMLElement
+                const curTarget = event.currentTarget as HTMLElement;
                 if (this.tooltip.isVisible && this.tooltip.showOn !== 'Always' && this.tooltipObj && this.isMaterialTooltip &&
                     !curTarget.classList.contains(classNames.sliderHandleFocused) &&
                     !curTarget.classList.contains(classNames.sliderTabHandle)) {
@@ -3052,6 +3151,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @private
      */
     protected getPersistData(): string {
@@ -3062,6 +3162,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
      * Also it removes the attributes and classes.
+     *
      * @method destroy
      * @return {void}
      */
@@ -3084,120 +3185,121 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Calls internally if any of the property value is changed.
+     *
      * @private
      */
     // tslint:disable-next-line
     public onPropertyChanged(newProp: SliderModel, oldProp: SliderModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    this.setCSSClass(oldProp.cssClass);
-                    break;
-                case 'value':
-                    if (newProp && oldProp) {
-                        let value: number | number[] = isNullOrUndefined(newProp.value) ?
-                            (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
-                        this.setProperties({ 'value': value }, true);
-                        if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
-                            this.setValue();
-                            this.refreshTooltip(this.tooltipTarget);
-                            if (this.type === 'Range') {
-                                if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
-                                    this.activeHandle = 1;
-                                } else {
-                                    this.activeHandle = 2;
-                                }
+            case 'cssClass':
+                this.setCSSClass(oldProp.cssClass);
+                break;
+            case 'value':
+                if (newProp && oldProp) {
+                    let value: number | number[] = isNullOrUndefined(newProp.value) ?
+                        (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
+                    this.setProperties({ 'value': value }, true);
+                    if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
+                        this.setValue();
+                        this.refreshTooltip(this.tooltipTarget);
+                        if (this.type === 'Range') {
+                            if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
+                                this.activeHandle = 1;
+                            } else {
+                                this.activeHandle = 2;
                             }
                         }
                     }
-                    break;
-                case 'min':
-                case 'step':
-                case 'max':
-                    this.setMinMaxValue();
-                    break;
-                case 'tooltip':
-                    if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
-                        this.setTooltip(prop);
-                    }
-                    break;
-                case 'type':
-                    if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
-                        && !isNullOrUndefined(oldProp.type)) {
-                        this.changeSliderType(oldProp.type, prop);
-                        this.setZindex();
-                    }
-                    break;
-                case 'enableRtl':
-                    if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
-                        this.rtl = oldProp.enableRtl;
-                        this.changeRtl();
-                    }
-                    break;
-                case 'limits':
-                    this.limitsPropertyChange();
-                    break;
-                case 'orientation':
-                    this.changeOrientation();
-                    break;
-                case 'ticks':
+                }
+                break;
+            case 'min':
+            case 'step':
+            case 'max':
+                this.setMinMaxValue();
+                break;
+            case 'tooltip':
+                if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
+                    this.setTooltip(prop);
+                }
+                break;
+            case 'type':
+                if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
+                    && !isNullOrUndefined(oldProp.type)) {
+                    this.changeSliderType(oldProp.type, prop);
+                    this.setZindex();
+                }
+                break;
+            case 'enableRtl':
+                if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
+                    this.rtl = oldProp.enableRtl;
+                    this.changeRtl();
+                }
+                break;
+            case 'limits':
+                this.limitsPropertyChange();
+                break;
+            case 'orientation':
+                this.changeOrientation();
+                break;
+            case 'ticks':
 
-                    if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
-                        detach(this.ul);
-                        Array.prototype.forEach.call(this.sliderContainer.classList, (className: string) => {
-                            if (className.match(/e-scale-/)) {
-                                this.sliderContainer.classList.remove(className);
-                            }
-                        });
+                if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
+                    detach(this.ul);
+                    Array.prototype.forEach.call(this.sliderContainer.classList, (className: string) => {
+                        if (className.match(/e-scale-/)) {
+                            this.sliderContainer.classList.remove(className);
+                        }
+                    });
+                }
+                if (this.ticks.placement !== 'None') {
+                    this.renderScale();
+                    this.setZindex();
+                }
+                break;
+            case 'locale':
+                if (this.showButtons) {
+                    this.buttonTitle();
+                }
+                break;
+            case 'showButtons':
+                if (newProp.showButtons) {
+                    this.setButtons();
+                    this.reposition();
+                    if (this.enabled && !this.readonly) {
+                        this.wireButtonEvt(false);
                     }
-                    if (this.ticks.placement !== 'None') {
-                        this.renderScale();
-                        this.setZindex();
-                    }
-                    break;
-                case 'locale':
-                    if (this.showButtons) {
-                        this.buttonTitle();
-                    }
-                    break;
-                case 'showButtons':
-                    if (newProp.showButtons) {
-                        this.setButtons();
+                } else {
+                    if (this.firstBtn && this.secondBtn) {
+                        this.sliderContainer.removeChild(this.firstBtn);
+                        this.sliderContainer.removeChild(this.secondBtn);
+                        this.sliderContainer.classList.remove(classNames.sliderButtonClass);
+                        this.firstBtn = undefined;
+                        this.secondBtn = undefined;
                         this.reposition();
-                        if (this.enabled && !this.readonly) {
-                            this.wireButtonEvt(false);
-                        }
-                    } else {
-                        if (this.firstBtn && this.secondBtn) {
-                            this.sliderContainer.removeChild(this.firstBtn);
-                            this.sliderContainer.removeChild(this.secondBtn);
-                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
-                            this.firstBtn = undefined;
-                            this.secondBtn = undefined;
-                            this.reposition();
-                        }
                     }
-                    break;
-                case 'enabled':
-                    this.setEnabled();
-                    break;
-                case 'readonly':
-                    this.setReadOnly();
-                    break;
-                case 'customValues':
-                    this.setValue();
-                    this.reposition();
-                    break;
-                case 'colorRange':
-                    this.reposition();
-                    break;
-                case 'width':
-                    this.setElementWidth(newProp.width);
-                    this.setMinMaxValue();
-                    if (this.limits) {
-                        this.limitsPropertyChange();
-                    }
-                    break;
+                }
+                break;
+            case 'enabled':
+                this.setEnabled();
+                break;
+            case 'readonly':
+                this.setReadOnly();
+                break;
+            case 'customValues':
+                this.setValue();
+                this.reposition();
+                break;
+            case 'colorRange':
+                this.reposition();
+                break;
+            case 'width':
+                this.setElementWidth(newProp.width);
+                this.setMinMaxValue();
+                if (this.limits) {
+                    this.limitsPropertyChange();
+                }
+                break;
             }
         }
     }
@@ -3300,6 +3402,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
     /**
      * Gets the component name
+     *
      * @private
      */
     public getModuleName(): string {

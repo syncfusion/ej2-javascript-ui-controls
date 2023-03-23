@@ -8,6 +8,7 @@ import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
 import { DOMNode } from './dom-node';
+import { FormatPainterValue } from '../plugin';
 
 export class SelectionCommands {
     public static enterAction: string = 'P'
@@ -20,17 +21,18 @@ export class SelectionCommands {
      * @param {string} enterAction - specifies the enter key action
      * @param {string} value - specifies the string value
      * @param {string} selector - specifies the string
+     * @param {FormatPainterValue} painterValues specifies the element created and last child
      * @returns {void}
      * @hidden
      * @deprecated
      */
     public static applyFormat(
         docElement: Document, format: string, endNode: Node, enterAction: string,
-        value?: string, selector?: string): void {
+        value?: string, selector?: string, painterValues?: FormatPainterValue): void {
         this.enterAction = enterAction;
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
-        if (validFormats.indexOf(format) > -1) {
+        if (validFormats.indexOf(format) > -1 || value === 'formatPainter') {
             if (format === 'backgroundcolor' && value === '') {
                 value = 'transparent';
             }
@@ -93,7 +95,7 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
-                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') && range.startContainer.parentElement === endNode){
+                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') && range.startContainer.parentElement === endNode) {
                     formatNode = null;
                 }
                 if (index === 0 && formatNode === null) {
@@ -114,7 +116,9 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                } else if (range.startContainer.parentElement !== endNode || (range.commonAncestorContainer === endNode || nodes.length === 1)) {
+                } else if (range.startContainer.parentElement !== endNode || 
+                    (range.commonAncestorContainer !== endNode && range.startContainer.parentElement ===endNode)
+                    || (range.commonAncestorContainer === endNode || nodes.length === 1)) {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,
@@ -127,6 +131,7 @@ export class SelectionCommands {
                         nodeCutter,
                         format,
                         value,
+                        painterValues,
                         domNode,
                         endNode);
                 }
@@ -448,6 +453,7 @@ export class SelectionCommands {
         nodeCutter: NodeCutter,
         format: string,
         value: string,
+        painterValues: FormatPainterValue,
         domNode: DOMNode,
         endNode: Node): Node {
         let rootElementNode: Node;
@@ -455,7 +461,7 @@ export class SelectionCommands {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (nodes[index as number].nodeName !== 'BR') {
                     if (format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') {
-                        let rangeNode: Node = nodes[index];
+                        let rangeNode: Node = nodes[index as number];
                         while (rangeNode && !domNode.isBlockNode(rangeNode as Element) && rangeNode !== endNode) {
                             if (domNode.isBlockNode(rangeNode.parentElement)) {
                                 rootElementNode = rangeNode;
@@ -475,11 +481,11 @@ export class SelectionCommands {
                         : nodes[index as number].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     const element: HTMLElement = this.GetFormatNode(format, value);
-                    if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname' || format === 'backgroundcolor') {
+                    if (value === 'formatPainter' || format === 'fontsize' || format === 'fontcolor' || format === 'fontname' || format === 'backgroundcolor') {
                         if (format !== 'fontname' && format !== 'backgroundcolor') {
                             let liElement: HTMLElement = nodes[index as number].parentElement;
                             let parentElement: HTMLElement = nodes[index as number].parentElement;
-                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li' && parentElement !== endNode) {
+                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
                                 parentElement = parentElement.parentElement;
                                 liElement = parentElement;
                             }
@@ -493,26 +499,30 @@ export class SelectionCommands {
                                 }
                             }
                         }
-                        if (rootElementNode && rootElementNode.nodeType !== 3) {
+                        if (rootElementNode && rootElementNode.nodeType !== 3 && rootElementNode.nodeName !== 'A') {
                             const save: NodeSelection = new NodeSelection();
                             save.save(range, docElement);
                             domNode.setMarker(save);
-                            var cloneNode = rootElementNode.cloneNode(true);
+                            const cloneNode : Node = rootElementNode.cloneNode(true);
                             element.appendChild(cloneNode);
                             domNode.replaceWith(rootElementNode as Element, element.outerHTML);
                             const currentStartNode: Node = (endNode as Element).querySelector('.e-editor-select-start');
                             const currrentEndNode: Node = (endNode as Element).querySelector('.e-editor-select-end');
                             if (index === 0) {
-                                nodes[index] = currentStartNode ? currentStartNode.lastChild : nodes[index];
+                                nodes[index as number] = currentStartNode ? currentStartNode.lastChild : nodes[index as number];
                             }
                             if (range.startContainer.parentElement === endNode) {
                                 if (nodes.length > 1) {
-                                    nodes[nodes.length - 1] =  currrentEndNode ? currrentEndNode.lastChild : nodes[index];
+                                    nodes[nodes.length - 1] =  currrentEndNode ? currrentEndNode.lastChild : nodes[index as number];
                                 }
                             }
                             domNode.saveMarker(save, null);
                         } else {
-                            nodes[index as number] = this.applyStyles(nodes, index, element);
+                            if (value === 'formatPainter') {
+                                return this.insertFormatPainterElem(nodes, index, range, nodeCutter, painterValues, domNode);
+                            } else{
+                                nodes[index as number] = this.applyStyles(nodes, index, element);
+                            }
                         }
                         if (format === 'fontsize') {
                             const bg: Element = closest(nodes[index as number].parentElement, 'span[style*=' + 'background-color' + ']');
@@ -652,5 +662,58 @@ export class SelectionCommands {
         if (styles !== null && tag === 'SPAN') {
             ele.setAttribute('style', styles);
         }
+    }
+
+    // Below function is used to insert the element created by the format painter plugin.
+    private static insertFormatPainterElem(nodes: Node[], index: number, range: Range, nodeCutter: NodeCutter,
+                                           painterValues: FormatPainterValue, domNode: DOMNode): Node {
+        let parent: HTMLElement = nodes[index as number].parentElement;
+        if (!domNode.isBlockNode(parent)) {
+            // The below code is used to remove the already present inline style from the text node.
+            while (parent.textContent.trim() === parent.parentElement.textContent.trim() && !domNode.isBlockNode(parent.parentElement)){
+                parent = parent.parentElement;
+            }
+            if (parent.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                nodeCutter.SplitNode(range, parent, true);
+                const childELemList: NodeList = nodes[index as number].parentElement.childNodes;
+                for ( let i: number = 0; i < childELemList.length; i++) {
+                    if (childELemList[i as number].textContent.trim() === nodes[i as number].textContent.trim()) {
+                        parent.parentNode.insertBefore(childELemList[i as number], parent);
+                        break;
+                    }
+                }
+                const blockChildNodes: NodeList =  parent.parentElement.childNodes;
+                for (let k: number = 0; k < blockChildNodes.length; k++ ) {
+                    if (blockChildNodes[k as number].textContent.trim() === '' || blockChildNodes[k as number].textContent.length === 0 ) {
+                        detach(blockChildNodes[k as number]);
+                    }
+                }
+            } else {
+                InsertMethods.unwrap(parent);
+            }
+        }
+        const elem: HTMLElement = painterValues.element;
+        if (!isNOU(elem)) {
+            // Step 1: Cloning the element that is created by format painter.
+            // Step 2: Finding the last child of the nested elememt using the paintervalues.lastchild nodename
+            // Step 3: Assigning the nodes[index] text content to the last child element.
+            // Step 4: Wrapping the cloned element with the nodes[index]
+            const clonedElement: Node = elem.cloneNode(true);
+            const elemList: NodeList = (clonedElement as HTMLElement).querySelectorAll(painterValues.lastChild.nodeName);
+            let lastElement: Node;
+            if (elemList.length > 0){
+                lastElement = elemList[elemList.length - 1];
+            } else{
+                if (!isNOU(clonedElement) && clonedElement.nodeName === painterValues.lastChild.nodeName){
+                    lastElement = clonedElement;
+                }
+            }
+            lastElement.textContent =  nodes[index as number].textContent;
+            const lastChild: Node = lastElement.childNodes[0];
+            nodes[index as number] = InsertMethods.Wrap(nodes[index as number] as HTMLElement, clonedElement as HTMLElement);
+            nodes[index as number].textContent = '';
+            nodes[index as number] = lastChild;
+        }
+        return nodes[index as number];
     }
 }

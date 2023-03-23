@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart} from '../../smithchart';
 import { SeriesMarkerModel, SeriesMarkerBorderModel } from './series-model';
 import { CircleOption, PathOption } from '../../smithchart/utils/helper';

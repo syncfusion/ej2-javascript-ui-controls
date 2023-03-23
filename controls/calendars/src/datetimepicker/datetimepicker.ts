@@ -11,7 +11,7 @@ import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderF
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
-import {MaskPlaceholderModel} from '../common/maskplaceholder-model'
+import {MaskPlaceholderModel} from '../common/maskplaceholder-model';
 
 //class constant defination
 const DATEWRAPPER: string = 'e-date-wrapper';
@@ -477,20 +477,20 @@ export class DateTimePicker extends DatePicker {
      * Specifies whether it is a masked datetimepicker or not.
      * By default the datetimepicker component render without masked input.
      * If you need masked datetimepicker input then specify it as true.
-     * 
+     *
      * @default false
      */
-     @Property(false)
-     public enableMask: boolean;
- 
-     /**
+    @Property(false)
+    public enableMask: boolean;
+
+    /**
      * Specifies the mask placeholder to be displayed on masked datetimepicker.
-     * 
+     *
      * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
      */
-      @Property({day:'day' , month:'month', year: 'year', hour:'hour', minute:'minute', second:'second', dayOfTheWeek: 'day of the week'})
-      public maskPlaceholder: MaskPlaceholderModel;
-      
+    @Property({day: 'day' , month: 'month', year: 'year', hour: 'hour', minute: 'minute', second: 'second', dayOfTheWeek: 'day of the week'})
+    public maskPlaceholder: MaskPlaceholderModel;
+
     /**
      * Triggers when popup is opened.
      *
@@ -666,7 +666,7 @@ export class DateTimePicker extends DatePicker {
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
-        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+        if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
         super.updateHtmlAttributeToElement();
@@ -679,12 +679,12 @@ export class DateTimePicker extends DatePicker {
         super.updateHtmlAttributeToWrapper();
         this.bindInputEvents();
         if (this.enableMask) {
-            this.notify("createMask", {
-              module: "MaskedDateTime",
+            this.notify('createMask', {
+                module: 'MaskedDateTime'
             });
-          }
+        }
         this.setValue(true);
-        if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+        if (this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType === 'Always' || !this.floatLabelType || !this.placeholder)){
             Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
         }
         this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(this.scrollTo))) }, true);
@@ -850,7 +850,7 @@ export class DateTimePicker extends DatePicker {
         }
         return cldrTime;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     private getCldrFormat(type: string): string {
         let cldrDateTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
@@ -867,7 +867,7 @@ export class DateTimePicker extends DatePicker {
             return false;
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     protected getCultureTimeObject(ld: Object, c: string): Object {
         if (this.calendarMode === 'Gregorian') {
             return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
@@ -963,8 +963,7 @@ export class DateTimePicker extends DatePicker {
             });
         }
         const value: Date = isNullOrUndefined(this.value) ? this.inputElement.value !== '' ?
-            dateObject :
-            new Date() : this.value;
+            dateObject : new Date() : this.value;
         this.valueWithMinutes = value;
         this.listWrapper = createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
         const min: Date = this.startTime(value);
@@ -1233,7 +1232,7 @@ export class DateTimePicker extends DatePicker {
             Input.setValue(tempVal, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousElementValue = this.inputElement.value;
             this.setProperties({ value: new Date(this.timeCollections[this.activeIndex]) }, true);
-            if(this.enableMask)
+            if (this.enableMask)
             {
                 this.createMask();
             }
@@ -1250,9 +1249,9 @@ export class DateTimePicker extends DatePicker {
         return this.validateMinMaxRange(value);
     }
     private createMask(): void {
-        this.notify("createMask", {
-            module: "MaskedDateTime",
-          });
+        this.notify('createMask', {
+            module: 'MaskedDateTime'
+        });
     }
     private combineDateTime(value: Date): Date {
         if (this.isDateObject(value)) {
@@ -1305,7 +1304,7 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeActiveDescendant(): void {
-        if (!isNullOrUndefined(this.selectedElement)&& this.value) {
+        if (!isNullOrUndefined(this.selectedElement) && this.value) {
             attributes(this.inputElement, { 'aria-activedescendant': this.selectedElement.getAttribute('id') });
         } else {
             this.inputElement.removeAttribute('aria-activedescendant');
@@ -1544,9 +1543,9 @@ export class DateTimePicker extends DatePicker {
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
-        if(this.enableMask)
+        if (this.enableMask)
         {
-           modules.push(this.maskedDateModule());
+            modules.push(this.maskedDateModule());
         }
 
         return modules;
@@ -1554,8 +1553,8 @@ export class DateTimePicker extends DatePicker {
 
     private maskedDateModule(): ModuleDeclaration
     {
-       let modules: ModuleDeclaration = {args: [this], member: 'MaskedDateTime'};
-       return modules;
+        const modules: ModuleDeclaration = {args: [this], member: 'MaskedDateTime'};
+        return modules;
     }
 
     private getTimeActiveElement(): HTMLElement[] {
@@ -1693,7 +1692,8 @@ export class DateTimePicker extends DatePicker {
                 let index: number = (event.keyCode === 40 || event.keyCode === 39) ? ++this.activeIndex : --this.activeIndex;
                 this.activeIndex = index = this.activeIndex === (listCount) ? 0 : this.activeIndex;
                 this.activeIndex = index = this.activeIndex < 0 ? (listCount - 1) : this.activeIndex;
-                nextItemValue = isNullOrUndefined(this.timeCollections[index as number]) ? this.timeCollections[0] : this.timeCollections[index as number];
+                nextItemValue = isNullOrUndefined(this.timeCollections[index as number]) ?
+                    this.timeCollections[0] : this.timeCollections[index as number];
             } else if (event.action === 'home') {
                 this.activeIndex = 0;
                 nextItemValue = this.timeCollections[0];
@@ -1787,10 +1787,10 @@ export class DateTimePicker extends DatePicker {
                 this.changeTrigger(null);
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 if (this.enableMask && this.value) {
-                    this.notify("createMask", {
-                      module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
-                  }
+                }
                 break;
             case 'min':
             case 'max':
@@ -1831,10 +1831,10 @@ export class DateTimePicker extends DatePicker {
                 this.dateTimeFormat = this.formatString;
                 this.setValue();
                 if (this.enableMask) {
-                    this.notify("createMask", {
-                      module: "MaskedDateTime",
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
                     });
-                    if(!this.value)
+                    if (!this.value)
                     {
                         Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
                     }
@@ -1881,22 +1881,22 @@ export class DateTimePicker extends DatePicker {
                     this.setProperties({ scrollTo: null }, true);
                 }
                 break;
-                case 'enableMask':
-                    if (this.enableMask) {
-                        this.notify("createMask", {
-                          module: "MaskedDateTime",
-                        });
+            case 'enableMask':
+                if (this.enableMask) {
+                    this.notify('createMask', {
+                        module: 'MaskedDateTime'
+                    });
+                    Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                }
+                else
+                {
+                    if (this.inputElement.value === this.maskedDateValue)
+                    {
+                        this.maskedDateValue = '';
                         Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
-                      }
-                      else
-                      {
-                          if(this.inputElement.value === this.maskedDateValue)
-                          {
-                            this.maskedDateValue = '';
-                            Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
-                          }
-                      }
-                    break;
+                    }
+                }
+                break;
             default:
                 super.onPropertyChanged(newProp, oldProp);
                 break;

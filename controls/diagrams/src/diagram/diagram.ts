@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -1422,6 +1422,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public drop: EmitType<IDropEventArgs>;
+
+    /** 
+     * This event is triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector 
+     * 
+     * @event 
+     * @deprecated 
+     */ 
+    @Event()
+    public segmentChange: EmitType<ISegmentChangeEventArgs>; 
 
     //private variables
     /** @private */
@@ -6576,7 +6585,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         newList = newList.concat(parentist);
         return newList;
     }
-      private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
+    private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
         let layer: LayerModel;
         let isSourceId: boolean = false;
         let isTargetId: boolean = false;
@@ -6599,17 +6608,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
-                //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
-                if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
+               //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
+               if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
                     this.activeLayer.objects.indexOf(obj.targetID) !== -1) { 
                         this.setZIndex(layer || this.activeLayer, obj);
-                    } 
+                    }
             } else {
                 this.setZIndex(layer || this.activeLayer, obj);
             }
         }
     }
-    
     private updateLayer(newProp: DiagramModel): void {
         for (const key of Object.keys(newProp.layers)) {
             const layerObject: string[] = this.layers[`${key}`].objects;
@@ -8022,7 +8030,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const renderNode: Node = id ? this.nameTable[id[`${node}`]] : this.nameTable[(layer as Layer).zIndexTable[`${node}`]];
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
                     (!(renderNode.processId) || this.refreshing)) {
-                     //EJ2-68738 - Overview content not updated properly on zoom out the diagram
+                    //EJ2-68738 - Overview content not updated properly on zoom out the diagram
                      let  transformValue:TransformFactor
                      if(this.scroller.currentZoom < 1){
                          transformValue = {
@@ -10077,7 +10085,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 // EJ2-65876 - Exception occurs on line routing injection module
                 if (actualObject.sourceID !== actualObject.targetID && actualObject.segments.length>1){
                     //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
-                    this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
+                        this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
                 }
             }
             points = this.getPoints(actualObject);

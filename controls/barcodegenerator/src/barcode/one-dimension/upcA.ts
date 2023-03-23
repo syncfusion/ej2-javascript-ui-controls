@@ -77,9 +77,9 @@ export class UpcA extends OneDimension {
         for (let i: number = 0; i < leftString.length; i++) {
             tempValue = codes[structure[i]];
             if (i === 0) {
-                code = tempValue[leftString[i]];
+                code = tempValue[leftString[parseInt(i.toString(), 10)]];
             } else {
-                code += tempValue[leftString[i]];
+                code += tempValue[leftString[parseInt(i.toString(), 10)]];
             }
         }
         return code;

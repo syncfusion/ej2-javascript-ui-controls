@@ -1,110 +1,138 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
 
-# ej2-buttons Component
+# JavaScript Button Controls
 
-A package of Syncfusion JavaScript UI Components (Essential JS 2) Button, CheckBox, RadioButton and Switch.
+## What's Included in the JavaScript Buttons Package
 
-![Button](https://ej2.syncfusion.com/products/images/button/readme.gif)
+The JavaScript Buttons package includes the following list of controls.
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
+### JavaScript Button
 
-> A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+The [JavaScript Button](https://www.syncfusion.com/javascript-ui-controls/js-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm) control is a custom HTML5 button component. It has several built-in features such as support for icons, predefined styles, different button types, different button sizes, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/button/getting-started/#getting-started?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a>.
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/default.html">Online demos</a>.
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>.
+</p>
+
+<p align="center">
+<img alt="JavaScript Button Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-button.png">
+</p>
+
+#### Key features
+
+* [Types](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-types) - Provided with different types of Button.
+* [Predefined styles](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-styles) - Provided with predefined styles of Button.
+* [Sizes](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-size) - Provided with different sizes of Button.
+* [Icons](https://ej2.syncfusion.com/documentation/button/types-and-styles#icons) - Supports text and icon on the Button.
+
+### JavaScript CheckBox
+
+The [JavaScript CheckBox](https://www.syncfusion.com/javascript-ui-controls/js-checkbox?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm) control is a custom checkbox-type HTML5 input component for selecting one or more options from a list of predefined choices. It supports an indeterminate state, different sizes, custom labels and positions, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/check-box/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/checkbox.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-checkbox?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript CheckBox Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-checkbox.png">
+</p>
+
+#### Key features
+
+* [States](https://ej2.syncfusion.com/documentation/check-box/getting-started#change-the-checkbox-state) - Provided with different states of CheckBox.
+* [Label](https://ej2.syncfusion.com/documentation/check-box/label-and-size#label) - Supports label and its positioning.
+* [Sizes](https://ej2.syncfusion.com/documentation/check-box/label-and-size#size) - Provided with different sizes of CheckBox.
+
+### JavaScript RadioButton
+
+The [JavaScript RadioButton](https://www.syncfusion.com/javascript-ui-controls/js-radio-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm) control is a custom radio-type HTML5 input component for selecting one option from a list of predefined choices. It supports different states, sizes, labels, label positions, and UI customizations.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/radio-button/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/radio-button.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-radio-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript RadioButton Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-radio-button.png">
+</p>
+
+#### Key features
+
+* [States](https://ej2.syncfusion.com/documentation/radio-button/getting-started#change-the-radiobutton-state) - Provided with different states of RadioButton.
+* [Label](https://ej2.syncfusion.com/documentation/radio-button/label-and-size#label) - Supports label and its positioning.
+* [Sizes](https://ej2.syncfusion.com/documentation/radio-button/label-and-size#size) - Provided with different sizes of RadioButton.
+
+### JavaScript Switch
+
+The [JavaScript Switch](https://www.syncfusion.com/javascript-ui-controls/js-toggle-switch-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm) control is a custom HTML5 input-type component control that allows you to perform a toggle (on/off) action between checked and unchecked states. It supports different sizes, labels, label positions, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/switch/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm#/material/button/switch.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-toggle-switch-button?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Switch Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-toggle-switch-button.png">
+</p>
+
+#### Key features
+
+* [Text](https://ej2.syncfusion.com/documentation/switch/getting-started#set-text-on-switch) - Supports text.
+* [Sizes](https://ej2.syncfusion.com/documentation/switch/how-to#change-size) - Provided with different sizes of Switch.
+
+<p align="center">
+Trusted by the world's leading companies
+  <a href="https://www.syncfusion.com/">
+    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Syncfusion logo">
+  </a>
+</p>
 
 ## Setup
 
-To install `Button` and its dependent packages, use the following command
+To install `buttons` and its dependent packages, use the following command,
 
 ```sh
 npm install @syncfusion/ej2-buttons
 ```
 
-## Components included
+## Supported frameworks
 
-Following list of components are available in the package.
+Button controls are also offered to following list of frameworks.
 
-* Button - `Button` is a graphical user interface element that triggers an event on its click action.
-    * [Getting Started](https://ej2.syncfusion.com/documentation/button/getting-started?lang=typescript&utm_source=npm&utm_campaign=button)
-    * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=button#/material/button/default.html)
-    * [Product Page](https://www.syncfusion.com/javascript-ui-controls/button)
-
-* CheckBox - `CheckBox` is a graphical user interface element that allows to select one or more options from the choices.
-    * [Getting Started](https://ej2.syncfusion.com/documentation/check-box/getting-started?lang=typescript&utm_source=npm&utm_campaign=check-box)
-    * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=check-box#/material/button/check-box.html)
-    * [Product Page](https://www.syncfusion.com/javascript-ui-controls/checkbox)
-
-* RadioButton - `RadioButton` is a graphical user interface element that allows to select one option from the choices.
-    * [Getting Started](https://ej2.syncfusion.com/documentation/radio-button/getting-started?lang=typescript&utm_source=npm&utm_campaign=radio-button)
-    * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=radio-button#/material/button/radio-button.html)
-    * [Product Page](https://www.syncfusion.com/javascript-ui-controls/radio-button)
-
-* Switch - `Switch` is a graphical user interface element that allows you to toggle between checked and unchecked states.
-    * [Getting Started](https://ej2.syncfusion.com/documentation/switch/getting-started?lang=typescript&utm_source=npm&utm_campaign=switch)
-    * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=switch#/material/button/switch.html)
-    * [Product Page](https://www.syncfusion.com/javascript-ui-controls/toggle-switch-button)
-
-## Supported Frameworks
-
-These components are available in following list of frameworks.
-
-1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/buttons?utm_source=npm&utm_campaign=button)
-2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/buttons?utm_source=npm&utm_campaign=button)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/buttons?utm_source=npm&utm_campaign=button)
-4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls)
-5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls)
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls)
+| [<img src="https://ej2.syncfusion.com/github/images/angular.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase samples
 
-* Expense Tracker ([Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=button#/dashboard))
-* Loan Calculator ([Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=button))
-
-## Key Features
-
-### Button
-
-* [**Types**](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-types) - Provided with different types of Button.
-
-* [**Predefined Styles**](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-styles) - Provided with predefined styles of Button.
-
-* [**Sizes**](https://ej2.syncfusion.com/documentation/button/types-and-styles#button-size) - Provided with different sizes of Button.
-
-* [**Icons**](https://ej2.syncfusion.com/documentation/button/types-and-styles#icons) - Supports text and icon on the Button.
-
-### CheckBox
-
-* [**States**](https://ej2.syncfusion.com/documentation/check-box/getting-started#change-the-checkbox-state) - Provided with different states of CheckBox.
-
-* [**Label**](https://ej2.syncfusion.com/documentation/check-box/label-and-size#label) - Supports label and its positioning.
-
-* [**Sizes**](https://ej2.syncfusion.com/documentation/check-box/label-and-size#size) - Provided with different sizes of CheckBox.
-
-### RadioButton
-
-* [**States**](https://ej2.syncfusion.com/documentation/radio-button/getting-started#change-the-radiobutton-state) - Provided with different states of RadioButton.
-
-* [**Label**](https://ej2.syncfusion.com/documentation/radio-button/label-and-size#label) - Supports label and its positioning.
-
-* [**Sizes**](https://ej2.syncfusion.com/documentation/radio-button/label-and-size#size) - Provided with different sizes of RadioButton.
-
-### Switch
-
-* [**Text**](https://ej2.syncfusion.com/documentation/switch/getting-started#set-text-on-switch) - Supports text.
-* [**Sizes**](https://ej2.syncfusion.com/documentation/switch/how-to#change-size) - Provided with different sizes of Switch.
+* Expanse Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=button#/dashboard)
+* Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=button)
 
 ## Support
 
-Product support is available for through following mediums.
+Product support is available through following mediums.
 
-* Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=button) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=button).
-* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
-* Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_campaign=button) with tag `syncfusion`, `ej2`.
-
-## License
-
-Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=button).
+* [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
+* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm)
+* [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-button-npm)
+* Live chat
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/buttons/CHANGELOG.md?utm_source=npm&utm_campaign=button)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/buttons/CHANGELOG.md?utm_source=npm&utm_campaign=button). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
-© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+## License and copyright
+
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+
+> A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+
+See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=button) for more info.
+
+&copy; Copyright 2023 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

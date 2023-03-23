@@ -392,7 +392,11 @@ export class EditorHistory {
         this.viewer.updateScrollBars();
         selection.fireSelectionChanged(true);
         this.documentHelper.isScrollHandler = false;
-        this.documentHelper.updateFocus();
+        if(this.owner.enableAutoFocus)
+        {
+            this.documentHelper.updateFocus();
+        }
+        
         this.updateComplexHistoryInternal();
         this.owner.editorModule.fireContentChange();
     }

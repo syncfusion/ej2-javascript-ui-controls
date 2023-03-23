@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable security/detect-object-injection */
 import { DataUtil } from './util';
 import { DataManager } from './manager';
 import { NumberFormatOptions, DateFormatOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -40,7 +42,9 @@ export class Query {
 
     /**
      * Constructor for Query class.
-     * @param  {string|string[]} from?
+     *
+     * @param {string|string[]} from?
+     * @param from
      * @hidden
      */
     constructor(from?: string | string[]) {
@@ -64,7 +68,8 @@ export class Query {
 
     /**
      * Sets the primary key.
-     * @param  {string} field - Defines the column field.     
+     *
+     * @param  {string} field - Defines the column field.
      */
     public setKey(field: string): Query {
         this.key = field;
@@ -73,7 +78,8 @@ export class Query {
 
     /**
      * Sets default DataManager to execute query.
-     * @param  {DataManager} dataManager - Defines the DataManager.     
+     *
+     * @param  {DataManager} dataManager - Defines the DataManager.
      */
     public using(dataManager: DataManager): Query {
         this.dataManager = dataManager;
@@ -82,18 +88,19 @@ export class Query {
 
     /**
      * Executes query with the given DataManager.
+     *
      * @param  {DataManager} dataManager - Defines the DataManager.
      * @param  {Function} done - Defines the success callback.
      * @param  {Function} fail - Defines the failure callback.
      * @param  {Function} always - Defines the callback which will be invoked on either success or failure.
-     * 
-     * <pre> 
+     *
+     * <pre>
      * let dataManager: DataManager = new DataManager([{ ID: '10' }, { ID: '2' }, { ID: '1' }, { ID: '20' }]);
      * let query: Query = new Query();
      * query.sortBy('ID', (x: string, y: string): number => { return parseInt(x, 10) - parseInt(y, 10) });
      * let promise: Promise< Object > = query.execute(dataManager);
      * promise.then((e: { result: Object }) => { });
-     * </pre> 
+     * </pre>
      */
     public execute(dataManager?: DataManager, done?: Function, fail?: Function, always?: Function): Promise<Object> {
         dataManager = dataManager || this.dataManager;
@@ -109,6 +116,7 @@ export class Query {
 
     /**
      * Executes query with the local datasource.
+     *
      * @param  {DataManager} dataManager - Defines the DataManager.
      */
     public executeLocal(dataManager?: DataManager): Object[] {
@@ -124,10 +132,10 @@ export class Query {
     }
 
     /**
-     * Creates deep copy of the Query object.     
+     * Creates deep copy of the Query object.
      */
     public clone(): Query {
-        let cloned: Query = new Query();
+        const cloned: Query = new Query();
         cloned.queries = this.queries.slice(0);
         cloned.key = this.key;
         cloned.isChild = this.isChild;
@@ -148,7 +156,8 @@ export class Query {
 
     /**
      * Specifies the name of table to retrieve data in query execution.
-     * @param  {string} tableName - Defines the table name.     
+     *
+     * @param  {string} tableName - Defines the table name.
      */
     public from(tableName: string): Query {
         this.fromTable = tableName;
@@ -157,6 +166,7 @@ export class Query {
 
     /**
      * Adds additional parameter which will be sent along with the request which will be generated while DataManager execute.
+     *
      * @param  {string} key - Defines the key of additional parameter.
      * @param  {Function|string} value - Defines the value for the key.
      */
@@ -170,6 +180,7 @@ export class Query {
     }
 
     /**
+     * @param fields
      * @hidden
      */
     public distinct(fields: string | string[]): Query {
@@ -183,6 +194,7 @@ export class Query {
 
     /**
      * Expands the related table.
+     *
      * @param  {string|Object[]} tables
      */
     public expand(tables: string | Object[]): Query {
@@ -195,12 +207,15 @@ export class Query {
     }
 
     /**
-     * Filter data with given filter criteria.     
-     * @param  {string|Predicate} fieldName - Defines the column field or Predicate.
-     * @param  {string} operator - Defines the operator how to filter data.
-     * @param  {string|number|boolean} value - Defines the values to match with data.
-     * @param  {boolean} ignoreCase - If ignore case set to false, then filter data with exact match or else  
+     * Filter data with given filter criteria.
+     *
+     * @param {string|Predicate} fieldName - Defines the column field or Predicate.
+     * @param {string} operator - Defines the operator how to filter data.
+     * @param {string|number|boolean} value - Defines the values to match with data.
+     * @param {boolean} ignoreCase - If ignore case set to false, then filter data with exact match or else
      * filter data with case insensitive.
+     * @param ignoreAccent
+     * @param matchCase
      */
     public where(
         fieldName: string | Predicate | Predicate[], operator?: string,
@@ -221,42 +236,46 @@ export class Query {
     }
 
     /**
-     * Search data with given search criteria.  
-     * @param  {string|number|boolean} searchKey - Defines the search key.
-     * @param  {string|string[]} fieldNames - Defines the collection of column fields.
-     * @param  {string} operator - Defines the operator how to search data.
-     * @param  {boolean} ignoreCase - If ignore case set to false, then filter data with exact match or else  
+     * Search data with given search criteria.
+     *
+     * @param {string|number|boolean} searchKey - Defines the search key.
+     * @param {string|string[]} fieldNames - Defines the collection of column fields.
+     * @param {string} operator - Defines the operator how to search data.
+     * @param {boolean} ignoreCase - If ignore case set to false, then filter data with exact match or else
      * filter data with case insensitive.
+     * @param ignoreAccent
      */
     public search(
         searchKey: string | number | boolean, fieldNames?: string | string[], operator?: string, ignoreCase?: boolean,
         ignoreAccent?: boolean): Query {
-            if (typeof fieldNames === 'string') {
-                fieldNames = [(fieldNames as string)];
-            }
-            if (!operator || operator === 'none') {
-                operator = 'contains';
-            }
-            let comparer: Function = (<{ [key: string]: Function }>DataUtil.fnOperators)[operator];
-            this.queries.push({
-                fn: 'onSearch',
-                e: {
-                    fieldNames: fieldNames,
-                    operator: operator,
-                    searchKey: searchKey,
-                    ignoreCase: ignoreCase,
-                    ignoreAccent: ignoreAccent,
-                    comparer: comparer
-                }
-            });
-            return this;
+        if (typeof fieldNames === 'string') {
+            fieldNames = [(fieldNames as string)];
         }
+        if (!operator || operator === 'none') {
+            operator = 'contains';
+        }
+        const comparer: Function = (<{ [key: string]: Function }>DataUtil.fnOperators)[operator];
+        this.queries.push({
+            fn: 'onSearch',
+            e: {
+                fieldNames: fieldNames,
+                operator: operator,
+                searchKey: searchKey,
+                ignoreCase: ignoreCase,
+                ignoreAccent: ignoreAccent,
+                comparer: comparer
+            }
+        });
+        return this;
+    }
 
     /**
      * Sort the data with given sort criteria.
      * By default, sort direction is ascending.
-     * @param  {string|string[]} fieldName - Defines the single or collection of column fields.
-     * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.     
+     *
+     * @param {string|string[]} fieldName - Defines the single or collection of column fields.
+     * @param {string|Function} comparer - Defines the sort direction or custom sort comparer function.
+     * @param isFromGroup
      */
     public sortBy(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean): Query {
         return this.sortByForeignKey(fieldName, comparer, isFromGroup);
@@ -265,9 +284,11 @@ export class Query {
     /**
      * Sort the data with given sort criteria.
      * By default, sort direction is ascending.
-     * @param  {string|string[]} fieldName - Defines the single or collection of column fields.
-     * @param  {string|Function} comparer - Defines the sort direction or custom sort comparer function.
-     * @param  {string} direction - Defines the sort direction .  
+     *
+     * @param {string|string[]} fieldName - Defines the single or collection of column fields.
+     * @param {string|Function} comparer - Defines the sort direction or custom sort comparer function.
+     * @param isFromGroup
+     * @param {string} direction - Defines the sort direction .
      */
     public sortByForeignKey(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean, direction?: string): Query {
         let order: string = !isNullOrUndefined(direction) ? direction : 'ascending';
@@ -315,6 +336,7 @@ export class Query {
 
     /**
      * Sorts data in descending order.
+     *
      * @param  {string} fieldName - Defines the column field.
      */
     public sortByDesc(fieldName: string): Query {
@@ -323,7 +345,10 @@ export class Query {
 
     /**
      * Groups data with the given field name.
-     * @param  {string} fieldName - Defines the column field.
+     *
+     * @param {string} fieldName - Defines the column field.
+     * @param fn
+     * @param format
      */
     public group(fieldName: string, fn?: Function, format?: string | NumberFormatOptions | DateFormatOptions): Query {
         this.sortBy(fieldName, null, true);
@@ -340,6 +365,7 @@ export class Query {
 
     /**
      * Gets data based on the given page index and size.
+     *
      * @param  {number} pageIndex - Defines the current page index.
      * @param  {number} pageSize - Defines the no of records per page.
      */
@@ -356,6 +382,7 @@ export class Query {
 
     /**
      * Gets data based on the given start and end index.
+     *
      * @param  {number} start - Defines the start index of the datasource.
      * @param  {number} end - Defines the end index of the datasource.
      */
@@ -372,6 +399,7 @@ export class Query {
 
     /**
      * Gets data from the top of the data source based on given number of records count.
+     *
      * @param  {number} nos - Defines the no of records to retrieve from datasource.
      */
     public take(nos: number): Query {
@@ -386,6 +414,7 @@ export class Query {
 
     /**
      * Skips data with given number of records count from the top of the data source.
+     *
      * @param  {number} nos - Defines the no of records skip in the datasource.
      */
     public skip(nos: number): Query {
@@ -398,6 +427,7 @@ export class Query {
 
     /**
      * Selects specified columns from the data source.
+     *
      * @param  {string|string[]} fieldNames - Defines the collection of column fields.
      */
     public select(fieldNames: string | string[]): Query {
@@ -413,8 +443,9 @@ export class Query {
 
     /**
      * Gets the records in hierarchical relationship from two tables. It requires the foreign key to relate two tables.
+     *
      * @param  {Query} query - Defines the query to relate two tables.
-     * @param  {Function} selectorFn - Defines the custom function to select records.     
+     * @param  {Function} selectorFn - Defines the custom function to select records.
      */
     public hierarchy(query: Query, selectorFn: Function): Query {
         this.subQuerySelector = selectorFn;
@@ -424,7 +455,8 @@ export class Query {
 
     /**
      * Sets the foreign key which is used to get data from the related table.
-     * @param  {string} key - Defines the foreign key.     
+     *
+     * @param  {string} key - Defines the foreign key.
      */
     public foreignKey(key: string): Query {
         this.fKey = key;
@@ -432,7 +464,7 @@ export class Query {
     }
 
     /**
-     * It is used to get total number of records in the DataManager execution result.            
+     * It is used to get total number of records in the DataManager execution result.
      */
     public requiresCount(): Query {
         this.isCountRequired = true;
@@ -442,6 +474,7 @@ export class Query {
     //type - sum, avg, min, max
     /**
      * Aggregate the data with given type and field name.
+     *
      * @param  {string} type - Defines the aggregate type.
      * @param  {string} field - Defines the column field to aggregate.
      */
@@ -455,6 +488,7 @@ export class Query {
 
     /**
      * Pass array of filterColumn query for performing filter operation.
+     *
      * @param  {QueryOptions[]} queries
      * @param  {string} name
      * @hidden
@@ -466,15 +500,16 @@ export class Query {
     }
     /**
      * To get the list of queries which is already filtered in current data source.
+     *
      * @param  {Object[]} queries
      * @param  {string[]} singles
      * @hidden
      */
     public static filterQueryLists(queries: Object[], singles: string[]): Object {
-        let filtered: QueryOptions[] = queries.filter((q: QueryOptions) => {
+        const filtered: QueryOptions[] = queries.filter((q: QueryOptions) => {
             return singles.indexOf(q.fn) !== -1;
         });
-        let res: { [key: string]: Object } = {};
+        const res: { [key: string]: Object } = {};
         for (let i: number = 0; i < filtered.length; i++) {
             if (!res[filtered[i].fn]) {
                 res[filtered[i].fn] = filtered[i].e;
@@ -513,17 +548,19 @@ export class Predicate {
 
     /**
      * Constructor for Predicate class.
-     * @param  {string|Predicate} field
-     * @param  {string} operator
-     * @param  {string|number|boolean|Predicate|Predicate[]} value
-     * @param  {boolean=false} ignoreCase
-     * @param  {boolean} matchCase
+     *
+     * @param {string|Predicate} field
+     * @param {string} operator
+     * @param {string|number|boolean|Predicate|Predicate[]} value
+     * @param {boolean=false} ignoreCase
+     * @param ignoreAccent
+     * @param {boolean} matchCase
      * @hidden
      */
     constructor(
         field: string | Predicate, operator: string, value: string | number | Date | boolean | Predicate | Predicate[] | null,
         ignoreCase: boolean = false, ignoreAccent?: boolean, matchCase?: boolean) {
-            if (typeof field === 'string') {
+        if (typeof field === 'string') {
             this.field = field;
             this.operator = operator.toLowerCase();
             this.value = value;
@@ -538,18 +575,19 @@ export class Predicate {
             this.predicates = [field];
             this.matchCase = field.matchCase;
             this.ignoreCase = field.ignoreCase;
-            this.ignoreAccent = field.ignoreAccent; 
+            this.ignoreAccent = field.ignoreAccent;
             if (value instanceof Array) {
                 [].push.apply(this.predicates, value);
             } else {
                 this.predicates.push(value);
             }
         }
-            return this;
+        return this;
     }
 
     /**
      * Adds n-number of new predicates on existing predicate with “and” condition.
+     *
      * @param  {Object[]} args - Defines the collection of predicates.
      */
     public static and(...args: Object[]): Predicate {
@@ -558,20 +596,24 @@ export class Predicate {
 
     /**
      * Adds new predicate on existing predicate with “and” condition.
-     * @param  {string} field - Defines the column field.
-     * @param  {string} operator - Defines the operator how to filter data.
-     * @param  {string} value - Defines the values to match with data.
-     * @param  {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else  
+     *
+     * @param {string} field - Defines the column field.
+     * @param {string} operator - Defines the operator how to filter data.
+     * @param {string} value - Defines the values to match with data.
+     * @param {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else
      * filter data with case insensitive.
+     * @param ignoreCase
+     * @param ignoreAccent
      */
     public and(
         field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null,
         ignoreCase?: boolean, ignoreAccent?: boolean): Predicate {
-            return Predicate.combine(this, field, operator, value, 'and', ignoreCase, ignoreAccent);
-        }
+        return Predicate.combine(this, field, operator, value, 'and', ignoreCase, ignoreAccent);
+    }
 
     /**
      * Adds n-number of new predicates on existing predicate with “or” condition.
+     *
      * @param  {Object[]} args - Defines the collection of predicates.
      */
     public static or(...args: Object[]): Predicate {
@@ -580,50 +622,120 @@ export class Predicate {
 
     /**
      * Adds new predicate on existing predicate with “or” condition.
-     * @param  {string} field - Defines the column field.
-     * @param  {string} operator - Defines the operator how to filter data.
-     * @param  {string} value - Defines the values to match with data.
-     * @param  {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else  
+     *
+     * @param {string} field - Defines the column field.
+     * @param {string} operator - Defines the operator how to filter data.
+     * @param {string} value - Defines the values to match with data.
+     * @param {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else
      * filter data with case insensitive.
+     * @param ignoreCase
+     * @param ignoreAccent
      */
     public or(
         field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null, ignoreCase?: boolean,
         ignoreAccent?: boolean): Predicate {
-            return Predicate.combine(this, field, operator, value, 'or', ignoreCase, ignoreAccent);
-        }
+        return Predicate.combine(this, field, operator, value, 'or', ignoreCase, ignoreAccent);
+    }
+
+    /**
+     * Adds n-number of new predicates on existing predicate with “and not” condition.
+     *
+     * @param  {Object[]} args - Defines the collection of predicates.
+     */
+    public static ornot(...args: Object[]): Predicate {
+        return Predicate.combinePredicates([].slice.call(args, 0), 'or not');
+    }
+
+    /**
+     * Adds new predicate on existing predicate with “and not” condition.
+     *
+     * @param {string} field - Defines the column field.
+     * @param {string} operator - Defines the operator how to filter data.
+     * @param {string} value - Defines the values to match with data.
+     * @param {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else
+     * filter data with case insensitive.
+     * @param ignoreCase
+     * @param ignoreAccent
+     */
+    public ornot(
+        field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null, ignoreCase?: boolean,
+        ignoreAccent?: boolean): Predicate {
+        return Predicate.combine(this, field, operator, value, 'ornot', ignoreCase, ignoreAccent);
+    }
+
+    /**
+     * Adds n-number of new predicates on existing predicate with “and not” condition.
+     *
+     * @param  {Object[]} args - Defines the collection of predicates.
+     */
+    public static andnot(...args: Object[]): Predicate {
+        return Predicate.combinePredicates([].slice.call(args, 0), 'and not');
+    }
+
+    /**
+     * Adds new predicate on existing predicate with “and not” condition.
+     *
+     * @param {string} field - Defines the column field.
+     * @param {string} operator - Defines the operator how to filter data.
+     * @param {string} value - Defines the values to match with data.
+     * @param {boolean} ignoreCase? - If ignore case set to false, then filter data with exact match or else
+     * filter data with case insensitive.
+     * @param ignoreCase
+     * @param ignoreAccent
+     */
+    public andnot(
+        field: string | Predicate, operator?: string, value?: string | number | Date | boolean | null, ignoreCase?: boolean,
+        ignoreAccent?: boolean): Predicate {
+        return Predicate.combine(this, field, operator, value, 'andnot', ignoreCase, ignoreAccent);
+    }
 
     /**
      * Converts plain JavaScript object to Predicate object.
+     *
      * @param  {Predicate[]|Predicate} json - Defines single or collection of Predicate.
      */
     public static fromJson(json: Predicate[] | Predicate): Predicate[] {
         if (json instanceof Array) {
-            let res: Predicate[] = [];
+            const res: Predicate[] = [];
             for (let i: number = 0, len: number = json.length; i < len; i++) {
                 res.push(this.fromJSONData(json[i]));
             }
             return res;
         }
-        let pred: Predicate = <Predicate>json;
+        const pred: Predicate = <Predicate>json;
         return <Predicate[] & Predicate>this.fromJSONData(pred);
     }
 
     /**
      * Validate the record based on the predicates.
+     *
      * @param  {Object} record - Defines the datasource record.
      */
     public validate(record: Object): boolean {
-        let predicate: Predicate[] = this.predicates ? this.predicates : [];
-        let isAnd: boolean;
+        const predicate: Predicate[] = this.predicates ? this.predicates : [];
         let ret: boolean;
+        let isAnd: boolean;
 
         if (!this.isComplex && this.comparer) {
-            return this.comparer.call(this, DataUtil.getObject(this.field, record), this.value, this.ignoreCase, this.ignoreAccent);
+            if (this.condition && this.condition.indexOf('not') !== -1) {
+                this.condition = this.condition.split('not')[0] === '' ? undefined : this.condition.split('not')[0];
+                return !this.comparer.call(this, DataUtil.getObject(this.field, record), this.value, this.ignoreCase, this.ignoreAccent);
+            }
+            else {
+                return this.comparer.call(this, DataUtil.getObject(this.field, record), this.value, this.ignoreCase, this.ignoreAccent);
+            }
+        }
+        if (this.condition && this.condition.indexOf('not') !== -1) {
+            isAnd = this.condition.indexOf('and') !== -1;
+        }
+        else {
+            isAnd = this.condition === 'and';
         }
 
-        isAnd = this.condition === 'and';
-
         for (let i: number = 0; i < predicate.length; i++) {
+            if (i > 0 && this.condition && this.condition.indexOf('not') !== -1) {
+                predicate[i].condition = predicate[i].condition ? predicate[i].condition + 'not' : 'not';
+            }
             ret = predicate[i].validate(record);
             if (isAnd) {
                 if (!ret) { return false; }
@@ -636,7 +748,7 @@ export class Predicate {
 
     /**
      * Converts predicates to plain JavaScript.
-     * This method is uses Json stringify when serializing Predicate object.     
+     * This method is uses Json stringify when serializing Predicate object.
      */
     public toJson(): Object {
         let predicates: Object[];
@@ -683,9 +795,9 @@ export class Predicate {
         return DataUtil.throwError('Predicate - ' + condition + ' : invalid arguments');
     }
     private static fromJSONData(json: Predicate): Predicate {
-        let preds: Predicate[] = json.predicates || [];
-        let len: number = preds.length;
-        let predicates: Predicate[] = [];
+        const preds: Predicate[] = json.predicates || [];
+        const len: number = preds.length;
+        const predicates: Predicate[] = [];
         let result: Predicate;
 
         for (let i: number = 0; i < len; i++) {

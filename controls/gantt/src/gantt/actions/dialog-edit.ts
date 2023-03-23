@@ -1,4 +1,4 @@
-import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest } from '@syncfusion/ej2-base';
+import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -899,7 +899,7 @@ export class DialogEdit {
             inputElement = args.container as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
-        } else if (!isNullOrUndefined(args.event) && !isNullOrUndefined((args.event as CObject).path[1])) {
+        } else if (!isNullOrUndefined(args.event) && !isNullOrUndefined((args.event as CObject).path)&& !isNullOrUndefined((args.event as CObject).path)[1]) {
             inputElement = (args.event as CObject).path[1] as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
@@ -937,6 +937,9 @@ export class DialogEdit {
             if (!isNullOrUndefined(tasks.startDate) && tasks.startDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'startDate');
             }
+            if (tasks.endDate === colName && !isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(args.value) && ganttProp.startDate.getTime() > args.value) {
+                this.updateScheduleFields(dialog, ganttProp, 'endDate');
+            }
             if (!isNullOrUndefined(tasks.endDate) && tasks.endDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'endDate');
             }
@@ -961,8 +964,8 @@ export class DialogEdit {
         if (col.editType === 'stringedit') {
             const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
-            !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col): // eslint-disable-line
-            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :   // eslint-disable-line
+                    this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
                 textBox.dataBind();
@@ -1114,6 +1117,9 @@ export class DialogEdit {
         if (taskSettings.endDate === columnName) {
             if (value !== '') {
                 let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
+                if (isNullOrUndefined(ganttProp.startDate) && isNullOrUndefined(endDate) && ganttProp.startDate.getTime() > endDate.getTime()) {
+                    endDate = ganttProp.endDate;
+                }
                 if (endDate.getHours() === 0 && ganttObj.defaultEndTime !== 86400) {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
@@ -1496,6 +1502,9 @@ export class DialogEdit {
             } else if (item.content === 'General') {
                 item.content = this.renderGeneralTab(item.content);
             } else if (item.content === 'Dependency') {
+		if (this.editedRecord.hasChildRecords && !this.parent.allowParentDependency) {
+                    item.disabled = true;
+                }
                 item.content = this.renderPredecessorTab(item.content);
             } else if (item.content === 'Resources') {
                 item.content = this.renderResourceTab(item.content);
@@ -1941,28 +1950,35 @@ export class DialogEdit {
         this.preTableCollection = [];
         for (let i: number = 0; i < flatData.length; i++) {
             const data: IGanttData = flatData[i as number];
-            let currentFlatData: IGanttData = data;
-            if (data.parentUniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
-                this.isValidData = false
-            }
-            else {
-                do {
-                    if (currentFlatData.parentItem) {
-                        currentFlatData = this.parent.flatData[this.parent.ids.indexOf(currentFlatData.parentItem.taskId)];
-                        if (currentFlatData.uniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
-                            this.isValidData = false;
-                            break;
+            if (this.parent.allowParentDependency) {
+                let currentFlatData: IGanttData = data;
+                if (data.parentUniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
+                    this.isValidData = false
+                }
+                else {
+                    do {
+                        if (currentFlatData.parentItem) {
+                            currentFlatData = this.parent.flatData[this.parent.ids.indexOf(currentFlatData.parentItem.taskId)];
+                            if (currentFlatData.uniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
+                                this.isValidData = false;
+                                break;
+                            }
                         }
                     }
+                    while (currentFlatData.parentItem)
                 }
-                while (currentFlatData.parentItem)
+                if (data.hasChildRecords && this.isValidData) {
+                    this.isValidData = this.isParentValid(data.childRecords);
+                }
+                if (!this.isValidData) {
+                    this.isValidData = true;
+                    continue;
+                }
             }
-            if (data.hasChildRecords && this.isValidData) {
-                this.isValidData = this.isParentValid(data.childRecords);
-            }
-            if (!this.isValidData) {
-                this.isValidData = true;
-                continue;
+            else {
+                if (data.hasChildRecords) {
+                   continue;
+                }
             }
             const taskId: string = this.parent.viewType === 'ResourceView' ? data.ganttProperties.taskId.toString()
                 : data.ganttProperties.rowUniqueID.toString();
@@ -2194,6 +2210,10 @@ export class DialogEdit {
                     }
                 } else {
                     tasksData[fieldName as string] = controlObj.value;
+                    if (this.parent.enableHtmlSanitizer && typeof (controlObj.value) === 'string') { 
+                        controlObj.value = SanitizeHtmlHelper.sanitize(controlObj.value);
+                        tasksData[fieldName as string] = controlObj.value;
+                        }               
                 }
             }
         }

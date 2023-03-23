@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-unsafe-regex */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable valid-jsdoc */
@@ -141,7 +142,7 @@ export class TextOption {
         this.height = height ? height : 0;
     }
 }
-/** calculate the start and end point of circle. */
+/** calculate the start and end point of circle */
 export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): Pos {
     const angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);
 
@@ -150,7 +151,7 @@ export function degreeToLocation(centerX: number, centerY: number, radius: numbe
         y: centerY + (radius * Math.sin(angleInRadians))
     };
 }
-/** calculate the path of the circle. */
+/** calculate the path of the circle */
 export function getPathArc(
     x: number, y: number, radius: number, startAngle: number, endAngle: number,
     enableRtl: boolean, pieView?: boolean

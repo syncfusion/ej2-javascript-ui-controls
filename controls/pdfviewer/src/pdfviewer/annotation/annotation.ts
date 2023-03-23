@@ -356,6 +356,9 @@ export class Annotation {
                     if(formFieldsData[x].uniqueID==selectedAnnotation.id){
                         formFieldsData[x].Value='';
                         for(let y=0;y<formFieldsData.length;y++){
+                            if (formFieldsData[y].Name === 'ink') {
+                                formFieldsData[y].Value = '';
+                            }
                             if(formFieldsData[x].FieldName===formFieldsData[y].FieldName&&formFieldsData[y].Name==='ink'){
                                 formFieldsData.splice(y,1);
                             }

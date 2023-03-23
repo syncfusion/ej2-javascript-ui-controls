@@ -1242,11 +1242,11 @@ export class Selection {
         }
         const borderEleColl: HTMLCollectionOf<Element> =
             this.parent.element.getElementsByClassName('e-formularef-selection') as HTMLCollectionOf<Element>;
-        for (let idx: number = 0; idx < borderEleColl.length; idx++) {
+        for (let idx: number = borderEleColl.length - 1; idx >= 0; idx--) {
             const td: HTMLElement = borderEleColl[idx as number] as HTMLElement;
             const classArr: string[] = ['e-vborderright', 'e-vborderbottom', 'e-pborderright', 'e-pborderbottom',
                 'e-cborderright', 'e-cborderbottom', 'e-gborderright', 'e-gborderbottom', 'e-oborderright',
-                'e-oborderbottom', 'e-bborderright', 'e-bborderbottom'];
+                'e-oborderbottom', 'e-bborderright', 'e-bborderbottom', 'e-formularef-selection'];
             for (let idx: number = 0; idx < classArr.length; idx++) {
                 td.classList.remove(classArr[idx as number]);
             }

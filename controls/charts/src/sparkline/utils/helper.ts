@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-returns */
@@ -392,7 +390,7 @@ export function measureText(text: string, font: SparklineFontModel): Size {
         document.body.appendChild(htmlObject);
     }
 
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.fontStyle = font.fontStyle;
     htmlObject.style.fontFamily = font.fontFamily;
     htmlObject.style.visibility = 'hidden';

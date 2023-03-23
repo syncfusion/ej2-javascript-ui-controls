@@ -2,7 +2,7 @@ import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult, IGrid } from '../base/interface';
-import { TextAlign, ClipMode, Action, SortDirection, CommandButtonType, freezeDirection, freezeTable } from '../base/enum';
+import { TextAlign, ClipMode, Action, SortDirection, CommandButtonType, freezeDirection, freezeTable, EditType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
@@ -109,8 +109,7 @@ export class Column {
     /**
      * It is used to change display value with the given format and does not affect the original data.
      * Gets the format from the user which can be standard or custom
-     * [`number`](../base/internationalization/#number-formatting/)
-     * and [`date`](../base/internationalization/#date-formatting/) formats.
+     * `number` and `date` formats.
      *
      * @default null
      * @aspType string
@@ -331,7 +330,7 @@ export class Column {
      *
      * @default 'stringedit'
      */
-    public editType: string;
+    public editType: EditType | string;
 
     /**
      * Defines rules to validate data before creating and updating.

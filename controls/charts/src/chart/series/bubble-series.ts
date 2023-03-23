@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 import { withInRange, getPoint, drawSymbol } from '../../common/utils/helper';

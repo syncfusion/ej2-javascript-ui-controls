@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
@@ -39,7 +38,7 @@ export class MacdIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         let signalCollection: Points[] = [];
         const fastPeriod: number = indicator.fastPeriod;
         const slowPeriod: number = indicator.slowPeriod;

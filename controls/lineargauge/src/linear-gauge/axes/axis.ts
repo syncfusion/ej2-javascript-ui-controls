@@ -6,11 +6,13 @@ import { RangeModel, PointerModel, LabelModel, TickModel, LineModel } from './ax
 import { Point, Placement, MarkerType, Position} from '../utils/enum';
 import { LinearGradientModel, RadialGradientModel} from '../axes/gradient-model';
 
-/** Sets and gets the options for customizing the axis line in linear gauge. */
+/** Sets and gets the options for customizing the appearance of axis line in linear gauge. */
 
 export class Line extends ChildProperty<Line> {
     /**
      * Sets and gets the dash-array of the axis line.
+     * 
+     * @default ''
      */
 
     @Property('')
@@ -20,6 +22,7 @@ export class Line extends ChildProperty<Line> {
      * Sets and gets the height of the axis line.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     @Property(null)
     public height: number;
@@ -34,13 +37,16 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Sets and gets the color for the axis line.
+     * 
+     * @default null
      */
     @Property(null)
     public color: string;
 
     /**
-     * Sets and gets the offset to position the axis line in linear gauge.
+     * Sets and gets the offset value from where the axis line must be placed in linear gauge.
      *
+     * @default 0
      */
     @Property(0)
     public offset: number;
@@ -58,7 +64,7 @@ export class Label extends ChildProperty<Label> {
     public font: FontModel;
 
     /**
-     * Enables or disables the color of the label to use the color of the ranges in linear gauge.
+     * Enables or disables to use the color of the ranges in the labels of the linear gauge.
      *
      * @default false
      */
@@ -69,13 +75,15 @@ export class Label extends ChildProperty<Label> {
     /**
      * Sets and gets the format for the axis label. This property accepts any global format string like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
+     * 
+     * @default ''
      */
 
     @Property('')
     public format: string;
 
     /**
-     * Sets and gets the value to position the axis labels in linear gauge.
+     * Sets and gets the offset value from where the labels must be placed from the axis in linear gauge.
      *
      * @default 0
      */
@@ -141,12 +149,14 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the color of the axis range.
+     * 
+     * @default ''
      */
     @Property('')
     public color: string;
 
     /**
-     * Sets and gets the width of the start of the range in axis.
+     * Sets and gets the width for the start of the range in axis.
      *
      * @default 10
      */
@@ -154,7 +164,7 @@ export class Range extends ChildProperty<Range> {
     public startWidth: number;
 
     /**
-     * Sets and gets the width of the end of the range in axis.
+     * Sets and gets the width for the end of the range in axis.
      *
      * @default 10
      */
@@ -162,7 +172,7 @@ export class Range extends ChildProperty<Range> {
     public endWidth: number;
 
     /**
-     * Sets and gets the value to position the range in the axis.
+     * Sets and gets the offset value from where the range must be placed from the axis in linear gauge.
      *
      * @default '0'
      */
@@ -170,7 +180,7 @@ export class Range extends ChildProperty<Range> {
     public offset: number | string;
 
     /**
-     * Sets and gets the options to customize the color and width of the border for the axis range.
+     * Sets and gets the options to customize the style properties of the border for the axis range.
      */
     @Complex<BorderModel>({ color: '#000000', width: 0 }, Border)
     public border: BorderModel;
@@ -195,14 +205,13 @@ export class Range extends ChildProperty<Range> {
 
 export class Tick extends ChildProperty<Tick> {
     /**
-     * Sets and gets the height of the tick line in the axis.
+     * Sets and gets the height of the tick line in the axis. The default value is 20 for major ticks and 10 for minor ticks.
      */
     @Property(20)
     public height: number;
 
     /**
-     * Sets and gets the width of the tick line in the axis.
-     *
+     * Sets and gets the width of the tick line in the axis. The default value is 2 for major ticks and 1 for minor ticks.
      * @default 2
      */
     @Property(2)
@@ -212,6 +221,7 @@ export class Tick extends ChildProperty<Tick> {
      * Sets and gets the gap between the ticks in the axis.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     @Property(null)
     public interval: number;
@@ -219,15 +229,18 @@ export class Tick extends ChildProperty<Tick> {
     /**
      * Sets and gets the color for the major or minor tick line. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
+     * 
+     * @default null
      */
 
     @Property(null)
     public color: string;
 
     /**
-     * Sets and gets the value to move the ticks from the axis.
+     * Sets and gets the offset value from where the ticks must be placed from the axis in linear gauge.
      *
      * @aspDefaultValueIgnore
+     * @default null
      */
     @Property(null)
     public offset: number;
@@ -249,7 +262,7 @@ export class Tick extends ChildProperty<Tick> {
 
 export class Pointer extends ChildProperty<Pointer> {
     /**
-     * Sets and gets the type of pointer in axis.
+     * Sets and gets the type of pointer in axis. There are two types of pointers: Marker and Bar.
      *
      * @default Marker
      */
@@ -291,7 +304,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public markerType: MarkerType;
 
     /**
-     * Sets and gets the URL path for the image in marker when the marker type is chosen as image.
+     * Sets and gets the URL path for the image in marker when the marker type is set as image.
      *
      * @default null
      */
@@ -299,7 +312,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public imageUrl: string;
 
     /**
-     * Sets and gets the options to optimize the color and width of the border for pointers.
+     * Sets and gets the options to customize the style properties of the border for pointers.
      */
     @Complex<BorderModel>({ color: '#808080' }, Border)
     public border: BorderModel;
@@ -338,6 +351,8 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the color of the pointer.
+     * 
+     * @default null
      */
     @Property(null)
     public color: string;
@@ -359,7 +374,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public animationDuration: number;
 
     /**
-     * Enables or disables the drag movement of pointer.
+     * Enables or disables the drag movement of pointer to update the pointer value.
      *
      * @default false
      */
@@ -438,6 +453,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Enables or disables the inversed axis.
+     * 
+     * @default false
      */
 
     @Property(false)
@@ -445,6 +462,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Shows or hides the last label in the axis of the linear gauge.
+     * 
+     * @default false
      */
 
     @Property(false)
@@ -452,12 +471,14 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Enables or disables the opposed position of the axis in the linear gauge.
+     * 
+     * @default false
      */
     @Property(false)
     public opposedPosition: boolean;
 
     /**
-     * Sets and gets the options for customizing the axis line.
+     * Sets and gets the options for customizing the appearance of the axis line.
      */
     @Complex(<LineModel>{}, Line)
     public line: LineModel;

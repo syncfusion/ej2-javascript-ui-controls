@@ -1,100 +1,122 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-notifications/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-notifications)
 
-# ej2-notifications
+# JavaScript Notification Controls
 
-![ej2-notifications](https://ej2.syncfusion.com/products/images/notifications/readMe.gif)
+## What's Included in the JavaScript Notification Package
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at [https://www.syncfusion.com/sales/products](https://www.syncfusion.com/sales/products) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials).
+The JavaScript Notification package includes the following list of controls.
 
-> A free [community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+### JavaScript Badge
+
+The [Javascript Badge](https://www.syncfusion.com/javascript-ui-controls/js-badge?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm) control is a pure CSS control used to add notifications, messages, or statuses in different shapes and sizes. The Badge control can be easily integrated with ListView, Avatar, and other container controls.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/badge/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/badge/default.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-badge?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Badge Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-badge.png">
+</p>
+
+#### Key features
+
+* [Types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/badge/types.html) - Provided 8 different types of Badges.
+* [Predefined colors](https://ej2.syncfusion.com/documentation/badge/types/) - Provided 8 predefined situational colors of Badges.
+* [Position](https://ej2.syncfusion.com/documentation/badge/types/#position) - Supports 3 different positions, such as `default`, `top` and `bottom`.
+
+### JavaScript Message
+
+The [JavaScript Message](https://www.syncfusion.com/javascript-ui-controls/js-message?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm) control is a graphical user interface for displaying messages with visual severity levels. It differentiates messages with icons and colors to denote the importance and context of the message.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/message/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/message/default.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-message?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Message Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-message.png">
+</p>
+
+#### Key features
+
+* [Severity](https://ej2.syncfusion.com/documentation/message/severities/) - Provides an option to display the message with distinctive icons and colors based on the severity type. The available severity types such as **Normal**, **Success**, **Info**, **Warning**, and **Error**.
+* [Variants](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/message/variants.html) - Provides an option to display the message with predefined appearance variants. The available variants such as **Text**, **Outlined**, and **Filled**.
+* [Visibility](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/message/default.html) - Provides an option to show or hide the message.
+* [Template](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/message/template.html) - Provides an option to customize the content of the message.
+
+### JavaScript Toast
+
+The [JavaScript Toast](https://www.syncfusion.com/javascript-ui-controls/js-toast?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm) control is a small, non-blocking notification pop-up. It is a readable message displayed at the bottom of the screen or at a specific target and disappears automatically after a few seconds (time out) with different animation effects.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/toast/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/toast/default.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-toast?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Toast Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-toast.png">
+</p>
+
+#### Key features
+
+* [Position](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/toast/positions.html) - Enables to position the toast anywhere on the screen. It has a predefined set of positions and custom inputs for position based on the target.
+* [Autohide and Timeout](https://ej2.syncfusion.com/documentation/toast/timeout/) - Toast can be expired based on the timeOut property; it hides toast automatically when reaches specific time without user interaction.
+* [Multi toast](https://ej2.syncfusion.com/documentation/toast/position/) - Toasts can support to display multiple toasts with various time delay.
+* [Progress bar](https://ej2.syncfusion.com/documentation/toast/config/#progress-bar) - Supports to visually indicate time lapse when the toast expires.
+* [Action buttons](https://ej2.syncfusion.com/documentation/toast/action-buttons/) - Supports to add buttons in the toast for archiving any actions within the toast.
+* [Template](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/toast/template.html) - User customized element can be defined for the toast using the template property.
+
+<p align="center">
+Trusted by the world's leading companies
+  <a href="https://www.syncfusion.com/">
+    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Syncfusion logo">
+  </a>
+</p>
 
 ## Setup
 
-To install Notification and its dependent packages, use the following command
+To install `notifications` and its dependent packages, use the following command,
 
 ```sh
 npm install @syncfusion/ej2-notifications
 ```
 
-## Components included
+## Supported frameworks
 
-Following list of components are available in the package
+Notification controls are also offered to following list of frameworks.
 
-### Badges
+| [<img src="https://ej2.syncfusion.com/github/images/angular.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| :-----: | :-----: | :-----: | :-----: | :-----: |
 
-Badges can be used to alert users about new or unread messages, notifications, and additional information to the content. This can be used in conjunction with lists to represent each list’s timeline such as ‘new’, ‘old’, and ‘preview’.
+## Showcase samples
 
-* [Getting Started](https://ej2.syncfusion.com/documentation/badge/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=badge)
-* [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=badge#/material/badge/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/badge/?utm_source=npm&utm_campaign)
-
-### Message
-
-The Message component has an option to display the messages with severity by differentiating icons and colors to denote the importance and context of the message to the end user.
-
-* [Getting Started](https://ej2.syncfusion.com/documentation/message/getting-started/?lang=typescript&utm_source=npm&utm_campaign=message)
-* [API References](https://ej2.syncfusion.com/documentation/api/message/?utm_source=npm&utm_campaign=message)
-* [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=message#/bootstrap5/message/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/message/?utm_source=npm&utm_campaign=message)
-
-### Toasts
-
-The toast is a small container, in which user can show a single or multiple informative lines with actions.
-
-* [Getting Started](https://ej2.syncfusion.com/documentation/toast/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=toast)
-* [API References](https://ej2.syncfusion.com/documentation/api/toast?utm_source=npm&utm_campaign=toast)
-* [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=toast#/material/toast/default.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/toast)
-
-## Supported Frameworks
-
-`Notification` component is also offered in following list of frameworks.
-
-1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components?utm_source=github&utm_medium=listing)
-2. [React](https://github.com/syncfusion/ej2-react-ui-components?utm_source=github&utm_medium=listing)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components?utm_source=github&utm_medium=listing)
-4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=github&utm_medium=listing)
-5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=github&utm_medium=listing)
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing)
-
-## Key Features
-
-### Badges
-
-1. **Types** - Provided 8 different types of Badges.
-2. **Predefined Colours** - Provided 8 predefined situational colours of Badges.
-3. **Position** - Supports 3 different positions, such as `default`, `top` and `bottom`.
-
-### Message
-
-1. **Severity** - Provides an option to display the message with distinctive icons and colors based on the severity type. The available severity types such as **Normal**, **Success**, **Info**, **Warning**, and **Error**.
-2. **Variants** - Provides an option to display the message with predefined appearance variants. The available variants such as **Text**, **Outlined**, and **Filled**.
-3. **Visibility** - Provides an option to show or hide the message.
-4. **Template** - Provides an option to customize the content of the message.
-
-### Toasts
-
-1. **Position** - Enables to position the toast anywhere on the screen. It has a predefined set of positions and custom inputs for position based on the target.
-2. **Autohide and TimeOut** - Toast can be expired based on the timeOut property; it hides toast automatically when reaches specific time without user interaction.
-3. **Multi Toast** - Toasts can support to display multiple toasts with various time delay.
-4. **Progress Bar** - Supports to visually indicate time lapse when the toast expires.
-5. **Action Buttons** - Supports to add buttons in the toast for archiving any actions within the toast.
-5. **Template** - User customized element can be defined for the toast using the template property.
+* Expanse Tracker - [Source](https://github.com/syncfusion/ej2-sample-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=notification#/dashboard)
+* Loan Calculator - [Source](https://github.com/syncfusion/ej2-sample-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=notification)
 
 ## Support
 
-Product support is available for through following mediums.
+Product support is available through following mediums.
 
-* Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=notification) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=notification).
-* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new).
-* Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_campaign=notification) with tag `syncfusion` and `ej2`.
-
-## License
-
-Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=notification).
+* [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
+* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm)
+* [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm)
+* Live chat
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
-© Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+## License and copyright
+
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+
+> A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+
+See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=notification) for more info.
+
+&copy; Copyright 2023 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

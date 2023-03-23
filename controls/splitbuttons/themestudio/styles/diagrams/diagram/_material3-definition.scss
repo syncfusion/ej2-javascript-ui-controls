@@ -1,7 +1,5 @@
 @import 'definition.scss';
 
-$skin-name: 'bootstrap5';
-
 //layout variables
 $diagram-border-stroke-width: 2;
 $diagram-lane-border-stroke-width: 2;
@@ -10,14 +8,14 @@ $diagram-symbolpalette-shape-radius: 00px;/* stylelint-disable-line length-zero-
 $diagram-tooltip: none;
 
 //normal
-$diagram-endpoint-handle-color: $white;
-$diagram-endpoint-handle-connected-border: $white;
+$diagram-endpoint-handle-color: $primary-text-color;
+$diagram-endpoint-handle-connected-border: $primary-text-color;
 
-$diagram-resize-handle-disable-color: $content-bg-color-alt5;
-$diagram-border-stroke-disabled: $content-bg-color-alt5;
-$diagram-resize-handle-disable-stroke: $white;
+$diagram-resize-handle-disable-color: $border-light;
+$diagram-border-stroke-disabled: $border-light;
+$diagram-resize-handle-disable-stroke: $primary-text-color;
 $diagram-rotate-handle-color: $primary;
-$diagram-bezier-handle-color: $white;
+$diagram-bezier-handle-color: $primary-text-color;
 
 $diagram-symbolpalette-hover: $diagram-palette-hover-background;
 $diagram-symbolpalette-selected: $diagram-palette-hover-background;
@@ -30,7 +28,7 @@ $diagram-ruler-tick-stroke: $series-3;
 
 $palette-background-color: $diagram-palette-background;
 
-$diagram-background-color: $white;
+$diagram-background-color: $primary-text-color;
 $diagram-editbox-fontcolor: $black;
 
 //end normal

@@ -9,9 +9,9 @@ export interface AppBarModel extends ComponentModel{
 
     /**
      * Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
-     * * Regular
-     * * Prominent
-     * * Dense
+     * * `Regular`: Specifies default height for the AppBar.
+     * * `Prominent`: Specifies longer height for the AppBar to show the longer titles and images, or to provide a stronger presence.
+     * * `Dense`: Specifies compressed (short) height for the AppBar to accommodate all the app bar content in a denser layout.
      *
      * @default 'Regular'
      */
@@ -19,8 +19,8 @@ export interface AppBarModel extends ComponentModel{
 
     /**
      * Specifies the position of the AppBar. The possible values for this property are as follows:
-     * * Top
-     * * Bottom
+     * * `Top`: Position the AppBar at the top.
+     * * `Bottom`: Position the AppBar at the bottom.
      *
      * @default 'Top'
      */
@@ -50,10 +50,10 @@ export interface AppBarModel extends ComponentModel{
 
     /**
      * Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
-     * * Light
-     * * Dark
-     * * Primary
-     * * Inherit
+     * * `Light`: Specifies the AppBar in light color.
+     * * `Dark`: Specifies the AppBar in dark color.
+     * * `Primary`: Specifies the AppBar in a primary color.
+     * * `Inherit`: Inherit color from parent for AppBar. AppBar background and colors are inherited from its parent element.
      *
      * @default 'Light'
      */

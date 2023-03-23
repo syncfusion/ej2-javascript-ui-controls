@@ -412,10 +412,8 @@ export class MonthEvent extends EventBase {
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, eventTemplate, templateId, false);
         } else {
             const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
-            const appointmentSubject: HTMLElement = createElement('div', {
-                className: cls.SUBJECT_CLASS,
-                innerHTML: (eventSubject + (eventLocation ? ';&nbsp' + eventLocation : ''))
-            });
+            const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
+            appointmentSubject.innerText = this.parent.sanitize((eventSubject + (eventLocation ? '; ' + eventLocation : '')));
             const appointmentStartTime: HTMLElement = createElement('div', {
                 className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
                 innerHTML: this.parent.getTimeString(eventData[this.fields.startTime] as Date)
@@ -454,7 +452,8 @@ export class MonthEvent extends EventBase {
                     const appTime: HTMLElement = createElement('div', {
                         className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''), innerHTML: timeString
                     });
-                    const appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS, innerHTML: eventLocation });
+                    const appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS });
+                    appLocation.innerText = this.parent.sanitize(eventLocation);
                     innerElement = [appointmentSubject, appTime, appLocation];
                 }
                 const wrap: HTMLElement = createElement('div', { className: 'e-inner-wrap' });

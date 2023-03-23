@@ -6,7 +6,7 @@ import * as events from '../base/constant';
 import { freezeTable } from '../base/enum';
 import { getScrollBarWidth, parentsUntil, gridActionHandler, Global, getExactFrozenMovableColumn } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import * as literals from '../base/string-literals';
 
 export const resizeClassList: ResizeClasses = {
@@ -191,11 +191,11 @@ export class Resize implements IAction {
         if (result === false) {
             let element: Column[];
             if (this.parent.isAutoFitColumns && gObj.isFrozenGrid()) {
-                let frozenMovableColumns: { 
-                    frozenLeft:Column[],
-                    movable:Column[],
-                    frozenRight: Column[] 
-                } = getExactFrozenMovableColumn(this.parent); 
+                const frozenMovableColumns: {
+                    frozenLeft: Column[],
+                    movable: Column[],
+                    frozenRight: Column[]
+                } = getExactFrozenMovableColumn(this.parent);
                 if (columnbyindex.freezeTable === 'frozen-left') {
                     element = frozenMovableColumns.frozenLeft;
                 }
@@ -307,7 +307,7 @@ export class Resize implements IAction {
         myTable.className = table.className;
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
-        const myTr: HTMLTableRowElement = this.parent.createElement('tr', { attrs: { role: 'row' } }) as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
         for (let i: number = 0; i < text.length; i++) {
             const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
@@ -645,6 +645,7 @@ export class Resize implements IAction {
 
     private resizeEnd(e: PointerEvent): void {
         if (!this.helper || this.parent.isDestroyed) { return; }
+        const gObj: IGrid = this.parent;
         EventHandler.remove(this.parent.element, Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeEnd);
         this.updateCursor('remove');
@@ -669,6 +670,35 @@ export class Resize implements IAction {
         if (this.parent.allowTextWrap) {
             this.updateResizeEleHeight();
             this.parent.notify(events.textWrapRefresh, { case: 'textwrap' });
+        }
+        let headerTable: Element;
+        let contentTable: Element;
+        let footerTable: Element;
+        const rightCnt: number = gObj.getFrozenRightColumnsCount();
+        if (!isNullOrUndefined(gObj.getFooterContent())) {
+            footerTable = gObj.getFooterContentTable();
+        }
+        if (gObj.isFrozenGrid()) {
+            if (rightCnt > 0) {
+                headerTable = gObj.getHeaderContent().querySelector('.e-frozen-right-header').children[0];
+                contentTable = gObj.getContent().querySelector('.e-frozen-right-content').children[0];
+            } else {
+                headerTable = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).children[0];
+                contentTable = gObj.getContent().querySelector('.' + literals.movableContent).children[0];
+            }
+        } else {
+            headerTable = gObj.getHeaderTable();
+            contentTable = gObj.getContentTable();
+        }
+        const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
+        const contentwidth: number = (gObj.getContent().scrollWidth);
+        if (contentwidth > tableWidth) {
+            addClass([headerTable, contentTable], ['e-tableborder']);
+        } else {
+            removeClass([headerTable, contentTable], ['e-tableborder']);
+        }
+        if (!isNullOrUndefined(footerTable)) {
+            footerTable.classList.add('e-tableborder');
         }
         this.refresh();
         this.doubleTapEvent(e);

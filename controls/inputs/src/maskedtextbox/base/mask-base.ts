@@ -93,7 +93,7 @@ export function createMask(): void {
         if (!isNullOrUndefined(this.customCharacters)) {
             for (let i: number = 0; i < this.promptMask.length; i++) {
                 if (!isNullOrUndefined(this.customCharacters[this.promptMask[i as number]])) {
-                    // eslint-disable-next-line detect-non-literal-regexp
+                    /* eslint-disable-next-line security/detect-non-literal-regexp */
                     this.promptMask = this.promptMask.replace(new RegExp(this.promptMask[i as number], 'g'), this.promptChar);
                 }
             }
@@ -363,7 +363,7 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
                             selectionEnd: inputElement.selectionEnd
                         };
                         triggerFocus.call(this, eventArgs, inputElement);
-                    },110);
+                    }, 110);
                     break;
                 }
             }
@@ -383,15 +383,15 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
     }
 }
 
-export function triggerFocus(eventArgs: MaskFocusEventArgs, inputElement:HTMLInputElement):void {
+export function triggerFocus(eventArgs: MaskFocusEventArgs, inputElement: HTMLInputElement): void {
     this.trigger('focus', eventArgs, (eventArgs: MaskFocusEventArgs) => {
         inputElement.selectionStart = eventArgs.selectionStart;
         inputElement.selectionEnd = eventArgs.selectionEnd;
     });
 }
 
-export function escapeRegExp(text: any):string {
-    return !isNullOrUndefined(text) ? text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : text;
+export function escapeRegExp(text: any): string {
+   return !isNullOrUndefined(text) ? text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : text;
 }  
 
 export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
@@ -399,7 +399,7 @@ export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent
         event: event,
         value: this.value,
         maskedValue: this.element.value,
-        container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj,
+        container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj
     };
     this.trigger('blur', this.blurEventArgs);
     if (this.mask) {
@@ -865,19 +865,19 @@ function validateValue(key: string, isCtrlKey: boolean, event: KeyboardEvent): v
                 const customValStr: string = <string>this.customCharacters[`${curMask}`];
                 const customValArr: string[] = customValStr.split(',');
                 for (let i: number = 0; i < customValArr.length; i++) {
-                    // eslint-disable-next-line detect-non-literal-regexp
+                    /* eslint-disable-next-line security/detect-non-literal-regexp */
                     if (keyValue.match(new RegExp('[' + customValArr[i as number] + ']'))) {
                         allowText = true;
                         break;
                     }
                 }
-            // eslint-disable-next-line detect-non-literal-regexp
+            /* eslint-disable-next-line security/detect-non-literal-regexp */
             } else if (!isNullOrUndefined(this.regExpCollec[`${curMask}`]) && keyValue.match(new RegExp(this.regExpCollec[`${curMask}`]))
                 && this.promptMask[startIndex as number] === this.promptChar) {
                 allowText = true;
             } else if (this.promptMask[startIndex as number] === this.promptChar && this.customRegExpCollec[startIndex as number][0] === '['
                 && this.customRegExpCollec[startIndex as number][this.customRegExpCollec[startIndex as number].length - 1] === ']'
-                // eslint-disable-next-line detect-non-literal-regexp
+                /* eslint-disable-next-line security/detect-non-literal-regexp */
                 && keyValue.match(new RegExp(this.customRegExpCollec[startIndex as number]))) {
                 allowText = true;
             }

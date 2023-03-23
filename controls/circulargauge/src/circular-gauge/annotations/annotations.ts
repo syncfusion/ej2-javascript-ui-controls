@@ -7,6 +7,8 @@ import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
+ * 
+ * @hidden
  */
 
 export class Annotations {
@@ -23,6 +25,8 @@ export class Annotations {
 
     /**
      * Method to render the annotation for circular gauge.
+     * 
+     * @private
      */
 
     public renderAnnotation(axis: Axis, index: number, gauge: CircularGauge): void {
@@ -48,6 +52,8 @@ export class Annotations {
 
     /**
      * Method to create annotation template for circular gauge.
+     * 
+     * @private
      */
 
     public createTemplate(element: HTMLElement, annotationIndex: number, axisIndex: number, gauge: CircularGauge): void {

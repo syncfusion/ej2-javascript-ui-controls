@@ -4,7 +4,7 @@ import { remove, closest, select } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import {
     IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, NotifyArgs, CellFocusArgs,
-    BeforeAutoFillEventArgs, RowDeselectEventArgs, RowDeselectingEventArgs
+    BeforeAutoFillEventArgs, RowDeselectingEventArgs
 } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
 import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';

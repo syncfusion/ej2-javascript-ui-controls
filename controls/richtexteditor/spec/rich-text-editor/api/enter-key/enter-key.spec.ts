@@ -2055,6 +2055,30 @@ describe("EJ2-64561- When press the enter key while the cursor focused before vi
         expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
 });
+describe("EJ2-67119 - List item gets removed when press the enterkey in list second item", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            value : `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">
+            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">
+        </video></span><br></li><li>﻿﻿<br></li></ol>`
+        });
+    });
+    it(' check for Enter key press end of the list', () => {
+        rteObj.focusIn();
+        let range: Range = new Range();
+        const contentElem : HTMLElement = <HTMLElement>document.body.querySelectorAll("ol")[0].childNodes[1];
+        range.setStart( contentElem,0 );
+        range.setEnd( contentElem,0 );
+        rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        const corrrectElemString : string = `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n        </video></span><br></li></ol><p><br></p>`;
+        expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+});
 describe("EJ2-68925 -The enter key is not working properly with Lists when pasting from MS Word", () => {
     let rteObj : RichTextEditor;
     beforeAll( () =>{

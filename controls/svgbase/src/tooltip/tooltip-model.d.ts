@@ -71,6 +71,7 @@ export interface TooltipBorderModel {
 
     /**
      * The dash-array of the border.
+     *
      * @default ''
      */
     dashArray?: string;

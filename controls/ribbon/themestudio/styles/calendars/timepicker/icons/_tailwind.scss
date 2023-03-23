@@ -1,0 +1,12 @@
+@include export-module('timepicker-tailwind-icons') {
+
+  /*! component icons */
+
+  .e-time-wrapper,
+  #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      content: '\e705';
+    }
+  }
+}

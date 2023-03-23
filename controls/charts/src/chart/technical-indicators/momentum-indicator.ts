@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
@@ -28,7 +27,7 @@ export class MomentumIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         const upperCollection: Points[] = [];
         const signalCollection: Points[] = [];
 

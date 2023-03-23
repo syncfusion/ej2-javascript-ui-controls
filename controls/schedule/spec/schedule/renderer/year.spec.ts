@@ -7,6 +7,7 @@ import { Schedule, ScheduleModel, Year, TimelineYear, CellClickEventArgs } from 
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
 
 Schedule.Inject(Year, TimelineYear);
 
@@ -57,7 +58,6 @@ describe('Schedule year view', () => {
         });
 
         it('work cells', () => {
-            expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-selected')).toEqual('false');
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day" title="Sunday, December 27, 2020">27</span>');
         });
@@ -300,12 +300,12 @@ describe('Schedule year view', () => {
             util.destroy(schObj);
         });
         it('All templates checking', () => {
-            expect(schObj.element.querySelectorAll('.e-day.e-title')[0][`innerHTML`]).toBe('<div class="date-text">0</div>');
-            expect(schObj.element.querySelectorAll('.e-week-header')[0][`innerHTML`])
+            expect(schObj.element.querySelectorAll('.e-day.e-title')[0]['innerHTML']).toBe('<div class="date-text">0</div>');
+            expect(schObj.element.querySelectorAll('.e-week-header')[0]['innerHTML'])
                 .toBe('<tr><th><div class="date-text">0</div></th><th><div class="date-text">1</div></th><th><div class="date-text">2</div></th><th><div class="date-text">3</div></th><th><div class="date-text">4</div></th><th><div class="date-text">5</div></th><th><div class="date-text">6</div></th></tr>');
-            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[0][`innerHTML`]).toBe('<div class="date-text">26</div><div class="date-text">26</div>');
-            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6][`innerHTML`]).toBe('<div class="date-text">1</div><div class="date-text">1</div>');
-            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]["innerHTML"]).toBe('<div class="date-text">1-31</div>');
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[0]['innerHTML']).toBe('<div class="date-text">26</div><div class="date-text">26</div>');
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6]['innerHTML']).toBe('<div class="date-text">1</div><div class="date-text">1</div>');
+            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]['innerHTML']).toBe('<div class="date-text">1-31</div>');
         });
         it('remove daterange', () => {
             expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
@@ -371,10 +371,8 @@ describe('Schedule year view', () => {
             schObj = util.createSchedule(model, []);
             const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
-            expect(workCell.getAttribute('aria-selected')).toEqual('false');
             workCell.click();
             expect(workCell.classList).not.toContain('e-selected-cell');
-            expect(workCell.getAttribute('aria-selected')).toEqual('false');
         });
 
         it('cell double click', () => {
@@ -561,6 +559,142 @@ describe('Schedule year view', () => {
         });
     });
 
+    describe('EJ2-45830 - Display multi-month event as single event in vertical year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Test event-1',
+                StartTime: new Date(2023, 1, 2, 8),
+                EndTime: new Date(2023, 3, 2, 9),
+                TaskId: 1
+            }, {
+                Id: 2,
+                Subject: 'Test event-2',
+                StartTime: new Date(2023, 0, 1, 8),
+                EndTime: new Date(2023, 5, 1, 13),
+                TaskId: 2
+            }, {
+                Id: 3,
+                Subject: 'Test event-3',
+                StartTime: new Date(2023, 1, 1, 8),
+                EndTime: new Date(2023, 2, 1, 13),
+                TaskId: 2
+            }, {
+                Id: 4,
+                Subject: 'Test event-4',
+                StartTime: new Date(2023, 1, 2, 12),
+                EndTime: new Date(2023, 1, 2, 13),
+                TaskId: 2
+            }, {
+                Id: 5,
+                Subject: 'Test event-5',
+                StartTime: new Date(2023, 1, 1, 8),
+                EndTime: new Date(2023, 2, 1, 13),
+                TaskId: 2
+            }, {
+                Id: 6,
+                Subject: 'Test event-6',
+                StartTime: new Date(2023, 1, 2, 12),
+                EndTime: new Date(2023, 1, 2, 13),
+                TaskId: 2
+            }];
+            const model: ScheduleModel = {
+                width: '100%', height: '550px',
+                selectedDate: new Date(2023, 3, 1),
+                group: {
+                    resources: ['Categories']
+                },
+                views: [
+                    { option: 'TimelineYear', displayName: 'Vertical Timeline Year', orientation: 'Vertical' }
+                ],
+                resources: [
+                    {
+                        field: 'TaskId',
+                        title: 'Category',
+                        name: 'Categories',
+                        allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, color: '#7fa900' },
+                            { text: 'Robert', id: 3, color: '#ea7a57' },
+                            { text: 'Smith', id: 4, color: '#5978ee' },
+                            { text: 'Micheal', id: 5, color: '#df5286' }
+                        ],
+                        textField: 'text',
+                        idField: 'id',
+                        colorField: 'color'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking the multi month events displaying as single event', () => {
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-vertical');
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+            const editedEvent: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            expect(editedEvent.offsetWidth).toEqual(300);
+        });
+
+        it('Checking more events', () => {
+            const moreIndicator: HTMLElement = document.querySelector('.e-more-indicator');
+            util.triggerMouseEvent(moreIndicator, 'click');
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper');
+            expect(morePopup.querySelectorAll('.e-appointment').length).toEqual(5);
+            expect(schObj.eventsData.length).toEqual(6);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+
+        it('After changing first month of the year', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                schObj.dataBound = () => {
+                    expect(schObj.firstMonthOfYear).toEqual(1);
+                    expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+                    done();
+                };
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                const addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_7"]') as HTMLElement;
+                expect(addedEvent.offsetWidth).toEqual(100);
+                expect(addedEvent.offsetHeight).toEqual(22);
+                expect(addedEvent.firstElementChild.classList.contains('e-left-icon')).toBeTruthy();
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                schObj.firstMonthOfYear = 1;
+                schObj.dataBind();
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startObj.value = new Date(2022, 11, 1);
+            startObj.dataBind();
+            const endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endObj.value = new Date(2023, 0, 30);
+            endObj.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+
+        it('After changing number of months', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.firstMonthOfYear).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+                const appointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+                expect(appointment.firstElementChild.classList.contains('e-left-icon')).toBeTruthy();
+                expect(appointment.children[2].classList.contains('e-right-icon')).toBeTruthy();
+                done();
+            };
+            schObj.monthsCount = 4;
+            schObj.dataBind();
+        });
+    });
+
     describe('EJ2-57740 - Checking the scroll position maintenance in Timeline year view', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -618,6 +752,35 @@ describe('Schedule year view', () => {
             expect(monthArea.scrollTop).toEqual(120);
         });
     });
+
+    describe('checking getCurrentViewDates', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: [
+                    { option: 'Year', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                selectedDate: new Date(2023, 1, 24)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking getCurrentViewDates for year view', () => {
+            expect(schObj.getCurrentViewDates().length).toEqual(365);
+        });
+
+        it('Checking getCurrentViewDates for timeline year view', () => {
+            schObj.currentView = 'TimelineYear';
+            schObj.dataBind();
+            expect(schObj.getCurrentViewDates().length).toEqual(365);
+        });
+    });
+
 
     it('memory leak', () => {
         profile.sample();

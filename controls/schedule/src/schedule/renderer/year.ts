@@ -84,6 +84,7 @@ export class Year extends ViewBase implements IRenderer {
             calendarElement.appendChild(this.renderCalendarContent(currentMonth));
             calendarWrapper.appendChild(calendarElement);
         }
+        this.renderDates.splice(0, 1);
     }
     public renderCalendarHeader(currentDate: Date): HTMLElement {
         const headerWrapper: HTMLElement = createElement('div', { className: 'e-header e-month' });
@@ -145,7 +146,7 @@ export class Year extends ViewBase implements IRenderer {
             for (const date of weekDates) {
                 const td: HTMLElement = createElement('td', {
                     className: 'e-cell ' + cls.WORK_CELLS_CLASS,
-                    attrs: { 'aria-selected': 'false', 'data-date': date.getTime().toString() }
+                    attrs: { 'data-date': date.getTime().toString() }
                 });
                 if (this.parent.activeViewOptions.cellHeaderTemplate) {
                     const args: CellTemplateArgs = { date: date, type: 'monthCells' };
@@ -176,6 +177,9 @@ export class Year extends ViewBase implements IRenderer {
                     addClass([td], classList);
                 }
                 tr.appendChild(td);
+                if (currentDate.getMonth() === date.getMonth()) {
+                    this.renderDates.push(new Date(date));
+                }
                 if (!this.parent.isMinMaxDate(date)) {
                     addClass([td], cls.DISABLE_DATES);
                 }

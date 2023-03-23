@@ -1,14 +1,14 @@
 //layout variables
 $cmenu-back-icon: '\e977' !default;
 $cmenu-back-icon-margin: 8px !default;
-$cmenu-bigger-caret-font-size: 16px !default;
+$cmenu-bigger-caret-font-size: $text-base !default;
 $cmenu-bigger-font-size: $text-base !default;
 $cmenu-bigger-li-height: 36px !default;
 $cmenu-bigger-li-padding: 0 16px !default;
 $cmenu-bigger-max-width: 280px !default;
 $cmenu-bigger-min-width: 112px !default;
 $cmenu-caret-blank-icon: 14px !default;
-$cmenu-caret-font-size: 16px !default;
+$cmenu-caret-font-size: $text-base !default;
 $cmenu-caret-icon: '\e956' !default;
 $cmenu-caret-icon-rtl: '\e937' !default;
 $cmenu-caret-li-padding: 36px !default;
@@ -20,7 +20,7 @@ $cmenu-li-padding: 0 12px !default;
 $cmenu-li-right-padding: 12px !default;
 $cmenu-li-border-width: 1px !default;
 $cmenu-max-width: 240px !default;
-$cmenu-icon-font-size: 18px !default;
+$cmenu-icon-font-size: $text-lg !default;
 $cmenu-icon-bigger-font-size: 22px !default;
 $cmenu-min-width: 120px !default;
 $cmenu-parent-ul-box-shadow: $shadow-lg !default;

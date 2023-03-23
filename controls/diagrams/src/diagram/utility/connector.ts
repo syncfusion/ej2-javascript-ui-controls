@@ -1036,8 +1036,9 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
         let segment: StraightSegmentModel | BezierSegmentModel;
         let first: StraightSegmentModel | BezierSegmentModel;
         if (ele.type === 'Bezier') {
+            //EJ2-67651 - Bezier segment points are static when we move the connector's source or target node.
             if ((ele.bezierSettings.allowSegmentsReset || (ele.segments.length === 0 || 
-                (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point)))))  {
+                (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point))))){
                 intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
                 intermeditatePoints = intermeditatePointsForStraight(ele, source, target);
                 return intermeditatePoints;

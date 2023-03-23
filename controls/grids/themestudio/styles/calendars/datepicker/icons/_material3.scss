@@ -1,4 +1,4 @@
-@include export-module('datepicker-material3-icons') {
+@include export-module('datepicker-Material3-icons') {
 
   /*! component icons */
 
@@ -11,7 +11,7 @@
     outline: none;
 
     #{if(&, '&', '*')}::before {
-      content: '\e75e';
+      content: '\e778';
       font-family: 'e-icons';
     }
 
@@ -30,7 +30,7 @@
     min-width: $datepicker-bigger-icon-container-min-width;
 
     #{if(&, '&', '*')}::before {
-      content: '\e75e';
+      content: '\e778';
       font-family: 'e-icons';
     }
 

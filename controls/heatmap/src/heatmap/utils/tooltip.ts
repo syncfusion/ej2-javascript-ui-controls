@@ -14,35 +14,31 @@ import { Theme } from '../model/theme';
 import { DataModel } from '../datasource/adaptor-model';
 
 /**
- * Configures the color property in Heatmap.
+ * Sets and gets the options to customize the tooltip in heatmap.
  */
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
-     * Custom template to format the ToolTip content.
+     * Sets and gets the custom template to format the tooltip content.
      *
      * @default ''
      */
     @Property('')
     public template: string;
     /**
-     * Specifies the color collection for heat map cell.
+     * Specifies the color to be applied to the tooltip.
      *
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * Specifies the cell border style.
-     *
-     * @default ''
+     * Sets and gets the options to customize the cell border style.
      */
     @Complex<TooltipBorderModel>({}, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
-     * Specifies the cell label style.
-     *
-     * @default ''
+     * Sets and gets the options to customize the cell label style.
      */
     @Complex<FontModel>(Theme.tooltipFont, Font)
     public textStyle: FontModel;

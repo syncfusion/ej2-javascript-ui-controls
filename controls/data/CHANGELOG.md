@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 20.4.44 (2023-01-18)
+## 21.1.35 (2023-03-23)
 
 ### DataManager
 
-#### Bug Fixes
+#### New Features
 
-- `#I418727` - Milliseconds is displayed but time is incorrect issue has been fixed.
+- `#I304073, #I301329, #I441756` - Now, the filtering functionality has been enhanced to include additional filter operators such as `notcontains`, `notstartwith`, `notendwith`, `null`, `notnull`, `isempty`, and `isnotempty`. Additionally, `like` and `wildcard` support have been added.
 
 ## 19.4.52 (2022-02-15)
 

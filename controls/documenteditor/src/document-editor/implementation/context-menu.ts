@@ -7,6 +7,9 @@ import { TextPosition } from './selection/selection-helper';
 import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
 import { Point } from './editor/editor-helper';
+import { CheckBox } from '@syncfusion/ej2-buttons';
+import { DialogUtility } from '@syncfusion/ej2-popups';
+import { createElement } from '@syncfusion/ej2-base';
 
 
 const CONTEXTMENU_LOCK: string = '_contextmenu_lock';
@@ -90,6 +93,7 @@ export class ContextMenu {
     private noSuggestion: HTMLElement;
     private spellContextItems: MenuItemModel[] = [];
     private customItems: MenuItemModel[] = [];
+    private pasteCheckBoxDialog: HTMLInputElement;
     /**
      * @param {DocumentHelper} documentHelper - Specifies the document helper.
      * @private
@@ -381,6 +385,45 @@ export class ContextMenu {
         return false;
     }
     /**
+     * paste Dialog box.
+     */
+    private openPasteDialog(): void {
+        const container = createElement('div') as HTMLElement;
+        const contentDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        const contentValue: HTMLParagraphElement = createElement('p') as HTMLParagraphElement;
+        let contentDialog: string = this.locale.getConstant('Paste Content Dialog');
+        if (this.documentHelper.isIosDevice) {
+            contentValue.textContent = contentDialog + " Command + V.";
+        }
+        else {
+            contentValue.textContent = contentDialog + " Ctrl + V.";
+        }
+        contentDiv.appendChild(contentValue);
+        container.appendChild(contentDiv);
+        const contentWithBookMark: HTMLDivElement = createElement('div') as HTMLDivElement;
+        this.pasteCheckBoxDialog = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
+        contentWithBookMark.appendChild(this.pasteCheckBoxDialog);
+        let bookmarkCheckbox = new CheckBox({ label: this.locale.getConstant('Paste Content CheckBox') });
+        bookmarkCheckbox.appendTo(this.pasteCheckBoxDialog);
+        container.appendChild(contentWithBookMark);
+        let getDialogBox: boolean = JSON.parse(localStorage.getItem("ej_de_hidePasteAlert"));
+        if (!getDialogBox) {
+            let dialogUtility = DialogUtility.alert({
+                title: this.locale.getConstant('Information'),
+                content: container,
+                okButton: { text: this.locale.getConstant('Ok') },
+                showCloseIcon: true,
+                closeOnEscape: true,
+                animationSettings: { effect: 'Zoom' },
+                close: (): void => {
+                    if (this.pasteCheckBoxDialog.checked) {
+                        localStorage.setItem("ej_de_hidePasteAlert", "true");
+                    }
+                }
+            });
+        }
+    }
+    /**
      * Handles context menu items.
      * @param  {string} item Specifies which item is selected.
      * @private
@@ -406,7 +449,12 @@ export class ContextMenu {
                 break;
             case id + CONTEXTMENU_PASTE:
                 if (!this.documentHelper.owner.isReadOnlyMode) {
-                    this.documentHelper.owner.editorModule.pasteInternal(undefined);
+                    if (this.documentHelper.owner.enableLocalPaste) {
+                        this.documentHelper.owner.editorModule.pasteInternal(undefined);
+                    }
+                    else {
+                        this.openPasteDialog();
+                    }
                 }
                 break;
             case id + CONTEXTMENU_ADD_COMMENT:
@@ -812,8 +860,8 @@ export class ContextMenu {
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment;
         addComment.style.display = isHideComment ? 'none' : 'block';
-        if(this.documentHelper.isCommentOnlyMode){
-            addComment.style.display='block';
+        if (this.documentHelper.isCommentOnlyMode) {
+            addComment.style.display = 'block';
         }
         (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
@@ -834,8 +882,11 @@ export class ContextMenu {
         classList(deleteTable, ['e-blankicon'], []);
         classList(editField, ['e-blankicon'], []);
         classList(autoFitTable, ['e-blankicon'], []);
-        let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
-        classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
+        let getDialogBox: boolean = JSON.parse(localStorage.getItem("ej_de_hidePasteAlert"));
+        if (getDialogBox) {
+            let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
+            classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
+        }
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';
             editField.style.display = 'block';
@@ -897,7 +948,7 @@ export class ContextMenu {
                 mergeCells.style.display = 'block';
             }
             autoFitTable.style.display = this.documentHelper.selection.isTableSelected() ? 'block' : 'none';
-        } 
+        }
         if (this.documentHelper.owner.fontDialogModule) {
             font.style.display = 'block';
         }
@@ -921,7 +972,7 @@ export class ContextMenu {
             else {
                 acceptChange.style.display = 'block';
                 rejectChange.style.display = 'block';
-            }    
+            }
         }
         if (this.documentHelper.selection.isinFootnote || this.documentHelper.selection.isinEndnote) {
             editNoteoptions.style.display = 'block';

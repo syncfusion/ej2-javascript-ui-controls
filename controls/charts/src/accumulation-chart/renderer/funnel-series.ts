@@ -1,6 +1,5 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Defines the behavior of a funnel series
  */

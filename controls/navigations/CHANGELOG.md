@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I441253` - An issue with the `aria-disabled` role accessibility has been fixed.
+
+### Toolbar
+
+#### Breaking Changes
+
+- We improved the Toolbar alignments with a flex design, which may cause slight changes to the alignment of Toolbar items.
+
 ## 20.4.53 (2023-03-07)
 
 ### Sidebar

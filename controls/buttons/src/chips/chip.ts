@@ -58,6 +58,14 @@ export class Chip {
      */
 
     public value: string | number;
+
+     /**
+     * Allows additional HTML attributes such as aria labels, title, name, etc., and
+     * accepts n number of attributes in a key-value pair format.
+     * 
+     * @default {}
+     */
+    public htmlAttributes: { [key: string]: string };
 }
 
 
@@ -88,6 +96,15 @@ export interface ChipModel {
      * @default ''
      */
     avatarIconCss?: string;
+
+    /**
+     * Specifies the additional HTML attributes, such as title, styles, class, id, and name, in a key-value pair format 
+     * and appended to the chip item element of the Chip component. If both the property and equivalent HTML attributes are configured,
+     * then the component overrides the property value with the HTML attributes.
+     * 
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
 
     /**
      * Specifies the leading icon CSS class for the chip.

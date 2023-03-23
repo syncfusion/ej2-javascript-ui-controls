@@ -1,5 +1,5 @@
 import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId } from '../base/index';
-import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs } from '../index';
+import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef } from '../index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
@@ -84,6 +84,7 @@ export class WorkbookFormula {
         this.parent.on(formulaInValidation, this.formulaInValidation, this);
         this.parent.on(refreshInsertDelete, this.refreshInsertDelete, this);
         this.parent.on(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete, this);
+        this.parent.on(checkFormulaRef, this.autoCorrectCellRef, this);
     }
 
     private removeEventListener(): void {
@@ -96,6 +97,7 @@ export class WorkbookFormula {
             this.parent.off(formulaInValidation, this.formulaInValidation);
             this.parent.off(refreshInsertDelete, this.refreshInsertDelete);
             this.parent.off(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete);
+            this.parent.on(checkFormulaRef, this.autoCorrectCellRef, this);
         }
     }
 
@@ -528,7 +530,7 @@ export class WorkbookFormula {
 
     private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {
         if (!isNullOrUndefined(formula)) {
-            formula = this.autoCorrectCellRef(formula);
+            formula = this.autoCorrectCellRef({ formula: formula });
             formula = formula.toString();
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
@@ -614,19 +616,19 @@ export class WorkbookFormula {
         return { isInvalid: isInvalid, ref: cellRefArr.join(':') };
     }
 
-    private autoCorrectCellRef(formula: string): string {
-        const rightParens: number = formula.lastIndexOf(')');
+    private autoCorrectCellRef(args: { formula: string, isInvalid?: boolean }): string {
+        const rightParens: number = args.formula.lastIndexOf(')');
         let refCorrectObj: { isInvalid: boolean, ref: string };
-        if (rightParens > -1 && formula.split(')').length === 2) {
+        if (rightParens > -1 && args.formula.split(')').length === 2) {
             let leftParens: number = rightParens - 1;
-            while (leftParens > -1 && formula[leftParens as number] !== '(') {
-                if (formula[leftParens as number] === ')') {
-                    return formula;
+            while (leftParens > -1 && args.formula[leftParens as number] !== '(') {
+                if (args.formula[leftParens as number] === ')') {
+                    return args.formula;
                 }
                 leftParens--;
             }
             if (leftParens > -1) {
-                const formulaArgs: string = formula.substring(leftParens + 1, rightParens);
+                const formulaArgs: string = args.formula.substring(leftParens + 1, rightParens);
                 const formulaArgsArr: string[] = formulaArgs.split(',');
                 let isInValidRef: boolean;
                 for (let argsIdx: number = 0; argsIdx < formulaArgsArr.length; argsIdx++) {
@@ -637,16 +639,18 @@ export class WorkbookFormula {
                     }
                 }
                 if (isInValidRef) {
-                    formula = formula.split(formulaArgs).join(formulaArgsArr.join(','));
+                    args.formula = args.formula.split(formulaArgs).join(formulaArgsArr.join(','));
+                    args.isInvalid = true;
                 }
             }
-        } else if (formula.startsWith('=') && !formula.includes(')')) {
-            refCorrectObj = this.correctCellReference(formula.substring(1, formula.length));
+        } else if (args.formula.startsWith('=') && !args.formula.includes(')')) {
+            refCorrectObj = this.correctCellReference(args.formula.substring(1, args.formula.length));
             if (refCorrectObj.isInvalid) {
-                formula =  '=' + refCorrectObj.ref;
+                args.formula =  '=' + refCorrectObj.ref;
+                args.isInvalid = true;
             }
         }
-        return formula;
+        return args.formula;
     }
 
     private getUpdatedCellRef(cellRef: string): string {

@@ -255,9 +255,11 @@ export interface FormatObject {
     skeleton?: string;
 }
 /**
- * Specifies the fieldMode as DropDownList or DropDownTree.
- * Default: To Specifies the fieldMode as DropDownList.
- * DropdownTree: To Specifies the fieldMode as DropdownTree.
+ * Defines the fieldMode of Dropdown control.
+ * ```props 
+ * Default :- To Specifies the fieldMode as DropDownList.
+ * DropdownTree :- To Specifies the fieldMode as DropdownTree.
+ * ```
  */
 export type FieldMode =
     /** Display the DropdownList */
@@ -265,9 +267,11 @@ export type FieldMode =
     /** Display the DropdownTree */
     'DropdownTree';
 /**
- * Specifies the displayMode as Horizontal or Vertical.
- * Horizontal: To Display the Horizontal UI.
- * Vertical: To Display the Vertical UI.
+ * Defines the display mode of the control.
+ * ```props 
+ * Horizontal :- To display the control in a horizontal UI.
+ * Vertical :- To display the control in a vertical UI.
+ * ```
  */
 export type DisplayMode =
     /**  Display the Horizontal UI */
@@ -275,10 +279,12 @@ export type DisplayMode =
     /**  Display the Vertical UI */
     'Vertical';
 /**
- * Specifies the sort direction of the field names. They are
- * Default: Show the field names in default .
- * Ascending: Show the field names in Ascending.
- * Descending: Show the field names in Descending
+ * Defines the sorting direction of the field names in a control.
+ * ```props 
+ * Default :- Specifies the field names in default sorting order.
+ * Ascending :- Specifies the field names in ascending order.
+ * Descending :- Specifies the field names in descending order.
+ * ```
  */
 export type SortDirection =
     /**  Show the field names in default */
@@ -4075,7 +4081,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         if (this.dataSource instanceof DataManager) {
-            if (!isNullOrUndefined(pred) && (pred.operator === 'isnull' || pred.operator === 'notnull')) {
+            if (!isNullOrUndefined(pred) && (pred.operator === 'isnull' || pred.operator === 'isnotnull')) {
                 pred.operator = pred.operator === 'isnull' ? 'equal' : 'notequal';
             }
         }
@@ -4182,7 +4188,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 pred = new Predicate(ruleColl.field, 'isnull', nullValue);
                 break;
             case 'isnotnull':
-                pred = new Predicate(ruleColl.field, 'notnull', nullValue);
+                pred = new Predicate(ruleColl.field, 'isnotnull', nullValue);
                 break;
             case 'isempty':
                 pred = new Predicate(ruleColl.field, 'equal', '');
@@ -4716,7 +4722,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (sqlString[j as number] === ')') {
                         isClosed = true;
                     }
-                    if (isClosed && sqlString[j] === "'") {
+                    if (isClosed && sqlString[j as number] === '\'') {
                         break;
                     }
                 }
@@ -4896,7 +4902,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             }
                             if (operator.indexOf('like') > -1 && parser[j as number][0] === 'String') {
                                 let val: string = parser[j as number][1];
-                                if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                if (parser[j as number][1] && parser[j as number][1][0] === '\'') {
                                     val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
                                 }
                                 val = val ? val.replace(/%/g, '') : parser[j as number][1];
@@ -4909,7 +4915,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                     numVal.push(Number(parser[j as number][1]));
                                 } else if (parser[j as number][0] === 'String') {
                                     let val: string = parser[j as number][1];
-                                    if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                    if (parser[j as number][1] && parser[j as number][1][0] === '\'') {
                                         val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
                                     }
                                     strVal.push(val);
@@ -4919,7 +4925,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                     numVal.push(Number(parser[j as number][1]));
                                 } else if (parser[j as number][0] === 'String') {
                                     let val: string = parser[j as number][1];
-                                    if (parser[j as number][1] && parser[j as number][1][0] === "'") {
+                                    if (parser[j as number][1] && parser[j as number][1][0] === '\'') {
                                         val = parser[j as number][1].substring(1, parser[j as number][1].length - 1);
                                     }
                                     strVal.push(val);

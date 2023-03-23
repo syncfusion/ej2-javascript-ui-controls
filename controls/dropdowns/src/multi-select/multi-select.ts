@@ -1491,7 +1491,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 var downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(getComputedStyle(this.dropIcon).marginRight)
                 elementWidth = this.overAllWrapper.clientWidth - (downIconWidth + 2 * (parseInt(getComputedStyle(this.inputElement).paddingRight)));
-        }
+            }
             Input.calculateWidth(elementWidth, this.overAllWrapper, this.getModuleName()); 
         }
     }
@@ -1632,7 +1632,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.refreshPopup();
             }
             setTimeout(() => {
-                this.calculateWidth();
+                this.calculateWidth();  
             }, 150);
             return true;
         } else {

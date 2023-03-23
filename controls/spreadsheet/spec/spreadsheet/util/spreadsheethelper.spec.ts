@@ -178,7 +178,7 @@ export class SpreadsheetHelper extends TestHelper {
         spreadsheet.selectRange(address);
         (spreadsheet as any).editModule.startEdit();
         (spreadsheet as any).editModule.editCellData.value = value;
-        (spreadsheet as any).editModule.endEdit();
+        spreadsheet.endEdit();
     }
 
     public editInUI(value: string, address?: string): void {

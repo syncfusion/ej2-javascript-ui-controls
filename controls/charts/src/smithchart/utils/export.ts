@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { print as smithchartPrint, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../index';

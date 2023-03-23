@@ -63,7 +63,7 @@ $pivotgrid-hover-color: $neutral-quintenary !default;
 $pivotgrid-focus-color: $neutral-tertiary-alt !default;
 $pivotgrid-excel-member-filter-height: 141px !default;
 $pivotgrid-excel-filter-height: 215px !default;
-$pivotgrid-excel-member-filter-bigger-height: 126px !default;
+$pivotgrid-excel-member-filter-bigger-height: 105px !default;
 $pivotgrid-excel-filter-bigger-height: 238px !default;
 $pivotgrid-bigger-excel-dialog-min-width: 350px !default;
 $pivotgrid-editor-label-padding-size: 15px 10px 16px 20px !default;
@@ -104,6 +104,7 @@ $pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
 $pivotgrid-value-sort-icon-padding: 3px 4px 4px 4px !default;
 $pivotgrid-value-sort-icon-font-size: 12px !default;
 $pivotgrid-drillthrough-header-font-color: $neutral-light-font !default;
+$pivotgrid-drillthrough-header-value-font-color: $pivotview-grid-header-font-color !default;
 
 //enddefault
 

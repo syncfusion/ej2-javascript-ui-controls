@@ -1,5 +1,3 @@
-$kanban-skin: 'bootstrap5' !default;
-
 //Layout Variables Start
 $kanban-icons-border-radius: 4px !default;
 $kanban-text-base: $text-base !default;
@@ -118,7 +116,7 @@ $kanban-card-header-padding: 12px 14px 0 !default;
 $kanban-card-header-bgr-padding: 24px 24px 0 !default;
 $kanban-color-card-header-padding: 12px 14px 0 14px !default;
 $kanban-color-card-header-bgr-padding: 12px 20px 0 20px !default;
-$kanban-card-header-title-font-size: 14px !default;
+$kanban-card-header-title-font-size: $text-sm !default;
 $kanban-card-header-title-line-height: $leading-relaxed !default;
 $kanban-card-header-title-font-weight: $font-weight-medium !default;
 $kanban-card-header-title-bgr-font-size: $text-base !default;

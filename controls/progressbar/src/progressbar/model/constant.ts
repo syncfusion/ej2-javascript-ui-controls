@@ -46,3 +46,7 @@ export const gradientType: string = 'linearGradient';
  * stop element
  */
 export const stopElement: string = 'stop';
+/**
+ * Render for the tooltip.
+ */
+ export const tooltipRender: string  = 'tooltipRender';

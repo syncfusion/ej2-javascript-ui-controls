@@ -1,4 +1,5 @@
 import { Dialog } from '@syncfusion/ej2-popups';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotActionInfo, DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, closest } from '@syncfusion/ej2-base';
@@ -193,6 +194,7 @@ export class DrillThroughDialog {
                     showCloseIcon: true,
                     locale: this.parent.locale,
                     enableRtl: this.parent.enableRtl,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     width: this.parent.isAdaptive ? '100%' : '60%',
                     position: { X: 'center', Y: 'center' },
                     closeOnEscape: !this.parent.editSettings.allowEditing,
@@ -201,7 +203,7 @@ export class DrillThroughDialog {
                 });
                 this.dialogPopUp.isStringTemplate = true;
                 this.dialogPopUp.appendTo(drillThroughDialog);
-                // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+                // this.dialogPopUp.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('details');
                 setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
                 if (this.parent.editSettings.allowEditing) {
                     this.drillthroughKeyboardModule = new KeyboardEvents(this.dialogPopUp.element, {
@@ -502,9 +504,12 @@ export class DrillThroughDialog {
                     } else {
                         editType = 'defaultedit';
                     }
+                    let caption: string = this.parent.enableHtmlSanitizer ?
+                        SanitizeHtmlHelper.sanitize(this.engine.fieldList[key as string].caption)
+                        : this.engine.fieldList[key as string].caption;
                     columns.push({
                         field: key,
-                        headerText: this.engine.fieldList[key as string].caption,
+                        headerText: caption,
                         width: 120,
                         visible: this.engine.fieldList[key as string].isSelected,
                         validationRules: { required: true },

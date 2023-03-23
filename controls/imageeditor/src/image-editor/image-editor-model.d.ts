@@ -1,5 +1,5 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
-import {ImageFinetuneValue,Theme,ImageEditorCommands,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,OpenEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs} from "./image-editor";
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
+import {ImageFinetuneValue,ZoomTrigger,Point,Theme,ImageEditorCommand,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,OpenEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs,ImageEditorClickEventArgs,QuickAccessToolbarEventArgs} from "./image-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -8,53 +8,153 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface FinetuneSettingsModel {
 
     /**
-     * Specifies the brightness level of image.
+     * Represents a finetune setting for adjusting the brightness of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The brightness level of the image, from -100 to 100.
+     * @property {number} min - The minimum brightness value allowed, typically -100.
+     * @property {number} max - The maximum brightness value allowed, typically 100.
      * @default null
      */
     brightness?: ImageFinetuneValue;
 
     /**
-     * Specifies the contrast level image.
+     * Represents a finetune setting for adjusting the contrast of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The contrast level of the image, from -100 to 100.
+     * @property {number} min - The minimum contrast value allowed, typically -100.
+     * @property {number} max - The maximum contrast value allowed, typically 100.
      * @default null
      */
     contrast?: ImageFinetuneValue;
 
     /**
-     * Specifies the hue level image.
+     * Represents a finetune setting for adjusting the hue of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The hue level of the image, from 0 to 100.
+     * @property {number} min - The minimum hue value allowed, typically 0.
+     * @property {number} max - The maximum hue value allowed, typically 100.
      * @default null
      */
     hue?: ImageFinetuneValue;
 
     /**
-     * Specifies the saturation level image.
+     * Represents a finetune setting for adjusting the saturation of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The saturation level of the image, from -100 to 100.
+     * @property {number} min - The minimum saturation value allowed, typically -100.
+     * @property {number} max - The maximum saturation value allowed, typically 100.
      * @default null
      */
     saturation?: ImageFinetuneValue;
 
     /**
-     * Specifies the exposure level image.
+     * Represents a finetune setting for adjusting the exposure of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The exposure level of the image, from -100 to 100.
+     * @property {number} min - The minimum exposure value allowed, typically -100.
+     * @property {number} max - The maximum exposure value allowed, typically 100.
      * @default null
      */
     exposure?: ImageFinetuneValue;
 
     /**
-     * Specifies the opacity level image.
+     * Represents a finetune setting for adjusting the opacity of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The opacity level of the image, from 0 to 100.
+     * @property {number} min - The minimum opacity value allowed, typically 0.
+     * @property {number} max - The maximum opacity value allowed, typically 100.
      * @default null
      */
     opacity?: ImageFinetuneValue;
 
     /**
-     * Specifies the blur level image.
+     * Represents a finetune setting for adjusting the blur of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The blur level of the image, from 0 to 100.
+     * @property {number} min - The minimum blur value allowed, typically 0.
+     * @property {number} max - The maximum blur value allowed, typically 100.
      * @default null
      */
     blur?: ImageFinetuneValue;
+
+}
+
+/**
+ * Interface for a class ZoomSettings
+ */
+export interface ZoomSettingsModel {
+
+    /**
+     * Specifies the available options for zooming in an image editor control.
+     *
+     * @remarks
+     * Use this property to enable or disable specific types of zooming in the image editor. The following zooming options are available:
+     * MouseWheel: Zooming is performed by scrolling the mouse wheel up and down.
+     * Pinch: Zooming is performed using pinch gestures on touch-enabled devices.
+     * Commands: Zooming is performed by clicking the CTRL key and either the plus (+) or minus (-) buttons on the keyboard.
+     * Toolbar: Zooming is performed using toolbar buttons.
+     *
+     * By default, this property is set to `null`, which enables all types of zooming.
+     *
+     * @default null
+     */
+    zoomTrigger?: ZoomTrigger;
+
+    /**
+     * Specifies the minimum zooming level to limit the zooming.
+     * An integer value that specifies the minimum zooming level. And the default value is 1 (100%).
+     *
+     * @private
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    minZoomFactor?: number;
+
+    /**
+     * Specifies the maximum zooming level to limit the zooming.
+     * An integer value that specifies the maximum zooming level. And the default value is 10 (1000 percent).
+     *
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    maxZoomFactor?: number;
+
+    /**
+     * Specifies the default zoom factor to be applied on initial loading of image.
+     * An integer value that specifies the current zooming level. And the default value is 1 (100 percent).
+     *
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    zoomFactor?: number;
+
+    /**
+     * Specifies the point in which the zooming  has been performed in the image editor.
+     * A point value that specifies the current zooming point.
+     * And the default value is null, and it can be considered as center point of the image editor.
+     *
+     * @remarks
+     * The given value is a point object which has x and y coordinates.
+     *
+     */
+    zoomPoint?: Point;
 
 }
 
@@ -64,23 +164,21 @@ export interface FinetuneSettingsModel {
 export interface ImageEditorModel extends ComponentModel{
 
     /**
-     * Defines class/multiple classes separated by a space for customizing Image Editor UI.
+     * Defines one or more CSS classes that can be used to customize the appearance of an Image Editor component.
+     *
+     * @remarks
+     * One or more CSS classes to customize the appearance of the Image Editor component, such as by changing its toolbar appearance, borders, sizes, or other visual aspects.
      *
      * @default ''
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({cssClass: 'e-custom-img-editor'});
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
      */
     cssClass?: string;
 
     /**
-     * Specifies whether the Image Editor is disabled.
+     * Defines whether an Image Editor component is enabled or disabled.
+     *
+     * @remarks
+     * A disabled Image Editor component may have a different visual appearance than an enabled one. When set to “true”, the Image Editor component will be disabled, and the user will not be able to interact with it.
      *
      * @default false
      */
@@ -89,14 +187,32 @@ export interface ImageEditorModel extends ComponentModel{
     /**
      * Specifies the height of the Image Editor.
      *
+     * @remarks
+     * The value of height is specified either as a percentage (e.g. '100%') or as a fixed pixel value (e.g. '100px').
+     *
      * @default '100%'
      */
     height?: string;
 
     /**
-     * Specifies the theme of the Image Editor. The shape selection appearance will be decided based on this property.
-     * The property supports all the built-in themes of Syncfusion.
-     * default 'Bootstrap5'
+     * Specifies the theme of the Image Editor. The appearance of the shape selection in Image Editor is determined by this property.
+     *
+     * @remarks
+     * The `theme` property supports all the built-in themes of Syncfusion, including:
+     * - `Bootstrap5`
+     * - `Fluent`
+     * - `Tailwind`
+     * - `Bootstrap4`
+     * - `Material`
+     * - `Fabric`
+     * - `HighContrast`
+     * - `Bootstrap5Dark`
+     * - `Bootstrap4Dark`
+     * - `MaterialDark`
+     * - `FabricDark`
+     * - `HighContrastDark`
+     *
+     * The default value is set to `Theme.Bootstrap5`.
      *
      * @isenumeration true
      * @default Theme.Bootstrap5
@@ -106,79 +222,111 @@ export interface ImageEditorModel extends ComponentModel{
     theme?: string | Theme;
 
     /**
-     * Specifies the toolbar items to perform UI interactions. It accepts both string[] and ItemModel[] to configure its toolbar items.
+     * Specifies the toolbar items to perform UI interactions.
+     * It accepts both string[] and ItemModel[] to configure its toolbar items. The default value is null.
+     * If the property is not defined in the control, the default toolbar will be rendered with preconfigured toolbar commands.
      * If the property is defined as empty collection, the toolbar will not be rendered.
-     * Suppose the property is not defined in control, an image editor’s toolbar will be rendered with preconfigured toolbar commands.
      * The preconfigured toolbar commands are
-     *  Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     *  Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
-     *  Transform: helps to rotate and flip an image.
-     *  ZoomIn: performs zoom-in an image.
-     *  ZoomOut: performs zoom-out an image.
-     *  Pan: performs panning once zoomed an image.
-     *  Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
-     *  Save: save the modified image.
-     *  Open: open an image to perform editing.
-     *  Reset: reset the modification and restore the original image.
+     * - Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
+     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     * - Transform: helps to rotate and flip an image.
+     * - Finetunes: helps to perform adjustments on an image.
+     * - Filters: helps to perform predefined color filters.
+     * - ZoomIn: performs zoom-in an image.
+     * - ZoomOut: performs zoom-out an image.
+     * - Save: save the modified image.
+     * - Open: open an image to perform editing.
+     * - Reset: reset the modification and restore the original image.
      *
+     * @example
+     * // Define toolbar items as an array of strings
+     * var toolbarItems = ["Crop", "Annotate", "Transform", "ZoomIn", "ZoomOut", "Pan", "Move", "Save", "Open", "Reset"];
+     *
+     * // Define toolbar items as an array of ItemModel objects
+     * var toolbarItems = [
+     *   { text: "Crop", tooltipText: "Crop", prefixIcon: "e-icon e-crop-icon" }
+     * ]
+     *
+     * @remarks
+     * If the toolbarTemplate property is defined in the control, the toolbar will be rendered based on the toolbarTemplate property.
      * @default null
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     *     toolbar[Crop, ZoomIn, ZoomOut, Transform, {text: 'Custom'}]
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/toolbar/index.md' %}{% endcodeBlock %}
      */
-    toolbar?: (string | ImageEditorCommands | ItemModel)[];
+    toolbar?: (string | ImageEditorCommand | ItemModel)[];
 
     /**
-     * Specifies template to the Image Editor Toolbar.
-     * If you want to customize the entire toolbar in own way by using this property.
-     * The property is depending on ‘toolbar’.
+     * Specifies a custom template for the toolbar of an image editor control.
+     * A string that specifies a custom template for the toolbar of the image editor. If this property is defined, the 'toolbar' property will not have any effect.
+     *
+     * @remarks
+     * Use this property if you want to customize the entire toolbar in your own way. The template should be a string that contains the HTML markup for the custom toolbar.
      *
      * @default null
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     *     toolbarTemplate: '#toolbarTemplate'
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * <script id="toolbarTemplate" type="text/x-template">
-     *    <div class = 'e-toolbar'>
-     *      <button id= 'dltbtn'></button>
-     *    </div>
-     *  </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/toolbarTemplate/index.md' %}{% endcodeBlock %}
+     *
      */
     toolbarTemplate?: string;
 
     /**
-     * Specifies the width of the Image Editor.
+     * Specifies the width of an Image Editor.
+     *
+     * @remarks
+     * The value of width is specified either as a percentage (e.g. '100%') or as a fixed pixel value (e.g. '100px').
      *
      * @default '100%'
      */
     width?: string;
 
     /**
-     * Specifies whether to perform undo / redo operation.
+     * Specifies a boolean value whether enable undo/redo operations in the image editor.
      *
-     * @default false
-     * @private
+     * @remarks
+     * If this property is true, the undo redo options will be enabled in toolbar and can also be accessed via keyboard shortcuts.
+     * If set to false, both options will be disabled.
+     * The undo redo history is limited to 16. Once the maximum limit is reached, the oldest history item will be removed to make space for the new item.
+     *
+     * @default true
+     *
      */
     allowUndoRedo?: boolean;
 
     /**
-     * Gets or sets whether to prevent the interaction in signature component.
-     * True, if the signature component is read only state where the user interaction is prevented. The default value is false.
+     * Specifies whether to show/hide the Quick Access Toolbar while select the shapes.
+     *
+     * @remarks
+     * The Quick Access Toolbar is a small customizable toolbar that shows commonly used commands while select the shapes.
+     * Set this property to true to show the Quick Access Toolbar, and false to hide it.
+     *
+     * @default false
+     * @private
+     *
+     * @remarks
+     * Set this property to true to show the quick access toolbar, and false to hide it.
+     */
+    showQuickAccessToolbar?: boolean;
+
+    /**
+     * Specifies a custom template content for the quick access toolbar of an Image Editor control.
+     *
+     * @default null
+     * @private
+     *
+     * @remarks
+     * This property only works if the "showQuickAccessToolbar" property is set to true.
+     *
+     * {% codeBlock src='image-editor/quickAccessToolbarTemplate/index.md' %}{% endcodeBlock %}
+     *
+     */
+    quickAccessToolbarTemplate?: string;
+
+    /**
+     * Specifies whether to prevent user interaction with the image editor control.
+     * A boolean that specifies whether to prevent the interaction in image editor control. The default value is false.
+     *
+     * @remarks
+     * If the property is true, the image editor control becomes read-only, and the user interaction will be prevented.
      *
      * @default false
      * @private
@@ -186,7 +334,8 @@ export interface ImageEditorModel extends ComponentModel{
     isReadOnly?: boolean;
 
     /**
-     * Specifies the Signature in RTL mode that displays the content in the right-to-left direction.
+     * Specifies whether to enable RTL mode in image editor control that displays the content in the right-to-left direction.
+     * A boolean that specifies whether to enable RTL mode in image editor control. The default value is false.
      *
      * @default false
      * @private
@@ -194,9 +343,11 @@ export interface ImageEditorModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
-     * Gets or sets whether to persist component's state between page reloads.
-     * True, if the component's state persistence is enabled. The default value is false.
-     * Component's property will be stored in browser local storage to persist component's state when page reloads.
+     * Specifies a bool value whether enable or disable persist component's state between page reloads. The default value is false.
+     *
+     * @remarks
+     * If this property is true, the controls's state persistence will be enabled.
+     * Control's property will be stored in browser local storage to persist control's state when page reloads.
      *
      * @default false
      * @private
@@ -204,128 +355,183 @@ export interface ImageEditorModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
-     * It can be done using the filter property of the canvas.  The following fine tunes can be supported.
-     * Brightness: The intensity of the primary colors grows with increased brightness, but the color itself does not change. It can be done by changing brightness and opacity property.
-     * Contrast: The contrast of an image refers to the difference between the light pixels and dark pixels. Low contrast images contain either a narrow range of colors while high contrast images have bright highlights and dark shadows. It can be done by changing contrast property.
-     * Hue: Hue distinguishes one color from another and is described using common color names such as green, blue, red, yellow, etc. Value refers to the lightness or darkness of a color. It can be controlled by hue-rotate property.
-     * Saturation: If saturation increases, colors appear sharper or purer. As saturation decreases, colors appear more washed-out or faded. It can be controlled by saturation and brightness property.
-     * Exposure: If exposure increases, intensity of light appears brighter. As exposure decreases, intensity of light decreases. Exposure can be controlled by brightness property.
-     * Opacity: The state or quality of being opaque or transparent, not allowing light to pass through the image. Opacity can be controlled by opacity property.
-     * Blur : Adjusting the blur can make an image unfocused or unclear. Blur can be controlled by blur property.
+     * Specifies the finetune settings option which can be used to perform color adjustments in the image editor control.
+     *
+     * @remarks
+     * A 'FinetuneSettingsModel' value that specifies the the finetune options which are enabled in image editor control.
+     * If the property is not specified, then the default values will be applied for minimum, maximum, and value properties for all finetune options.
+     *
+     * The possible values are:
+     * - Brightness: The intensity of the primary colors grows with increased brightness, but the color itself does not change. It can be done by changing brightness and opacity property.
+     * - Contrast: The contrast of an image refers to the difference between the light pixels and dark pixels. Low contrast images contain either a narrow range of colors while high contrast images have bright highlights and dark shadows. It can be done by changing contrast property.
+     * - Hue: Hue distinguishes one color from another and is described using common color names such as green, blue, red, yellow, etc. Value refers to the lightness or darkness of a color. It can be controlled by hue-rotate property.
+     * - Saturation: If saturation increases, colors appear sharper or purer. As saturation decreases, colors appear more washed-out or faded. It can be controlled by saturation and brightness property.
+     * - Exposure: If exposure increases, intensity of light appears brighter. As exposure decreases, intensity of light decreases. Exposure can be controlled by brightness property.
+     * - Opacity: The state or quality of being opaque or transparent, not allowing light to pass through the image. Opacity can be controlled by opacity property.
+     * - Blur : Adjusting the blur can make an image unfocused or unclear. Blur can be controlled by blur property.
+     *
+     * {% codeBlock src='image-editor/finetuneSettings/index.md' %}{% endcodeBlock %}
      *
      */
     finetuneSettings?: FinetuneSettingsModel;
 
     /**
-     * Triggers before an image is saved.
+     * Specifies the zoom settings to perform zooming action.
+     * A 'ZoomSettingsModel' value that specifies the the zoom related options which are enabled in image editor control. The default value is null.
+     *
+     * @remarks
+     * If the property is not specified, then the default settings will be applied for all the properties available in zoom settings.
+     *
+     * The following options are available in `zoomSettings`.
+     * - minZoomFactor: Specifies the minimum zoom factor level to control the zoom.
+     * - maxZoomFactor: Specifies the maximum zoom factor level to control the zoom.
+     * - zoomFactor: Specifies the zoom factor to be applied to the image.
+     * - zoomTrigger: Specifies the types of zooming to be supported in the image editor.
+     * - zoomPoint: Specifies the x and y coordinates in which the zooming performed on initial load.
+     *
+     * {% codeBlock src='image-editor/zoomSettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+    zoomSettings?: ZoomSettingsModel;
+
+    /**
+     * Event callback that is raised before an image is saved.
      *
      * @event beforeSave
      */
     beforeSave?: EmitType<BeforeSaveEventArgs>;
 
     /**
-     * Triggers once the component rendering is completed.
+     * Event callback that is raised after rendering the Image Editor component.
      *
      * @event created
      */
     created?: EmitType<Event>
 
     /**
-     * Triggers once the component is destroyed with its elements and bound events.
+     * Event callback that is raised once the component is destroyed with its elements and bound events.
      *
      * @event destroyed
      */
     destroyed?: EmitType<Event>
 
     /**
-     * Triggers while zooming an image.
+     * Event callback that is raised while zooming an image.
      *
      * @event zooming
      */
     zooming?: EmitType<ZoomEventArgs>
 
     /**
-     * Triggers while panning an image.
+     * Event callback that is raised while panning an image.
      *
      * @event panning
      */
     panning?: EmitType<PanEventArgs>
 
     /**
-     * Triggers while cropping an image.
+     * Event callback that is raised while cropping an image.
      *
      * @event cropping
      */
     cropping?: EmitType<CropEventArgs>
 
     /**
-     * Triggers while rotating an image.
+     * Event callback that is raised while rotating an image.
      *
      * @event rotating
      */
     rotating?: EmitType<RotateEventArgs>
 
     /**
-     * Triggers while flipping an image.
+     * Event callback that is raised while flipping an image.
      *
      * @event flipping
      */
     flipping?: EmitType<FlipEventArgs>
 
     /**
-     * Triggers while changing shapes in an image.
+     * Event callback that is raised while changing shapes in an Image Editor.
      *
      * @event shapeChanging
      */
     shapeChanging?: EmitType<ShapeChangeEventArgs>
 
     /**
-     * Triggers once an image is opened.
+     * Event callback that is raised once an image is opened in an Image Editor.
      *
      * @event fileOpened
      */
     fileOpened?: EmitType<OpenEventArgs>
 
     /**
-     * Triggers once an image is saved.
+     * Event callback that is raised once an image is saved.
      *
      * @event saved
      */
     saved?: EmitType<SaveEventArgs>;
 
     /**
-     * Triggers once the toolbar is created.
+     * Event callback that is raised once the toolbar is created.
      *
      * @event toolbarCreated
      */
     toolbarCreated?: EmitType<ToolbarEventArgs>
 
     /**
-     * Triggers while updating/refreshing the toolbar
+     * Event callback that is raised while updating/refreshing the toolbar
      *
      * @event toolbarUpdating
+     *
+     * {% codeBlock src='image-editor/toolbarUpdating/index.md' %}{% endcodeBlock %}
+     *
      */
     toolbarUpdating?: EmitType<ToolbarEventArgs>
 
     /**
-     * Triggers once the toolbar item is clicked.
+     * Event callback that is raised once the toolbar item is clicked.
      *
      * @event toolbarItemClicked
      */
     toolbarItemClicked?: EmitType<ClickEventArgs>
 
     /**
-     * Triggers when applying filter to an image.
+     * Event callback that is raised when applying filter to an image.
      *
      * @event imageFiltering
      */
     imageFiltering?: EmitType<ImageFilterEventArgs>;
 
     /**
-     * Triggers when applying fine tune to an image.
+     * Event callback that is raised when applying fine tune to an image.
      *
      * @event finetuneValueChanging
      */
     finetuneValueChanging?: EmitType<FinetuneEventArgs>
+
+    /**
+     * Event callback that is raised while clicking on an image in the Image Editor.
+     *
+     * @event click
+     */
+    click?: EmitType<ImageEditorClickEventArgs>
+
+    /**
+     * Event callback that is triggered when the quick access toolbar is opening.
+     *
+     * @event quickAccessToolbarOpening
+     * @private
+     *
+     * @remarks
+     * Use this event to customize the toolbar items that appear in the quick access toolbar.
+     * To customize the toolbar items, modify the "toolbarItems" collection property of the event arguments.
+     * The "toolbarItems" collection contains string and ItemModel values.
+     * The string values representing the names of the built-in toolbar items to display.
+     * The ItemModel values representing the ItemModel of custom toolbar items to display.
+     *
+     * {% codeBlock src='image-editor/quickAccessToolbarOpening/index.md' %}{% endcodeBlock %}
+     *
+     */
+    quickAccessToolbarOpening?: EmitType<QuickAccessToolbarEventArgs>
 
 }

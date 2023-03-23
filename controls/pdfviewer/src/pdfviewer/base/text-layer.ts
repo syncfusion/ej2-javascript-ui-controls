@@ -132,17 +132,24 @@ export class TextLayer {
                             heightValue = linebounds[parseInt(j.toString(), 10)].Height;
                         }
                         if (bounds) {
-                            bounds.Y = yValue;
-                            bounds.Height = heightValue;
-                            this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                            if (bounds.Rotation !== 270) {
+                                bounds.Y = yValue;
+                                bounds.Height = heightValue;
+                            }
+                            this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height, bounds.Rotation);
                         }
                         this.setTextElementProperties(textDiv);
                         const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                         context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                         const contextWidth: number = context.measureText(lineContent[parseInt(j.toString(), 10)].replace(/(\r\n|\n|\r)/gm, '')).width;
                         if (bounds) {
-                            const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                            this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                            let scale: number;
+                            if (bounds.Rotation === 90) {
+                                scale = bounds.Height * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                            } else {
+                                scale = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                            }
+                            this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation, bounds);
                         }
                         textLayer.appendChild(textDiv);
                         this.resizeExcessDiv(textLayer, textDiv);
@@ -196,7 +203,7 @@ export class TextLayer {
                 if (textBounds) {
                     bounds = textBounds[parseInt(i.toString(), 10)];
                     if (bounds) {
-                        this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                        this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height, bounds.Rotation);
                     }
                 }
                 this.setTextElementProperties(textDiv);
@@ -212,8 +219,13 @@ export class TextLayer {
                     contextWidth = context.measureText(textDiv.textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                 }
                 if (bounds) {
-                    const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                    this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                    let scale: number;
+                    if (bounds.Rotation === 90) {
+                        scale = bounds.Height * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    } else {
+                        scale = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    }
+                    this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation, bounds);
                 }
                 this.resizeExcessDiv(textLayer, textDiv);
             }
@@ -227,11 +239,25 @@ export class TextLayer {
         }
     }
 
-    private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number): void {
+    private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number, bounds: any): void {
         const scaleString: string = 'scaleX(' + scale + ')';
         if (rotation === 0) {
-            if (textRotation >= 0 && textRotation <= 90) {
+            if (textRotation >= 0 && textRotation < 90) {
                 textDiv.style.transform = scaleString;
+            } else if ((textRotation == 90) || (textRotation == 270)) {
+                if ((textRotation == 270)) {
+                    textDiv.style.left = bounds.X + "px";
+                    textDiv.style.top = bounds.Y + bounds.Width + "px";
+                    textDiv.style.height = bounds.Height + "px";
+                    textDiv.style.fontSize = bounds.Height + "px";
+                } else {
+                    textDiv.style.left = bounds.X + bounds.Width + "px";
+                    textDiv.style.top = bounds.Y + "px";
+                    textDiv.style.height = bounds.Width + "px";
+                    textDiv.style.fontSize = bounds.Width + "px";
+                    textDiv.style.transformOrigin = '0% 0%';
+                }
+                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
             } else {
                 textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
             }
@@ -241,6 +267,7 @@ export class TextLayer {
             } else if (textRotation === -90) {
                 textDiv.style.transform = scaleString;
             } else {
+                textRotation = textRotation + 90;
                 textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
             }
         } else if (rotation === 2) {
@@ -498,12 +525,17 @@ export class TextLayer {
     }
 
     // eslint-disable-next-line
-    private setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, bottom: number, width: number, height: number): void {
+    private setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, bottom: number, width: number, height: number, rotation: number): void {
         textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
         textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-        const textHeight: number = height * this.pdfViewerBase.getZoomFactor();
+        let textHeight: number;
+        if (rotation === 90) {
+            textHeight = width * this.pdfViewerBase.getZoomFactor();
+        } else {
+            textHeight = height * this.pdfViewerBase.getZoomFactor();
+        }
         textDiv.style.height = textHeight + 'px';
-        textDiv.style.fontSize = height * this.pdfViewerBase.getZoomFactor() + 'px';
+        textDiv.style.fontSize = textHeight + 'px';
     }
 
     private getTextSelectionStatus(): boolean {

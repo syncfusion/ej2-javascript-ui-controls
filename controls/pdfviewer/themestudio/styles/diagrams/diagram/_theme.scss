@@ -41,33 +41,46 @@
     stroke: $diagram-resize-handle-disable-stroke;
   }
 
-   /* stylelint-disable */
+  .e-diagram-bezier-control-handle.e-disabled {
+    fill: $diagram-resize-handle-disable-color;
+    opacity: 1;
+    stroke: $diagram-resize-handle-disable-stroke;
+  }
+
+  /* stylelint-disable */
   .e-diagram-bezier-handle.e-source.e-disabled {
     opacity: 1 !important;
-   }
+  }
 
   .e-diagram-bezier-handle.e-target.e-disabled {
     opacity: 1 !important;
-   }
+  }
 
-  .e-symbolpalette .e-acrdn-content {
-    background-color: $palette-background-color !important;
-   }
-  /* stylelint-enable */
-
-  .e-diagram-bezier-handle {
+  .e-diagram-bezier-control-handle {
     fill: $diagram-bezier-handle-color;
     stroke: $diagram-resize-handle-stroke;
   }
 
-  .e-diagram-bezier-line {
+  .e-diagram-bezier-segment-handle {
+    fill: $diagram-bezier-handle-color;
+    stroke: $diagram-resize-handle-stroke;
+  }
+
+  .e-symbolpalette .e-acrdn-content {
+    background-color: $palette-background-color !important;
+  }
+
+  /* stylelint-enable */
+
+  .e-diagram-bezier-control-line {
     stroke: $diagram-bezier-line-color;
   }
 
   .e-diagram-resize-handle {
     fill: $diagram-resize-handle-color;
-    stroke: $diagram-resize-handle-stroke;
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'material' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'FluentUI') {
+    stroke: $diagram-endpoint-handle-color;
+
+    @if ($skin-name =='tailwind' or $skin-name =='tailwind-dark' or $skin-name =='bootstrap5' or $skin-name =='material' or $skin-name =='fabric-dark' or $skin-name =='fabric' or $skin-name =='highcontrast' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' or $skin-name =='bootstrap4' or $skin-name =='FluentUI' or $skin-name =='material3') {
       stroke: $diagram-endpoint-handle-color;
     }
   }
@@ -87,21 +100,21 @@
     stroke: $diagram-resize-handle-stroke;
   }
 
-  .e-diagram-border {
+  .e-diagram-selector {
     stroke: $diagram-border-stroke;
   }
 
-  .e-diagram-border.e-disabled {
+  .e-diagram-selector.e-disabled {
     opacity: 1;
     stroke: $diagram-border-stroke-disabled;
   }
 
-  .e-diagram-border.e-thick-border {
+  .e-diagram-selector.e-thick-border {
     stroke: $diagram-border-strokes;
     stroke-width: $diagram-border-stroke-width;
   }
 
-  .e-diagram-border.e-thick-border.e-diagram-lane {
+  .e-diagram-selector.e-thick-border.e-diagram-lane {
     stroke: $diagram-lane-border-strokes;
     stroke-width: $diagram-lane-border-stroke-width;
   }
@@ -174,7 +187,7 @@
     padding-left: 28px;
   }
 
-  .e-diagram-selection-rect {
+  .e-diagram-selection-indicator {
     stroke: $diagram-multiselect-stroke;
   }
 
@@ -185,17 +198,19 @@
   /* stylelint-disable */
   .e-diagram-rotate {
     cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAACXBIWXMAAAsSAAALEgHS3X78AAAA60lEQVQ4jZ1SwQ2DMBAzlfLJI2KEjJAVukG7ARsxQkfoKHQDugHdgOoqh14oCaGWIpSTudzZRg2MdYOxrq0il2Csm411o7Eu5GinTN0D6AGMAGZVux9p1LGBrHIF0LD+4l3ql70thDABSFZYaeTJ6UqNWhL3ELhyyhUR98TcwI06Lk1aNonO1NocqGWy/6zOcGCq6OjiSCw22/wUfEzL8ND2P9duFXBmHMDvWVN7CliFkkGe69VM5RmVLDqG7ZMPOroWP5BTle5WjR6dkQayutyLqU6gsiU/ypHMiI41yf+CE01qov+R0egXAN5x6jng51I3yAAAAABJRU5ErkJggg==), auto !important;
-   }
+  }
 
-   .e-symbolpalette-hidden {
+  .e-symbolpalette-hidden {
     display: none !important;
-   }
-    .e-symbolpalette-search-hidden {
+  }
+
+  .e-symbolpalette-search-hidden {
     display: none !important;
-   }
-   .e-diagramTooltip-content {
+  }
+
+  .e-diagramTooltip-content {
     width: auto !important;
     height: auto !important;
-    }
-  /* stylelint-enable */
+  }
 }
+ /* stylelint-enable */

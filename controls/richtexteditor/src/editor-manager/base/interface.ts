@@ -1,6 +1,7 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
+import { IFormatPainterActionValue, IFormatPainterContext } from './enum';
 /**
  * Specifies  Command models interfaces.
  *
@@ -17,6 +18,7 @@ export interface ICommandModel {
      */
     editableElement: Element
     options?: { [key: string]: number }
+    formatPainterSettings?: IFormatPainterSettings
 }
 
 /**
@@ -148,4 +150,38 @@ export interface IHtmlKeyboardEvent {
      * Specifies the enter key configuration.
      */
     enterAction?: string
+}
+
+/**
+ *
+ * @deprecated
+ * @hidden
+ *
+ */
+export interface IFormatPainterSettings {
+    allowedContext?: IFormatPainterContext[]
+    allowedFormats?: string
+    deniedFormats?: string
+}
+
+/**
+ *
+ * @deprecated
+ * @hidden
+ *
+ */
+export interface IFormatPainterActionArgs {
+    name: string
+    event: MouseEvent | KeyboardEvent
+    item: IFormatPainterAction
+    subCommand: string
+}
+/**
+ *
+ * @deprecated
+ * @hidden
+ *
+ */
+export interface IFormatPainterAction {
+    formatPainterAction: IFormatPainterActionValue
 }

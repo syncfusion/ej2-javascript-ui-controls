@@ -156,6 +156,11 @@
           @if $theme-name == 'fluentui-dark' {
             border-color: $fe-search-border-color;
           }
+          @if ($fm-skin-name == 'Material3') {
+            border: none;
+            border-bottom: 1px solid $outline;
+            border-radius: 0;
+          }
         }
       }
     }
@@ -213,6 +218,10 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           color: $content-text-color-alt2;
         }
+
+        @if $fm-skin-name =='Material3' {
+          color: $fe-grid-empty-inner-content-color;
+        }
       }
 
       .e-rowcell {
@@ -263,14 +272,14 @@
         }
       }
 
-      &.e-gridhover tr[role = 'row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+      &.e-gridhover .e-row:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         @if $fm-skin-name == 'material-dark' or $fm-skin-name == 'bootstrap-dark' {
           background-color: $fe-hover-bg-color;
           color: $fe-grid-type-color;
         }
       }
 
-      &.e-gridhover tr[role = 'row'].e-fe-drop-file:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+      &.e-gridhover .e-row.e-fe-drop-file:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: transparent;
       }
     }
@@ -286,8 +295,11 @@
       }
 
       .e-empty-inner-content {
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           color: $content-text-color-alt2;
+        }
+        @if $fm-skin-name =='Material3' {
+          color: $fe-grid-empty-inner-content-color;
         }
       }
 

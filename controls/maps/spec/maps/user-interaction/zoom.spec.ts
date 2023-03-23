@@ -2483,6 +2483,7 @@ describe('Zoom feature tesing for map control', () => {
             map = new Maps({
                 zoomSettings: {
                     enable: true,
+                    toolbars: ['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'],
                 },
                 layers: [
                     {
@@ -2509,6 +2510,49 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
+        it('Checking with Zoom using public method', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_LayerIndex_0_shapeIndex_0_dataIndex_undefined");
+                expect(element.getAttribute("fill") === '#A6A6A6').toBe(true);
+            };
+            map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 1);
+        });
+        it('click the zoomin button', (done: Function) => {
+            let spec = getElement('container_Zooming_ToolBar_ZoomIn_Group');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('class')).toBe('e-maps-toolbar');
+            done();
+        });
+        it('Checking with Zoom using public method', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_LayerIndex_0_shapeIndex_0_dataIndex_undefined");
+                expect(element.getAttribute("fill") === '#A6A6A6').toBe(true);
+            };
+            map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 10);
+        });
+        it('click the zoomin button', (done: Function) => {
+            let spec = getElement('container_Zooming_ToolBar_ZoomIn_Group');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('class')).toBe('');
+            done();
+        });
+        it('To zoom the OSM layer with center position ', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomByPosition({ latitude: 21, longitude: 78 }, 1);
+            };
+            map.layers[0].layerType = 'OSM';
+            map.layers[0].shapeData = null;
+            map.zoomSettings.zoomFactor = 1;
+            map.refresh();
+        });
+        it('click the zoomin button OSM', (done: Function) => {
+            debugger;
+            let spec = getElement('container_Zooming_ToolBar_ZoomIn_Group');
+            trigger.clickEvent(spec);
+            expect(spec.getAttribute('class')).toBe('e-maps-toolbar');
+            done();
+        }); 
+        
     });
     it('memory leak', () => {
         profile.sample();

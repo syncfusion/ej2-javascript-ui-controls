@@ -18,6 +18,7 @@ import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Document Editor container component.
@@ -130,6 +131,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property('320px')
     public height: string;
+    /**
+     * Gets or sets a value indicating whether the automatic focus behavior is enabled for Document editor or not.
+     *
+     * > By default, the Document editor gets focused automatically when the page loads. If you want the Document editor not to be focused automatically, then set this property to false.
+     *
+     * @returns {boolean}
+     * @aspType bool
+     * @default true
+     */
+    @Property(true)
+    public enableAutoFocus: boolean;
     /**
      * Enables the partial lock and edit module.
      *
@@ -418,10 +430,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Restrict Editing': 'Restrict Editing',
         'Upload from computer': 'Upload from computer',
         'By URL': 'By URL',
-        'Page Break': 'Page Break',
+        'Page': 'Page',
         'Show properties pane': 'Show properties pane',
         'Hide properties pane': 'Hide properties pane',
-        'Section Break': 'Section Break',
+        'Next Page': 'Next Page',
+        'Continuous': 'Continuous',
         'Header And Footer': 'Header & Footer',
         'Options': 'Options',
         'Levels': 'Levels',
@@ -502,7 +515,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Numbering': 'Numbering',
         'Styles': 'Styles',
         'Manage Styles': 'Manage Styles',
-        'Page': 'Page',
         'of': 'of',
         'Fit one page': 'Fit one page',
         'Spell Check': 'Spell Check',
@@ -570,7 +582,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Borders': 'Borders',
         'ShowHiddenMarks Tooltip': 'Show the hidden characters like spaces, tab, paragraph marks, and breaks.(Ctrl + *)',
         'Columns': 'Columns',
-        'Column Break': 'Column Break'
+        'Column': 'Column',
+        'Page Breaks': 'Page Breaks',
+        'Section Breaks': 'Section Breaks'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
     /**
@@ -711,6 +725,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.resize();
                     }
                     break;
+                case 'enableAutoFocus':
+                    if(this.documentEditor)
+                    {
+                        this.documentEditor.enableAutoFocus = newModel.enableAutoFocus;
+                    }
+                    break;
             }
         }
     }
@@ -837,6 +857,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if(!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
             this.documentEditor.documentEditorSettings.showHiddenMarks = this.documentEditorSettings.showHiddenMarks;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.showBookmarks)) {
+            this.documentEditor.documentEditorSettings.showBookmarks = this.documentEditorSettings.showBookmarks;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.allowDragAndDrop)) {
+            this.documentEditor.documentEditorSettings.allowDragAndDrop = this.documentEditorSettings.allowDragAndDrop;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.optimizeSfdt)) {
+            this.documentEditor.documentEditorSettings.optimizeSfdt = this.documentEditorSettings.optimizeSfdt;
+        }
     }
     /**
      * @private
@@ -928,7 +957,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
             showRevisions: true,
-            enableLockAndEdit: this.enableLockAndEdit
+            enableLockAndEdit: this.enableLockAndEdit,
+            enableAutoFocus: this.enableAutoFocus
         });
         this.wireEvents();
         this.customizeDocumentEditorSettings();
@@ -1108,7 +1138,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     private onRequestNavigate(args: RequestNavigateEventArgs): void {
         if (args.linkType !== 'Bookmark') {
-            let link: string = args.navigationLink;
+            let link: string = SanitizeHtmlHelper.sanitize(args.navigationLink);
             if (args.localReference.length > 0) {
                 link += '#' + args.localReference;
             }

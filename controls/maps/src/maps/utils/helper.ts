@@ -2,11 +2,11 @@
 /**
  * Helper functions for maps control
  */
-import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { AnimationOptions, Animation } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType, ISelectionEventArgs, itemSelection } from '../../index';
-import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
+import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel, ZoomToolbarTooltipSettingsModel } from '../index';
 import {
     MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel,
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
@@ -16,15 +16,15 @@ import { CenterPositionModel, ConnectorLineSettingsModel, MarkerSettingsModel } 
 import { ExportType } from '../utils/enum';
 
 /**
- * Maps internal use of `Size` type
+ * Specifies the size information of an element.
  */
 export class Size {
     /**
-     * height value for size
+     * Specifies the height of an element.
      */
     public height: number;
     /**
-     * width value for size
+     * Specifies the width of an element.
      */
     public width: number;
 
@@ -52,6 +52,7 @@ export function stringToNumber(value: string, containerSize: number): number {
  *
  * @param {Maps} maps Specifies the maps instance
  * @returns {void}
+ * @private
  */
 export function calculateSize(maps: Maps): Size {
     maps.element.style.height = !isNullOrUndefined(maps.height) ? maps.height : 'auto';
@@ -77,6 +78,7 @@ export function calculateSize(maps: Maps): Size {
  *
  * @param {Maps} maps Specifies the map instance
  * @returns {void}
+ * @private
  */
 export function createSvg(maps: Maps): void {
     maps.renderer = new SvgRenderer(maps.element.id);
@@ -98,6 +100,7 @@ export function createSvg(maps: Maps): void {
  * @param {number} pageY - Specifies the pageY.
  * @param {Element} element - Specifies the element.
  * @returns {MapLocation} - Returns the location.
+ * @private
  */
 export function getMousePosition(pageX: number, pageY: number, element: Element): MapLocation {
     const elementRect: ClientRect = element.getBoundingClientRect();
@@ -114,6 +117,7 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
  *
  * @param {number} deg Specifies the degree value
  * @returns {number} Returns the number
+ * @private
  */
 export function degreesToRadians(deg: number): number {
     return deg * (Math.PI / 180);
@@ -124,6 +128,7 @@ export function degreesToRadians(deg: number): number {
  *
  * @param {number} radian Specifies the radian value
  * @returns {number} Returns the number
+ * @private
  */
 export function radiansToDegrees(radian: number): number {
     return radian * (180 / Math.PI);
@@ -139,6 +144,7 @@ export function radiansToDegrees(radian: number): number {
  * @param {LayerSettings} layer - Specifies the layer settings.
  * @param {Maps} mapModel - Specifies the maps.
  * @returns {Point} - Returns the point values.
+ * @private
  */
 export function convertGeoToPoint(latitude: number, longitude: number, factor: number, layer: LayerSettings, mapModel: Maps): Point {
     const mapSize: Size = new Size(mapModel.mapAreaRect.width, mapModel.mapAreaRect.height);
@@ -217,6 +223,7 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
  * @param {MapLocation} tileTranslatePoint Specifies the tile translate point
  * @param {boolean} isMapCoordinates Specifies the boolean value
  * @returns {MapLocation} Returns the location value
+ * @private
  */
 export function convertTileLatLongToPoint(
     center: MapLocation, zoomLevel: number, tileTranslatePoint: MapLocation, isMapCoordinates: boolean): MapLocation {
@@ -238,6 +245,7 @@ export function convertTileLatLongToPoint(
  * @param {Maps} mapObject - Specifies the maps.
  * @param {number} val - Specifies the value.
  * @returns {number} - Returns the number.
+ * @private
  */
 export function xToCoordinate(mapObject: Maps, val: number): number {
     const longitudeMinMax: MinMax = mapObject.baseMapBounds.longitude;
@@ -252,6 +260,7 @@ export function xToCoordinate(mapObject: Maps, val: number): number {
  * @param {Maps} mapObject - Specifies the maps.
  * @param {number} val - Specifies the value.
  * @returns {number} - Returns the number.
+ * @private
  */
 export function yToCoordinate(mapObject: Maps, val: number): number {
     const latitudeMinMax: MinMax = mapObject.baseMapBounds.latitude;
@@ -264,6 +273,7 @@ export function yToCoordinate(mapObject: Maps, val: number): number {
  * @param {number} x - Specifies the x value.
  * @param {number} y - Specifies the y value.
  * @returns {Point} - Returns the point value.
+ * @private
  */
 export function aitoff(x: number, y: number): Point {
     const cosy: number = Math.cos(y);
@@ -278,6 +288,7 @@ export function aitoff(x: number, y: number): Point {
  * @param {number} a - Specifies the a value
  * @param {number} b - Specifies the b value
  * @returns {number} - Returns the number
+ * @private
  */
 export function roundTo(a: number, b: number): number {
     const c: number = Math.pow(10, b);
@@ -288,6 +299,7 @@ export function roundTo(a: number, b: number): number {
  *
  * @param {number} x - Specifies the x value
  * @returns {number} - Returns the number
+ * @private
  */
 export function sinci(x: number): number {
     return x / Math.sin(x);
@@ -297,6 +309,7 @@ export function sinci(x: number): number {
  *
  * @param {number} a - Specifies the a value
  * @returns {number} - Returns the number
+ * @private
  */
 export function acos(a: number): number {
     return Math.acos(a);
@@ -309,6 +322,7 @@ export function acos(a: number): number {
  * @param {number} min Specifies the minimum value
  * @param {number} max Specifies the maximum value
  * @returns {number} Returns the value
+ * @private
  */
 export function calculateBound(value: number, min: number, max: number): number {
     if (!isNullOrUndefined(min)) {
@@ -328,6 +342,7 @@ export function calculateBound(value: number, min: number, max: number): number 
  * @param {string} url Specifies the url
  * @param {boolean} isDownload Specifies whether download a file.
  * @returns {void}
+ * @private
  */
 export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
     createElement('a', {
@@ -342,16 +357,16 @@ export function triggerDownload(fileName: string, type: ExportType, url: string,
     }));
 }
 /**
- * Map internal class for point
+ * Specifies the information of the position of the point in maps.
  */
 
 export class Point {
     /**
-     * Point x value
+     * Defines the x position in pixels.
      */
     public x: number;
     /**
-     * Point Y value
+     * Defines the y position in pixels.
      */
     public y: number;
     constructor(x: number, y: number) {
@@ -402,7 +417,7 @@ export function measureText(text: string, font: FontModel): Size {
         measureObject = createElement('text', { id: 'mapsmeasuretext' });
         document.body.appendChild(measureObject);
     }
-    measureObject.innerHTML = text;
+    measureObject.innerText = text;
     measureObject.style.position = 'absolute';
     if (typeof (font.size) === 'number') {
         measureObject.style.fontSize = (font.size) + 'px';
@@ -587,6 +602,7 @@ export class LineOption extends PathOption {
  * Internal use of line
  *
  * @property {number} Line - Specifies the line class
+ * @private
  */
 export class Line {
     public x1: number;
@@ -603,6 +619,7 @@ export class Line {
 /**
  * Internal use of map location type
  *
+ * @private
  */
 export class MapLocation {
     /**
@@ -639,6 +656,7 @@ export class Rect {
 }
 /**
  * Defines the pattern unit types for drawing the patterns in maps.
+ * @private
  */
 export type patternUnits =
     /** Specifies the user space for maps. */
@@ -649,6 +667,7 @@ export type patternUnits =
  * Internal use for pattern creation.
  *
  * @property {PatternOptions} PatternOptions - Specifies the pattern option class.
+ * @private
  */
 export class PatternOptions {
     public id: string;
@@ -776,6 +795,7 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
  * @param {string} value - Specifies the value
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {string} - Returns the string value
+ * @private
  */
 export function formatValue(value: string, maps: Maps): string {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -797,6 +817,7 @@ export function formatValue(value: string, maps: Maps): string {
  * @param {any} data - Specifies the data
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {string} - Returns the string value
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertStringToValue(stringTemplate: string, format: string, data: any, maps: Maps): string {
@@ -829,6 +850,7 @@ export function convertStringToValue(stringTemplate: string, format: string, dat
  * @param {number} index - Specifies the index
  * @param {Maps} mapObj - Specifies the map object
  * @returns {HTMLElement} - Returns the html element
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertElementFromLabel(element: Element, labelId: string, data: any, index: number, mapObj: Maps): HTMLElement {
@@ -859,6 +881,7 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
  * @param {Element} markerCollection - Specifies the marker collection
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {Element} - Returns the element
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any,
@@ -891,7 +914,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
         markerEle = maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
     } else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - size.height;
+        y = location.y - (size.height / 2);
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions) as SVGImageElement;
     } else {
@@ -905,6 +928,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
  * @param {any} data - Specifies the data
  * @param {string} value - Specifies the value
  * @returns {any} - Returns the data
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getValueFromObject(data: any, value: string): any {
@@ -927,6 +951,7 @@ export function getValueFromObject(data: any, value: string): any {
  * @param {IMarkerRenderingEventArgs} eventArgs - Specifies the event arguments
  * @param {any} data - Specifies the data
  * @returns {IMarkerRenderingEventArgs} - Returns the arguments
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
@@ -944,6 +969,7 @@ export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: an
  * @param {IMarkerRenderingEventArgs} eventArgs - Specifies the event arguments
  * @param {any} data - Specifies the data
  * @returns {IMarkerRenderingEventArgs} - Returns the arguments
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
@@ -980,6 +1006,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
  * @param {boolean} check - Specifies the boolean value
  * @param {boolean} zoomCheck - Specifies the boolean value
  * @returns {void}
+ * @private
  */
 export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps,
                                 layerIndex: number, markerCollection: Element,
@@ -1105,16 +1132,15 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                         const clusterID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                         const labelID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                         m++;
-                        const imageShapeY: number = shapeCustom['shape'] === 'Image' ? shapeCustom['size']['height'] / 2 : 0;
                         const ele: Element = drawSymbols(
-                            shapeCustom['shape'], shapeCustom['imageUrl'], { x: 0, y: imageShapeY },
+                            shapeCustom['shape'], shapeCustom['imageUrl'], { x: 0, y: 0 },
                             clusterID, shapeCustom, markerCollection, maps
                         );
                         ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                         if (eventArg.shape === 'Balloon') {
-                            ele.children[0].innerHTML = indexCollection.toString();
+                            (ele.children[0] as HTMLElement).innerText = indexCollection.toString();
                         } else {
-                            ele.innerHTML = indexCollection.toString();
+                            (ele as HTMLElement).innerText = indexCollection.toString();
                         }
                         options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                         textElement = renderTextElement(options, style, style.color, markerCollection);
@@ -1195,6 +1221,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {Element | HTMLElement} markerElement - Specifies the marker element
  * @returns {void}
+ * @private
  */
 export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement): void {
     const layerIndex: number = sameMarkerData[0].layerIndex;
@@ -1224,6 +1251,7 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
  * @param {Element | HTMLElement} markerElement - Specifies the marker element
  * @param {boolean} isDom - Specifies the boolean value
  * @returns {void}
+ * @private
  */
 export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean): void {
     const layerIndex: number = sameMarkerData[0].layerIndex;
@@ -1318,6 +1346,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {Element} markerCollection - Specifies the marker collection
  * @returns {Element} - Returns the element
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: any[], dataIndex: number,
@@ -1362,6 +1391,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
  * @param {Point} offset - Specifies the offset value
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {HTMLElement} - Returns the html element
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
@@ -1438,11 +1468,12 @@ export function maintainStyleClass(id: string, idClass: string, fill: string, op
                                    borderWidth: string, maps: Maps): void {
     if (!getElement(id)) {
         const styleClass: Element = createElement('style', {
-            id: id, innerHTML: '.' + idClass + '{fill:'
-                + fill + ';' + 'opacity:' + opacity + ';' +
-                'stroke-width:' + borderWidth + ';' +
-                'stroke:' + borderColor + ';' + '}'
+            id: id
         });
+        (styleClass as HTMLElement).innerText = '.' + idClass + '{fill:'
+            + fill + ';' + 'opacity:' + opacity + ';' +
+            'stroke-width:' + borderWidth + ';' +
+            'stroke:' + borderColor + ';' + '}';
         maps.shapeSelectionClass = styleClass;
         document.body.appendChild(styleClass);
     }
@@ -1715,7 +1746,7 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     const height: number = size.height;
     let pathElement: Element;
     location.x -= width / 2;
-    location.y -= height;
+    location.y -= height / 2;
     options.d = 'M15,0C8.8,0,3.8,5,3.8,11.2C3.8,17.5,9.4,24.4,15,30c5.6-5.6,11.2-12.5,11.2-18.8C26.2,5,21.2,0,15,0z M15,16' +
         'c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S17.8,16,15,16z';
     const balloon: Element = maps.renderer.drawPath(options);
@@ -1785,6 +1816,7 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
  * @param {string | string[]} propertyPath - Specifies the property path
  * @param {LayerSettingsModel} layer - Specifies the layer settings
  * @returns {number} - Returns the number
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
@@ -1839,6 +1871,7 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
  * @param {number} start - Specifies the start value
  * @param {number} end - Specifies the end value
  * @returns {MapLocation[]} - Returns the location
+ * @private
  */
 export function filter(points: MapLocation[], start: number, end: number): MapLocation[] {
     const pointObject: MapLocation[] = [];
@@ -1859,6 +1892,7 @@ export function filter(points: MapLocation[], start: number, end: number): MapLo
  * @param {number} minValue - Specifies the minValue
  * @param {number} maxValue -Specifies the maxValue
  * @returns {number} - Returns the number
+ * @private
  */
 export function getRatioOfBubble(min: number, max: number, value: number, minValue: number, maxValue: number): number {
     const percent: number = (100 / (maxValue - minValue)) * (value - minValue);
@@ -1875,6 +1909,7 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
  * @param {string} type - Specifies the type
  * @param {string} geometryType - Specified the type of the geometry
  * @returns {any} - Specifies the object
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function findMidPointOfPolygon(points: MapLocation[], type: string, geometryType?: string): any {
@@ -2013,6 +2048,7 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
  * @param {Size} textSize - Specifies the text size
  * @param {string} type - Specifies the type
  * @returns {Point} - Returns the point values
+ * @private
  */
 export function findPosition(location: Rect, alignment: Alignment, textSize: Size, type: string): Point {
     let x: number;
@@ -2037,6 +2073,7 @@ export function findPosition(location: Rect, alignment: Alignment, textSize: Siz
  *
  * @param {string} id - Specifies the id
  * @returns {void}
+ * @private
  */
 export function removeElement(id: string): void {
     const element: Element = document.getElementById(id);
@@ -2049,6 +2086,7 @@ export function removeElement(id: string): void {
  * @param {Maps} mapObject - Specifies the map object
  * @param {LayerSettings} layer - Specifies the layer settings
  * @returns {Point} - Returns the x and y points
+ * @private
  */
 export function calculateCenterFromPixel(mapObject: Maps, layer: LayerSettings): Point {
     const point1: Point = convertGeoToPoint(
@@ -2361,6 +2399,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
  *
  * @param {Maps} map - Specifies the instance of the maps
  * @returns {void}
+ * @private
  */
 export function fixInitialScaleForTile(map: Maps): void {
     map.tileZoomScale = map.tileZoomLevel = Math.floor(map.availableSize.height / 512) + 1;
@@ -2378,6 +2417,7 @@ export function fixInitialScaleForTile(map: Maps): void {
  *
  * @param {string} id - Specifies the id
  * @returns {Element} - Returns the element
+ * @private
  */
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
@@ -2403,6 +2443,7 @@ export function getClientElement(id: string): ClientRect {
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {number} value - Specifies the value
  * @returns {string} - Returns the string
+ * @private
  */
 export function Internalize(maps: Maps, value: number): string {
     maps.formatFunction =
@@ -2451,6 +2492,7 @@ export function getElement(id: string): Element {
  * @param {string} targetId - Specifies the target id
  * @param {Maps} map - Specifies the instance of the maps
  * @returns {any} - Returns the object
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getShapeData(targetId: string, map: Maps): { shapeData: any, data: any } {
@@ -2520,6 +2562,7 @@ export function triggerShapeEvent(
  *
  * @param {string} className - Specifies the class name
  * @returns {HTMLCollectionOf<Element>} - Returns the collection
+ * @private
  */
 export function getElementsByClassName(className: string): HTMLCollectionOf<Element> {
     return document.getElementsByClassName(className);
@@ -2536,6 +2579,7 @@ export function getElementsByClassName(className: string): HTMLCollectionOf<Elem
  * @param {string} args - Specifies the args
  * @param {string} elementSelector - Specifies the element selector
  * @returns {Element} - Returns the element
+ * @private
  */
 export function querySelector(args: string, elementSelector: string): Element {
     let targetEle: Element = null;
@@ -2552,6 +2596,7 @@ export function querySelector(args: string, elementSelector: string): Element {
  * @param {boolean} enable - Specifies the boolean value
  * @param {Maps} map - Specifies the instance of the maps
  * @returns {Element} - Returns the element
+ * @private
  */
 export function getTargetElement(layerIndex: number, name: string, enable: boolean, map: Maps): Element {
     let targetId: string;
@@ -2573,16 +2618,19 @@ export function getTargetElement(layerIndex: number, name: string, enable: boole
  * @param {string} className - Specifies the class name
  * @param {IShapeSelectedEventArgs | any} eventArgs - Specifies the event args
  * @returns {Element} - Returns the element
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | any): Element {
-    return createElement('style', {
-        id: id, innerHTML: '.' + className + '{fill:'
+    let styleEle: HTMLElement = createElement('style', {
+        id: id
+    });
+    styleEle.innerText = '.' + className + '{fill:'
             + eventArgs['fill'] + ';' + 'fill-opacity:' + (eventArgs['opacity']).toString() + ';' +
             'stroke-opacity:' + (eventArgs['border']['opacity']).toString() + ';' +
             'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
-            'stroke:' + eventArgs['border']['color'] + ';' + '}'
-    });
+            'stroke:' + eventArgs['border']['color'] + ';' + '}';
+    return styleEle;
 }
 /**
  * Function to customize the style for highlight and selection
@@ -2591,12 +2639,13 @@ export function createStyle(id: string, className: string, eventArgs: IShapeSele
  * @param {string} className - Specifies the class name
  * @param {IShapeSelectedEventArgs | any} eventArgs - Specifies the event args
  * @returns {void}
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function customizeStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | any): void {
     const styleEle: Element = getElement(id);
     if (!isNullOrUndefined(styleEle)) {
-        styleEle.innerHTML = '.' + className + '{fill:'
+        (styleEle as HTMLElement).innerText = '.' + className + '{fill:'
             + eventArgs['fill'] + ';' + 'fill-opacity:' + (eventArgs['opacity']).toString() + ';' +
             'stroke-width:' + (eventArgs['border']['width']).toString() + ';' +
             'stroke-opacity:' + (eventArgs['border']['opacity']).toString() + ';' +
@@ -2613,6 +2662,7 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
  * @param {any} shapeData - Specifies the shape data
  * @param {any} data - Specifies the data
  * @returns {void}
+ * @private
  */
 export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2651,6 +2701,7 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
  *
  * @param {Element} element - Specifies the element
  * @returns {void}
+ * @private
  */
 export function removeClass(element: Element): void {
     element.removeAttribute('class');
@@ -2709,6 +2760,7 @@ export function elementAnimate(
 /**
  * @param {string} id - Specifies the id
  * @returns {void}
+ * @private
  */
 export function timeout(id: string): void {
     removeElement(id);
@@ -2725,6 +2777,7 @@ export function timeout(id: string): void {
  * @param {Element} element - Specifies the element
  * @param {boolean} isTouch - Specifies the boolean value
  * @returns {void}
+ * @private
  */
 export function showTooltip(
     text: string, size: string, x: number, y: number, areaWidth: number, areaHeight: number, id: string, element: Element,
@@ -2791,12 +2844,13 @@ export function showTooltip(
  * @param {number} areaWidth - Specifies the area width
  * @param {Element} element - Specifies the element
  * @returns {void}
+ * @private
  */
 export function wordWrap(
     tooltip: HTMLElement, text: string, x: number, y: number, size1: string[], width: number,
     areaWidth: number, element: Element
 ): void {
-    tooltip.innerHTML = text;
+    tooltip.innerText = text;
     tooltip.style.top = tooltip.id.indexOf('_Legend') !== -1 ?
         (parseInt(size1[0], 10) + y).toString() + 'px' : (parseInt(size1[0], 10) * 2).toString() + 'px';
     tooltip.style.left = (x).toString() + 'px';
@@ -2839,27 +2893,55 @@ export function wordWrap(
  * @param {string} text - Specifies the text
  * @param {string} top - Specifies the top
  * @param {string} left - Specifies the left
- * @param {string} fontSize - Specifies the fontSize
+ * @param {ZoomToolbarTooltipSettingsModel} settings - Specifies the tooltip settings.
  * @returns {void}
  * @private
  */
-export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string): void {
+export function createTooltip(id: string, text: string, top: number, left: number, settings: ZoomToolbarTooltipSettingsModel): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
+    const borderColor: any = getHexColor(settings.borderColor);
+    const fontColor: any = getHexColor(settings.fontColor);
     const style: string = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
-        'color: #000000; ' +
-        'background:' + '#FFFFFF' + ';' +
+        'color:' + (fontColor ? 'rgba(' + fontColor.r + ',' + fontColor.g + ',' + fontColor.b + ',' + settings.fontOpacity + ')'
+        : settings.fontColor) + ';' +
+        'background:' + settings.fill + ';' +
         'z-index: 2;' +
-        'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px;';
-    if (!tooltip) {
+        'position:absolute;border:' + settings.borderWidth + 'px solid ' +
+        (borderColor ? 'rgba(' + borderColor.r + ',' + borderColor.g + ',' + borderColor.b + ',' + settings.borderOpacity + ')'
+            : settings.borderColor) + ';font-family:' + settings.fontFamily +
+            ';font-style:' + settings.fontStyle + ';font-weight:' + settings.fontWeight +
+        ';font-size:' + settings.fontSize + ';border-radius:' + settings.borderWidth + 'px;';
+    if (!tooltip && settings.visible) {
         tooltip = createElement('div', {
-            id: id, innerHTML: '&nbsp;' + text + '&nbsp;'
+            id: id
         });
+        tooltip.innerHTML = SanitizeHtmlHelper.sanitize('&nbsp;' + text + '&nbsp;');
         tooltip.style.cssText = style;
         document.body.appendChild(tooltip);
-    } else {
-        tooltip.innerHTML = '&nbsp;' + text + '&nbsp;';
+    } else if (settings.visible) {
+        tooltip.innerHTML = SanitizeHtmlHelper.sanitize('&nbsp;' + text + '&nbsp;');
         tooltip.style.cssText = style;
+    }
+}
+
+/**
+ * @private
+ */
+export function getHexColor(color: string): any {
+    if (color.indexOf('#') !== -1 && color.toLowerCase().indexOf('rgb') === -1) {
+        let colorArray: any = (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i).exec(color);
+        return colorArray ? { r: parseInt(colorArray[1], 16), g: parseInt(colorArray[2], 16), b: parseInt(colorArray[3], 16) } : null;
+    } else if (color.toLowerCase().indexOf('rgb') !== -1) {
+        const colorArray: number[] = color.match(/\d+/g).map((a) => { return parseInt(a, 10); });
+        return colorArray ? { r: colorArray[0], g: colorArray[1], b: colorArray[2] } : null;
+    } else {
+        const divElment: HTMLElement = document.createElement('div');
+        divElment.style.color = color;
+        // eslint-disable-next-line @typescript-eslint/tslint/config
+        const colorArray: number[] = window.getComputedStyle(document.body.appendChild(divElment)).color.match(/\d+/g).map((a) => { return parseInt(a, 10); });
+        document.body.removeChild(divElment);
+        return colorArray ? { r: colorArray[0], g: colorArray[1], b: colorArray[2] } : null;
     }
 }
 
@@ -3250,6 +3332,7 @@ export function zoomAnimate(
  * @param {Function} process - Specifies the process
  * @param {Function} end - Specifies the end
  * @returns {void}
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function animate(element: Element, delay: number, duration: number, process: any, end: any): void {
@@ -3275,28 +3358,28 @@ export function animate(element: Element, delay: number, duration: number, proce
     clearAnimation = window.requestAnimationFrame(startAnimation);
 }
 /**
- * To get shape data file using Ajax.
+ * Defines the options to get shape data file using Ajax request.
  */
 export class MapAjax {
     /**
-     * MapAjax data options
+     * Defines the data options for the Ajax.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public dataOptions: string | any;
     /**
-     * MapAjax type value
+     * Defines type of the Ajax.
      */
     public type: string;
     /**
-     * MapAjax async value
+     * Defines whether the Ajax request is asynchronous or not.
      */
     public async: boolean;
     /**
-     * MapAjax contentType value
+     * Defines the type of the content in Ajax request.
      */
     public contentType: string;
     /**
-     * MapAjax sendData value
+     * Defines the data sent in the Ajax request.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public sendData: string | any;
@@ -3348,6 +3431,7 @@ export function smoothTranslate(element: Element, delay: number, duration: numbe
  * @param {number} scaleFactor - Specifies the scale factor
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {void}
+ * @private
  */
 export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
     const previous: number = isNullOrUndefined(maps.shouldZoomPreviousFactor) ?
@@ -3376,6 +3460,7 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
  * @param {number} mapHeight - Specifies the height of the maps
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {number} - Returns the scale factor
+ * @private
  */
 export function calculateZoomLevel(minLat: number, maxLat: number, minLong: number, maxLong: number,
                                    mapWidth: number, mapHeight: number, maps: Maps, isZoomToCoordinates: boolean): number {
@@ -3417,6 +3502,7 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
  *
  * @param {any} e - Specifies the any type value
  * @returns {any} - Returns the data value
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function processResult(e: any): any {

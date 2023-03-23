@@ -1306,7 +1306,14 @@ describe('ColorPicker', () => {
                 expect(colorPicker.container.parentElement.classList.contains('e-popup-open')).toBeTruthy();
                 EventArgs.keyCode = 13;
                 colorPicker.pickerKeyDown(EventArgs);
+                EventArgs.action = 'enter';
+                EventArgs.target = colorPicker.splitBtn.element;
+                colorPicker.splitBtn.btnKeyBoardHandler(EventArgs);
                 expect(colorPicker.container.parentElement.classList.contains('e-popup-open')).toBeFalsy();
+                expect(colorPicker.container.parentElement.classList.contains('e-popup-close')).toBeTruthy();
+                colorPicker.splitBtn.toggle();
+                colorPicker.ctrlBtnKeyDown(EventArgs);
+                colorPicker.splitBtn.btnKeyBoardHandler(EventArgs);
                 expect(colorPicker.container.parentElement.classList.contains('e-popup-close')).toBeTruthy();
             });
 

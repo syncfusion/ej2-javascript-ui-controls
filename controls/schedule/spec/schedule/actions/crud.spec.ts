@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { extend, closest } from '@syncfusion/ej2-base';
-import { Query, DataManager, UrlAdaptor } from '@syncfusion/ej2-data';
+import { Query, DataManager, UrlAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, EJ2Instance, ActionEventArgs, ScheduleModel, Timezone, EventSettingsModel
+    Schedule, Day, Week, WorkWeek, Month, Agenda, EJ2Instance, ActionEventArgs, ScheduleModel,
+    Timezone, EventSettingsModel, DataBindingEventArgs
 } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
-import { defaultData, stringData, cloneDataSource } from '../base/datasource.spec';
+import { defaultData, stringData, cloneDataSource, resourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { triggerMouseEvent } from '../util.spec';
 
 /**
  * Schedule CRUD module
@@ -600,7 +602,7 @@ describe('Schedule CRUD', () => {
     describe('Delete Actions with string id', () => {
         let schObj: Schedule;
         const testData: Record<string, any>[] = [{
-            Id: "1",
+            Id: '1',
             Subject: 'recurrence event',
             StartTime: new Date(2017, 9, 19, 10, 0),
             EndTime: new Date(2017, 9, 19, 11, 0),
@@ -620,7 +622,7 @@ describe('Schedule CRUD', () => {
 
         it('Checking cancel action begin event for delete', () => {
             schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-            schObj.deleteEvent("1");
+            schObj.deleteEvent('1');
             expect(schObj.eventsData.length).toEqual(1);
         });
 
@@ -683,6 +685,76 @@ describe('Schedule CRUD', () => {
         afterAll(() => {
             util.destroy(schObj);
             jasmine.Ajax.uninstall();
+        });
+    });
+
+    describe('Remote data testing with OdataV4 service', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const dataManager: DataManager = new DataManager({
+                url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders/',
+                adaptor: new ODataV4Adaptor(),
+                crossDomain: true
+            });
+            const model: ScheduleModel = {
+                selectedDate: new Date(1996, 6, 9),
+                currentView: 'Month',
+                eventSettings: {
+                    query: new Query(),
+                    includeFiltersInQuery: true,
+                    fields: {
+                        id: 'Id',
+                        subject: { name: 'ShipName' },
+                        location: { name: 'ShipCountry' },
+                        description: { name: 'ShipAddress' },
+                        startTime: { name: 'OrderDate' },
+                        endTime: { name: 'RequiredDate' },
+                        recurrenceRule: { name: 'ShipRegion' }
+                    }
+                }
+            };
+            schObj = util.createSchedule(model, dataManager, done);
+            schObj.dataBinding = (args: DataBindingEventArgs) => {
+                expect(args.result.length).toEqual(200);
+                expect((args as any).query.params.length).toBe(0);
+                expect((args as any).query.queries.length).toBe(1);
+                const events: Record<string, any>[] = args.result.filter((x: Record<string, any>) => !x.ShipRegion);
+                expect(events.length).toEqual(15);
+                expect((args as any).xhr.responseURL).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?$filter=((((OrderDate%20ge%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20ge%201996-06-30T00:00:00.000Z))%20and%20(OrderDate%20lt%201996-08-04T00:00:00.000Z))%20or%20((OrderDate%20le%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20gt%201996-06-30T00:00:00.000Z)))%20or%20((ShipRegion%20ne%20null)%20and%20(ShipRegion%20ne%20%27%27))');
+                done();
+            };
+            schObj.dataBound = () => {
+                const appointmentEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(appointmentEle.length).toEqual(11);
+                const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicator.length).toEqual(27);
+                expect(schObj.getCurrentViewEvents().length).toBe(15);
+                done();
+            };
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Check the server end filtering by disabling the includeFiltersInQuery property', (done: DoneFn) => {
+            schObj.dataBinding = (args: DataBindingEventArgs) => {
+                expect(args.result.length).toEqual(200);
+                expect((args as any).query.params.length).toBe(2);
+                expect((args as any).query.queries.length).toBe(0);
+                const events: Record<string, any>[] = args.result.filter((x: Record<string, any>) => !x.ShipRegion);
+                expect(events.length).toEqual(124);
+                expect((args as any).xhr.responseURL).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?StartDate=1996-06-30T00:00:00.000Z&EndDate=1996-08-04T00:00:00.000Z');
+                done();
+            };
+            schObj.dataBound = () => {
+                const appointmentEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(appointmentEle.length).toEqual(11);
+                const moreIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicator.length).toEqual(27);
+                expect(schObj.getCurrentViewEvents().length).toBe(15);
+                done();
+            };
+            schObj.eventSettings.includeFiltersInQuery = false;
+            schObj.dataBind();
         });
     });
 
@@ -1570,6 +1642,144 @@ describe('Schedule CRUD', () => {
                 RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
             }];
             schObj.addEvent(data);
+        });
+    });
+
+    describe('Events are missing after block pop thrown ', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: '2018-06-09T09:30:00.000Z',
+            EndTime: '2018-06-09T11:30:00.000Z',
+            OwnerId: 1,
+            IsBlock: false
+        },
+        {
+            Id: 6,
+            Subject: 'Burning',
+            StartTime: '2018-06-11',
+            EndTime: '2018-06-11',
+            OwnerId: 1
+        },
+        {
+            Id: 2,
+            Subject: 'Marketing Forum',
+            StartTime: '2018-06-03T04:30:00.000Z',
+            EndTime: '2018-06-03T06:00:00.000Z',
+            OwnerId: 2,
+            IsBlock: true
+        }, {
+            Id: 3,
+            Subject: 'Business Factory',
+            StartTime: '2018-06-03T08:00:00.000Z',
+            EndTime: '2018-06-03T09:30:00.000Z',
+            OwnerId: 3,
+            IsBlock: true
+        }, {
+            Id: 4,
+            Subject: 'Burning Man1',
+            StartTime: '2018-06-04T06:00:00.000Z',
+            EndTime: '2018-06-04T07:30:00.000Z',
+            OwnerId: 1,
+            IsBlock: true
+        }, {
+            Id: 5,
+            Subject: 'Funnel Hacking',
+            StartTime: '2018-06-05T04:00:00.000Z',
+            EndTime: '2018-06-05T05:30:00.000Z',
+            OwnerId: 3,
+            IsBlock: true
+        },
+        {
+            Id: 7,
+            Subject: 'Burning',
+            StartTime: '2018-06-05T06:00:00.000Z',
+            EndTime: '2018-06-05T07:30:00.000Z',
+            OwnerId: 1,
+            IsBlock: false,
+            IsAllDay: false
+        }
+        ];
+        const ownerCollections: Record<string, any>[] = [
+            { OwnerText: 'Margaret', OwnerId: 1, Color: '#ea7a57', workDays: [1, 2, 3, 4, 5, 6] },
+            { OwnerText: 'Robert', OwnerId: 2, Color: '#df5286' },
+            { OwnerText: 'Laura', OwnerId: 3, Color: '#865fcf' }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                showWeekend: false,
+                selectedDate: new Date(2018, 5, 5),
+                views: ['Week', 'TimelineMonth'],
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owners', name: 'Owners', allowMultiple: true,
+                        dataSource: ownerCollections, textField: 'OwnerText', idField: 'OwnerId',
+                        colorField: 'Color', workDaysField: 'workDays'
+                    }
+                ],
+                eventSettings: {
+                    dataSource: data
+                }
+            };
+            schObj = util.createSchedule(schOptions, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                const eventList: Element = schObj.element.querySelector('.e-appointment');
+                expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning');
+                (schObj.element.querySelector('.e-schedule-toolbar .e-toolbar-right .e-week') as HTMLElement).click();
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(5);
+            const eventList: Element = schObj.element.querySelector('.e-appointment');
+            expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning');
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_7"]') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', 130, 224);
+            triggerMouseEvent(dragElement, 'mousemove', 120, 234);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(320) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 110, 234);
+            triggerMouseEvent(dragElement, 'mouseup');
+            const popupElement: HTMLElement = document.querySelector('.e-quick-dialog.e-popup') as HTMLElement;
+            expect(popupElement.classList.contains('e-popup-open'));
+            expect(popupElement.querySelector('.e-dlg-header-content .e-dlg-header').innerHTML).toBe('Alert');
+            const okButton: HTMLElement = popupElement.querySelector('.e-footer-content .e-quick-alertok') as HTMLElement;
+            okButton.click();
+            (schObj.element.querySelector('.e-schedule-toolbar .e-toolbar-right .e-timeline-month') as HTMLElement).click();
+        });
+
+        it('Checking appointments without opening the block popup', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                const eventList: Element = schObj.element.querySelector('.e-appointment');
+                expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning');
+                (schObj.element.querySelector('.e-schedule-toolbar .e-toolbar-right .e-week') as HTMLElement).click();
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(5);
+            const eventList: Element = schObj.element.querySelector('.e-appointment');
+            expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning');
+            const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_7"]') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', 130, 224);
+            triggerMouseEvent(dragElement, 'mousemove', 120, 234);
+            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells').item(320) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 110, 234);
+            workCell = schObj.element.querySelectorAll('.e-work-cells').item(321) as HTMLElement;
+            triggerMouseEvent(workCell, 'mousemove', 110, 234);
+            triggerMouseEvent(dragElement, 'mouseup');
+            (schObj.element.querySelector('.e-schedule-toolbar .e-toolbar-right .e-timeline-month') as HTMLElement).click();
         });
     });
 

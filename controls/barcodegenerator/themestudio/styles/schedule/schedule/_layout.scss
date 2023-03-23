@@ -10,7 +10,6 @@
     user-select: none;
 
     .e-schedule-toolbar {
-      background: $schedule-tbar-default-bg;
       border: 0;
       border-bottom: $schedule-tbar-border-bottom-size;
       box-shadow: $schedule-tbar-box-shadow;
@@ -33,11 +32,18 @@
       }
 
       .e-toolbar-items {
-        background: $schedule-tbar-default-bg;
 
         &.e-tbar-pos {
           height: $schedule-tbar-min-height;
           min-height: $schedule-tbar-min-height;
+
+          .e-toolbar-right .e-toolbar-item .e-tbar-btn {
+            border: $schedule-tbar-right-items-btn-border;
+            border-radius: $schedule-tbar-right-items-btn-border-radius;
+          }
+          .e-toolbar-right .e-toolbar-item.e-active-view .e-tbar-btn {
+            border: $schedule-tbar-right-active-items-btn-border;
+          }
         }
 
         &.e-tbar-pos > div {
@@ -103,12 +109,11 @@
       }
 
       &.e-rtl .e-hor-nav {
-        background: $schedule-tbar-default-bg;
         border-left: 0;
         border-right: $border-size $schedule-tbar-border-nav-type $schedule-tbar-border-nav;
 
         &:not(.e-nav-active):hover {
-          background-color: $schedule-tbar-hover-bg;
+          background: $schedule-tbar-hover-bg;
           color: $schedule-tbar-hover-font;
         }
       }
@@ -156,6 +161,11 @@
           &.e-tbar-pos {
             height: $schedule-tbar-bgr-size;
             min-height: $schedule-tbar-bgr-size;
+
+            .e-toolbar-right .e-toolbar-item .e-tbar-btn {
+              border: $schedule-device-tbar-right-items-btn-border;
+              border-radius: $schedule-device-tbar-right-items-btn-border-radius;
+            }
           }
 
           &.e-tbar-pos > div {
@@ -253,7 +263,7 @@
       vertical-align: top;
 
       &.e-translate {
-        transition: transform .3s ease 0s;
+        transition: transform .1s ease 0s;
       }
     }
 
@@ -277,7 +287,7 @@
 
     .e-resource-tree-popup-overlay {
       &.e-enable {
-        background-color: $schedule-popup-overlay-bg-color;
+        background: $schedule-popup-overlay-bg-color;
         height: 100%;
         left: 0;
         opacity: .5;
@@ -288,7 +298,7 @@
     }
 
     .e-new-event {
-      background-color: $schedule-appointment-bg-color;
+      background: $schedule-appointment-bg-color;
       border: 1px solid $schedule-appointment-font-color;
       border-radius: 5px;
       height: 100%;
@@ -436,7 +446,7 @@
       }
 
       .e-inline-subject {
-        background-color: transparent;
+        background: transparent;
         border: 0;
         color: $schedule-appointment-font-color;
         font-size: 13px;
@@ -843,20 +853,20 @@
         width: $schedule-work-cells-width;
 
         &.e-disable-dates {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
 
           &:hover {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
           }
         }
       }
 
       &.e-virtual-mask .e-work-cells {
-        background-color: $schedule-disable-dates-color;
+        background: $schedule-disable-dates-color;
         box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
 
         &:hover {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
         }
       }
 
@@ -1200,7 +1210,7 @@
       .e-week-number {
         border-bottom: $border-size $border-type $schedule-content-border-color;
         border-right: $border-size $border-type $schedule-content-border-color;
-        height: 70px;
+        height: $schedule-month-work-cells-height;
       }
 
       .e-content-wrap {
@@ -1242,7 +1252,7 @@
         }
 
         &.e-disable-dates {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
 
           .e-date-header {
             cursor: default;
@@ -1254,17 +1264,17 @@
           }
 
           &:hover {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
           }
         }
       }
 
       &.e-virtual-mask .e-work-cells {
-        background-color: $schedule-disable-dates-color;
+        background: $schedule-disable-dates-color;
         box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
 
         &:hover {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
         }
       }
 
@@ -1430,7 +1440,7 @@
 
           .e-appointment,
           .e-appointment-indicator {
-            background-color: $schedule-appointment-bg-color;
+            background: $schedule-appointment-bg-color;
             border-radius: 50%;
             height: 5px;
             margin: -6px auto 0;
@@ -1441,7 +1451,7 @@
 
         .e-work-cells {
           &.e-disable-dates {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
             cursor: default;
 
             .e-day {
@@ -1449,7 +1459,7 @@
             }
 
             &:hover {
-              background-color: $schedule-disable-dates-color;
+              background: $schedule-disable-dates-color;
             }
           }
         }
@@ -1465,7 +1475,7 @@
           }
 
           td {
-            background-color: $schedule-header-bg-color;
+            background: $schedule-header-bg-color;
             border-color: $schedule-header-border-color;
             border-style: $border-type;
             border-width: $schedule-month-work-cells-border;
@@ -1521,7 +1531,7 @@
 
       .e-resource-left-td,
       .e-date-header-wrap table td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: 0 $border-size $border-size 0;
@@ -1556,7 +1566,7 @@
         position: relative;
 
         .e-resource-cells {
-          background-color: $schedule-work-cells-bg-color;
+          background: $schedule-work-cells-bg-color;
           border-color: $schedule-content-border-color;
           border-style: $border-type;
           border-width: 0 1px 1px 0;
@@ -1567,11 +1577,11 @@
           vertical-align: middle;
 
           &.e-child-node {
-            background-color: $schedule-workhour-bg-color;
+            background: $schedule-workhour-bg-color;
           }
 
           &:focus {
-            background-color: $schedule-hover-bg-color;
+            background: $schedule-resource-focus-bg-color;
           }
         }
       }
@@ -1833,7 +1843,7 @@
       }
 
       .e-date-header-wrap table tbody td.e-time-slots {
-        background-color: $schedule-timeline-header-time-slots-bg;
+        background: $schedule-timeline-header-time-slots-bg;
         overflow: inherit;
       }
 
@@ -1856,10 +1866,10 @@
         height: $schedule-timeline-work-cells-height;
 
         &.e-disable-dates {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
 
           &:hover {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
           }
         }
       }
@@ -1873,7 +1883,7 @@
       }
 
       .e-resource-left-td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: 0 1px 1px 0;
@@ -1883,7 +1893,7 @@
       }
 
       .e-resource-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: 0 1px 1px 0;
@@ -1894,7 +1904,7 @@
         vertical-align: middle;
 
         &:focus {
-          background-color: $schedule-hover-bg-color;
+          background: $schedule-resource-focus-bg-color;
         }
       }
 
@@ -1918,7 +1928,7 @@
       }
 
       &.e-virtual-mask .e-work-cells {
-        background-color: $schedule-disable-dates-color;
+        background: $schedule-disable-dates-color;
         box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
       }
 
@@ -1936,7 +1946,7 @@
       }
 
       .e-child-node {
-        background-color: $schedule-workhour-bg-color;
+        background: $schedule-workhour-bg-color;
       }
 
       .e-appointment-wrapper {
@@ -2248,10 +2258,10 @@
         vertical-align: top;
 
         &.e-disable-dates {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
 
           &:hover {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
           }
         }
       }
@@ -2269,7 +2279,7 @@
       }
 
       .e-appointment-wrap {
-        background-color: $schedule-agenda-color;
+        background: $schedule-agenda-color;
         overflow: auto;
         padding: 0 8px;
       }
@@ -2401,7 +2411,7 @@
     }
 
     .e-agenda-view {
-      background-color: $schedule-agenda-color;
+      background: $schedule-agenda-color;
 
       .e-content-wrap table td:first-child,
       .e-date-column {
@@ -2693,9 +2703,8 @@
           button.e-btn,
           .e-tbar-btn.e-btn.e-control {
             height: auto;
-            line-height: 25px;
+            line-height: $schedule-tbar-btn-bgr-line-height;
             margin: $schedule-tbar-btn-bgr-mrgn;
-            min-height: $schedule-tbar-btn-bgr-minheight;
             min-width: $schedule-tbar-btn-bgr-minwidth;
             padding: $schedule-tbar-btn-bgr-padding;
 
@@ -2707,7 +2716,6 @@
             }
 
             .e-btn-icon {
-              height: 25px;
               padding-top: $schedule-tbar-btn-icn-right-bgr-padding-top;
             }
           }
@@ -3345,6 +3353,8 @@
 
     .e-repeat-container {
       display: block;
+      padding-right: 35px;
+      padding-left: 0;
     }
 
     .e-icon-down-arrow {
@@ -3374,6 +3384,11 @@
       .e-all-day-container {
         padding-right: 0;
       }
+
+      .e-repeat-container {
+        padding-left: 35px;
+        padding-right: 0;
+      }
     }
 
     .e-recurrence-container {
@@ -3400,7 +3415,7 @@
 
   /*! schedule quick popup */
   .e-quick-popup-wrapper {
-    background-color: $schedule-popup-bg-color;
+    background: $schedule-popup-bg-color;
     border-radius: $schedule-more-popup-wrapper-border-radius;
     box-shadow: $schedule-popup-box-shadow-1, $schedule-popup-box-shadow-2, $schedule-popup-box-shadow-3;
     color: $schedule-primary-content-font-color;
@@ -3459,7 +3474,7 @@
 
     .e-event-popup {
       .e-popup-header {
-        background-color: $schedule-event-popup-header-bg-color;
+        background: $schedule-event-popup-header-bg-color;
 
         .e-header-icon-wrapper {
           padding: $schedule-event-popup-header-icon-padding;
@@ -3509,7 +3524,7 @@
           padding: $schedule-event-popup-subject-wrap-padding;
 
           .e-subject {
-            background-color: $schedule-event-popup-subject-bg-color;
+            background: $schedule-event-popup-subject-bg-color;
             border-left: $schedule-event-popup-subject-border-left;
             border-radius: $schedule-event-popup-subject-border-radius;
             color: $schedule-event-popup-subject-color;
@@ -3537,7 +3552,7 @@
         .e-edit,
         .e-delete,
         .e-close {
-          background-color: transparent;
+          background: transparent;
           border: 0;
         }
       }
@@ -3658,7 +3673,7 @@
 
       .e-event-popup .e-popup-header {
         .e-header-icon-wrapper {
-          background-color: $schedule-header-icon-wrapper-bg-color;
+          background: $schedule-header-icon-wrapper-bg-color;
         }
 
         .e-header-icon-wrapper .e-edit,
@@ -3704,7 +3719,7 @@
         .e-close,
         .e-edit,
         .e-delete {
-          background-color: $schedule-multiple-event-popup-icon-bg-color;
+          background: $schedule-multiple-event-popup-icon-bg-color;
           border: 0;
           color: $schedule-multiple-event-popup-icon-color;
           height: 40px;
@@ -3935,7 +3950,7 @@
 
 .e-bigger .e-more-popup-wrapper,
 .e-more-popup-wrapper {
-  background-color: $schedule-popup-bg-color;
+  background: $schedule-popup-bg-color;
   border: 1px solid $schedule-popup-border-color;
   border-radius: $schedule-more-popup-wrapper-border-radius;
   box-shadow: $schedule-more-indicator-shadow-color-more-popup;
@@ -4004,7 +4019,7 @@
   }
 
   .e-more-event-close {
-    background-color: transparent;
+    background: transparent;
     border: 0;
     box-shadow: none;
     color: $schedule-popup-icon-color;
@@ -4025,7 +4040,7 @@
 
     &:focus,
     &:hover {
-      background-color: $schedule-popup-header-icon-focus-bg-color;
+      background: $schedule-popup-header-icon-focus-bg-color;
       border-radius: 50%;
       color: $schedule-popup-header-icon-focus-color;
     }

@@ -1,4 +1,4 @@
-import { Component, L10n,Internationalization } from '@syncfusion/ej2-base';
+import { Component, Internationalization } from '@syncfusion/ej2-base';
 import { CalendarType } from '../calendar/calendar';
 
 /**

@@ -1031,6 +1031,24 @@ export interface IDropEventArgs {
 }
 
 /**
+ * ISegmentChangeEventArgs triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector
+ */
+export interface ISegmentChangeEventArgs {
+    /** Returns the connector, the segment of which is being dragged  */
+    source: ConnectorModel;
+    /** Returns the current state of segment change event (Start, Progress, Completed)  */
+    state: State;
+    /** Returns the segment with the newly changed values  */
+    newValue:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+    /** Returns the segment with the values before the event triggered.  */
+    oldValue:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+    /** Returns whether to cancel the change or not when the event state is Start.  */
+    cancel:boolean;
+    /** Returns the segment which is being dragged  */
+    segment:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+}
+
+/**
  * Interface for command
  */
 export interface ICommandExecuteEventArgs {

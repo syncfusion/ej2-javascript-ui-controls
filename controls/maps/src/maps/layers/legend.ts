@@ -99,6 +99,7 @@ export class Legend {
      * To calculate legend bounds and draw the legend shape and text.
      *
      * @returns {void}
+     * @private
      */
     public renderLegend(): void {
         this.legendRenderingCollections = [];
@@ -425,6 +426,7 @@ export class Legend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To draw the legend shape and text.
+     * @private
      */
     public drawLegend(): void {
         const map: Maps = this.maps;

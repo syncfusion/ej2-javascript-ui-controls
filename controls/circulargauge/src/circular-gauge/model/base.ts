@@ -2,13 +2,15 @@ import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel, RangeTooltipModel, AnnotationTooltipModel } from './base-model';
 
 /**
- * Sets and gets the options to customize the color and width of the borders in circular gauge.
+ * Sets and gets the options to customize the styles of the borders in circular gauge.
  */
 export class Border extends ChildProperty<Border> {
 
     /**
      * Gets and sets the color of the border in the circular gauge. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
+     * 
+     * @default ''
      */
     @Property('')
     public color: string;
@@ -23,6 +25,8 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * Gets and sets the dash-array of the border.
+     * 
+     * @default ''
      */
     @Property('')
     public dashArray: string;
@@ -36,7 +40,7 @@ export class Border extends ChildProperty<Border> {
 export class Font extends ChildProperty<Font> {
 
     /**
-     * Gets and sets the font size of the text in annotation, label, and tooltip, etc. The default of the size is '16px'.
+     * Gets and sets the text font size in an annotation, label, tooltip, and so on. The default of the size is '16px'.
      *
      * @default '16px'
      */
@@ -44,13 +48,15 @@ export class Font extends ChildProperty<Font> {
     public size: string;
 
     /**
-     * Gets and sets the font color of the text in annotation, label and tooltip etc.
+     * Gets and sets the font color of the text in annotation, label, tooltip, and so on.
+     *
+     * @default ''
      */
     @Property('')
     public color: string;
 
     /**
-     * Gets and sets the font family for the given text in annotation, tooltip etc.
+     * Gets and sets the font family for the text in annotation, label, tooltip, and so on.
      *
      * @default 'segoe UI'
      */
@@ -58,7 +64,7 @@ export class Font extends ChildProperty<Font> {
     public fontFamily: string;
 
     /**
-     * Gets and sets the font weight for the text in annotation, tooltip etc.
+     * Gets and sets the font weight for the text in annotation, label, tooltip, and so on.
      *
      * @default 'Normal'
      */
@@ -66,7 +72,7 @@ export class Font extends ChildProperty<Font> {
     public fontWeight: string;
 
     /**
-     * Gets and sets the style of the font, which is in in annotation, tooltip etc.
+     * Gets and sets the font style for the text in annotation, label, tooltip, and so on.
      *
      * @default 'Normal'
      */
@@ -74,7 +80,7 @@ export class Font extends ChildProperty<Font> {
     public fontStyle: string;
 
     /**
-     * Sets and gets the opacity for the annotation or tooltip text.
+     * Sets and gets the font opacity for the text in annotation, label, tooltip, and so on.
      *
      * @default 1
      */
@@ -97,7 +103,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     public fill: string;
 
     /**
-     * Sets and gets the options for the text style of the tooltip text for ranges in circular Gauge.
+     * Sets and gets the options for the text style of the tooltip text for ranges in circular gauge.
      */
 
     @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
@@ -129,7 +135,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
     public enableAnimation: boolean;
 
     /**
-     * Sets and gets the options to customize the border for range tooltip.
+     * Sets and gets the options to customize the style properties of the border for range tooltip.
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
@@ -191,7 +197,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     public enableAnimation: boolean;
 
     /**
-     * Sets and gets the options to customize the border for annotation tooltip.
+     * Sets and gets the options to customize the style properties of the border for annotation tooltip.
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
@@ -242,7 +248,7 @@ export class Margin extends ChildProperty<Margin> {
 
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
-     * Enables or Disables the visibility of tooltip.
+     * Enables or disables the visibility of tooltip.
      *
      * @default false
      */
@@ -251,7 +257,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enable: boolean;
 
     /**
-     * Sets and gets the fill color of the tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
+     * Sets and gets the fill color of the pointer tooltip. This property accepts value in hex code, rgba string as a valid CSS color string.
      *
      * @default null
      */
@@ -260,7 +266,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public fill: string;
 
     /**
-     * Gets and sets the text style of the gauge tooltip.
+     * Gets and sets the text style of the pointer tooltip.
      */
 
     @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
@@ -281,7 +287,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public annotationSettings: AnnotationTooltipModel;
 
     /**
-     * Sets and gets the format for the tooltip content in circular gauge.
+     * Sets and gets the format for the pointer tooltip content in circular gauge. Use ${value} as a placeholder text to display corresponding pointer value.
      *
      * @default null
      */
@@ -300,7 +306,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public template: string;
 
     /**
-     * Enables and disables the animation to take place in circular gauge.
+     * Enables and disables the animation of the pointer tooltip in circular gauge.
      *
      * @default true
      */
@@ -308,13 +314,13 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enableAnimation: boolean;
 
     /**
-     * Sets and gets the options to customize the border for circular gauge tooltip.
+     * Sets and gets the options to customize the style properties of the border for pointer tooltip.
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
     /**
-     * Enables and disables the tooltip of the circular gauge at mouse position. By default, it set as false.
+     * Enables and disables to show the tooltip of the pointer at mouse position. When set as false which is the default value, the tooltip will be displayed over the axis line.
      *
      * @default false
      */
@@ -322,7 +328,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public showAtMousePosition: boolean;
 
     /**
-     * Sets and gets the options to select the type of tooltip for range, annotation and pointer.
+     * Sets and gets the elements such as range, annotation and pointer to which the tooltip must be displayed.
      *
      * @default Pointer
      */

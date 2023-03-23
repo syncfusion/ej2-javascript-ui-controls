@@ -111,8 +111,10 @@
     }
 
     .e-toolbar .e-tbar-btn {
-      @if ($skin-name == 'tailwind') {
-        background-color: transparent;
+      background-color: transparent;
+
+      @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+        border: none !important;
       }
 
       &:hover {
@@ -972,6 +974,14 @@
     .e-pivot-pager {
       padding: $pivotpager-padding;
 
+      &.sf-pager {
+        .e-pivot-pager-info-container{
+          &.e-pagercontainer {
+            font-size: unset;
+          }
+        }
+      }
+
       &.e-pivot-pager-bottom {
         border-top: 0;
       }
@@ -1072,6 +1082,10 @@
           .e-pivot-row-pager-settings,
           .e-pivot-column-pager-settings {
             flex: none;
+
+            &.e-pivot-pager-axis-container {
+              display: inline-table;
+            }
 
             .e-numeric {
               margin: $pivotpager-numeric-box-margin;
@@ -1238,6 +1252,10 @@
           &:not(.e-pivot-pager-single-maindiv) {
             .e-pagercontainer {
               margin-top: $pivotpager-adaptive-page-container-marging-top;
+
+              @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') or ($skin-name == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast')  {
+                margin-left: 0;
+              }
             }
           }
         }
@@ -1528,10 +1546,19 @@
           }
         }
       }
+
+      .e-scrollbar .e-movablescrollbar {
+        min-height: 1px !important;
+        visibility: hidden;
+      }
     }
 
     .e-component-disable {
       display: none !important;
+    }
+
+    .e-pivotchart.e-chart {
+      overflow: visible !important;
     }
 
     /* stylelint-enable */

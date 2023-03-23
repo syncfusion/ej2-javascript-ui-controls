@@ -41,7 +41,7 @@ describe('Timezone module', () => {
 
         const resolvedOptions: any = Intl.DateTimeFormat.prototype.resolvedOptions;
         const tzData: Record<string, any> = { 'timeZone': null };
-        Intl.DateTimeFormat.prototype.resolvedOptions = () => tzData;
+        Intl.DateTimeFormat.prototype.resolvedOptions = () => tzData as any;
         expect(timezone.getLocalTimezoneName()).toEqual('UTC');
         Intl.DateTimeFormat.prototype.resolvedOptions = resolvedOptions;
     });

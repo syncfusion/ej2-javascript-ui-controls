@@ -55,6 +55,11 @@
       font-size: 13px;
     }
 
+    .e-de-multi-cmt-mark::before {
+      content: '\e978';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-post::before {
       content: '\e816';
       font-family: 'e-icons';

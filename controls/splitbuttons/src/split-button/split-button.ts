@@ -257,7 +257,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.wrapper.classList.add(RTL);
         }
         if (this.cssClass) {
-            addClass([this.wrapper], this.cssClass.split(' '));
+            addClass([this.wrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
     }
 
@@ -310,6 +310,10 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.trigger('select', args);
         };
         dropDownBtnModel.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
+            if (this.createPopupOnClick && this.items.length == 0) {
+                this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
+                this.dropDown = this.secondaryBtnObj.dropDown;
+            }
             const callBackPromise: Deferred = new Deferred();
             this.trigger('beforeOpen', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
                 callBackPromise.resolve(observedArgs);
@@ -396,7 +400,8 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         new KeyboardEvents(this.element, {
             keyAction: this.btnKeyBoardHandler.bind(this),
             keyConfigs: {
-                altdownarrow: 'alt+downarrow'
+                altdownarrow: 'alt+downarrow',
+                enter: 'enter'
             }
         });
     }
@@ -414,6 +419,15 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         switch (e.action) {
         case 'altdownarrow':
             this.clickHandler(e);
+            break;
+        case 'enter':
+            this.clickHandler(e);
+            if (!this.getPopUpElement().classList.contains('e-popup-close')) {
+                this.element.classList.remove('e-active');
+                this.secondaryBtnObj.element.classList.add('e-active');
+            } else {
+                this.secondaryBtnObj.element.classList.remove('e-active');
+            }
             break;
         }
     }
@@ -441,7 +455,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
                 if (oldProp.cssClass) {
                     removeClass([this.wrapper], oldProp.cssClass.split(' '));
                 }
-                addClass([this.wrapper], newProp.cssClass.split(' '));
+                addClass([this.wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 break;
             case 'enableRtl':
                 if (newProp.enableRtl) {

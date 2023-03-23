@@ -2637,7 +2637,7 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `insertedText<div><h1>Heading</h1></div>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `insertedText<div><h1>Heading</h1></div>`).toBe(true);
         done();
       }, 100);
     });
@@ -2760,6 +2760,61 @@ describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
     });
 });
 
+describe("EJ2-68255 - The pasted content goes out of the contentEditable div when using enter Key as BR or DIV", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    let innerHTML: string = "insertedText";
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'BR',
+        value: innerHTML
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting content when enterKey is configured as BR and Div not working issue test case", (done) => {
+      let localElem: string = `<div style="display:inline;"><!--StartFragment--><h1 style=" font-size: 42px; font-family: &quot;Segoe UI&quot;, Arial, sans-serif; font-weight: 400; margin: 10px 0px; color: rgb(0, 0, 0); font-style: normal; text-align: start; text-indent: 0px; white-space: normal;" class="pasteContent_RTE">Heading</h1><!--EndFragment--></div>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.childNodes[0], 12);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `insertedText<div><h1>Heading</h1></div>`).toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
 describe("EJ2-68999 - RichTextEditor doesn't adjust to the pasteCleanUp popup's height when using saveInterval - ", () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = {

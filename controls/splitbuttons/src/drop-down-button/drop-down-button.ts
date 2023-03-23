@@ -301,7 +301,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
             ['type']: 'button', ['aria-label']: this.element.textContent ? this.element.textContent : 'dropdownbutton'
         });
-        if (this.cssClass) { addClass([div], this.cssClass.split(' ')); }
+        if (this.cssClass) { addClass([div], this.cssClass.replace(/\s+/g, ' ').trim().split(' ')); }
         this.isPopupCreated = true;
     }
 
@@ -587,6 +587,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (this.target && (e.keyCode === 13 || e.keyCode === 9 )) {
             return;
         }
+        if (e.keyCode === 13 && this.activeElem[0].classList.contains('e-split-btn')) {
+            this.activeElem[0].focus();
+            return;
+        }
         if (e.target && (e.target as Element).className.indexOf('e-edit-template') > -1 && e.keyCode === 32) {
             return;
         }
@@ -795,7 +799,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 break;
             case 'cssClass':
-                if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1 || oldProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
+                if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1  || oldProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
                     if (!this.element.querySelector('span.e-caret')) {
                         this.appendArrowSpan();
                     }
@@ -808,7 +812,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                         removeClass([popupElement], oldProp.cssClass.split(' '));
                     }
                     if (newProp.cssClass) {
-                        addClass([popupElement], newProp.cssClass.split(' '));
+                        addClass([popupElement], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                     }
                 }
                 break;

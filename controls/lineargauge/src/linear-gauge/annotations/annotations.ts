@@ -13,6 +13,8 @@ import { FontModel } from '../model/base-model';
 
 /**
  * Represent the Annotation rendering for gauge
+ * 
+ * @hidden
  */
 
 export class Annotations {
@@ -23,6 +25,8 @@ export class Annotations {
      * To render annotation elements.
      *
      * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
+     * 
+     * @private
      */
     public renderAnnotationElements(gauge: LinearGauge): void {
         const secondaryID: string = gauge.element.id + '_Secondary_Element';
@@ -47,6 +51,8 @@ export class Annotations {
      * @param {HTMLElement} element - Specifies the content of the annotation to be updated in it.
      * @param {number} annotationIndex - Specifies the index number of the annotation in which the content is to be changed.
      * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
+     * 
+     * @private
      */
     public createAnnotationTemplate(element: HTMLElement, annotationIndex: number, gauge: LinearGauge): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

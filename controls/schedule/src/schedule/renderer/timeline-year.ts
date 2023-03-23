@@ -147,16 +147,16 @@ export class TimelineYear extends Year {
             this.parent.virtualScrollModule.renderVirtualTrack(content);
         }
         const contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
-        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            if (this.parent.rowAutoHeight) {
-                const addClassTable: HTMLElement[] = [contentTable];
-                const monthHeader: HTMLElement =
-                    this.parent.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER + ' .' + cls.SCHEDULE_TABLE_CLASS);
-                if (monthHeader) {
-                    addClassTable.push(monthHeader);
-                }
-                addClass(addClassTable, cls.AUTO_HEIGHT);
+        if (this.parent.rowAutoHeight) {
+            const addClassTable: HTMLElement[] = [contentTable];
+            const monthHeader: HTMLElement =
+                this.parent.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER + ' .' + cls.SCHEDULE_TABLE_CLASS);
+            if (monthHeader) {
+                addClassTable.push(monthHeader);
             }
+            addClass(addClassTable, cls.AUTO_HEIGHT);
+        }
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             const colCount: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : this.columnCount;
             contentTable.appendChild(this.createTableColGroup(colCount));
             this.renderResourceContent(eventWrapper, monthTBody, contentTBody);
@@ -251,6 +251,8 @@ export class TimelineYear extends Year {
                 }
                 if (td.classList.contains(cls.OTHERMONTH_CLASS)) {
                     continue;
+                } else {
+                    this.renderDates.push(new Date(date));
                 }
                 td.appendChild(dateHeader);
                 if (isDateAvail) {
@@ -266,6 +268,7 @@ export class TimelineYear extends Year {
                 }
             }
         }
+        this.renderDates.splice(0, 1);
     }
 
     public getContentRows(): Element[] {

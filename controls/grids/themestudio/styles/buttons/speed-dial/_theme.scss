@@ -10,15 +10,20 @@
       .e-speeddial-li-text,
       .e-speeddial-li-icon {
         box-shadow: $sd-li-shadow;
-        background-color: $sd-li-bg;
-        border-color: $sd-li-border-color;
+        background: $sd-li-bg;
+        @if ($skin-name == 'Material3') {
+          border-color: transparent;
+        }
+        @else {
+          border-color: $sd-li-border-color;
+        }
       }
     }
     .e-speeddial-li.e-disabled {
       color: $sd-disabled-font-color;
       .e-speeddial-li-text,
       .e-speeddial-li-icon {
-        background-color: $sd-disabled-li-bg;
+        background: $sd-disabled-li-bg;
         border-color: $sd-disabled-li-border-color;
       }
     }
@@ -28,9 +33,9 @@
       color: $sd-focus-font-color;
       .e-speeddial-li-text,
       .e-speeddial-li-icon {
-        background-color: $sd-focus-li-bg;
+        background: $sd-focus-li-bg;
         border-color: $sd-focus-li-border-color;
-        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
           box-shadow: $sd-focus-box-shadow;
         }
       }
@@ -40,7 +45,7 @@
       color: $sd-hover-font-color;
       .e-speeddial-li-text,
       .e-speeddial-li-icon {
-        background-color: $sd-hover-li-bg;
+        background: $sd-hover-li-bg;
         border-color: $sd-hover-li-border-color;
       }
     }
@@ -49,7 +54,7 @@
       color: $sd-active-font-color;
       .e-speeddial-li-text,
       .e-speeddial-li-icon {
-        background-color: $sd-active-li-bg;
+        background: $sd-active-li-bg;
         border-color: $sd-active-li-border-color;
       }
     }

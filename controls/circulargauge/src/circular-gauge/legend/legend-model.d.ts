@@ -34,7 +34,7 @@ export interface LegendSettingsModel {
     visible?: boolean;
 
     /**
-     * Enables and disables the ranges visibility collapses based on the legend visibility.
+     * Enables and disables the visibility of the ranges. When the legend is clicked, the visibility of the legend will be toggled.
      *
      * @default true
      */
@@ -48,13 +48,13 @@ export interface LegendSettingsModel {
     alignment?: Alignment;
 
     /**
-     * Sets and gets the options to customize the border settings of the legend.
+     * Sets and gets the options to customize the style properties of the border of the legend.
      *
      */
     border?: BorderModel;
 
     /**
-     * Sets and gets the options to customize the border for the shape of the legend in the circular gauge.
+     * Sets and gets the options to customize the style properties of the border for the shape of the legend in the circular gauge.
      */
     shapeBorder?: BorderModel;
 
@@ -101,7 +101,7 @@ export interface LegendSettingsModel {
     width?: string;
 
     /**
-     * Sets and gets the options to customize the text of the legend.
+     * Sets and gets the options to customize the text of the legend item.
      */
     textStyle?: FontModel;
 

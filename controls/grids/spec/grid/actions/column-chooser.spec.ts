@@ -893,7 +893,7 @@ describe('Column chooser module', () => {
         });
 
     });
-
+    
     describe('EJ2-69223 => Columns in column chooser is not get focused while clicking or tabbing', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

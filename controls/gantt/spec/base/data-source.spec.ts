@@ -7,7 +7,391 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
-export let totalDurationData: Object[] = [
+export let customZoomingdata: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+        Indicators: [
+            {
+                'date': new Date('04/10/2019'),
+                'name': '#briefing',
+                'title': 'Product concept breifing',
+            }
+        ]
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '5', Progress: 30
+                    },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                ]
+            },
+            {
+                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                Predecessor: '7, 8', Progress: 30
+            },
+            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+            {
+                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
+                Indicators: [
+                    {
+                        'date': new Date('04/20/2019'),
+                        'name': '#meeting',
+                        'title': '1st board of directors meeting',
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('06/21/2019'),
+    }
+];
+export let customCrIssue: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Task 1',
+        StartDate: new Date('04/02/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Task 2',
+                StartDate: new Date('04/02/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+        ],
+    },
+    {
+        TaskID: 3,
+        TaskName: 'Task 3',
+        StartDate: new Date('04/02/2019'),
+        Predecessor: '2FS',
+        subtasks: [
+            {
+                TaskID: 4,
+                TaskName: 'Task 4',
+                StartDate: new Date('04/02/2019'),
+                Duration: 2,
+                Progress: 30,
+            },
+        ]
+    },
+];
+export let crData1:Object[]=[
+
+    {
+      id: '62ed75125fb9e80015ae8ee7',
+      TaskID: 'ITEM-002',
+      taskId: 'ITEM-002',
+      TaskName: 'testttts',
+      StartDate: '2021-10-30T15:00:00.000Z',
+      EndDate: '2022-02-18T01:00:00.000Z',
+      Duration: 2,
+      Progress: 62,
+      parent: null,
+      subTasks: [
+        {
+          id: '62ed76455fb9e80015ae94cf',
+          TaskID: 'SUBITEM-003',
+          TaskName: '1234',
+          StartDate: '2021-10-30T15:00:00.000Z',
+          EndDate: '2024-02-18T01:00:00.000Z',
+          Duration: 2,
+          Progress: 48,
+          parent: '62ed75125fb9e80015ae8ee7',
+          subTasks: [
+            {
+              id: '62ed65f94971860014766268',
+              TaskID: 'LASTITEM-007',
+              TaskName: '432111',
+              StartDate: '2021-10-30T15:00:00.000Z',
+              EndDate: '2024-02-18T01:00:00.000Z',
+              Duration: 2,
+              Progress: 48,
+              parent: '62ed76455fb9e80015ae94cf',
+              subTasks: [],
+              rank: '4',
+              PlannedStartDate: '2022-06-06T15:00:00.000Z',
+              PlannedEndDate: '2022-12-30T01:00:00.000Z',
+              Indicators: [],
+              null: null,
+            },
+            {
+              id: '62ed65f94971860a14766268',
+              TaskID: 'LASTITEM-020',
+              TaskName: 'UnscheduledTasks',
+              StartDate: null,
+              EndDate: null,
+              Duration: 1,
+              Progress: 48,
+              parent: '62ed76455fb9e80015ae94cf',
+              subTasks: [],
+              rank: '4',
+              PlannedStartDate: '2022-06-06T15:00:00.000Z',
+              PlannedEndDate: '2022-12-30T01:00:00.000Z',
+              Indicators: [],
+              null: null,
+            },
+          ],
+          rank: '3',
+          PlannedStartDate: '2022-12-05T16:00:00.000Z',
+          PlannedEndDate: '2022-12-30T01:00:00.000Z',
+          Indicators: [],
+          isExpand: true,
+          null: null,
+        },
+        {
+          id: '62ed766a286e530014580ad4',
+          TaskID: 'SUBITEM-004',
+          TaskName: '3333333333',
+          StartDate: '2021-11-10T16:00:00.000Z',
+          EndDate: '2022-10-01T00:00:00.000Z',
+          Duration: 5,
+          Progress: 100,
+          parent: '62ed75125fb9e80015ae8ee7',
+          subTasks: [
+            {
+              id: '62ed66454971860014766314',
+              TaskID: 'LASTITEM-009',
+              TaskName: '6555',
+              StartDate: '2021-11-10T16:00:00.000Z',
+              EndDate: '2022-10-01T00:00:00.000Z',
+              Duration: 5,
+              Progress: 100,
+              parent: '62ed766a286e530014580ad4',
+              subTasks: [],
+              rank: '6',
+              PlannedStartDate: '2022-08-08T15:00:00.000Z',
+              PlannedEndDate: '2022-08-15T21:00:00.000Z',
+              Indicators: [],
+              null: null,
+            },
+          ],
+          rank: '5',
+          PlannedStartDate: null,
+          PlannedEndDate: null,
+          Indicators: [],
+          isExpand: true,
+          null: null,
+        },
+        {
+          id: '62ed7q6a286e530014580ad4',
+          TaskID: 'SUBITEM-019',
+          TaskName: 'UnscheduledTasks',
+          StartDate: null,
+          EndDate: null,
+          Duration: 1,
+          Progress: 100,
+          parent: '62ed75125fb9e80015ae8ee7',
+          subTasks: [],
+          rank: '5',
+          PlannedStartDate: null,
+          PlannedEndDate: null,
+          Indicators: [],
+          isExpand: true,
+          null: null,
+        },
+        {
+          id: '62ed7q6a286e530014580ad4',
+          TaskID: 'SUBITEM-014',
+          TaskName: 'UnscheduledTasks 2',
+          StartDate: null,
+          EndDate: null,
+          Duration: 1,
+          Progress: 100,
+          parent: '62ed75125fb9e80015ae8ee7',
+          subTasks: [
+            {
+              id: '62ed7q6a28pe530014580ad4',
+              TaskID: 'LASTITEM-014',
+              TaskName: 'UnscheduledTasks 2',
+              StartDate: null,
+              EndDate: null,
+              Duration: 1,
+              Progress: 100,
+              parent: '62ed7q6a286e530014580ad4',
+              subTasks: [],
+              rank: '5',
+              PlannedStartDate: null,
+              PlannedEndDate: null,
+              Indicators: [],
+              isExpand: true,
+              null: null,
+            },
+          ],
+          rank: '5',
+          PlannedStartDate: null,
+          PlannedEndDate: null,
+          Indicators: [],
+          isExpand: true,
+          null: null,
+        },
+      ],
+      isExpand: true,
+      rank: '0V',
+      PlannedStartDate: '2022-12-05T16:00:00.000Z',
+      PlannedEndDate: '2022-12-31T01:00:00.000Z',
+      Indicators: [],
+    },
+    {
+      id: '62ed75415fb9e80015ae8ffd',
+      TaskID: 'ITEM-003',
+      taskId: 'ITEM-003',
+      TaskName: '123333',
+      StartDate: '2022-10-05T15:00:00.000Z',
+      EndDate: '2023-07-09T00:00:00.000Z',
+      Duration: 7,
+      Progress: 99,
+      parent: null,
+      subTasks: [
+        {
+          id: '62ed769c286e530014580be4',
+          TaskID: 'SUBITEM-005',
+          TaskName: '7777',
+          StartDate: '2022-10-05T15:00:00.000Z',
+          EndDate: '2023-07-09T00:00:00.000Z',
+          Duration: 7,
+          Progress: 100,
+          parent: '62ed75415fb9e80015ae8ffd',
+          subTasks: [
+            {
+              id: '62ed6547d69fd60014db8bc9',
+              TaskID: 'LASTITEM-006',
+              TaskName: '4',
+              StartDate: '2022-12-01T16:00:00.000Z',
+              EndDate: '2022-12-02T01:00:00.000Z',
+              Duration: 1,
+              Progress: 100,
+              parent: '62ed769c286e530014580be4',
+              subTasks: [],
+              rank: '19',
+              PlannedStartDate: null,
+              PlannedEndDate: null,
+              Indicators: [],
+              null: null,
+            },
+            {
+              id: '62ed668a4971860014766400',
+              TaskID: 'LASTITEM-011',
+              TaskName: 'Task',
+              StartDate: '2023-03-31T15:00:00.000Z',
+              EndDate: '2023-07-09T00:00:00.000Z',
+              Duration: 100,
+              Progress: 100,
+              parent: '62ed769c286e530014580be4',
+              subTasks: [],
+              rank: '16',
+              PlannedStartDate: null,
+              PlannedEndDate: null,
+              Indicators: [],
+              null: null,
+            },
+            {
+              id: '62ed66a14971860014766455',
+              TaskID: 'LASTITEM-012',
+              TaskName: 'Test',
+              StartDate: '2022-10-05T15:00:00.000Z',
+              EndDate: '2023-01-09T01:00:00.000Z',
+              Duration: 96,
+              Progress: 100,
+              parent: '62ed769c286e530014580be4',
+              subTasks: [],
+              rank: '17',
+              PlannedStartDate: '2022-08-08T15:00:00.000Z',
+              PlannedEndDate: '2022-08-15T21:00:00.000Z',
+              Indicators: [],
+              null: null,
+            },
+            {
+              id: '62ed66c749718600147664ac',
+              TaskID: 'LASTITEM-013',
+              TaskName: 'Test 2',
+              StartDate: '2023-02-19T16:00:00.000Z',
+              EndDate: '2023-02-20T01:00:00.000Z',
+              Duration: 1,
+              Progress: 100,
+              parent: '62ed769c286e530014580be4',
+              subTasks: [],
+              rank: '18',
+              PlannedStartDate: null,
+              PlannedEndDate: null,
+              Indicators: [],
+              null: null,
+            },
+          ],
+          rank: '15',
+          PlannedStartDate: null,
+          PlannedEndDate: null,
+          Indicators: [],
+          isExpand: true,
+          null: null,
+        },
+        {
+          id: '62ed76be286e530014580c83',
+          TaskID: 'SUBITEM-006',
+          TaskName: '7777',
+          StartDate: '2023-01-16T16:00:00.000Z',
+          EndDate: '2023-01-17T01:00:00.000Z',
+          Duration: 1,
+          Progress: 0,
+          parent: '62ed75415fb9e80015ae8ffd',
+          subTasks: [],
+          rank: '20',
+          PlannedStartDate: null,
+          PlannedEndDate: null,
+          Indicators: [],
+          null: null,
+        },
+      ],
+      isExpand: true,
+      rank: '1',
+      PlannedStartDate: null,
+      PlannedEndDate: null,
+      Indicators: [
+        {
+          date: '10/18/2022',
+          name: 'test 3',
+          color: '#66b032',
+          tooltip: '3',
+          iconClass: 'e-icons e-icons lock',
+          id: '058a35ec',
+          taskId: '62ed75415fb9e80015ae8ffd',
+        },
+      ],
+    },
+
+  ]
+
+  export let totalDurationData: Object[] = [
     {
         TaskID: 10847,
         TaskName: 'T010847: Purchase',
@@ -639,6 +1023,29 @@ export let totalDurationData: Object[] = [
         Resources: null,
     },
 ];
+
+export let customSelfReferenceData: Object[] = [
+    {
+        'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40'
+    },
+    {
+        'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 1
+    },
+    {
+        'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 2
+    },
+    {
+        'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', 'parentID': 1
+    },
+    {
+        'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': new Date('03/14/2017'),
+        'EndDate': new Date('03/18/2017'), 'Progress': '40', 'parentID': 4
+    },
+];
 export let customCRData: Object[]  = [
     {
         TaskID: 1,
@@ -648,290 +1055,37 @@ export let customCRData: Object[]  = [
     },
     { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "1fs-1" },
 ];
-export let crData1:Object[]=[
-                    
+export let resourceviewData: object[]=[
     {
-      id: '62ed75125fb9e80015ae8ee7',
-      TaskID: 'ITEM-002',
-      taskId: 'ITEM-002',
-      TaskName: 'testttts',
-      StartDate: '2021-10-30T15:00:00.000Z',
-      EndDate: '2022-02-18T01:00:00.000Z',
-      Duration: 2,
-      Progress: 62,
-      parent: null,
-      subTasks: [
-        {
-          id: '62ed76455fb9e80015ae94cf',
-          TaskID: 'SUBITEM-003',
-          TaskName: '1234',
-          StartDate: '2021-10-30T15:00:00.000Z',
-          EndDate: '2024-02-18T01:00:00.000Z',
-          Duration: 2,
-          Progress: 48,
-          parent: '62ed75125fb9e80015ae8ee7',
-          subTasks: [
-            {
-              id: '62ed65f94971860014766268',
-              TaskID: 'LASTITEM-007',
-              TaskName: '432111',
-              StartDate: '2021-10-30T15:00:00.000Z',
-              EndDate: '2024-02-18T01:00:00.000Z',
-              Duration: 2,
-              Progress: 48,
-              parent: '62ed76455fb9e80015ae94cf',
-              subTasks: [],
-              rank: '4',
-              PlannedStartDate: '2022-06-06T15:00:00.000Z',
-              PlannedEndDate: '2022-12-30T01:00:00.000Z',
-              Indicators: [],
-              null: null,
-            },
-            {
-              id: '62ed65f94971860a14766268',
-              TaskID: 'LASTITEM-020',
-              TaskName: 'UnscheduledTasks',
-              StartDate: null,
-              EndDate: null,
-              Duration: 1,
-              Progress: 48,
-              parent: '62ed76455fb9e80015ae94cf',
-              subTasks: [],
-              rank: '4',
-              PlannedStartDate: '2022-06-06T15:00:00.000Z',
-              PlannedEndDate: '2022-12-30T01:00:00.000Z',
-              Indicators: [],
-              null: null,
-            },
-          ],
-          rank: '3',
-          PlannedStartDate: '2022-12-05T16:00:00.000Z',
-          PlannedEndDate: '2022-12-30T01:00:00.000Z',
-          Indicators: [],
-          isExpand: true,
-          null: null,
-        },
-        {
-          id: '62ed766a286e530014580ad4',
-          TaskID: 'SUBITEM-004',
-          TaskName: '3333333333',
-          StartDate: '2021-11-10T16:00:00.000Z',
-          EndDate: '2022-10-01T00:00:00.000Z',
-          Duration: 5,
-          Progress: 100,
-          parent: '62ed75125fb9e80015ae8ee7',
-          subTasks: [
-            {
-              id: '62ed66454971860014766314',
-              TaskID: 'LASTITEM-009',
-              TaskName: '6555',
-              StartDate: '2021-11-10T16:00:00.000Z',
-              EndDate: '2022-10-01T00:00:00.000Z',
-              Duration: 5,
-              Progress: 100,
-              parent: '62ed766a286e530014580ad4',
-              subTasks: [],
-              rank: '6',
-              PlannedStartDate: '2022-08-08T15:00:00.000Z',
-              PlannedEndDate: '2022-08-15T21:00:00.000Z',
-              Indicators: [],
-              null: null,
-            },
-          ],
-          rank: '5',
-          PlannedStartDate: null,
-          PlannedEndDate: null,
-          Indicators: [],
-          isExpand: true,
-          null: null,
-        },
-        {
-          id: '62ed7q6a286e530014580ad4',
-          TaskID: 'SUBITEM-019',
-          TaskName: 'UnscheduledTasks',
-          StartDate: null,
-          EndDate: null,
-          Duration: 1,
-          Progress: 100,
-          parent: '62ed75125fb9e80015ae8ee7',
-          subTasks: [],
-          rank: '5',
-          PlannedStartDate: null,
-          PlannedEndDate: null,
-          Indicators: [],
-          isExpand: true,
-          null: null,
-        },
-        {
-          id: '62ed7q6a286e530014580ad4',
-          TaskID: 'SUBITEM-014',
-          TaskName: 'UnscheduledTasks 2',
-          StartDate: null,
-          EndDate: null,
-          Duration: 1,
-          Progress: 100,
-          parent: '62ed75125fb9e80015ae8ee7',
-          subTasks: [
-            {
-              id: '62ed7q6a28pe530014580ad4',
-              TaskID: 'LASTITEM-014',
-              TaskName: 'UnscheduledTasks 2',
-              StartDate: null,
-              EndDate: null,
-              Duration: 1,
-              Progress: 100,
-              parent: '62ed7q6a286e530014580ad4',
-              subTasks: [],
-              rank: '5',
-              PlannedStartDate: null,
-              PlannedEndDate: null,
-              Indicators: [],
-              isExpand: true,
-              null: null,
-            },
-          ],
-          rank: '5',
-          PlannedStartDate: null,
-          PlannedEndDate: null,
-          Indicators: [],
-          isExpand: true,
-          null: null,
-        },
-      ],
-      isExpand: true,
-      rank: '0V',
-      PlannedStartDate: '2022-12-05T16:00:00.000Z',
-      PlannedEndDate: '2022-12-31T01:00:00.000Z',
-      Indicators: [],
-    },
-    {
-      id: '62ed75415fb9e80015ae8ffd',
-      TaskID: 'ITEM-003',
-      taskId: 'ITEM-003',
-      TaskName: '123333',
-      StartDate: '2022-10-05T15:00:00.000Z',
-      EndDate: '2023-07-09T00:00:00.000Z',
-      Duration: 7,
-      Progress: 99,
-      parent: null,
-      subTasks: [
-        {
-          id: '62ed769c286e530014580be4',
-          TaskID: 'SUBITEM-005',
-          TaskName: '7777',
-          StartDate: '2022-10-05T15:00:00.000Z',
-          EndDate: '2023-07-09T00:00:00.000Z',
-          Duration: 7,
-          Progress: 100,
-          parent: '62ed75415fb9e80015ae8ffd',
-          subTasks: [
-            {
-              id: '62ed6547d69fd60014db8bc9',
-              TaskID: 'LASTITEM-006',
-              TaskName: '4',
-              StartDate: '2022-12-01T16:00:00.000Z',
-              EndDate: '2022-12-02T01:00:00.000Z',
-              Duration: 1,
-              Progress: 100,
-              parent: '62ed769c286e530014580be4',
-              subTasks: [],
-              rank: '19',
-              PlannedStartDate: null,
-              PlannedEndDate: null,
-              Indicators: [],
-              null: null,
-            },
-            {
-              id: '62ed668a4971860014766400',
-              TaskID: 'LASTITEM-011',
-              TaskName: 'Task',
-              StartDate: '2023-03-31T15:00:00.000Z',
-              EndDate: '2023-07-09T00:00:00.000Z',
-              Duration: 100,
-              Progress: 100,
-              parent: '62ed769c286e530014580be4',
-              subTasks: [],
-              rank: '16',
-              PlannedStartDate: null,
-              PlannedEndDate: null,
-              Indicators: [],
-              null: null,
-            },
-            {
-              id: '62ed66a14971860014766455',
-              TaskID: 'LASTITEM-012',
-              TaskName: 'Test',
-              StartDate: '2022-10-05T15:00:00.000Z',
-              EndDate: '2023-01-09T01:00:00.000Z',
-              Duration: 96,
-              Progress: 100,
-              parent: '62ed769c286e530014580be4',
-              subTasks: [],
-              rank: '17',
-              PlannedStartDate: '2022-08-08T15:00:00.000Z',
-              PlannedEndDate: '2022-08-15T21:00:00.000Z',
-              Indicators: [],
-              null: null,
-            },
-            {
-              id: '62ed66c749718600147664ac',
-              TaskID: 'LASTITEM-013',
-              TaskName: 'Test 2',
-              StartDate: '2023-02-19T16:00:00.000Z',
-              EndDate: '2023-02-20T01:00:00.000Z',
-              Duration: 1,
-              Progress: 100,
-              parent: '62ed769c286e530014580be4',
-              subTasks: [],
-              rank: '18',
-              PlannedStartDate: null,
-              PlannedEndDate: null,
-              Indicators: [],
-              null: null,
-            },
-          ],
-          rank: '15',
-          PlannedStartDate: null,
-          PlannedEndDate: null,
-          Indicators: [],
-          isExpand: true,
-          null: null,
-        },
-        {
-          id: '62ed76be286e530014580c83',
-          TaskID: 'SUBITEM-006',
-          TaskName: '7777',
-          StartDate: '2023-01-16T16:00:00.000Z',
-          EndDate: '2023-01-17T01:00:00.000Z',
-          Duration: 1,
-          Progress: 0,
-          parent: '62ed75415fb9e80015ae8ffd',
-          subTasks: [],
-          rank: '20',
-          PlannedStartDate: null,
-          PlannedEndDate: null,
-          Indicators: [],
-          null: null,
-        },
-      ],
-      isExpand: true,
-      rank: '1',
-      PlannedStartDate: null,
-      PlannedEndDate: null,
-      Indicators: [
-        {
-          date: '10/18/2022',
-          name: 'test 3',
-          color: '#66b032',
-          tooltip: '3',
-          iconClass: 'e-icons e-icons lock',
-          id: '058a35ec',
-          taskId: '62ed75415fb9e80015ae8ffd',
-        },
-      ],
-    },
-  
-  ]
+        oppgaveId: '6',
+        oppgaveNavn: 'Task1',
+        fraDato: '2023-01-02T07:00:00.000Z',
+        tilDato: '2023-01-02T16:00:00.000Z',
+        varighet: 1,
+        resources: [
+          {
+            brukerId: 9,
+            navn: 'John ',
+            unit: 100,
+          },
+        ],
+      },
+
+      {
+        oppgaveId: '7',
+        oppgaveNavn: 'Task2',
+        fraDato: '2023-01-03T07:00:00.000Z',
+        tilDato: '2023-01-04T16:00:00.000Z',
+        varighet: 2,
+        resources: [
+          {
+            brukerId: 9,
+            navn: 'John ',
+            unit: 100,
+          },
+        ],
+      },
+];
 
 export let crData: Object[] = [
     {
@@ -997,38 +1151,20 @@ export let crData: Object[] = [
         ],
     }
 ];
-export let resourceviewData: object[]=[
+export let autoDateCalculate: object[] = [
     {
-        oppgaveId: '6',
-        oppgaveNavn: 'Task1',
-        fraDato: '2023-01-02T07:00:00.000Z',
-        tilDato: '2023-01-02T16:00:00.000Z',
-        varighet: 1,
-        resources: [
-          {
-            brukerId: 9,
-            navn: 'John ',
-            unit: 100,
-          },
-        ],
-      },
-  
-      {
-        oppgaveId: '7',
-        oppgaveNavn: 'Task2',
-        fraDato: '2023-01-03T07:00:00.000Z',
-        tilDato: '2023-01-04T16:00:00.000Z',
-        varighet: 2,
-        resources: [
-          {
-            brukerId: 9,
-            navn: 'John ',
-            unit: 100,
-          },
-        ],
-      },
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), EndDate: new Date('04/07/2019'), Duration: 6, Progress: 30,subtasks: [
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), EndDate: new Date('04/04/2019'), Duration: 3 },
+            ] },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
 ];
-
 export let filterdata: object[]=[
     {
         TaskID: 1,
@@ -1423,28 +1559,7 @@ export let selfReference: Object[] = [
     }
 
 ];
-export let customSelfReferenceData: Object[] = [
-    {
-        'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('02/27/2017'),
-        'EndDate': new Date('03/03/2017'), 'Progress': '40'
-    },
-    {
-        'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 1
-    },
-    {
-        'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/27/2017'),
-        'EndDate': new Date('03/03/2017'), 'Progress': '40', 'parentID': 2
-    },
-    {
-        'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
-        'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', 'parentID': 1
-    },
-    {
-        'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': new Date('03/14/2017'),
-        'EndDate': new Date('03/18/2017'), 'Progress': '40', 'parentID': 4
-    },
-];
+
 export let indentOutdentData: object[] = [
     {
         TaskID: 1,
@@ -1693,74 +1808,7 @@ export let projectData: Object[] = [
         ]
     }
 ];
-export let customZoomingdata: Object[] = [
-    {
-        TaskID: 1,
-        TaskName: 'Product concept',
-        StartDate: new Date('04/02/2019'),
-        EndDate: new Date('04/21/2019'),
-        subtasks: [
-            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
-            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
-            {
-                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
-                Predecessor: '2', Progress: 30
-            },
-        ]
-    },
-    {
-        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
-        Indicators: [
-            {
-                'date': new Date('04/10/2019'),
-                'name': '#briefing',
-                'title': 'Product concept breifing',
-            }
-        ]
-    },
-    {
-        TaskID: 6,
-        TaskName: 'Market research',
-        StartDate: new Date('04/02/2019'),
-        EndDate: new Date('04/21/2019'),
-        subtasks: [
-            {
-                TaskID: 7,
-                TaskName: 'Demand analysis',
-                StartDate: new Date('04/04/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    {
-                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
-                        Predecessor: '5', Progress: 30
-                    },
-                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
-                ]
-            },
-            {
-                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
-                Predecessor: '7, 8', Progress: 30
-            },
-            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
-            {
-                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
-                Indicators: [
-                    {
-                        'date': new Date('04/20/2019'),
-                        'name': '#meeting',
-                        'title': '1st board of directors meeting',
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        TaskID: 13,
-        TaskName: 'Product concept',
-        StartDate: new Date('04/02/2019'),
-        EndDate: new Date('06/21/2019'),
-    }
-];
+
 export let zoomingData: object[] = [ {
     TaskID: 1,
     TaskName: 'Project Initiation',
@@ -2369,6 +2417,28 @@ export let timezoneData: Object[] = [
         ]
     }
 ];
+export let predecessorOffSetValidation: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+        ]
+    }
+];
 export let defaultGanttData: Object[] = [
     {
         'TaskID': 1,
@@ -2489,37 +2559,7 @@ export let baselineData: Object[] = [
         ]
     }
 ];
-export let customCrIssue: Object[] = [
-    {
-        TaskID: 1,
-        TaskName: 'Task 1',
-        StartDate: new Date('04/02/2019'),
-        subtasks: [
-            {
-                TaskID: 2,
-                TaskName: 'Task 2',
-                StartDate: new Date('04/02/2019'),
-                Duration: 2,
-                Progress: 30,
-            },
-        ],
-    },
-    {
-        TaskID: 3,
-        TaskName: 'Task 3',
-        StartDate: new Date('04/02/2019'),
-        Predecessor: '2FS',
-        subtasks: [
-            {
-                TaskID: 4,
-                TaskName: 'Task 4',
-                StartDate: new Date('04/02/2019'),
-                Duration: 2,
-                Progress: 30,
-            },
-        ]
-    },
-];
+
 export let resourceData: Object[] = [
     { resourceId: 1, resourceName: 'Robert King' },
     { resourceId: 2, resourceName: 'Anne Dodsworth' },
@@ -2588,19 +2628,6 @@ export let cellEditData: object[] = [
     BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), EstimatedWork: 55  },
     { TaskID: 7, TaskName: 'Unscheduled Duration Task', Duration: 5, Notes: 'Notes 6',
     BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  },
-];
-
-export let customProgressData: object[] = [
-    {
-        TaskID: 1,
-        TaskName: 'Parent Task',
-        StartDate: new Date('04/02/2019'),
-        Duration: 1,
-        subtasks: [
-            { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100}, 
-            { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 0.1, Progress: 100}
-        ]
-    },
 ];
 
 export let dialogEditData: object[] = [
@@ -2684,6 +2711,24 @@ export let scheduleModeData: Object[] = [
         ]
     }
 ];
+
+export let customScheduleModeData: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+            { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true }
+        ]
+    }
+];
+
 export let resourceDataTaskType: object[] = [
     {
         TaskID: 1,

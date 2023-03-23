@@ -346,8 +346,13 @@ export const defaultLocale: object = {
     NotEqual: 'Not Equal',
     Equal: 'Equal',
     Contains: 'Contains',
+    NotContains: 'Does Not Contains',
     EndsWith: 'Ends With',
+    NotEndsWith: 'Does Not End With',
     StartsWith: 'Starts With',
+    NotStartsWith: 'Does Not Start With',
+    IsEmpty: 'Empty',
+    IsNotEmpty: 'Not Empty',
     ClearButton: 'Clear',
     FilterButton: 'Filter',
     CancelButton: 'Cancel',
@@ -587,5 +592,6 @@ export const defaultLocale: object = {
     ReEnterPassword: 'Re-enter password to proceed',
     SheetPassword: 'Password to unprotect sheet:',
     Fluent: 'Fluent',
-    FluentDark: 'Fluent Dark'
+    FluentDark: 'Fluent Dark',
+    CellReferenceTypoError: 'We found a typo in your cell reference. Do you want to correct this reference as follows?'
 };

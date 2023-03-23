@@ -15,6 +15,18 @@ $header-cell-color: $content-text-color-alt2 !default;
 $spreadsheet-border-color: $border-light !default;
 $spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
 $select-all-bg-color: $content-bg-color-alt3 !default;
+$header-cell-font-size: $text-xs !default;
+$open-dlg-file-alert-span-font-size: $text-xs !default;
+$goto-dlg-btn-font-size: $text-xs !default;
+$numformat-ddb-preview-font-size: $text-xs !default;
+$aggregate-list-font-size: $text-sm !default;
+$header-cell-font-weight: $font-weight-medium !default;
+$spreadsheet-tbar-btn-icon-font-size: $font-icon-16 !default;
+$spreadsheet-cpicker-font-color-font-size: $font-icon-13 !default;
+$spreadsheet-cpicker-fill-color-font-size: $font-icon-14 !default;
+$aggregate-list-font-size: $font-icon-16 !default;
+$bigger-spreadsheet-tbar-btn-icon-font-size: $font-icon-18 !default;
+$spreadsheet-drop-icon-font-size: $font-icon-12 !default;
 
 //enddefault
 //selection
@@ -45,7 +57,7 @@ $select-icon-color: $icon-color !default;
 //End Tab
 //Formula bar
 $formula-bar-font-size: $text-sm !default;
-$bigger-formula-bar-font-size: 16px !default;
+$bigger-formula-bar-font-size: $text-base !default;
 $name-box-width: 92px !default;
 $namebox-icon-size: 18px !default;
 $formula-textarea-width: calc(100% - 146px) !default;
@@ -53,14 +65,24 @@ $formula-bar-color: $content-text-color-alt2 !default;
 $mformula-bar-height: 42px !default;
 $expand-icon-margin: 4px !default;
 $formula-bar-bg-color: $content-bg-color !default;
+$formula-submit-btn-icon-font-size: $font-icon-16 !default;
+$formula-bar-drop-icon-font-size: $font-icon-10 !default;
+$formula-bar-btn-icon-font-size: $font-icon-18 !default;
+$bigger-name-box-ddl-icon-font-size: $font-icon-20 !default;
+$bigger-insert-function-btn-icon-font-size: $font-icon-18 !default;
+$bigger-formula-bar-drop-icon-font-size: $font-icon-18 !default;
 
 //End formula bar
 //Insert dialog box
 $dlg-list-border: $spreadsheet-border !default;
-$dlg-description-font-weight: 500 !default;
+$dlg-description-font-weight: $font-weight-medium !default;
 $dlg-content-padding: 18px !default;
 $dlg-category-margin-bottom: 5px !default;
 $dlg-min-height: 520px !default;
+$function-dlg-header-content-font-size: $text-base !default;
+$dlg-category-content-font-size: $text-xs !default;
+$dlg-description-content-font-size: $text-sm !default;
+$dlg-category-content-font-weight: $font-weight-medium !default;
 
 //End Insert dialogbox
 //Ribbon
@@ -71,16 +93,16 @@ $align-ddb-ul-padding: 8px !default;
 $align-ddb-item-padding: 0 7px !default;
 $align-ddb-item-margin: 0 !default;
 $ctrl-btn-padding: 16px !default;
-$ribbon-btn-width: 30px !default;
-$ribbon-btn-height: 30px !default;
-$ribbon-btn-padding: 1.5px !default;
-$bigger-ribbon-btn-height: 34px !default;
-$bigger-ribbon-btn-padding: 6px !default;
+$spreadsheet-ribbon-btn-width: 30px !default;
+$spreadsheet-ribbon-btn-height: 30px !default;
+$spreadsheet-ribbon-btn-padding: 1.5px !default;
+$bigger-spreadsheet-ribbon-btn-height: 34px !default;
+$bigger-spreadsheet-ribbon-btn-padding: 6px !default;
 $cpicker-btn-width: 32px !default;
 $bigger-cpicker-btn-width: 36px !default;
 $menu-extension-padding: 12px !default;
-$ribbon-item-hover-border-color: transparent !default;
-$ribbon-item-active-border-color: transparent !default;
+$spreadsheet-ribbon-item-hover-border-color: transparent !default;
+$spreadsheet-ribbon-item-active-border-color: transparent !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 
@@ -88,10 +110,16 @@ $normal-btn-padding: 8px !default;
 //Sorting
 $sort-error-bg-color: $danger-light;
 $sort-error-font-color: $danger-bg-color;
+$sort-dlg-listwrapper-text-font-size: $text-xs !default;
+$sort-dlg-error-font-size: $text-xs !default;
 
 //End Sorting
 //Hyperlink
 $hyper-doc-border-color:  $border-light !default;
+$hyperlink-dlg-header-content-font-size: $text-lg !default;
+$hyperlink-dlg-content-header-font-size: $text-sm !default;
+$hyperlink-dlg-content-text-font-size: $text-sm !default;
+$link-dialog-tab-text-font-size: $text-sm !default;
 
 //End Hyperlink
 //Filtering
@@ -99,6 +127,7 @@ $filter-icon-margin-bottom: 0 !default;
 $filter-icon-bigger-margin-bottom: 7px !default;
 $filter-selectall-padding: 25px !default;
 $filter-selectall-bigger-padding: 33px !default;
+$filter-icon-before-font-size: $font-icon-20 !default;
 
 //End Filtering
 //Find And Replace
@@ -111,11 +140,30 @@ $bigger-find-goto-dlg-height: 256px !default;
 $find-popup-border-top-color: $border-light !default;
 $find-popup-border-color: $border-light !default;
 $bigger-find-tool-margin-bottom: 0 !default;
+$find-dlg-alert-span-font-size: $text-xs !default;
+$bigger-find-dlg-btn-font-size: $text-xs !default;
+$find-dlg-header-font-weight: $font-weight-medium !default;
 
 //End Find And Replace
 //Protect Sheet
 $protect-dlg-height: 470px !default;
 $protect-dlg-width: 348px !default;
+$protect-sheet-dlg-password-header-font-size: $text-sm !default;
+$unprotect-sheet-dlg-header-font-size: $text-lg !default;
+$unprotectsheet-alert-span-font-size: $text-xs !default;
+$unprotectsheet-content-header-font-size: $text-sm !default;
+$reenterpwd-dlg-content-header-font-size: $text-lg !default;
+$reenterpwd-dlg-alert-span-font-size: $text-xs !default;
+$reenterpwd-dlg-content-header-font-size: $text-sm !default;
+$protect-checkbox-label-font-size: $text-sm !default;
+$protectworkbook-dlg-header-font-size: $text-lg !default;
+$protectworkbook-dlg-alert-span-font-size: $text-xs !default;
+$protectworkbook-dlg-content-header-font-size: $text-xs !default;
+$unprotectworkbook-dlg-content-header-font-size: $text-sm !default;
+$importprotectworkbook-dlg-content-header-font-size: $text-sm !default;
+$protectworkbook-dlg-pwd-alert-span-font-size: $text-sm !default;
+$protectworkbook-dlg-pwd-content-font-size: $text-sm !default;
+$protect-content-font-size: $text-sm !default;
 
 //End Protect Sheet
 //Conditional Formatting
@@ -123,6 +171,8 @@ $ele-color: $content-bg-color-alt3;
 $ele-hover-color: $content-bg-color-hover;
 $dark-ele-color: $flyout-bg-color;
 $dark-ele-hover-color: $flyout-bg-color-hover;
+$cf-dlg-content-font-weight: $font-weight-medium !default;
+$cf-menu-icon-font-size: $font-icon-16 !default;
 
 //End Conditional Formatting
 //Formula selection
@@ -148,5 +198,21 @@ $expand-icon-color: $icon-color !default;
 
 //File Name Dialog
 $open-dlg-width: 340px !default;
+$file-menu-extension-font-size: $text-sm !default;
 
 //File Name Dialog
+//Data Validation
+$validation-dlg-content-header-font-size: $text-sm !default;
+$validation-dlg-content-input-font-size: $text-sm !default;
+$validation-dlg-error-font-size: $text-xs !default;
+$validationerror-dlg-content-font-size: $text-sm !default;
+
+//End Data Validation
+//Chart
+$title-dlg-content-header-font-size: $text-base !default;
+$title-dlg-content-input-font-size: $text-sm !default;
+$spreadsheet-switch-row-column-icon-font-size: $font-icon-18 !default;
+$spreadsheet-addchart-icon-font-size: $font-icon-18 !default;
+$spreadsheet-chart-icon-font-size: $font-icon-32 !default;
+
+//End Chart

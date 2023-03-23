@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Smithchart } from '../../smithchart';
 import { SmithchartSeriesModel } from '../../smithchart/series/series-model';
 import { ClosestPoint, Point, SmithchartRect } from '../../smithchart/utils/utils';
@@ -74,7 +73,7 @@ export class TooltipRender {
         };
 
 
-        // eslint-disable-next-line @typescript-eslint/ban-types
+
         const smithChartTooltipSuccess: Function = (argsData: ISmithChartTooltipEventArgs) => {
             const markerHeight: number = smithchart.series[seriesindex as number].marker.height / 2;
             let div: Element = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');

@@ -475,8 +475,8 @@ export class DataValidation {
         dlgContent.appendChild(allowDataCont);
         dlgContent.appendChild(valuesCont);
         dlgContent.appendChild(ignoreBlankCont);
-        const cellRangeText: HTMLElement = this.parent.createElement(
-            'span', { className: 'e-header', innerHTML: l10n.getConstant('CellRange') });
+        const cellRangeText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+        cellRangeText.innerText = l10n.getConstant('CellRange');
         const cellRangeEle: HTMLElement = this.parent.createElement('input', {
             className: 'e-input',
             attrs: { value: range, 'aria-label': l10n.getConstant('CellRange') }
@@ -487,7 +487,8 @@ export class DataValidation {
         const dataCont: HTMLElement = this.parent.createElement('div', { className: 'e-data' });
         allowDataCont.appendChild(allowCont);
         allowDataCont.appendChild(dataCont);
-        const allowText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Allow') });
+        const allowText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+        allowText.innerText = l10n.getConstant('Allow');
         this.typeData = [
             { text: l10n.getConstant('WholeNumber'), id: 'type-1' },
             { text: l10n.getConstant('Decimal'), id: 'type-2' },
@@ -521,7 +522,8 @@ export class DataValidation {
         }
         if (isNew || type !== 'List') {
             let dataIdx: number = 0;
-            const dataText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Data') });
+            const dataText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            dataText.innerText = l10n.getConstant('Data');
             const dataSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
             if (!isNew) {
                 for (let idx: number = 0; idx < this.operatorData.length; idx++) {
@@ -560,10 +562,10 @@ export class DataValidation {
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            const minimumText: HTMLElement =
-                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
-            const maximumText: HTMLElement =
-                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
+            const minimumText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            minimumText.innerText = l10n.getConstant('Minimum');
+            const maximumText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            maximumText.innerText = l10n.getConstant('Maximum');
             const minimumInp: HTMLElement = this.parent.createElement('input', {
                 id: 'minvalue',
                 className: 'e-input', attrs: { value: value1, 'aria-label': l10n.getConstant('Minimum') }
@@ -585,16 +587,14 @@ export class DataValidation {
             });
             numericMax.appendTo('#maxvalue');
         } else if (!isNew && type === 'List') {
-            const valueText: HTMLElement = this.parent.createElement('span', {
-                className: 'e-header', innerHTML: l10n.getConstant('Sources')
-            });
+            const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            valueText.innerText = l10n.getConstant('Sources');
             const valueEle: HTMLElement = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
             valuesCont.appendChild(valueText);
             valuesCont.appendChild(valueEle);
         } else {
-            const valueText: HTMLElement = this.parent.createElement('span', {
-                className: 'e-header', innerHTML: l10n.getConstant('Value')
-            });
+            const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            valueText.innerText = l10n.getConstant('Value');
             const valueEle: HTMLElement = this.parent.createElement('input', { className: 'e-input', attrs: { value: value1 } });
             valuesCont.appendChild(valueText);
             valuesCont.appendChild(valueEle);
@@ -813,7 +813,8 @@ export class DataValidation {
                 while (dataCont.lastChild) {
                     dataCont.removeChild(dataCont.lastChild);
                 }
-                const dataText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Data' });
+                const dataText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+                dataText.innerText = l10n.getConstant('Data');
                 const dataSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
                 dataCont.appendChild(dataText);
                 dataCont.appendChild(dataSelectEle);
@@ -825,10 +826,10 @@ export class DataValidation {
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            const minimumText: HTMLElement =
-                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
-            const maximumText: HTMLElement =
-                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
+            const minimumText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            minimumText.innerText = l10n.getConstant('Minimum');
+            const maximumText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            maximumText.innerText = l10n.getConstant('Maximum');
             const minimumInp: HTMLElement = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
             const maximumInp: HTMLElement = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
             const numericMin: NumericTextBox = new NumericTextBox({
@@ -844,8 +845,8 @@ export class DataValidation {
             maximumCont.appendChild(maximumText);
             maximumCont.appendChild(maximumInp);
         } else {
-            const text: string = listObj.value === l10n.getConstant('List') ? l10n.getConstant('Sources') : l10n.getConstant('Value');
-            const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: text });
+            const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+            valueText.innerText = listObj.value === l10n.getConstant('List') ? l10n.getConstant('Sources') : l10n.getConstant('Value');
             const valueEle: HTMLElement = listObj.value === l10n.getConstant('List') ? this.parent.createElement('input', {
                 className: 'e-input',
                 attrs: { placeholder: 'Enter value' }
@@ -951,7 +952,7 @@ export class DataValidation {
                         }
                     }
                     delete args.cancel;
-                    if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
+                    if (!document.getElementsByClassName('e-validation-error-dlg')[0]) {
                         if (dialogInst.dialogInstance) {
                             dialogInst.dialogInstance.hide();
                         } else {
@@ -963,9 +964,8 @@ export class DataValidation {
             }
         }
         if (!isValid) {
-            const errorEle: HTMLElement = this.parent.createElement('div', {
-                className: 'e-dlg-error', id: 'e-invalid', innerHTML: errorMsg
-            });
+            const errorEle: HTMLElement = this.parent.createElement('div', { className: 'e-dlg-error', id: 'e-invalid' });
+            errorEle.innerText = errorMsg;
             values.appendChild(errorEle);
             dlgFooter.querySelector('.e-primary').setAttribute('disabled', 'true');
         }
@@ -1302,13 +1302,8 @@ export class DataValidation {
     private formatValidation(value: string, type: string, isDialogValidator?: boolean): { isValidate: boolean, errorMsg: string } {
         const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
         let errorMsg: string;
-        const formEle: HTMLElement = this.parent.createElement('form', {
-            id: 'formId',
-            className: 'form-horizontal'
-        });
-        const inputEle: HTMLElement = this.parent.createElement('input', {
-            id: 'e-validation', innerHTML: value
-        });
+        const formEle: HTMLElement = this.parent.createElement('form', { id: 'formId', className: 'form-horizontal' });
+        const inputEle: HTMLElement = this.parent.createElement('input', { id: 'e-validation' });
         inputEle.setAttribute('name', 'validation');
         inputEle.setAttribute('type', 'text');
         inputEle.setAttribute('value', value);
@@ -1391,11 +1386,11 @@ export class DataValidation {
     private validationErrorHandler(error: string): void {
         const el: HTMLElement = document.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (!this.parent.element.querySelector('.e-validationerror-dlg')) {
+        if (!this.parent.element.querySelector('.e-validation-error-dlg')) {
             const erroDialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
             const disableCancel: boolean = false;
             const dlgModel: DialogModel = {
-                width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validationerror-dlg',
+                width: 400, height: 200, isModal: true, showCloseIcon: true, cssClass: 'e-validation-error-dlg',
                 target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {

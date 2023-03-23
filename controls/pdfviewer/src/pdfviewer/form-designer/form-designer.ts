@@ -21,6 +21,10 @@ import { cloneObject } from '../drawing/drawing-util';
  * The `FormDesigner` module is used to handle form designer actions of PDF viewer.
  */
 export class FormDesigner {
+    // eslint-disable-next-line
+    private data: any;
+    // eslint-disable-next-line
+    private formFieldsData: any;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private isFormFieldExistingInCollection: boolean = false;
@@ -1561,8 +1565,8 @@ export class FormDesigner {
             let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds,isPrint);
             element.style.display = bounds.display;
             labelElement = createElement("label", { className: "e-pv-checkbox-container" });
-            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomLevel) + "px" : bounds.width + "px";
-            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomLevel) + "px" : bounds.height + "px";
+            labelElement.style.width = drawingObject.bounds? (drawingObject.bounds.width * zoomLevel) +"px" : bounds.width + "px";
+            labelElement.style.height = drawingObject.bounds? (drawingObject.bounds.height * zoomLevel) +"px" : bounds.height +"px" ;
             if (this.isDrawHelper)
                 labelElement.style.cursor = 'crosshair';
             else
@@ -1626,6 +1630,7 @@ export class FormDesigner {
             inputElement.style.height = bounds.height + "px";
             if (!isPrint) {
                 this.updateCheckBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
+
             }
             this.updateCheckboxProperties(drawingObject, checkboxDiv);
             inputElement.appendChild(labelElement);
@@ -1712,7 +1717,8 @@ export class FormDesigner {
         }
         if ((formFieldAnnotationType === "Checkbox" || formFieldAnnotationType === "RadioButton") && !isPrint) {
             element.appendChild(labelElement);
-        } else if (formFieldAnnotationType === "Checkbox" && isPrint) {
+        }
+        else if (formFieldAnnotationType === "Checkbox" && isPrint) {
             element.appendChild(labelElement)
         }
         else {
@@ -1812,7 +1818,7 @@ export class FormDesigner {
     }
        
     public setCheckBoxState(event: Event) {
-        if ((Browser.isDevice) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
+        if ((Browser.isDevice) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div'|| (event.target as Element).className === 'e-pv-checkbox-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
             let minCheckboxWidth: number = 20;
             let isChecked: boolean = false;
             let checkTarget: Element;
@@ -3782,19 +3788,136 @@ export class FormDesigner {
         let borderColor: any = this.hexToRgb(currentData.borderColor);
         let borderRGB: any = currentData.borderColor ? { r: borderColor[0], g: borderColor[1], b: borderColor[2], a: 100 } : { r: 48, g: 48, b: 48, a: 100 };
         let value: string;
+
         if ((currentData.name === items.name) && (currentData.type === 'Textbox' || currentData.type === 'PasswordField')) {
             value = items.value;
         }
+
+        let options: ItemModel[]  = [];
+        let dropListoptions: any = [];
+        let selectedIndex: any = [];
+        let finalSignBounds : any
+        let signType: any = '';
+
+        this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+
+        if (!isNullOrUndefined(this.data)) {
+
+            this.formFieldsData = JSON.parse(this.data);
+
+            if ((currentData.type === 'DropdownList' || currentData.type === 'ListBox')){
+                let dropListData: any = this.formFieldsData.filter( (fieldData: any) => (currentData.name === fieldData.FieldName) )
+                if (dropListData.length > 0) {
+                    
+                    dropListoptions = dropListData[0].TextList;
+                    selectedIndex.push(dropListData[0].selectedIndex);
+
+                    for (let i = 0; i < dropListoptions.length; i++) {
+                        options.push({ itemName: dropListoptions[i], itemValue: dropListoptions[i] })
+                    }
+                }
+            }
+
+            if ((currentData.type === 'InitialField' || currentData.type === 'SignatureField')) {
+
+                this.formFieldsData = JSON.parse(this.data);
+                let signData: any = this.formFieldsData.filter((signfieldName: any) => (currentData.name === signfieldName.FieldName) )
+
+                if(signData.length > 0) {
+
+                    let boundsData: any = this.formFieldsData.filter((datafieldName: any) => (datafieldName.Name === 'ink' || datafieldName.Name === 'SignatureField' || datafieldName.Name === 'SignatureImage' || datafieldName.Name === 'SignatureText') && (signData[0].FieldName === datafieldName.FieldName.split("_")[0]) )
+
+                    for(var i = 0; i < boundsData.length; i++){
+
+                        if((signData[0].FieldName !== boundsData[i].FieldName)){
+
+                            value = boundsData[i].Value;
+                            currentData.fontFamily = boundsData[i].FontFamily;
+                            currentData.fontSize = boundsData[i].FontSize;
+
+                            if (!signData.Bounds) {
+
+                                let signBounds: any = boundsData[i].LineBounds;
+                                let currentLeft: number = void 0;
+                                let currentTop: number = void 0;
+                                let currentWidth: number = void 0;
+                                let currentHeight: number = void 0;
+                                let currentPage = parseFloat(boundsData[i].PageIndex);
+
+                                if (signBounds.x || signBounds.y || signBounds.width || signBounds.height) {
+                                    currentLeft = signBounds.x;
+                                    currentTop = signBounds.y;
+                                    currentWidth = signBounds.width;
+                                    currentHeight = signBounds.height;
+                                }
+                                else {
+                                    currentLeft = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.X);
+                                    currentTop = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Y);
+                                    currentWidth = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Width);
+                                    currentHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Height);
+                                }
+
+                                let bound : any = { left: currentLeft, top: currentTop, width: currentWidth, height: currentHeight };
+                                finalSignBounds = this.pdfViewer.formFieldsModule.updateSignatureBounds(bound, currentPage, false);
+                            }
+                            if(boundsData[i].Name === "SignatureImage"){
+                                signType = 'Image';
+                            }
+                            if(boundsData[i].Name === "ink"){
+                                signType = 'Path';
+                            }
+                            if(boundsData[i].Name === "SignatureText"){
+                                signType = 'Text';
+                            }
+                            if (signType === 'Path') { 
+
+                                let collectionData: any = processPathData(boundsData[i].Value);
+                                let csData: any = splitArrayCollection(collectionData);
+                                value = JSON.stringify(csData);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+
         let fieldProperties: any = {
-            lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
-            value: value ? value : currentData.value, radiobuttonItem: [], signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, insertSpaces: currentData.insertSpaces ? currentData.insertSpaces : false, isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, isMultiline: currentData.Multiline ? currentData.Multiline : false, rotation: 0,
-            isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1, options: [], maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+            lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, 
+            pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
+            value: value ? value : currentData.value, radiobuttonItem: [], 
+            signatureType: currentData.signatureType ? currentData.signatureType : signType, id: currentData.id, 
+            insertSpaces: currentData.insertSpaces ? currentData.insertSpaces : false, isChecked: currentData.isChecked ? currentData.isChecked : false, 
+            isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily, 
+            fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, 
+            fontSize: currentData.fontSize, isMultiline: currentData.Multiline ? currentData.Multiline : false, rotation: 0,
+            isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, 
+            isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, 
+            zoomvalue: 1, option: options, maxLength: currentData.maxLength ? currentData.maxLength : 0, 
+            visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
+
+        if(finalSignBounds) {
+            fieldProperties.signatureBound = finalSignBounds;
+        }
+
+        if(selectedIndex.length > 0 ) {
+            fieldProperties.selectedIndex = selectedIndex;
+        }
+
         if (currentData.type === 'RadioButton') {
             var field = {
-                lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
-                value: currentData.value, signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
-                isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1, maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+                lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, 
+                pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
+                value: currentData.value, signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, 
+                isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, 
+                fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, 
+                fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
+                isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ? currentData.isRequired : false, 
+                textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1, 
+                maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility, 
+                font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
             };
             fieldProperties.radiobuttonItem.push(field);
         } else {
@@ -6127,19 +6250,12 @@ export class FormDesigner {
      * @private
     */
     public getFormDesignerSignField(signatureFieldCollection: any): any[] {
-        let formDesignerData: any = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
-        // eslint-disable-next-line
-        let currentData: any;
-        if (formDesignerData) {
-            // eslint-disable-next-line
-            let formFieldsObject: any = JSON.parse(formDesignerData);
-            for (let i: number = 0; i < formFieldsObject.length; i++) {
-                currentData = formFieldsObject[i].FormField;
-                if (currentData.formFieldAnnotationType === 'SignatureField') {
-                    // eslint-disable-next-line
-                    currentData['uniqueID'] = currentData.id.replace("_content", "");
-                    signatureFieldCollection.push(formFieldsObject[i]);
-                }
+        let collectiondata: any = this.pdfViewer.formFieldCollections;
+        let dataCollection: any;
+        for (let i: any = 0; i < collectiondata.length; i++) {
+            dataCollection = collectiondata[i].type;
+            if (dataCollection === "SignatureField" || dataCollection === "InitialField") {
+                signatureFieldCollection.push(collectiondata[i]);
             }
         }
         return signatureFieldCollection;

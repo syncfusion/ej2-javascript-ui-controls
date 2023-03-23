@@ -1,8 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { withInRange } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { subArraySum, getElement, appendChildElement, redrawElement } from '../../common/utils/helper';

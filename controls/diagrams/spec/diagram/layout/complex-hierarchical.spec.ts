@@ -8,7 +8,7 @@ import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/s
 import {
     ConnectorModel, Node,
     DataBinding, PointModel, GraphLayoutManager, Layout, IConnector, IDataLoadedEventArgs, LineDistribution,ConnectionPointOrigin,ChildArrangement,
-    HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel, ImageElement, StackPanel, TextElement, DiagramConstraints, Connector, ConnectorConstraints
+    HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel, ImageElement, StackPanel, TextElement, Connector, DiagramConstraints, ConnectorConstraints
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(ComplexHierarchicalTree, HierarchicalTree, LineDistribution,DataBinding);
@@ -2917,10 +2917,6 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
         });
 
     });
-
-
-
-
 
 
     describe('Tree Line Distribution 2', () => {

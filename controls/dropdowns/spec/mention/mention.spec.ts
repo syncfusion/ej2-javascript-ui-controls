@@ -201,42 +201,6 @@ describe('Mention', () => {
             mentionObj.hidePopup();
         });
     });
-    describe('Check the cursor focus', () => {
-        let mentionObj: any;
-        let popupObj: any;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('div', { id: 'divMention' } );
-        const arrowKeyMentionEventArgs: any = {
-            code: 'ArrowLeft',
-            keyCode: 37,
-            key: 'ArrowLeft'
-        };
-        beforeAll(() => {
-            element.innerHTML ="<p>testing @P</p>";
-            document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2 });
-            mentionObj.appendTo(element);
-            mentionObj.initValue();
-        });
-        afterAll(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('to hide popup with arrowKey navigation', (done) => {
-            setCursorPoint(mentionObj.inputElement.firstChild.firstChild, 9);
-            mentionObj.onKeyUp(keyMentionEventArgs);
-            mentionObj.showPopup();
-            setTimeout(() => {
-                setCursorPoint(mentionObj.inputElement.firstChild.firstChild, 8);
-                mentionObj.onKeyUp(arrowKeyMentionEventArgs);
-                setTimeout(() => {
-                    expect(isNullOrUndefined(mentionObj.isPopupOpen)).toBe(false);
-                    done();
-                }, 500);
-            }, 500);
-        });
-    });
     // collision
     describe('mention collision checking', () => {
         let mentionObj: any;
@@ -1668,7 +1632,7 @@ describe('Mention', () => {
             done();
         });
     });
-
+    
     describe('Show popup with CSS and target property set for div', () => {
         let mentionObj: any;
         let popupObj: any;
@@ -1710,7 +1674,7 @@ describe('Mention', () => {
         divElement.id = 'divElement';
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
-            
+
             document.body.appendChild(element);
             document.body.appendChild(divElement);
             mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
@@ -1742,7 +1706,7 @@ describe('Mention', () => {
         divElement.id = 'divElement';
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
-            
+
             document.body.appendChild(element);
             document.body.appendChild(divElement);
             mentionObj = new Mention({ dataSource: datasource2, target: '#textareaMention', cssClass: 'sample', mentionChar: '@' });

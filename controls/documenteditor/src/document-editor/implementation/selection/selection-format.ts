@@ -1708,6 +1708,7 @@ export class SelectionSectionFormat {
     private equalWidthIn: boolean;
     private lineBetweenColumnsIn: boolean;
     private columnsIn: SelectionColumnFormat[];
+    private breakCodeIn: string;
 
     /**
      * private
@@ -2049,6 +2050,23 @@ export class SelectionSectionFormat {
      public get columns(): SelectionColumnFormat[] {
         return this.columnsIn;
     }
+    /**
+     * Gets or sets the breakCode.
+     *
+     * @aspType int
+     */
+    public get breakCode(): string {
+        return this.breakCodeIn;
+    }
+    /**
+     * Gets or sets the breakCode.
+     *
+     * @aspType int
+     */
+    public set breakCode(value: string) {
+        this.breakCodeIn = value;
+        this.notifyPropertyChanged('breakCode');
+    }
 
     /**
      * @param selection
@@ -2093,6 +2111,7 @@ export class SelectionSectionFormat {
             selectCol.space = HelperMethods.convertPixelToPoint((col as WColumnFormat).space);
             this.columns.push(selectCol);
         }
+        this.breakCode = format.breakCode;
     }
     private applyColumnFormat(): void {
 
@@ -2185,6 +2204,8 @@ export class SelectionSectionFormat {
                 return this.lineBetweenColumnsIn;
             case 'columns':
                 return this.columnsIn;
+            case 'breakCode':
+                return this.breakCodeIn;
             default:
                 return undefined;
         }

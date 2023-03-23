@@ -145,11 +145,17 @@ $schedule-tbar-separator-bgr-mrgn: 7.5px 3px !default;
 $schedule-tbar-separator-bgr-minheight: 38px !default;
 $schedule-tbar-btn-icon-bgr-width: 24px !default;
 $schedule-tbar-btn-bgr-mrgn: 4px 0 !default;
+$schedule-tbar-btn-bgr-line-height: 25px !default;
 $schedule-tbar-btn-bgr-minheight: 24px !default;
 $schedule-tbar-btn-bgr-minwidth: 24px !default;
 $schedule-tbar-btn-bgr-padding: 8px !default;
 $schedule-tbar-btn-icn-bgr-padding: 0 !default;
 $schedule-tbar-btn-icn-right-bgr-padding: 6px !default;
+$schedule-tbar-right-items-btn-border: none !default;
+$schedule-tbar-right-items-btn-border-radius: 0 !default;
+$schedule-tbar-right-active-items-btn-border: none !default;
+$schedule-device-tbar-right-items-btn-border-radius: 0 !default;
+$schedule-device-tbar-right-items-btn-border: none !default;
 
 // view definitions
 $schedule-timeline-header-cells-height: 36px !default;
@@ -235,6 +241,7 @@ $schedule-current-date-bg-color: $primary !default;
 $schedule-disable-dates-color: $content-bg-color-alt2 !default;
 $schedule-workhour-bg-color: $content-bg-color !default;
 $schedule-hover-bg-color: darken($content-bg-color-alt1, 2%) !default;
+$schedule-resource-focus-bg-color: $schedule-hover-bg-color !default;
 $schedule-active-color: $content-bg-color !default;
 $schedule-current-day-active-color: $schedule-active-color !default;
 $schedule-active-border-color: $primary !default;

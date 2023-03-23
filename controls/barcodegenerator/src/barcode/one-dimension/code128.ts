@@ -51,7 +51,7 @@ export class Code128 extends OneDimension {
     private getBytes(givenWord: string): number[] {
         const bytes: number[] = [];
         for (let i: number = 0; i < givenWord.length; i++) {
-            bytes.push(givenWord[i].charCodeAt(0));
+            bytes.push(givenWord[parseInt(i.toString(), 10)].charCodeAt(0));
         }
         return bytes;
     }
@@ -215,7 +215,7 @@ export class Code128 extends OneDimension {
     // Get a bar symbol by index
     private getCodes(index: number): string {
         const codes: number[] = this.getCodeValue();
-        return codes[index] ? codes[index].toString() : '';
+        return codes[parseInt(index.toString(), 10)] ? codes[parseInt(index.toString(), 10)].toString() : '';
     }
 
 }

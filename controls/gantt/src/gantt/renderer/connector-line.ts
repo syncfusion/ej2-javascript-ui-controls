@@ -300,9 +300,16 @@ export class ConnectorLine {
      * @private
      */
     private getHeightValue(data: IConnectorLineObject): number {
-        return (data.parentIndex * data.rowHeight) > (data.childIndex * data.rowHeight) ?
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+            return (data.parentIndex * this.parent.rowHeight) > (data.childIndex * this.parent.rowHeight) ?
+            ((data.parentIndex * this.parent.rowHeight) - (data.childIndex * this.parent.rowHeight)) :
+            ((data.childIndex * this.parent.rowHeight) - (data.parentIndex * this.parent.rowHeight));
+        }
+        else {
+            return (data.parentIndex * data.rowHeight) > (data.childIndex * data.rowHeight) ?
             ((data.parentIndex * data.rowHeight) - (data.childIndex * data.rowHeight)) :
             ((data.childIndex * data.rowHeight) - (data.parentIndex * data.rowHeight));
+        }
     }
 
     /**
@@ -381,10 +388,33 @@ export class ConnectorLine {
         if (this.parent.renderBaseline) {
             isMilestoneValue = (data.milestoneParent && data.milestoneChild) ? 0 : data.milestoneParent ? -5 : data.milestoneChild ? 5 : 0;
         }
-        const heightValue: number = isVirtual ? connectorLine.height : (height + isMilestoneValue);
+        let heightValue: number = isVirtual ? connectorLine.height : (height + isMilestoneValue);
         let borderTopWidth: number = 0;
         let addTop: number = 0;
-        if (this.parent.currentViewData[data.parentIndex] && this.parent.currentViewData[data.childIndex]) {
+        let parentOverlapTopValue: number = 0;
+        let childOverlapTopValue: number = 0;
+        let count: number = 0;
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+            for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
+                if (this.parent.getRowByIndex(i as number).style.display != 'none') {
+                    if (count < data.parentIndex) {
+                        count++;
+                        parentOverlapTopValue = parentOverlapTopValue + this.parent.getRowByIndex(i as number).offsetHeight;
+                    }
+                }
+            }
+            count = 0;
+            for (let j: number = 0; j < this.parent.currentViewData.length; j++) {
+                if (this.parent.getRowByIndex(j as number).style.display != 'none') {
+                    if (count < data.childIndex) {
+                        count++;
+                        childOverlapTopValue = childOverlapTopValue + this.parent.getRowByIndex(j as number).offsetHeight;
+                    }
+                }
+            }
+            heightValue = Math.abs(parentOverlapTopValue - childOverlapTopValue);
+        }
+        if (this.parent.currentViewData[data.parentIndex] && this.parent.currentViewData[data.childIndex] && this.parent.allowParentDependency) {
             let fromRecordIsParent: boolean = this.parent.currentViewData[data.parentIndex].hasChildRecords;
             let toRecordIsParent: boolean = this.parent.currentViewData[data.childIndex].hasChildRecords;
             let fromRecordIsManual: boolean = this.parent.currentViewData[data.parentIndex].ganttProperties.isAutoSchedule;
@@ -480,7 +510,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FSType1') {
                 div = div + direction + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType1">';
 
                 div = div + eLine;
@@ -506,7 +536,7 @@ export class ConnectorLine {
 
 
             if (this.getParentPosition(data) === 'FSType2') {
-                div = div + direction + data.parentLeft + 'px;top:' + (isVirtual ? connectorLine.top : ((data.parentIndex * data.rowHeight) + addTop +
+                div = div + direction + data.parentLeft + 'px;top:' + (isVirtual ? connectorLine.top : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop +
                     this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType2">';
 
@@ -546,7 +576,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FSType3') {
                 div = div + direction + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType3">';
 
                 div = div + rightArrow;
@@ -584,7 +614,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FSType4') {
                 div = div + direction + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType4">';
 
                 div = div + rightArrow;
@@ -615,7 +645,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SSType4') {
                 div = div + direction + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue: (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType4">';
 
                 div = div + rightArrow;
@@ -632,7 +662,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SSType3') {
                 div = div + direction + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType3">';
 
                 div = div + rightArrow;
@@ -649,7 +679,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SSType2') {
                 div = div + direction + setInnerElementLeftSSType2 + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType2">';
 
                 div = div + eLine;
@@ -674,7 +704,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SSType1') {
                 div = div + direction + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue: (data.parentIndex * data.rowHeight)) + addTop +
                         this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType1">';
 
@@ -697,7 +727,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FFType1') {
                 div = div + direction + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType1">';
 
                 div = div + eLine;
@@ -726,7 +756,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FFType2') {
                 div = div + direction + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType2">';
 
                 div = div + eLine;
@@ -757,7 +787,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FFType3') {
                 div = div + direction + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType3">';
 
                 div = div + duplicateStingOne;
@@ -785,7 +815,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'FFType4') {
                 div = div + direction + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType4">';
 
                 div = div + leftArrow;
@@ -819,7 +849,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SFType4') {
                 div = div + direction + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;width:1px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;width:1px;' +
                     'height:' + heightValue + 'px;position:absolute" data-connectortype="SFType4">';
 
                 div = div + duplicateStingFour + 'top:' + (-5 - this.lineStroke + (this.lineStroke - 1)) + 'px;' +
@@ -855,7 +885,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SFType3') {
                 div = div + direction + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.childIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType3">';
 
                 div = div + duplicateStingOne;
@@ -878,7 +908,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SFType1') {
                 div = div + direction + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType1">';
 
                 div = div + eLine;
@@ -911,7 +941,7 @@ export class ConnectorLine {
 
             if (this.getParentPosition(data) === 'SFType2') {
                 div = div + direction + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
-                    ((data.parentIndex * data.rowHeight) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
+                    ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue)) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType2">';
 
                 div = div + eLine;

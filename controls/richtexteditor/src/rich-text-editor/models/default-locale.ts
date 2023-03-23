@@ -191,7 +191,8 @@ export let defaultLocale: { [key: string]: string } = {
     'bulletFormatListCircle': 'Circle',
     'bulletFormatListSquare': 'Square',
     'numberFormatListNone': 'None',
-    'bulletFormatListNone':'None'
+    'bulletFormatListNone':'None',
+    'formatPainter': 'Format Painter'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -279,7 +280,8 @@ export let toolsLocale: { [key: string]: string } = {
     'alignbottom': 'AlignBottom',
     'insertrowbefore': 'insertRowBefore',
     'insertrowafter': 'insertRowAfter',
-    'deleterow': 'deleteRow'
+    'deleterow': 'deleteRow',
+    'formatpainter': 'formatPainter'
 };
 
 export let fontNameLocale : { [ket: string]: string }[] = [

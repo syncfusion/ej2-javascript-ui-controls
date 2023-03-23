@@ -191,6 +191,15 @@ export class FilterMenuRenderer {
             this.dlgObj.element.style.maxHeight = this.maxHeight;
         }
         this.dlgObj.show();
+        const optrInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flm_optrdiv').querySelector('input');
+        const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
+        if (optrInput.value === 'Empty' || optrInput.value === 'Not Empty' ||
+            optrInput.value === 'Null' || optrInput.value === 'Not Null') {
+            valInput.setAttribute('disabled', '');
+        }
+        else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+            valInput.removeAttribute('disabled');
+        }
         if (!column.filterTemplate) {
             this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));
         }

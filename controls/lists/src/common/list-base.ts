@@ -200,30 +200,30 @@ export namespace ListBase {
         cssClass = getModuleClass(curOpt.moduleName);
         const id: string = generateId(); // generate id for drop-down-list option.
         for (let i: number = 0; i < dataSource.length; i++) {
-            if (isNullOrUndefined(dataSource[i])) {
+            if (isNullOrUndefined(dataSource[i as number])) {
                 continue;
             }
             let li: HTMLElement;
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 const curData: object = {
                     dataSource: dataSource,
-                    curData: dataSource[i],
-                    text: dataSource[i],
+                    curData: dataSource[i as number],
+                    text: dataSource[i as number],
                     options: curOpt
                 };
                 curOpt.itemCreating(curData);
             }
 
             if (isSingleLevel) {
-                li = generateSingleLevelLI(createElement, dataSource[i], undefined, null, null, [], null, id, i, options);
+                li = generateSingleLevelLI(createElement, dataSource[i as number], undefined, null, null, [], null, id, i, options);
             } else {
-                li = generateLI(createElement, dataSource[i], undefined, null, null, options, componentInstance);
+                li = generateLI(createElement, dataSource[i as number], undefined, null, null, options, componentInstance);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 const curData: Object = {
                     dataSource: dataSource,
-                    curData: dataSource[i],
-                    text: dataSource[i],
+                    curData: dataSource[i as number],
+                    text: dataSource[i as number],
                     item: li,
                     options: curOpt
                 };
@@ -279,21 +279,21 @@ export namespace ListBase {
             id = generateId(); // generate id for drop-down-list option.
         }
         for (let i: number = 0; i < dataSource.length; i++) {
-            let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i], fields);
-            if (isNullOrUndefined(dataSource[i])) { continue; }
+            let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i as number], fields);
+            if (isNullOrUndefined(dataSource[i as number])) { continue; }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
                 const curData: { [key: string]: object | string } = {
                     dataSource: dataSource,
-                    curData: dataSource[i],
+                    curData: dataSource[i as number],
                     text: fieldData[fields.text],
                     options: curOpt,
                     fields: fields
                 };
                 curOpt.itemCreating(curData);
             }
-            const curItem: { [key: string]: Object } = dataSource[i];
+            const curItem: { [key: string]: Object } = dataSource[i as number];
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
-                fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i], fields);
+                fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i as number], fields);
             }
             // eslint-disable-next-line no-prototype-builtins
             if (fieldData.hasOwnProperty(fields.id) && !isNullOrUndefined(fieldData[fields.id])) {
@@ -388,7 +388,7 @@ export namespace ListBase {
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
                 const curData: { [key: string]: object | string } = {
                     dataSource: dataSource,
-                    curData: dataSource[i],
+                    curData: dataSource[i as number],
                     text: fieldData[fields.text],
                     item: li,
                     options: curOpt,
@@ -453,7 +453,7 @@ export namespace ListBase {
         siblingLI = liCollections[liIndex + (isPrevious === true ? -1 : 1)];
         while (siblingLI && (!isVisible(siblingLI) || siblingLI.classList.contains(cssClass.disabled))) {
             liIndex = liIndex + (isPrevious === true ? -1 : 1);
-            siblingLI = liCollections[liIndex];
+            siblingLI = liCollections[liIndex as number];
         }
         return siblingLI;
     }
@@ -497,22 +497,22 @@ export namespace ListBase {
 
         for (let j: number = 0; j < ds.length; j++) {
             const itemObj: { [key: string]: Object }[]
-                = (ds[j] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
+                = (ds[j as number] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
             const grpItem: { [key: string]: Object } = {};
             const hdr: string = 'isHeader';
-            grpItem[curFields.text] = (ds[j] as { key: string } & { [key: string]: Object }).key;
-            grpItem[hdr] = true;
+            grpItem[curFields.text] = (ds[j as number] as { key: string } & { [key: string]: Object }).key;
+            grpItem[`${hdr}`] = true;
             let newtext: string = curFields.text;
             if (newtext === 'id') {
                 newtext = 'text';
-                grpItem[newtext] = ds[j].key;
+                grpItem[`${newtext}`] = ds[j as number].key;
             }
-            grpItem._id = 'group-list-item-' + ((ds[j] as { [key: string]: Object }).key ?
-                (ds[j] as { [key: string]: Object }).key.toString().trim() : 'undefined');
+            grpItem._id = 'group-list-item-' + ((ds[j as number] as { [key: string]: Object }).key ?
+                (ds[j as number] as { [key: string]: Object }).key.toString().trim() : 'undefined');
             grpItem.items = itemObj;
             dataSource.push(grpItem);
             for (let k: number = 0; k < itemObj.length; k++) {
-                dataSource.push(itemObj[k]);
+                dataSource.push(itemObj[k as number]);
             }
         }
         return dataSource;
@@ -533,7 +533,7 @@ export namespace ListBase {
             query.sortBy(sortBy, 'descending', true);
         } else {
             for (let i: number = 0; i < query.queries.length; i++) {
-                if (query.queries[i].fn === 'onSortBy') {
+                if (query.queries[i as number].fn === 'onSortBy') {
                     query.queries.splice(i, 1);
                 }
             }
@@ -577,7 +577,7 @@ export namespace ListBase {
         curEle.classList.remove('json-parent');
 
         for (let i: number = 0; i < childs.length; i++) {
-            const li: HTMLElement = childs[i];
+            const li: HTMLElement = childs[i as number];
             const anchor: HTMLElement = li.querySelector('a');
             const ul: Element = li.querySelector('ul');
             // eslint-disable-next-line
@@ -585,8 +585,8 @@ export namespace ListBase {
             const childNodes: NodeList = anchor ? anchor.childNodes : li.childNodes;
             const keys: string[] = Object.keys(childNodes);
             for (let i: number = 0; i < childNodes.length; i++) {
-                if (!(childNodes[Number(keys[i])]).hasChildNodes()) {
-                    json[fields.text] = childNodes[Number(keys[i])].textContent;
+                if (!(childNodes[Number(keys[i as number])]).hasChildNodes()) {
+                    json[fields.text] = childNodes[Number(keys[i as number])].textContent;
                 }
             }
             let attributes: { [key: string]: string } = getAllAttributes(li);
@@ -618,8 +618,8 @@ export namespace ListBase {
     function typeofData(data: { [key: string]: Object }[] | string[] | number[]): { [key: string]: Object } {
         let match: { [key: string]: Object } = <{ [key: string]: Object }>{ typeof: null, item: null };
         for (let i: number = 0; i < data.length; i++) {
-            if (!isNullOrUndefined(data[i])) {
-                return match = { typeof: typeof data[i], item: data[i] };
+            if (!isNullOrUndefined(data[i as number])) {
+                return match = { typeof: typeof data[i as number], item: data[i as number] };
             }
         }
         return match;
@@ -639,7 +639,7 @@ export namespace ListBase {
         const attributes: { [key: string]: string } = {};
         const attr: NamedNodeMap = element.attributes;
         for (let index: number = 0; index < attr.length; index++) {
-            attributes[attr[index].nodeName] = attr[index].nodeValue;
+            attributes[attr[index as number].nodeName] = attr[index as number].nodeValue;
         }
         return attributes;
     }
@@ -667,10 +667,10 @@ export namespace ListBase {
         let value: string;
         const id: string = generateId(); // generate id for drop-down-list option.
         for (let i: number = 0; i < dataSource.length; i++) {
-            let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i], curFields);
-            const curItem: { [key: string]: Object } | string | number = dataSource[i];
+            let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource[i as number], curFields);
+            const curItem: { [key: string]: Object } | string | number = dataSource[i as number];
             const isHeader: Object = (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader;
-            if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+            if (typeof dataSource[i as number] === 'string' || typeof dataSource[i as number] === 'number') {
                 value = curItem as string;
             } else {
                 value = fieldData[curFields.value] as string;
@@ -686,8 +686,8 @@ export namespace ListBase {
                 curOpt.itemCreating(curData);
             }
             if (curOpt.itemCreating && typeof curOpt.itemCreating === 'function') {
-                fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i], curFields);
-                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i as number], curFields);
+                if (typeof dataSource[i as number] === 'string' || typeof dataSource[i as number] === 'number') {
                     value = curItem as string;
                 } else {
                     value = fieldData[curFields.value] as string;
@@ -698,7 +698,7 @@ export namespace ListBase {
                 className: isHeader ? cssClass.group : cssClass.li, attrs: { role: 'presentation' }
             });
             if (isHeader) {
-                if (typeof dataSource[i] === 'string' || typeof dataSource[i] === 'number') {
+                if (typeof dataSource[i as number] === 'string' || typeof dataSource[i as number] === 'number') {
                     li.innerText = curItem as string;
                 } else {
                     li.innerText = fieldData[curFields.text] as string;
@@ -785,7 +785,7 @@ export namespace ListBase {
         const category: string = curFields.groupBy;
         for (const header of headerItems) {
             const headerData: { [key: string]: string; } = {};
-            headerData[category] = header.textContent;
+            headerData[`${category}`] = header.textContent;
             header.innerHTML = '';
             if (componentInstance && componentInstance.getModuleName() !== "listview") {
                 // eslint-disable-next-line
@@ -1259,11 +1259,11 @@ export function getFieldValues(dataItem: { [key: string]: Object } | string | nu
         return dataItem;
     } else {
         for (const field of Object.keys(fields)) {
-            const dataField: string = (<{ [key: string]: Object }>fields)[field] as string;
+            const dataField: string = (<{ [key: string]: Object }>fields)[`${field}`] as string;
             const value: { [key: string]: Object } = !isNullOrUndefined(dataField) &&
                 typeof (dataField) === 'string' ? getValue(dataField, dataItem) : undefined;
             if (!isNullOrUndefined(value)) {
-                fieldData[dataField] = value;
+                fieldData[`${dataField}`] = value;
             }
         }
     }

@@ -1,11 +1,11 @@
-@include export-module('numerictextbox-tailwind-icons') {
+@include export-module('numerictextbox-Material3-icons') {
   .e-input-group-icon.e-spin-up::before {
-    content: '\e776';
+    content: '\e87a';
     font-family: 'e-icons';
   }
 
   .e-input-group-icon.e-spin-down::before {
-    content: '\e729';
+    content: '\e70d';
     font-family: 'e-icons';
   }
 }

@@ -112,6 +112,13 @@ export interface DialogModel extends ComponentModel{
     enableHtmlSanitizer?: boolean;
 
     /**
+     * Enables or disables the persistence of the dialog's dimensions and position state between page reloads.
+     *
+     * @default false
+     */
+    enablePersistence?: boolean;
+
+    /**
      * Specifies the value that represents whether the close icon is shown in the dialog component.
      *
      * @default false

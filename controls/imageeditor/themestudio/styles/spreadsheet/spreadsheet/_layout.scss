@@ -1,4 +1,4 @@
-@import '../ribbon/mixin.scss';
+@import '../spreadsheet-ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
 
   /*! spreadsheet layout */
@@ -17,7 +17,7 @@
       width: $protect-dlg-width;
 
       & .e-sheet-password-content .e-header {
-        font-size: 14px;
+        font-size: $protect-sheet-dlg-password-header-font-size;
         line-height: 28px;
         margin-bottom: 4px;
       }
@@ -56,20 +56,20 @@
 
     & .e-unprotectworksheet-dlg.e-dialog {
       & .e-dlg-header-content .e-dlg-header {
-        font-size: 18px;
+        font-size: $unprotect-sheet-dlg-header-font-size;
         line-height: 21px;
       }
 
       & .e-dlg-content {
         & .e-unprotectsheetpwd-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $unprotectsheet-alert-span-font-size;
           padding-top: 7px;
         }
 
         & .e-unprotectsheetpwd-content {
           & .e-header {
-            font-size: 14px;
+            font-size: $unprotectsheet-content-header-font-size;
             line-height: 16px;
           }
 
@@ -82,20 +82,20 @@
 
     & .e-reenterpwd-dlg.e-dialog {
       & .e-dlg-header-content .e-dlg-header {
-        font-size: 18px;
+        font-size: $reenterpwd-dlg-content-header-font-size;
         line-height: 21px;
       }
 
       & .e-dlg-content {
         & .e-reenterpwd-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $reenterpwd-dlg-alert-span-font-size;
           padding-top: 7px;
         }
 
         & .e-reenterpwd-content {
           & .e-header {
-            font-size: 14px;
+            font-size: $reenterpwd-dlg-content-header-font-size;
             line-height: 16px;
           }
 
@@ -134,7 +134,7 @@
           border-radius: 5px;
         }
 
-        @if $skin-name == 'FluentUI' or $skin-name == 'FluentUI-dark' {
+        @if $skin-name == 'FluentUI' {
           margin-bottom: $bigger-find-tool-margin-bottom;
         }
 
@@ -168,7 +168,7 @@
       padding-top: 20px;
 
       & .e-label {
-        font-size: 14px;
+        font-size: $protect-checkbox-label-font-size;
       }
     }
 
@@ -197,7 +197,7 @@
     }
 
     & .e-protect-content {
-      font-size: 13px;
+      font-size: $protect-content-font-size;
       height: 37px;
       padding-top: 20px;
       width: 100%;
@@ -218,7 +218,7 @@
         vertical-align: top;
 
         & .e-btn-icon {
-          font-size: 16px;
+          font-size: $formula-submit-btn-icon-font-size;
           margin-top: 0;
           vertical-align: top;
         }
@@ -270,7 +270,7 @@
           min-height: 15px;
 
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-            font-size: 18px;
+            font-size: $name-box-icon-font-size;
           }
         }
       }
@@ -301,11 +301,11 @@
         width: 18px;
 
         @if $skin-name != 'bootstrap4' {
-          font-size: 10px;
+          font-size: $formula-bar-drop-icon-font-size;
         }
 
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          font-size: 18px;
+          font-size: $formula-bar-drop-icon-font-size;
           line-height: 25px;
         }
       }
@@ -539,8 +539,8 @@
         }
 
         & .e-header-cell {
-          font-size: 12px;
-          font-weight: 500;
+          font-size: $header-cell-font-size;
+          font-weight: $header-cell-font-weight;
           letter-spacing: 0;
           text-align: center;
         }
@@ -1136,15 +1136,15 @@
         }
 
         &:not(.e-split-colorpicker) {
-          line-height: $ribbon-btn-height;
+          line-height: $spreadsheet-ribbon-btn-height;
         }
 
         &:not(.e-dropdown-btn):not(.e-split-btn) {
-          padding-left: $ribbon-btn-padding;
-          padding-right: $ribbon-btn-padding;
+          padding-left: $spreadsheet-ribbon-btn-padding;
+          padding-right: $spreadsheet-ribbon-btn-padding;
 
           & .e-btn-icon {
-            min-width: $ribbon-btn-width;
+            min-width: $spreadsheet-ribbon-btn-width;
           }
         }
 
@@ -1154,23 +1154,18 @@
 
         &:not(.e-split-colorpicker) .e-btn-icon {
           @if $skin-name != 'bootstrap5' {
-            line-height: $ribbon-btn-height;
-            min-height: $ribbon-btn-height;
+            line-height: $spreadsheet-ribbon-btn-height;
+            min-height: $spreadsheet-ribbon-btn-height;
             vertical-align: bottom;
           }
 
           &:not(.e-caret) {
-            @if $skin-name == 'bootstrap5' {
-              font-size: 18px;
-            }
-            @else {
-              font-size: 16px;
-            }
+            font-size: $spreadsheet-tbar-btn-icon-font-size;
           }
 
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
             &.e-wrap-icon {
-              font-size: 19px;
+              font-size: $toolbar-wrap-icon-font-size;
             }
           }
         }
@@ -1179,30 +1174,30 @@
       & .e-toolbar .e-toolbar-item .e-btn {
         @if $skin-name == 'material' or $skin-name == 'bootstrap4' {
           &.e-tbar-btn .e-icons.e-btn-icon:not(.e-caret) {
-            font-size: 16px;
+            font-size: $spreadsheet-tbar-btn-icon-font-size;
           }
         }
 
         & .e-chart-icon,
         & .e-chart-type-icon {
-          font-size: 30px !important; /* stylelint-disable-line declaration-no-important */
+          font-size: $spreadsheet-chart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
           margin-right: 5px;
           padding: 0 5px;
           width: 30px;
         }
 
         & .e-switch-row-column-icon {
-          font-size: 18px !important; /* stylelint-disable-line declaration-no-important */
+          font-size: $spreadsheet-switch-row-column-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
           margin-right: 5px;
         }
 
         & .e-addchart-icon {
-          font-size: 18px !important; /* stylelint-disable-line declaration-no-important */
+          font-size: $spreadsheet-addchart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
           margin-right: -5px;
         }
 
         &.e-split-colorpicker {
-          line-height: $ribbon-btn-height - 1;
+          line-height: $spreadsheet-ribbon-btn-height - 1;
           padding-bottom: 1px;
           padding-left: 0;
           padding-right: 0;
@@ -1210,11 +1205,11 @@
 
           & .e-icons.e-btn-icon:not(.e-caret) {
             &.e-font-color {
-              font-size: 13px;
+              font-size: $spreadsheet-cpicker-font-color-font-size;
             }
 
             &.e-fill-color {
-              font-size: 14px;
+              font-size: $spreadsheet-cpicker-fill-color-font-size;
             }
           }
         }
@@ -1283,7 +1278,7 @@
           padding-right: 9px;
 
           & .e-btn-icon {
-            font-size: 18px;
+            font-size: $formula-bar-btn-icon-font-size;
             line-height: $mformula-bar-height;
           }
         }
@@ -1590,7 +1585,7 @@
       }
 
       & .e-top-header {
-        font-weight: 500;
+        font-weight: $cf-dlg-content-font-weight;
       }
 
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
@@ -1603,11 +1598,11 @@
     & .e-title-dlg {
       & .e-title-dlg-content {
         & .e-top-header {
-          font-size: 16px;
+          font-size: $title-dlg-content-header-font-size;
         }
 
         & .e-input {
-          font-size: 14px;
+          font-size: $title-dlg-content-input-font-size;
           line-height: 30px;
         }
       }
@@ -1632,12 +1627,12 @@
           margin-bottom: 24px;
 
           & .e-header {
-            font-size: 14px;
+            font-size: $validation-dlg-content-header-font-size;
             line-height: 16px;
           }
 
           & .e-input {
-            font-size: 14px;
+            font-size: $validation-dlg-content-input-font-size;
             height: 32px;
             margin-top: 5px;
           }
@@ -1652,7 +1647,7 @@
             width: 50%;
 
             & .e-header {
-              font-size: 14px;
+              font-size: $validation-dlg-content-header-font-size;
               line-height: 16px;
             }
 
@@ -1668,7 +1663,7 @@
             width: 50%;
 
             & .e-header {
-              font-size: 14px;
+              font-size: $validation-dlg-content-header-font-size;
               line-height: 16px;
             }
 
@@ -1688,12 +1683,12 @@
             width: 50%;
 
             & .e-header {
-              font-size: 14px;
+              font-size: $validation-dlg-content-header-font-size;
               line-height: 16px;
             }
 
             & .e-input {
-              font-size: 14px;
+              font-size: $validation-dlg-content-input-font-size;
               height: 32px;
               margin-top: 5px;
             }
@@ -1705,29 +1700,29 @@
             width: 50%;
 
             & .e-header {
-              font-size: 14px;
+              font-size: $validation-dlg-content-header-font-size;
               line-height: 16px;
             }
 
             & .e-input {
-              font-size: 14px;
+              font-size: $validation-dlg-content-input-font-size;
               height: 32px;
               margin-top: 5px;
             }
           }
 
           & .e-dlg-error {
-            font-size: 12px;
+            font-size: $validation-dlg-error-font-size;
             padding-top: 10px;
           }
 
           & .e-header {
-            font-size: 14px;
+            font-size: $validation-dlg-content-header-font-size;
             line-height: 16px;
           }
 
           & .e-input {
-            font-size: 14px;
+            font-size: $validation-dlg-content-input-font-size;
             height: 32px;
           }
         }
@@ -1742,8 +1737,8 @@
       }
     }
 
-    & .e-validationerror-dlg .e-dlg-content {
-      font-size: 14px;
+    & .e-validation-error-dlg .e-dlg-content {
+      font-size: $validationerror-dlg-content-font-size;
       line-height: 28px;
     }
 
@@ -1760,7 +1755,7 @@
         }
 
         & .e-dlg-header {
-          font-size: 18px;
+          font-size: $hyperlink-dlg-header-content-font-size;
           line-height: 21px;
         }
       }
@@ -1786,11 +1781,6 @@
             & .e-toolbar-item {
               text-align: center;
               width: 136px;
-
-              & .e-tab-text {
-                font-size: 13px;
-                line-height: 15px;
-              }
             }
           }
 
@@ -1814,7 +1804,7 @@
               }
 
               & .e-header {
-                font-size: 14px;
+                font-size: $hyperlink-dlg-content-header-font-size;
                 line-height: 16px;
               }
 
@@ -1822,7 +1812,7 @@
                 @if $skin-name != 'material' and $skin-name != 'material-dark' {
                   margin-top: 8px;
                 }
-                font-size: 14px;
+                font-size: $hyperlink-dlg-content-text-font-size;
                 height: 32px;
                 line-height: 16px;
                 width: 275px;
@@ -1865,7 +1855,7 @@
 
         & .e-file-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $open-dlg-file-alert-span-font-size;
           padding-top: 7px;
         }
       }
@@ -1878,13 +1868,13 @@
       & .e-dlg-content {
         & .e-find-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $find-dlg-alert-span-font-size;
           padding-top: 7px;
         }
 
         & .e-replace-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $find-dlg-alert-span-font-size;
           padding-top: 7px;
         }
 
@@ -1910,14 +1900,14 @@
 
     & .e-protectworkbook-dlg.e-dialog {
       & .e-dlg-header-content .e-dlg-header {
-        font-size: 18px;
+        font-size: $protectworkbook-dlg-header-font-size;
         line-height: 31px;
       }
 
       & .e-dlg-content {
         & .e-pwd-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: 12px;
         }
 
@@ -1925,7 +1915,7 @@
           padding-top: 12px;
 
           & .e-header {
-            font-size: 12px;
+            font-size: $protectworkbook-dlg-content-header-font-size;
             line-height: 24px;
             margin-bottom: 4px;
           }
@@ -1935,20 +1925,20 @@
 
     & .e-unprotectworkbook-dlg.e-dialog {
       & .e-dlg-header-content .e-dlg-header {
-        font-size: 18px;
+        font-size: $protectworkbook-dlg-header-font-size;
         line-height: 21px;
       }
 
       & .e-dlg-content {
         & .e-unprotectpwd-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: 7px;
         }
 
         & .e-unprotectpwd-content {
           & .e-header {
-            font-size: 14px;
+            font-size: $unprotectworkbook-dlg-content-header-font-size;
             line-height: 16px;
           }
 
@@ -1961,20 +1951,20 @@
 
     & .e-importprotectworkbook-dlg.e-dialog {
       & .e-dlg-header-content .e-dlg-header {
-        font-size: 18px;
+        font-size: $protectworkbook-dlg-header-font-size;
         line-height: 21px;
       }
 
       & .e-dlg-content {
         & .e-importprotectpwd-alert-span {
           color: $dlg-error-color;
-          font-size: 12px;
+          font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: 7px;
         }
 
         & .e-importprotectpwd-content {
           & .e-header {
-            font-size: 14px;
+            font-size: $importprotectworkbook-dlg-content-header-font-size;
             line-height: 16px;
           }
 
@@ -1991,11 +1981,11 @@
         margin-top: -9px;
       }
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        font-size: 14px;
+        font-size: $filter-icon-font-size;
       }
 
       &::before {
-        font-size: 20px;
+        font-size: $filter-icon-before-font-size;
         margin-left: -3px;
       }
     }
@@ -2042,7 +2032,7 @@
       max-width: initial;
 
       & .e-numformat-preview-text {
-        font-size: 13px;
+        font-size: $numformat-ddb-preview-font-size;
         max-width: 200px;
         overflow: hidden;
         text-align: right;
@@ -2093,7 +2083,7 @@
     }
 
     &.e-aggregate-list {
-      font-size: 13px;
+      font-size: $aggregate-list-font-size;
       margin-left: auto;
     }
 
@@ -2101,12 +2091,12 @@
       border: 0;
 
       & ul .e-menu-item .e-menu-icon {
-        font-size: 16px;
+        font-size: $aggregate-list-font-size;
       }
     }
 
     &.e-popup.e-aggregate-list ul {
-      font-size: 13px;
+      font-size: $aggregate-list-font-size;
     }
   }
 
@@ -2116,7 +2106,7 @@
       width: 100%;
 
       & .e-extension {
-        font-size: 13px;
+        font-size: $file-menu-extension-font-size;
         margin-left: auto;
         opacity: .7;
         padding-left: $menu-extension-padding;
@@ -2475,7 +2465,7 @@
       }
 
       & .e-dlg-header {
-        font-size: 16px;
+        font-size: $function-dlg-header-content-font-size;
         font-weight: normal;
       }
     }
@@ -2486,12 +2476,11 @@
       padding-right: $dlg-content-padding;
 
       & .e-category-content {
-        font-size: 12px;
-        font-weight: 500;
+        font-size: $dlg-category-content-font-size;
+        font-weight: $dlg-category-content-font-weight;
         margin-bottom: $dlg-category-margin-bottom;
 
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-          font-weight: 600;
           padding: 10px 0;
         }
       }
@@ -2503,7 +2492,7 @@
       }
 
       & .e-description-content {
-        font-size: 14px;
+        font-size: $dlg-description-content-font-size;
         font-weight: $dlg-description-font-weight;
         padding-top: 10px;
       }
@@ -2598,7 +2587,7 @@
     }
 
     & .e-aggregate-list {
-      font-size: 13px;
+      font-size: $aggregate-list-font-size;
       margin-left: auto;
     }
 
@@ -2626,7 +2615,7 @@
         }
       }
 
-      .e-validationerror-dlg .e-dlg-content {
+      .e-validation-error-dlg .e-dlg-content {
         padding-bottom: 0;
       }
 
@@ -2650,31 +2639,31 @@
     & .e-ribbon {
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
         &:not(.e-split-colorpicker) {
-          line-height: $bigger-ribbon-btn-height;
+          line-height: $bigger-spreadsheet-ribbon-btn-height;
         }
 
         &.e-split-colorpicker {
-          line-height: $bigger-ribbon-btn-height - 2;
+          line-height: $bigger-spreadsheet-ribbon-btn-height - 2;
           padding-bottom: 2px;
           width: $bigger-cpicker-btn-width;
         }
 
         &:not(.e-dropdown-btn):not(.e-split-btn) {
-          padding-left: $bigger-ribbon-btn-padding;
-          padding-right: $bigger-ribbon-btn-padding;
+          padding-left: $bigger-spreadsheet-ribbon-btn-padding;
+          padding-right: $bigger-spreadsheet-ribbon-btn-padding;
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          line-height: $bigger-ribbon-btn-height;
-          min-height: $bigger-ribbon-btn-height;
+          line-height: $bigger-spreadsheet-ribbon-btn-height;
+          min-height: $bigger-spreadsheet-ribbon-btn-height;
 
           &:not(.e-caret) {
-            font-size: 18px;
+            font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
           }
 
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fabric-dark' {
             &.e-wrap-icon {
-              font-size: 21px;
+              font-size: $bigger-toolbar-wrap-icon-font-size;
             }
           }
         }
@@ -2682,7 +2671,7 @@
 
       & .e-toolbar .e-toolbar-item .e-btn {
         &.e-tbar-btn .e-icons.e-btn-icon:not(.e-caret) {
-          font-size: 18px;
+          font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
         }
       }
 
@@ -2703,7 +2692,7 @@
 
     & .e-formula-bar-panel {
       & .e-input-group.e-control-wrapper.e-ddl.e-name-box .e-input-group-icon {
-        font-size: 20px;
+        font-size: $bigger-name-box-ddl-icon-font-size;
         margin: 0;
       }
 
@@ -2736,7 +2725,7 @@
 
     @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' {
       & .e-drop-icon {
-        font-size: 12px;
+        font-size: $spreadsheet-drop-icon-font-size;
         margin-right: 5px;
       }
     }
@@ -2746,7 +2735,7 @@
         height: 29px;
 
         & .e-btn-icon {
-          font-size: 18px;
+          font-size: $bigger-insert-function-btn-icon-font-size;
           line-height: 30px;
         }
       }
@@ -2759,7 +2748,7 @@
         line-height: 29px;
 
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          font-size: 18px;
+          font-size: $bigger-formula-bar-drop-icon-font-size;
           line-height: 38px;
         }
       }
@@ -2811,13 +2800,13 @@
     & .e-filter-icon {
       margin-bottom: $filter-icon-bigger-margin-bottom;
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        font-size: 21px;
+        font-size: $bigger-filter-icon-font-size;
         margin-top: -3px;
       }
     }
 
     & .e-find-dlg .e-footer-content .e-btn {
-      font-size: 11px;
+      font-size: $bigger-find-dlg-btn-font-size;
       margin-top: 6px;
     }
 
@@ -2830,14 +2819,14 @@
       height: auto;
 
       & .e-btn {
-        font-size: 12px;
+        font-size: $goto-dlg-btn-font-size;
       }
     }
 
     & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
       & .e-pwd-alert-span {
         color: $dlg-error-color;
-        font-size: 14px;
+        font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
         padding-top: 16px;
       }
 
@@ -2845,7 +2834,7 @@
         padding-top: 16px;
 
         & .e-header {
-          font-size: 14px;
+          font-size: $protectworkbook-dlg-pwd-content-font-size;
           line-height: 28px;
           margin-bottom: 4px;
         }
@@ -2937,7 +2926,7 @@
     }
 
     & .e-sort-listwrapper .text {
-      font-size: 12px;
+      font-size: $sort-dlg-listwrapper-text-font-size;
       padding: 10px 0 5px;
     }
 
@@ -2962,7 +2951,7 @@
     & .e-sort-error {
       bottom: 0;
       display: none;
-      font-size: 12px;
+      font-size: $sort-dlg-error-font-size;
       height: 20px;
       line-height: 20px;
       position: absolute;
@@ -3019,7 +3008,7 @@
   }
 
   @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-    .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+    .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
       & .e-tab-wrap:focus .e-text-wrap {
         height: 32px;
       }

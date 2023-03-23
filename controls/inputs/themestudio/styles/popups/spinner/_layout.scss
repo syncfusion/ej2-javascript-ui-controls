@@ -70,7 +70,8 @@
         text-align: center;
       }
 
-      .e-spin-material {
+      .e-spin-material,
+      .e-spin-material3 {
         @include mat-spinner-rotate;
         display: block;
         margin: 0 auto;

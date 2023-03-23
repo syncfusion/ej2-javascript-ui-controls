@@ -612,7 +612,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const noDataCompTemp: any = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
             if (noDataCompTemp && noDataCompTemp.length > 0) {
                 for (let i: number = 0; i < noDataCompTemp.length; i++) {
-                    ele.appendChild(noDataCompTemp[i]);
+                    ele.appendChild(noDataCompTemp[i as number]);
                 }
             }
             this.renderReactTemplates();
@@ -722,9 +722,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         const invalidAttr: string[] = ['class', 'style', 'id', 'type','aria-expanded','aria-autocomplete','aria-readonly'];
         const attr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
-            !( this.getModuleName() === 'dropdownlist' &&  this.element.attributes[a].name === 'readonly')) {
-                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            if (invalidAttr.indexOf(this.element.attributes[a as number].name) === -1 &&
+            !( this.getModuleName() === 'dropdownlist' &&  this.element.attributes[a as number].name === 'readonly')) {
+                attr[this.element.attributes[a as number].name] = this.element.getAttribute(this.element.attributes[a as number].name);
             }
         }
         extend(attr, value, attr);
@@ -740,7 +740,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.getJSONfromOption(jsonElement, option, fields);
         if (group.length) {
             for (let i: number = 0; i < group.length; i++) {
-                const item: HTMLOptGroupElement = group[i] as HTMLOptGroupElement;
+                const item: HTMLOptGroupElement = group[i as number] as HTMLOptGroupElement;
                 const optionGroup: { [key: string]: {} } = {};
                 optionGroup[fields.text] = item.label;
                 optionGroup.isHeader = true;
@@ -899,8 +899,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (list) {
             const listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
             for (let index: number = 0; index < listArr.length; index++) {
-                if (listArr[index].getAttribute(attribute) === (value + '')) {
-                    liElement = listArr[index];
+                if (listArr[index as number].getAttribute(attribute) === (value + '')) {
+                    liElement = listArr[index as number];
                     break;
                 }
             }
@@ -975,9 +975,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         if (this.getModuleName() === 'multiselect' && this.properties.allowCustomValue && this.fields.groupBy) {
             for (let i: number = 0; i< ulElement.childElementCount; i++) {
-                if (ulElement.children[i].classList.contains('e-list-group-item')) {
-                    if (isNullOrUndefined(ulElement.children[i].innerHTML) || ulElement.children[i].innerHTML == "") {
-                        addClass([ulElement.children[i]], HIDE_GROUPLIST) }
+                if (ulElement.children[i as number].classList.contains('e-list-group-item')) {
+                    if (isNullOrUndefined(ulElement.children[i as number].innerHTML) || ulElement.children[i as number].innerHTML == "") {
+                        addClass([ulElement.children[i as number]], HIDE_GROUPLIST) }
                 }
             }
         }
@@ -1039,7 +1039,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 //EJ2-55168- Group checkbox is not working with group template
                 if (this.isGroupChecking) {
                     for (let i: number = 0; i < tempHeaders.length; i++) {
-                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
+                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i as number] });
                     }
                 }
             } else {
@@ -1051,7 +1051,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 //EJ2-55168- Group checkbox is not working with group template
                 if (this.isGroupChecking) {
                     for (let i: number = 0; i < tempHeaders.length; i++) {
-                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
+                        this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i as number] });
                     }
                 }
             }
@@ -1120,13 +1120,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected scrollStop(e?: Event): void {
-        let target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
-        let liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
+        const target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
+        const liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
         const topIndex: number = Math.round(target.scrollTop / liHeight);
         const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
         for (let i: number = topIndex; i > -1; i--) {
-            if (!isNullOrUndefined(liCollections[i]) && liCollections[i].classList.contains(dropDownBaseClasses.group)) {
-                const currentLi: HTMLElement = liCollections[i] as HTMLElement;
+            if (!isNullOrUndefined(liCollections[i as number]) && liCollections[i as number].classList.contains(dropDownBaseClasses.group)) {
+                const currentLi: HTMLElement = liCollections[i as number] as HTMLElement;
                 this.fixedHeaderElement.innerHTML = currentLi.innerHTML;
                 this.fixedHeaderElement.style.top = target.scrollTop + 'px';
                 this.fixedHeaderElement.style.display = 'block';
@@ -1194,13 +1194,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     { [key: string]: Object }[] | string[] | number[] | boolean[]): { [key: string]: Object } {
         let item: { [key: string]: Object } = { typeof: null, item: null };
         for (let i: number = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
-            if (!isNullOrUndefined(items[i])) {
-                const listDataType: boolean = typeof (items[i]) === 'string' ||
-                    typeof (items[i]) === 'number' || typeof (items[i]) === 'boolean';
-                const isNullData: boolean = listDataType ? isNullOrUndefined(items[i]) :
-                    isNullOrUndefined(getValue((this.fields.value ? this.fields.value : 'value'), items[i]));
+            if (!isNullOrUndefined(items[i as number])) {
+                const listDataType: boolean = typeof (items[i as number]) === 'string' ||
+                    typeof (items[i as number]) === 'number' || typeof (items[i as number]) === 'boolean';
+                const isNullData: boolean = listDataType ? isNullOrUndefined(items[i as number]) :
+                    isNullOrUndefined(getValue((this.fields.value ? this.fields.value : 'value'), items[i as number]));
                 if (!isNullData) {
-                    return item = { typeof: typeof items[i], item: items[i] };
+                    return item = { typeof: typeof items[i as number], item: items[i as number] };
                 }
             }
         }
@@ -1256,7 +1256,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let index: number;
         const listItems: Element[] = this.getItems();
         for (let i: number = 0; i < listItems.length; i++) {
-            if (!isNullOrUndefined(value) && listItems[i].getAttribute('data-value') === value.toString()) {
+            if (!isNullOrUndefined(value) && listItems[i as number].getAttribute('data-value') === value.toString()) {
                 index = i;
                 break;
             }
@@ -1336,11 +1336,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.isDataFetched = false;
         const updateData: { [key: string]: string | { [key: string]: Object }[] } = {};
         for (let j: number = 0; props.length > j; j++) {
-            if ((newProp as { [key: string]: string })[props[j]] && props[j] === 'fields') {
+            if ((newProp as { [key: string]: string })[props[j as number]] && props[j as number] === 'fields') {
                 this.setFields();
-                (updateData as { [key: string]: string })[props[j]] = (newProp as { [key: string]: string })[props[j]];
-            } else if ((newProp as { [key: string]: string })[props[j]]) {
-                (updateData as { [key: string]: string })[props[j]] = (newProp as { [key: string]: string })[props[j]];
+                (updateData as { [key: string]: string })[props[j as number]] = (newProp as { [key: string]: string })[props[j as number]];
+            } else if ((newProp as { [key: string]: string })[props[j as number]]) {
+                (updateData as { [key: string]: string })[props[j as number]] = (newProp as { [key: string]: string })[props[j as number]];
             }
         }
         if (Object.keys(updateData).length > 0) {
@@ -1486,7 +1486,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         const liCollections: HTMLElement[] = [];
         for (let i: number = 0; i < items.length; i++) {
-            const item: { [key: string]: Object } | string | boolean | number = items[i];
+            const item: { [key: string]: Object } | string | boolean | number = items[i as number];
             const isHeader: boolean = (item as { [key: string]: Object }).isHeader as boolean;
             const li: HTMLElement = this.createElement(
                 'li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
@@ -1540,29 +1540,29 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             for (let i: number = 0; i < items.length; i++) {
                 const listGroupItem: NodeList = this.ulElement.querySelectorAll('.e-list-group-item');
                 for (let j: number = 0; j < listGroupItem.length; j++) {
-                    attr[j] = (listGroupItem[j] as HTMLElement).innerText;
+                    attr[j as number] = (listGroupItem[j as number] as HTMLElement).innerText;
                 }
-                if (attr.indexOf(liCollections[i].innerText) > -1 && fields.groupBy) {
+                if (attr.indexOf(liCollections[i as number].innerText) > -1 && fields.groupBy) {
                     for (let j: number = 0; j < listGroupItem.length; j++) {
-                        if (attr[j] === liCollections[i].innerText ) {
+                        if (attr[j as number] === liCollections[i as number].innerText ) {
                             if (this.sortOrder === 'None') {
                                 this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
                             } else {
-                                this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex]);
+                                this.ulElement.insertBefore(liCollections[i + 1], this.ulElement.childNodes[itemIndex as number]);
                             }
                             i = i + 1;
                             break;
                         }
                     }
                 } else {
-                    if (this.liCollections[index]) {
-                        this.liCollections[index].parentNode.insertBefore(liCollections[i], this.liCollections[index]);
+                    if (this.liCollections[index as number]) {
+                        this.liCollections[index as number].parentNode.insertBefore(liCollections[i as number], this.liCollections[index as number]);
                     } else {
-                        this.ulElement.appendChild(liCollections[i]);
+                        this.ulElement.appendChild(liCollections[i as number]);
                     }
                 }
                 const tempLi: HTMLElement[] = [].slice.call(this.liCollections);
-                tempLi.splice(index, 0, liCollections[i]);
+                tempLi.splice(index, 0, liCollections[i as number]);
                 this.liCollections = tempLi;
                 index += 1;
                 if (this.getModuleName() === 'multiselect') {
@@ -1581,12 +1581,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         target.removeAttribute('name');
         const attributes: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attributes.length; i++) {
-            if (!target.getAttribute(attributes[i])) {
+            if (!target.getAttribute(attributes[i as number])) {
                 continue;
             }
-            const attr: string = target.getAttribute(attributes[i]);
-            hidden.setAttribute(attributes[i], attr);
-            target.removeAttribute(attributes[i]);
+            const attr: string = target.getAttribute(attributes[i as number]);
+            hidden.setAttribute(attributes[i as number], attr);
+            target.removeAttribute(attributes[i as number]);
         }
     }
 

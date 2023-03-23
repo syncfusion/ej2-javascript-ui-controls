@@ -58,12 +58,23 @@ const POPUP: string = 'e-menu-popup';
 const TEMPLATE_PROPERTY: string = 'Template';
 
 /**
- * Sub menu open type
+ * Defines the different types of options available for opening a submenu.
+ * ```props
+ * Auto - The submenu opens automatically when clicked or hovered over, depending on the 'showItemOnClick' property.
+ * Click - The submenu opens when clicked the menu item.
+ * Hover - The submenu opens when the user hovers over the menu item with the mouse cursor.
+ * ```
  */
 export type MenuOpenType = 'Auto' | 'Click' | 'Hover';
 
 /**
- * Menu animation effects
+ * Defines the different types of animation effects available for opening the sub menu.
+ * ```props
+ * None - The sub menu is opened / closed without any animation effect.
+ * SlideDown - The submenu is opened / closed with a slide down effect.
+ * ZoomIn - The submenu is opened / closed with a zoom in effect.
+ * FadeIn - The sub menu is opened / closed with a fade in effect.
+ * ```
  */
 export type MenuEffect = 'None' | 'SlideDown' | 'ZoomIn' | 'FadeIn';
 
@@ -1831,7 +1842,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let idx: number;
                 let navIdx: number[];
                 let item: MenuItemModel[];
-                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this as any).isReact && this.template) {
                     this.clearTemplate(['template']);
                 }

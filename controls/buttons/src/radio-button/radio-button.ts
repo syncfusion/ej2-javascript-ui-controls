@@ -5,6 +5,10 @@ import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import { RadioButtonModel } from './radio-button-model';
 /**
  * Defines the label position of Radio Button.
+ * ```props
+ * After :- When the label is positioned After, it appears to the right of the Radio Button.
+ * Before :- When the label is positioned Before, it appears to the left of the Radio Button.
+ * ```
  */
 export type RadioLabelPosition = 'After' | 'Before';
 

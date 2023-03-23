@@ -259,7 +259,6 @@ export class LinkCommand {
         return arr.join(' ') + ' ';
     }
     private openLink(e: IHtmlItem): void {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         document.defaultView.open(e.item.url, e.item.target);
         this.callBack(e);
     }

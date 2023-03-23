@@ -10,8 +10,11 @@ import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleN
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
-import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange } from '../common/index';
+import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, dialog, locale } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
+import { checkFormulaRef } from '../../workbook/common/index';
+import { L10n } from '@syncfusion/ej2-base';
+import { Dialog } from '../services/dialog';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -158,7 +161,7 @@ export class Edit {
             break;
         case 'endEdit':
             if (this.isEdit) {
-                this.endEdit(<boolean>args.refreshFormulaBar);
+                this.endEdit(<boolean>args.refreshFormulaBar, null, <boolean>args.isPublic);
             }
             break;
         case 'cancelEdit':
@@ -308,10 +311,10 @@ export class Edit {
                         isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
                     )) || isF2Edit || isBackSpace) {
                         if (isF2Edit) { this.isNewValueEdit = false; }
-                        const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
-                        if (pictureElements.length) {
-                            if (keyCode === this.keyCodes.DELETE) {
-                                this.parent.notify(deleteImage, { id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1 });
+                        const overlayElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
+                        if (overlayElements.length) {
+                            if (isBackSpace) {
+                                this.editingHandler('delete');
                             }
                         } else {
                             this.startEdit(null, null, true, true);
@@ -543,7 +546,7 @@ export class Edit {
         return cursorOffset;
     }
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
+        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validation-error-dlg')) {
             if (this.isEdit) {
                 const curOffset: { start?: number, end?: number } = this.getCurPosition();
                 if (curOffset.start) { this.curStartPos = this.selectionStart = curOffset.start; }
@@ -852,43 +855,85 @@ export class Edit {
         }
     }
 
-    private updateEditedValue(tdRefresh: boolean = true, value?: string): boolean {
+    private updateEditedValue(tdRefresh: boolean, value: string, e: MouseEvent & TouchEvent | KeyboardEventArgs, isPublic: boolean): void {
         const oldCellValue: string = this.editCellData.oldValue;
-        const oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
-        let isValidate: boolean = true;
-        const address: string | number[] = this.editCellData.addr;
-        const cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
-        const column: ColumnModel = getColumn(sheet, cellIndex[1]);
-        let indexes: number[][];
         if (value) {
             this.editCellData.value = value;
         }
         const newVal: string = this.editCellData.value;
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
-        if (this.parent.allowDataValidation && ((cell && cell.validation) || checkColumnValidation(column, cellIndex[0], cellIndex[1])))  {
-            const value: string = parseLocaleNumber([newVal ? newVal : this.getEditElement(sheet).innerText], this.parent.locale)[0];
-            const isCell: boolean = true;
-            const sheetIdx: number = this.parent.activeSheetIndex;
-            let range: number[];
-            if (typeof address === 'string') {
-                range = getRangeIndexes(address);
-            } else {
-                range = address;
-            }
-            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
-            this.parent.notify(isValidation, validEventArgs);
-            isValidate = validEventArgs.isValid;
-            if (isValidate) {
-                this.editCellData.value = value;
-            } else {
-                this.isCellEdit = true;
+        let isValidCellValue: boolean = true;
+        if (this.parent.allowDataValidation) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
+            const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, false, true);
+            const column: ColumnModel = getColumn(sheet, cellIndex[1]);
+            if (cell.validation || checkColumnValidation(column, cellIndex[0], cellIndex[1])) {
+                const value: string = parseLocaleNumber(
+                    [this.editCellData.value || this.getEditElement(sheet).innerText], this.parent.locale)[0];
+                const isCell: boolean = true;
+                const sheetIdx: number = this.parent.activeSheetIndex;
+                const range: number[] = typeof this.editCellData.addr === 'string' ? getRangeIndexes(this.editCellData.addr) :
+                    this.editCellData.addr;
+                const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
+                this.parent.notify(isValidation, validEventArgs);
+                isValidCellValue = validEventArgs.isValid;
+                if (isValidCellValue) {
+                    this.editCellData.value = value;
+                } else {
+                    this.isCellEdit = true;
+                }
             }
         }
-        if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=NOW()') > -1 || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
-            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
+        if (!isPublic && checkIsFormula(this.editCellData.value)) {
+            const eventArgs: { formula: string, isInvalid?: boolean } = { formula: this.editCellData.value };
+            this.parent.notify(checkFormulaRef, eventArgs);
+            if (eventArgs.isInvalid) {
+                let isYesBtnClick: boolean;
+                this.isCellEdit = true;
+                isValidCellValue = false;
+                const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                const erroDialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+                erroDialogInst.show({
+                    width: 400, isModal: true, showCloseIcon: true, target: this.parent.element, cssClass: 'e-validation-error-dlg',
+                    content: `${l10n.getConstant('CellReferenceTypoError')}<br>${eventArgs.formula}`,
+                    beforeOpen: (): void => this.editCellData.element.focus(),
+                    buttons: [{
+                        buttonModel: { content: l10n.getConstant('Yes'), isPrimary: true },
+                        click: (): void => {
+                            isYesBtnClick = true;
+                            erroDialogInst.hide();
+                            value = this.editCellData.value = eventArgs.formula;
+                            this.updateCell(oldCellValue, tdRefresh, value, newVal, e);
+                            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: eventArgs.formula });
+                        }
+                    },
+                    {
+                        buttonModel: { content: l10n.getConstant('No') },
+                        click: (): void => erroDialogInst.hide()
+                    }],
+                    close: (): void => {
+                        const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+                        if (!isYesBtnClick && editorElem.innerText) {
+                            window.getSelection().selectAllChildren(editorElem);
+                        }
+                    }
+                }, false);
+            }
+        }
+        if (isValidCellValue) {
+            this.updateCell(oldCellValue, tdRefresh, value, newVal, e);
+        } else if (e) {
+            e.preventDefault();
+        }
+    }
+
+    private updateCell(
+        oldCellValue: string, tdRefresh: boolean, value: string, newVal: string, e?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
+        const oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
+        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=NOW()') > -1 || oldValue.indexOf('=RAND()') > -1 ||
+            oldValue.indexOf('RAND()') > -1 || oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
             if (oldCellValue && oldCellValue.toString().indexOf('=UNIQUE(') > - 1 && this.editCellData.value === '') {
@@ -900,24 +945,30 @@ export class Edit {
             if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
                 const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
                 if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') === - 1) {
-                    return isValidate;
+                    return;
                 }
             }
             if (oldCellValue && oldCellValue.toString().indexOf('UNIQUE') > - 1 &&
-            this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
+                this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
                 this.updateUniqueRange('');
             }
-            const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
-                address: this.editCellData.addr, value: this.editCellData.value };
+            const evtArgs: { [key: string]: string | boolean | number[] | number } = {
+                action: 'updateCellValue',
+                address: this.editCellData.addr, value: this.editCellData.value
+            };
             this.parent.notify(workbookEditOperation, evtArgs);
+            let indexes: number[][];
             if (<boolean>evtArgs.isFormulaDependent) {
                 indexes = getViewportIndexes(this.parent, this.parent.viewport);
             }
-            this.parent.notify(refreshChart, {cell: null, rIdx: this.editCellData.rowIndex, cIdx: this.editCellData.colIndex, viewportIndexes: indexes });
+            this.parent.notify(
+                refreshChart, { cell: null, rIdx: this.editCellData.rowIndex, cIdx: this.editCellData.colIndex, viewportIndexes: indexes });
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(
-                    applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex], isAction: true,
-                        refreshAll: evtArgs.isFormulaDependent, isEdit: true });
+                    applyCF, <ApplyCFArgs>{
+                        indexes: [this.editCellData.rowIndex, this.editCellData.colIndex], isAction: true,
+                        refreshAll: evtArgs.isFormulaDependent, isEdit: true
+                    });
             }
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(
@@ -929,7 +980,9 @@ export class Edit {
             if (cell && cell.wrap) {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
-            if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
+            if (tdRefresh) {
+                this.parent.refreshNode(this.editCellData.element, eventArgs);
+            }
             if (cell && cell.hyperlink) {
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIndex);
             }
@@ -937,7 +990,7 @@ export class Edit {
                 const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
                 if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') > - 1) { this.isSpill = true; }
                 if ((oldCellValue !== '' && this.editCellData.value === '') ||
-                (this.editCellData.formula && this.editCellData.formula.length > 1 && oldCellValue !== this.editCellData.formula)) {
+                    (this.editCellData.formula && this.editCellData.formula.length > 1 && oldCellValue !== this.editCellData.formula)) {
                     let skip: boolean = false;
                     for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
                         for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
@@ -955,7 +1008,12 @@ export class Edit {
                 }
             }
         }
-        return isValidate;
+        this.triggerEvent('cellSave', e, value);
+        this.resetEditState();
+        this.focusElement();
+        if (this.parent.showSheetTabs && !this.parent.isProtected) {
+            this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
+        }
     }
 
     private checkUniqueRange(uniquArgs: {cellIdx: number[], isUnique: boolean, uniqueRange?: string, sheetName?: string}): void {
@@ -1067,8 +1125,7 @@ export class Edit {
             isRowFill: eventArgs.isRowFill };
     }
 
-    public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
-        this.editCellData.element = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex);
+    public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs, isPublic?: boolean): void {
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
         const triggerEventArgs: CellEditEventArgs = this.triggerEvent('beforeCellSave');
         if (triggerEventArgs.cancel) {
@@ -1081,17 +1138,7 @@ export class Edit {
             wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent as Workbook);
             this.refreshEditor(triggerEventArgs.value, this.isCellEdit, false, false, false);
         }
-        const isValidate: boolean = this.updateEditedValue(true, triggerEventArgs.value);
-        if (isValidate) {
-            this.triggerEvent('cellSave', event, triggerEventArgs.value);
-            this.resetEditState();
-            this.focusElement();
-        } else if (event) {
-            event.preventDefault();
-        }
-        if (this.parent.showSheetTabs && !this.parent.isProtected) {
-            this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
-        }
+        this.updateEditedValue(true, triggerEventArgs.value, event, isPublic);
     }
 
     public cancelEdit(refreshFormulaBar: boolean = true, trigEvent: boolean = true, event?: MouseEvent & TouchEvent |
@@ -1217,7 +1264,7 @@ export class Edit {
             this.parent.notify(initiateFormulaReference, {
                 range: this.editCellData.value, formulaSheetIdx: this.editCellData.sheetIndex
             });
-            this.getEditElement(this.parent.getActiveSheet()).innerHTML = value;
+            this.getEditElement(this.parent.getActiveSheet()).textContent = value;
             this.initiateCurPosition();
         } else {
             this.initiateCurPosition();

@@ -480,7 +480,7 @@ describe('Chart Control', () => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[2] == '589.5' || svg.getAttribute('d').split(' ')[2] == '593.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '334.375' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '335.375' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

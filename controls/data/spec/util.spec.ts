@@ -73,16 +73,119 @@ describe('DataUtil', () => {
             expect(result).toBeNull;
         });
     });
-    describe('notnull method', () => {
+    describe('isnotnull method', () => {
         it('To check method is properly working.', () => {
-            expect(DataUtil.fnOperators.notnull(null)).toBeTruthy;
-            expect(DataUtil.fnOperators.notnull('Called')).toBeFalsy;
+            expect(DataUtil.fnOperators.isnotnull(null)).toBe(false);
+            expect(DataUtil.fnOperators.isnotnull('Called')).toBe(true);
         });
     });
     describe('processSymbols method', () => {
         it('To check method is properly working.', () => {
-            expect(DataUtil.fnOperators.notnull(null)).toBeTruthy;
-            expect(DataUtil.fnOperators.notnull('Called')).toBeFalsy;
+            expect(DataUtil.fnOperators.isnotnull(null)).toBe(false);
+            expect(DataUtil.fnOperators.isnotnull('Called')).toBe(true);
+        });
+    });
+    describe('isempty method', () => {
+        it('To check method is properly working.', () => {
+            expect(DataUtil.fnOperators.isempty('')).toBe(true);
+            expect(DataUtil.fnOperators.isempty(undefined)).toBe(true);
+            expect(DataUtil.fnOperators.isempty('Called')).toBe(false);
+        });
+    });
+    describe('isnotempty method', () => {
+        it('To check method is properly working.', () => {
+            expect(DataUtil.fnOperators.isnotempty('Called')).toBe(true);
+            expect(DataUtil.fnOperators.isnotempty('')).toBe(false);
+            expect(DataUtil.fnOperators.isnotempty(undefined)).toBe(false);
+        });
+    });
+    describe('doesnotstartwith method', () => {
+        it('To check method is properly working.', () => {
+            expect(DataUtil.fnOperators.doesnotstartwith('hanar', 'ha')).toBe(false);
+            expect(DataUtil.fnOperators.doesnotstartwith('hanar', 'an')).toBe(true);
+            expect(DataUtil.fnOperators.doesnotstartwith('HaNar', 'an', true)).toBe(true);
+            expect(DataUtil.fnOperators.doesnotstartwith('Áèèleè', 'le', true, true)).toBe(true);
+        });
+    });
+    describe('doesnotendwith method', () => {
+        it('To check method is properly working.', () => {
+            expect(DataUtil.fnOperators.doesnotendwith('hanar', 'ar')).toBe(false);
+            expect(DataUtil.fnOperators.doesnotendwith('hanar', 'na')).toBe(true);
+            expect(DataUtil.fnOperators.doesnotendwith('HaNar', 'na', true)).toBe(true);
+            expect(DataUtil.fnOperators.doesnotendwith('Áèèleè', 'le', true, true)).toBe(true);
+        });
+    });
+    describe('doesnotcontain method', () => {
+        it('To check method is properly working.', () => {
+            expect(DataUtil.fnOperators.doesnotcontain('hanar', 'ar')).toBe(false);
+            expect(DataUtil.fnOperators.doesnotcontain('hanar', 'ra')).toBe(true);
+            expect(DataUtil.fnOperators.doesnotcontain('HaNar', 'ra', true)).toBe(true);
+            expect(DataUtil.fnOperators.doesnotcontain('Áèèleè', 'ea', true, true)).toBe(true);
+        });
+
+    });
+    describe('like method', () => {
+        it('To check like startswith is properly working.', () => {
+            expect(DataUtil.fnOperators.like('hanar', '%an')).toBe(false);
+            expect(DataUtil.fnOperators.like('hanar', '%ha')).toBe(true);
+            expect(DataUtil.fnOperators.like('%hanar', '%%h')).toBe(true);
+            expect(DataUtil.fnOperators.like('HaNar', '%ha', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('%HaNar', '%%h', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('Áèèleè', '%ae', true, true)).toBe(true);
+        });
+        it('To check like endswith is properly working.', () => {
+            expect(DataUtil.fnOperators.like('hanar', 'na%')).toBe(false);
+            expect(DataUtil.fnOperators.like('hanar', 'ar%')).toBe(true);
+            expect(DataUtil.fnOperators.like('hanar%', 'r%%')).toBe(true);
+            expect(DataUtil.fnOperators.like('HaNar', 'ar%', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('HaNar%', 'r%%', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('Áèèleè', 'ee%', true, true)).toBe(true);
+        });
+        it('To check like contains is properly working.', () => {
+            expect(DataUtil.fnOperators.like('hanar', '%ra%')).toBe(false);
+            expect(DataUtil.fnOperators.like('hanar', '%an%')).toBe(true);
+            expect(DataUtil.fnOperators.like('han%ar', '%%%')).toBe(true);
+            expect(DataUtil.fnOperators.like('HaNar', '%an%', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('HaN%ar', '%%%', true)).toBe(true);
+            expect(DataUtil.fnOperators.like('Áèèleè', '%le%', true, true)).toBe(true);
+        });
+    });
+    describe('wildcard method', () => {
+        it('To check wildcard startswith is properly working.', () => {
+            expect(DataUtil.fnOperators.wildcard('hanar', 'ah*')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('hanar', 'ha*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaNar', 'ha*', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Áèèleè', 'ae*', true, true)).toBe(true);
+        });
+        it('To check wildcard endswith is properly working.', () => {
+            expect(DataUtil.fnOperators.wildcard('hanar', '*ra')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('hanar', '*ar')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaNar', '*ar', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Áèèleè', '*ee', true, true)).toBe(true);
+        });
+        it('To check wildcard contains is properly working.', () => {
+            expect(DataUtil.fnOperators.wildcard('hanar', '*ra*')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('hanar', '*an*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('han%ar', '*%*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaNar', '*an*', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaN%ar', '*%*', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Áèèleè', '*le*', true, true)).toBe(true);
+        });
+        it('To check wildcard single character ? and combination is properly working.', () => {
+            expect(DataUtil.fnOperators.wildcard('hanar', 'h*nr')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('hanar', 'h?n')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('ha%ar', 'h??a')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('hanar', 'h*n?r')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaNar', 'h?n', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Ha%Ar', 'h??a', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaNar', 'h*n?r', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('ha%ar', 'h*%?a*')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('han%ar', 'h*?%a*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Han%Ar', 'h*?%a*', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('ha%ar', '*a?%*')).toBe(false);
+            expect(DataUtil.fnOperators.wildcard('han%ar', '*a?%*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('HaN%ar', '*a?%*', true)).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Áèèleè', '*e?le*', true, true)).toBe(true);
         });
     });
     describe('parse method', () => {

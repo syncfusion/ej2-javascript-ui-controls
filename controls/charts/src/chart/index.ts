@@ -28,6 +28,7 @@ export * from './series/stacking-step-area-series';
 export * from './series/stacking-line-series';
 export * from './series/scatter-series';
 export * from './series/range-column-series';
+export * from './series/range-step-area-series';
 export * from './series/waterfall-series';
 export * from './series/hilo-series';
 export * from './series/hilo-open-close-series';

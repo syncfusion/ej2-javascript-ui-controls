@@ -72,7 +72,9 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'space': '32',
     'enter': '13',
     'tab': 'tab',
-    'delete': '46'
+    'delete': '46',
+    'format-copy': 'ctrl+shift+c',
+    'format-paste': 'ctrl+shift+v'
 };
 /**
  * Default  markdown key config for adapter

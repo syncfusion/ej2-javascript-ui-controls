@@ -98,11 +98,13 @@
 
   .e-dropdownbase {
     border-color: $ddl-list-border-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-bg-color;
+    }
     @at-root {
       #{if(&, '&', '*')} .e-list-item {
         /* stylelint-disable property-no-vendor-prefix */
         -webkit-tap-highlight-color: $ddl-list-tap-color;
-        background-color: $ddl-list-bg-color;
         border-bottom: $ddl-list-bottom-border;
         border-color: $ddl-list-gradient-color;
         color: $ddl-list-default-font-color;
@@ -112,11 +114,16 @@
         min-height: $ddl-list-line-height;
         padding-right: $ddl-list-padding-right;
         text-indent: $ddl-list-text-indent;
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-bg-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $ddl-list-bg-color;
+        }
       }
 
       #{if(&, '&', '*')} .e-list-group-item,
       .e-fixed-head {
-        background-color: $ddl-list-bg-color;
         border-color: $ddl-list-gradient-color;
         color: $ddl-list-header-font-color;
         font-family: $ddl-list-font-family;
@@ -126,17 +133,33 @@
         min-height: $ddl-list-line-height;
         padding-left: $ddl-list-header-padding-left;
         padding-right: $ddl-list-padding-right;
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-bg-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $ddl-list-bg-color;
+        }
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active,
       #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
-        background-color: $ddl-list-active-bg-color;
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-active-bg-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $ddl-list-active-bg-color;
+        }
         border-color: $ddl-list-active-border-color;
         color: $ddl-list-active-font-color;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-hover {
-        background-color: $ddl-list-hover-bg-color;
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-hover-bg-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $ddl-list-hover-bg-color;
+        }
         border-color: $ddl-list-hover-border-color;
         color: $ddl-list-hover-font-color;
       }
@@ -146,7 +169,12 @@
       }
 
       #{if(&, '&', '*')} .e-list-item.e-item-focus {
-        background-color: $ddl-list-hover-bg-color;
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-focus-bg-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $ddl-list-hover-bg-color;
+        }
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active:last-child {
@@ -188,7 +216,12 @@
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-ddl-header {
-    background-color: $ddl-list-bg-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-bg-color;
+    }
+    @if $skin-name != 'Material3' {
+      background-color: $ddl-list-bg-color;
+    }
     border-color: $ddl-multi-column-border-color;
     border-style: solid;
     border-width: $ddl-multi-column-border-width;
@@ -285,7 +318,12 @@
   }
 
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item {
-    background-color: $ddl-list-bg-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-bg-color;
+    }
+    @if $skin-name != 'Material3' {
+      background-color: $ddl-list-bg-color;
+    }
     border-bottom: $ddl-list-bottom-border;
     border-color: $ddl-list-gradient-color;
     color: $ddl-list-default-font-color;
@@ -301,18 +339,33 @@
   }
 
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item.e-item-focus {
-    background-color: $ddl-list-hover-bg-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-hover-bg-color;
+    }
+    @if $skin-name != 'Material3' {
+      background-color: $ddl-list-hover-bg-color;
+    }
   }
 
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item.e-active,
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item.e-active.e-hover {
-    background-color: $ddl-list-active-bg-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-active-bg-color;
+    }
+    @if $skin-name != 'Material3' {
+      background-color: $ddl-list-active-bg-color;
+    }
     border-color: $ddl-list-active-border-color;
     color: $ddl-list-active-font-color;
   }
 
   .e-ddl.e-popup.e-multiselect-group .e-list-group-item.e-hover {
-    background-color: $ddl-list-hover-bg-color;
+    @if $skin-name == 'Material3' {
+      background: $ddl-list-hover-bg-color;
+    }
+    @if $skin-name != 'Material3' {
+      background-color: $ddl-list-hover-bg-color;
+    }
     border-color: $ddl-list-hover-border-color;
     color: $ddl-list-hover-font-color;
     @if $skin-name == 'FluentUI' {

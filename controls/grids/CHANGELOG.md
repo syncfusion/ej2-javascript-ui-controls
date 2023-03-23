@@ -2,149 +2,29 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
+## 21.1.35 (2023-03-23)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#I445812` - Column Reordering index is wrong when Grid has hidden columns issue has been fixed.
-- `#I440720` - Executing query with custom dataSource is not working in excel export issue has been fixed.
-- `#F180504` - Copy not working properly when using `hideColumns` property issue has been fixed.
-- `#I433483` - Header cell alignment not proper when text wrapping enabled with filtering issue has been fixed.
-- `#I440455` - Unable to get the row element in the `rowDataBound` when using `rowTemplate` in `React18` issue has been fixed.
-- `#I380872` - All child element gets Hovered on hovering one child issue has been fixed.
-- `#I442280` - Provided the locale support for Expand and Collapse icons issue has been fixed.
-- `#I443824` - The issue with the clear icon displaying incorrect text when hovering over it has been resolved.
-
-## 20.4.53 (2023-03-07)
-
-### Grid
+- Implemented a feature to limit column expansion over their specified width, preventing them from using more space.
+- `#I225917`, `#F146138`, `#F150441` - Provided support to dynamically change both new columns and datasource simultaneously by using inbuilt `changeDataSource` method of Grid.
+- `#I304073, #I301329, #I441756` - Now, the filtering functionality has been enhanced to include additional filter operators such as `notcontains`, `notstartwith`, `notendwith`, `null`, `notnull`, `isempty`, and `isnotempty`. Additionally, `like` and `wildcard` support have been added.
+- `#I432547` - The security of the Grid component has been improved by the use of sanitization to remove any potentially untrusted strings and scripts. This feature can be enabled by setting the property `enableHtmlSanitizer` as true.
 
 #### Bug Fixes
 
-- `#I432092`, `#I438520`, `#I438656`, `#I437702` -  Script error thrown when Printing Grid in angular platform has been resolved.
-- `#I431502` - Memory leak issue in React platform has been fixed.
-- `#I439291` - Improper row height in first row when using grid with `allowTextWrap` and `Infinitescrolling` issue has been resolved.
-- `#I436900` - Grid skeleton thrown script error when using detail template with `Infinitescrolling` issue has been resolved.
-- `#I436480` - Showing HTML tags in tooltip on hovering the group caption issue has been fixed.
-- `#I437570` - Using String Template causes exception issue has been fixed.
-- `#F180121` - Grid's Content cropped when rendering with toolbar template inside a card component issue has been fixed.
+- `#I439725` - The issue where an exception was thrown when attempting to filter 'Blanks' value using URL Adaptor in Excel filter has been resolved.
+- `#F41177`  - Resolved the issue exporting the hierarchy grid with different mode.
+- `#I342921`, `#I407440` - The issue related to Content Security Policy violation that occurred while using grid paging and grouping has been resolved.
+- `#I446747` - Script error occurred on `foreignkey` sample while trying to auto complete in filter menu issue has been fixed.
+- `#I428772` - Fixed alignment issue with Dialog component header content and close icon on fluent theme. [More Information](https://ej2.syncfusion.com/documentation/release-notes/20.4.49/#dialog).
 
-## 20.4.52 (2023-02-28)
+#### Breaking Changes
 
-### Grid
-
-#### Bug Fixes
-
-- `#I429268` - Script error thrown on state change, with row template button click has been fixed.
-- `#I436447` - Improvement in Excel Filter search action and Custom Filter Dialog has been done.
-- `#I439694` - Resolved the issue where selecting columns in column chooser or navigating through columns was not being highlighted.
-
-## 20.4.51 (2023-02-21)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I438353` - Fixed the issue where column reordering was not working properly in the grid when using stacked headers with some columns set to visible false.
-- `#I436131` - Fixed the issue where resize was not working properly in the frozen columns.
-- `#I435246`, `#I298601` - Fixed the issue where checkbox selection was not working in the custom binding after performing searching.
-- `#I433085` - Fixed the issue where changing the React State in the recordClick event throws a script error when clicking on a template column.
-- `#I436040` - Fixed the issue with insert action in Infinite Scrolling in `RemoteSave` Adaptor.
-- `#I432276` - Fixed the issue where the row element was not updating properly when updating through the `rowDataBound` event.
-- `#I439886` - Resolved the issue where column header misalignment was happening with drag and drop.
-- `#I432304` - Fixed the issue where the Grid Component menu filtering was behaving incorrectly.
-
-## 20.4.50 (2023-02-14)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I434411` - Filter menu dialog is not opening on foreign key column when it has filter template issue has been fixed.
-- `#I428195` - Two times dialog word repeated in column chooser when using JAWS screen reader issue was fixed.
-- `#I430467` - Script error is thrown when show/hide column in Infinite Scrolling Grid with cache mode issue has been fixed.
-- `#I431446` - Editing on `ForeignKeyColumn` is not working in frozen grid when `allowEditOnDblClick` is false issue has been fixed.
-- `#I435267` - Grid navigation with TAB not working when focus Grid with Alt + J issue has been fixed.
-- `#I434619` - Issue with Scrolling in column `virtualization` grid with empty data has been fixed.
-- `#I434806` - Misalignment in Grid column when using Text wrap feature with Hierarchy Grid issue has been fixed.
-- `#F180026` - New page added, after adding a new row when page size set to 'ALL' issue has been resolved.
-- `#F179988` - Dynamic Freeze Column throws script error in batch editing issue has been resolved.
-
-## 20.4.49 (2023-02-07)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I428359` - Fixed issue with previous filtering of other columns being cleared when filtered with "not equal to blank."
-- `#I433085`, `#I432020` - Fixed issue with template column appearing blank when React state value changed.
-- `#F180302` - Fixed script error when accessing the edit form inside the `actionComplete` event.
-- `#I428195` - Fixed issue with drag and drop when dynamically enabling drag and drop and infinite scrolling.
-- `#I429045` - Fixed issue with HTML input not working in header template when `allowDragAndDrop` property is enabled.
-
-## 20.4.48 (2023-02-01)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I425349` - Grid toolbar template item focus issue has been fixed.
-- `#I413517` - Column menu pop-up is not properly shown with sticky header issue has been fixed.
-- `#I426775` - Template items disappear on edit action issue has been fixed.
-
-## 20.4.44 (2023-01-18)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I427528` - First column missing highlight when tabbing into grid issue has been fixed.
-- `#I427309` - API document has wrong information issue has been fixed.
-- `#I423348` - Autofit on the columns is not work as expected in the frozen grid has been fixed.
-- `#I419759` - Column Reordering is not working fine with Frozen column and hidden columns has been fixed.
-- `#I416705` - Alignment issue with row drag and drop and frozen columns in stacked headers has been fixed.
-- `#I424387` - Misalignment has been fixed when applying auto-fit for frozen columns with `allowtextwrap`.
-
-## 20.4.43 (2023-01-10)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I425228` - Exception is thrown when exporting the grid with custom aggregate issue has been fixed.
-- `#F179549` - `colSpan` is not working with Frozen Grid issue has been fixed.
-- `#I428130` - Group indent cell width is not properly set has been fixed.
-- `#I422144`, `#F177682` - Validation message misalignment issue has been fixed.
-- `#I425048` - The last row bottom border issue in grouping has been fixed.
-- `#I424343`, `#I424671` - Issue with dynamically changing pager `pageSize` property has been resolved.
-- `#I367619` - Added `pageSize` argument for paging action in `actionBegin` and `actionComplete` event.
-- `#I414874` - Checkbox state is now reading properly by JAWS screen reader, when select all checkbox is clicked.
-- `#I426392` - Grid Column Menu is misplaced in mobile device has been fixed.
-
-## 20.4.42 (2023-01-04)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I422739` - New record ID undefined on Infinite Scroll Grid issue has been fixed.
-- `#I423348` - `autoFitColumns` does not work with Frozen Grid issue has been fixed.
-- `#I423530` - Row deselection is not working in Virtualization with checkbox column issue has been fixed.
-- `#I419838` - Custom filter dialog throws script error when we render filter template issue has been fixed.
-- `#I425422` - `Persistence` is not working on `ForeignKeyColumn` filter is fixed.
-
-## 20.4.40 (2022-12-28)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I423744` - Script error thrown when saving the data with Shimmer effect issue has been fixed.
-- `#I422501` - Header tooltip displays when the header text is wrapped and `clipMode` is set issue has been fixed.
-- `#I424277` - Ellipsis With Tooltip is now working fine with batch editing.
-- `#I421562`, `#I423051` - Unable to filter the menu with autocomplete when grouping is applied has been fixed.
+- Unnecessary role attributes for Grid row cell and header elements have been removed to enhance accessibility standards.
+- The `td` element for `e-detailcell` in [detail element](https://ej2.syncfusion.com/documentation/grid/row/detail-template/) has been only changed from a `td` element to the `th` element to enhance accessibility standards.
 
 ## 20.4.38 (2022-12-21)
 
@@ -269,7 +149,7 @@
 - `#SF-362860` - Last column header cell border issue has been fixed.
 - `#SF-357202` - Wrong operator while filtering with Excel filter search box is fixed.
 - `#SF-362140` - Script error while selecting the row with `virtualization` issue has been fixed.
-- `#FB-31236` - Multi-column sorting missing sort number indicators issue has been fixed.
+- `#FB-31236` -  Multi-column sorting missing sort number indicators issue has been fixed.
 - `#FB-31556` - Row Height misalignment when show/hide the template column with frozen Grid is fixed.
 - `#F171116` - Border is not apply properly in the Excel exporting has been fixed.
 
@@ -312,7 +192,7 @@
 
 #### Bug Fixes
 
-- `#I345910` - Sticky header not working when group drop area is hidden has been fixed.
+- `#I345910` - Sticky header not working when group drop area  is hidden has been fixed.
 - `#I357254` - Outline is displayed in excel export has been fixed.
 - `#FB30729` - Filter dialog position issue when enable virtual scrolling is fixed.
 - `#I356122` - `actionComplete` event is trigger after row reorder is performed has been fixed.
@@ -524,7 +404,7 @@
 
 #### Bug Fixes
 
-- `#F167053` - Border misalignment when adding a row in bottom has been fixed.
+- `#F167053` - Border misalignment when  adding a row in bottom has been fixed.
 - `#I336216` - Cell Selection with box mode is not working properly after filtering, has been fixed.
 - `#I336097, #I335284` - Virtualization Grid in flex container produce blank space issue has been fixed.
 
@@ -611,7 +491,7 @@
 - `#I329350` - Immutable mode doesn’t work for date values issue has been fixed.
 - `#I329350` - Update the reordered data in immutable mode re-renders multiple rows issue has been fixed.
 - `#I327293` - CPU takes more usage when export the hierarchy grid issue has been fixed.
-- `#FB25510` - Throws script error While grouping the complex columns is fixed.
+- `#FB25510` -  Throws script error While grouping the complex columns is fixed.
 
 ## 19.1.67 (2021-06-08)
 
@@ -633,7 +513,7 @@
 - `#I326727` - Column resize issue with frozen right/left and aggregate has been resolved.
 - `#I327237` - Empty row appears while hiding/showing columns in `virtualized` grouping grid, has been fixed.
 - `#I299221` - Frozen part refresh issue with template column has been resolved.
-- `#I311142` - Provided internal event to handle queries on custom `ExcelFilter` dataSource.
+- `#I311142` -  Provided internal event to handle queries on custom `ExcelFilter` dataSource.
 
 ## 19.1.65 (2021-05-25)
 
@@ -1216,7 +1096,7 @@
 
 #### Bug Fixes
 
-- `#279922, #280077` - Scrollbar when clicking `childgrid` summary row, issue has been fixed.
+- `#279922, #280077` -  Scrollbar when clicking `childgrid` summary row, issue has been fixed.
 
 ## 18.1.57 (2020-06-16)
 
@@ -1250,13 +1130,13 @@
 
 - Now `data`, `row`, `foreignKeyData` these Grid selection event arguments are get array values only when we perform multi selection. Please find modified event arguments and it types from the below table,
 
-| `Properties`     | `Type`                 |
-| ---------------- | ---------------------- |
-| `data`           | `Object or Object[]`   |
-| `rowIndex`       | `number`               |
-| `rowIndexes`     | `number[]`             |
-| `row`            | `Element or Element[]` |
-| `foreignKeyData` | `Object or Object[]`   |
+`Properties` |`Type`
+-----|-----
+`data` | `Object or Object[]`
+`rowIndex` | `number`
+`rowIndexes` | `number[]`
+`row` | `Element or Element[]`
+`foreignKeyData` | `Object or Object[]`
 
 ## 18.1.55 (2020-06-02)
 
@@ -1320,7 +1200,7 @@
 
 - `#269945, #271023` - `editTemplate` element events are not triggered for movable content.
 - `#273042` - grouping after restoring the persist data issue has been resolved.
-- `#273483, #275002, #275153` - `actionfailure` event error message issue has been fixed.
+- `#273483, #275002, #275153` -  `actionfailure` event error message issue has been fixed.
 - `#273238` - Missing of `headerText` property in the template data has been fixed.
 - `#266631` - Hidden column headers in Grid did not reflect in pdf export while using `includeHiddenColumn` issue has been fixed.
 - `#271911` - column template in angular after print issue has been resolved.
@@ -1365,7 +1245,7 @@
 
 #### Bug Fixes
 
-- `#271625, #272096` - Frozen Grid cell selection issue has been fixed.
+- `#271625, #272096` -  Frozen Grid cell selection issue has been fixed.
 - `#271625` - Grid resize cursor issue with stacked header has been fixed.
 - `#271240` - Batch editing `cellSaved` event after escape key issue has been fixed.
 - `#260390` - Header misalignment in auto wrap enabled Grid with frozen columns has been fixed.
@@ -1567,7 +1447,7 @@
 - `#254164` - Support for `FilterItemTemplate` function like as `ValueAccessor` is given.
 - `#253705` - `Ctrl+A` in Grid does not select the last record in Batch mode issue has been fixed.
 - `#253106` - Error thrown on using `setCellValue` method when row drag and drop is enabled issue has been fixed.
-- `#253398` - Frozen header height discrepancy when setting `rowHeight` and `allowTextWrap` property issue has been fixed.
+- `#253398` - Frozen header height discrepancy when setting `rowHeight` and `allowTextWrap`  property issue has been fixed.
 - `#252923` - Grid footer element is invisible while dynamically bind the Grid dataSource issue has been fixed.
 - `#253614` - Changed the scope of the `filterOperator` variable as public.
 
@@ -1601,7 +1481,7 @@
 
 #### Breaking Changes
 
-- Now `disableHtmlEncode` default value is set to true, so the HTML tags can be displayed in the Grid header and content by default, so to display it as html content `disableHtmlEncode` need to be set as false.
+- Now `disableHtmlEncode` default value  is set to true, so the HTML tags can be displayed in the Grid header and content by default, so to display it as html content `disableHtmlEncode` need to be set as false.
 
 ## 17.3.21 (2019-10-30)
 
@@ -1798,7 +1678,7 @@
 
 #### Bug Fixes
 
-- `#237403` - Footer template shows proper result when using both group footer and footer template in exported excel document.
+- `#237403` -  Footer template shows proper result when using both group footer and footer template in exported excel document.
 - `#232272` - `RemoteSaveAdaptor` batch changes are now refreshed properly in grid when `ContractResolver` set to `DefaultContractResolver`.
 - `#236337, #234622` - Child grid data is now successfully loads with query property in the `url` adaptor.
 - `#236011` - Selection `api` example is now working properly in the sample browser.
@@ -1808,7 +1688,7 @@
 
 #### Breaking Changes
 
-- Now in dialog and inline template editing, the element name for complex fields should be given with triple underscore instead of single underscore. This change has been made as underscore is valid identifier in DB field names.
+- Now in dialog and inline template editing, the element name for complex fields should be given with triple underscore instead of single underscore.  This change has been made as underscore is valid identifier in DB field names.
 
 ## 17.2.28-beta (2019-06-27)
 
@@ -2531,7 +2411,7 @@ Interface changed for `PdfExportProperties`
 #### Bug Fixes
 
 - Column properties is not persisted after reordering columns resolved.
-- `args.cancel` has included in `rowSelecting` event while select the rows through method and user interaction.
+- `args.cancel`  has included in `rowSelecting` event while select the rows through method and user interaction.
 
 ## 16.1.29 (2018-03-13)
 
@@ -2539,7 +2419,7 @@ Interface changed for `PdfExportProperties`
 
 #### Bug Fixes
 
-- `args.cancel` has included in `rowSelecting` event.
+- `args.cancel`  has included in `rowSelecting` event.
 - Dynamically changing filter settings does not update `Filterbar` value and filter status message is resolved.
 - Batch edit should close on clicking outside grid and on pressing enter or tab key is resolved.
 - `updateRow` method is provided for Normal editing and Dialog editing.
@@ -2574,7 +2454,7 @@ Interface changed for `PdfExportProperties`
 #### Breaking Changes
 
 - All grid enum property values are changed from camel casing to pascal casing. Please refer the below link for complete API changes from `v15.4.23` to `v16.1.24`.
-  [Migration](http://ej2.syncfusion.com/documentation/grid/migration.html).
+[Migration](http://ej2.syncfusion.com/documentation/grid/migration.html).
 
 ## 15.4.30-preview (2018-02-14)
 
@@ -2760,7 +2640,7 @@ Grid component is used to display and manipulate tabular data with configuration
 - **Sorting and grouping** - Supports n levels of sorting and grouping.
 - **Selection** - Provides the option to select the grid rows single or multiple.
 - **Filtering** - Offers filter bar or menu , or checkbox at each column to filter data.
-- **Editing** - Provides the options to dynamically insert, delete and update records.
+- **Editing** -  Provides the options to dynamically insert, delete and update records.
 - **Virtualization** - Provides the options to load large amount of data without performance degradation.
 - **Aggregates** - Provides built in types are sum , average, min, max, count.
 - **Paging** - Provides the option to easily switch between pages using the pager bar.

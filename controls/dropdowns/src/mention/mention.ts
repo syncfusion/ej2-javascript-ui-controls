@@ -58,6 +58,9 @@ export class Mention extends DropDownBase {
     private spinnerTemplateElement: HTMLElement;
     private lineBreak: boolean;
     private selectedElementID : string;
+    private isSelectCancel: boolean;
+    private isTyped: boolean;
+    private didPopupOpenByTypingInitialChar: boolean;
 
     // Mention Options
 
@@ -479,8 +482,11 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     public render(): void {
-        this.inputElement = !isNullOrUndefined(this.target) ? ((typeof this.target) === 'string') ?
-        <HTMLElement>document.querySelector(<string>this.target) : <HTMLElement>this.target : this.element;
+        const isSelector = typeof this.target === 'string';
+        this.inputElement = !isNullOrUndefined(this.target) ?
+            this.checkAndUpdateInternalComponent(isSelector
+                ? <HTMLElement>document.querySelector(<string>this.target)
+                : <HTMLElement>this.target) : this.element;
         if (this.isContentEditable(this.inputElement)) {
             this.inputElement.setAttribute('contenteditable', 'true');
             addClass([this.inputElement], ['e-mention']);
@@ -488,6 +494,7 @@ export class Mention extends DropDownBase {
                 addClass([this.inputElement], ['e-editable-element']);
             }
         }
+        this.inputElement.setAttribute('role', 'textbox');
         this.queryString = this.elementValue();
         this.wireEvent();
     }
@@ -528,6 +535,21 @@ export class Mention extends DropDownBase {
         if (!isNullOrUndefined(this.spinnerTemplate) && !isNullOrUndefined(this.spinnerTemplateElement)) {
             detach(this.spinnerTemplateElement);
         }
+    }
+
+    private checkAndUpdateInternalComponent(targetElement: HTMLElement): HTMLElement {
+        if (!(this as any).isVue && targetElement.classList.contains('e-richtexteditor')) {
+            return targetElement.querySelector('.e-content') as HTMLElement;
+        }
+
+        if ((this as any).isVue && targetElement.nodeName === 'TEXTAREA' && targetElement.classList.contains('e-rte-hidden')) {
+            const parentElement = targetElement.parentElement;
+            if (parentElement && parentElement.classList.contains('e-richtexteditor')) {
+                return parentElement.querySelector('.e-content') as HTMLElement;
+            }
+        }
+
+        return targetElement;
     }
 
     /**
@@ -587,7 +609,7 @@ export class Mention extends DropDownBase {
             if (this.isPopupOpen) {
                 e.preventDefault();
                 if (this.popupObj && this.popupObj.element.contains(this.selectedLI)) {
-                    this.setValue(e);
+                    this.updateSelectedItem(this.selectedLI, e, false, true);
                 }
             }
             break;
@@ -636,6 +658,10 @@ export class Mention extends DropDownBase {
 
     private onKeyUp(e: KeyboardEventArgs): void {
         let rangetextContent: string[];
+        this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
+        if (document.activeElement != this.inputElement) {
+            this.inputElement.focus(); 
+        }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
             rangetextContent = this.range.startContainer.textContent.split('');
@@ -645,13 +671,7 @@ export class Mention extends DropDownBase {
         // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar, 'g');
         const charRegex: RegExp = new RegExp('[a-zA-Z]', 'g');
-        if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) {
-            if ((e.keyCode === 37 || e.keyCode === 39) && !isNullOrUndefined(currentRange) &&
-                currentRange.indexOf(this.mentionChar) === -1 && this.isPopupOpen) {
-                this.hidePopup();
-            }
-            return;
-        }
+        if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) { return; }
         if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
@@ -663,7 +683,7 @@ export class Mention extends DropDownBase {
                 (this.list && this.list.querySelectorAll('ul').length > 0)) {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
                 this.searchLists(e);
-            } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange)) {
+            } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange) && (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) {
                 this.hidePopup();
                 this.lineBreak = true;
             }
@@ -691,6 +711,7 @@ export class Mention extends DropDownBase {
                 this.initValue();
             }
             if (!this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40) {
+                this.didPopupOpenByTypingInitialChar = true;
                 this.showPopup();
                 if (this.initRemoteRender && this.list.querySelectorAll('li').length === 0) { this.showWaitingSpinner(); }
                 this.lineBreak = false;
@@ -917,6 +938,17 @@ export class Mention extends DropDownBase {
      */
     public showPopup(): void {
         this.beforePopupOpen = true;
+        if (document.activeElement != this.inputElement) {
+            this.inputElement.focus(); 
+        }
+        this.queryString = this.didPopupOpenByTypingInitialChar ? this.queryString : '';
+        this.didPopupOpenByTypingInitialChar = false;
+        if (this.isContentEditable(this.inputElement)) {
+            this.range = this.getCurrentRange();
+        }
+        if (!this.isTyped) {
+            this.resetList(this.dataSource, this.fields); 
+        }
         if (isNullOrUndefined(this.list)) {
             this.initValue();
         }
@@ -1045,7 +1077,7 @@ export class Mention extends DropDownBase {
     }
 
     private setHeight(popupEle: HTMLElement): void {
-        if (this.popupHeight !== 'auto') {
+        if (this.popupHeight !== 'auto' && this.list) {
             this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
             popupEle.style.maxHeight = formatUnit(this.popupHeight);
         } else {
@@ -1075,7 +1107,7 @@ export class Mention extends DropDownBase {
                 mostRecentTriggerCharPos = idx;
             }
         }
-        return mostRecentTriggerCharPos;
+        return mostRecentTriggerCharPos ? mostRecentTriggerCharPos : 0;
     }
 
     private initializePopup(element: HTMLElement, offsetValue: number, left: number): void {
@@ -1155,14 +1187,37 @@ export class Mention extends DropDownBase {
             const selectedNodePosition: number = this.getTriggerCharPosition();
             globalRange = this.range;
             range = document.createRange();
-            range.setStart(globalRange.startContainer, selectedNodePosition);
-            range.setEnd(globalRange.startContainer, selectedNodePosition);
+            if (this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1 && this.isTyped) {
+                range.setStart(globalRange.startContainer, selectedNodePosition);
+                range.setEnd(globalRange.startContainer, selectedNodePosition);
+            }
+            else {
+                range.setStart(globalRange.startContainer, globalRange.startOffset);
+                range.setEnd(globalRange.startContainer, globalRange.endOffset);
+            }
+            this.isTyped = false;
             range.collapse(false);
-            rect = range.getBoundingClientRect();
+            rect = range.getBoundingClientRect().top === 0 ? (range.startContainer as any).getClientRects()[0] : range.getBoundingClientRect();
         }
         const doc: HTMLElement = document.documentElement;
         const windowLeft: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         const windowTop: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+        let width: number = 0;
+        if (!isNullOrUndefined(range) && range.getBoundingClientRect().top === 0) {
+            for (let i = 0; i < this.range.startContainer.childNodes.length; i++) {
+                if (this.range.startContainer.childNodes[i as number].nodeType !== Node.TEXT_NODE && this.range.startContainer.childNodes[i as number].textContent.trim() !== '') {
+                    width +=  (this.range.startContainer.childNodes[i as number] as any).getClientRects()[0].width;
+                }
+                else if (this.range.startContainer.childNodes[i as number].textContent !== '') {
+                    let span = document.createElement("span");
+                    span.innerHTML = this.range.startContainer.childNodes[i as number].nodeValue;
+                    document.body.appendChild(span);
+                    let textNodeWidth : number = span.offsetWidth;
+                    document.body.removeChild(span);
+                    width += textNodeWidth;
+                }
+            }
+        }
         if (!this.isContentEditable(this.inputElement)) {
             coordinates = {
                 top: rect.top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth, 10) +
@@ -1173,7 +1228,7 @@ export class Mention extends DropDownBase {
         } else {
             coordinates = {
                 top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
-                left: rect.left + windowLeft
+                left: rect.left + windowLeft + width
             };
         }
         return coordinates;
@@ -1229,6 +1284,7 @@ export class Mention extends DropDownBase {
         if (!this.isValidLI(li)) {
             return;
         }
+        this.isSelected = true;
         this.setSelection(li, e);
         const delay: number = 100;
         this.closePopup(delay, e);
@@ -1247,7 +1303,7 @@ export class Mention extends DropDownBase {
         const selectedData: string | number | boolean | {
             [key: string]: Object
         } = this.getDataByValue(value);
-        if (!preventSelect && !isNullOrUndefined(e)) {
+        if (!preventSelect && !isNullOrUndefined(e) && !((e as KeyboardEventArgs).action  === "down" || (e as KeyboardEventArgs).action === "up")) {
             const items: FieldSettingsModel = this.detachChanges(selectedData);
             this.isSelected = true;
             const eventArgs: SelectEventArgs = {
@@ -1260,6 +1316,8 @@ export class Mention extends DropDownBase {
             this.trigger('select', eventArgs, (eventArgs: SelectEventArgs) => {
                 if (eventArgs.cancel) {
                     li.classList.remove(dropDownBaseClasses.selected);
+                    this.isSelected = false;
+                    this.isSelectCancel = true;
                 } else {
                     this.selectEventCallback(li, selectedData, value);
                     if (isSelection) {
@@ -1416,6 +1474,10 @@ export class Mention extends DropDownBase {
         const selection: Selection = this.inputElement.ownerDocument.getSelection();
         const startPos: number = this.getTriggerCharPosition();
         textSuffix = typeof this.suffixText === 'string' ? this.suffixText : '';
+        if (this.isSelectCancel) {
+            this.isSelectCancel = false;
+            return;
+        }
         if (dataItem.text !== null) {
             value = this.mentionVal(dataItem.text);
         }
@@ -1438,8 +1500,20 @@ export class Mention extends DropDownBase {
             }
             globalRange = this.range;
             range = document.createRange();
-            range.setStart(globalRange.startContainer, startPos);
-            range.setEnd(globalRange.startContainer, endPos);
+            if (((this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1 && this.isTyped) || this.getTextRange() && this.getTextRange().trim() === '@')) {
+                range.setStart(globalRange.startContainer, startPos);
+                range.setEnd(globalRange.startContainer, endPos); }
+            else {
+                if (globalRange.commonAncestorContainer.textContent.trim() !== '' && !isNullOrUndefined(globalRange.commonAncestorContainer.textContent.trim()) && this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1) {
+                    range.setStart(globalRange.startContainer, globalRange.startOffset - 1);
+                    range.setEnd(globalRange.startContainer, globalRange.endOffset - 1);
+                }
+                else {
+                    range.setStart(globalRange.startContainer, globalRange.startOffset);
+                    range.setEnd(globalRange.startContainer, globalRange.endOffset);
+                }
+            }
+            this.isTyped = false;
             range.deleteContents();
             const element: HTMLElement = this.createElement('div');
             element.innerHTML = value;

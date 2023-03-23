@@ -458,7 +458,7 @@ export class Video {
         const height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
         if (width > height) {
             vid.style.minWidth = this.parent.insertVideoSettings.minWidth === 0 ? '140px' : formatUnit(this.parent.insertVideoSettings.minWidth);
-            vid.style.minHeight = this.parent.insertVideoSettings.minHeight === 0 ? '50px' : formatUnit(this.parent.insertVideoSettings.minHeight);
+            vid.style.minHeight = this.parent.insertVideoSettings.minHeight === 0 ? '60px' : formatUnit(this.parent.insertVideoSettings.minHeight);
             if (this.parent.insertVideoSettings.resizeByPercent) {
                 if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
                     const percentageValue: number = this.pixToPerc(
@@ -662,8 +662,9 @@ export class Video {
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && (selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) && selectNodeEle.length < 1) {
-                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-                save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+                    save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+                }
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -714,8 +715,9 @@ export class Video {
             }
             break;
         case 'insert-video':
-            if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
-            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+            if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+                save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
+            }
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;
@@ -742,7 +744,8 @@ export class Video {
             this.insertVideo({
                 args: {
                     item: { command: 'Videos', subCommand: 'Video' } as IToolbarItemModel,
-                    originalEvent: event
+                    originalEvent: event,
+                    name: !isInternal ? 'showDialog' : null
                 },
                 selectNode: selectNodeEle,
                 selection: save,
@@ -992,7 +995,7 @@ export class Video {
     }
 
     private showVideoQuickToolbar(e: IShowPopupArgs): void {
-        if (e.type !== 'Videos' || e.args.detail === 2 || isNullOrUndefined(this.parent.quickToolbarModule)
+        if (e.type !== 'Videos' || (!isNullOrUndefined(e.args) && e.args.detail === 2) || isNullOrUndefined(this.parent.quickToolbarModule)
             || isNullOrUndefined(this.parent.quickToolbarModule.videoQTBar) || isNullOrUndefined(e.args)) {
             return;
         }

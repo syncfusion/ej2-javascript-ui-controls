@@ -218,6 +218,7 @@
           overflow: $range-visibility-hidden;
           padding: $range-list-item-padding;
           white-space: $range-text-nowrap;
+          text-overflow: $range-text-overflow;
         }
         #{if(&, '&', '*')} .e-list-parent {
           margin: $range-value-zero;
@@ -294,7 +295,12 @@
 
   .e-bigger #{&}.e-daterangepicker.e-range-modal,
   #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker.e-range-modal {
-    background-color: $range-overlay;
+    @if $skin-name != 'Material3' {
+      background-color: $range-overlay;
+    }
+    @if $skin-name == 'Material3' {
+      background: $range-overlay;
+    }
     height: 100%;
     left: 0;
     opacity: .5;
@@ -315,6 +321,12 @@
   #{if(&, '&', '*')}.e-bigger#{&}.e-daterangepicker,
   #{if(&, '&', '*')}.e-device#{&}.e-daterangepicker {
     #{if(&, '&', '*')}.e-popup {
+      @if $skin-name == 'material' or $skin-name == 'bootstrap'{
+        background-color: $range-background;
+      }
+      @if $skin-name == 'Material3' {
+        background: $range-background;
+      }
 
       #{if(&, '&', '*')} .e-start-label,
       #{if(&, '&', '*')} .e-end-label {
@@ -432,6 +444,10 @@
         }
       }
       #{if(&, '&', '*')} .e-header {
+        @if ($skin-name == 'FluentUI') {
+          padding: 8px 16px;
+        }
+        
         #{if(&, '&', '*')} .e-next,
         #{if(&, '&', '*')} .e-prev {
           height: $range-bigger-nav-icon-height;
@@ -501,6 +517,10 @@
               line-height: $range-device-indicator-height;
             }
             margin: $range-device-indicator-margin;
+            
+            @if $skin-name == 'fluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' {
+              margin-bottom: 0;
+            }
           }
         }
       }
@@ -555,6 +575,28 @@
           line-height: $range-preset-small-list-height;
         }
       }
+    }
+  }
+  .e-daterangepicker .e-calendar .e-month .e-selected span.e-day,
+  .e-daterangepicker.e-bigger.e-small .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 25px;
+      width: 25px;
+      line-height: 25px;
+    }
+  }
+  .e-daterangepicker.e-bigger .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 29px;
+      width: 29px;
+      line-height: 29px;
+    }
+  }
+  .e-daterangepicker.e-small .e-calendar .e-month .e-selected span.e-day {
+    @if $skin-name == 'FluentUI' {
+      height: 21px;
+      width: 21px;
+      line-height: 21px;
     }
   }
 }
@@ -659,7 +701,7 @@
     }
 
     .e-daterangepick-mob-popup-wrap {
-     @if $skin-name == 'material' {
+     @if $skin-name == 'material' or $skin-name == 'Material3' {
         #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
             .e-range-header {
                 float: left;
@@ -669,7 +711,12 @@
                 width: 40%;
                 margin: 0;
                 display: block;
-                background-color: $range-primary-color;
+                @if $skin-name != 'Material3' {
+                  background-color: $range-primary-color;
+                }
+                @if $skin-name == 'Material3' {
+                  background: $range-primary-color;
+                }
             }
 
             .e-calendar-holder {
@@ -714,6 +761,7 @@
             .e-content.e-month {
                 height: 80%;
                 table {
+                  display: table;
                   border-spacing: unset;
               }
             }

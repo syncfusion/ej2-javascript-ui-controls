@@ -11,27 +11,30 @@
   .e-footer-content {
     background-color: $dialog-footer-bg-color;
 
-    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
       .e-btn.e-primary.e-flat:not([DISABLED]) {
-        background-color: $dialog-footer-btn-bg-color;
+        background: $dialog-footer-btn-bg-color;
         border-color: $dialog-footer-btn-border-color;
         color: $dialog-footer-btn-color;
       }
 
       .e-btn:hover.e-primary.e-flat:not([DISABLED]) {
-        background-color: $dialog-footer-hover-btn-color;
+        background: $dialog-footer-hover-btn-color;
+        @if $skin-name == 'Material3' {
+          color: $dialog-footer-btn-bg-color;
+        }
       }
     }
 
-    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI'or $skin-name == 'Material3' {
       .e-btn.e-flat:not([DISABLED]) {
-        background-color: $dialog-footer-flat-btn-bg-color;
+        background: $dialog-footer-flat-btn-bg-color;
         border-color: $dialog-footer-flat-btn-border-color;
         color: $dialog-footer-flat-btn-content-color;
       }
 
       .e-btn:hover.e-flat:not([DISABLED]) {
-        background-color: $dialog-footer-flat-hover-btn-bg-color;
+        background: $dialog-footer-flat-hover-btn-bg-color;
       }
     }
   }

@@ -109,6 +109,9 @@ export class ContentRender implements IRenderer {
                     : this.movableRows;
             }
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
+            if (this.parent.autoFit) {
+                this.parent.preventAdjustColumns();
+            }
             if (!this.parent.isInitialLoad) {
                 this.parent.focusModule.setFirstFocusableTabIndex();
             }
@@ -137,7 +140,7 @@ export class ContentRender implements IRenderer {
                         }
                     });
                 }
-                if (this.parent.allowTextWrap && this.parent.height === 'auto') {
+                if (this.parent.allowTextWrap && this.parent.height === 'auto'){
                     if (this.parent.getContentTable().scrollHeight > this.parent.getContent().clientHeight) {
                         this.parent.scrollModule.setPadding();
                     }
@@ -548,7 +551,7 @@ export class ContentRender implements IRenderer {
             contentModule.splitRows(tableName);
         }
         gObj.removeMaskRow();
-        this.parent.notify("removeGanttShimmer", { requestType: 'hideShimmer'});
+        this.parent.notify('removeGanttShimmer', { requestType: 'hideShimmer'});
         if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector( literals.tbody);

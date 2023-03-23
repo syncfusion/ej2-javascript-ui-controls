@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
 import { createElement, compile as templateComplier, remove } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../smithchart/smithchart';
@@ -97,11 +96,12 @@ export function convertElementFromLabel(
         // eslint-disable-next-line security/detect-non-literal-regexp
         templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
     }
-    return createElement('div', {
+    let templateElement: HTMLElement = createElement('div', {
         id: labelId,
-        innerHTML: templateHtml,
         styles: 'position: absolute'
     });
+    templateElement.innerText = templateHtml;
+    return templateElement;
 }
 
 /**
@@ -269,7 +269,7 @@ export function measureText(text: string, font: SmithchartFontModel): Smithchart
         document.body.appendChild(htmlObject);
     }
 
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.left = '0';

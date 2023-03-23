@@ -41,6 +41,15 @@ export interface ChipListModel extends ComponentModel{
     avatarIconCss?: string;
 
     /**
+     * Allows additional HTML attributes such as aria labels, title, name, etc., and
+     * accepts n number of attributes in a key-value pair format.
+     * {% codeBlock src='chiplist/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Specifies the leading icon CSS class for the chip.
      * {% codeBlock src='chips/leadingIconCss/index.md' %}{% endcodeBlock %}
      *

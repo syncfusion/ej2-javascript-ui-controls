@@ -513,7 +513,7 @@ describe('Chart Control Series', () => {
                 let point: Element = document.getElementById('container_Series_0_Point_0');
                 //    expect(point).toBe(true);
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
-                expect(axisLabel.textContent == 'May').toBe(true);
+                expect(axisLabel.textContent == 'May 2000').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -532,7 +532,7 @@ describe('Chart Control Series', () => {
 
         it('Checking with Months and its Round rangePadding', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == 'Mar').toBe(true);
+                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == 'Mar 2000').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -873,10 +873,9 @@ describe('Chart Control Series', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '234.375' || svg.getAttribute('d').split(' ')[2] == '234.125').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '235.375' || svg.getAttribute('d').split(' ')[2] == '234.125').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '75.25').toBe(true);
-
+                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -988,7 +987,7 @@ describe('Chart Control Series', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 let axisLabelLast: Element = document.getElementById('container0_AxisLabel_4');
-                expect(axisLabelLast.textContent == '27').toBe(true);
+                expect(axisLabelLast.textContent == 'Jun 27').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

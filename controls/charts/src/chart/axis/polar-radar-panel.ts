@@ -1,8 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
 import { valueToCoefficient, inside, isOverlap, textTrim } from '../../common/utils/helper';

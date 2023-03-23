@@ -61,8 +61,8 @@ export class EventSettings extends ChildProperty<EventSettings> {
     /**
      * Defines the option to render the spanned events (more than 24 hours) in either `AllDayRow` or `TimeSlot`. By default it renders in `AllDayRow`.
      * This property is applicable for `Day`, `Week` and `WorkWeek` views only. The possible values for this property as follows
-     * * AllDayRow
-     * * TimeSlot
+     * * `AllDayRow`: Denotes the rendering of spanned events in an all-day row.
+     * * `TimeSlot`: Denotes the rendering of spanned events in an time slot row.
      * {% codeBlock src='schedule/spannedEventPlacement/index.md' %}{% endcodeBlock %}
      *
      * @default 'AllDayRow'
@@ -165,4 +165,14 @@ export class EventSettings extends ChildProperty<EventSettings> {
      */
     @Property()
     public sortComparer: SortComparerFunction;
+
+    /**
+     * Gets or sets a value that determines whether the start date and end date filter conditions should be included in the query itself when requesting data from the server, or passed as query parameters in the API call.
+     * When set to <c>true</c> the filter conditions will be part of the query itself, potentially reducing the size of the request and minimizing the time needed to parse the response.
+     * However, it can also lead to longer query strings, which could result in issues with maximum URL length or server limitations on query string length.
+     *
+     * @default false
+     */
+    @Property()
+    public includeFiltersInQuery: boolean;
 }

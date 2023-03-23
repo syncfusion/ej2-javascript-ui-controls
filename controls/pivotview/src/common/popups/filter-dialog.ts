@@ -96,6 +96,7 @@ export class FilterDialog {
             visible: true,
             showCloseIcon: this.allowExcelLikeFilter ? true : false,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
             height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
                 (this.allowExcelLikeFilter ? '400px' : '350px'),
@@ -197,9 +198,9 @@ export class FilterDialog {
         const treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
         const treeViewContainer: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS });
         const promptDiv: HTMLElement = createElement('div', {
-            className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
-            innerHTML: this.parent.localeObj.getConstant('noMatches')
+            className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE
         });
+        promptDiv.innerText = this.parent.localeObj.getConstant('noMatches');
         if (this.parent.dataType === 'olap' && this.parent.control.loadOnDemandInMemberEditor &&
             !(this.parent.engineModule as OlapEngine).fieldList[fieldName as string].isHierarchy &&
             !(this.parent.engineModule as OlapEngine).fieldList[fieldName as string].isNamedSets) {
@@ -244,6 +245,7 @@ export class FilterDialog {
             showCheckBox: true,
             expandOn: 'None',
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             nodeClicked: this.nodeCheck.bind(this, true),
             keyPress: this.nodeCheck.bind(this, true),
             nodeSelected: (args: NodeSelectEventArgs) => {
@@ -267,6 +269,7 @@ export class FilterDialog {
             fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
             showCheckBox: true,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             nodeChecking: this.validateTreeNode.bind(this),
             nodeClicked: this.nodeCheck.bind(this, false),
             keyPress: this.nodeCheck.bind(this, false),
@@ -302,11 +305,11 @@ export class FilterDialog {
                 id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button', 'aria-label': 'button' }
             });
             let sortBtnElement: Button = new Button({
-                iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass
+                iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             sortBtnElement.appendTo(sortAscendElement);
             sortBtnElement = new Button({
-                iconCss: cls.ICON + ' ' + cls.SORT_DESCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass
+                iconCss: cls.ICON + ' ' + cls.SORT_DESCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             sortBtnElement.appendTo(sortDescendElement);
             sortWrapper.appendChild(sortAscendElement);
@@ -331,6 +334,7 @@ export class FilterDialog {
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
                 const items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
                 const engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
@@ -651,6 +655,7 @@ export class FilterDialog {
             height: '100%',
             selectedItem: selectedIndex,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             cssClass: this.parent.cssClass
         });
         this.tabObj.isStringTemplate = true;
@@ -747,14 +752,14 @@ export class FilterDialog {
             }
         });
         const textContentdiv: HTMLElement = createElement('div', {
-            className: cls.FILTER_TEXT_DIV_CLASS,
-            innerHTML: this.parent.localeObj.getConstant(type + 'TextContent')
+            className: cls.FILTER_TEXT_DIV_CLASS
         });
+        textContentdiv.innerText = this.parent.localeObj.getConstant(type + 'TextContent');
         const betweenTextContentdiv: HTMLElement = createElement('div', {
             className: cls.BETWEEN_TEXT_DIV_CLASS + ' ' +
-                (betweenOperators.indexOf(selectedOption as Operators) === -1 ? cls.ICON_DISABLE : ''),
-            innerHTML: this.parent.localeObj.getConstant('And')
+                (betweenOperators.indexOf(selectedOption as Operators) === -1 ? cls.ICON_DISABLE : '')
         });
+        betweenTextContentdiv.innerText = this.parent.localeObj.getConstant('And');
         const separatordiv: HTMLElement = createElement('div', { className: cls.SEPARATOR_DIV_CLASS });
         const filterWrapperDiv1: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_1_CLASS });
         const levelWrapperDiv: HTMLElement = createElement('div', {

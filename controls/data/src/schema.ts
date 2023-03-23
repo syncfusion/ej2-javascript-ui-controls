@@ -1,11 +1,14 @@
-export const schema = 
+/* tslint:disable:typedef */
+// tslint:disable-next-line:missing-jsdoc
+export const schema =
+// tslint:disable-next-line:no-multiline-string
 `input Sort {
     name: String!
     direction: String!
-} 
+}
 
 input Aggregate {
-    field: String! 
+    field: String!
     type: String!
 }
 
@@ -21,4 +24,4 @@ input DataManager {
     requiresCounts: Boolean,
     aggregates: [Aggregate],
     params: String
-}`
+}`;

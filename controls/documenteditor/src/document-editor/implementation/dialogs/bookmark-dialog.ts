@@ -2,6 +2,7 @@ import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * The Bookmark dialog is used to add, navigate or delete bookmarks.
@@ -165,7 +166,7 @@ export class BookmarkDialog {
      * @returns {void}
      */
     private addBookmark = (): void => {
-        this.documentHelper.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
+        this.documentHelper.owner.editorModule.insertBookmark(SanitizeHtmlHelper.sanitize((this.textBoxInput as HTMLInputElement).value));
         this.documentHelper.hideDialog();
     };
     /* eslint-disable @typescript-eslint/no-explicit-any */

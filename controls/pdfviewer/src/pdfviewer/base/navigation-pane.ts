@@ -362,8 +362,9 @@ export class NavigationPane {
 
     // eslint-disable-next-line
     private openAnnotationContextMenu(event: any): void {
-        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+        /* eslint-disable */
         this.annotationMenuObj.open(event.clientY, event.clientX, event.currentTarget);
+        /* eslint-enable */
     }
 
     /**
@@ -468,7 +469,14 @@ export class NavigationPane {
                             if (annotationData) {
                                 // eslint-disable-next-line
                                 let jsonData: any = JSON.parse(annotationData);
-                                this.pdfViewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
+                                let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
+                                if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation || firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation || firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation || (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {
+                                    this.pdfViewerBase.isPDFViewerJson = true;
+                                    this.pdfViewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
+                                } else {
+                                    this.pdfViewerBase.isPDFViewerJson = false;
+                                    this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Json);
+                                }
                             }
                         }
                     };

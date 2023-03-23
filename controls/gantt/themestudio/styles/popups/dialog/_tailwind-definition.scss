@@ -1,8 +1,8 @@
 //Layout Variables Start
 $dialog-close-button-left: 0 !default;
 $dialog-header-border: 0 !default;
-$dialog-close-icon-font-size: 16px !default;
-$dialog-bigger-close-icon-font-size: 20px !default;
+$dialog-close-icon-font-size: $text-base !default;
+$dialog-bigger-close-icon-font-size: $text-xl !default;
 $dialog-header-font-size: $text-base !default;
 $footer-content-border-radius: 6px !default;
 $header-content-border-radius: 6px !default;
@@ -34,7 +34,7 @@ $dialog-close-icon-width: 10px !default;
 $dialog-bigger-close-icon-height: 10px !default;
 $dialog-bigger-close-icon-width: 10px !default;
 $dialog-close-icon-top: 0 !default;
-$dialog-bigger-header-content-font-size: 18px !default;
+$dialog-bigger-header-content-font-size: $text-lg !default;
 $dialog-bigger-content-font-size: $text-base !default;
 $dialog-bigger-close-icon-top: 0 !default;
 $dialog-bigger-close-icon-margin-left: 0 !default;

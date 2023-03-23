@@ -2729,7 +2729,7 @@ describe('Datepicker', () => {
             keyEventArgs.action = 'altDownArrow';
             datePicker.inputKeyActionHandle(keyEventArgs);
             (<HTMLElement>document.querySelector('.e-next span')).click();
-            expect(document.querySelector('.e-title').textContent).toBe('March 2017');
+            expect(document.querySelector('.e-title').textContent).toBe('March 2017'); 
         });
         it('esc key test case', function () {
             datePicker = new DatePicker({
@@ -4243,7 +4243,7 @@ describe('Datepicker', () => {
         beforeEach(function () {
             let element: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(element);
-});
+        });
         afterEach(function () {
             if (datePicker) {
                 datePicker.destroy();

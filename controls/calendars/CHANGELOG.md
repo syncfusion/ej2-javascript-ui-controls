@@ -2,24 +2,6 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
-
-- `#SF-443337` - The issue "Bigger mode icon in calendar components was slightly bigger than other components" has been resolved.
-
-- `#SF-440324` - The issue "Unable to enter a time value in the TimePicker when the mask is enabled" has been resolved.
-
-## 20.4.48 (2023-02-01)
-
-- `#I426149` - The issue "show method target parameter not works as expected" has been resolved.
-
-## 20.4.44 (2023-01-18)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I428245` - The issue "selected range changes when we click outside the DateRangePicker component" has been resolved.
-
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

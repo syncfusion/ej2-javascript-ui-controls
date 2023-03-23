@@ -4,15 +4,15 @@
   /*! menu theme */
   .e-menu-wrapper,
   .e-menu-container {
-    background-color: $menu-ul-bgcolor;
+    background: $menu-ul-bgcolor;
 
     @at-root {
       & .e-menu {
-        @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
+        @if $skin-name == 'bootstrap4' {
           background-color: $cmenu-ul-bgcolor;
         }
         @else {
-          background-color: inherit;
+          background: inherit;
         }
         color: $menu-color;
 
@@ -51,7 +51,7 @@
             outline: $menu-li-hover-outline;
             outline-offset: $menu-li-hover-outline-offset;
             @if $skin-name == 'bootstrap4' {
-              background-color: $menu-ul-bgcolor;
+              background: $menu-ul-bgcolor;
 
               & .e-caret {
                 color: $menu-caret-color;
@@ -63,7 +63,10 @@
             }
             @else {
               @include focused-icon-color;
-              background-color: $menu-li-bgcolor;
+              background: $menu-li-bgcolor;
+              @if $skin-name == 'Material3' {
+                border-radius: 20px;
+              }
             }
           }
 
@@ -72,21 +75,34 @@
             outline: $menu-li-selected-outline;
             outline-offset: $menu-li-selected-outline-offset;
             @if $skin-name == 'bootstrap4' {
-              background-color: $menu-ul-bgcolor;
+              background: $menu-ul-bgcolor;
             }
             @if $skin-name == 'FluentUI' {
-              background-color: $cmenu-li-bgcolor;
+              background: $cmenu-li-bgcolor;
             }
             @else {
-              background-color: $menu-li-selection-bgcolor;
+              background: $menu-li-selection-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              border-radius: 20px;
             }
 
             & .e-caret {
-              color: $menu-caret-color;
+              @if $skin-name == 'Material3' {
+                color: $menu-icon-focussed-color;
+              }
+              @else {
+                color: $menu-caret-color;
+              }
             }
 
             & .e-menu-icon {
-              color: $menu-caret-color;
+              @if $skin-name == 'Material3' {
+                color: $menu-icon-focussed-color;
+              }
+              @else {
+                color: $menu-caret-color;
+              }
             }
           }
 
@@ -99,7 +115,7 @@
       }
 
       & .e-ul {
-        background-color: inherit;
+        background: inherit;
         color: $submenu-color;
 
         & .e-menu-item {
@@ -166,10 +182,10 @@
     }
 
     &.e-menu-popup {
-      background-color: $cmenu-ul-bgcolor;
+      background: $cmenu-ul-bgcolor;
 
       &.e-sfcontextmenu .e-menu-vscroll {
-        background-color: inherit;
+        background: inherit;
       }
     }
 
@@ -182,7 +198,7 @@
 
       &:hover {
         @if $skin-name == 'bootstrap4' {
-          background-color: darken($gray-600, 7.5%);
+          background: darken($gray-600, 7.5%);
           border: 1px inset darken($gray-600, 10%);
 
           & .e-icons {
@@ -196,7 +212,7 @@
 
       &:focus {
         @if $skin-name == 'bootstrap4' {
-          background-color: darken($gray-600, 7.5%);
+          background: darken($gray-600, 7.5%);
           border-color: darken($gray-600, 10%);
 
           & .e-icons {
@@ -210,7 +226,7 @@
 
       &:active {
         @if $skin-name == 'bootstrap4' {
-          background-color: darken($gray-600, 7.5%);
+          background: darken($gray-600, 7.5%);
           border: 1px inset darken($gray-600, 10%);
         }
         @else {

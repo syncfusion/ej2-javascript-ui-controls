@@ -74,7 +74,7 @@ describe('Quick Popups', () => {
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
         });
 
-        it('Event click edit occurance', () => {
+        it('Event click edit occurrence', () => {
             const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             eventElements[10].click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1127,6 +1127,88 @@ describe('Quick Popups', () => {
                 expect(currentCellData.endTime.getTime()).toEqual(new Date(2018, 11, 7, 13, 0).getTime());
             };
             (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
+        });
+    });
+
+    describe('EJ2-70306 - e-subject element missing in more popup apointment elements', () => {
+        let schObj: Schedule;
+        const eventDatas: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Board Meeting',
+            Description: 'Meeting to discuss business goal of 2018.',
+            StartTime: new Date(2018, 11, 7, 12, 35, 26),
+            EndTime: new Date(2018, 11, 7, 14, 36, 0),
+            OwnerId: 1
+        }, {
+            Id: 2,
+            Subject: 'Board Meeting1',
+            Description: 'Meeting to discuss business goal of 2018.',
+            StartTime: new Date(2018, 11, 7, 10, 36, 26),
+            EndTime: new Date(2018, 11, 7, 12, 36, 0),
+            OwnerId: 1
+        }, {
+            Id: 3,
+            Subject: 'Time Rounded',
+            StartTime: new Date(2018, 11, 7, 10),
+            EndTime: new Date(2018, 11, 7, 11, 30),
+            IsAllDay: false,
+            OwnerId: 3
+        }, {
+            Id: 4,
+            Subject: 'In-Between time',
+            StartTime: new Date(2018, 11, 7, 10, 12),
+            EndTime: new Date(2018, 11, 7, 11, 38),
+            IsAllDay: false,
+            OwnerId: 3
+        }, {
+            Id: 5,
+            Subject: 'spanned event',
+            StartTime: new Date(2018, 11, 7, 11),
+            EndTime: new Date(2018, 11, 8, 11),
+            IsAllDay: false,
+            OwnerId: 5
+        }, {
+            Id: 6,
+            Subject: 'Recurrence Summary Checking',
+            StartTime: new Date(2018, 11, 7, 10),
+            EndTime: new Date(2018, 11, 8, 12),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+            IsAllDay: false,
+            OwnerId: 6
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '550px', width: '100%',
+                selectedDate: new Date(2018, 11, 7),
+                currentView: 'TimelineWeek',
+                views: ['TimelineWeek'],
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200' },
+                        { OwnerText: 'Mission', Id: 5, OwnerColor: '#df5286' },
+                        { OwnerText: 'Hangout', Id: 6, OwnerColor: '#00bdae' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, eventDatas, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('e-subject element missing in more popup apointment elements', () => {
+            (schObj.element.querySelectorAll('.e-more-indicator')[5] as HTMLElement).click();
+            expect(schObj.quickPopup.morePopup.element.classList.contains('e-popup-open')).toEqual(true);
+            const morePopupEvents: NodeListOf<Element> = schObj.quickPopup.morePopup.element.querySelectorAll('.e-appointment');
+            expect(morePopupEvents.length).toEqual(2);
+            expect(morePopupEvents[0].firstElementChild.classList.contains('e-subject')).toEqual(true);
+            expect((morePopupEvents[0] as HTMLElement).innerText).toEqual('Time Rounded');
         });
     });
 
@@ -2633,7 +2715,7 @@ describe('Quick Popups', () => {
             target.click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
-            expect((eventPopup.querySelector('.e-subject') as HTMLElement).innerText).toEqual('MSUser Group');
+            expect((eventPopup.querySelector('.e-subject') as HTMLElement).innerText).toEqual('<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">MS</a>User Group');
             expect((eventPopup.querySelector('.e-subject') as HTMLElement).getAttribute('title'))
                 .toBe("<A href='https://www.milletsoftware.com' title='Millet Software' target='_blank'>MS</A>User Group");
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();

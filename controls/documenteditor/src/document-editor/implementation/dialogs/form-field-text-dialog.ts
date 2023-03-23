@@ -8,6 +8,7 @@ import { DropDownList, ComboBox, ChangeEventArgs } from '@syncfusion/ej2-dropdow
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { TextFormFieldType } from '../../base/types';
 import { HelperMethods } from '../editor/editor-helper';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * Form field text dialog is used to modify the value in text form field.
@@ -312,7 +313,7 @@ export class TextFormFieldDialog {
      * @returns {void}
      */
     public updateTextFormtas = (): void => {
-        let defautText: string = this.updateFormats(this.defaultTextInput.value) as string;
+        let defautText: string = SanitizeHtmlHelper.sanitize(this.updateFormats(this.defaultTextInput.value) as string);
         (this.defaultTextInput as HTMLInputElement).value = !isNullOrUndefined(defautText) ? defautText : '';
     }
 
@@ -388,15 +389,15 @@ export class TextFormFieldDialog {
                 } else {
                     type = 'Text';
                 }
-                let format: string = this.textFormatDropDown.value as string;
+                let format: string = SanitizeHtmlHelper.sanitize(this.textFormatDropDown.value as string);
 
                 let formField: TextFormField = new TextFormField();
                 formField.type = type;
                 formField.defaultValue = this.defaultTextInput.value;
                 formField.maxLength = this.maxLengthNumber.value;
                 formField.format = !isNullOrUndefined(format) ? format : '';
-                formField.name = this.bookmarkTextInput.value;
-                formField.helpText = this.tooltipTextInput.value;
+                formField.name = SanitizeHtmlHelper.sanitize(this.bookmarkTextInput.value);
+                formField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipTextInput.value);
                 formField.enabled = this.fillInEnable.checked;
                 this.owner.editor.editFormField('Text', formField);
                 this.closeTextField();

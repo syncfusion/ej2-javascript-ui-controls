@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { BulletChart } from '../bullet-chart';
 import { measureText, textElement, TextOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Orientation } from '../../chart/utils/enum';

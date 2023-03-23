@@ -1,10 +1,10 @@
 /*! TreeView's tailwind theme wise override definitions and variables */
 /* stylelint-disable */
 $treeview-font-size: $text-sm !default;
-$treeview-icon-font-size: 20px !default;
-$treeview-image-font-size: 20px !default;
+$treeview-icon-font-size: $text-xl !default;
+$treeview-image-font-size: $text-xl !default;
 $treeview-big-font-size: $text-base !default;
-$treeview-big-icon-font-size: 24px !default;
+$treeview-big-icon-font-size: $text-2xl !default;
 $treeview-item-height: 38px !default;
 $treeview-text-height: 36px !default;
 $treeview-input-height: 30px !default;
@@ -72,7 +72,7 @@ $treeview-big-icon-margin: 0 0 0 -24px !default;
 $treeview-big-rtl-icon-margin: 0 -24px 0 0 !default;
 $treeview-big-text-wrap-padding: 0 0 0 24px !default;
 $treeview-big-rtl-text-wrap-padding: 0 24px 0 0 !default;
-$treeview-big-drag-icon-font-size: 24px !default;
+$treeview-big-drag-icon-font-size: $text-2xl !default;
 $treeview-big-drag-item-text-padding-left: 12px !default;
 $treeview-big-drag-icon-margin:-6px 0px 5px -9px !default;
 $treeview-big-drag-before-icon-padding: 6px !default;
@@ -84,7 +84,7 @@ $treeview-big-icon-wrap-width: calc(100% - 35px) !default;
 $treeview-big-icon-img-wrap-width: calc(100% - 71px) !default;
 
 $treeview-font-family: $font-family !default;
-$treeview-drag-icon-font-size: 20px !default;
+$treeview-drag-icon-font-size: $text-xl !default;
 $treeview-drag-icon-padding: 6px !default;
 $treeview-drag-icon-margin: 0 8px 10px -20px;
 $treeview-drag-icon-padding-right: 4px !default;

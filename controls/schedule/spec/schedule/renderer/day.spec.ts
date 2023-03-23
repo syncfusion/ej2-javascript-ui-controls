@@ -261,7 +261,7 @@ describe('Schedule day view', () => {
 
         it('dateRange template', () => {
             const model: ScheduleModel = {
-                currentView: 'Day', 
+                currentView: 'Day',
                 selectedDate: new Date(2017, 9, 5),
                 dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
             };
@@ -345,8 +345,8 @@ describe('Schedule day view', () => {
                 maxDate: new Date(2017, 9, 6)
             };
             schObj = util.createSchedule(model, []);
-            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');

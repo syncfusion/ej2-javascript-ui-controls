@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
@@ -55,14 +56,14 @@ export class ErrorBar {
                 let errorY: number = 0;
                 switch (errorbar.mode) {
                 case 'Vertical':
-                    errorY = errorbar.verticalError;
+                    errorY = point.verticalError;
                     break;
                 case 'Horizontal':
-                    errorX = errorbar.horizontalError;
+                    errorX = point.horizontalError;
                     break;
                 case 'Both':
-                    errorX = errorbar.horizontalError;
-                    errorY = errorbar.verticalError;
+                    errorX = point.horizontalError;
+                    errorY = point.verticalError;
                     break;
 
                 }
@@ -73,16 +74,15 @@ export class ErrorBar {
 
                 symbolId = this.chart.element.id + '_Series_' + '_ErrorBarGroup_' + seriesIndex + '_Point_' + point.index;
                 capId = this.chart.element.id + '_Series_' + '_ErrorBarCap_' + seriesIndex + '_Point_' + point.index;
-
                 const shapeOption: PathOption = new PathOption(
-                    symbolId, '', errorbar.width, errorbar.color || this.chart.themeStyle.errorBar, null, '', errorDirection[0]
+                    symbolId, '', errorbar.width, (errorbar.errorBarColorMapping ? point.errorBarColor : errorbar.color || this.chart.themeStyle.errorBar), null, '', errorDirection[0]
                 );
                 let element: Element = getElement(shapeOption.id);
                 let previousDirection: string = element ? element.getAttribute('d') : null;
                 series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
                 pathAnimation(element, errorDirection[0], redraw, previousDirection);
                 const capOption: PathOption = new PathOption(
-                    capId, '', errorBarCap.width, errorBarCap.color || this.chart.themeStyle.errorBar, null, '', errorDirection[1]
+                    capId, '', errorBarCap.width, (errorbar.errorBarCap.color ? errorBarCap.color : (errorbar.errorBarColorMapping ? point.errorBarColor : errorbar.color || this.chart.themeStyle.errorBar)), null, '', errorDirection[1]
                 );
                 element = getElement(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
@@ -103,9 +103,9 @@ export class ErrorBar {
                 point.yValue;
         const startPoint: ChartLocation = getPoint(
             point.xValue + ((direction === 'Plus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
-                (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = errorbar.horizontalPositiveError : x1 : 0),
+                (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = point.horizontalPositiveError : x1 : 0),
             yValue + ((direction === 'Plus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
-                (errorbar.mode === 'Vertical' || errorbar.mode === 'Both')) ? y1 = errorbar.verticalPositiveError : y1 : 0),
+                (errorbar.mode === 'Vertical' || errorbar.mode === 'Both')) ? y1 = point.verticalPositiveError : y1 : 0),
             series.xAxis, series.yAxis, isInverted
         );
         location.push(startPoint);
@@ -123,9 +123,9 @@ export class ErrorBar {
 
         const endPoint: ChartLocation = getPoint(
             point.xValue - ((direction === 'Minus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
-                (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = errorbar.horizontalNegativeError : x1 : 0),
+                (errorbar.mode === 'Horizontal' || errorbar.mode === 'Both')) ? x1 = point.horizontalNegativeError : x1 : 0),
             yValue - ((direction === 'Minus' || direction === 'Both') ? (errorbar.type === 'Custom' &&
-                (errorbar.mode === 'Vertical' || errorbar.mode === 'Both')) ? y1 = errorbar.verticalNegativeError : y1 : 0),
+                (errorbar.mode === 'Vertical' || errorbar.mode === 'Both')) ? y1 = point.verticalNegativeError : y1 : 0),
             series.xAxis, series.yAxis, isInverted
         );
         location.push(endPoint);

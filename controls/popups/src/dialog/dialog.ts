@@ -454,6 +454,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
+     * Enables or disables the persistence of the dialog's dimensions and position state between page reloads.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enablePersistence: boolean;
+    /**
      * Specifies the value that represents whether the close icon is shown in the dialog component.
      *
      * @default false
@@ -836,7 +843,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.isProtectedOnChange = prevOnChange;
         }
     }
-
+    private updatePersistData(): void {
+        if (this.enablePersistence){
+            this.setProperties({ width : parseFloat(this.element.style.width), height : parseFloat(this.element.style.height),
+                position : { X: parseFloat(this.dragObj.element.style.left), Y: parseFloat(this.dragObj.element.style.top)} }, true);
+        }
+    }
     private isNumberValue(value: string): boolean {
         const isNumber: boolean = /^[-+]?\d*\.?\d+$/.test(value);
         return isNumber;
@@ -905,6 +917,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private onResizeComplete(args: MouseEvent | TouchEvent, dialogObj: Dialog): void {
         dialogObj.trigger('resizeStop', args);
+        this.updatePersistData();
     }
 
     private setResize(): void {
@@ -1016,9 +1029,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (event.keyCode === 27 && this.closeOnEscape) {
             this.dlgClosedBy = DLG_ESCAPE_CLOSED;
-            const query:HTMLElement=<HTMLElement>document.querySelector('.e-popup-open:not(.e-dialog)');
+            const query: HTMLElement = <HTMLElement>document.querySelector('.e-popup-open:not(.e-dialog)');
             // 'document.querySelector' is used to find the elements rendered based on body
-            if (!(!isNullOrUndefined(query)&& !query.classList.contains("e-toolbar-pop"))){
+            if (!(!isNullOrUndefined(query) && !query.classList.contains('e-toolbar-pop'))){
                 this.hide(event);
             }
         }
@@ -1263,6 +1276,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                     this.trigger('dragStop', event);
                     this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
+                    this.updatePersistData();
                 },
                 drag: (event: Object) => {
                     this.trigger('drag', event);
@@ -1729,9 +1743,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'isModal':
                 this.updateIsModal(); break;
             case 'height':
-                setStyleAttribute(this.element, {'height': formatUnit(newProp.height) }); break;
+                setStyleAttribute(this.element, {'height': formatUnit(newProp.height) });
+                this.updatePersistData(); break;
             case 'width':
-                setStyleAttribute(this.element, { 'width': formatUnit(newProp.width) }); break;
+                setStyleAttribute(this.element, { 'width': formatUnit(newProp.width) });
+                this.updatePersistData(); break;
             case 'zIndex':
                 this.popupObj.zIndex = this.zIndex;
                 if (this.isModal) {
@@ -1771,7 +1787,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         this.dlgContainer.classList.remove('e-dlg-' + positionX + '-' + positionY );
                     }
                 }
-                this.positionChange(); break;
+                this.positionChange();
+                this.updatePersistData(); break;
             case 'enableRtl':
                 this.setEnableRTL(); break;
             case 'enableResize':
@@ -1833,7 +1850,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private setzIndex(zIndexElement: HTMLElement, setPopupZindex: boolean): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        const currentzIndex = getZindexPartial(zIndexElement);
+        const currentzIndex : number = getZindexPartial(zIndexElement);
         this.zIndex = currentzIndex > this.zIndex ? currentzIndex : this.zIndex;
         this.isProtectedOnChange = prevOnChange;
         if (setPopupZindex) {
@@ -1852,8 +1869,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @returns {void}
      * @private
      */
-    protected getPersistData(): string {
-        return this.addOnPersist([]);
+    public getPersistData(): string {
+        return this.addOnPersist(['width', 'height', 'position']);
     }
     /**
      * To destroy the widget
@@ -2321,7 +2338,6 @@ export namespace DialogUtility {
             { effect: 'Fade', duration: 400, delay: 0 };
         options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
         options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
-        // eslint-disable-next-line
         options.open = !isNullOrUndefined(option.open) ? option.open : null;
         options.width = !isNullOrUndefined(option.width) ? option.width : 'auto';
         options.height = !isNullOrUndefined(option.height) ? option.height : 'auto';

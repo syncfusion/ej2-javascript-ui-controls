@@ -9,6 +9,7 @@ import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import { PivotView } from '../../pivotview';
 
 /**
  * Module to render Pivot Field List Dialog
@@ -86,9 +87,9 @@ export class DialogRenderer {
                 className: cls.FIELD_LIST_TITLE_CLASS
             });
             const headerContent: HTMLElement = createElement('div', {
-                className: cls.FIELD_LIST_TITLE_CONTENT_CLASS,
-                innerHTML: this.parent.localeObj.getConstant('staticFieldList')
+                className: cls.FIELD_LIST_TITLE_CONTENT_CLASS
             });
+            headerContent.innerText = this.parent.localeObj.getConstant('staticFieldList');
             layoutHeader.appendChild(headerContent);
             layoutHeader.appendChild(this.createCalculatedButton());
             addClass([fieldListWrappper], cls.STATIC_FIELD_LIST_CLASS);
@@ -108,6 +109,7 @@ export class DialogRenderer {
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
                 checked: true,
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale,
                 change: this.onCheckChange.bind(this),
                 cssClass: this.parent.cssClass
@@ -120,6 +122,7 @@ export class DialogRenderer {
                 content: this.parent.localeObj.getConstant('apply'),
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 isPrimary: true
             });
             this.deferUpdateApplyButton.isStringTemplate = true;
@@ -132,7 +135,7 @@ export class DialogRenderer {
                 (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
-            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
@@ -176,7 +179,7 @@ export class DialogRenderer {
             if (this.parent.dataType === 'olap') {
                 this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
             }
-            this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+            this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
         }
         this.parent.allowDeferLayoutUpdate = !this.parent.allowDeferLayoutUpdate;
         if (this.parent.renderMode === 'Fixed') {
@@ -206,10 +209,10 @@ export class DialogRenderer {
         if (this.parent.dataType === 'olap') {
             this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
         }
-        parent.clonedFieldList = extend({}, parent.pivotFieldList, null, true) as IFieldListOptions;
+        parent.clonedFieldList = PivotUtil.getClonedFieldList(parent.pivotFieldList);
     }
     private onCloseFieldList(args?: MouseEventArgs, isDeferLayoutEnabled?: boolean): void {
-        if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView ||
+        if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView || 
             (this.parent.pivotGridModule && this.parent.pivotGridModule.actionObj.actionName !== '') || this.parent.actionObj.actionName !== '')) {
             this.parent.
                 setProperties({
@@ -292,6 +295,7 @@ export class DialogRenderer {
                 closeOnEscape: false,
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 width: '100%',
                 height: '100%',
                 position: { X: 'center', Y: 'center' },
@@ -327,6 +331,7 @@ export class DialogRenderer {
                 allowDragging: true,
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 width: this.parent.element.style.width,
                 position: { X: 'center', Y: this.parent.element.offsetTop },
                 footerTemplate: template,
@@ -413,6 +418,7 @@ export class DialogRenderer {
             items: items,
             height: '100%',
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             locale: this.parent.locale,
             selected: this.tabSelect.bind(this),
             cssClass: this.parent.cssClass
@@ -468,7 +474,7 @@ export class DialogRenderer {
         const calculateField: Button = new Button({
             cssClass: cls.CALCULATED_FIELD_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.localeObj.getConstant('CalculatedField'),
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
@@ -488,12 +494,12 @@ export class DialogRenderer {
             cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
                 ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         const fieldList: Button = new Button({
             cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         fieldList.isStringTemplate = true;
         fieldList.appendTo(fieldListButton);
@@ -512,9 +518,9 @@ export class DialogRenderer {
         });
         const axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + axis });
         const axisPrompt: HTMLElement = createElement('span', {
-            className: cls.AXIS_PROMPT_CLASS,
-            innerHTML: this.parent.localeObj.getConstant('addPrompt')
+            className: cls.AXIS_PROMPT_CLASS
         });
+        axisPrompt.innerText = this.parent.localeObj.getConstant('addPrompt');
         axisWrapper.appendChild(axisContent);
         axisWrapper.appendChild(axisPrompt);
         return axisWrapper;
@@ -560,7 +566,7 @@ export class DialogRenderer {
                 if (this.parent.dataType === 'olap') {
                     this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
                 }
-                this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+                this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
             }
             addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
             this.parent.dialogRenderer.fieldListDialog.show();

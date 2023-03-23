@@ -26,7 +26,7 @@ export function measureText(text: string, font: FontModel): Size {
     }
     const style: string = 'position: absolute; visibility: hidden;' +
         ';left: 0px; top: -100px; white-space: nowrap;' + getFontStyle(font);
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.cssText = style;
     return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
 }
@@ -892,16 +892,16 @@ export class RectOption extends CustomizeOption {
 }
 
 /**
- * Internal class size
+ * Specifies the size information of an element.
  */
 export class Size {
 
     /**
-     * Specifies the height.
+     * Specifies the height of an element.
      */
     public height: number;
     /**
-     * Specifies the width.
+     * Specifies the width of an element.
      */
     public width: number;
 
@@ -912,15 +912,15 @@ export class Size {
 }
 
 /**
- * Internal use of circular gauge location
+ * Specifies the location of the element in the circular gauge.
  */
 export class GaugeLocation {
     /**
-     * To specify x value
+     * Specifies the x position of the location in pixels.
      */
     public x: number;
     /**
-     * To specify y value
+     * Specifies the y position of the location in pixels.
      */
     public y: number;
 

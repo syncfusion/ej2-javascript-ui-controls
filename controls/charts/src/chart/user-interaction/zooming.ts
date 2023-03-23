@@ -3,7 +3,6 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Chart } from '../chart';
 import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
 import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';

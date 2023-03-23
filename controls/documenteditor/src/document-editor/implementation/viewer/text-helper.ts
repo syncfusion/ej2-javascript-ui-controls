@@ -665,7 +665,8 @@ export class TextHelper {
                 else
                     return fontName;
             }
-        private getFontNameFromTheme(charFormat: WCharacterFormat, fontName:string,  scriptType:FontScriptType, hintType: FontHintType,isAscii?:boolean): string
+
+        private getFontNameFromTheme(charFormat: WCharacterFormat, fontName:string,  scriptType:FontScriptType, hintType: FontHintType): string
         {            
             let fontScheme: FontScheme;
             if(this.documentHelper.hasThemes && !isNullOrUndefined(this.documentHelper.themes) && !isUndefined(this.documentHelper.themes.fontScheme))
@@ -687,10 +688,9 @@ export class TextHelper {
                 }
                 fontName = this.updateFontNameFromTheme(charFormat, minorFontScheme, scriptType, fontName, hintType);
             }
-            if (isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName)){
+            if (isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
                 //Gets the default font (Times New Roman)
-                fontName = defaultFont;               
-            }
+                fontName = defaultFont;
             return fontName;
         }
 

@@ -122,6 +122,7 @@ export class Ajax {
             if (!isNullOrUndefined(this.onUploadProgress)) {
                 this.httpRequest.upload.onprogress = this.onUploadProgress;
             }
+            // eslint-disable-next-line
             this.httpRequest.open(this.type, this.url, this.mode);
             // Set default headers
             if (!isNullOrUndefined(this.data) && this.contentType !== null) {

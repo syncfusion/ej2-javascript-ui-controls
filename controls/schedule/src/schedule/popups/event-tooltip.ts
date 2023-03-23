@@ -26,7 +26,8 @@ export class EventTooltip {
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
             beforeClose: this.onBeforeClose.bind(this),
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         this.tooltipObj.appendTo(this.parent.element);
     }

@@ -1,0 +1,152 @@
+@include export-module('pager-theme') {
+
+  /*! Pager theme */
+  #{&}.e-pager {
+    background-color: $pager-bg-color;
+    border-color: $pager-border-color;
+    color: $pager-color;
+    opacity: $pager-content-opacity;
+
+    div.e-icons.e-pager-default {
+      color: $pager-icon-color;
+    }
+
+    div.e-icons.e-disable {
+      color: $pager-numeric-txt-bg-color;
+    }
+
+    .e-pager-default:hover {
+      background: $pager-hover-bg-color;
+      color: $pager-hover-color;
+      opacity: $pager-content-opacity;
+    }
+
+    .e-parentmsgbar {
+      font-weight: $pager-pagermessage-weight;
+    }
+
+    .e-spacing {
+      color: $page-content-color;
+      opacity: $pager-content-opacity;
+    }
+
+    .e-spacing.e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+      background: $pager-numeric-hover-bg-color;
+    }
+
+    .e-numericitem:hover {
+      color: $pager-hover-color;
+      opacity: $pager-content-opacity;
+    }
+
+    .e-numericitem:hover:not(.e-np):not(.e-pp):not(.e-active) {
+      border-left: $pager-item-hover-borders-width solid $pager-item-hover-border-color;
+    }
+
+    .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
+      background-color: $pager-number-hover-bg-color;
+      opacity: 1;
+    }
+
+    .e-numericitem {
+      background: $pager-bg-color;
+      border-right-color: $pager-border-color;
+      color: $page-content-color;
+    }
+
+    .e-prevpagedisabled,
+    .e-prevpage,
+    .e-nextpage,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled,
+    .e-lastpage,
+    .e-firstpage,
+    .e-firstpagedisabled {
+      background-color: $pager-bg-color;
+      color: $pager-icon-color;
+    }
+
+    .e-lastpage,
+    .e-firstpage {
+      background-color: transparent;
+    }
+
+    .e-pagercontainer {
+      background-color: $pager-bg-color;
+      border-color: $pager-border-color;
+    }
+
+    .e-firstpage,
+    .e-prevpage,
+    .e-firstpagedisabled,
+    .e-prevpagedisabled,
+    .e-nextpage,
+    .e-lastpage,
+    .e-nextpagedisabled,
+    .e-lastpagedisabled {
+      border-right-color: $pager-border-color;
+    }
+
+    .e-currentitem,
+    .e-currentitem:hover {
+      @if $pager-skin == 'bootstrap5' {
+        border-right-color: $primary-light;
+      }
+      background: $pager-active-bg-color;
+      color: $pager-active-color;
+      opacity: 1;
+    }
+
+    .e-numericitem.e-focused,
+    .e-first.e-focused,
+    .e-prev.e-focused,
+    .e-next.e-focused,
+    .e-last.e-focused,
+    .e-mfirst.e-focused,
+    .e-mprev.e-focused,
+    .e-mnext.e-focused,
+    .e-mlast.e-focused {
+      background-color: $pager-focus-bg-color;
+    }
+
+    .e-currentitem.e-numericitem.e-focused {
+      background: $pager-active-bg-color;
+      box-shadow: $pager-focus-active-box-shadow;
+    }
+
+    .e-focused {
+      box-shadow: $pager-focus-shadow;
+    }
+
+    @media (max-width: 590px) {
+      .e-pager-default:hover {
+        background: $pager-bg-color;
+        color: $pager-mhover-color;
+        opacity: $pager-content-opacity;
+      }
+    }
+
+    &.e-rtl {
+
+      & .e-numericitem {
+        border-left-color: $pager-border-color;
+      }
+
+      & .e-firstpage,
+      & .e-prevpage,
+      & .e-firstpagedisabled,
+      & .e-prevpagedisabled,
+      & .e-nextpage,
+      & .e-lastpage,
+      & .e-nextpagedisabled,
+      & .e-lastpagedisabled {
+        border-left-color: $pager-border-color;
+      }
+
+      & .e-nextpage,
+      & .e-nextpagedisabled {
+        border-left-color: $pager-border-color;
+      }
+    }
+  }
+}

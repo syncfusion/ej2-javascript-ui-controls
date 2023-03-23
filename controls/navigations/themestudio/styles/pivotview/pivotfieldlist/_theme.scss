@@ -79,7 +79,71 @@
     font-size: $field-list-content-font-size;
     max-width: 700px;
     min-width: 300px;
+    
+    &.sf-pivotfieldlist-container {    
+    .e-field-list-container .e-field-table .e-field-list
+    {
+      display: block;
+      overflow-y: auto;
+      &.e-olap-field-list-tree.e-treeview {
+         ul:first-child {
+           padding-right: 0;
+         }
+         li {
+          &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+           display: none;
+         }
+         &.e-rtl {
+           ul:first-child {
+             padding-left: 0;
+             padding-right: 10px;
+           }
+        }
+      }
+    }
 
+      li {
+        .e-drag {
+            padding: revert;
+            margin: revert;
+            width: auto;
+            height: auto;
+          }
+        .e-draggable {
+          display: contents;
+          }  
+        .e-text-content {
+            display: flex;
+            align-items: center;
+          }
+        .e-list-text {
+            text-overflow: ellipsis;    
+            overflow-x: hidden;
+            width: 100%;
+            white-space: nowrap;
+        }        
+    }  
+}
+    .e-field-list-container .e-field-table .e-field-list.e-treeview:not(.e-rtl) {
+     .e-list-text {
+       padding-right: revert;
+     }
+   }
+
+   .e-field-list-container .e-field-table .e-field-list.e-treeview.e-rtl {
+     .e-list-text {
+      padding-left: revert;
+    }
+   }
+    .e-adaptive-field-list-dialog .e-member-editor-container
+    {
+      li {
+        &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+          display: none;
+           }
+       }
+    }
+}
     .e-layout-footer {
       display: flex;
       padding: 10px 2px 2px;
@@ -1356,10 +1420,6 @@
 
                 .e-list-icon {
                   color: $field-list-tree-icon-color;
-
-                  @if ($skin-name == 'bootstrap5') {
-                    color: $field-list-default-fill-color;
-                  }
                 }
 
                 .e-calcfieldmember .e-list-text {

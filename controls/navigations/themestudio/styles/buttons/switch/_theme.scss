@@ -73,7 +73,12 @@
           opacity: $switch-on-off-disabled-bg-color-opacity;
         }
         background-color: $switch-on-off-disabled-bg-color;
-        border-color: $switch-handle-disabled-bg-color;
+        @if $skin-name == 'Material3' {
+          border-color: $switch-handle-disabled-border-color;
+        }
+        @else {
+          border-color: $switch-handle-disabled-bg-color;
+        }
         color: $switch-disabled-font-color;
       }
 

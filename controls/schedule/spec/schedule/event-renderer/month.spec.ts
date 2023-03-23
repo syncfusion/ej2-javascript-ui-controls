@@ -467,7 +467,7 @@ describe('Month Event Render Module', () => {
                 width: '100%',
                 height: '550px',
                 views: ['Month'],
-                selectedDate: new Date(2022, 2, 6),
+                selectedDate: new Date(2022, 2, 6)
             };
             schObj = util.createSchedule(model, [], done);
         });
@@ -479,12 +479,12 @@ describe('Month Event Render Module', () => {
                 expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=WEEKLY;BYDAY=MO,TU;INTERVAL=1;UNTIL=20220308T000000Z;');
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
                 done();
-            }
-            const workCell: HTMLTableCellElement = schObj.element.querySelector("[data-date='1646611200000']");
+            };
+            const workCell: HTMLTableCellElement = schObj.element.querySelector('[data-date="1646611200000"]');
             util.triggerMouseEvent(workCell, 'click');
             util.triggerMouseEvent(workCell, 'dblclick');
             const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
-            util.triggerMouseEvent(editor.querySelector(".e-all-day.e-field") as HTMLElement, 'click');
+            util.triggerMouseEvent(editor.querySelector('.e-all-day.e-field') as HTMLElement, 'click');
             const repeatElement: DropDownList =
                 (editor.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
             repeatElement.index = 2; repeatElement.dataBind();
@@ -497,7 +497,7 @@ describe('Month Event Render Module', () => {
             util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-clear-icon'), 'mousedown');
             const dp: DatePicker = (editor.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DatePicker;
             dp.value = new Date(2022, 2, 1);
-            async function openUntil(done: DoneFn) {
+            async function openUntil(done: DoneFn): Promise<void> {
                 util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-date-icon'), 'mousedown');
                 done();
             }

@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**
@@ -22,7 +21,6 @@ export class PieBase extends AccumulationBase {
     protected startAngle: number;
     protected totalAngle: number;
     public innerRadius: number;
-
     public pieBaseCenter: ChartLocation;
     public pieBaseRadius: number;
     public pieBaseLabelRadius: number;
@@ -220,7 +218,6 @@ export class PieBase extends AccumulationBase {
         this.pieBaseCenter.x += 1;
         let radius: number = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const effect: Function = getAnimationFunction('Linear'); // need to check animation type
         new Animation({}).animate(<HTMLElement>slice, {
             duration: duration,

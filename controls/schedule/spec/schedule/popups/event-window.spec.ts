@@ -155,8 +155,8 @@ describe('Schedule event window initial load', () => {
                         title: 'Project',
                         name: 'Project', allowMultiple: false,
                         dataSource: [
-                            { text: "Department A", id: 1, color: "#cb6bb2" },
-                            { text: "Department B", id: 2, color: "#cb6bb2" }
+                            { text: 'Department A', id: 1, color: '#cb6bb2' },
+                            { text: 'Department B', id: 2, color: '#cb6bb2' }
                         ],
                         textField: 'text', idField: 'id', colorField: 'color'
                     }, {
@@ -164,8 +164,8 @@ describe('Schedule event window initial load', () => {
                         title: 'Categories',
                         name: 'Categories', allowMultiple: true,
                         dataSource: [
-                            { text: "Instrument X", id: 1, groupId: 2, color: "#1aaa55" },
-                            { text: "Instrument Y", id: 2, groupId: 2, color: "#1aaa55" }
+                            { text: 'Instrument X', id: 1, groupId: 2, color: '#1aaa55' },
+                            { text: 'Instrument Y', id: 2, groupId: 2, color: '#1aaa55' }
                         ],
                         textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
                     },
@@ -174,12 +174,12 @@ describe('Schedule event window initial load', () => {
                         title: 'Subcategories',
                         name: 'Subcategories', allowMultiple: true,
                         dataSource: [
-                            { text: "Technician 1", id: 1, groupId: 1, color: "#7fa900" },
-                            { text: "Technician 2", id: 2, groupId: 1, color: "#7fa900" },
+                            { text: 'Technician 1', id: 1, groupId: 1, color: '#7fa900' },
+                            { text: 'Technician 2', id: 2, groupId: 1, color: '#7fa900' }
                         ],
                         textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
                     }
-                ],
+                ]
             };
             schObj = util.createSchedule(model, resourceAppointments, done);
         });
@@ -1185,6 +1185,17 @@ describe('Schedule event window initial load', () => {
                 const backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
                 backIcon.click();
             });
+
+            it('EJ2-63839 - openEditor with repeatType check', () => {
+                schObj.openEditor(schObj.activeCellsData, 'Add', null, 1)
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const repeatElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' +
+                    cls.EVENT_WINDOW_REPEAT_CLASS + ' input');
+                expect(((repeatElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(true);
+                expect(((repeatElement as EJ2Instance).ej2_instances[0] as CheckBox).label).toEqual('Repeats every day(s)');
+                const backIcon: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
+                backIcon.click();
+            });
         });
 
         describe('event taphold', () => {
@@ -1351,6 +1362,24 @@ describe('Schedule event window initial load', () => {
             expect(dialogElement.querySelectorAll('#customDiv').length).toEqual(1);
             (dialogElement.querySelector('.e-event-cancel') as HTMLElement).click();
             expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+
+        it('EJ2-70482 - Schedule form validator instance count ', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const formElement: object[] = (<HTMLElement>dialogElement.querySelector('.e-schedule-form') as EJ2Instance).ej2_instances;
+            expect(formElement.length).toEqual(1);
+            const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[10] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[10] as HTMLElement, 'dblclick');
+            const formElement1: object[] = (<HTMLElement>dialogElement.querySelector('.e-schedule-form') as EJ2Instance).ej2_instances;
+            expect(formElement1.length).toEqual(1);
+            cancelButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+
         });
     });
 
@@ -1541,22 +1570,22 @@ describe('Schedule event window initial load', () => {
                 'style="width: 100%; height: 60px !important; resize: vertical"></textarea></td></tr></tbody></table>';
             const onPopupOpen: EmitType<PopupOpenEventArgs> = (args: PopupOpenEventArgs) => {
                 if (args.type === 'Editor') {
-                    let formElement: HTMLElement = <HTMLElement>args.element.querySelector('.e-schedule-form');
-                    let statusElement: HTMLInputElement = args.element.querySelector('#EventType') as HTMLInputElement;
+                    const formElement: HTMLElement = <HTMLElement>args.element.querySelector('.e-schedule-form');
+                    const statusElement: HTMLInputElement = args.element.querySelector('#EventType') as HTMLInputElement;
                     if (!statusElement.classList.contains('e-dropdownlist')) {
-                        let dropDownListObject: DropDownList = new DropDownList({
+                        const dropDownListObject: DropDownList = new DropDownList({
                             placeholder: 'Choose status', value: statusElement.value,
                             dataSource: ['New', 'Requested', 'Confirmed']
                         });
                         dropDownListObject.appendTo(statusElement);
                     }
-                    let validator: FormValidator = ((formElement as EJ2Instance).ej2_instances[0] as FormValidator);
+                    const validator: FormValidator = ((formElement as EJ2Instance).ej2_instances[0] as FormValidator);
                     validator.addRules('EventType', { required: true });
-                    let startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                    const startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
                     if (!startElement.classList.contains('e-datetimepicker')) {
                         new DateTimePicker({ value: new Date(startElement.value) || new Date() }, startElement);
                     }
-                    let endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                    const endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
                     if (!endElement.classList.contains('e-datetimepicker')) {
                         new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
                     }
@@ -1594,7 +1623,7 @@ describe('Schedule event window initial load', () => {
                 'colspan="4"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td></tr><tr><td class="e-textlabel">To' +
                 '</td><td colspan="4"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td class="e-textlabel">Reason</td><td colspan="4">' +
                 '<textarea id="Description" class="e-field e-input" name="Description" rows="3" cols="50"' +
-                'style="width: 100%; height: 60px !important; resize: vertical"></textarea></td></tr></tbody></table>'
+                'style="width: 100%; height: 60px !important; resize: vertical"></textarea></td></tr></tbody></table>';
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
@@ -1613,77 +1642,77 @@ describe('Schedule event window initial load', () => {
         beforeAll((done: DoneFn) => {
             const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5" id ="formId"><tbody>' +
                 '<tr><td class="e-textlabel">Training Number</td> <td colspan="4"><input id="trainingNumber" class="e-field e-input" type="text" value="" ' +
-                'name="trainingNumber" style="width: 100%" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/></td>'+
+                'name="trainingNumber" style="width: 100%" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/></td>' +
                 '</tr><tr><td class="e-textlabel">Training name</td> <td colspan="4">' +
                 ' <input id="Subject" class="e-field e-input" type="text" value="" name="Subject" style="width: 100%" placeholder="Enter the training Name" /> ' +
                 '</td></tr><tr><td class="e-textlabel">Timing Session1 </td><td ' +
                 'colspan="4"><input id="startTime" class="e-field" type="text" name="StartTime" /></td></tr><tr><td class="e-textlabel">Timing Session2' +
-                '</td><td colspan="4"> <input id="session2" class="e-field" type="text" name="session2" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
+                '</td><td colspan="4"> <input id="session2" class="e-field" type="text" name="session2" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
                 '</td></tr><tr><td class="e-textlabel">Timing Session3 </td><td colspan="4">' +
-                '<input id="endTime" class="e-field" type="text" name="EndTime"  /></td></tr><tr><td class="e-textlabel" style="padding: 7px;">Duration</td>'+
-                '<td colspan="4"><input id="duration" class="e-field e-input" type="text" value="" name="duration" style="width: 100%" placeholder="Add a duration" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td class="e-textlabel">Description</td><td colspan="4"><textarea id="Description" class="e-field e-input" name="Description" rows="3" cols="50" style="width: 100%; height: 60px !important; resize: vertical" placeholder="Add a description" ></textarea>'+
-                '</td></tr><tr><td class="e-textlabel">Location</td><td colspan="4"><input id="location" class="e-field" type="text" value="" style="width: 100%" data-name="location" />'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Employee Name</td><td colspan="4">'+
-                '<input id="employee" class="e-field" type="text" value="" name="employee" data-name="employee" style="width: 100%"  placeholder= "Select a Employee name" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 7px;">Comment</td><td colspan="4">'+
-                '<input id="comment" class="e-field e-input" type="text" value="" name="comment" style="width: 100%"placeholder="Add a comment" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 7px;">Skill</td><td colspan="4"><input id="skill" class="e-field e-input" type="text" value="" name="skill" style="width: 100%" placeholder="Add a skill" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Approved by</td><td colspan="4">'+
-                '<input id="approvedBy" class="e-field e-input" type="text" value="" name="approvedBy" style="width: 100%" placeholder="Enter a Approver" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td colspan="4"><input type="hidden" id="Stage" name="Stage" class="e-field  e-input" style="width: 100%" value="" readonly/>'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Faculty</td><td colspan="4">'+
-                '<input id="faculty" class="e-field" type="text" value="" name="faculty" data-name="faculty" style="width: 100%" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td> </tr><tr><td class="e-textlabel" style="padding: 1px;">EvaluationBy</td><td colspan="4">'+
-                '<input id="evaluationBy" class="e-field e-input" type="text" value="" name="evaluationBy" style="width: 100%" placeholder="Enter a Name" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">ApproverDetails</td><td colspan="4">'+
-                ' <input id="approverDetails" class="e-field e-input" type="text" value="" name="approverDetails" style="width: 100%" placeholder="Add a details" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>'+
-                '</td></tr></tbody></table>'
+                '<input id="endTime" class="e-field" type="text" name="EndTime"  /></td></tr><tr><td class="e-textlabel" style="padding: 7px;">Duration</td>' +
+                '<td colspan="4"><input id="duration" class="e-field e-input" type="text" value="" name="duration" style="width: 100%" placeholder="Add a duration" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td class="e-textlabel">Description</td><td colspan="4"><textarea id="Description" class="e-field e-input" name="Description" rows="3" cols="50" style="width: 100%; height: 60px !important; resize: vertical" placeholder="Add a description" ></textarea>' +
+                '</td></tr><tr><td class="e-textlabel">Location</td><td colspan="4"><input id="location" class="e-field" type="text" value="" style="width: 100%" data-name="location" />' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Employee Name</td><td colspan="4">' +
+                '<input id="employee" class="e-field" type="text" value="" name="employee" data-name="employee" style="width: 100%"  placeholder= "Select a Employee name" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 7px;">Comment</td><td colspan="4">' +
+                '<input id="comment" class="e-field e-input" type="text" value="" name="comment" style="width: 100%"placeholder="Add a comment" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 7px;">Skill</td><td colspan="4"><input id="skill" class="e-field e-input" type="text" value="" name="skill" style="width: 100%" placeholder="Add a skill" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Approved by</td><td colspan="4">' +
+                '<input id="approvedBy" class="e-field e-input" type="text" value="" name="approvedBy" style="width: 100%" placeholder="Enter a Approver" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td colspan="4"><input type="hidden" id="Stage" name="Stage" class="e-field  e-input" style="width: 100%" value="" readonly/>' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">Faculty</td><td colspan="4">' +
+                '<input id="faculty" class="e-field" type="text" value="" name="faculty" data-name="faculty" style="width: 100%" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td> </tr><tr><td class="e-textlabel" style="padding: 1px;">EvaluationBy</td><td colspan="4">' +
+                '<input id="evaluationBy" class="e-field e-input" type="text" value="" name="evaluationBy" style="width: 100%" placeholder="Enter a Name" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr><tr><td class="e-textlabel" style="padding: 1px;">ApproverDetails</td><td colspan="4">' +
+                ' <input id="approverDetails" class="e-field e-input" type="text" value="" name="approverDetails" style="width: 100%" placeholder="Add a details" data-required-message="This field is required" required="" regex="^[a-zA-Z .()-_0-9]+$" data-regex-message="Only & sign not allowed"/>' +
+                '</td></tr></tbody></table>';
             const onPopupOpen: EmitType<PopupOpenEventArgs> = (args: PopupOpenEventArgs) => {
                 if (args.type === 'Editor') {
-                    var startElement = args.element.querySelector('#startTime') as HTMLInputElement;
+                    const startElement: HTMLInputElement = args.element.querySelector('#startTime') as HTMLInputElement;
                     if (!startElement.classList.contains('e-datetimepicker')) {
-                      new DateTimePicker({ value: new Date(startElement.value) || new Date() }, startElement);
-                    }              
-                    var endElement = args.element.querySelector('#endTime') as HTMLInputElement;
+                        new DateTimePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                    }
+                    const endElement: HTMLInputElement = args.element.querySelector('#endTime') as HTMLInputElement;
                     if (!endElement.classList.contains('e-datetimepicker')) {
-                      new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
-                    }              
-                    var sessionElement = args.element.querySelector('#session2') as HTMLInputElement;
+                        new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                    const sessionElement: HTMLInputElement = args.element.querySelector('#session2') as HTMLInputElement;
                     if (!sessionElement.classList.contains('e-datetimepicker')) {
-                      new DateTimePicker({ value: new Date(sessionElement.value) || new Date() }, sessionElement);
-                    }              
-                    var employeeElement = args.element.querySelector('#employee') as HTMLInputElement;
+                        new DateTimePicker({ value: new Date(sessionElement.value) || new Date() }, sessionElement);
+                    }
+                    const employeeElement: HTMLInputElement = args.element.querySelector('#employee') as HTMLInputElement;
                     if (!employeeElement.classList.contains('e-autocomplete')) {
-                      var employeeObj = new AutoComplete({
-                        dataSource: ['Nancy', 'Steven', 'Laura', 'Robert', 'Margaret', 'Alice'],
-                        placeholder: 'Select a Employee name'
-                      });
-                      employeeObj.appendTo(employeeElement);
-                      // Setup the name attribute to the autocomplete input element for input focus out validation
-                      employeeObj.element.setAttribute('name', 'employee');
-                    }              
-                    var facultyElement = args.element.querySelector('#faculty') as HTMLInputElement;
+                        const employeeObj: AutoComplete = new AutoComplete({
+                            dataSource: ['Nancy', 'Steven', 'Laura', 'Robert', 'Margaret', 'Alice'],
+                            placeholder: 'Select a Employee name'
+                        });
+                        employeeObj.appendTo(employeeElement);
+                        // Setup the name attribute to the autocomplete input element for input focus out validation
+                        employeeObj.element.setAttribute('name', 'employee');
+                    }
+                    const facultyElement: HTMLInputElement = args.element.querySelector('#faculty') as HTMLInputElement;
                     if (!facultyElement.classList.contains('e-autocomplete')) {
-                      var facultyObj = new AutoComplete({
-                        dataSource: ['Nancy', 'Steven', 'Laura', 'Robert', 'Margaret', 'Alice'],
-                        placeholder: 'Enter a Faculty'
-                      });
-                      facultyObj.appendTo(facultyElement);
-                      facultyObj.element.setAttribute('name', 'faculty');
-                    }              
-                    var locationElement = args.element.querySelector('#location') as HTMLInputElement;
+                        const facultyObj: AutoComplete = new AutoComplete({
+                            dataSource: ['Nancy', 'Steven', 'Laura', 'Robert', 'Margaret', 'Alice'],
+                            placeholder: 'Enter a Faculty'
+                        });
+                        facultyObj.appendTo(facultyElement);
+                        facultyObj.element.setAttribute('name', 'faculty');
+                    }
+                    const locationElement: HTMLInputElement = args.element.querySelector('#location') as HTMLInputElement;
                     if (!locationElement.classList.contains('e-autocomplete')) {
-                      var locationObj = new AutoComplete({
-                        dataSource: ['India', 'USA', 'California', 'Greenland', 'Newyork City', 'Bermuda'],
-                        placeholder: 'Enter your location'
-                      });
-                      locationObj.appendTo(locationElement);
-                      locationObj.element.setAttribute('name', 'location');
-                    }              
-                    var stageElement = args.element.querySelector('#Stage') as HTMLInputElement;
+                        const locationObj: AutoComplete = new AutoComplete({
+                            dataSource: ['India', 'USA', 'California', 'Greenland', 'Newyork City', 'Bermuda'],
+                            placeholder: 'Enter your location'
+                        });
+                        locationObj.appendTo(locationElement);
+                        locationObj.element.setAttribute('name', 'location');
+                    }
+                    const stageElement: HTMLInputElement = args.element.querySelector('#Stage') as HTMLInputElement;
                     if (stageElement) {
-                      stageElement.value = 'New';
+                        stageElement.value = 'New';
                     }
                 }
             };
@@ -1696,7 +1725,7 @@ describe('Schedule event window initial load', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        
+
         it('event window validation checking with input Feild', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
@@ -1722,7 +1751,7 @@ describe('Schedule event window initial load', () => {
             cancelButton.click();
         });
     });
-    
+
     describe('Editor window validation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -2844,12 +2873,12 @@ describe('Schedule event window initial load', () => {
                 height: '500px',
                 selectedDate: new Date(2022, 1, 6),
                 showQuickInfo: false,
-                eventRendered: function (args: EventRenderedArgs) {
+                eventRendered: (args: EventRenderedArgs) => {
                     if (args.type === 'blockEvent') {
                         args.element.onclick = onBlockClick;
                     }
                 },
-                popupOpen: function (args) {
+                popupOpen: (args: PopupOpenEventArgs) => {
                     if (args.type === 'Editor') {
                         if (!args.element.querySelector('.custom-field-row')) {
                             const row: HTMLElement = createElement('div', { className: 'custom-field-row' });
@@ -2866,23 +2895,23 @@ describe('Schedule event window initial load', () => {
                             inputEle.setAttribute('name', 'IsBlock');
                         }
                     }
-                },
+                }
             };
             schObj = util.createSchedule(schOptions, defaultData, done);
 
-            function onBlockClick(args: Event) {
+            function onBlockClick(args: Event): void {
                 const totalCount: Record<string, any>[] = schObj.getBlockEvents();
                 let currentId: number;
                 const target: HTMLElement = args.target as HTMLElement;
                 if (target.classList.contains('e-block-appointment')) {
-                    currentId = parseInt(target.getAttribute('data-id').split('_')[1]);
+                    currentId = parseInt(target.getAttribute('data-id').split('_')[1], 10);
                 } else {
-                    currentId = parseInt(target.offsetParent.getAttribute('data-id').split('_')[1]);
+                    currentId = parseInt(target.offsetParent.getAttribute('data-id').split('_')[1], 10);
                 }
                 const currentBlockData: Record<string, any>[] = [];
                 for (let i: number = 0; i < totalCount.length; i++) {
-                    if (totalCount[i].Id === currentId) {
-                        currentBlockData.push(totalCount[i]);
+                    if (totalCount[parseInt(i.toString(), 10)].Id === currentId) {
+                        currentBlockData.push(totalCount[parseInt(i.toString(), 10)]);
                     }
                 }
                 schObj.openEditor(currentBlockData[0], 'Save');

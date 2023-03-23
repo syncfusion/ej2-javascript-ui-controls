@@ -132,6 +132,10 @@
       font-size: $format-label-font-size;
       font-weight: $format-label-font-weight;
       opacity: $format-label-font-opacity;
+
+      @if ($field-list-skin == 'bootstrap5') or ($field-list-skin == 'FluentUI') or ($field-list-skin == 'tailwind') {
+        opacity: 1;
+      }
     }
 
     .e-format-value-preview {
@@ -1065,6 +1069,7 @@
           li:not(.e-pivot-parent):not(.e-pivot-child) {
             .e-text-content {
               padding-left: $field-list-treeview-mobile-li-padding;
+              margin-left: $field-list-adaptive-footer-padding-size;
             }
           }
         }
@@ -1153,6 +1158,12 @@
     }
 
     .e-member-editor-dialog {
+      .e-member-editor-container-outer-div {
+        @if ($skin-name == 'FluentUI') {
+          height: $field-list-excel-member-filter-height;
+        }
+      }
+
       .e-toolbar .e-toolbar-items {
         margin-left: $field-list-filter-toolbar-items-margin;
       }

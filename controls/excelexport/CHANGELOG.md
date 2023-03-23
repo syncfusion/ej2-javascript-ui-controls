@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 20.4.53 (2023-03-07)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Fixed the file corruption issue due to the multiple vertical tab in Grid to CSV export.
-
-## 20.4.51 (2023-02-21)
+## 21.1.35 (2023-03-23)
 
 ### Excel Export
 
@@ -18,21 +10,9 @@
 
 - Fixed the file corruption issue due to the vertical tab in Grid to CSV export.
 
-## 20.4.40 (2022-12-28)
-
-### Excel Export
-
 #### Bug Fixes
 
 - Modified the "\n" character at end of row as "\r\n" in Grid to CSV export.
-
-## 20.4.38 (2022-12-21)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Fixed the exception issue when the images are added in the last column of Grid.
 
 ## 20.2.39 (2022-07-19)
 

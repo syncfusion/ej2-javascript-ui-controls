@@ -223,6 +223,7 @@
     }
 
     .e-rte-toolbar.e-rte-tb-mobile .e-toolbar-multirow {
+      display: inline-block;
       margin-left: 0;
       margin-right: 0;
       overflow-x: auto;
@@ -944,7 +945,7 @@
     .e-videoheader,
     .e-video-url-wrap {
       font-family: $rte-font-family;
-      font-size: 15px;
+      font-size: $rte-insert-dialog-font-size;
       opacity: .87;
       padding-bottom: $rte-insert-dialog-label-padding-bottom;
       padding-top: $rte-insert-dialog-label-padding-top;
@@ -1002,11 +1003,11 @@
     .e-dialog .e-aud-uploadwrap.e-droparea .e-browsebtn,
     .e-dialog .e-vid-uploadwrap.e-droparea .e-browsebtn {
       display: block;
-      height: 36px;
+      height: $rte-droparea-browsebtn-height;
       margin: 0 auto;
-      padding: 0 18px;
+      padding: $rte-droparea-browsebtn-padding;
       position: relative;
-      top: -50px;
+      top: $rte-droparea-browsebtn-top;
       @if $skin-name == 'FluentUI' {
         outline: none;
       }
@@ -1026,7 +1027,7 @@
     .e-dialog .e-img-uploadwrap.e-droparea,
     .e-dialog .e-aud-uploadwrap.e-droparea,
     .e-dialog .e-vid-uploadwrap.e-droparea {
-      line-height: 10;
+      line-height: $rte-droparea-line-height;
       min-height: 50px;
       position: relative;
     }
@@ -1079,15 +1080,15 @@
     .e-rte-table-popup.e-popup-open .e-rte-tablecell {
       border: $rte-table-span-border;
       display: inline-block;
-      height: 14px;
-      margin: 1px;
+      height: $rte-table-popup-tablecell-height;
+      margin: $rte-table-popup-tablecell-margin;
       overflow: hidden;
       vertical-align: top;
-      width: 14px;
+      width: $rte-table-popup-tablecell-width;
     }
 
     .e-rte-table-popup.e-popup-open .e-rte-table-row {
-      height: 16px;
+      height: $rte-table-popup-row-height;
     }
 
     .e-rte-table-popup.e-popup-open .e-insert-table-btn {
@@ -1171,6 +1172,7 @@
 
       .e-toolbar-items:not(.e-tbar-pos).e-toolbar-multirow {
         white-space: nowrap;
+        display: inline-block;
       }
 
       &.e-remove-white-space {
@@ -1194,7 +1196,7 @@
         }
 
         .e-toolbar-item {
-          margin: 0 6px;
+          margin: $rte-toolbar-item-frist-last-child-margin;
           min-height: 42px;
 
           &:first-child,
@@ -1304,7 +1306,7 @@
 
         .e-toolbar-item:first-child,
         .e-toolbar-item:last-child {
-          margin: 0 6px;
+          margin: $rte-big-toolbar-item-frist-last-child-margin;
         }
 
         .e-toolbar-item .e-tbar-btn.e-btn.e-control {
@@ -1611,12 +1613,12 @@
   }
 
   .e-bigger .e-rte-table-popup.e-popup-open .e-rte-tablecell {
-    height: 16px;
-    width: 16px;
+    height: $rte-big-tablecell-height;
+    width: $rte-big-tablecell-width;
   }
 
   .e-bigger .e-rte-table-popup.e-popup-open .e-rte-table-row {
-    height: 18px;
+    height: $rte-big-table-row-height;
   }
 
   .e-table-rhelper {
@@ -1729,7 +1731,7 @@
 
     .e-linkheader {
       font-family: $rte-font-family;
-      font-size: 15px;
+      font-size: $rte-big-insert-dialog-font-size;
       opacity: .87;
       padding-bottom: $rte-insert-dialog-label-padding-bottom;
       padding-top: $rte-insert-dialog-label-padding-top;
@@ -1749,6 +1751,32 @@
     }
   }
 
+  @if $skin-name == 'Material3' {
+    .e-rte-toolbar .e-rte-table-popup .e-insert-table-btn{
+      border-color: $outline;
+    }
+    .e-dialog .e-dlg-header-content + .e-dlg-content{
+      padding-top: 0;
+    }
+    .e-bigger .e-richtexteditor,
+    .e-richtexteditor.e-bigger {
+      .e-dialog {
+        border-radius: 16px;
+      }
+    }
+    .e-dialog .e-dlg-content{
+      padding: 7px 20px;
+    }
+    .e-toolbar-wrapper .e-toolbar .e-toolbar-item:not(.e-separator),
+    .e-bigger .e-toolbar .e-toolbar-item:not(.e-separator) {
+      padding: 8px 4px;
+    }
+    .e-rte-quick-popup .e-rte-toolbar.e-rte-quick-toolbar .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child,
+    .e-rte-quick-popup .e-rte-quick-toolbar .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
+      margin: 0;
+    }
+  }
+  
   // Blazor styles start
   .e-rte-upload-popup.e-dialog .e-file-select-wrap {
     display: none;
@@ -1828,6 +1856,10 @@
 
   .e-richtexteditor .e-rte-table-popup.e-popup-open.e-dialog .e-rte-tablecell {
     margin: 1px;
+  }
+  .e-transparent.e-rte-elements.e-tbar-btn.e-rte-fontcolor-dropdown,
+  .e-transparent.e-rte-elements.e-tbar-btn.e-rte-backgroundcolor-dropdown {
+    visibility: hidden;
   }
   // Blazor styles end
 }

@@ -154,8 +154,8 @@ export interface DropDownTreeModel extends ComponentModel{
 
     /**
      * Enables or disables the multi-selection of items. To select multiple items:
-     * * Select the items by holding down the **CTRL** key when clicking on the items.
-     * * Select consecutive items by clicking the first item to select and hold down the **SHIFT** key and click the last item to select.
+     * * Select the items by holding down the **Ctrl** key when clicking on the items.
+     * * Select consecutive items by clicking the first item to select and hold down the **Shift** key and click the last item to select.
      *
      * @default false
      */

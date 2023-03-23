@@ -2,29 +2,29 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
+## 21.1.35 (2023-03-23)
 
 ### Image Editor
 
-#### Bug Fixes
+#### Features
 
-- Issue with "Custom slider losses focus in Image Editor toolbar" has been resolved.
+- Provided the undo/redo support, that records all the actions so that it can be reverted later if necessary.
+- Provided pinch zoom support to zoom in or out the image while performing pinch on touch enabled devices.
+- Provided mouse wheel zoom support to zoom in/out the image while scrolling mouse wheel with ctrl key press.
+- Provided public method 'getImageDimension' to get the current image size with its coordinates.
+- Provided click event to get the current cursor position on the image.
 
-## 20.4.49 (2023-02-07)
+#### Breaking Changes
 
-### Image Editor
-
-#### Bug Fixes
-
-- Issue with "Script error thrown while cancelling freehand drawing" has been resolved.
-
-### Image Editor
+|Previous Enum Name|Modified Enum Name|
+|-----------|-----------|
+|ImageFinetuneOptions|ImageFinetuneOption|
+|ImageFilterOptions|ImageFilterOption|
+|ImageEditorCommands|ImageEditorCommand|
 
 #### Bug Fixes
 
 - Issue with "Script error thrown while resizing control without toolbar" has been resolved.
-
-- Issue with "Script error thrown while cancelling freehand drawing" has been resolved.
 
 ## 20.4.40 (2022-12-28)
 

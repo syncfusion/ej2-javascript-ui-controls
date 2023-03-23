@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
@@ -42,6 +42,7 @@ export class HtmlEditor {
     private isImageDelete: boolean = false;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
+    private clickTimeout: number;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -141,7 +142,7 @@ export class HtmlEditor {
             pointer = range.startOffset;
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
-            : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
+                : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
                 pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
@@ -164,9 +165,9 @@ export class HtmlEditor {
                             detach(currentChildNode[i as number]);
                             i--;
                         }
-                        if (focusNode.textContent.replace(regEx, '') === currentChildNode[i].textContent) {
+                        if (focusNode.textContent.replace(regEx, '') === currentChildNode[i as number].textContent) {
                             pointer = focusNode.textContent.length > 1 ? focusNode.textContent.length - 1 : focusNode.textContent.length;
-                            focusNode = currentChildNode[i] as Element;
+                            focusNode = currentChildNode[i as number] as Element;
                         }
                     }
                 } else if (currentChildNode.length === 1) {
@@ -585,111 +586,127 @@ export class HtmlEditor {
         let selectParentEle: Node[];
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
-        if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
-            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
-                item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
-                if (isIDevice() && item.command === 'Images') {
-                    this.nodeSelectionObj.restore();
-                }
-                const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
-                save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
-                selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
-                selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
-            }
-            if (item.command === 'Images') {
-                this.parent.notify(events.imageToolbarAction, {
-                    member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-            }
-            if (item.command === 'Audios') {
-                this.parent.notify(events.audioToolbarAction, {
-                    member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-            }
-            if (item.command === 'Videos') {
-                this.parent.notify(events.videoToolbarAction, {
-                    member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-            }
-            if (item.command === 'Links') {
-                this.parent.notify(events.linkToolbarAction, {
-                    member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-            }
-            if (item.command === 'Table') {
-                this.parent.notify(events.tableToolbarAction, {
-                    member: 'table', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-            }
-        } else {
-            const linkDialog: Element = document.getElementById(this.parent.getID() + '_rtelink');
-            const imageDialog: Element = document.getElementById(this.parent.getID() + '_image');
-            if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
-                item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
-                const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
-                if (isNullOrUndefined(linkDialog) && isNullOrUndefined(imageDialog)) {
+        if (item.command !== 'FormatPainter') {
+            if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
+                if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
+                    item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                    if (isIDevice() && item.command === 'Images') {
+                        this.nodeSelectionObj.restore();
+                    }
+                    const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                     save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
+                    selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
+                    selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
                 }
-                selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
-                selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
+                if (item.command === 'Images') {
+                    this.parent.notify(events.imageToolbarAction, {
+                        member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                }
+                if (item.command === 'Audios') {
+                    this.parent.notify(events.audioToolbarAction, {
+                        member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                }
+                if (item.command === 'Videos') {
+                    this.parent.notify(events.videoToolbarAction, {
+                        member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                }
+                if (item.command === 'Links') {
+                    this.parent.notify(events.linkToolbarAction, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                }
+                if (item.command === 'Table') {
+                    this.parent.notify(events.tableToolbarAction, {
+                        member: 'table', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                }
+            } else {
+                const linkDialog: Element = document.getElementById(this.parent.getID() + '_rtelink');
+                const imageDialog: Element = document.getElementById(this.parent.getID() + '_image');
+                if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
+                    item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                    const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
+                    if (isNullOrUndefined(linkDialog) && isNullOrUndefined(imageDialog)) {
+                        save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
+                    }
+                    selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
+                    selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
+                }
+                switch (item.subCommand) {
+                case 'Maximize':
+                    this.parent.notify(events.enableFullScreen, { args: args });
+                    break;
+                case 'Minimize':
+                    this.parent.notify(events.disableFullScreen, { args: args });
+                    break;
+                case 'CreateLink':
+                    this.parent.notify(events.insertLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'RemoveLink':
+                    this.parent.notify(events.unLink, {
+                        member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'Print':
+                    this.parent.print();
+                    break;
+                case 'Image':
+                    this.parent.notify(events.insertImage, {
+                        member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'Audio':
+                    this.parent.notify(events.insertAudio, {
+                        member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'Video':
+                    this.parent.notify(events.insertVideo, {
+                        member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                case 'CreateTable':
+                    this.parent.notify(events.createTable, {
+                        member: 'table', args: args, selection: save
+                    });
+                    break;
+                case 'SourceCode':
+                    this.parent.notify(events.sourceCode, { member: 'viewSource', args: args });
+                    break;
+                case 'Preview':
+                    this.parent.notify(events.updateSource, { member: 'updateSource', args: args });
+                    break;
+                case 'FontColor':
+                case 'BackgroundColor':
+                    break;
+                case 'File':
+                    this.parent.notify(events.renderFileManager, {
+                        member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
+                default:
+                    this.parent.formatter.process(this.parent, args, args.originalEvent, null);
+                    break;
+                }
             }
-            switch (item.subCommand) {
-            case 'Maximize':
-                this.parent.notify(events.enableFullScreen, { args: args });
-                break;
-            case 'Minimize':
-                this.parent.notify(events.disableFullScreen, { args: args });
-                break;
-            case 'CreateLink':
-                this.parent.notify(events.insertLink, {
-                    member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+        } else{
+            if ((args.originalEvent as MouseEventArgs).detail === 1 ) {
+                clearTimeout(this.clickTimeout);
+                this.clickTimeout = setTimeout(() => {
+                    this.parent.notify( events.formatPainterClick, {
+                        member: 'formatPainter', args: args
+                    });
+                }, 200);
+            } else {
+                clearTimeout(this.clickTimeout);
+                this.parent.notify( events.formatPainterDoubleClick, {
+                    member: 'formatPainter', args: args
                 });
-                break;
-            case 'RemoveLink':
-                this.parent.notify(events.unLink, {
-                    member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-                break;
-            case 'Print':
-                this.parent.print();
-                break;
-            case 'Image':
-                this.parent.notify(events.insertImage, {
-                    member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-                break;
-            case 'Audio':
-                this.parent.notify(events.insertAudio, {
-                    member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-                break;
-            case 'Video':
-                this.parent.notify(events.insertVideo, {
-                    member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-                break;
-            case 'CreateTable':
-                this.parent.notify(events.createTable, {
-                    member: 'table', args: args, selection: save
-                });
-                break;
-            case 'SourceCode':
-                this.parent.notify(events.sourceCode, { member: 'viewSource', args: args });
-                break;
-            case 'Preview':
-                this.parent.notify(events.updateSource, { member: 'updateSource', args: args });
-                break;
-            case 'FontColor':
-            case 'BackgroundColor':
-                break;
-            case 'File':
-                this.parent.notify(events.renderFileManager, {
-                    member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
-                });
-                break;
-            default:
-                this.parent.formatter.process(this.parent, args, args.originalEvent, null);
-                break;
             }
         }
     }
@@ -734,7 +751,8 @@ export class HtmlEditor {
             const formatterClass: HTMLFormatter = new HTMLFormatter({
                 currentDocument: this.contentRenderer.getDocument(),
                 element: editElement,
-                options: option
+                options: option,
+                formatPainterSettings: this.parent.formatPainterSettings
             });
             this.parent.setProperties({ formatter: formatterClass }, true);
         } else {

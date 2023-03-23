@@ -8,9 +8,9 @@ export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
     /**
      * Template option to customize the header section of quick popup.
      * The applicable template types are,
-     * * Both
-     * * Cell
-     * * Event
+     * * `Both`: Denotes the template applies both to the event and cell.
+     * * `Cell`: Denotes the template applies only to the cell.
+     * * `Event`: Denotes the template applies to the event alone.
      *
      *  @default 'Both'
      */

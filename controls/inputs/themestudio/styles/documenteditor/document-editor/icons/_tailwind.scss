@@ -54,6 +54,12 @@
       font-size: 13px;
     }
 
+    .e-de-multi-cmt-mark::before {
+      color: $icon-color;
+      content: '\e8bc';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-post::before {
       content: '\e71d';
       font-family: 'e-icons';
@@ -165,6 +171,7 @@
     content: '\e775';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 2px;
   }
 
   .e-de-tablecell-center-alignment::before {
@@ -172,6 +179,7 @@
     content: '\e7e5';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 2px;
   }
 
   .e-de-tablecell-bottom-alignment::before {
@@ -179,6 +187,7 @@
     content: '\e7d9';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
+    margin: 2px;
   }
 
   .e-de-table-border-setting {

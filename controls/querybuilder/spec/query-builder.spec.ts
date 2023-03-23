@@ -2019,7 +2019,7 @@ describe('QueryBuilder', () => {
             operatorElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             itemsCln[11].click();
-            expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('notnull');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('isnotnull');
             queryBuilder.element.querySelector('.e-removerule').click();
             queryBuilder.addRules([{ 'label': 'Name', 'field': 'Name', 'type': 'string', 'operator': 'in', 'value': ['Nancy'] }], 'group0');
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
@@ -3383,6 +3383,40 @@ describe('QueryBuilder', () => {
             let itemCln1: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             itemCln1[1].click();
             expect(queryBuilder.rule.rules[0].field).toEqual('Name.FirstName');
+        });
+
+        it('EJ2-68260 - Provided special character in SQL string support to query builder', () => {
+            let columns: ColumnsModel[] = [
+                {field: 'Employee', label: 'Employee', columns: [
+                    { field: 'ID', label: 'ID', type: 'number'},
+                    { field: 'DOB', label: 'Date of birth', type: 'date'},
+                    { field: 'HireDate', label: 'Hire Date', type: 'date'},
+                    { field: 'Salary', label: 'Salary', type: 'number'},
+                    { field: 'Age', label: 'Age', type: 'number'},
+                    { field: 'Title', label: 'Title', type: 'string'}
+                ]},
+                {field: 'Name', label: 'Name', columns: [
+                    { field: 'FirstName', label: 'First Name', type: 'string'}, 
+                    { field: 'LastName', label: 'Last Name', type: 'string'}
+                ]},
+                {field: 'Country', label: 'Country', columns : [
+                    { field: 'State', label: 'State', columns : [
+                        { field: 'City', label: 'City', type: 'string'}, 
+                        { field: 'Zipcode', label: 'Zip Code', type: 'number'}] },
+                    { field: 'Region', label: 'Region', type: 'string'},
+                    { field: 'Name', label: 'Name', type: 'string'}
+                ]}
+            ]
+
+            queryBuilder = new QueryBuilder({
+                dataSource: complexData,
+                separator: '.',
+                columns: columns,
+                enableNotCondition: true,
+                fieldMode: 'DropdownTree',
+            }, '#querybuilder');
+            queryBuilder.setRulesFromSql("Name.FirstName LIKE ('Date.parse('yyyy-MM-dd','1980-05-24')%')");
+            expect(queryBuilder.rule.rules[0].value).toEqual("Date.parse('yyyy-MM-dd','1980-05-24')");
         });
         
     });

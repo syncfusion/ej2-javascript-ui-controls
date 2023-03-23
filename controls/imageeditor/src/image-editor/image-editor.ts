@@ -1,16 +1,16 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';
-import { Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
-import { ImageEditorModel, FinetuneSettingsModel } from './image-editor-model';
+import { ImageEditorModel, FinetuneSettingsModel, ZoomSettingsModel } from './image-editor-model';
 
 /**
- * Interface for image finetune values.
+ * This interface is used to specify settings for image finetuning operations, including minimum and maximum values, as well as default values.
  */
 export interface ImageFinetuneValue {
 
@@ -37,60 +37,95 @@ export interface ImageFinetuneValue {
 }
 
 /**
- * Interface for image finetune values.
+ * This interface is used to specify settings for finetuning operations on images, including brightness, contrast, hue, saturation, exposure, opacity, and blur. It includes properties for setting minimum and maximum values for each of these options, as well as a default value.
  */
 export class FinetuneSettings extends ChildProperty<FinetuneSettings> {
     /**
-     * Specifies the brightness level of image.
+     * Represents a finetune setting for adjusting the brightness of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The brightness level of the image, from -100 to 100.
+     * @property {number} min - The minimum brightness value allowed, typically -100.
+     * @property {number} max - The maximum brightness value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public brightness: ImageFinetuneValue;
 
     /**
-     * Specifies the contrast level image.
+     * Represents a finetune setting for adjusting the contrast of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The contrast level of the image, from -100 to 100.
+     * @property {number} min - The minimum contrast value allowed, typically -100.
+     * @property {number} max - The maximum contrast value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public contrast: ImageFinetuneValue;
 
     /**
-     * Specifies the hue level image.
+     * Represents a finetune setting for adjusting the hue of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The hue level of the image, from 0 to 100.
+     * @property {number} min - The minimum hue value allowed, typically 0.
+     * @property {number} max - The maximum hue value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public hue: ImageFinetuneValue;
 
     /**
-     * Specifies the saturation level image.
+     * Represents a finetune setting for adjusting the saturation of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The saturation level of the image, from -100 to 100.
+     * @property {number} min - The minimum saturation value allowed, typically -100.
+     * @property {number} max - The maximum saturation value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public saturation: ImageFinetuneValue;
 
     /**
-     * Specifies the exposure level image.
+     * Represents a finetune setting for adjusting the exposure of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The exposure level of the image, from -100 to 100.
+     * @property {number} min - The minimum exposure value allowed, typically -100.
+     * @property {number} max - The maximum exposure value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public exposure: ImageFinetuneValue;
 
     /**
-     * Specifies the opacity level image.
+     * Represents a finetune setting for adjusting the opacity of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The opacity level of the image, from 0 to 100.
+     * @property {number} min - The minimum opacity value allowed, typically 0.
+     * @property {number} max - The maximum opacity value allowed, typically 100.
      * @default null
      */
     @Property(null)
     public opacity: ImageFinetuneValue;
 
     /**
-     * Specifies the blur level image.
+     * Represents a finetune setting for adjusting the blur of an image.
      *
+     * @type {ImageFinetuneValue}
+     *
+     * @property {number} value - The blur level of the image, from 0 to 100.
+     * @property {number} min - The minimum blur value allowed, typically 0.
+     * @property {number} max - The maximum blur value allowed, typically 100.
      * @default null
      */
     @Property(null)
@@ -98,24 +133,87 @@ export class FinetuneSettings extends ChildProperty<FinetuneSettings> {
 }
 
 /**
- * Image Editor is a graphical user interface that helps to edit an image by performing actions like selection,
- * cropping, rotating, inserting text and shapes (rectangles, ellipses, lines), and drawing free hand on top of an image.
+ * An interface used to define the settings such as minimum, maximum, and default zoom factors, and the type of zooming which are available in the image editor control.
+ */
+export class ZoomSettings extends ChildProperty<ZoomSettings> {
+    /**
+     * Specifies the available options for zooming in an image editor control.
+     *
+     * @remarks
+     * Use this property to enable or disable specific types of zooming in the image editor. The following zooming options are available:
+     * MouseWheel: Zooming is performed by scrolling the mouse wheel up and down.
+     * Pinch: Zooming is performed using pinch gestures on touch-enabled devices.
+     * Commands: Zooming is performed by clicking the CTRL key and either the plus (+) or minus (-) buttons on the keyboard.
+     * Toolbar: Zooming is performed using toolbar buttons.
+     *
+     * By default, this property is set to `null`, which enables all types of zooming.
+     *
+     * @default null
+     */
+    @Property(null)
+    public zoomTrigger: ZoomTrigger;
+
+    /**
+     * Specifies the minimum zooming level to limit the zooming.
+     * An integer value that specifies the minimum zooming level. And the default value is 1 (100%).
+     *
+     * @private
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    @Property(1)
+    public minZoomFactor: number;
+
+    /**
+     * Specifies the maximum zooming level to limit the zooming.
+     * An integer value that specifies the maximum zooming level. And the default value is 10 (1000 percent).
+     *
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    @Property(10)
+    public maxZoomFactor: number;
+
+    /**
+     * Specifies the default zoom factor to be applied on initial loading of image.
+     * An integer value that specifies the current zooming level. And the default value is 1 (100 percent).
+     *
+     * @remarks
+     * The given value is considered as percentage.
+     *
+     */
+    @Property(1)
+    public zoomFactor: number;
+
+    /**
+     * Specifies the point in which the zooming  has been performed in the image editor.
+     * A point value that specifies the current zooming point.
+     * And the default value is null, and it can be considered as center point of the image editor.
+     *
+     * @remarks
+     * The given value is a point object which has x and y coordinates.
+     *
+     */
+    @Property(null)
+    public zoomPoint: Point;
+}
+
+/**
+ * The Image Editor is a graphical user interface for editing images.
  *
- ```html
- * <div id='imageeditor'></div>
- * ```
- * ```typescript
- * <script>
- * var imageObj = new ImageEditor({});
- * imageObj.appendTo("#imageeditor");
- * </script>
- * ```
+ * @remarks
+ * The Image Editor component provides various image editing features such as zooming, cropping, rotating, inserting text and shapes (rectangles, ellipses, and lines), drawing freehand on top of an image, undo/redo, and more.
+ *
+ * {% codeBlock src='image-editor/default/index.md' %}{% endcodeBlock %}
+ *
  */
 @NotifyPropertyChanges
 export class ImageEditor extends Component<HTMLDivElement> implements INotifyPropertyChanged {
     /**
      *
-     * ImageEditor Private Properties
+     * Image Editor Private Properties
      */
 
     private lowerCanvas : HTMLCanvasElement;
@@ -159,9 +257,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private fontSizeColl: DropDownButtonItemModel[] = []; // collection of font sizes
     private textRow: number = 1; // text area row count
     private activeObj: SelectionPoint = {activePoint: {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0},
-        flipObjColl: []} as SelectionPoint;
+        flipObjColl: [], triangle: [], triangleRatio: []} as SelectionPoint;
     private tempActiveObj: SelectionPoint = {activePoint: {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0},
-        flipObjColl: []} as SelectionPoint; // for undo redo
+        flipObjColl: [], triangle: [], triangleRatio: []} as SelectionPoint; // for undo redo
     private currObjType: Interaction = {shape: '', isDragging: false, isActiveObj: false, isText : false, isInitialText: false, isLine: false, isInitialLine: false,
         isCustomCrop: false, isZoomed: false, isUndoZoom: false, isUndoAction: false, isFiltered: false, isSave: false};
     private defToolbarItems: ItemModel[] = [];
@@ -169,7 +267,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private l10n: L10n;
     private themeColl: Object;
     private toolbarFn: Function;
-    private isTimer: boolean = false; // mobile mode text area rendering on long touch
+    private quickAccessToolbarFn: Function;
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timer: any; // mobile mode text area rendering on long touch
     private tempObjColl: SelectionPoint[]; // for undo redo
@@ -187,7 +285,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private tempFilter: string = ''; // restore filter style on cancel
     private canvasFilter: string = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' + // current filter style applied to lowerCanvas
         'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
-    private tempUndoRedoColl: Transition[] = [];
     private tempUndoRedoStep: number = 0;
     // Revamp new properties
     private zoomFactor: number = 0; // Current zoom factor
@@ -213,7 +310,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private isRotateZoom: boolean = false; // To restore zoomed image on selection crop selection
     // eslint-disable-next-line
     private rotateFlipColl: any = []; // Transformation collection for redrawing image on rotate and flip
-    private currentPannedPoint: Point; // To store current panned point in rotated state
+    private currentPannedPoint: Point = {x: 0, y: 0}; // To store current panned point in rotated state
     private isCircleCrop: boolean = false; // Specifies whether circle crop is enabled or not
     private rotatedDestPoints: ActivePoint = {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint;
     private croppedDegree: number = 0; // Specifies the degree when crop is performed
@@ -244,16 +341,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private tempFreehandCounter: number = 0;
     // Undo Redo
     private tempActObj: SelectionPoint; // For text editing undo redo
-    private lastPan: Point = {x: 0, y: 0}; // To store last pan point
     private selectedFreehandColor: string = '#42a5f5';
     private isFreehandDrawCustomized: boolean = false;
-    private isShapeInserted: boolean = false;
     private isAllowCropPan: boolean = false;
-    private tempPannedPoint: Point = {x: 0, y: 0};
     private cropObj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
         totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [],
         degree: 0, currFlipState: '', destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
-        srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '' };
+        srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', zoomFactor: 0, previousZoomValue : 0};
     private afterCropActions: string[] = [];
     private isCancelAction: boolean = false;
     private isFreehandPointMoved: boolean = false;
@@ -267,28 +361,44 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private cancelPointColl: Point[] = [];
     private rotatedFlipCropSelection: boolean = false;
     private freehandDrawSelectedId: string;
-    private panStartObj: CurrentObject;
     private transformCurrentObj: CurrentObject;
+    private currToolbar: string = '';
+    private currentMouseMovePoint: Point = {x: 0, y: 0}; // To prevent mouse move event on pinch zoom
+    private previousCropCurrentObj: CurrentObject;
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private zoomBtnHold: any;
+    private zoomType: string = 'Toolbar';
+    private cursorTargetObjId: string = '';
+    private appliedUndoRedoColl: Transition[] = [];
+    private selPoints: Point[] = [];
+    // eslint-disable-next-line
+    private selPointColl: any = {};
+    private prevActObj: SelectionPoint;
+    private tempCurrSelectionPoint: SelectionPoint;
+    private previousZoomValue: number = 1;
+    private initialZoomValue: number;
+    private isObjSelected: boolean = false;
+    private isShapeInserted: boolean = false;
+    private isInitialTextEdited: boolean = false;
+    private isShapeTextInserted: boolean = false;
 
     /**
-     * Defines class/multiple classes separated by a space for customizing Image Editor UI.
+     * Defines one or more CSS classes that can be used to customize the appearance of an Image Editor component.
+     *
+     * @remarks
+     * One or more CSS classes to customize the appearance of the Image Editor component, such as by changing its toolbar appearance, borders, sizes, or other visual aspects.
      *
      * @default ''
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({cssClass: 'e-custom-img-editor'});
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * Specifies whether the Image Editor is disabled.
+     * Defines whether an Image Editor component is enabled or disabled.
+     *
+     * @remarks
+     * A disabled Image Editor component may have a different visual appearance than an enabled one. When set to “true”, the Image Editor component will be disabled, and the user will not be able to interact with it.
      *
      * @default false
      */
@@ -298,15 +408,33 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     /**
      * Specifies the height of the Image Editor.
      *
+     * @remarks
+     * The value of height is specified either as a percentage (e.g. '100%') or as a fixed pixel value (e.g. '100px').
+     *
      * @default '100%'
      */
     @Property('100%')
     public height: string;
 
     /**
-     * Specifies the theme of the Image Editor. The shape selection appearance will be decided based on this property.
-     * The property supports all the built-in themes of Syncfusion.
-     * default 'Bootstrap5'
+     * Specifies the theme of the Image Editor. The appearance of the shape selection in Image Editor is determined by this property.
+     *
+     * @remarks
+     * The `theme` property supports all the built-in themes of Syncfusion, including:
+     * - `Bootstrap5`
+     * - `Fluent`
+     * - `Tailwind`
+     * - `Bootstrap4`
+     * - `Material`
+     * - `Fabric`
+     * - `HighContrast`
+     * - `Bootstrap5Dark`
+     * - `Bootstrap4Dark`
+     * - `MaterialDark`
+     * - `FabricDark`
+     * - `HighContrastDark`
+     *
+     * The default value is set to `Theme.Bootstrap5`.
      *
      * @isenumeration true
      * @default Theme.Bootstrap5
@@ -317,65 +445,60 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public theme: string | Theme;
 
     /**
-     * Specifies the toolbar items to perform UI interactions. It accepts both string[] and ItemModel[] to configure its toolbar items.
+     * Specifies the toolbar items to perform UI interactions.
+     * It accepts both string[] and ItemModel[] to configure its toolbar items. The default value is null.
+     * If the property is not defined in the control, the default toolbar will be rendered with preconfigured toolbar commands.
      * If the property is defined as empty collection, the toolbar will not be rendered.
-     * Suppose the property is not defined in control, an image editor’s toolbar will be rendered with preconfigured toolbar commands.
      * The preconfigured toolbar commands are
-     *  Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     *  Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
-     *  Transform: helps to rotate and flip an image.
-     *  ZoomIn: performs zoom-in an image.
-     *  ZoomOut: performs zoom-out an image.
-     *  Pan: performs panning once zoomed an image.
-     *  Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
-     *  Save: save the modified image.
-     *  Open: open an image to perform editing.
-     *  Reset: reset the modification and restore the original image.
+     * - Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
+     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     * - Transform: helps to rotate and flip an image.
+     * - Finetunes: helps to perform adjustments on an image.
+     * - Filters: helps to perform predefined color filters.
+     * - ZoomIn: performs zoom-in an image.
+     * - ZoomOut: performs zoom-out an image.
+     * - Save: save the modified image.
+     * - Open: open an image to perform editing.
+     * - Reset: reset the modification and restore the original image.
      *
+     * @example
+     * // Define toolbar items as an array of strings
+     * var toolbarItems = ["Crop", "Annotate", "Transform", "ZoomIn", "ZoomOut", "Pan", "Move", "Save", "Open", "Reset"];
+     *
+     * // Define toolbar items as an array of ItemModel objects
+     * var toolbarItems = [
+     *   { text: "Crop", tooltipText: "Crop", prefixIcon: "e-icon e-crop-icon" }
+     * ]
+     *
+     * @remarks
+     * If the toolbarTemplate property is defined in the control, the toolbar will be rendered based on the toolbarTemplate property.
      * @default null
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     *     toolbar[Crop, ZoomIn, ZoomOut, Transform, {text: 'Custom'}]
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/toolbar/index.md' %}{% endcodeBlock %}
      */
     @Property()
-    public toolbar: (string | ImageEditorCommands | ItemModel)[];
+    public toolbar: (string | ImageEditorCommand | ItemModel)[];
 
     /**
-     * Specifies template to the Image Editor Toolbar.
-     * If you want to customize the entire toolbar in own way by using this property.
-     * The property is depending on ‘toolbar’.
+     * Specifies a custom template for the toolbar of an image editor control.
+     * A string that specifies a custom template for the toolbar of the image editor. If this property is defined, the 'toolbar' property will not have any effect.
+     *
+     * @remarks
+     * Use this property if you want to customize the entire toolbar in your own way. The template should be a string that contains the HTML markup for the custom toolbar.
      *
      * @default null
-     ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     *     toolbarTemplate: '#toolbarTemplate'
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * <script id="toolbarTemplate" type="text/x-template">
-     *    <div class = 'e-toolbar'>
-     *      <button id= 'dltbtn'></button>
-     *    </div>
-     *  </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/toolbarTemplate/index.md' %}{% endcodeBlock %}
+     *
      */
     @Property()
     public toolbarTemplate: string;
 
     /**
-     * Specifies the width of the Image Editor.
+     * Specifies the width of an Image Editor.
+     *
+     * @remarks
+     * The value of width is specified either as a percentage (e.g. '100%') or as a fixed pixel value (e.g. '100px').
      *
      * @default '100%'
      */
@@ -383,17 +506,56 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public width: string;
 
     /**
-     * Specifies whether to perform undo / redo operation.
+     * Specifies a boolean value whether enable undo/redo operations in the image editor.
      *
-     * @default false
-     * @private
+     * @remarks
+     * If this property is true, the undo redo options will be enabled in toolbar and can also be accessed via keyboard shortcuts.
+     * If set to false, both options will be disabled.
+     * The undo redo history is limited to 16. Once the maximum limit is reached, the oldest history item will be removed to make space for the new item.
+     *
+     * @default true
+     *
      */
-    @Property(false)
+    @Property(true)
     public allowUndoRedo: boolean;
 
     /**
-     * Gets or sets whether to prevent the interaction in signature component.
-     * True, if the signature component is read only state where the user interaction is prevented. The default value is false.
+     * Specifies whether to show/hide the Quick Access Toolbar while select the shapes.
+     *
+     * @remarks
+     * The Quick Access Toolbar is a small customizable toolbar that shows commonly used commands while select the shapes.
+     * Set this property to true to show the Quick Access Toolbar, and false to hide it.
+     *
+     * @default false
+     * @private
+     *
+     * @remarks
+     * Set this property to true to show the quick access toolbar, and false to hide it.
+     */
+    @Property(false)
+    public showQuickAccessToolbar: boolean;
+
+    /**
+     * Specifies a custom template content for the quick access toolbar of an Image Editor control.
+     *
+     * @default null
+     * @private
+     *
+     * @remarks
+     * This property only works if the "showQuickAccessToolbar" property is set to true.
+     *
+     * {% codeBlock src='image-editor/quickAccessToolbarTemplate/index.md' %}{% endcodeBlock %}
+     *
+     */
+    @Property()
+    public quickAccessToolbarTemplate: string;
+
+    /**
+     * Specifies whether to prevent user interaction with the image editor control.
+     * A boolean that specifies whether to prevent the interaction in image editor control. The default value is false.
+     *
+     * @remarks
+     * If the property is true, the image editor control becomes read-only, and the user interaction will be prevented.
      *
      * @default false
      * @private
@@ -402,7 +564,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public isReadOnly: boolean;
 
     /**
-     * Specifies the Signature in RTL mode that displays the content in the right-to-left direction.
+     * Specifies whether to enable RTL mode in image editor control that displays the content in the right-to-left direction.
+     * A boolean that specifies whether to enable RTL mode in image editor control. The default value is false.
      *
      * @default false
      * @private
@@ -411,9 +574,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public enableRtl: boolean;
 
     /**
-     * Gets or sets whether to persist component's state between page reloads.
-     * True, if the component's state persistence is enabled. The default value is false.
-     * Component's property will be stored in browser local storage to persist component's state when page reloads.
+     * Specifies a bool value whether enable or disable persist component's state between page reloads. The default value is false.
+     *
+     * @remarks
+     * If this property is true, the controls's state persistence will be enabled.
+     * Control's property will be stored in browser local storage to persist control's state when page reloads.
      *
      * @default false
      * @private
@@ -422,21 +587,49 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public enablePersistence: boolean;
 
     /**
-     * It can be done using the filter property of the canvas.  The following fine tunes can be supported.
-     * Brightness: The intensity of the primary colors grows with increased brightness, but the color itself does not change. It can be done by changing brightness and opacity property.
-     * Contrast: The contrast of an image refers to the difference between the light pixels and dark pixels. Low contrast images contain either a narrow range of colors while high contrast images have bright highlights and dark shadows. It can be done by changing contrast property.
-     * Hue: Hue distinguishes one color from another and is described using common color names such as green, blue, red, yellow, etc. Value refers to the lightness or darkness of a color. It can be controlled by hue-rotate property.
-     * Saturation: If saturation increases, colors appear sharper or purer. As saturation decreases, colors appear more washed-out or faded. It can be controlled by saturation and brightness property.
-     * Exposure: If exposure increases, intensity of light appears brighter. As exposure decreases, intensity of light decreases. Exposure can be controlled by brightness property.
-     * Opacity: The state or quality of being opaque or transparent, not allowing light to pass through the image. Opacity can be controlled by opacity property.
-     * Blur : Adjusting the blur can make an image unfocused or unclear. Blur can be controlled by blur property.
+     * Specifies the finetune settings option which can be used to perform color adjustments in the image editor control.
+     *
+     * @remarks
+     * A 'FinetuneSettingsModel' value that specifies the the finetune options which are enabled in image editor control.
+     * If the property is not specified, then the default values will be applied for minimum, maximum, and value properties for all finetune options.
+     *
+     * The possible values are:
+     * - Brightness: The intensity of the primary colors grows with increased brightness, but the color itself does not change. It can be done by changing brightness and opacity property.
+     * - Contrast: The contrast of an image refers to the difference between the light pixels and dark pixels. Low contrast images contain either a narrow range of colors while high contrast images have bright highlights and dark shadows. It can be done by changing contrast property.
+     * - Hue: Hue distinguishes one color from another and is described using common color names such as green, blue, red, yellow, etc. Value refers to the lightness or darkness of a color. It can be controlled by hue-rotate property.
+     * - Saturation: If saturation increases, colors appear sharper or purer. As saturation decreases, colors appear more washed-out or faded. It can be controlled by saturation and brightness property.
+     * - Exposure: If exposure increases, intensity of light appears brighter. As exposure decreases, intensity of light decreases. Exposure can be controlled by brightness property.
+     * - Opacity: The state or quality of being opaque or transparent, not allowing light to pass through the image. Opacity can be controlled by opacity property.
+     * - Blur : Adjusting the blur can make an image unfocused or unclear. Blur can be controlled by blur property.
+     *
+     * {% codeBlock src='image-editor/finetuneSettings/index.md' %}{% endcodeBlock %}
      *
      */
     @Complex<FinetuneSettingsModel>({}, FinetuneSettings)
     public finetuneSettings: FinetuneSettingsModel;
 
     /**
-     * Triggers before an image is saved.
+     * Specifies the zoom settings to perform zooming action.
+     * A 'ZoomSettingsModel' value that specifies the the zoom related options which are enabled in image editor control. The default value is null.
+     *
+     * @remarks
+     * If the property is not specified, then the default settings will be applied for all the properties available in zoom settings.
+     *
+     * The following options are available in `zoomSettings`.
+     * - minZoomFactor: Specifies the minimum zoom factor level to control the zoom.
+     * - maxZoomFactor: Specifies the maximum zoom factor level to control the zoom.
+     * - zoomFactor: Specifies the zoom factor to be applied to the image.
+     * - zoomTrigger: Specifies the types of zooming to be supported in the image editor.
+     * - zoomPoint: Specifies the x and y coordinates in which the zooming performed on initial load.
+     *
+     * {% codeBlock src='image-editor/zoomSettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+    @Complex<ZoomSettingsModel>({}, ZoomSettings)
+    public zoomSettings: ZoomSettingsModel;
+
+    /**
+     * Event callback that is raised before an image is saved.
      *
      * @event beforeSave
      */
@@ -444,7 +637,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public beforeSave: EmitType<BeforeSaveEventArgs>;
 
     /**
-     * Triggers once the component rendering is completed.
+     * Event callback that is raised after rendering the Image Editor component.
      *
      * @event created
      */
@@ -452,7 +645,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public created: EmitType<Event>
 
     /**
-     * Triggers once the component is destroyed with its elements and bound events.
+     * Event callback that is raised once the component is destroyed with its elements and bound events.
      *
      * @event destroyed
      */
@@ -460,7 +653,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public destroyed: EmitType<Event>
 
     /**
-     * Triggers while zooming an image.
+     * Event callback that is raised while zooming an image.
      *
      * @event zooming
      */
@@ -468,7 +661,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public zooming: EmitType<ZoomEventArgs>
 
     /**
-     * Triggers while panning an image.
+     * Event callback that is raised while panning an image.
      *
      * @event panning
      */
@@ -476,7 +669,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public panning: EmitType<PanEventArgs>
 
     /**
-     * Triggers while cropping an image.
+     * Event callback that is raised while cropping an image.
      *
      * @event cropping
      */
@@ -484,7 +677,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public cropping: EmitType<CropEventArgs>
 
     /**
-     * Triggers while rotating an image.
+     * Event callback that is raised while rotating an image.
      *
      * @event rotating
      */
@@ -492,7 +685,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public rotating: EmitType<RotateEventArgs>
 
     /**
-     * Triggers while flipping an image.
+     * Event callback that is raised while flipping an image.
      *
      * @event flipping
      */
@@ -500,7 +693,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public flipping: EmitType<FlipEventArgs>
 
     /**
-     * Triggers while changing shapes in an image.
+     * Event callback that is raised while changing shapes in an Image Editor.
      *
      * @event shapeChanging
      */
@@ -508,7 +701,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public shapeChanging: EmitType<ShapeChangeEventArgs>
 
     /**
-     * Triggers once an image is opened.
+     * Event callback that is raised once an image is opened in an Image Editor.
      *
      * @event fileOpened
      */
@@ -516,7 +709,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public fileOpened: EmitType<OpenEventArgs>
 
     /**
-     * Triggers once an image is saved.
+     * Event callback that is raised once an image is saved.
      *
      * @event saved
      */
@@ -524,7 +717,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public saved: EmitType<SaveEventArgs>;
 
     /**
-     * Triggers once the toolbar is created.
+     * Event callback that is raised once the toolbar is created.
      *
      * @event toolbarCreated
      */
@@ -532,15 +725,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public toolbarCreated: EmitType<ToolbarEventArgs>
 
     /**
-     * Triggers while updating/refreshing the toolbar
+     * Event callback that is raised while updating/refreshing the toolbar
      *
      * @event toolbarUpdating
+     *
+     * {% codeBlock src='image-editor/toolbarUpdating/index.md' %}{% endcodeBlock %}
+     *
      */
     @Event()
     public toolbarUpdating: EmitType<ToolbarEventArgs>
 
     /**
-     * Triggers once the toolbar item is clicked.
+     * Event callback that is raised once the toolbar item is clicked.
      *
      * @event toolbarItemClicked
      */
@@ -548,7 +744,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public toolbarItemClicked: EmitType<ClickEventArgs>
 
     /**
-     * Triggers when applying filter to an image.
+     * Event callback that is raised when applying filter to an image.
      *
      * @event imageFiltering
      */
@@ -556,12 +752,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public imageFiltering : EmitType<ImageFilterEventArgs>;
 
     /**
-     * Triggers when applying fine tune to an image.
+     * Event callback that is raised when applying fine tune to an image.
      *
      * @event finetuneValueChanging
      */
     @Event()
     public finetuneValueChanging: EmitType<FinetuneEventArgs>
+
+    /**
+     * Event callback that is raised while clicking on an image in the Image Editor.
+     *
+     * @event click
+     */
+    @Event()
+    public click: EmitType<ImageEditorClickEventArgs>
+
+    /**
+     * Event callback that is triggered when the quick access toolbar is opening.
+     *
+     * @event quickAccessToolbarOpening
+     * @private
+     *
+     * @remarks
+     * Use this event to customize the toolbar items that appear in the quick access toolbar.
+     * To customize the toolbar items, modify the "toolbarItems" collection property of the event arguments.
+     * The "toolbarItems" collection contains string and ItemModel values.
+     * The string values representing the names of the built-in toolbar items to display.
+     * The ItemModel values representing the ItemModel of custom toolbar items to display.
+     *
+     * {% codeBlock src='image-editor/quickAccessToolbarOpening/index.md' %}{% endcodeBlock %}
+     *
+     */
+    @Event()
+    public quickAccessToolbarOpening: EmitType<QuickAccessToolbarEventArgs>
 
     /**
      *
@@ -650,6 +873,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             Ellipse: 'Ellipse',
             Rectangle: 'Rectangle',
             Line: 'Line',
+            Arrow: 'Arrow',
             Bold: 'Bold',
             Italic: 'Italic',
             BoldItalic: 'Bold Italic',
@@ -659,7 +883,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             Large: 'Large',
             XLarge: 'X-Large',
             ABC: 'ABC',
-            Browse: 'Browse'
+            Browse: 'Browse',
+            Duplicate: 'Duplicate',
+            Remove: 'Remove',
+            EditText: 'Edit Text'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.locale);
     }
@@ -758,9 +985,26 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 this.refreshToolbar('main');
                 break;
-            case 'toolbar':
+            case 'showQuickAccessToolbar':
+                if (newProperties.showQuickAccessToolbar) {
+                    this.showQuickAccessToolbar = true;
+                    this.createQuickAccessToolbar();
+                    this.renderQuickAccessToolbar();
+                } else {
+                    this.showQuickAccessToolbar = false;
+                    this.destroyQuickAccessToolbar();
+                }
                 break;
-            case 'toolbarTemplate':
+            case 'zoomSettings':
+                if (newProperties.zoomSettings) {
+                    this.zoomSettings.zoomTrigger = newProperties.zoomSettings.zoomTrigger;
+                }
+                if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
+                    this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar | ZoomTrigger.Commands);
+                    this.refreshToolbar('main');
+                } else if ((newProperties.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+                    this.refreshToolbar('main');
+                }
                 break;
             }
         }
@@ -777,13 +1021,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     public initialize(): void {
-        this.updateFinetunes(); this.createToolbar(); this.createContextualToolbar(); this.createCanvas(); this.wireEvent();
+        this.updateFinetunes(); this.createToolbar(); this.createContextualToolbar();
+        this.createCanvas(); this.createQuickAccessToolbar(); this.wireEvent();
         this.lowerContext.filter = this.canvasFilter = this.initialAdjustmentValue = this.adjustmentValue = this.getDefaultFilter();
         if (this.cssClass) {addClass([this.element], this.cssClass.replace(/\s+/g, ' ').trim().split(' ') ); }
         if (this.element) {
             createSpinner({
                 target: this.element
             });
+        }
+        if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
+            this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar | ZoomTrigger.Commands);
         }
     }
 
@@ -905,15 +1153,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateTheme(): void {
-        if (this.theme !== '') {
+        if (!isNullOrUndefined(this.theme) && this.theme !== '') {
             this.theme = this.toPascalCase(this.theme);
+        } else {
+            this.theme = 'Bootstrap5';
         }
     }
 
     private toPascalCase(str: string): string {
         let strArr: string[] = [];
         if (!isNullOrUndefined(str)) {
-            strArr = str.toLowerCase().split('-')
+            strArr = str.toLowerCase().split('-');
         }
         for (let i: number = 0; i < strArr.length; i++) {
             strArr[i as number] = strArr[i as number].charAt(0).toUpperCase() + strArr[i as number].slice(1);
@@ -943,6 +1193,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             id: this.element.id + '_textArea', className: 'e-textarea', attrs: { name: 'textArea' }
         }));
         this.textArea.setAttribute('spellcheck', 'false');
+        this.textArea.style.lineHeight = 'normal';
         this.lowerCanvas.style.width = this.upperCanvas.style.width = this.inMemoryCanvas.style.width = '100%';
         this.lowerCanvas.style.height = this.upperCanvas.style.height = this.inMemoryCanvas.style.height = '100%';
         this.upperCanvas.style.position = this.lowerCanvas.style.position = this.textArea.style.position = 'absolute';
@@ -953,7 +1204,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             id: this.element.id + '_orgImg', attrs: { name: 'Image', crossorigin: 'anonymous' }
         });
         this.upperCanvas.style.cursor = 'default';
-        this.upperCanvas.style.display = 'none';
+        this.upperCanvas.style.display = 'block';
         this.upperContext = this.upperCanvas.getContext('2d');
         this.inMemoryContext = this.inMemoryCanvas.getContext('2d');
     }
@@ -985,22 +1236,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         template: new Uploader({
                             allowedExtensions: '.jpg, .jpeg, .png,.svg',
                             selected: () => {
-                                if (Browser.isDevice) {
-                                    if (this.defToolbarItems.length > 0 &&
-                                        (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
-                                        (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+                                if (!this.disabled) {
+                                    if (Browser.isDevice) {
+                                        if (this.defToolbarItems.length > 0 &&
+                                            (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
+                                            (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+                                        }
+                                        if (!isNullOrUndefined(document.getElementById(this.element.id + '_bottomToolbar'))) {
+                                            (getComponent(document.getElementById(this.element.id + '_bottomToolbar'), 'toolbar') as Toolbar).destroy();
+                                        }
+                                        this.initToolbarItem(false, Browser.isDevice, null);
+                                        this.createBottomToolbar();
+                                    } else {
+                                        if (this.defToolbarItems.length > 0 &&
+                                            (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
+                                            (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+                                        }
+                                        this.initToolbarItem(false, false, null);
                                     }
-                                    if (!isNullOrUndefined(document.getElementById(this.element.id + '_bottomToolbar'))) {
-                                        (getComponent(document.getElementById(this.element.id + '_bottomToolbar'), 'toolbar') as Toolbar).destroy();
-                                    }
-                                    this.initToolbarItem(false, Browser.isDevice, null);
-                                    this.createBottomToolbar();
-                                } else {
-                                    if (this.defToolbarItems.length > 0 &&
-                                        (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
-                                        (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
-                                    }
-                                    this.initToolbarItem(false, false, null);
                                 }
                             }
                         })
@@ -1018,6 +1271,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         } else {
             this.toolbarHeight = 0;
+        }
+    }
+
+    private createQuickAccessToolbar(): void {
+        if (this.showQuickAccessToolbar) {
+            const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
+            canvasWrapper.appendChild(this.createElement('div', {
+                id: this.element.id + '_quickAccessToolbarArea', className: 'e-quick-access-toolbar-area'
+            }));
+            const quickAccessToolbar: HTMLElement = document.getElementById(this.element.id + '_quickAccessToolbarArea');
+            quickAccessToolbar.style.position = 'absolute';
+            if (!isNullOrUndefined(this.activeObj)) {
+                quickAccessToolbar.style.left = this.activeObj.activePoint.startX + 'px';
+                quickAccessToolbar.style.top = this.activeObj.activePoint.startY + 'px';
+            }
+            quickAccessToolbar.style.width = '100%';
+            quickAccessToolbar.style.height = '40px';
+            if (this.quickAccessToolbarTemplate) {
+                this.quickAccessToolbarTemplateFn();
+            } else {
+                const toolbarItems: ItemModel = { cssClass: 'e-image-upload', align: 'Left', type: 'Input',
+                    tooltipText: this.l10n.getConstant('Browse'), template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) };
+                if (isNullOrUndefined(this.defToolbarItems)) {
+                    this.defToolbarItems = [];
+                }
+                this.defToolbarItems.push(toolbarItems);
+                const toolbarArea: HTMLElement = document.getElementById(this.element.id + '_quickAccessToolbarArea');
+                const toolbar: HTMLElement = this.createElement('div', {
+                    id: this.element.id + '_quickAccessToolbar'
+                });
+                toolbarArea.appendChild(toolbar);
+                new Toolbar({clicked: this.defToolbarClicked.bind(this)}, '#' + this.element.id + '_quickAccessToolbar');
+            }
         }
     }
 
@@ -1130,6 +1416,26 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private quickAccessToolbarTemplateFn(): void {
+        let template: Element; const templateID: string = this.element.id + '_quickAccessToolbar';
+        const toolbarArea: HTMLElement = this.element.querySelector('#' + this.element.id + '_quickAccessToolbarArea');
+        if (this.quickAccessToolbarTemplate) {
+            this.quickAccessToolbarFn = this.templateParser(this.quickAccessToolbarTemplate);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((this as any).isReact) {
+                template = this.quickAccessToolbarFn({type: 'toolbar'}, this, 'Template', templateID)[0];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isAngular) {
+                const templateColl: Element [] = this.quickAccessToolbarFn({type: 'toolbar'}, this, 'Template', templateID);
+                template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
+            } else {
+                template = this.quickAccessToolbarFn({type: 'toolbar'}, this, 'Template', templateID)[0];
+            }
+            toolbarArea.appendChild(template);
+            this.renderReactTemplates();
+        }
+    }
+
     private templateParser(template: string): Function {
         if (template) {
             try {
@@ -1148,7 +1454,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private getLeftToolbarItem(isOkBtn?: boolean): ItemModel[] {
         const toolbarItems: ItemModel[] = [];
         if (!isOkBtn) {
-            toolbarItems.push({ cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) });
+            toolbarItems.push({ id: this.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input',
+                template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) });
             toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
         }
         if (this.allowUndoRedo) {
@@ -1161,7 +1468,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     tooltipText: this.l10n.getConstant('Redo'), align: 'Left' });
             }
         }
-        if (!this.preventZoomBtn) {
+        if (!this.preventZoomBtn && (this.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
             if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('ZoomOut') > -1)) {
                 toolbarItems.push({ id: this.element.id + '_zoomOut', prefixIcon: 'e-icons e-zoom-out', cssClass: 'top-icon e-dec-zoom',
                     tooltipText: this.l10n.getConstant('ZoomOut'), align: 'Left' });
@@ -1277,6 +1584,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return toolbarItems;
     }
 
+    private wireZoomBtnEvents(): void {
+        const zoomIn: HTMLElement = document.querySelector('#' + this.element.id + '_zoomIn');
+        const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
+        if (!isNullOrUndefined(zoomIn)) {
+            zoomIn.addEventListener('mousedown', this.zoomInBtnMouseDownHandler.bind(this));
+            zoomIn.addEventListener('mouseup', this.zoomBtnMouseUpHandler.bind(this));
+            zoomIn.addEventListener('click', this.zoomInBtnClickHandler.bind(this));
+            zoomIn.addEventListener('touchstart', this.zoomInBtnClickHandler.bind(this));
+        }
+        if (!isNullOrUndefined(zoomOut)) {
+            zoomOut.addEventListener('mousedown', this.zoomOutBtnMouseDownHandler.bind(this));
+            zoomOut.addEventListener('mouseup', this.zoomBtnMouseUpHandler.bind(this));
+            zoomOut.addEventListener('click', this.zoomOutBtnClickHandler.bind(this));
+            zoomIn.addEventListener('touchstart', this.zoomInBtnClickHandler.bind(this));
+        }
+    }
+
     private isToolbar(): boolean {
         return (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.length > 0)
         || !isNullOrUndefined(this.toolbarTemplate));
@@ -1303,6 +1627,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.renderCropBtn();
                         this.renderTransformBtn();
                     }
+                    this.wireZoomBtnEvents();
                     this.renderSaveBtn();
                     this.trigger('toolbarCreated', {toolbarType: 'main'});
                 }
@@ -1322,23 +1647,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (!isNullOrUndefined(undo) && this.undoRedoStep === 0) {
             undo.classList.add('e-disabled');
             undo.parentElement.classList.add('e-overlay');
-        } else if (!isNullOrUndefined(undo)) {
+        } else if (!isNullOrUndefined(undo) && this.undoRedoStep > 0) {
             undo.classList.remove('e-disabled');
             undo.parentElement.classList.remove('e-overlay');
         }
         const redo: HTMLElement = document.querySelector('#' + this.element.id + '_redo');
-        if (!isNullOrUndefined(redo) && (this.undoRedoStep === this.undoRedoColl.length)) {
+        if (!isNullOrUndefined(redo) && (this.undoRedoStep === this.appliedUndoRedoColl.length)) {
             redo.classList.add('e-disabled');
             redo.parentElement.classList.add('e-overlay');
-        } else if (!isNullOrUndefined(redo) && (this.undoRedoStep === 0 && this.undoRedoColl.length > 0 )) {
+        } else if (!isNullOrUndefined(redo) && (this.undoRedoStep === 0 && this.appliedUndoRedoColl.length > 0 )) {
             redo.classList.remove('e-disabled');
             redo.parentElement.classList.remove('e-overlay');
-        } else if (!isNullOrUndefined(redo)) {
+        } else if (!isNullOrUndefined(redo) && this.undoRedoStep > 0) {
             redo.classList.remove('e-disabled');
             redo.parentElement.classList.remove('e-overlay');
         }
         const zoomIn: HTMLElement = document.querySelector('#' + this.element.id + '_zoomIn');
-        if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 2) {
+        if (!isNullOrUndefined(zoomIn) && this.zoomSettings.zoomFactor >= this.zoomSettings.maxZoomFactor) {
             zoomIn.classList.add('e-disabled');
             zoomIn.parentElement.classList.add('e-overlay');
         } else if (!isNullOrUndefined(zoomIn)) {
@@ -1401,13 +1726,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Ellipse') > -1)) {
             items.push({ text: this.l10n.getConstant('Ellipse'), id: 'ellipse', iconCss: 'e-icons e-circle' });
         }
+        // if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Arrow') > -1)) {
+        //     items.push({ text: this.l10n.getConstant('Arrow'), id: 'arrow', iconCss: 'e-icons e-arrow-right-up' });
+        // }
         if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Text') > -1)) {
             items.push({ text: this.l10n.getConstant('Text'), id: 'text', iconCss: 'e-icons e-add-text' });
         }
         const drpDownBtn: DropDownButton = new DropDownButton({ items: items, iconCss: 'e-icons e-annotation',
             cssClass: 'e-image-popup',
             open: (args: OpenCloseMenuEventArgs) => {
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 if (Browser.isDevice) {
                     args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
                     args.element.parentElement.offsetHeight + 'px';
@@ -1427,7 +1754,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (isCropSelection || this.togglePan) {
                     this.refreshActiveObj();
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
                 switch (args.item.id) {
                 case 'pen':
@@ -1472,7 +1799,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         const drpDownBtn: DropDownButton = new DropDownButton({
             open: (args: OpenCloseMenuEventArgs) => {
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 if (this.togglePan) {
                     this.cancelPan();
                 }
@@ -1506,7 +1832,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         const drpDownBtn: DropDownButton = new DropDownButton({
             open: (args: OpenCloseMenuEventArgs) => {
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 if (Browser.isDevice) {
                     const ht: number = args.element.parentElement.offsetHeight;
                     args.element.parentElement.style.display = 'none';
@@ -1543,25 +1868,21 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private cropSelect(args: MenuEventArgs): void {
         this.isCropTab = true;
         this.zoomFactor = this.cropZoomFactor;
-        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-        const previousObj: CurrentObject = this.getCurrentObj();
-        previousObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-        previousObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-        previousObj.afterCropActions = this.afterCropActions;
         const text: string = args.item.id;
         this.currentToolbar = 'crop';
         this.currSelectionPoint = null;
         this.select(text);
         this.refreshToolbar('main', true, true);
         this.refreshDropDownBtn(true);
-        this.updateUndoRedoColl('selectionTransform', previousObj, previousObj.objColl, previousObj.pointColl, prevCropObj);
         this.enableDisableToolbarBtn();
     }
 
     private transformSelect(args: MenuEventArgs): void {
+        if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
         this.cropSelectedState();
         this.currentSelectionPoint = null;
         this.performTransformation(args.item.id);
+        this.updateCurrentUndoRedoColl('ok');
     }
 
     private performTransformation(text: string): void {
@@ -1575,16 +1896,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.transformCurrentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.isUndoRedo = true;
             if (this.defaultZoomFactor > 0) {
-                this.zoom(-this.defaultZoomFactor);
+                this.zoomAction(-this.defaultZoomFactor);
             } else {
-                this.zoom(Math.abs(this.defaultZoomFactor));
+                this.zoomAction(Math.abs(this.defaultZoomFactor));
             }
             this.isUndoRedo = isUndoRedo;
         }
         this.updateTransform(text);
         if (tempZoomFactor !== 0) {
             this.isUndoRedo = true;
-            this.zoom(tempZoomFactor);
+            this.zoomAction(tempZoomFactor);
             this.isUndoRedo = isUndoRedo;
             let state: string = '';
             if (text === 'rotateleft' || text === 'rotateright') {
@@ -1592,7 +1913,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (text === 'horizontalflip' || text === 'verticalflip') {
                 state = 'flip';
             }
-            this.updateUndoRedoColl(state, this.transformCurrentObj, this.transformCurrentObj.objColl, this.transformCurrentObj.pointColl, prevCropObj);
+            this.updateUndoRedoColl(state, this.transformCurrentObj, this.transformCurrentObj.objColl,
+                                    this.transformCurrentObj.pointColl, prevCropObj);
             this.transformCurrentObj = null;
         }
     }
@@ -1600,16 +1922,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private updateTransform(text: string): void {
         switch (text.toLowerCase()) {
         case 'rotateleft':
-            this.rotate(-90);
+            this.rotateImage(-90);
             break;
         case 'rotateright':
-            this.rotate(90);
+            this.rotateImage(90);
             break;
         case 'horizontalflip':
-            this.flip('Horizontal');
+            this.flipImage(Direction.Horizontal);
             break;
         case 'verticalflip':
-            this.flip('Vertical');
+            this.flipImage(Direction.Vertical);
             break;
         }
     }
@@ -1660,6 +1982,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             created: () => {
                 this.createShapeColor(items);
                 this.createShapeBtn(items);
+                this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
                     this.renderSaveBtn();
                 }
@@ -1905,6 +2228,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             created: () => {
                 this.createTextColor(items);
                 this.createTextBtn(items);
+                this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
                     this.renderSaveBtn();
                 }
@@ -1942,6 +2266,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 modeSwitcher: false, value: '#fff',
                 showButtons: false, mode: 'Palette', cssClass: 'e-text-fontt-color',
                 change: (args: ColorPickerEventArgs): void => {
+                    this.isInitialTextEdited = false;
                     this.pushActItemIntoObj();
                     const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
                     const prevObj: CurrentObject = this.getCurrentObj();
@@ -2035,6 +2360,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.isInitialTextEdited = false;
                     this.pushActItemIntoObj();
                     const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
                     const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
@@ -2124,6 +2450,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     args.element.querySelector('[id *= ' + '"' + fontStyle + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.isInitialTextEdited = false;
                     if (Browser.isDevice) {
                         if (args.item.id === 'bold') {
                             span1Elem.setAttribute('style', 'font-weight: bold');
@@ -2160,6 +2487,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     args.element.querySelector('[aria-label *= ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.isInitialTextEdited = false;
                     this.pushActItemIntoObj();
                     const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
                     const prevObj: CurrentObject = this.getCurrentObj();
@@ -2279,9 +2607,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             obj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.undoRedoColl.push({operation: 'shapeTransform', previousObj: obj, currentObj: obj,
                 previousObjColl: objColl, currentObjColl: obj.objColl,
-                previousPointColl: obj.pointColl, currentPointColl: obj.pointColl,  
+                previousPointColl: obj.pointColl, currentPointColl: obj.pointColl,
                 previousCropObj: cropObj, currentCropObj: cropObj});
-            this.undoRedoStep++;
             this.redrawShape(this.objColl[this.objColl.length - 1]);
         }
     }
@@ -2289,7 +2616,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private updateObjColl(item: string, objColl: SelectionPoint[]): void {
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const prevObj: CurrentObject = this.getCurrentObj();
-        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.objColl = objColl;
         prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
         prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
         const tempBold: boolean = this.activeObj.textSettings.bold;
@@ -2400,6 +2727,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             clicked: this.defToolbarClicked.bind(this),
             created: () => {
                 this.renderSaveBtn();
+                this.wireZoomBtnEvents();
                 this.trigger('toolbarCreated', {toolbarType: 'zoom'});
             }
         }, '#' + this.element.id + '_toolbar');
@@ -2414,6 +2742,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private refreshUndoRedoColl(): void {
         this.undoRedoColl = this.undoRedoColl.slice(0, this.undoRedoStep);
+        this.appliedUndoRedoColl = this.appliedUndoRedoColl.slice(0, this.undoRedoStep);
         this.isUndoRedo = this.currObjType.isUndoAction = false;
         this.enableDisableToolbarBtn();
     }
@@ -2431,194 +2760,276 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (selEle) {
             selEle.classList.remove('e-selected');
         }
+        const type: string = args.item.id.replace(this.element.id, '').split('_')[1];
+        const imageFiltering: ImageFilterEventArgs = { filter: this.toPascalCase(type) as ImageFilterOption, cancel: false};
+        this.trigger('imageFiltering', imageFiltering);
+        if (imageFiltering.cancel) { return; }
         document.getElementById(args.item.id + 'Canvas').parentElement.parentElement.classList.add('e-selected');
         this.currObjType.isFiltered = true;
-        const type: string = args.item.id.replace(this.element.id, '').split('_')[1];
-        const imageFiltering: ImageFilterEventArgs = { filter: this.toPascalCase(type) as ImageFilterOptions};
-        this.trigger('imageFiltering', imageFiltering);
         this.setFilter(type.toLowerCase());
         this.currentFilter = args.item.id;
         this.enableDisableToolbarBtn();
     }
 
+    private zoomInBtnClickHandler(e: MouseEvent & TouchEvent): void {
+        if ((this.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+            if (Browser.isDevice && e.type === 'touchstart') {
+                if (!e.returnValue) {
+                    return;
+                }
+                e.preventDefault();
+            }
+            const zoomIn: HTMLElement = document.querySelector('#' + this.element.id + '_zoomIn');
+            EventHandler.trigger(zoomIn, 'click');
+            if (this.isFreehandDrawEditing) {
+                this.applyFreehandDraw();
+            }
+            this.applyPreviewFilter();
+            this.currObjType.isFiltered = false;
+            if (this.togglePen) {
+                this.currObjType.isZoomed = true;
+                this.freeHandDraw(false); this.updateCurrentUndoRedoColl('ok');
+            }
+            this.currentSelectionPoint = null;
+            this.zoomAction(.1);
+        }
+    }
+
+    private zoomOutBtnClickHandler(e: MouseEvent & TouchEvent): void {
+        if ((this.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+            if (Browser.isDevice && e.type === 'touchstart') {
+                if (!e.returnValue) {
+                    return;
+                }
+                e.preventDefault();
+            }
+            const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
+            EventHandler.trigger(zoomOut, 'click');
+            if (this.isFreehandDrawEditing) {
+                this.applyFreehandDraw();
+            }
+            this.applyPreviewFilter();
+            this.currObjType.isFiltered = false;
+            if (this.togglePen) {
+                this.currObjType.isZoomed = true;
+                this.freeHandDraw(false); this.updateCurrentUndoRedoColl('ok');
+            }
+            this.currentSelectionPoint = null;
+            this.zoomAction(-.1);
+        }
+    }
+
+    private zoomInBtnMouseDownHandler(e: MouseEvent & TouchEvent): void {
+        e.preventDefault();
+        this.zoomBtnHold = setInterval(this.zoomInBtnClickHandler.bind(this), 250);
+    }
+
+    private zoomOutBtnMouseDownHandler(e: MouseEvent & TouchEvent): void {
+        e.preventDefault();
+        this.zoomBtnHold = setInterval(this.zoomOutBtnClickHandler.bind(this), 250);
+    }
+
+    private zoomBtnMouseUpHandler(): void {
+        clearInterval(this.zoomBtnHold);
+        this.zoomBtnHold = 0;
+    }
+
     private defToolbarClicked(args: ClickEventArgs): void {
         let isContextualToolbar: boolean = false;
+        let isFilterFinetune: boolean = false;
         if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
             if (!this.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hide')) {
                 isContextualToolbar = true;
             }
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+            isFilterFinetune = true;
         }
-        let zoomIn: HTMLElement;
-        const type: string = args.item.id.replace(this.element.id + '_', '').toLowerCase();
-        const imageEditorObj: ImageEditor = getInstance(document.getElementById(this.element.id), ImageEditor) as ImageEditor;
-        let isCropSelection: boolean = false;  let panBtn: HTMLElement;
-        let splitWords: string[];
-        if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-        if (splitWords === undefined && this.currObjType.isCustomCrop) {
-            isCropSelection = true;
-        } else if (splitWords !== undefined && splitWords[0] === 'crop'){
-            isCropSelection = true;
-        }
-        let isDisabledZoomOut: boolean = false; let isDisabledFilter: boolean = false; let isDisabledAdjustment: boolean = false;
-        const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
-        if (!isNullOrUndefined(zoomOut) && zoomOut.classList.contains('e-disabled')) {
-            isDisabledZoomOut = true;
-        }
-        const adjustment: HTMLElement = document.querySelector('#' + this.element.id + '_adjustment');
-        if (!isNullOrUndefined(adjustment) && adjustment.classList.contains('e-disabled')) {
-            isDisabledAdjustment = true;
-        }
-        const filter: HTMLElement = document.querySelector('#' + this.element.id + '_filter');
-        if (!isNullOrUndefined(filter) && filter.classList.contains('e-disabled')) {
-            isDisabledFilter = true;
-        }
-        this.enableDisableToolbarBtn();
-        if (!this.disabled) {
-            switch (type) {
-            case 'zoomin':
-                if (this.isFreehandDrawEditing) {
-                    this.applyFreehandDraw();
-                }
-                this.applyPreviewFilter();
-                this.currObjType.isFiltered = false;
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-                if (this.togglePen) {
-                    this.currObjType.isZoomed = true;
-                    this.freeHandDraw(false);
-                }
-                this.currentSelectionPoint = null;
-                imageEditorObj.zoom(.1);
-                break;
-            case 'zoomout':
-                if (!isDisabledZoomOut) {
-                    if (this.isFreehandDrawEditing) {
-                        this.applyFreehandDraw();
-                    }
-                    this.applyPreviewFilter();
-                    this.currObjType.isFiltered = false;
-                    if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-                    if (this.togglePen) {
-                        this.currObjType.isZoomed = true;
-                        this.freeHandDraw(false);
-                    }
-                    this.currentSelectionPoint = null;
-                    imageEditorObj.zoom(-.1);
-                }
-                break;
-            case 'pan':
-                this.currObjType.isCustomCrop = this.currObjType.isFiltered = false;
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-                if (isCropSelection) {
-                    this.currObjType.isCustomCrop = false;
-                    this.refreshActiveObj(); this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.refreshToolbar('main');
-                }
-                if (this.togglePan) {
-                    this.cancelPan();
-                    this.disablePan = true;
-                    if (this.currentToolbar === 'pen') {
-                        this.freeHandDraw(true);
-                    }
-                } else {
-                    panBtn = this.element.querySelector('.e-img-pan .e-btn');
-                    if (!isNullOrUndefined(panBtn)) {
-                        panBtn.classList.add('e-selected-btn');
-                    }
-                    imageEditorObj.pan(true);
-                    this.disablePan = false;
-                }
-                zoomIn = document.querySelector('#' + this.element.id + '_zoomIn');
-                if (!isNullOrUndefined(zoomIn) && this.zoomFactor >= 2) {
-                    zoomIn.classList.add('e-disabled');
-                    zoomIn.parentElement.classList.add('e-overlay');
-                } else if (!isNullOrUndefined(zoomIn)) {
-                    zoomIn.classList.remove('e-disabled');
-                    zoomIn.parentElement.classList.remove('e-overlay');
-                }
-                this.refreshToolbar('main');
-                break;
-            case 'cancel':
-                this.performCancel(isContextualToolbar);
-                break;
-            case 'ok':
-                this.okBtn();
-                this.refreshDropDownBtn(false);
-                this.currentToolbar = 'main';
-                break;
-            case 'crop':
-                if (!isNullOrUndefined(this.currSelectionPoint)) {
-                    if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-                    if (!isNullOrUndefined(this.cropObj.activeObj.shape)) {
-                        this.select(this.cropObj.activeObj.shape);
-                    }
-                    this.refreshToolbar('main', true, true);
-                    (getComponent(this.element.querySelector('#' + this.element.id + '_cropBtn') as HTMLElement, 'dropdown-btn') as DropDownButton).toggle();
-                    if (!isNullOrUndefined(this.activeObj.shape)) {
-                        document.getElementById(this.activeObj.shape.split('-')[1]).classList.add('e-selected');
-                    }
-                }
-                break;
-            case 'reset':
-                imageEditorObj.reset();
-                this.currentToolbar = 'main';
-                break;
-            // case 'undo':
-            //     this.callUndo();
-            //     break;
-            // case 'redo':
-            //     this.callRedo();
-            //     break;
-            case 'adjustment':
-                if (!isDisabledAdjustment) {
-                    this.refreshToolbar('adjustment');
-                    this.setTempFilterProperties();
-                    this.openSlider('brightness');
-                }
-                break;
-            case 'brightness':
-            case 'contrast':
-            case 'hue':
-            case 'saturation':
-            case 'opacity':
-            case 'blur':
-            case 'exposure':
-                this.openSlider(type);
-                break;
-            case 'filter':
-                if (!isDisabledFilter) {
-                    this.refreshToolbar('filter');
-                    this.setTempFilterProperties();
-                }
-                break;
-            case 'default':
-            case 'chrome':
-            case 'cold':
-            case 'warm':
-            case 'grayscale':
-            case 'blackandwhite':
-            case 'sepia':
-            case 'invert':
-            case 'sharpen':
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-                this.currObjType.isFiltered = true;
-                this.setFilter(type);
-                break;
+        if (!isNullOrUndefined(args.item)) {
+            const type: string = args.item.id.replace(this.element.id + '_', '').toLowerCase();
+            const imageEditorObj: ImageEditor = getInstance(document.getElementById(this.element.id), ImageEditor) as ImageEditor;
+            let isCropSelection: boolean = false;  let panBtn: HTMLElement;
+            let splitWords: string[];
+            if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+            if (splitWords === undefined && this.currObjType.isCustomCrop) {
+                isCropSelection = true;
+            } else if (splitWords !== undefined && splitWords[0] === 'crop'){
+                isCropSelection = true;
             }
+            let isDisabledFilter: boolean = false; let isDisabledAdjustment: boolean = false;
+            const zoomIn: HTMLElement = document.querySelector('#' + this.element.id + '_zoomIn');
+            const adjustment: HTMLElement = document.querySelector('#' + this.element.id + '_adjustment');
+            if (!isNullOrUndefined(adjustment) && adjustment.classList.contains('e-disabled')) {
+                isDisabledAdjustment = true;
+            }
+            const filter: HTMLElement = document.querySelector('#' + this.element.id + '_filter');
+            if (!isNullOrUndefined(filter) && filter.classList.contains('e-disabled')) {
+                isDisabledFilter = true;
+            }
+            this.enableDisableToolbarBtn();
+            let previousObj: CurrentObject; let duplicateObj: SelectionPoint; let objColl: SelectionPoint[];
+            if (!this.disabled) {
+                switch (type) {
+                case 'pan':
+                    this.currObjType.isCustomCrop = this.currObjType.isFiltered = false;
+                    if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
+                    if (isCropSelection) {
+                        this.currObjType.isCustomCrop = false;
+                        this.refreshActiveObj(); this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                        this.refreshMainToolbar();
+                    }
+                    if (this.togglePan) {
+                        this.cancelPan();
+                        this.disablePan = true;
+                        if (this.currentToolbar === 'pen') {
+                            this.freeHandDraw(true);
+                        }
+                    } else {
+                        panBtn = this.element.querySelector('.e-img-pan .e-btn');
+                        if (!isNullOrUndefined(panBtn)) {
+                            panBtn.classList.add('e-selected-btn');
+                        }
+                        imageEditorObj.pan(true);
+                        this.disablePan = false;
+                    }
+                    if (!isNullOrUndefined(zoomIn) && this.zoomSettings.zoomFactor >= this.zoomSettings.maxZoomFactor) {
+                        zoomIn.classList.add('e-disabled');
+                        zoomIn.parentElement.classList.add('e-overlay');
+                    } else if (!isNullOrUndefined(zoomIn)) {
+                        zoomIn.classList.remove('e-disabled');
+                        zoomIn.parentElement.classList.remove('e-overlay');
+                    }
+                    this.refreshMainToolbar();
+                    break;
+                case 'cancel':
+                    this.performCancel(isContextualToolbar);
+                    break;
+                case 'ok':
+                    this.okBtn();
+                    this.refreshDropDownBtn(false);
+                    this.currentToolbar = 'main';
+                    break;
+                case 'crop':
+                    previousObj = this.getCurrentObj();
+                    previousObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    previousObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+                    previousObj.afterCropActions = this.afterCropActions;
+                    this.previousCropCurrentObj = previousObj;
+                    if (!isNullOrUndefined(this.currSelectionPoint)) {
+                        if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
+                        if (!isNullOrUndefined(this.cropObj.activeObj.shape)) {
+                            this.select(this.cropObj.activeObj.shape);
+                        }
+                        this.refreshToolbar('main', true, true);
+                        (getComponent(this.element.querySelector('#' + this.element.id + '_cropBtn') as HTMLElement, 'dropdown-btn') as DropDownButton).toggle();
+                        if (!isNullOrUndefined(this.activeObj.shape)) {
+                            document.getElementById(this.activeObj.shape.split('-')[1]).classList.add('e-selected');
+                        }
+                    }
+                    break;
+                case 'reset':
+                    imageEditorObj.reset();
+                    this.currentToolbar = 'main';
+                    break;
+                case 'undo':
+                    this.callUndo();
+                    break;
+                case 'redo':
+                    this.callRedo();
+                    break;
+                case 'adjustment':
+                    if (!isDisabledAdjustment) {
+                        this.refreshToolbar('adjustment');
+                        this.setTempFilterProperties();
+                        this.openSlider('brightness');
+                    }
+                    break;
+                case 'brightness':
+                case 'contrast':
+                case 'hue':
+                case 'saturation':
+                case 'opacity':
+                case 'blur':
+                case 'exposure':
+                    this.openSlider(type);
+                    break;
+                case 'filter':
+                    if (!isDisabledFilter) {
+                        this.refreshToolbar('filter');
+                        this.setTempFilterProperties();
+                    }
+                    break;
+                case 'default':
+                case 'chrome':
+                case 'cold':
+                case 'warm':
+                case 'grayscale':
+                case 'blackandwhite':
+                case 'sepia':
+                case 'invert':
+                case 'sharpen':
+                    this.currObjType.isFiltered = true;
+                    this.setFilter(type);
+                    break;
+                case 'duplicate':
+                    duplicateObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
+                    if (isNullOrUndefined(this.activeObj.currIndex)) {
+                        this.applyActObj();
+                    } else {
+                        this.applyActObj(true);
+                    }
+                    objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    duplicateObj.activePoint.startX += 10; duplicateObj.activePoint.startY -= 10;
+                    duplicateObj.activePoint.endX += 10; duplicateObj.activePoint.endY -= 10;
+                    this.activeObj = duplicateObj;
+                    this.updateTrianglePoints(this.activeObj);
+                    this.drawObject('duplicate');
+                    this.updateUndoRedoObj(objColl);
+                    this.renderQuickAccessToolbar();
+                    break;
+                case 'remove':
+                    this.deleteItem();
+                    break;
+                case 'edittext':
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                    this.renderTextArea(this.activeObj.activePoint.startX, this.activeObj.activePoint.startY, this.activeObj);
+                    if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                        document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+                    }
+                    break;
+                case 'upload':
+                    if (isFilterFinetune) {
+                        this.element.querySelector('.e-contextual-toolbar-wrapper').classList.remove('e-hide');
+                    }
+                    break;
+                }
+            }
+            this.trigger('toolbarItemClicked', args);
         }
-        this.trigger('toolbarItemClicked', args);
     }
 
     private performCancel(isContextualToolbar?: boolean): void {
         isContextualToolbar = isContextualToolbar ? isContextualToolbar : false;
         if  (this.isFreehandDrawEditing) {
             this.cancelFreehandDraw();
+            this.destroyQuickAccessToolbar();
+            this.updateCurrentUndoRedoColl('cancel');
         } else if (this.textArea.style.display === 'block') {
             this.textArea.style.display = 'none';
             this.textArea.value = '';
             this.textArea.style.transform = '';
-            this.activeObj.strokeSettings = this.tempStrokeSettings;
-            this.activeObj.textSettings = this.tempTextSettings;
+            if (!isNullOrUndefined(this.prevActObj)) {
+                this.activeObj = this.prevActObj;
+                this.prevActObj = null;
+            } else {
+                this.activeObj.strokeSettings = this.tempStrokeSettings;
+                this.activeObj.textSettings = this.tempTextSettings;
+            }
+            this.updateCurrentUndoRedoColl('cancel');
+            if (this.isShapeTextInserted) {
+                this.refreshActiveObj();
+            }
+            this.applyActObj(true);
+            this.refreshMainToolbar();
         } else if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_sliderWrapper')) ||
             this.currObjType.isFiltered) {
             this.lowerContext.filter = this.adjustmentValue = this.initialAdjustmentValue = this.tempAdjustmentValue;
@@ -2636,6 +3047,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.upperCanvas.style.cursor = 'default'; this.currObjType.isCustomCrop = false;
             this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
             this.callMainToolbar();
+            this.updateCurrentUndoRedoColl('cancel');
         } else {
             if (isContextualToolbar) {
                 this.callMainToolbar();
@@ -2644,7 +3056,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.togglePan = this.dragCanvas = false;
             }
         }
-        this.enableDisableToolbarBtn();
+        this.isShapeTextInserted = false;
         this.refreshDropDownBtn(false);
         this.currentToolbar = 'main';
     }
@@ -2652,11 +3064,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private applyShape(): void {
         if (!isNullOrUndefined(this.activeObj.shape) && (this.activeObj.shape === 'rectangle' ||
             this.activeObj.shape === 'ellipse' || this.activeObj.shape === 'line' ||
-            this.activeObj.shape === 'text')) {
+            this.activeObj.shape === 'arrow' || this.activeObj.shape === 'text')) {
             this.redrawActObj();
             this.refreshActiveObj();
             this.currentToolbar = 'main';
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
         }
     }
 
@@ -2668,7 +3080,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.renderImage();
-        this.refreshToolbar('main');
+        this.refreshMainToolbar();
         if (!isNullOrUndefined(this.pointColl[this.freehandDrawSelectedIndex])) {
             this.pointColl[this.freehandDrawSelectedIndex].isSelected = false;
         }
@@ -2689,8 +3101,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = this.freehandDrawSelectedId = null;
         this.isFreehandDrawEditing = this.isFreehandDrawingPoint = false;
+        this.activeObj.strokeSettings.strokeColor = this.tempFreeHandDrawEditingStyles.strokeColor;
+        this.activeObj.strokeSettings.strokeWidth = this.penStrokeWidth = this.tempFreeHandDrawEditingStyles.strokeWidth;
         this.tempFreeHandDrawEditingStyles = {strokeColor: null, strokeWidth: null, fillColor: null};
-        this.refreshToolbar('main');
+        this.refreshMainToolbar();
     }
 
     private openSlider(type: string): void {
@@ -2707,11 +3121,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.tempAdjustmentValue = this.lowerContext.filter;
         this.tempAdjustmentLevel = extend({}, this.adjustmentLevel, {}, true) as Adjustment;
         this.tempFilter = this.currentFilter;
-        this.tempUndoRedoColl = extend([], this.undoRedoColl, [], true) as Transition[];
         this.tempUndoRedoStep = this.undoRedoStep;
     }
 
-    private okBtn(): void {
+    private okBtn(isMouseDown?: boolean): void {
         let isCropSelection: boolean = false; let splitWords: string[];
         if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
         if (splitWords === undefined && this.currObjType.isCustomCrop) {
@@ -2726,21 +3139,155 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (isCropSelection) {
             this.crop();
         } else if (this.togglePen) {
-            this.freeHandDraw(false);
+            this.freeHandDraw(false); this.updateCurrentUndoRedoColl('ok');
         } else if (this.textArea.style.display === 'block') {
             this.redrawActObj();
         } else if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_sliderWrapper')) ||
             this.currObjType.isFiltered) {
             this.initialAdjustmentValue = this.canvasFilter = this.lowerContext.filter;
             this.currObjType.isFiltered = false;
+            this.updateCurrentUndoRedoColl('ok');
         } else if (this.isFreehandDrawEditing) {
             this.applyFreehandDraw();
+            this.destroyQuickAccessToolbar();
+            this.updateCurrentUndoRedoColl('ok');
         } else {
-            this.applyActObj();
+            this.applyActObj(isMouseDown);
         }
         this.callMainToolbar(false);
         this.isCropTab = false;
         this.zoomFactor = this.defaultZoomFactor;
+    }
+
+    private getZeroZoomPointCollValue(obj: Point[]): Point[] {
+        const currentObj: CurrentObject = this.getCurrentObj();
+        currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        currentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+        let getZeroZoomPointColl: Point[] = extend([], this.pointColl, [], true) as Point[];
+        if (this.zoomFactor > 0 && obj.length > 0) {
+            this.pointColl = obj;
+            const isUndoRedo: boolean = this.isUndoRedo;
+            if (this.zoomFactor !== 0) {
+                this.isUndoRedo = this.isCropTab = true;
+                this.updateObjAndFreeHandDrawColl();
+                const zoomSettings: ZoomSettings = extend({}, this.zoomSettings, null, true) as ZoomSettings;
+                if (this.zoomFactor > 0) {
+                    this.zoomAction(-this.zoomFactor);
+                } else {
+                    this.zoomAction(Math.abs(this.zoomFactor));
+                }
+                this.zoomSettings = zoomSettings;
+                this.isCropTab = false;
+                this.isUndoRedo = isUndoRedo;
+                getZeroZoomPointColl = extend([], this.pointColl, [], true) as Point[];
+                this.objColl = [];
+                this.pointColl = [];
+                this.freehandCounter = 0;
+                this.setCurrentObj(currentObj);
+                this.destLeft = currentObj.destPoints.startX;
+                this.destTop = currentObj.destPoints.startY;
+                this.totalPannedPoint = currentObj.totalPannedPoint;
+                this.totalPannedClientPoint = currentObj.totalPannedClientPoint;
+                this.totalPannedInternalPoint = currentObj.totalPannedInternalPoint;
+                this.objColl = extend([], currentObj.objColl, [], true) as SelectionPoint[];
+                this.pointColl = extend([], currentObj.pointColl, [], true) as Point[];
+                this.freehandCounter = this.pointColl.length;
+                this.lowerContext.filter = 'none';
+                this.iterateObjColl();
+                this.freehandRedraw(this.lowerContext);
+                this.updateCursorPointsForFreehandDrawing();
+                this.lowerContext.filter = currentObj.filter;
+            }
+        }
+        return getZeroZoomPointColl;
+    }
+
+    private getZeroZoomObjValue(obj: SelectionPoint[]): SelectionPoint[] {
+        const currentObj: CurrentObject = this.getCurrentObj();
+        currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        currentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+        let getZeroZoomObjColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+        if (this.zoomFactor > 0 && obj.length > 0) {
+            this.objColl = obj;
+            const isUndoRedo: boolean = this.isUndoRedo;
+            if (this.zoomFactor !== 0) {
+                this.isUndoRedo = this.isCropTab = true;
+                this.updateObjAndFreeHandDrawColl();
+                const zoomSettings: ZoomSettings = extend({}, this.zoomSettings, null, true) as ZoomSettings;
+                if (this.zoomFactor > 0) {
+                    this.zoomAction(-this.zoomFactor);
+                } else {
+                    this.zoomAction(Math.abs(this.zoomFactor));
+                }
+                this.zoomSettings = zoomSettings;
+                this.isCropTab = false;
+                this.isUndoRedo = isUndoRedo;
+                getZeroZoomObjColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                this.objColl = [];
+                this.pointColl = [];
+                this.freehandCounter = 0;
+                this.setCurrentObj(currentObj);
+                this.destLeft = currentObj.destPoints.startX;
+                this.destTop = currentObj.destPoints.startY;
+                this.totalPannedPoint = currentObj.totalPannedPoint;
+                this.totalPannedClientPoint = currentObj.totalPannedClientPoint;
+                this.totalPannedInternalPoint = currentObj.totalPannedInternalPoint;
+                this.objColl = extend([], currentObj.objColl, [], true) as SelectionPoint[];
+                this.pointColl = extend([], currentObj.pointColl, [], true) as Point[];
+                this.freehandCounter = this.pointColl.length;
+                this.lowerContext.filter = 'none';
+                this.iterateObjColl();
+                this.freehandRedraw(this.lowerContext);
+                this.updateCursorPointsForFreehandDrawing();
+                this.lowerContext.filter = currentObj.filter;
+            }
+        }
+        return getZeroZoomObjColl;
+    }
+
+    private updateCurrentUndoRedoColl(type: string): void {
+        if (type === 'ok') {
+            this.isShapeTextInserted = false;
+            if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
+            if (isNullOrUndefined(this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1])) {
+                if (!isNullOrUndefined(this.undoRedoColl[0])) {
+                    this.undoRedoColl[this.undoRedoColl.length - 1].previousCropObj = this.undoRedoColl[0].previousCropObj;
+                    this.undoRedoColl[this.undoRedoColl.length  - 1].previousObj = this.undoRedoColl[0].previousObj;
+                    this.undoRedoColl[this.undoRedoColl.length  - 1].previousObjColl = this.undoRedoColl[0].previousObjColl;
+                    this.undoRedoColl[this.undoRedoColl.length  - 1].previousPointColl = this.undoRedoColl[0].previousPointColl;
+                    this.undoRedoColl[this.undoRedoColl.length  - 1].previousText = this.undoRedoColl[0].previousText;
+                }
+            } else {
+                this.undoRedoColl[this.undoRedoColl.length  - 1].previousCropObj =
+                    this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1].currentCropObj;
+                this.undoRedoColl[this.undoRedoColl.length  - 1].previousObj =
+                    this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1].currentObj;
+                this.undoRedoColl[this.undoRedoColl.length  - 1].previousObjColl =
+                    this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1].currentObjColl;
+                this.undoRedoColl[this.undoRedoColl.length  - 1].previousPointColl =
+                    this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1].currentPointColl;
+                this.undoRedoColl[this.undoRedoColl.length  - 1].previousText =
+                    this.appliedUndoRedoColl[this.appliedUndoRedoColl.length - 1].currentText;
+            }
+            if (!isNullOrUndefined(this.undoRedoColl[this.undoRedoColl.length  - 1])) {
+                this.undoRedoColl[this.undoRedoColl.length  - 1].currentObjColl =
+                    this.getZeroZoomObjValue(this.undoRedoColl[this.undoRedoColl.length  - 1].currentObjColl);
+                this.undoRedoColl[this.undoRedoColl.length  - 1].currentPointColl =
+                    this.getZeroZoomPointCollValue(this.undoRedoColl[this.undoRedoColl.length  - 1].currentPointColl);
+                this.appliedUndoRedoColl.push(this.undoRedoColl[this.undoRedoColl.length  - 1]);
+            }
+        }
+        if (this.appliedUndoRedoColl.length > 16) {
+            this.appliedUndoRedoColl.splice(0, 1);
+        }
+        this.undoRedoColl = [];
+        this.undoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
+        if (type === 'ok') {this.undoRedoStep = this.undoRedoColl.length; this.enableDisableToolbarBtn(); }
+        if (this.zoomFactor > 0) {
+            this.dragCanvas = this.togglePan = true;
+        }
     }
 
     private updateBrightnessFilter(): void {
@@ -2788,7 +3335,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = null;
             this.isFreehandDrawEditing = this.isFreehandDrawingPoint = false;
             this.renderImage();
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
         }
     }
 
@@ -2812,12 +3359,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private callUndo(): void {
         this.currObjType.isFiltered = false;
-        if (!this.togglePan) {
-            this.callMainToolbar(false, false);
-        }
         if (this.zoomFactor === 0) {
             this.dragCanvas = this.togglePan = false;
-            this.callMainToolbar(false, false);
         }
         if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
@@ -2827,17 +3370,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.upperCanvas.style.cursor = 'default';
             this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         }
+        if (this.appliedUndoRedoColl.length > 0) {
+            this.undoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
+        }
         this.undo();
     }
 
     private callRedo(): void {
         this.currObjType.isFiltered = false;
-        if (!this.togglePan) {
-            this.callMainToolbar(false, false);
-        }
         if (this.zoomFactor === 0) {
             this.dragCanvas = this.togglePan = false;
-            this.callMainToolbar(false, false);
+        }
+        if (this.appliedUndoRedoColl.length > 0) {
+            this.undoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
         }
         this.redo();
     }
@@ -2884,7 +3429,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         if (brightness !== 1) {splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')'; }
         let saturate: number; let bright: number; let saturatePercent: number; let contrast: number;
-        let tempFilter: string; let temp: string; let saturatePercentage: number;
+        let saturatePercentage: number;
         switch (type) {
         case 'brightness':
             if (parseFloat(splitWords[3].split('(')[1]) !== 100) {
@@ -3068,7 +3613,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private autoEnablePan(): void {
         if (this.zoomFactor === 0) {
             this.dragCanvas = this.togglePan = false;
-            this.callMainToolbar(false, true);
             this.pan(false);
             this.disablePan = false;
         } else if (!this.disablePan) {
@@ -3177,7 +3721,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             width: Browser.isDevice ? '200px' : '300px',
             cssClass: 'e-slider',
             change: (args: SliderChangeEventArgs): void => {
-                if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                 this.setCurrAdjustmentValue(type, args.value as number);
                 this.enableDisableToolbarBtn();
             }
@@ -3212,9 +3755,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return value;
     }
 
+    private getFinetuneOption(type: string): ImageFinetuneOption {
+        let option: ImageFinetuneOption;
+        switch (type) {
+        case 'brightness':
+            option = ImageFinetuneOption.Brightness;
+            break;
+        case 'contrast':
+            option = ImageFinetuneOption.Contrast;
+            break;
+        case 'hue':
+            option = ImageFinetuneOption.Hue;
+            break;
+        case 'saturation':
+            option = ImageFinetuneOption.Saturation;
+            break;
+        case 'opacity':
+            option = ImageFinetuneOption.Opacity;
+            break;
+        case 'blur':
+            option = ImageFinetuneOption.Blur;
+            break;
+        case 'exposure':
+            option = ImageFinetuneOption.Exposure;
+            break;
+        }
+        return option;
+    }
+
     private setCurrAdjustmentValue(type: string, value: number): void {
-        const finetuneValueChanging: FinetuneEventArgs = { finetune: this.toPascalCase(type) as ImageFinetuneOptions, value: value };
+        const finetuneValueChanging: FinetuneEventArgs = { finetune: this.getFinetuneOption(this.toPascalCase(type)),
+            value: value, cancel: false };
         this.trigger('finetuneValueChanging', finetuneValueChanging);
+        if (finetuneValueChanging.cancel) { return; }
         switch (type) {
         case 'brightness':
             this.setBrightness(value);
@@ -3241,7 +3814,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private cancelPan(): void {
-        this.applyActObj();
+        this.applyActObj(true);
         const panBtn: HTMLElement = this.element.querySelector('.e-img-pan .e-btn');
         if (!isNullOrUndefined(panBtn)) {
             panBtn.classList.remove('e-selected-btn');
@@ -3283,16 +3856,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.currSelectionPoint = null;
         } else {
             if (this.cropObj.cropZoom > 0) {
+                const isUndoRedo: boolean = this.isUndoRedo;
+                this.isUndoRedo = true;
                 const cropObjColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
                 const cropPointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
                 this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
-                this.zoom(this.cropObj.cropZoom);
+                this.objColl.push(this.currSelectionPoint);
+                this.zoomAction(this.cropObj.cropZoom);
+                this.currSelectionPoint = extend({}, this.objColl[0], null, true) as SelectionPoint;
                 this.objColl = cropObjColl; this.pointColl = cropPointColl; this.freehandCounter = this.pointColl.length;
-                this.currSelectionPoint = extend({}, this.cropObj.activeObj, null, true) as SelectionPoint;
-                if (this.cropObj.currFlipState !== '') {
-                    this.cropObj.totalPannedPoint.x += this.cropObj.tempFlipPanPoint.x;
-                    this.cropObj.totalPannedPoint.y += this.cropObj.tempFlipPanPoint.y;
-                }
+                this.isUndoRedo = isUndoRedo;
             }
             const destPoints: ActivePoint = {startX: this.destLeft, startY: this.destTop, width: this.destWidth, height: this.destHeight};
             this.destLeft = this.currSelectionPoint.activePoint.startX; this.destTop = this.currSelectionPoint.activePoint.startY;
@@ -3300,7 +3873,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.zoomObjColl(); this.zoomFreehandDrawColl();
             this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
             this.destWidth = destPoints.width; this.destHeight = destPoints.height;
-            this.updatePannedRegion();
+            if (this.cropObj.cropZoom === 0) {this.updatePannedRegion(); }
             this.updateObjAndFreeHandDrawColl();
             const cropObjColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
             const cropPointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
@@ -3320,7 +3893,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updatePannedRegion(): void {
-        let pannedPoint: Point = this.degree === 0 ? this.cropObj.totalPannedPoint : this.cropObj.totalPannedClientPoint;
+        let pannedPoint: Point;
+        if (this.degree % 90 === 0 && this.degree % 180 === 0) {
+            pannedPoint = extend({}, this.cropObj.totalPannedPoint, null, true) as Point;
+        } else {
+            pannedPoint = extend({}, this.cropObj.totalPannedClientPoint, null, true) as Point;
+        }
         if (this.currFlipState === this.cropObj.currFlipState) {
             this.panObjColl(-pannedPoint.x, -pannedPoint.y, '');
             this.panFreehandDrawColl(-pannedPoint.x, -pannedPoint.y, '');
@@ -3385,39 +3963,66 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.freehandCounter = this.tempFreehandCounter;
             this.currentFreehandDrawIndex = this.tempCurrentFreehandDrawIndex;
+            this.activeObj.strokeSettings = this.strokeSettings = this.tempStrokeSettings;
+            this.updateCurrentUndoRedoColl('cancel');
+            this.isFreehandDrawCustomized = false;
         } else if (this.activeObj.shape === 'text') {
+            this.textSettings = this.tempTextSettings;
+            this.strokeSettings = this.tempStrokeSettings;
             if (isNullOrUndefined(this.activeObj.currIndex)) {
                 this.refreshActiveObj();
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
             } else {
-                this.activeObj.strokeSettings = this.tempStrokeSettings;
-                this.activeObj.textSettings = this.tempTextSettings;
-                if (this.activeObj.keyHistory === 'Enter Text' && this.activeObj.activePoint.startX === this.textStartPoints.x
-                && this.activeObj.activePoint.startY === this.textStartPoints.y) {
+                const len: number = this.appliedUndoRedoColl.length;
+                if (!isNullOrUndefined(this.prevActObj) && !isNullOrUndefined(this.appliedUndoRedoColl[len - 1]) &&
+                this.appliedUndoRedoColl[len - 1].currentObjColl[this.appliedUndoRedoColl[len - 1].currentObjColl.length - 1].currIndex
+                === this.prevActObj.currIndex) {
+                    this.activeObj = this.prevActObj;
+                    this.prevActObj = null;
+                } else {
                     this.refreshActiveObj();
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.textSettings = this.tempTextSettings;
-                    this.strokeSettings = this.tempStrokeSettings;
+                }
+                if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.keyHistory === 'Enter Text' &&
+                    this.activeObj.activePoint.startX === this.textStartPoints.x
+                    && this.activeObj.activePoint.startY === this.textStartPoints.y) {
+                    this.refreshActiveObj();
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.drawShapeText();
-                    this.applyActObj();
-                } else {
+                    this.updateCurrentUndoRedoColl('cancel');
+                    this.applyActObj(true);
+                } else if (!isNullOrUndefined(this.activeObj.shape)) {
                     this.redrawText();
                     this.redrawShape(this.activeObj);
-                    if (!isCropSelection && this.activeObj.topLeftCircle !== undefined) {this.applyActObj(); }
+                    if (!isCropSelection && this.activeObj.topLeftCircle !== undefined) {this.applyActObj(true); }
                     this.clearSelection();
                 }
             }
+            this.destroyQuickAccessToolbar();
             this.tempTextSettings = {text: 'Enter Text', fontFamily: 'Arial', fontSize: null, fontRatio: null, bold: false,
                 italic: false, underline: false};
-        } else if (this.activeObj.shape === 'rectangle' || this.activeObj.shape === 'ellipse' || this.activeObj.shape === 'line') {
+        } else if (this.activeObj.shape === 'rectangle' || this.activeObj.shape === 'ellipse'
+            || this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow') {
+            this.strokeSettings = this.tempStrokeSettings;
             if (isNullOrUndefined(this.activeObj.currIndex)) {
                 this.refreshActiveObj();
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
             } else {
-                this.activeObj.strokeSettings = this.tempStrokeSettings;
-                this.redrawShape(this.activeObj);
-                this.applyActObj();
+                const len: number = this.appliedUndoRedoColl.length;
+                if (!isNullOrUndefined(this.prevActObj) && !isNullOrUndefined(this.appliedUndoRedoColl[len - 1]) &&
+                    this.appliedUndoRedoColl[len - 1].currentObjColl[this.appliedUndoRedoColl[len - 1].currentObjColl.length - 1].currIndex
+                    === this.prevActObj.currIndex) {
+                    this.activeObj = this.prevActObj;
+                    this.prevActObj = null;
+                    this.redrawShape(this.activeObj);
+                    this.updateCurrentUndoRedoColl('cancel');
+                    this.applyActObj(true);
+                } else {
+                    this.refreshActiveObj();
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                }
             }
+            this.destroyQuickAccessToolbar();
         } else if ((this.zoomFactor !== this.tempZoomFactor) || isCropSelection && isNullOrUndefined(this.currSelectionPoint)) {
             const length: number = this.cropZoomFactor - this.tempZoomFactor;
             this.zoomFactor = this.cropZoomFactor;
@@ -3428,9 +4033,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.refreshActiveObj();
                     if (length > 0) {
-                        this.zoom(-length);
+                        this.zoomAction(-length);
                     } else {
-                        this.zoom(Math.abs(length));
+                        this.zoomAction(Math.abs(length));
                     }
                     this.cropZoomFactor = this.tempZoomFactor;
                     this.currObjType.isCustomCrop = false;
@@ -3459,9 +4064,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.refreshActiveObj();
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                 if (length > 0) {
-                    this.zoom(-length);
+                    this.zoomAction(-length);
                 } else {
-                    this.zoom(Math.abs(length));
+                    this.zoomAction(Math.abs(length));
                 }
                 this.cropZoomFactor = this.tempZoomFactor;
             } else {
@@ -3488,6 +4093,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         } else {
             this.refreshActiveObj();
             this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            this.updateCurrentUndoRedoColl('cancel');
         }
         this.upperCanvas.style.cursor = 'default'; this.currObjType.isCustomCrop = false;
         this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
@@ -3531,6 +4137,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.pointColl[this.freehandCounter].flipState = this.currFlipState;
         this.pointColl[this.freehandCounter].id = 'pen_' + (this.currentFreehandDrawIndex + 1);
         this.points = [];
+        this.selPointColl[this.freehandCounter] = {};
+        this.selPointColl[this.freehandCounter].points = extend([], this.selPoints);
+        this.selPoints = [];
         this.pointCounter = 0;
         this.freehandCounter++; this.currentFreehandDrawIndex++;
         this.isFreehandDrawing = false;
@@ -3556,6 +4165,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const isLastPointTooClose: boolean = lastPoint ? this.distanceTo(lastPoint) <= 5 : false;
         let controlPoint1: Point; let controlPoint2: Point;
         let startPoint: Point; let endPoint: Point;
+        this.selPoints.push({x: x, y: y, ratioX: (x - this.destLeft) / this.destWidth, ratioY: (y - this.destTop) / this.destHeight,
+            time: this.freehandDrawObj.time });
         if (!lastPoint || !(lastPoint && isLastPointTooClose) || mouseDown) {
             this.freehandDrawObj.time = new Date().getTime();
             this.points.push({x: x, y: y, ratioX: (x - this.destLeft) / this.destWidth, ratioY: (y - this.destTop) / this.destHeight,
@@ -3770,7 +4381,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (Browser.isDevice) {
                 this.initToolbarItem(false, true, true);
             }
-            if (this.activeObj.shape === 'line') {
+            if (this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow') {
                 args.toolbarItems = ['strokeColor', 'strokeWidth'];
             } else {
                 args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth'];
@@ -3810,6 +4421,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.updateContextualToolbar(type, cType);
             break;
         }
+        this.currToolbar = type;
         this.refreshDropDownBtn(isCropping);
     }
 
@@ -3943,6 +4555,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             created: () => {
                 this.createPenColor(items);
                 this.createPenBtn(items);
+                this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
                     this.renderSaveBtn();
                 }
@@ -3987,7 +4600,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     const prevObj: CurrentObject = this.getCurrentObj();
                     prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
                     prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];   
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
                     this.pointColl = temp;
                     proxy.isFreehandDrawCustomized = true;
                     proxy.activeObj.strokeSettings.strokeColor = proxy.selectedFreehandColor = args.currentValue.hex;
@@ -4151,6 +4764,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             items: this.defToolbarItems,
             clicked: this.defToolbarClicked.bind(this),
             created: () => {
+                this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
                     this.renderSaveBtn();
                 }
@@ -4262,6 +4876,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.objColl = []; this.refreshActiveObj();
         this.isRotateZoom = true;
         this.updateCurrentTransformedState('initial');
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         if (this.degree === 0 && this.rotateFlipColl.length > 0) {
             this.destLeft += this.totalPannedPoint.x;
             this.destTop += this.totalPannedPoint.y;
@@ -4403,6 +5018,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private panFreehandDrawColl(xDiff: number, yDiff: number, panRegion: string): void {
+        // Updating point collection for panning
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4418,6 +5034,27 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 else {
                     this.points[l as number].y -= yDiff;
+                }
+            }
+        }
+        // Updating each points for cursor styles for panning
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.selPoints.length;
+                for (let l: number = 0; l < len; l++) {
+                    if (panRegion === '' || panRegion === 'vertical') {
+                        this.selPoints[l as number].x += xDiff;
+                    } else {
+                        this.selPoints[l as number].x -= xDiff;
+                    }
+                    if (panRegion === '' || panRegion === 'horizontal') {
+                        this.selPoints[l as number].y += yDiff;
+                    }
+                    else {
+                        this.selPoints[l as number].y -= yDiff;
+                    }
                 }
             }
         }
@@ -4445,6 +5082,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.objColl[i as number].activePoint.height = this.objColl[i as number].activePoint.endY -
                                                            this.objColl[i as number].activePoint.startY;
             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
+            this.updateTrianglePoints(this.objColl[i as number]);
             const temp: string = this.lowerContext.filter;
             this.lowerContext.filter = 'none';
             this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
@@ -4467,13 +5105,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 width: this.activeObj.activePoint.width / this.objColl[i as number].activePoint.width,
                 height: this.activeObj.activePoint.height / this.objColl[i as number].activePoint.height };
                 if (this.objColl[i as number].shape === 'text') {
-                    this.objColl[i as number].textSettings.fontRatio = this.objColl[i as number].activePoint.width / this.objColl[i as number].textSettings.fontSize;
+                    this.objColl[i as number].textSettings.fontRatio = this.objColl[i as number].activePoint.width /
+                        this.objColl[i as number].textSettings.fontSize;
                 }
             }
         }
     }
 
     private cropFreehandDrawColl(): void {
+        // Update crop values to point collection
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4483,6 +5123,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                                                    this.activeObj.activePoint.startX) / this.activeObj.activePoint.width;
                 this.points[l as number].ratioY = (this.points[l as number].y -
                                                    this.activeObj.activePoint.startY) / this.activeObj.activePoint.height;
+            }
+        }
+        // Update crop values to each poins for cursor styles
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.selPoints.length;
+                for (let l: number = 0; l < len; l++) {
+                    this.selPoints[l as number].ratioX = (this.selPoints[l as number].x -
+                                                       this.activeObj.activePoint.startX) / this.activeObj.activePoint.width;
+                    this.selPoints[l as number].ratioY = (this.selPoints[l as number].y -
+                                                       this.activeObj.activePoint.startY) / this.activeObj.activePoint.height;
+                }
             }
         }
     }
@@ -4501,8 +5155,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         let controlPoint1: Point; let controlPoint2: Point;
         let startPoint: Point; let endPoint: Point;
         let minStrokeWidth: number = 0; let maxStrokeWidth: number = 0;
-        context.fillStyle = fillStyle ? fillStyle : '#42a5f5';
-        context.strokeStyle = '#fff';
+        context.fillStyle = fillStyle ? fillStyle : this.pointColl[idx as number].strokeColor;
+        context.strokeStyle = context.fillStyle;
         minStrokeWidth = maxStrokeWidth = this.penStrokeWidth = strokeWidth ?
             strokeWidth : this.pointColl[idx as number].strokeWidth;
         if (len === 1) {
@@ -4521,9 +5175,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         }
         context.closePath();
+        // Outer selection
+        const point: ActivePoint = this.getSquarePointForFreehandDraw(idx);
+        const tempLineWidth: number = context.lineWidth;
+        context.lineWidth = 2;
+        context.strokeStyle = this.themeColl[this.theme]['primaryColor'];
+        context.beginPath();
+        context.rect(point.startX, point.startY, point.width, point.height);
+        context.stroke();
+        context.closePath();
+        context.lineWidth = tempLineWidth;
     }
 
     private pointsHorizontalFlip(): void {
+        // Update flip value for point collection
         for (let n: number = 0; n < this.freehandCounter; n++) {
             if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
                 this.points = extend([], this.pointColl[n as number].points, []) as Point[];
@@ -4541,9 +5206,32 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.pointColl[n as number].shapeFlip = this.currFlipState;
             }
         }
+        // Update flip value for each points for cursor styles
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                if (this.selPointColl[n as number].shapeFlip !== this.currFlipState) {
+                    this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                    this.pointCounter = 0;
+                    const len: number = this.selPoints.length;
+                    for (let l: number = 0; l < len; l++) {
+                        if (this.selPoints[l as number].x <= this.destLeft + (this.destWidth / 2)) {
+                            this.selPoints[l as number].x = (this.destLeft + this.destWidth) - (this.selPoints[l as number].x -
+                                this.destLeft);
+                        } else if (this.selPoints[l as number].x >= this.destLeft + (this.destWidth / 2)) {
+                            this.selPoints[l as number].x = this.destLeft + (this.destLeft + this.destWidth -
+                                this.selPoints[l as number].x);
+                        }
+                        this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - this.destLeft) / this.destWidth;
+                        this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - this.destTop) / this.destHeight;
+                    }
+                }
+            }
+        }
+        this.updateCursorPointsForFreehandDrawing();
     }
 
     private pointsVerticalFlip(): void {
+        // Update flip value for point collection
         for (let n: number = 0; n < this.freehandCounter; n++) {
             if (this.pointColl[n as number].shapeFlip !== this.currFlipState) {
                 this.points = extend([], this.pointColl[n as number].points, []) as Point[];
@@ -4561,6 +5249,28 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.pointColl[n as number].shapeFlip = this.currFlipState;
             }
         }
+        // Update flip value for each points for cursor styles
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                if (this.selPointColl[n as number].shapeFlip !== this.currFlipState) {
+                    this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                    this.pointCounter = 0;
+                    const len: number = this.selPoints.length;
+                    for (let l: number = 0; l < len; l++) {
+                        if (this.selPoints[l as number].y <= this.destTop + (this.destHeight / 2)) {
+                            this.selPoints[l as number].y = (this.destTop + this.destHeight) - (this.selPoints[l as number].y -
+                                this.destTop);
+                        } else if (this.selPoints[l as number].y >= this.destTop + (this.destHeight / 2)) {
+                            this.selPoints[l as number].y = this.destTop + (this.destTop + this.destHeight -
+                                this.selPoints[l as number].y);
+                        }
+                        this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - this.destLeft) / this.destWidth;
+                        this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - this.destTop) / this.destHeight;
+                    }
+                }
+            }
+        }
+        this.updateCursorPointsForFreehandDrawing();
     }
 
     private flipFreehandrawColl(value: string): void {
@@ -4579,6 +5289,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private rotateFreehandDrawColl(): void {
+        // Update rotation points for point collection
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4588,7 +5299,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.points[l as number].x = (this.destLeft + this.destWidth) - (this.destWidth * this.points[l as number].ratioY);
             }
         }
-        // Update current image ratio for all objects
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4598,9 +5308,49 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.points[l as number].ratioY = (this.points[l as number].y - this.destTop) / this.destHeight;
             }
         }
+        // Update rotation points for each point for cursor styles
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.selPoints.length;
+                for (let l: number = 0; l < len; l++) {
+                    this.selPoints[l as number].y = this.destTop + (this.destHeight * this.selPoints[l as number].ratioX);
+                    this.selPoints[l as number].x = (this.destLeft + this.destWidth) - (this.destWidth *
+                        this.selPoints[l as number].ratioY);
+                }
+            }
+        }
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.selPoints.length;
+                for (let l: number = 0; l < len; l++) {
+                    this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - this.destLeft) / this.destWidth;
+                    this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - this.destTop) / this.destHeight;
+                }
+            }
+        }
+        this.updateCursorPointsForFreehandDrawing();
+    }
+
+    private updateCursorPointsForFreehandDrawing(): void {
+        for (let n: number = 0; n < this.freehandCounter; n++) {
+            if (!isNullOrUndefined(this.selPointColl[n as number])) {
+                this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
+                this.pointCounter = 0;
+                const len: number = this.selPoints.length;
+                for (let l: number = 0; l < len; l++) {
+                    this.selPoints[l as number].x = this.zoomX(this.selPoints[l as number].ratioX);
+                    this.selPoints[l as number].y = this.zoomY(this.selPoints[l as number].ratioY);
+                }
+            }
+        }
     }
 
     private zoomFreehandDrawColl(isPreventApply?: boolean): void {
+        // Updating point collection for zoom
         for (let n: number = 0; n < this.freehandCounter; n++) {
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
@@ -4610,6 +5360,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.points[l as number].y = this.zoomY(this.points[l as number].ratioY);
             }
         }
+        // Updating each points for cursor styles for zoom
+        this.updateCursorPointsForFreehandDrawing();
         if (isNullOrUndefined(isPreventApply)) {
             this.freehandRedraw(this.lowerContext);
         }
@@ -4637,6 +5389,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.updateFontSize(this.objColl[i as number]);
             }
             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
+            this.updateTrianglePoints(this.objColl[i as number]);
             if (isNullOrUndefined(preventApply)) {
                 const temp: string = this.lowerContext.filter;
                 this.lowerContext.filter = 'none';
@@ -4659,72 +5412,78 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return {width: widthRatio, height: heightRatio};
     }
 
-    private drawCustomSelection(cropShape: string): void {
+    private drawCustomSelection(cropShape: string, startX?: number, startY?: number, width?: number, height?: number): void {
         this.currObjType.isCustomCrop = true;
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.currObjType.shape = this.activeObj.shape = cropShape.toLowerCase();
-        if (this.zoomFactor === 0) {
-            if (this.destLeft >= 0 && this.destTop >= 0) {
-                this.activeObj.activePoint.startX = this.destLeft; this.activeObj.activePoint.startY = this.destTop;
-                this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
-                this.activeObj.activePoint.endY = this.destTop + this.destHeight;
-            } else if (this.destLeft >= 0) {
-                this.activeObj.activePoint.startX = this.destLeft; this.activeObj.activePoint.startY = 7.5;
-                this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
-                this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
-            } else if (this.destTop >= 0) {
-                this.activeObj.activePoint.startX = 7.5; this.activeObj.activePoint.startY = this.destTop;
-                this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
-                this.activeObj.activePoint.endY = this.destTop + this.destHeight;
-            } else {
-                // arcRadius 7.5
-                this.activeObj.activePoint.startX = 7.5; this.activeObj.activePoint.startY = 7.5;
-                this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
-                this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
-            }
+        if (!isNullOrUndefined(startX) && !isNullOrUndefined(startY) && !isNullOrUndefined(width) && !isNullOrUndefined(height)) {
+            this.activeObj.activePoint.startX = startX; this.activeObj.activePoint.startY = startY;
+            this.activeObj.activePoint.endX = startX + width; this.activeObj.activePoint.endY = startY + height;
+            this.activeObj.activePoint.width = width; this.activeObj.activePoint.height = height;
         } else {
-            if (this.destLeft > 0) {
+            if (this.zoomFactor === 0) {
+                if (this.destLeft >= 0 && this.destTop >= 0) {
+                    this.activeObj.activePoint.startX = this.destLeft; this.activeObj.activePoint.startY = this.destTop;
+                    this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
+                    this.activeObj.activePoint.endY = this.destTop + this.destHeight;
+                } else if (this.destLeft >= 0) {
+                    this.activeObj.activePoint.startX = this.destLeft; this.activeObj.activePoint.startY = 7.5;
+                    this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
+                    this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
+                } else if (this.destTop >= 0) {
+                    this.activeObj.activePoint.startX = 7.5; this.activeObj.activePoint.startY = this.destTop;
+                    this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
+                    this.activeObj.activePoint.endY = this.destTop + this.destHeight;
+                } else {
+                    // arcRadius 7.5
+                    this.activeObj.activePoint.startX = 7.5; this.activeObj.activePoint.startY = 7.5;
+                    this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
+                    this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
+                }
+            } else {
+                if (this.destLeft > 0) {
+                    this.activeObj.activePoint.startX = this.destLeft;
+                } else {
+                    this.activeObj.activePoint.startX = 7.5;
+                }
+                if (this.destTop > 0) {
+                    this.activeObj.activePoint.startY = this.destTop;
+                } else {
+                    this.activeObj.activePoint.startY = 7.5;
+                }
+                if (this.destLeft + this.destWidth + 15 < this.lowerCanvas.width) {
+                    this.activeObj.activePoint.endX = this.destLeft + this.destWidth - 15;
+                } else {
+                    this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
+                }
+                if (this.destTop + this.destHeight + 15 < this.lowerCanvas.height) {
+                    this.activeObj.activePoint.endY = this.destTop + this.destHeight - 15;
+                } else {
+                    this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
+                }
+            }
+            if (this.activeObj.activePoint.startX < this.destLeft) {
                 this.activeObj.activePoint.startX = this.destLeft;
-            } else {
-                this.activeObj.activePoint.startX = 7.5;
             }
-            if (this.destTop > 0) {
+            if (this.activeObj.activePoint.startY < this.destTop) {
                 this.activeObj.activePoint.startY = this.destTop;
-            } else {
-                this.activeObj.activePoint.startY = 7.5;
             }
-            if (this.destLeft + this.destWidth + 15 < this.lowerCanvas.width) {
-                this.activeObj.activePoint.endX = this.destLeft + this.destWidth - 15;
-            } else {
-                this.activeObj.activePoint.endX = this.lowerCanvas.width - 15;
+            if (this.activeObj.activePoint.endX > this.destLeft + this.destWidth) {
+                this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
             }
-            if (this.destTop + this.destHeight + 15 < this.lowerCanvas.height) {
-                this.activeObj.activePoint.endY = this.destTop + this.destHeight - 15;
-            } else {
-                this.activeObj.activePoint.endY = this.lowerCanvas.height - 15;
+            if (this.activeObj.activePoint.endY > this.destTop + this.destHeight) {
+                this.activeObj.activePoint.endY = this.destTop + this.destHeight;
             }
+            if (this.activeObj.activePoint.startX === this.destLeft && this.destLeft + this.destWidth > this.lowerCanvas.clientWidth) {
+                this.activeObj.activePoint.endX = this.lowerCanvas.clientWidth - 15;
+            }
+            if (this.activeObj.activePoint.startY === this.destTop && this.destTop + this.destHeight > this.lowerCanvas.clientHeight) {
+                this.activeObj.activePoint.endY = this.lowerCanvas.clientHeight - 15;
+            }
+            this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
+            this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
+            this.updateActiveObject(this.activeObj.activePoint, this.activeObj);
         }
-        if (this.activeObj.activePoint.startX < this.destLeft) {
-            this.activeObj.activePoint.startX = this.destLeft;
-        }
-        if (this.activeObj.activePoint.startY < this.destTop) {
-            this.activeObj.activePoint.startY = this.destTop;
-        }
-        if (this.activeObj.activePoint.endX > this.destLeft + this.destWidth) {
-            this.activeObj.activePoint.endX = this.destLeft + this.destWidth;
-        }
-        if (this.activeObj.activePoint.endY > this.destTop + this.destHeight) {
-            this.activeObj.activePoint.endY = this.destTop + this.destHeight;
-        }
-        if (this.activeObj.activePoint.startX === this.destLeft && this.destLeft + this.destWidth > this.lowerCanvas.clientWidth) {
-            this.activeObj.activePoint.endX = this.lowerCanvas.clientWidth - 15;
-        }
-        if (this.activeObj.activePoint.startY === this.destTop && this.destTop + this.destHeight > this.lowerCanvas.clientHeight) {
-            this.activeObj.activePoint.endY = this.lowerCanvas.clientHeight - 15;
-        }
-        this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
-        this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
-        this.updateActiveObject(this.activeObj.activePoint, this.activeObj);
         this.drawObject('duplicate', this.activeObj, null, null, true);
     }
 
@@ -4789,6 +5548,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.zoomFactor = obj.defaultZoom;
             }
         }
+        this.setProperties({zoomSettings: { zoomFactor: obj.zoomFactor}}, true);
+        this.previousZoomValue = obj.previousZoomValue;
         this.totalPannedPoint = extend({}, obj.totalPannedPoint, {}, true) as Point;
         this.totalPannedClientPoint = extend({}, obj.totalPannedClientPoint, {}, true) as Point;
         this.totalPannedInternalPoint = extend({}, obj.totalPannedInternalPoint, {}, true) as Point;
@@ -4809,18 +5570,25 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         }
         const isCircleCrop: boolean = this.isCircleCrop;
-        const currSelectionPoint: SelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
-        this.currSelectionPoint = null;
+        let currSelectionPoint: SelectionPoint;
+        if (isNullOrUndefined(this.currSelectionPoint)) {
+            currSelectionPoint = null;
+        } else {
+            currSelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
+            this.currSelectionPoint = null;
+        }
         this.isCircleCrop = false;
         this.drawCropSelectionImage(obj, false);
         if (this.degree !== 0) {
-            this.currentPannedPoint = { x: 0, y: 0 };
             this.rotatePan();
+            this.destLeft = obj.destPoints.startX; this.destTop = obj.destPoints.startY;
+            this.totalPannedClientPoint = extend({}, obj.totalPannedClientPoint, {}, true) as Point;
+            this.totalPannedInternalPoint = extend({}, obj.totalPannedInternalPoint, {}, true) as Point;
         }
         this.activeObj = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
         if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
-            this.drawObject('duplicate');
+            this.drawObject('duplicate', null, null, null, true);
         }
         let activeObj: SelectionPoint = extend({}, obj.activeObj, {}, true) as SelectionPoint;
         let isAfterCropAction: boolean = false;
@@ -4838,7 +5606,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     if (afterCropActions.length === 1) {
                         this.activeObj = extend({}, this.cropObj.activeObj, {}, true) as SelectionPoint;
                         this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-                        this.drawObject('duplicate');
+                        this.drawObject('duplicate', null, null, null, true);
                     }
                 }
             }
@@ -4849,14 +5617,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.activeObj = activeObj;
             this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
             if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
-                this.drawObject('duplicate');
+                this.drawObject('duplicate', null, null, null, true);
             }
             if (obj.degree !== this.degree) {
                 this.cropZoomFactor = this.zoomFactor = 0;
             }
             this.updateObjAndFreeHandDrawColl();
             if (this.rotatedFlipCropSelection) {
-                // this.totalPannedInternalPoint = extend({}, this.cropObj.totalPannedInternalPoint, {}, true) as Point;
                 this.rotatedFlipCropSelection = false;
             }
         }
@@ -4868,7 +5635,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.activeObj = activeObj;
         this.isCircleCrop = isCircleCrop;
-        this.currSelectionPoint = currSelectionPoint;
+        if (isNullOrUndefined(currSelectionPoint)) {
+            this.currSelectionPoint = null;
+        } else {
+            this.currSelectionPoint = extend({}, currSelectionPoint, {}, true) as SelectionPoint;
+        }
     }
 
     private drawCropSelectionImage(obj: CurrentObject, isObj: boolean): void {
@@ -5075,7 +5846,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 panRegion = 'horizontalVertical';
             } else if (type === 'vertical') {
                 panRegion = 'verticalHorizontal';
-            }  else if (type === 90) {
+            } else if (type === 90) {
                 panRegion = 'horizontal';
             } else if (type === -90) {
                 panRegion = 'vertical';
@@ -5092,6 +5863,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private getCurrentPanRegion(): string {
         let panRegion: string = '';
+        this.rotateFlipColl = this.alignRotateFlipColl(this.rotateFlipColl, true);
         for (let i: number = 0; i < this.rotateFlipColl.length; i++) {
             panRegion = this.setCurrentPanRegion(panRegion, this.rotateFlipColl[i as number]);
         }
@@ -5114,18 +5886,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.updateCurrentTransformedState('reverse');
         this.destLeft = destPoints.startX; this.destTop = destPoints.startY;
         this.destWidth = destPoints.width; this.destHeight = destPoints.height;
+        const temp: string = this.lowerContext.filter;
         this.lowerContext.filter = 'none';
         this.panObjColl(point.x, point.y, '');
         this.panFreehandDrawColl(point.x, point.y, '');
+        this.lowerContext.filter = temp;
         if (this.isCircleCrop) {
             this.cropCircle(this.lowerContext, null, true);
         }
     }
 
     private drawPannedImage(xDiff?: number, yDiff?: number): void {
-        const panEventArgs: PanEventArgs = {startPoint: this.panDown, endPoint: this.panMove};
+        const panEventArgs: PanEventArgs = {startPoint: this.panDown, endPoint: this.panMove, cancel: false};
         this.trigger('panning', panEventArgs);
+        if (panEventArgs.cancel) { return; }
         let isObjCreated: boolean = false;
+        if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape === 'shape') {
+            this.refreshActiveObj();
+        }
         if (isNullOrUndefined(this.activeObj.shape)) {
             isObjCreated = true;
             this.activeObj.activePoint = {startX: this.destLeft, startY: this.destTop,
@@ -5240,7 +6018,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.isReverseFlip = true;
         this.totalPannedPoint.x += this.tempFlipPanPoint.x;
         this.totalPannedPoint.y += this.tempFlipPanPoint.y;
-        let tempCurrFlipState: string = this.currFlipState;
+        const tempCurrFlipState: string = this.currFlipState;
         const tempFlipColl: string[] = this.flipColl;
         this.flipColl = [];
         this.updateImageRatioForActObj();
@@ -5250,7 +6028,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const isUndoRedo: boolean = this.isUndoRedo;
             for (let i: number = 0; i < (zoomFactor * 10); i++) {
                 this.isUndoRedo = true;
-                this.zoom(-0.1);
+                this.zoomAction(-0.1);
             }
             this.isUndoRedo = isUndoRedo;
             this.resetPanPoints();
@@ -5346,7 +6124,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.rotateFreehandDrawColl();
         }
         let activeObj: SelectionPoint = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
-        
         if (this.currFlipState !== '') {
             for (let i: number = 0; i < this.objColl.length; i++) {
                 this.objColl[i as number].shapeFlip = '';
@@ -5354,7 +6131,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             for (let i: number = 0; i < this.freehandCounter; i++) {
                 this.pointColl[i as number].shapeFlip = '';
             }
-            let flipState: string = this.getCurrentCropState('initial');
+            const flipState: string = this.getCurrentCropState('initial');
             this.redrawObj(flipState);
             this.flipFreehandrawColl(flipState);
         }
@@ -5394,7 +6171,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             for (let i: number = 0; i < this.freehandCounter; i++) {
                 this.pointColl[i as number].shapeFlip = '';
             }
-            let flipState: string = this.getCurrentCropState('reverse');
+            const flipState: string = this.getCurrentCropState('reverse');
             this.redrawObj(flipState);
             this.flipFreehandrawColl(flipState);
         }
@@ -5420,7 +6197,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private getCurrentCropState(type: string, isAllowInvert?: boolean): string {
         let flipState: string = '';
-        let state: string[] = [];
+        const state: string[] = [];
         if (type === 'initial') {
             if (this.degree === 180 || this.degree === -180) {
                 flipState = this.flipColl.length > 1 ? this.getCurrentPanRegion() : this.currFlipState;
@@ -5467,6 +6244,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateRotatePanPoints(): void {
+        if (isNullOrUndefined(this.currentPannedPoint)) {
+            return;
+        }
         let panRegion: string = '';
         if (this.isInitialRotate() && this.degree < 0) {
             panRegion = this.getCurrentCropState('reverse', true);
@@ -5703,11 +6483,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         if (this.isUndoRedo) {
             if (this.currFlipState !== '') {
-                this.flip(this.toPascalCase(this.currFlipState) as Direction);
+                this.flipImage(this.toPascalCase(this.currFlipState) as Direction);
             }
         }
         if (this.disabled) { this.element.setAttribute('class', 'e-disabled'); }
         this.trigger('fileOpened', fileOpened);
+        if (this.zoomSettings.zoomFactor !== 1 || !isNullOrUndefined(this.zoomSettings.zoomPoint)) {
+            this.zoom(this.zoomSettings.zoomFactor, this.zoomSettings.zoomPoint);
+        }
+        if (isNullOrUndefined(this.initialZoomValue)) {
+            this.initialZoomValue = this.zoomSettings.zoomFactor;
+        }
     }
 
     private imageOnLoad(src: string): void {
@@ -5748,6 +6534,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private refreshActiveObj(): void {
         this.activeObj = {} as SelectionPoint;
         this.activeObj.activePoint = {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0};
+        this.activeObj.triangle = [];
+        this.activeObj.triangleRatio = [];
         this.activeObj.flipObjColl = [];
         this.activeObj.strokeSettings = this.strokeSettings;
         this.activeObj.textSettings = this.textSettings;
@@ -5889,10 +6677,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private getCurrentObj(): CurrentObject {
         const obj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
             totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
-            rotateFlipColl: [], degree: 0, currFlipState: '',
+            rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0,
             destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
             srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '' };
         obj.cropZoom = this.cropZoomFactor; obj.defaultZoom = this.defaultZoomFactor;
+        obj.zoomFactor = this.zoomSettings.zoomFactor; obj.previousZoomValue = this.previousZoomValue;
         obj.totalPannedPoint = extend({}, this.totalPannedPoint, {}, true) as Point;
         obj.totalPannedClientPoint = extend({}, this.totalPannedClientPoint, {}, true) as Point;
         obj.totalPannedInternalPoint = extend({}, this.totalPannedInternalPoint, {}, true) as Point;
@@ -5910,11 +6699,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateUndoRedoColl(operation: string, previousObj: CurrentObject, previousObjColl: SelectionPoint[],
-            previousPointColl: Point[], previousCropObj: CurrentObject, previousText?: string, currentText?: string,
-            previousFilter?: string): void {
+                               previousPointColl: Point[], previousCropObj: CurrentObject,
+                               previousText?: string, currentText?: string, previousFilter?: string,
+                               isCircleCrop?: boolean): void {
         if (!this.isInitialLoading && this.allowUndoRedo) {
-            if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-            this.undoRedoStep++;
             const currentObj: CurrentObject = this.getCurrentObj();
             currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
             currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
@@ -5923,28 +6711,26 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 previousObjColl: previousObjColl, currentObjColl: currentObj.objColl,
                 previousPointColl: previousPointColl, currentPointColl: currentObj.pointColl,
                 previousCropObj: previousCropObj, currentCropObj: extend({}, this.cropObj, {}, true) as CurrentObject,
-                previousText: previousText, currentText: currentText, filter: previousFilter });
-            if (this.undoRedoColl.length > 16) {
-                this.undoRedoColl.splice(0, 1);
-                this.undoRedoStep--;
-            }
+                previousText: previousText, currentText: currentText, filter: previousFilter, isCircleCrop: isCircleCrop });
             this.enableDisableToolbarBtn();
         }
     }
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
-        showSpinner(this.element);
-        this.element.style.opacity = '0.5';
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const filesData: FileList = (args.target as any).files[0];
-        if (this.isImageLoaded) {this.isImageLoaded = false; this.reset(); }
-        if (isNullOrUndefined(this.toolbarTemplate)) {this.reset(); this.update(); }
-        this.fileName = inputElement.value.split('\\')[inputElement.value.split('\\').length - 1];
-        this.fileName = this.fileName.split('.')[0];
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const URL: any = window.URL; const url: URL = URL.createObjectURL(filesData);
-        this.imageOnLoad(url.toString());
-        inputElement.value = '';
+        if (!this.disabled) {
+            showSpinner(this.element);
+            this.element.style.opacity = '0.5';
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const filesData: FileList = (args.target as any).files[0];
+            if (this.isImageLoaded) {this.isImageLoaded = false; this.reset(); }
+            if (isNullOrUndefined(this.toolbarTemplate)) {this.reset(); this.update(); }
+            this.fileName = inputElement.value.split('\\')[inputElement.value.split('\\').length - 1];
+            this.fileName = this.fileName.split('.')[0];
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const URL: any = window.URL; const url: URL = URL.createObjectURL(filesData);
+            this.imageOnLoad(url.toString());
+            inputElement.value = '';
+        }
     }
 
     private findTextPoint(e: MouseEvent & TouchEvent): void {
@@ -6085,7 +6871,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private setTimer(e: MouseEvent & TouchEvent): void {
-        if (!this.isTimer && this.timer > 10) {
+        if (this.timer > 10) {
+            clearTimeout(this.timer);
+            this.timer = 0;
             this.findTextPoint(e);
             if (Browser.isDevice) {
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
@@ -6095,8 +6883,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     // eslint-disable-next-line
     private targetTouches(touches: any): Point[] {
-        const p1: Point = {x: touches[0].pageX, y: touches[0].pageY};
-        const p2: Point = {x: touches[1].pageX, y: touches[1].pageY};
+        const bbox: DOMRect = this.lowerCanvas.getBoundingClientRect() as DOMRect;
+        const p1: Point = {x: touches[0].pageX - bbox.left, y: touches[0].pageY - bbox.top};
+        const p2: Point = {x: touches[1].pageX - bbox.left, y: touches[1].pageY - bbox.top};
         const points: Point[] = [p1, p2];
         return points;
     }
@@ -6135,7 +6924,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (e.touches.length === 2) {
             this.isFirstMove = true;
         } else {
-            this.timer = setTimeout(this.setTimer.bind(this), 1000, e);
             this.mouseDownEventHandler(e);
         }
         EventHandler.add(this.lowerCanvas, 'touchend', this.mouseUpEventHandler, this);
@@ -6144,26 +6932,120 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         EventHandler.add(this.upperCanvas, 'touchmove', this.mouseMoveEventHandler, this);
     }
 
-    private isShapeTouch(e: MouseEvent & TouchEvent, isCropSelection: boolean): boolean {
+    private getCurrentIndex(): number {
+        let index: number;
+        for (let i: number = 0; i < this.objColl.length; i++) {
+            if (this.activeObj.currIndex === this.objColl[i].currIndex) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    private isShapeClick(e: MouseEvent & TouchEvent, isCropSelection: boolean): boolean {
         let isShape: boolean = false;
-        if (e.type === 'touchstart') {
-            this.redrawActObj();
+        if (this.togglePen) {
+            return isShape;
+        }
+        if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape === 'text' && this.isShapeInserted) {
+            const isTextArea: boolean = this.textArea.style.display === 'block' ? true : false;
+            const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+            this.redrawActObj(null, null, true);
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             isShape = this.findTargetObj(x, y, isCropSelection);
+            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (isTextArea) {
+                this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
+                this.textArea.style.display = 'block';
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if (isNullOrUndefined(index)) {
+                    this.objColl.pop();
+                } else {
+                    this.objColl.splice(index, 1);
+                }
+            } else if (!isShape && !isNullOrUndefined(activeObj.shape)) {
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                    this.objColl.splice(index, 1);
+                } else if (isNullOrUndefined(this.activeObj.currIndex)) {
+                    this.objColl.pop();
+                }
+            }
+        }
+        return isShape;
+    }
+
+    private isShapeTouch(e: MouseEvent & TouchEvent, isCropSelection: boolean): boolean {
+        let isShape: boolean = false;
+        if (e.type === 'touchstart' && !this.togglePen) {
+            if (!isNullOrUndefined(this.activeObj) && this.activeObj.shape === 'text') {
+                this.timer = setTimeout(this.setTimer.bind(this), 1000, e);
+            }
+            const isTextArea: boolean = this.textArea.style.display === 'block' ? true : false;
+            const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+            this.redrawActObj(null, null, true);
+            const points: Point = this.setXYPoints(e);
+            const x: number = points.x; const y: number = points.y;
+            isShape = this.findTargetObj(x, y, isCropSelection);
+            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (isTextArea) {
+                this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
+                this.textArea.style.display = 'block';
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if (isNullOrUndefined(index)) {
+                    this.objColl.pop();
+                } else {
+                    this.objColl.splice(index, 1);
+                }
+            } else if (!isShape && !isNullOrUndefined(activeObj.shape)) {
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                    this.objColl.splice(index, 1);
+                } else if (isNullOrUndefined(this.activeObj.currIndex)) {
+                    this.objColl.pop();
+                }
+            }
         }
         return isShape;
     }
 
     private isFreehandDrawTouch(e: MouseEvent & TouchEvent, isCropSelection: boolean): boolean {
         let isFreehandDraw: boolean = false;
-        if (e.type === 'touchstart' && !isCropSelection) {
-            this.redrawActObj();
+        if (e.type === 'touchstart' && !isCropSelection && !this.togglePen) {
+            const isTextArea: boolean = this.textArea.style.display === 'block' ? true : false;
+            const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+            this.redrawActObj(null, null, true);
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             this.setCursor(x, y);
             if (this.isFreehandDrawingPoint) {
                 isFreehandDraw = true;
+            }
+            if (isTextArea) {
+                this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
+                this.textArea.style.display = 'block';
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if (isNullOrUndefined(index)) {
+                    this.objColl.pop();
+                } else {
+                    this.objColl.splice(index, 1);
+                }
+            }
+            if (!isNullOrUndefined(activeObj.shape)) {
+                this.activeObj = activeObj;
+                const index: number = this.getCurrentIndex();
+                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                    this.objColl.splice(index, 1);
+                } else if (isNullOrUndefined(this.activeObj.currIndex)) {
+                    this.objColl.pop();
+                }
             }
         }
         return isFreehandDraw;
@@ -6184,9 +7066,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.pointColl[this.freehandDrawSelectedIndex].isSelected = true;
         this.freehandDrawSelectedId = this.pointColl[this.freehandDrawSelectedIndex].id;
         if (this.pointColl[this.freehandDrawHoveredIndex].strokeColor !== '#42a5f5') {
-            this.tempFreeHandDrawEditingStyles.strokeColor = this.pointColl[this.freehandDrawHoveredIndex].strokeColor;
+            this.activeObj.strokeSettings.strokeColor = this.tempFreeHandDrawEditingStyles.strokeColor =
+                this.pointColl[this.freehandDrawHoveredIndex].strokeColor;
         }
-        this.tempFreeHandDrawEditingStyles.strokeWidth = this.pointColl[this.freehandDrawHoveredIndex].strokeWidth;
+        this.activeObj.strokeSettings.strokeWidth = this.tempFreeHandDrawEditingStyles.strokeWidth =
+            this.pointColl[this.freehandDrawHoveredIndex].strokeWidth;
         if (this.isFreehandDrawEditing) {
             this.refreshToolbar('pen');
         } else {
@@ -6202,15 +7086,81 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             && !this.element.querySelector('#' + this.element.id + '_headWrapper').parentElement.classList.contains('e-hide'))) {
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
             this.okBtn();
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
             isContextualToolbar = true;
         }
         return isContextualToolbar;
     }
 
+    private applyObj(x: number, y:  number): boolean {
+        let isApply: boolean = false;
+        if (!isNullOrUndefined(this.activeObj.shape) && (this.activeObj.shape === 'rectangle' || this.activeObj.shape === 'ellipse' ||
+            this.activeObj.shape === 'text' || this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow')) {
+            if (x >= (this.activeObj.activePoint.startX - (this.activeObj.topLeftCircle.radius * 2)) &&
+                        x <= (this.activeObj.activePoint.endX + (this.activeObj.topLeftCircle.radius * 2)) &&
+                        y >= (this.activeObj.activePoint.startY - (this.activeObj.topLeftCircle.radius * 2)) &&
+                        y <= (this.activeObj.activePoint.endY + (this.activeObj.topLeftCircle.radius * 2))) {
+                isApply = false;
+            } else {
+                isApply = true;
+            }
+        }
+        return isApply;
+    }
+
+    private applyCurrShape(isShapeClick: boolean): boolean {
+        let isApply: boolean = false;
+        if (this.togglePen) {
+            return isApply;
+        }
+        let obj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+        if (this.isShapeInserted && this.activeObj.shape === 'text' && isShapeClick) {
+            this.isInitialTextEdited = this.isShapeTextInserted = true;
+        }
+        if (this.textArea.style.display === 'block') {
+            const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
+            this.redrawActObj();
+            obj = extend({}, this.objColl[this.objColl.length - 1], null, true) as SelectionPoint;
+            this.objColl.pop();
+            this.activeObj = extend({}, activeObj, null, true) as SelectionPoint;
+            this.textArea.value = obj.keyHistory;
+            this.textArea.style.display = 'block';
+            let strokeColor: string = obj.strokeSettings.strokeColor.split('(')[0] === 'rgb' ?
+                this.rgbToHex(parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[0]),
+                parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[1]),
+                parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[2])) :
+                obj.strokeSettings.strokeColor;
+            if (strokeColor === '#ffffff') {
+                strokeColor = '#fff';
+            }
+            if (this.tempActiveObj.strokeSettings.strokeColor === '#ffffff') {
+                this.tempActiveObj.strokeSettings.strokeColor = '#fff';
+            }
+            if (obj.keyHistory !== this.tempActiveObj.keyHistory ||
+                strokeColor !== this.tempActiveObj.strokeSettings.strokeColor ||
+                obj.textSettings.fontFamily !== this.tempActiveObj.textSettings.fontFamily ||
+                Math.round(obj.textSettings.fontSize) !== Math.round(this.tempActiveObj.textSettings.fontSize) ||
+                Math.round(obj.textSettings.fontRatio) !== Math.round(this.tempActiveObj.textSettings.fontRatio) ||
+                obj.textSettings.bold !== this.tempActiveObj.textSettings.bold ||
+                obj.textSettings.italic !== this.tempActiveObj.textSettings.italic ||
+                obj.textSettings.underline !== this.tempActiveObj.textSettings.underline) {
+                isApply = true;
+            }
+            if (this.isInitialTextEdited && !isApply) {
+                isApply = true;
+                this.isInitialTextEdited = false;
+            }
+        } else {
+            isApply = JSON.stringify(obj) !== JSON.stringify(this.tempActiveObj);
+        }
+        return isApply;
+    }
+
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
         if (e.type === 'touchstart') {
             this.isTouch = true;
+        } else {
+            this.isTouch = false;
         }
         if (e.type === 'touchstart' && e.currentTarget === this.lowerCanvas && !this.isImageLoaded) {
             return;
@@ -6223,23 +7173,50 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (isCropSelection) {
             this.dragCanvas = this.togglePan = true;
         }
+        const imageEditorClickEventArgs: ImageEditorClickEventArgs = {point: this.setXYPoints(e)};
+        this.trigger('click', imageEditorClickEventArgs);
+        const x: number = imageEditorClickEventArgs.point.x; const y: number = imageEditorClickEventArgs.point.y;
         if (isCropSelection && this.dragCanvas) {
-            const points: Point = this.setXYPoints(e);
-            const x: number = points.x; const y: number = points.y;
             this.setCursor(x, y);
             if (this.upperCanvas.style.cursor !== 'move' && this.upperCanvas.style.cursor !== 'crosshair' &&
             this.upperCanvas.style.cursor !== 'default' && this.upperCanvas.style.cursor !== 'grab') {
                 isPan = false;
             }
         }
+        if (!isNullOrUndefined(this.activeObj.shape)) {
+            this.isObjSelected = true;
+        } else {
+            this.isObjSelected = false;
+        }
+        const prevObj: CurrentObject = this.getCurrentObj();
+        const activeObj: SelectionPoint = extend({}, this.activeObj, null, true) as SelectionPoint;
         const isShape: boolean = this.isShapeTouch(e, isCropSelection);
         const isFreehandDraw: boolean = this.isFreehandDrawTouch(e, isCropSelection);
+        const isShapeClick: boolean = isShape ? isShape : this.isShapeClick(e, isCropSelection);
+        const allowUndoRedoPush: boolean = this.applyCurrShape(isShapeClick);
+        if (this.isTouch && !isShape && !isNullOrUndefined(activeObj.shape) && !isCropSelection) {
+            if (this.applyObj(x, y)) {
+                this.okBtn(true); this.prevActObj = null;
+            }
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+            if (allowUndoRedoPush) {
+                this.updateCurrentUndoRedoColl('ok');
+            }
+        }
         if (!isShape && !this.togglePen && !isCropSelection) {
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
             this.closeContextualToolbar();
         }
         if (this.dragCanvas && isPan && (this.upperCanvas.style.cursor === 'grab' || this.isTouch)
             && !isShape && !isFreehandDraw && !this.togglePen) {
+            if (this.applyObj(x, y)) {
+                this.okBtn(true);
+                if (allowUndoRedoPush) {
+                    this.updateCurrentUndoRedoColl('ok');
+                }
+                this.prevActObj = null;
+            }
             if (this.isFreehandDrawEditing) {
                 this.applyFreehandDraw();
             }
@@ -6249,7 +7226,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         else {
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
-            this.redrawActObj(x, y);
+            if (this.applyObj(x, y)) {
+                this.okBtn(true);
+                if (allowUndoRedoPush) {
+                    this.updateCurrentUndoRedoColl('ok');
+                }
+                this.prevActObj = null;
+            }
+            this.redrawActObj(x, y, true);
             if (this.isFreehandDrawingPoint || (this.isFreehandDrawCustomized && !this.togglePen)) {
                 if (!isNullOrUndefined(this.freehandDrawSelectedIndex) &&
                     this.freehandDrawSelectedIndex !== this.freehandDrawHoveredIndex) {
@@ -6258,12 +7242,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.isFreehandDrawCustomized = false;
                     this.freehandDrawHoveredIndex = tempHoveredIndex;
                     if (this.freehandDrawHoveredIndex > -1) {
-                        const strokeColor: string = this.pointColl[this.freehandDrawHoveredIndex].strokeColor === '#fff' ? '#42a5f5' : this.pointColl[this.freehandDrawHoveredIndex].strokeColor;
+                        const strokeColor: string = this.pointColl[this.freehandDrawHoveredIndex].strokeColor;
                         this.hoverFreehandraw(strokeColor, this.pointColl[this.freehandDrawHoveredIndex].strokeWidth);
                     }
                 }
                 if (!isNullOrUndefined(this.freehandDrawHoveredIndex) && this.freehandDrawHoveredIndex > -1) {
-                    this.selectFreehandDraw();
+                    this.selectFreehandDraw(); this.renderQuickAccessToolbar(true);
                 } else if (this.freehandDrawSelectedIndex) {
                     this.okBtn();
                     const strokeColor: string = this.pointColl[this.freehandDrawSelectedIndex].strokeColor;
@@ -6272,6 +7256,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else {
                 if (this.isFreehandDrawEditing) {
                     this.cancelFreehandDraw();
+                    if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                        document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+                    }
                 }
                 this.closeContextualToolbar();
                 this.isFreehandDrawEditing = false;
@@ -6303,27 +7290,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 else if ((this.currObjType.shape === '' || this.currObjType.isCustomCrop) && !this.togglePen  && this.upperCanvas.style.cursor !== 'default') {
                     this.setActivePoint(x, y);
                 }
-                if (!isNullOrUndefined(this.activeObj)) {
-                    let isCropSelection: boolean = false;
-                    let splitWords: string[];
-                    if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-                    if (splitWords === undefined && (this.currObjType.isCustomCrop || this.togglePen)) {
-                        isCropSelection = true;
-                    } else if (splitWords !== undefined && splitWords[0] === 'crop'){
-                        isCropSelection = true;
-                    }
-                    if ((this.activeObj.shape === 'rectangle') || (this.activeObj.shape === 'ellipse')
-                    || (this.activeObj.shape === 'line')) {
-                        this.refreshToolbar('shapes');
-                    }
-                    else if (this.activeObj.shape === 'text') {
-                        this.refreshToolbar('text');
-                    }
-                    else if (!isCropSelection) {
-                        this.callMainToolbar();
-                    }
-                    this.updateToolbarItems();
-                }
             }
         }
         this.isShapeInserted = false;
@@ -6332,40 +7298,47 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private mouseMoveEventHandler(e: MouseEvent & TouchEvent): void {
         e.preventDefault();
+        const bbox: DOMRect = this.lowerCanvas.getBoundingClientRect() as DOMRect;
         if (e.type === 'touchmove' && e.touches.length === 2) {
             if (this.isFirstMove) {
                 this.startTouches = this.targetTouches(e.touches);
                 this.tempTouches = [];
-                this.tempTouches.push({x: e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft),
-                    y: e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)});
-                this.tempTouches.push({x: e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft),
-                    y: e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)});
+                this.tempTouches.push({x: (e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft) - bbox.left),
+                    y: (e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)) - bbox.top});
+                this.tempTouches.push({x: (e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft)) - bbox.left,
+                    y: (e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)) - bbox.top});
             } else {
-                const firstFingerX: number = e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft);
-                const firstFingerY: number = e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop);
-                const secondFingerX: number = e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft);
-                const secondFingerY: number = e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop);
-                const scale: number = this.calculateScale(this.startTouches, this.targetTouches(e.touches));
-                // Need to set lastX and lastY points
-                if (this.tempTouches[0].x !== firstFingerX && this.tempTouches[0].y !== firstFingerY &&
-                    this.tempTouches[1].x !== secondFingerX && this.tempTouches[1].y !== secondFingerY) {
-                    if (scale > 1) {
-                        this.zoom(1.1);
-                    } else {
-                        this.zoom(-1.1);
+                const firstFingerX: number = (e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft)) - bbox.left;
+                const firstFingerY: number = (e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)) - bbox.top;
+                const secondFingerX: number = (e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft)) - bbox.left;
+                const secondFingerY: number = (e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)) - bbox.top;
+                const center: Point = {x: firstFingerX < secondFingerX ? secondFingerX - ((secondFingerX - firstFingerX) / 2) :
+                    firstFingerX - ((firstFingerX - secondFingerX) / 2), y: firstFingerY < secondFingerY ?
+                    secondFingerY - ((secondFingerY - firstFingerY) / 2) : firstFingerY - ((firstFingerY - secondFingerY) / 2)};
+                if (this.currentMouseMovePoint.x !== center.x && this.currentMouseMovePoint.y !== center.y) {
+                    let type: string = '';
+                    if (e.type === 'touchmove' && (this.zoomSettings.zoomTrigger & ZoomTrigger.Pinch) === ZoomTrigger.Pinch) {
+                        this.zoomType = 'Pinch';
+                        const scale: number = this.calculateScale(this.startTouches,
+                                                                  this.targetTouches((e as MouseEvent & TouchEvent).touches));
+                        this.startTouches = this.targetTouches((e as MouseEvent & TouchEvent).touches);
+                        if (scale > 1) {
+                            type = 'zoomIn';
+                        } else if (scale < 1) {
+                            type = 'zoomOut';
+                        }
                     }
+                    if (type !== '') {this.performPointZoom(center.x, center.y, type); }
                     this.tempTouches = [];
                     this.tempTouches.push({x: e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft),
                         y: e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)});
                     this.tempTouches.push({x: e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft),
                         y: e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)});
+                    this.currentMouseMovePoint.x = center.x; this.currentMouseMovePoint.y = center.y;
                 }
             }
             this.isFirstMove = false;
             return;
-        }
-        if (this.textArea.style.display === 'none') {
-            this.isTimer = true;
         }
         let x: number; let y: number;
         if (e.type === 'mousemove') {
@@ -6374,7 +7347,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.touchEndPoint.x = x = e.touches[0].clientX;
             this.touchEndPoint.y = y = e.touches[0].clientY;
         }
-        const bbox: DOMRect = this.lowerCanvas.getBoundingClientRect() as DOMRect;
         x -= bbox.left; y -= bbox.top;
         this.canvasMouseMoveHandler(e);
         let isCropSelection: boolean = false; let splitWords: string[];
@@ -6386,12 +7358,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.disableZoomOutBtn();
         }
         if (this.currObjType.isActiveObj && (this.activeObj.activePoint !== undefined || this.objColl.length > 0) &&
-        !this.dragCanvas || this.activeObj.activePoint !== undefined) {
+            !this.dragCanvas || this.activeObj.activePoint !== undefined) {
             if (this.dragElement === '') {
                 this.setCursor(x, y);
-                if ((!isNullOrUndefined(this.activeObj.activePoint) && this.activeObj.activePoint.width === 0) && this.upperCanvas.style.cursor !== 'default' &&
-                this.upperCanvas.style.cursor !== 'move' && this.upperCanvas.style.cursor !== 'crosshair'
-                && this.upperCanvas.style.cursor !== 'grab' && this.upperCanvas.style.cursor !== 'pointer') {
+                if ((!isNullOrUndefined(this.activeObj.activePoint) &&
+                    (this.activeObj.activePoint.width === 0 || (!isNullOrUndefined(this.activeObj.currIndex) &&
+                    this.cursorTargetObjId !== this.activeObj.currIndex)))
+                    && this.upperCanvas.style.cursor !== 'default' &&
+                    this.upperCanvas.style.cursor !== 'move' && this.upperCanvas.style.cursor !== 'crosshair'
+                    && this.upperCanvas.style.cursor !== 'grab' && this.upperCanvas.style.cursor !== 'pointer') {
                     this.upperCanvas.style.cursor = 'move';
                 }
                 this.findTarget(x, y, e.type);
@@ -6400,6 +7375,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (this.currObjType.isDragging) {
             this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.updateActivePoint(x, y, isCropSelection);
+            this.updateTrianglePoints(this.activeObj);
             if (this.isPreventDragging) {
                 if ((this.activeObj.activePoint.startX > this.destLeft) &&
                     (this.activeObj.activePoint.endX < this.destLeft + this.destWidth) && (this.activeObj.activePoint.startY > this.destTop)
@@ -6419,6 +7395,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private mouseUpEventHandler(e: MouseEvent & TouchEvent): void {
         if (e.type === 'touchstart') {
             this.isTouch = false;
+        } else if (e.type === 'touchend') {
+            e.stopImmediatePropagation();
         }
         e.preventDefault();
         if (this.togglePan) {this.canvasMouseUpHandler(e); }
@@ -6434,7 +7412,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.startTouches = this.tempTouches = [];
             this.isFirstMove = false;
             if (this.textArea.style.display === 'none') {
-                this.isTimer = false; this.timer = 0;
+                this.timer = 0;
             }
         }
         let isCropSelection: boolean = false; let splitWords: string[];
@@ -6454,7 +7432,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.objColl.push(this.activeObj);
                     if (JSON.stringify(this.activeObj.activePoint) !== JSON.stringify(this.tempActiveObj.activePoint)) {
                         this.updateUndoRedoColl('shapeTransform', prevObj, this.tempObjColl,
-                            prevObj.pointColl, prevCropObj);
+                                                prevObj.pointColl, prevCropObj);
                     }
                     this.redrawShape(this.objColl[this.objColl.length - 1]);
                     this.tempObjColl = undefined;
@@ -6462,15 +7440,44 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (!this.isFreehandDrawEditing) {
                     this.applyCurrActObj(x, y);
                 }
-            } else if (isCropSelection && !this.togglePen) {
-                if (JSON.stringify(this.activeObj.activePoint) !== JSON.stringify(this.tempActiveObj.activePoint)) {
-                    prevObj.activeObj = extend([], this.tempActiveObj, {}, true) as SelectionPoint;
-                    this.updateUndoRedoColl('selectionTransform', prevObj, prevObj.objColl,
-                        prevObj.pointColl, prevCropObj);
+            }
+            if (!isNullOrUndefined(this.activeObj)) {
+                let isCropSelection: boolean = false;
+                let splitWords: string[];
+                if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+                if (splitWords === undefined && (this.currObjType.isCustomCrop || this.togglePen)) {
+                    isCropSelection = true;
+                } else if (splitWords !== undefined && splitWords[0] === 'crop'){
+                    isCropSelection = true;
                 }
+                if ((this.activeObj.shape === 'rectangle') || (this.activeObj.shape === 'ellipse')
+                || (this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow')) {
+                    this.refreshToolbar('shapes');
+                } else if (this.activeObj.shape === 'text') {
+                    this.refreshToolbar('text');
+                } else if (this.isFreehandDrawEditing) {
+                    this.refreshToolbar('pen');
+                } else if (!isCropSelection) {
+                    this.callMainToolbar();
+                }
+                this.updateToolbarItems();
             }
         }
-        if (this.togglePen && e.currentTarget === this.upperCanvas){
+        if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+        if (splitWords !== undefined && splitWords[0] === 'crop'){
+            isCropSelection = true;
+        }
+        if (!isNullOrUndefined(this.activeObj.shape) && !isCropSelection && e.currentTarget === this.upperCanvas &&
+            this.textArea.style.display === 'none') {
+            if (this.activeObj.shape === 'text') {
+                this.refreshToolbar('text');
+            } else {
+                this.refreshToolbar('shapes');
+            }
+            this.updateToolbarItems();
+            this.renderQuickAccessToolbar();
+        }
+        if (this.togglePen && e.currentTarget === this.upperCanvas) {
             this.freehandUpHandler(e, this.upperCanvas, this.upperContext);
         } else {this.currObjType.shape = ''; }
         this.dragElement = '';
@@ -6478,9 +7485,138 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.oldPoint.x = undefined; this.oldPoint.y = undefined;
     }
 
-    private keyDownEventHandler(e: KeyboardEvent): void {
+    private getSquarePointForFreehandDraw(idx: number): ActivePoint {
+        const activePoint: ActivePoint = {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0};
+        const sPoints: Point[] = extend([], this.selPointColl[idx as number].points, []) as Point[];
+        this.points = extend([], this.pointColl[idx as number].points) as Point[];
+        this.pointCounter = 0;
+        const len: number = sPoints.length;
+        for (let l: number = 0; l < len; l++) {
+            if (activePoint.startX === 0 && activePoint.startY === 0 && activePoint.endX === 0 && activePoint.endY === 0) {
+                activePoint.startX = sPoints[l as number].x; activePoint.startY = sPoints[l as number].y;
+                activePoint.endX = sPoints[l as number].x; activePoint.endY = sPoints[l as number].y;
+            }
+            if (sPoints[l as number].x < activePoint.startX) {
+                activePoint.startX = sPoints[l as number].x;
+            }
+            if (sPoints[l as number].y < activePoint.startY) {
+                activePoint.startY = sPoints[l as number].y;
+            }
+            if (sPoints[l as number].x > activePoint.endX) {
+                activePoint.endX = sPoints[l as number].x;
+            }
+            if (sPoints[l as number].y > activePoint.endY) {
+                activePoint.endY = sPoints[l as number].y;
+            }
+        }
+        activePoint.startX -= this.penStrokeWidth; activePoint.startY -= this.penStrokeWidth;
+        activePoint.endX += this.penStrokeWidth; activePoint.endY += this.penStrokeWidth;
+        activePoint.width = activePoint.endX - activePoint.startX;
+        activePoint.height = activePoint.endY - activePoint.startY;
+        return activePoint;
+    }
+
+    private getQuickAccessToolbarItem(isPenEdit: boolean): ItemModel[] {
+        const args: QuickAccessToolbarEventArgs = {cancel: false, toolbarItems: []};
+        const toolbarItems: (string | ItemModel)[] = [];
+        if (isNullOrUndefined(isPenEdit)) {
+            toolbarItems.push('Clone'); toolbarItems.push('Delete');
+            if (this.activeObj.shape === 'text') {
+                toolbarItems.push('EditText');
+            }
+        } else if (isPenEdit) {
+            toolbarItems.push('Remove');
+        }
+        args.toolbarItems = extend([], toolbarItems, null, true) as ItemModel[];
+        this.trigger('quickAccessToolbarOpening', args);
+        let orgToolbarItems: ItemModel[] = [];
+        if (args.cancel) {
+            orgToolbarItems = [];
+        } else {
+            for (let i: number = 0; i < args.toolbarItems.length; i++) {
+                if (args.toolbarItems[i as number] === 'Clone') {
+                    orgToolbarItems.push({ id: this.element.id + '_duplicate', prefixIcon: 'e-icons e-order', cssClass: 'top-icon e-order',
+                        tooltipText: this.l10n.getConstant('Duplicate'), align: 'Left' });
+                } else if (args.toolbarItems[i as number] === 'Delete') {
+                    orgToolbarItems.push({ id: this.element.id + '_remove', prefixIcon: 'e-icons e-trash', cssClass: 'top-icon e-trash',
+                        tooltipText: this.l10n.getConstant('Remove'), align: 'Left' });
+                } else if (args.toolbarItems[i as number] === 'EditText') {
+                    orgToolbarItems.push({ id: this.element.id + '_editText', prefixIcon: 'e-icons e-annotation-edit', cssClass: 'top-icon e-annotation-edit',
+                        tooltipText: this.l10n.getConstant('EditText'), align: 'Left' });
+                } else {
+                    orgToolbarItems.push(args.toolbarItems[i as number] as ItemModel);
+                }
+            }
+        }
+        return orgToolbarItems as ItemModel[];
+    }
+
+    private renderQuickAccessToolbar(isPenEdit?: boolean): void {
+        if (!isNullOrUndefined(this.activeObj) && this.showQuickAccessToolbar) {
+            const qtArea: HTMLElement = document.getElementById(this.element.id + '_quickAccessToolbarArea');
+            if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'block';
+            }
+            const items: ItemModel[] = this.getQuickAccessToolbarItem(isPenEdit);
+            if (items.length === 0) {return; }
+            new Toolbar({
+                items: items,
+                clicked: this.defToolbarClicked.bind(this)
+            }, '#' + this.element.id + '_quickAccessToolbar');
+            if (isNullOrUndefined(isPenEdit)) {
+                // 50 for toolbar width and 50 for toolbar height
+                qtArea.style.left = (this.activeObj.activePoint.startX + (this.activeObj.activePoint.width / 2)) - 50 + 'px';
+                qtArea.style.top = this.activeObj.activePoint.startY - 50 + 'px';
+            } else if (isPenEdit) {
+                const point: ActivePoint = this.getSquarePointForFreehandDraw(this.freehandDrawSelectedIndex);
+                // 25 for toolbar width and 50 for toolbar height
+                qtArea.style.left = (point.startX + (point.width / 2)) - 25 + 'px';
+                qtArea.style.top = point.startY - 50 + 'px';
+            }
+        }
+    }
+
+    private deleteItem(): void {
         let shapeChangingArgs: ShapeChangeEventArgs = {};
         let previousShapeSettings: ShapeSettings = {} as ShapeSettings;
+        if (this.isFreehandDrawEditing) {
+            this.updateFreehandDrawColorChange();
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            this.deleteFreehandDraw(parseInt(this.freehandDrawSelectedId.split('_')[1], 10) - 1, true);
+            this.updateUndoRedoColl('deleteFreehandDrawing', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+            this.updateCurrentUndoRedoColl('ok');
+        } else if (this.textArea.style.display === 'none') {
+            this.objColl.push(this.activeObj);
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const prevObj: CurrentObject = this.getCurrentObj();
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            this.objColl.pop();
+            previousShapeSettings = this.updatePreviousShapeSettings();
+            shapeChangingArgs = {action: 'delete', previousShapeSettings: previousShapeSettings, currentShapeSettings: null};
+            this.keyHistory = '';
+            this.clearSelection();
+            this.trigger('shapeChanging', shapeChangingArgs);
+            this.refreshMainToolbar();
+            if (!isNullOrUndefined(prevObj.objColl[prevObj.objColl.length - 1].currIndex)) {
+                this.updateUndoRedoColl('deleteObj', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+                this.updateCurrentUndoRedoColl('ok');
+            }
+        }
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+            document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+        }
+    }
+
+    private keyDownEventHandler(e: KeyboardEvent): void {
+        if (e.ctrlKey && (e.key === '+' || e.key === '-')) {
+            e.preventDefault();
+        }
         const beforeSave: BeforeSaveEventArgs = {fileName: this.fileName, fileType: this.fileType, cancel: false};
         let splitWords: string[];
         switch (e.key) {
@@ -6493,57 +7629,47 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             e.preventDefault();
             e.stopImmediatePropagation();
             break;
-        // case (e.ctrlKey && 'z'):
-        //     if (this.allowUndoRedo) {
-        //         this.callUndo();
-        //     }
-        //     break;
-        // case (e.ctrlKey && 'y'):
-        //     if (this.allowUndoRedo) {
-        //         this.callRedo();
-        //     }
-        //     break;
-        case 'Delete':
-            if (this.isFreehandDrawEditing) {
-                this.updateFreehandDrawColorChange();
-                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-                const prevObj: CurrentObject = this.getCurrentObj();
-                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-                this.deleteFreehandDraw(parseInt(this.freehandDrawSelectedId.split('_')[1], 10) - 1, true);
-                this.updateUndoRedoColl('deleteFreehandDrawing', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
-            } else if (this.textArea.style.display === 'none') {
-                this.objColl.push(this.activeObj);
-                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-                const prevObj: CurrentObject = this.getCurrentObj();
-                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-                this.objColl.pop();
-                previousShapeSettings = this.updatePreviousShapeSettings();
-                shapeChangingArgs = {action: 'delete', previousShapeSettings: previousShapeSettings, currentShapeSettings: null};
-                this.keyHistory = '';
-                this.clearSelection();
-                this.trigger('shapeChanging', shapeChangingArgs);
-                this.refreshToolbar('main');
-                this.updateUndoRedoColl('deleteObj', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+        case (e.ctrlKey && 'z'):
+            if (this.allowUndoRedo) {
+                this.callUndo();
             }
             break;
-        case 'Escape':
-            if (this.togglePan) {
-                this.refreshToolbar(this.currentToolbar);
-                this.pan(false);
-            } else if (this.textArea.style.display === 'block') {
-                this.redrawActObj();
-            } else {
-                this.performCancel();
+        case (e.ctrlKey && 'y'):
+            if (this.allowUndoRedo) {
+                this.callRedo();
             }
+            break;
+        case (e.ctrlKey && '+'):
+            if ((this.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
+                this.zoomType = 'Commands';
+                this.zoomAction(.1);
+            }
+            break;
+        case (e.ctrlKey && '-'):
+            if ((this.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
+                this.zoomType = 'Commands';
+                this.zoomAction(-.1);
+            }
+            break;
+        case 'Delete':
+            this.deleteItem();
+            break;
+        case 'Escape':
+            this.performCancel();
             break;
         case 'Enter':
             if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
             if (this.activeObj.horTopLine !== undefined && (this.activeObj.shape !== undefined && splitWords[0] === 'crop')) {
                 this.crop();
+            }
+            break;
+        case 'Tab':
+            if (this.textArea.style.display === 'block') {
+                const allowUndoRedoPush: boolean = this.applyCurrShape(false);
+                this.redrawActObj();
+                if (allowUndoRedoPush) {
+                    this.updateCurrentUndoRedoColl('ok');
+                }
             }
             break;
         default:
@@ -6574,13 +7700,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const bbox: DOMRect = this.lowerCanvas.getBoundingClientRect() as DOMRect;
         x -= bbox.left; y -= bbox.top;
         this.panDown = {x: x, y: y};
-        this.lastPan = {x: this.destLeft, y: this.destTop};
         if (isNullOrUndefined(this.tempPanMove)) {
             this.tempPanMove = {x: x, y: y};
-            this.panStartObj = this.getCurrentObj();
-            this.panStartObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-            this.panStartObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-            this.panStartObj.afterCropActions = this.afterCropActions;
         }
     }
 
@@ -6608,9 +7729,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         e.preventDefault();
         if (this.togglePan) {
             if (this.panDown && this.panMove && this.togglePan && this.dragCanvas) {
-                const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-                this.updateUndoRedoColl('pan', this.panStartObj, this.panStartObj.objColl, this.panStartObj.pointColl, prevCropObj);
-                this.panDown = null; this.panMove = null; this.tempPanMove = null; this.panStartObj = null;
+                this.panDown = null; this.panMove = null; this.tempPanMove = null;
             }
         }
         this.currObjType.isDragging = false;
@@ -6627,9 +7746,111 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (x > this.destLeft && x < this.destLeft + this.destWidth && y > this.destTop && y < this.destTop + this.destHeight) {
             isInsideCanvas = true;
         }
+        e.stopPropagation();
         if (e.ctrlKey === true && isInsideCanvas) {
             e.preventDefault();
+            if (!this.isCropTab) {
+                this.okBtn();
+                this.closeContextualToolbar();
+            }
+            let type: string = '';
+            if (e.type === 'mousewheel' && (this.zoomSettings.zoomTrigger & ZoomTrigger.MouseWheel) === ZoomTrigger.MouseWheel) {
+                this.zoomType = 'MouseWheel';
+                // eslint-disable-next-line
+                if ((e as any).wheelDelta > 0) {
+                    type = 'zoomIn';
+                } else {
+                    type = 'zoomOut';
+                }
+            }
+            if (type !== '') {this.performPointZoom(x, y, type); }
         }
+    }
+
+    private performPointZoom(x: number, y: number, type: string): void {
+        const ratioX: number = (x - this.destLeft) / this.destWidth;
+        const ratioY: number = (y - this.destTop) / this.destHeight;
+        const isUndoRedo: boolean = this.isUndoRedo;
+        this.isUndoRedo = true;
+        this.setProperties({zoomSettings: { zoomPoint: {x: x, y: y}}}, true);
+        if (type === 'zoomIn') {
+            this.zoomAction(.1);
+        } else if (type === 'zoomOut') {
+            this.zoomAction(-.1);
+        }
+        this.isUndoRedo = isUndoRedo;
+        if (this.zoomFactor > 0) {
+            const destLeft: number = this.destLeft; const destTop: number = this.destTop;
+            const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+            if (this.degree === 0) {
+                this.destLeft = x - (ratioX * this.destWidth);
+                this.destTop = y - (ratioY * this.destHeight);
+                this.drawZoomPanImage(this.destLeft - destLeft, this.destTop - destTop);
+            } else {
+                const isCropTab: boolean = this.isCropTab;
+                this.isCropTab = true;
+                const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                const pointColl: Point[] = extend([], this.pointColl, [], true) as Point[];
+                this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+                this.currentPannedPoint = {x: (x - (ratioX * this.destWidth)) - destLeft,
+                    y: (y - (ratioY * this.destHeight)) - destTop};
+                this.rotatePan();
+                this.isCropTab = isCropTab;
+                this.objColl = objColl; this.pointColl = pointColl; this.freehandCounter = this.pointColl.length;
+                this.panObjColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
+                this.panFreehandDrawColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
+            }
+            this.adjustPanning(activeObj);
+            this.activeObj = activeObj;
+            if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
+                this.drawObject('duplicate', null, null, null, true);
+            }
+        }
+    }
+
+    private adjustPanning(activeObj: SelectionPoint): void {
+        if (activeObj.activePoint.width !== 0 && activeObj.activePoint.height !== 0) {
+            const destLeft: number = this.destLeft; const destTop: number = this.destTop;
+            const point: Point = {x: 0, y: 0};
+            if (this.destLeft > activeObj.activePoint.startX) {
+                point.x =  this.destLeft - activeObj.activePoint.startX;
+            } else if (this.destLeft + this.destWidth < activeObj.activePoint.startX + activeObj.activePoint.width) {
+                point.x = (this.destLeft + this.destWidth) - (activeObj.activePoint.startX + activeObj.activePoint.width);
+            }
+            if (this.destTop > activeObj.activePoint.startY) {
+                point.y = this.destTop - activeObj.activePoint.startY;
+            } else if (this.destTop + this.destHeight < activeObj.activePoint.startY + activeObj.activePoint.height) {
+                point.y = (this.destTop + this.destHeight) - (activeObj.activePoint.startY + activeObj.activePoint.height);
+            }
+            if (this.degree === 0) {
+                this.destLeft -= point.x; this.destTop -= point.y;
+                this.drawZoomPanImage(this.destLeft - destLeft, this.destTop - destTop);
+            } else {
+                const isCropTab: boolean = this.isCropTab;
+                this.isCropTab = true;
+                const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                const pointColl: Point[] = extend([], this.pointColl, [], true) as Point[];
+                this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
+                this.destLeft -= point.x; this.destTop -= point.y;
+                this.currentPannedPoint = {x: this.destLeft - destLeft, y: this.destTop - destTop};
+                this.rotatePan();
+                this.isCropTab = isCropTab;
+                this.objColl = objColl; this.pointColl = pointColl; this.freehandCounter = this.pointColl.length;
+                this.panObjColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
+                this.panFreehandDrawColl(this.currentPannedPoint.x, this.currentPannedPoint.y, '');
+            }
+        }
+    }
+
+    private drawZoomPanImage(x: number, y: number): void {
+        this.panObjColl(x, y, '');
+        this.panFreehandDrawColl(x, y, '');
+        this.renderImage(true);
+        const maxDimension: Dimension = this.calcMaxDimension(this.srcWidth, this.srcHeight);
+        maxDimension.width += (maxDimension.width * this.zoomFactor);
+        maxDimension.height += (maxDimension.height * this.zoomFactor);
+        this.totalPannedPoint.x += x; this.totalPannedPoint.y += y;
+        this.tempFlipPanPoint = {x: 0, y: 0};
     }
 
     private textKeyDown(e: KeyboardEvent): void {
@@ -6646,6 +7867,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const rows: string[] = this.textArea.value.split('\n');
         this.textRow = rows.length;
         this.textArea.setAttribute('rows', this.textRow.toString());
+        this.isInitialTextEdited = false;
     }
 
     private adjustToScreen(): void {
@@ -6657,18 +7879,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             && !this.element.querySelector('#' + this.element.id + '_headWrapper').parentElement.classList.contains('e-hide'))) {
             this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
             this.okBtn();
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
+            this.destroyQuickAccessToolbar();
         }
-        let splitWords: string[]; let isSelectionCrop: boolean = false;
-        if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-        if (splitWords !== undefined && splitWords[0] === 'crop'){
-            isSelectionCrop = true;
-            this.updateImageRatioForActObj();
-            this.objColl.push(this.activeObj);
+        if (this.isFreehandDrawEditing) {this.destroyQuickAccessToolbar(); }
+        let isActiveObj: boolean = false;
+        if (this.activeObj.shape !== undefined) {
+            isActiveObj = true;
+            if (this.textArea.style.display === 'block') {
+                this.redrawActObj(); this.destroyQuickAccessToolbar();
+            } else {
+                this.updateImageRatioForActObj();
+                this.objColl.push(this.activeObj);
+            }
             this.refreshActiveObj();
-        }
-        if (this.textArea.style.display === 'block') {
-            this.redrawActObj();
         }
         const tempFilter: string = this.lowerContext.filter;
         this.update(); this.applyActObj(); this.refreshActiveObj();
@@ -6681,7 +7905,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
         if (!isNullOrUndefined(canvasWrapper)) {
-            canvasWrapper.style.width = this.element.offsetWidth + 'px';
+            canvasWrapper.style.width = this.element.offsetWidth - 2 + 'px';
             canvasWrapper.style.height = this.element.offsetHeight + 'px';
             if (Browser.isDevice) {
                 canvasWrapper.style.height = (parseFloat(canvasWrapper.style.height) - (2 * this.toolbarHeight)) - 3 + 'px';
@@ -6727,16 +7951,21 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         this.refreshActiveObj();
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-        if (isSelectionCrop) {
+        if (isActiveObj) {
             this.activeObj = extend({}, this.objColl[this.objColl.length - 1], null, true) as SelectionPoint;
             this.objColl.pop();
             this.drawObject('duplicate', this.activeObj);
+            if (this.activeObj.shape === 'rectangle' || this.activeObj.shape === 'ellipse' || this.activeObj.shape === 'text' ||
+                this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow') {
+                this.renderQuickAccessToolbar();
+            }
         }
+        if (this.isFreehandDrawEditing) {this.renderQuickAccessToolbar(true); }
         if ((this.degree !== 0 || this.currFlipState !== '') && this.defaultZoomFactor > 0) {
             const totalPannedPoint: Point = extend({}, this.totalPannedPoint, null, true) as Point;
             const totalPannedInternalPoint: Point = extend({}, this.totalPannedInternalPoint, null, true) as Point;
             const totalPannedClientPoint: Point = extend({}, this.totalPannedClientPoint, null, true) as Point;
-            this.zoom(.1); this.zoom(-.1);
+            this.zoomAction(.1); this.zoomAction(-.1);
             if (this.degree === 0) {
                 this.destLeft += totalPannedPoint.x; this.destTop += totalPannedPoint.y;
                 this.totalPannedPoint = totalPannedPoint;
@@ -6767,6 +7996,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private alignTextAreaIntoCanvas(): void {
+        const letters: string = this.textArea.value;
+        this.textArea.value = '';
+        for (let i: number = 0; i < letters.length; i++) {
+            this.textArea.value += letters[i as number];
+            this.textArea.style.height = 'auto';
+            this.textArea.style.height = this.textArea.scrollHeight + 'px';
+            this.setTextBoxWidth();
+        }
+    }
+
+    private refreshMainToolbar(): void {
+        if (this.currToolbar !== 'main') {
+            this.refreshToolbar('main');
+        }
+    }
+
     private updatePreviousShapeSettings(): ShapeSettings {
         const fontStyle: string[] = [];
         if (this.activeObj.shape === 'text' && !isNullOrUndefined(this.activeObj.textSettings)) {
@@ -6788,12 +8034,168 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             strokeWidth: !isNullOrUndefined(this.activeObj.strokeSettings) ? this.activeObj.strokeSettings.strokeWidth : null,
             fillColor: !isNullOrUndefined(this.activeObj.strokeSettings) ? this.activeObj.strokeSettings.fillColor : null,
             radius: this.activeObj.shape === 'ellipse' ? this.activeObj.activePoint.width / 2 : null,
-            length: this.activeObj.shape === 'line' ? this.activeObj.activePoint.width : null,
+            length: this.activeObj.shape === 'line' || this.activeObj.shape === 'arrow' ? this.activeObj.activePoint.width : null,
             text: this.activeObj.shape === 'text' ? (!isNullOrUndefined(this.activeObj.keyHistory) ? this.activeObj.keyHistory : null) : null,
             fontSize: this.activeObj.shape === 'text' ? (!isNullOrUndefined(this.activeObj.textSettings) ? this.activeObj.textSettings.fontSize : null) : null,
             fontStyle: this.activeObj.shape === 'text' ? fontStyle : null,
             color: this.activeObj.shape === 'text' ? (!isNullOrUndefined(this.activeObj.strokeSettings) ? this.activeObj.strokeSettings.strokeColor : null) : null
         };
+    }
+
+    private zoomAction(zoomFactor: number, zoomPoint?: Point): void {
+        if (!this.disabled && this.isImageLoaded) {
+            if ((this.zoomFactor === 0  && zoomFactor < 0) ||
+                (this.zoomSettings.zoomFactor >= this.zoomSettings.maxZoomFactor && zoomFactor > 0 ||
+                (this.zoomSettings.zoomFactor > this.zoomSettings.minZoomFactor && zoomFactor < 0 && this.disableZoomOutBtn()))) {
+                this.zoomBtnMouseUpHandler();
+                return;
+            }
+            if (this.previousZoomValue === 1) {
+                this.previousZoomValue += zoomFactor > 0 ? zoomFactor * 10 : (zoomFactor * 10) / 2;
+            } else if (this.previousZoomValue > 1) {
+                this.previousZoomValue += (zoomFactor * 10);
+            } else if (this.previousZoomValue < 1) {
+                const length: number = zoomFactor * 10;
+                for (let i: number = 0; i < Math.abs(length); i++) {
+                    if (zoomFactor > 0) {
+                        this.previousZoomValue *= 2;
+                    } else {
+                        this.previousZoomValue /= 2;
+                    }
+                }
+            }
+            this.setProperties({zoomSettings: { zoomFactor: this.previousZoomValue}}, true);
+            let splitWords: string[]; let tempActiveObj: SelectionPoint; let isShape: boolean = false;
+            if (this.activeObj.shape !== undefined) {
+                if (this.activeObj.shape === 'shape') {this.refreshActiveObj(); }
+                else {splitWords = this.activeObj.shape.split('-'); }
+            }
+            if (splitWords !== undefined && splitWords[0] === 'crop') {
+                tempActiveObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
+                this.isCropTab = true;
+            } else if (!isNullOrUndefined(this.activeObj.shape) && splitWords[0] !== 'crop') {
+                isShape = true;
+            }
+            if (isNullOrUndefined(zoomPoint)) {
+                if (this.isCropTab && !isNullOrUndefined(tempActiveObj)) {
+                    zoomPoint = {x: this.activeObj.activePoint.startX + (this.activeObj.activePoint.width / 2),
+                        y: this.activeObj.activePoint.startY + (this.activeObj.activePoint.height / 2) };
+                } else {
+                    zoomPoint = {x: this.lowerCanvas.clientWidth / 2, y: this.lowerCanvas.clientHeight / 2 };
+                }
+                if (this.zoomType === 'MouseWheel' || this.zoomType === 'Pinch') {
+                    zoomPoint = {x: this.zoomSettings.zoomPoint.x, y: this.zoomSettings.zoomPoint.y};
+                }
+            }
+            const previousZoomFactor: number = this.zoomSettings.zoomFactor - (zoomFactor * 10);
+            const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, cancel: false, previousZoomFactor: previousZoomFactor,
+                currentZoomFactor: this.zoomSettings.zoomFactor, zoomTrigger: this.zoomType};
+            this.trigger('zooming', zoomEventArgs);
+            if (zoomEventArgs.cancel) {return; }
+            this.closeContextualToolbar();
+            this.redrawActObj(null, null, true);
+            this.refreshActiveObj();
+            this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.filter = this.canvasFilter;
+            this.upperCanvas.style.cursor = 'default';
+            let objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+            if (!this.isCropTab) {
+                if (this.degree !== 0) {
+                    this.redrawActObj();
+                    this.currentPannedPoint = {x: 0, y: 0};
+                    this.rotatePan(true, true);
+                } else if (this.currFlipState !== '') {
+                    this.totalPannedPoint = {x: 0, y: 0};
+                }
+                this.updateObjAndFreeHandDrawColl();
+            }
+            if (this.degree === 0) {
+                this.drawZoomImgToCanvas(zoomFactor, tempActiveObj);
+                if (this.getCurrentPanRegion() !== '') {
+                    this.tempFlipPanPoint.x += this.totalPannedPoint.x;
+                    this.tempFlipPanPoint.y += this.totalPannedPoint.y;
+                    objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+                    this.objColl = [];
+                    const destLeft: number = this.destLeft; const destTop: number = this.destTop;
+                    this.setDestPointsForFlipState();
+                    this.rotatedFlip();
+                    this.destLeft = destLeft; this.destTop = destTop;
+                    this.objColl = objColl;
+                    this.zoomObjColl(); this.zoomFreehandDrawColl();
+                    this.updateObjAndFreeHandDrawColl();
+                }
+                if (this.zoomSettings.zoomFactor <= this.zoomSettings.minZoomFactor && !this.isCropTab) {
+                    this.totalPannedPoint = { x: 0, y: 0 };
+                }
+            } else {
+                this.updateObjAndFreeHandDrawColl();
+                this.totalPannedClientPoint = { x: 0, y: 0 };
+                this.totalPannedInternalPoint = { x: 0, y: 0 };
+                this.rotateZoom(zoomFactor);
+                if (this.getCurrentPanRegion() !== '') {
+                    const temp: string = this.lowerContext.filter;
+                    this.lowerContext.filter = 'none';
+                    this.zoomObjColl();
+                    this.zoomFreehandDrawColl();
+                    this.lowerContext.filter = temp;
+                }
+            }
+            const powerOften: number = Math.pow(10, 1);
+            if (this.zoomSettings.zoomFactor <= this.zoomSettings.minZoomFactor ||
+                (Math.round(this.zoomFactor * powerOften ) / powerOften) === 2) {
+                clearInterval(this.zoomBtnHold); this.zoomBtnHold = 0;
+            }
+            if (this.getCurrentPanRegion() === '') {
+                const temp: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'none';
+                this.zoomObjColl();
+                this.zoomFreehandDrawColl();
+                this.lowerContext.filter = temp;
+            }
+            if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
+                this.cropCircle(this.lowerContext);
+            }
+            this.clearOuterCanvas(this.lowerContext);
+            this.refreshActiveObj();
+            if (!isNullOrUndefined(tempActiveObj)) {
+                this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
+                this.drawObject('duplicate', this.activeObj);
+                if (this.zoomSettings.zoomFactor <= this.zoomSettings.minZoomFactor) {this.currSelectionPoint = null; }
+            }
+            this.isUndoRedo = false;
+            const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
+            if (!isNullOrUndefined(zoomOut) && this.zoomSettings.zoomFactor <= this.zoomSettings.minZoomFactor) {
+                zoomOut.classList.add('e-disabled');
+                zoomOut.parentElement.classList.add('e-overlay');
+            } else if (!isNullOrUndefined(zoomOut)) {
+                zoomOut.classList.remove('e-disabled');
+                zoomOut.parentElement.classList.remove('e-overlay');
+            }
+            this.autoEnablePan();
+            if (!isNullOrUndefined(tempActiveObj)) {
+                this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
+            }
+            if (this.activeObj.shape === 'crop-custom') {this.currObjType.isCustomCrop = true; }
+            const panBtn: HTMLElement = this.element.querySelector('.e-img-pan .e-btn');
+            if (!isNullOrUndefined(panBtn) && this.togglePan) {
+                panBtn.classList.add('e-selected-btn');
+            } else if (!isNullOrUndefined(panBtn)) {
+                panBtn.classList.remove('e-selected-btn');
+            }
+            if (isShape) {
+                this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
+                this.objColl.pop();
+                this.drawObject('duplicate', this.activeObj);
+                this.updateToolbarItems();
+                this.renderQuickAccessToolbar();
+            }
+            this.enableDisableToolbarBtn();
+            this.zoomType = 'Toolbar';
+        }
+    }
+
+    private getCurrentZoomFactor(zoomFactor: number): number {
+        return (zoomFactor - this.previousZoomValue) * 0.1;
     }
 
     private disableZoomOutBtn(): boolean {
@@ -6876,6 +8278,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if ((x >= Math.floor(actObj.activePoint.startX) && x <= Math.ceil(actObj.activePoint.endX) &&
             y >= Math.floor(actObj.activePoint.startY) && y <= Math.ceil(actObj.activePoint.endY))) {
             isInside = true;
+        } else if (actObj.shape === 'text' && this.dragElement !== '') {
+            isInside = true;
         }
         if (!isInside) {
             this.updateImageRatioForActObj();
@@ -6884,7 +8288,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.objColl.push(extend({}, this.activeObj, {}, true) as SelectionPoint);
             }
             if (this.activeObj.shape === 'text' || (this.currObjType.shape === 'ellipse' || this.currObjType.shape === 'rectangle' ||
-               this.currObjType.shape === 'line')) {
+               this.currObjType.shape === 'line' || this.activeObj.shape === 'arrow')) {
                 const tempFilter: string = this.lowerContext.filter;
                 this.lowerContext.filter = this.getDefaultFilter();
                 for (let i: number = 0; i < this.objColl.length; i++) {
@@ -6894,13 +8298,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 this.zoomFreehandDrawColl();
                 this.lowerContext.filter = tempFilter;
-                this.apply('shape');
+                if (!isNullOrUndefined(this.activeObj.shape)) {
+                    this.apply();
+                }
                 this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
                 if (this.isCircleCrop) {
                     this.cropCircle(this.lowerContext);
                 }
             }
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
         }
     }
 
@@ -6912,7 +8318,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
             prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
             this.updateUndoRedoColl('text', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj,
-                this.activeObj.keyHistory, this.textArea.value);
+                                    this.activeObj.keyHistory, this.textArea.value);
         }
         this.activeObj.keyHistory = this.textArea.value;
         this.textArea.style.display = 'none';
@@ -6938,7 +8344,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private setTextBoxStylesToActObj(): void {
         this.activeObj.textSettings.fontFamily = this.textArea.style.fontFamily;
-        this.activeObj.strokeSettings.strokeColor = this.textArea.style.color;
+        this.activeObj.strokeSettings.strokeColor = this.textArea.style.color !== '' ?
+            this.rgbToHex(parseFloat(this.textArea.style.color.split('(')[1].split(',')[0]),
+            parseFloat(this.textArea.style.color.split('(')[1].split(',')[1]),
+            parseFloat(this.textArea.style.color.split('(')[1].split(',')[2])) :
+            this.textArea.style.color;
         if (this.textArea.style.fontWeight === 'bold') {
             this.activeObj.textSettings.bold = true;
         } else {
@@ -6952,7 +8362,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.activeObj.textSettings.fontSize = (parseFloat(this.textArea.style.fontSize));
     }
 
-    private redrawActObj(x?: number, y?: number): void {
+    private redrawActObj(x?: number, y?: number, isMouseDown?: boolean): void {
         let splitWords: string[];
         if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
         if (this.activeObj.horTopLine !== undefined && (this.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
@@ -6970,10 +8380,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.objColl.push(this.activeObj);
                     this.refreshActiveObj();
                     this.textArea.style.transform = '';
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
             } else {
-                this.applyActObj();
+                this.applyActObj(isMouseDown);
             }
         }
     }
@@ -7169,6 +8579,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                 }
                 this.refreshActiveObj();
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                 this.lowerContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                 this.redrawImgWithObj();
                 if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
@@ -7195,40 +8606,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         const points: Point = this.setTextBoxPoints(actObj, degree, flip, x, y);
                         x = points.x; y = points.y;
                     }
-                    this.textArea.style.display = 'block';
-                    this.textArea.style.left = x + 'px';
-                    this.textArea.style.top = y + 'px';
-                    this.textArea.style.fontFamily = actObj.textSettings.fontFamily;
-                    this.textArea.style.fontSize = actObj.textSettings.fontSize + 'px';
-                    this.textArea.style.color = actObj.strokeSettings.strokeColor;
-                    this.textArea.style.fontWeight = actObj.textSettings.bold ? 'bold' : 'normal';
-                    this.textArea.style.fontStyle = actObj.textSettings.italic ? 'italic' : 'normal';
-                    this.textArea.style.border = '2px solid ' + this.themeColl[this.theme]['primaryColor'];
-                    this.textArea.value = actObj.keyHistory;
-                    this.textArea.style.overflow = 'hidden';
-                    this.textArea.style.height = 'auto';
-                    this.textArea.focus();
-                    if (degree % 90 === 0 && degree % 180 !== 0 && degree !== 0) {
-                        if (this.zoomFactor === 0) {
-                            this.textArea.style.width = (actObj.activePoint.height) + 'px';
-                            this.textArea.style.height = (actObj.activePoint.width) + 'px';
-                        } else {
-                            this.textArea.style.width = actObj.activePoint.height + 'px';
-                            this.textArea.style.height = actObj.activePoint.width + 'px';
-                        }
-                    } else {
-                        if (this.zoomFactor === 0) {
-                            this.textArea.style.width = (actObj.activePoint.width) + 'px';
-                            this.textArea.style.height = (actObj.activePoint.height) + 'px';
-                        } else {
-                            this.textArea.style.width = actObj.activePoint.width + 'px';
-                            this.textArea.style.height = actObj.activePoint.height + 'px';
-                        }
-                    }
-                    this.setTextBoxWidth();
-                    if (this.flipColl.length <= 1) {
-                        this.setTextBoxHeight();
-                    }
+                    this.renderTextArea(x, y, actObj);
                 } else {
                     this.applyActObj();
                 }
@@ -7237,6 +8615,69 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const temp: string = this.textArea.value;
             this.textArea.value += 'a';
             this.textArea.value = temp;
+        }
+    }
+
+    private renderTextArea(x: number, y: number, actObj: SelectionPoint): void {
+        let degree: number;
+        if (this.activeObj.shapeDegree === 0) {
+            degree = this.degree;
+        }
+        else {
+            degree = this.degree - this.activeObj.shapeDegree;
+        }
+        if (degree < 0) {
+            degree = 360 + degree;
+        }
+        this.destroyQuickAccessToolbar();
+        this.textArea.style.display = 'block';
+        this.textArea.style.left = x + 'px';
+        this.textArea.style.top = y + 'px';
+        this.textArea.style.fontFamily = actObj.textSettings.fontFamily;
+        this.textArea.style.fontSize = actObj.textSettings.fontSize + 'px';
+        this.textArea.style.color = actObj.strokeSettings.strokeColor;
+        this.textArea.style.fontWeight = actObj.textSettings.bold ? 'bold' : 'normal';
+        this.textArea.style.fontStyle = actObj.textSettings.italic ? 'italic' : 'normal';
+        this.textArea.style.border = '2px solid ' + this.themeColl[this.theme]['primaryColor'];
+        this.textArea.value = actObj.keyHistory;
+        this.textArea.style.overflow = 'hidden';
+        this.textArea.style.width = 'auto';
+        this.textArea.style.height = 'auto';
+        this.textArea.focus();
+        if (degree % 90 === 0 && degree % 180 !== 0 && degree !== 0) {
+            if (this.zoomFactor === 0) {
+                this.textArea.style.width = (actObj.activePoint.height) + 'px';
+                this.textArea.style.height = (actObj.activePoint.width) + 'px';
+            } else {
+                this.textArea.style.width = actObj.activePoint.height + 'px';
+                this.textArea.style.height = actObj.activePoint.width + 'px';
+            }
+        } else {
+            if (this.zoomFactor === 0) {
+                this.textArea.style.width = (actObj.activePoint.width) + 'px';
+                this.textArea.style.height = (actObj.activePoint.height) + 'px';
+            } else {
+                this.textArea.style.width = actObj.activePoint.width + 'px';
+                this.textArea.style.height = actObj.activePoint.height + 'px';
+            }
+        }
+        this.setTextBoxWidth();
+        if (this.flipColl.length <= 1) {
+            this.setTextBoxHeight();
+        }
+        if (degree % 90 === 0 && degree % 180 !== 0) {
+            if (parseFloat(this.textArea.style.left) + parseFloat(this.textArea.style.width) > this.destTop + this.destHeight) {
+                this.alignTextAreaIntoCanvas();
+            }
+        } else {
+            if (parseFloat(this.textArea.style.left) + parseFloat(this.textArea.style.width) > this.destLeft + this.destWidth) {
+                this.alignTextAreaIntoCanvas();
+            }
+        }
+        if (this.isTouch) {
+            setTimeout(() => {
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            }, 550);
         }
     }
 
@@ -7360,7 +8801,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                 }
                 else {
-                    if ((this.destWidth - (parseFloat(this.textArea.style.top)
+                    if ((this.destHeight - (parseFloat(this.textArea.style.top)
                     - this.destTop)) > (textAreaWidth + letterWidth)) {
                         this.textArea.style.width = (textAreaWidth + letterWidth) + 'px';
                     }
@@ -7499,34 +8940,42 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         switch (this.dragElement.toLowerCase()) {
         case 'nw-resize':
             this.updateNWPoints(x, y, maxDimension);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'n-resize':
             this.updateNPoints(x, y);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'ne-resize':
             this.updateNEPoints(x, y, maxDimension);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'w-resize':
             this.updateWPoints(x, y);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'e-resize':
             this.updateEPoints(x, y);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'sw-resize':
             this.updateSWPoints(x, y, maxDimension);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 's-resize':
             this.updateSPoints(x, y);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         case 'se-resize':
             this.updateSEPoints(x, y, maxDimension);
+            this.updateArrowDirection(this.activeObj);
             this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'resize');
             break;
         default:
@@ -7559,6 +9008,36 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private updateArrowDirection(obj: SelectionPoint, flip?: string, rotatedDegree?: number): void {
+        if (obj.shape === 'arrow' && (obj.activePoint.width < 0 ||
+            obj.activePoint.height < 0 || flip === 'horizontal' || flip === 'vertical' || rotatedDegree === 90)) {
+            if (obj.triangleDirection === 'left' && (obj.activePoint.width < 0 ||
+                flip === 'horizontal')) {
+                obj.triangleDirection = 'right';
+            } else if (obj.triangleDirection === 'right' && (obj.activePoint.width < 0 ||
+                flip === 'horizontal')) {
+                obj.triangleDirection = 'left';
+            } else if (obj.triangleDirection === 'top' && (obj.activePoint.height < 0 ||
+                flip === 'vertical')) {
+                obj.triangleDirection = 'bottom';
+            } else if (obj.triangleDirection === 'bottom' && (obj.activePoint.height < 0 ||
+                flip === 'vertical')) {
+                obj.triangleDirection = 'top';
+            }
+            if (!isNullOrUndefined(rotatedDegree) && rotatedDegree === 90) {
+                if (obj.triangleDirection === 'right') {
+                    obj.triangleDirection = 'bottom';
+                } else if (obj.triangleDirection === 'bottom') {
+                    obj.triangleDirection = 'left';
+                } else if (obj.triangleDirection === 'left') {
+                    obj.triangleDirection = 'top';
+                } else if (obj.triangleDirection === 'top') {
+                    obj.triangleDirection = 'right';
+                }
+            }
+        }
+    }
+
     private preventDraggingInvertly(): void {
         if (!this.isPreventDragging) {
             if (this.activeObj.activePoint.startX < this.destLeft) {
@@ -7576,6 +9055,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private preventTextDraggingInvertly(): boolean {
+        let isLimiting: boolean = false;
+        if (!this.isPreventDragging) {
+            if (this.activeObj.activePoint.startX < this.destLeft ||
+                this.activeObj.activePoint.startY < this.destTop ||
+                this.activeObj.activePoint.endX > this.destLeft + this.destWidth ||
+                this.activeObj.activePoint.endY > this.destTop + this.destHeight) {
+                isLimiting = true;
+            }
+        }
+        return isLimiting;
+    }
+
     private updateNWPoints(x: number, y: number, maxDimension: Dimension): void {
         let diff: number; let width: number; let height: number; let scale: number; let percentage: number;
         const prevDiffX: number = this.diffPoint.x; const prevDiffY: number = this.diffPoint.y;
@@ -7591,6 +9083,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             percentage = (diff / 10);
             this.activeObj.activePoint.startX -= (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.startY -= (maxDimension.height / 100) * percentage;
+            if (this.preventTextDraggingInvertly()) {
+                this.activeObj.activePoint.startX += (maxDimension.width / 100) * percentage;
+                this.activeObj.activePoint.startY += (maxDimension.height / 100) * percentage;
+            }
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
             this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
             this.updateFontSize(this.activeObj);
@@ -7701,6 +9197,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             percentage = (diff / 10);
             this.activeObj.activePoint.endX += (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.startY -= (maxDimension.height / 100) * percentage;
+            if (this.preventTextDraggingInvertly()) {
+                this.activeObj.activePoint.endX -= (maxDimension.width / 100) * percentage;
+                this.activeObj.activePoint.startY += (maxDimension.height / 100) * percentage;
+            }
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
             this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
             this.updateFontSize(this.activeObj);
@@ -7855,6 +9355,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             percentage = (diff / 10);
             this.activeObj.activePoint.startX -= (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.endY += (maxDimension.height / 100) * percentage;
+            if (this.preventTextDraggingInvertly()) {
+                this.activeObj.activePoint.startX += (maxDimension.width / 100) * percentage;
+                this.activeObj.activePoint.endY -= (maxDimension.height / 100) * percentage;
+            }
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
             this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
             this.updateFontSize(this.activeObj);
@@ -7971,6 +9475,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             percentage = (diff / 10);
             this.activeObj.activePoint.endX += (maxDimension.width / 50) * percentage;
             this.activeObj.activePoint.endY += (maxDimension.height / 50) * percentage;
+            if (this.preventTextDraggingInvertly()) {
+                this.activeObj.activePoint.endX -= (maxDimension.width / 50) * percentage;
+                this.activeObj.activePoint.endY -= (maxDimension.height / 50) * percentage;
+            }
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
             this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
             this.updateFontSize(this.activeObj);
@@ -8027,21 +9535,21 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private updateFontRatio(obj: SelectionPoint, isTextArea?: boolean): void {
+        const text: string = this.getMaxText(isTextArea);
+        const width: number = this.upperContext.measureText(text).width +
+            this.activeObj.textSettings.fontSize * 0.5;
+        const height: number = (this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.25);
         let degree: number;
         if (obj.shapeDegree === 0) {degree = this.degree; }
         else {degree =  this.degree - obj.shapeDegree; }
         if (isNullOrUndefined(isTextArea)) {
             if (degree === 0 || degree === 180) {
-                obj.textSettings.fontRatio = obj.activePoint.width / obj.textSettings.fontSize;
+                obj.textSettings.fontRatio = width / obj.textSettings.fontSize;
             } else {
-                obj.textSettings.fontRatio = obj.activePoint.height / obj.textSettings.fontSize;
+                obj.textSettings.fontRatio = height / obj.textSettings.fontSize;
             }
         } else if (isTextArea) {
-            if (degree === 0 || degree === 180) {
-                obj.textSettings.fontRatio = this.textArea.clientWidth / parseFloat(this.textArea.style.fontSize);
-            } else {
-                obj.textSettings.fontRatio = this.textArea.clientHeight / parseFloat(this.textArea.style.fontSize);
-            }
+            obj.textSettings.fontRatio = width / parseFloat(this.textArea.style.fontSize);
         }
     }
 
@@ -8049,7 +9557,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         let degree: number;
         if (obj.shapeDegree === 0) {degree = this.degree; }
         else {degree =  this.degree - obj.shapeDegree; }
-        if (degree === 0 || degree === 180) {
+        if (degree === 0 || degree === 180 || degree === -180) {
             obj.textSettings.fontSize = (obj.activePoint.width / obj.textSettings.fontRatio);
         } else {
             obj.textSettings.fontSize = (obj.activePoint.height / obj.textSettings.fontRatio);
@@ -8071,12 +9579,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private getScaleRatio(scale: number): Point {
         const point: Point = {x: scale, y: scale};
-        if (this.activeObj.shape !== 'crop-custom' && this.activeObj.shape !== 'crop-circle' && this.activeObj.shape !== 'crop-square') {
+        if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape !== 'crop-custom' &&
+            this.activeObj.shape !== 'crop-circle' && this.activeObj.shape !== 'crop-square') {
             let ratio: string[] = this.activeObj.shape.split('-');
-            ratio = ratio[1].split(':');
-            const newScale: number = scale / (parseInt(ratio[1], 10));
-            point.x = newScale * (parseInt(ratio[0], 10));
-            point.y = newScale * (parseInt(ratio[1], 10));
+            if (ratio.length > 1) {
+                ratio = ratio[1].split(':');
+                const newScale: number = scale / (parseInt(ratio[1], 10));
+                point.x = newScale * (parseInt(ratio[0], 10));
+                point.y = newScale * (parseInt(ratio[1], 10));
+            }
         }
         return point;
     }
@@ -8182,36 +9693,50 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         canvasDraw.strokeStyle = this.themeColl[this.theme]['primaryColor'];
         canvasDraw.fillStyle = this.themeColl[this.theme]['secondaryColor'];
-        if (this.activeObj.shape !== 'rectangle') {
+        let degree: number;
+        if (tempObj.shapeDegree === 0) {degree = this.degree; }
+        else {degree = this.degree - tempObj.shapeDegree; }
+        if (degree < 0) {degree = 360 + degree; }
+        if (this.activeObj.shape === 'arrow' || this.activeObj.shape === 'line') {
+            canvasDraw.beginPath();
+            if (degree % 90 === 0 && degree % 180 !== 0) {
+                canvasDraw.moveTo(tempObj.topCenterCircle.startX, tempObj.topCenterCircle.startY);
+                canvasDraw.lineTo(tempObj.bottomCenterCircle.startX, tempObj.bottomCenterCircle.startY);
+            } else {
+                canvasDraw.moveTo(tempObj.centerLeftCircle.startX, tempObj.centerLeftCircle.startY);
+                canvasDraw.lineTo(tempObj.centerRightCircle.startX, tempObj.centerRightCircle.startY);
+            }
+            canvasDraw.stroke();
+        } else {
             canvasDraw.beginPath();
             canvasDraw.rect(tempObj.activePoint.startX, tempObj.activePoint.startY, tempObj.activePoint.width, tempObj.activePoint.height);
             canvasDraw.stroke();
             canvasDraw.closePath();
+            canvasDraw.lineWidth *= 2;
+            canvasDraw.beginPath();
+            canvasDraw.moveTo(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY);
+            canvasDraw.arc(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY,
+                           tempObj.topLeftCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY);
+            canvasDraw.arc(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY,
+                           tempObj.topRightCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY);
+            canvasDraw.arc(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY,
+                           tempObj.bottomLeftCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY);
+            canvasDraw.arc(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY,
+                           tempObj.bottomRightCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.stroke(); canvasDraw.fill(); canvasDraw.closePath();
+            canvasDraw.lineWidth /= 2;
         }
-        canvasDraw.lineWidth *= 2;
-        canvasDraw.beginPath();
-        canvasDraw.moveTo(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY);
-        canvasDraw.arc(tempObj.topLeftCircle.startX, tempObj.topLeftCircle.startY,
-                       tempObj.topLeftCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY);
-        canvasDraw.arc(tempObj.topRightCircle.startX, tempObj.topRightCircle.startY,
-                       tempObj.topRightCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY);
-        canvasDraw.arc(tempObj.bottomLeftCircle.startX, tempObj.bottomLeftCircle.startY,
-                       tempObj.bottomLeftCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY);
-        canvasDraw.arc(tempObj.bottomRightCircle.startX, tempObj.bottomRightCircle.startY,
-                       tempObj.bottomRightCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.stroke(); canvasDraw.fill(); canvasDraw.closePath();
-        canvasDraw.lineWidth /= 2;
         if ((splitWords === undefined || splitWords[0] !== 'crop') && this.activeObj.shape !== 'text') {
-            this.drawCenterCircles(canvasDraw);
+            this.drawCenterCircles(canvasDraw, degree);
         }
         this.activeObj = extend({}, tempObj, {}, true) as SelectionPoint;
     }
 
     private drawObject(canvas: string, obj?: SelectionPoint, isCropRatio?: boolean, points?: ActivePoint,
-                       isPreventDrag?: boolean, saveContext?: CanvasRenderingContext2D): void {
+                       isPreventDrag?: boolean, saveContext?: CanvasRenderingContext2D, isPreventSelection?: boolean): void {
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         let canvasDraw: CanvasRenderingContext2D;
         if (canvas.toLowerCase() === 'original') {
@@ -8261,34 +9786,21 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                                             this.activeObj.activePoint.width,
                                             this.activeObj.activePoint.height);
             }
-            if (canvasDraw === this.lowerContext || canvasDraw === this.upperContext) {
+            if (isNullOrUndefined(isPreventSelection) && (canvasDraw === this.lowerContext || canvasDraw === this.upperContext)) {
                 this.drawOuterSelection(canvasDraw);
             }
         }
         this.currObjType.isActiveObj = true;
-        if (obj) {this.drawShapeObj(canvas, obj.shape, saveContext); }
-        else if (this.keyHistory !== '' && this.currObjType.isText) {this.drawShapeObj(canvas, 'text', saveContext); }
-        else if (this.activeObj.shape) {this.drawShapeObj(canvas, this.activeObj.shape, saveContext); }
-        else {this.drawShapeObj(canvas, undefined, saveContext); }
+        if (obj) {this.drawShapeObj(canvas, obj.shape, saveContext, isPreventSelection); }
+        else if (this.keyHistory !== '' && this.currObjType.isText) {this.drawShapeObj(canvas, 'text', saveContext, isPreventSelection); }
+        else if (this.activeObj.shape) {this.drawShapeObj(canvas, this.activeObj.shape, saveContext, isPreventSelection); }
+        else {this.drawShapeObj(canvas, undefined, saveContext, isPreventSelection); }
         if (this.isAllowCropPan) {
             this.isAllowCropPan = false;
             this.tempPanMove = extend({}, this.panMove, {}, true) as Point;
             this.currentPannedPoint  = this.updatePanPoints(this.getCurrentPanRegion());
             this.rotatePan();
         }
-    }
-
-    private rotateShape(canvasDraw: CanvasRenderingContext2D): void {
-        canvasDraw.beginPath();
-        canvasDraw.moveTo(this.activeObj.horTopLine.startX, this.activeObj.horTopLine.startY);
-        canvasDraw.lineTo(this.activeObj.horTopLine.endX, this.activeObj.horTopLine.endY);
-        canvasDraw.moveTo(this.activeObj.horBottomLine.startX, this.activeObj.horBottomLine.startY);
-        canvasDraw.lineTo(this.activeObj.horBottomLine.endX, this.activeObj.horBottomLine.endY);
-        canvasDraw.moveTo(this.activeObj.verLeftLine.startX, this.activeObj.verLeftLine.startY);
-        canvasDraw.lineTo(this.activeObj.verLeftLine.endX, this.activeObj.verLeftLine.endY);
-        canvasDraw.moveTo(this.activeObj.verRightLine.startX, this.activeObj.verRightLine.startY);
-        canvasDraw.lineTo(this.activeObj.verRightLine.endX, this.activeObj.verRightLine.endY);
-        canvasDraw.stroke();
     }
 
     private updateActiveObject(actPoint?: ActivePoint, obj?: SelectionPoint, isMouseMove?: boolean, x?: number, y?: number): void {
@@ -8329,7 +9841,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private drawShapeObj(canvas: string, shape?: string, saveContext?: CanvasRenderingContext2D): void {
+    private drawShapeObj(canvas: string, shape?: string, saveContext?: CanvasRenderingContext2D, isPreventSelection?: boolean): void {
         const currentShape: string = shape !== undefined ? shape : this.currObjType.shape;
         this.currObjType.shape = currentShape; let canvasDraw: CanvasRenderingContext2D;
         if (canvas.toLowerCase() === 'original') {
@@ -8340,7 +9852,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             canvasDraw = saveContext;
         }
         if (this.currObjType.shape.toLowerCase() === 'rectangle' || this.currObjType.shape.toLowerCase() === 'ellipse'
-         || this.currObjType.shape.toLowerCase() === 'line') {
+         || this.currObjType.shape.toLowerCase() === 'line' || this.activeObj.shape === 'arrow') {
             this.activeObj.shape = this.currObjType.shape;
         }
         canvasDraw.strokeStyle = this.activeObj.strokeSettings.strokeColor;
@@ -8356,7 +9868,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         switch (this.currObjType.shape.toLowerCase()) {
         case 'rectangle':
             this.drawSquareLines(canvasDraw);
-            if (canvasDraw === this.upperContext) {
+            if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
                 this.drawOuterSelection(canvasDraw);
             }
             break;
@@ -8378,7 +9890,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             canvasDraw.fillStyle = this.activeObj.strokeSettings.strokeColor;
             canvasDraw.fill('evenodd');
             canvasDraw.closePath();
-            if (canvasDraw === this.upperContext) {
+            if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
                 this.drawOuterSelection(canvasDraw);
             }
             break;
@@ -8389,8 +9901,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.shapeCircle(canvasDraw, selectionWidth, selectionHeight);
             break;
         case 'line':
+        case 'arrow':
             this.shapeLine(canvasDraw, selectionWidth, selectionHeight);
-            if (canvasDraw === this.upperContext) {
+            if (this.currObjType.shape.toLowerCase() === 'arrow') {
+                this.shapeArrow(canvasDraw);
+            }
+            if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
                 this.drawOuterSelection(canvasDraw);
             }
             break;
@@ -8446,6 +9962,50 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             break;
         }
         canvasDraw.stroke();
+        canvasDraw.lineWidth = tempLineWidth;
+    }
+
+    private shapeArrow(canvasDraw: CanvasRenderingContext2D): void {
+        const tempLineWidth: number = canvasDraw.lineWidth;
+        canvasDraw.lineWidth = (this.activeObj.strokeSettings.strokeWidth);
+        canvasDraw.beginPath();
+        // First Triangle
+        canvasDraw.moveTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y);
+        canvasDraw.lineTo(this.activeObj.triangle[1].x, this.activeObj.triangle[1].y);
+        canvasDraw.lineTo(this.activeObj.triangle[2].x, this.activeObj.triangle[2].y);
+        canvasDraw.lineTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y);
+        canvasDraw.fillStyle = canvasDraw.strokeStyle;
+        canvasDraw.fill();
+        // Second Triangle
+        switch (this.activeObj.triangleDirection) {
+        case 'right':
+            canvasDraw.moveTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y - this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[1].x + this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[1].y);
+            canvasDraw.lineTo(this.activeObj.triangle[2].x, this.activeObj.triangle[2].y + this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y - this.activeObj.strokeSettings.strokeWidth);
+            break;
+        case 'left':
+            canvasDraw.moveTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y - this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[1].x - this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[1].y);
+            canvasDraw.lineTo(this.activeObj.triangle[2].x, this.activeObj.triangle[2].y + this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[0].x, this.activeObj.triangle[0].y - this.activeObj.strokeSettings.strokeWidth);
+            break;
+        case 'top':
+            canvasDraw.moveTo(this.activeObj.triangle[0].x - this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[0].y);
+            canvasDraw.lineTo(this.activeObj.triangle[1].x, this.activeObj.triangle[1].y - this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[2].x + this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[2].y);
+            canvasDraw.lineTo(this.activeObj.triangle[0].x - this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[0].y);
+            break;
+        case 'bottom':
+            canvasDraw.moveTo(this.activeObj.triangle[0].x + this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[0].y);
+            canvasDraw.lineTo(this.activeObj.triangle[1].x, this.activeObj.triangle[1].y + this.activeObj.strokeSettings.strokeWidth);
+            canvasDraw.lineTo(this.activeObj.triangle[2].x - this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[2].y);
+            canvasDraw.lineTo(this.activeObj.triangle[0].x + this.activeObj.strokeSettings.strokeWidth, this.activeObj.triangle[0].y);
+            break;
+        }
+        canvasDraw.fillStyle = canvasDraw.strokeStyle;
+        canvasDraw.fill('evenodd');
+        canvasDraw.closePath();
         canvasDraw.lineWidth = tempLineWidth;
     }
 
@@ -8587,21 +10147,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperContext.closePath();
     }
 
-    private drawCenterCircles(canvasDraw: CanvasRenderingContext2D): void {
+    private drawCenterCircles(canvasDraw: CanvasRenderingContext2D, degree: number): void {
         canvasDraw.lineWidth *= 2;
         canvasDraw.beginPath();
-        canvasDraw.moveTo(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY);
-        canvasDraw.arc(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY,
-                       this.activeObj.topCenterCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY);
-        canvasDraw.arc(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY,
-                       this.activeObj.centerLeftCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY);
-        canvasDraw.arc(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY,
-                       this.activeObj.centerRightCircle.radius, 0, 2 * Math.PI);
-        canvasDraw.moveTo(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY);
-        canvasDraw.arc(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY,
-                       this.activeObj.bottomCenterCircle.radius, 0, 2 * Math.PI);
+        if (this.activeObj.shape === 'arrow' || this.activeObj.shape === 'line') {
+            if (degree % 90 === 0 && degree % 180 !== 0) {
+                canvasDraw.moveTo(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY);
+                canvasDraw.arc(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY,
+                               this.activeObj.topCenterCircle.radius, 0, 2 * Math.PI);
+                canvasDraw.moveTo(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY);
+                canvasDraw.arc(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY,
+                               this.activeObj.bottomCenterCircle.radius, 0, 2 * Math.PI);
+            } else {
+                canvasDraw.moveTo(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY);
+                canvasDraw.arc(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY,
+                               this.activeObj.centerLeftCircle.radius, 0, 2 * Math.PI);
+                canvasDraw.moveTo(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY);
+                canvasDraw.arc(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY,
+                               this.activeObj.centerRightCircle.radius, 0, 2 * Math.PI);
+            }
+        } else {
+            canvasDraw.moveTo(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY);
+            canvasDraw.arc(this.activeObj.topCenterCircle.startX, this.activeObj.topCenterCircle.startY,
+                           this.activeObj.topCenterCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY);
+            canvasDraw.arc(this.activeObj.centerLeftCircle.startX, this.activeObj.centerLeftCircle.startY,
+                           this.activeObj.centerLeftCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY);
+            canvasDraw.arc(this.activeObj.centerRightCircle.startX, this.activeObj.centerRightCircle.startY,
+                           this.activeObj.centerRightCircle.radius, 0, 2 * Math.PI);
+            canvasDraw.moveTo(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY);
+            canvasDraw.arc(this.activeObj.bottomCenterCircle.startX, this.activeObj.bottomCenterCircle.startY,
+                           this.activeObj.bottomCenterCircle.radius, 0, 2 * Math.PI);
+        }
         canvasDraw.stroke(); canvasDraw.fill(); canvasDraw.closePath();
         canvasDraw.lineWidth /= 2;
     }
@@ -8652,7 +10230,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private findTargetObj(x: number, y: number, isCrop: boolean): boolean {
-        let isShape: boolean;
+        let isShape: boolean = false;
         if (this.objColl.length !== 0 && !this.currObjType.isCustomCrop && !isCrop) {
             let diffX: number = 0; let i: number;
             for (let index: number = 0; index < this.objColl.length; index++ ) {
@@ -8681,11 +10259,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 const temp: SelectionPoint = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
                 this.objColl.splice(i, 1);
                 if (this.degree === 0) {
+                    const temp: string = this.lowerContext.filter;
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.updateBrightnessFilter();
                     this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth,
                                                 this.srcHeight, this.destLeft, this.destTop, this.destWidth, this.destHeight);
-                    const temp: string = this.lowerContext.filter;
                     this.lowerContext.filter = 'none';
                     this.iterateObjColl();
                     this.activeObj = extend({}, temp, {}, true) as SelectionPoint;
@@ -8710,11 +10288,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.trigger('shapeChanging', shapeChangingArgs);
                 this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
                 if (this.activeObj.activePoint) {
-                    this.drawObject('duplicate', this.activeObj, null, null, true);
-                    if (this.activeObj.activePoint.startX < this.destLeft) {this.isPreventDragging = true; }
-                    else if (this.activeObj.activePoint.endX > this.destLeft + this.destWidth) {this.isPreventDragging = true; }
-                    else if (this.activeObj.activePoint.startY < this.destTop) {this.isPreventDragging = true; }
-                    else if (this.activeObj.activePoint.endY > this.destTop + this.destHeight) {this.isPreventDragging = true; }
+                    if (isNullOrUndefined(this.prevActObj)) {
+                        this.prevActObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
+                    }
+                    this.drawObject('duplicate', this.activeObj, null, null, true, null, true);
+                    if (!this.isShapeInserted) {
+                        if (this.activeObj.activePoint.startX < this.destLeft) {this.isPreventDragging = true; }
+                        else if (this.activeObj.activePoint.endX > this.destLeft + this.destWidth) {this.isPreventDragging = true; }
+                        else if (this.activeObj.activePoint.startY < this.destTop) {this.isPreventDragging = true; }
+                        else if (this.activeObj.activePoint.endY > this.destTop + this.destHeight) {this.isPreventDragging = true; }
+                    }
                 }
                 isShape = true;
             }
@@ -8759,65 +10342,130 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (isNullOrUndefined(actObj.topLeftCircle)) {
             return;
         }
-        if (x >= (actObj.topLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-            x <= (actObj.topLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-            y >= (actObj.topLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-            y <= (actObj.topLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'nw-resize') {
-            actObj.topLeftCircle.startX = actObj.topLeftCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'nw-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.topCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-            x <= (actObj.topCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-            y >= (actObj.topCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-            y <= (actObj.topCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'n-resize') {
-            actObj.topCenterCircle.startX = actObj.topCenterCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'n-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.topRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.topRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.topRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.topRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'ne-resize') {
-            actObj.topRightCircle.startX = actObj.topRightCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'ne-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.centerLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.centerLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.centerLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.centerLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'w-resize') {
-            actObj.centerLeftCircle.startX = actObj.centerLeftCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'w-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.centerRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.centerRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.centerRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.centerRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'e-resize') {
-            actObj.centerRightCircle.startX = actObj.centerRightCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'e-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.bottomLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.bottomLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.bottomLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.bottomLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'sw-resize') {
-            actObj.bottomLeftCircle.startX = actObj.bottomLeftCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'sw-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.bottomCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.bottomCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.bottomCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.bottomCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 's-resize') {
-            actObj.bottomCenterCircle.startX = actObj.bottomCenterCircle.startY = 0;
-            this.upperCanvas.style.cursor = 's-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
-        } else if (x >= (actObj.bottomRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
-                x <= (actObj.bottomRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
-                y >= (actObj.bottomRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
-                y <= (actObj.bottomRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'se-resize') {
-            actObj.bottomRightCircle.startX = actObj.bottomRightCircle.startY = 0;
-            this.upperCanvas.style.cursor = 'se-resize'; isResize = true;
-            this.dragElement = this.upperCanvas.style.cursor;
+        let degree: number;
+        if (actObj.shapeDegree === 0) {degree = this.degree; }
+        else {degree = this.degree - actObj.shapeDegree; }
+        if (degree < 0) {degree = 360 + degree; }
+        if (this.isObjSelected) {
+            if (x >= (actObj.topLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                x <= (actObj.topLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                y >= (actObj.topLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                y <= (actObj.topLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'nw-resize') {
+                actObj.topLeftCircle.startX = actObj.topLeftCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'nw-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.topCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                x <= (actObj.topCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                y >= (actObj.topCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                y <= (actObj.topCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'n-resize') {
+                actObj.topCenterCircle.startX = actObj.topCenterCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'n-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.topRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.topRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.topRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.topRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'ne-resize') {
+                actObj.topRightCircle.startX = actObj.topRightCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'ne-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.centerLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.centerLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.centerLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.centerLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'w-resize') {
+                actObj.centerLeftCircle.startX = actObj.centerLeftCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'w-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.centerRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.centerRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.centerRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.centerRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'e-resize') {
+                actObj.centerRightCircle.startX = actObj.centerRightCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'e-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.bottomLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.bottomLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.bottomLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.bottomLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'sw-resize') {
+                actObj.bottomLeftCircle.startX = actObj.bottomLeftCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'sw-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.bottomCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.bottomCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.bottomCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.bottomCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 's-resize') {
+                actObj.bottomCenterCircle.startX = actObj.bottomCenterCircle.startY = 0;
+                this.upperCanvas.style.cursor = 's-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else if (x >= (actObj.bottomRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                    x <= (actObj.bottomRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                    y >= (actObj.bottomRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                    y <= (actObj.bottomRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'se-resize') {
+                actObj.bottomRightCircle.startX = actObj.bottomRightCircle.startY = 0;
+                this.upperCanvas.style.cursor = 'se-resize'; isResize = true;
+                this.dragElement = this.upperCanvas.style.cursor;
+            } else {
+                this.dragPoint.startX = this.previousPoint.x = this.dragPoint.endX = x;
+                this.dragPoint.startY = this.previousPoint.y = this.dragPoint.endY = y;
+            }
         } else {
             this.dragPoint.startX = this.previousPoint.x = this.dragPoint.endX = x;
             this.dragPoint.startY = this.previousPoint.y = this.dragPoint.endY = y;
+        }
+        if (actObj.shape === 'arrow' || actObj.shape === 'line') {
+            if (degree % 90 === 0 && degree % 180 !== 0) {
+                if (this.upperCanvas.style.cursor === 'sw-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                    if (x >= (actObj.bottomCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                        x <= (actObj.bottomCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                        y >= (actObj.bottomCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                        y <= (actObj.bottomCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 's-resize') {
+                        actObj.bottomCenterCircle.startX = actObj.bottomCenterCircle.startY = 0;
+                        this.upperCanvas.style.cursor = 's-resize'; isResize = true;
+                        this.dragElement = this.upperCanvas.style.cursor;
+                    }
+                } else if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'ne-resize') {
+                    if (x >= (actObj.topCenterCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                        x <= (actObj.topCenterCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                        y >= (actObj.topCenterCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                        y <= (actObj.topCenterCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'n-resize') {
+                        actObj.topCenterCircle.startX = actObj.topCenterCircle.startY = 0;
+                        this.upperCanvas.style.cursor = 'n-resize'; isResize = true;
+                        this.dragElement = this.upperCanvas.style.cursor;
+                    }
+                }
+            } else {
+                if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'sw-resize') {
+                    if (x >= (actObj.centerLeftCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                        x <= (actObj.centerLeftCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                        y >= (actObj.centerLeftCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                        y <= (actObj.centerLeftCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'w-resize') {
+                        actObj.centerLeftCircle.startX = actObj.centerLeftCircle.startY = 0;
+                        this.upperCanvas.style.cursor = 'w-resize'; isResize = true;
+                        this.dragElement = this.upperCanvas.style.cursor;
+                    }
+                } else if (this.upperCanvas.style.cursor === 'ne-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                    if (x >= (actObj.centerRightCircle.startX - (actObj.topLeftCircle.radius * 2)) &&
+                        x <= (actObj.centerRightCircle.startX + (actObj.topLeftCircle.radius * 2)) &&
+                        y >= (actObj.centerRightCircle.startY - (actObj.topLeftCircle.radius * 2)) &&
+                        y <= (actObj.centerRightCircle.startY + (actObj.topLeftCircle.radius * 2)) && this.dragElement !== 'e-resize') {
+                        actObj.centerRightCircle.startX = actObj.centerRightCircle.startY = 0;
+                        this.upperCanvas.style.cursor = 'e-resize'; isResize = true;
+                        this.dragElement = this.upperCanvas.style.cursor;
+                    }
+                }
+            }
+            if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'ne-resize' ||
+                    this.upperCanvas.style.cursor === 'sw-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                this.updateCursorStylesForArrow(x, y); isResize = false;
+            }
+            if (degree % 90 === 0 && degree % 180 !== 0) {
+                if (this.upperCanvas.style.cursor === 'w-resize' || this.upperCanvas.style.cursor === 'e-resize') {
+                    this.updateCursorStylesForArrow(x, y); isResize = false;
+                }
+            } else {
+                if (this.upperCanvas.style.cursor === 'n-resize' || this.upperCanvas.style.cursor === 's-resize') {
+                    this.updateCursorStylesForArrow(x, y); isResize = false;
+                }
+            }
         }
         this.previousPoint.x = this.previousPoint.y = this.diffPoint.x = this.diffPoint.y = 0;
         if (type === 'touchstart') {
@@ -8830,25 +10478,31 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private updateCursorStylesForArrow(x: number, y: number): void {
+        this.upperCanvas.style.cursor = 'move'; this.dragElement = '';
+        this.dragPoint.startX = this.previousPoint.x = this.dragPoint.endX = x;
+        this.dragPoint.startY = this.previousPoint.y = this.dragPoint.endY = y;
+    }
+
     private drawCropRatio(): void {
         let x: number; let y: number; let width: number; let height: number;
         if (this.zoomFactor > 0 && !isNullOrUndefined(this.currentSelectionPoint)) {
             //width = this.currentSelectionPoint.activePoint.width; height = this.currentSelectionPoint.activePoint.height;
             if (this.destLeft + this.destLeft + this.destWidth <= this.lowerCanvas.clientWidth) {
-                width = this.destWidth;
+                width = this.destWidth - this.destLeft;
                 if (this.destLeft < 0) {
                     width += (2 * this.destLeft);
                 }
             } else {
-                width = this.lowerCanvas.clientWidth;
+                width = this.lowerCanvas.clientWidth - this.destLeft;
             }
             if (this.destTop + this.destTop + this.destHeight <= this.lowerCanvas.clientHeight) {
-                height = this.destHeight;
+                height = this.destHeight - this.destTop;
                 if (this.destTop < 0) {
                     height += (2 * this.destTop);
                 }
             } else {
-                height = this.lowerCanvas.clientHeight;
+                height = this.lowerCanvas.clientHeight - this.destTop;
             }
             if (this.degree !== 0) {
                 this.isAllowCropPan = true;
@@ -8904,43 +10558,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.updatePoints();
             }
         }
-        // Set Selection inside image
-        if (!isNullOrUndefined(this.currentSelectionPoint)) {
-            if (this.activeObj.activePoint.startX < this.currentSelectionPoint.activePoint.startX) {
-                const diff: number = this.currentSelectionPoint.activePoint.startX - this.activeObj.activePoint.startX;
-                this.activeObj.activePoint.startX += diff; this.activeObj.activePoint.endX += diff;
-            }
-            if (this.activeObj.activePoint.startY < this.currentSelectionPoint.activePoint.startY) {
-                const diff: number = this.currentSelectionPoint.activePoint.startY - this.activeObj.activePoint.startY;
-                this.activeObj.activePoint.startY += diff; this.activeObj.activePoint.endY += diff;
-            }
-            if (this.activeObj.activePoint.endX > this.currentSelectionPoint.activePoint.endX) {
-                const diff: number = this.activeObj.activePoint.endX - this.currentSelectionPoint.activePoint.endX;
-                this.activeObj.activePoint.startX -= diff; this.activeObj.activePoint.endX -= diff;
-            }
-            if (this.activeObj.activePoint.endY > this.currentSelectionPoint.activePoint.endY) {
-                const diff: number = this.activeObj.activePoint.endY - this.currentSelectionPoint.activePoint.endY;
-                this.activeObj.activePoint.startY -= diff; this.activeObj.activePoint.endY -= diff;
-            }
-            this.activeObj.activePoint.startX = (this.lowerCanvas.clientWidth - this.activeObj.activePoint.width) / 2;
-            this.activeObj.activePoint.startY = (this.lowerCanvas.clientHeight - this.activeObj.activePoint.height) / 2;
-            this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + this.activeObj.activePoint.width;
-            this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + this.activeObj.activePoint.height;
+        if (this.activeObj.activePoint.startX < this.destLeft) {
+            const diff: number = (this.destLeft - this.activeObj.activePoint.startX) + 7.5;
+            this.activeObj.activePoint.startX += diff;
+            this.activeObj.activePoint.endX += diff;
         }
-        if (this.zoomFactor === 0) {
-            if (this.activeObj.activePoint.startX < this.destLeft) {
-                const diff: number = (this.destLeft - this.activeObj.activePoint.startX) + 7.5;
-                this.activeObj.activePoint.startX += diff;
-                this.activeObj.activePoint.endX += diff;
-            }
-            if (this.activeObj.activePoint.startY < this.destTop) {
-                const diff: number = (this.destTop - this.activeObj.activePoint.startY) + 7.5;
-                this.activeObj.activePoint.startY += diff;
-                this.activeObj.activePoint.endY += diff;
-            }
-            this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
-            this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
+        if (this.activeObj.activePoint.startY < this.destTop) {
+            const diff: number = (this.destTop - this.activeObj.activePoint.startY) + 7.5;
+            this.activeObj.activePoint.startY += diff;
+            this.activeObj.activePoint.endY += diff;
         }
+        this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
+        this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
     }
 
     private setDragDirection(width: number, height: number): void {
@@ -9000,11 +10629,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.activeObj.activePoint.endY = ((originalHeight - height) / 2 + height) - arcRadius;
         if (this.activeObj.activePoint.startX < this.destLeft && this.destLeft + this.destWidth > this.lowerCanvas.clientWidth) {
             this.activeObj.activePoint.startX = this.destLeft;
-            this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + width;
+            this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + width - arcRadius;
         }
         if (this.activeObj.activePoint.startY < this.destTop && this.destTop + this.destHeight > this.lowerCanvas.clientHeight) {
             this.activeObj.activePoint.startY = this.destTop;
-            this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + height;
+            this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + height - arcRadius;
         }
         this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
         this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
@@ -9059,6 +10688,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             const cursor: string = this.upperCanvas.style.cursor;
             const actObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+            this.cursorTargetObjId = actObj.currIndex;
+            let degree: number;
+            if (actObj.shapeDegree === 0) {degree = this.degree; }
+            else {degree = this.degree - actObj.shapeDegree; }
+            if (degree < 0) {degree = 360 + degree; }
             if (x >= (actObj.topLeftCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
                 x <= (actObj.topLeftCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
                 y >= (actObj.topLeftCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
@@ -9119,6 +10753,54 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 this.upperCanvas.style.cursor = 'default';
             }
+            if (actObj.shape === 'arrow' || actObj.shape === 'line') {
+                if (degree % 90 === 0 && degree % 180 !== 0) {
+                    if (this.upperCanvas.style.cursor === 'sw-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                        if (x >= (actObj.bottomCenterCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
+                            x <= (actObj.bottomCenterCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
+                            y >= (actObj.bottomCenterCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
+                            y <= (actObj.bottomCenterCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+                            this.upperCanvas.style.cursor = 's-resize';
+                        }
+                    } else if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'ne-resize') {
+                        if (x >= (actObj.topCenterCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
+                            x <= (actObj.topCenterCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
+                            y >= (actObj.topCenterCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
+                            y <= (actObj.topCenterCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+                            this.upperCanvas.style.cursor = 'n-resize';
+                        }
+                    }
+                } else {
+                    if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'sw-resize') {
+                        if (x >= (actObj.centerLeftCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
+                            x <= (actObj.centerLeftCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
+                            y >= (actObj.centerLeftCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
+                            y <= (actObj.centerLeftCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+                            this.upperCanvas.style.cursor = 'w-resize';
+                        }
+                    } else if (this.upperCanvas.style.cursor === 'ne-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                        if (x >= (actObj.centerRightCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
+                            x <= (actObj.centerRightCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
+                            y >= (actObj.centerRightCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
+                            y <= (actObj.centerRightCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+                            this.upperCanvas.style.cursor = 'e-resize';
+                        }
+                    }
+                }
+                if (this.upperCanvas.style.cursor === 'nw-resize' || this.upperCanvas.style.cursor === 'ne-resize' ||
+                        this.upperCanvas.style.cursor === 'sw-resize' || this.upperCanvas.style.cursor === 'se-resize') {
+                    this.upperCanvas.style.cursor = 'move';
+                }
+                if (degree % 90 === 0 && degree % 180 !== 0) {
+                    if (this.upperCanvas.style.cursor === 'w-resize' || this.upperCanvas.style.cursor === 'e-resize') {
+                        this.upperCanvas.style.cursor = 'move';
+                    }
+                } else {
+                    if (this.upperCanvas.style.cursor === 'n-resize' || this.upperCanvas.style.cursor === 's-resize') {
+                        this.upperCanvas.style.cursor = 'move';
+                    }
+                }
+            }
             if (cursor === 'default' && this.upperCanvas.style.cursor === 'default' && isCropSelection) {
                 this.upperCanvas.style.cursor = 'grab';
             }
@@ -9150,16 +10832,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private setCursorForFreehandDrawing(x: number, y: number): void {
         let isEntered: boolean = false;
         this.freehandDrawHoveredIndex = -1;
+        let sPoints: Point[];
         for (let n: number = 0; n < this.freehandCounter; n++) {
+            sPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
             this.points = extend([], this.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
-            const len: number = this.points.length;
+            const len: number = sPoints.length;
             for (let l: number = 0; l < len; l++) {
                 if (l !== 0) {
                     let isInside: boolean = false;
-                    if (!isNullOrUndefined(this.points[l - 1]) && !isNullOrUndefined(this.points[l as number])) {
-                        isInside = this.isInside(x, y, this.points[l - 1].x, this.points[l - 1].y,
-                                                 this.points[l as number].x, this.points[l as number].y);
+                    if (!isNullOrUndefined(sPoints[l - 1]) && !isNullOrUndefined(sPoints[l as number])) {
+                        isInside = this.isInside(x, y, sPoints[l - 1].x, sPoints[l - 1].y,
+                                                 sPoints[l as number].x, sPoints[l as number].y);
                     }
                     if (isInside) {
                         this.isFreehandDrawingPoint = true;
@@ -9174,7 +10858,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                             this.drawObject('duplicate', this.activeObj);
                         }
                         if (this.isFreehandDrawEditing) {
-                            const strokeColor: string = this.pointColl[n as number].strokeColor = this.selectedFreehandColor;
+                            const strokeColor: string = this.pointColl[n as number].strokeColor;
                             this.hoverFreehandraw(strokeColor, this.pointColl[n as number].strokeWidth);
                         } else {
                             this.freehandDrawHoveredIndex = null;
@@ -9198,7 +10882,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                             this.drawObject('duplicate', this.activeObj);
                         }
                         if (this.isFreehandDrawEditing) {
-                            const strokeColor: string = this.pointColl[n as number].strokeColor === '#fff' ? '#42a5f5' : this.pointColl[n as number].strokeColor;
+                            const strokeColor: string = this.pointColl[n as number].strokeColor;
                             this.hoverFreehandraw(strokeColor, this.pointColl[n as number].strokeWidth);
                         }
                         this.isFreehandDrawingPoint = false;
@@ -9214,59 +10898,60 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private setCursorFromObj(x: number, y: number, obj: SelectionPoint[]): void {
         for (let i: number = 0; i < obj.length; i++) {
             const actObj: SelectionPoint = extend({}, obj[i as number], {}, true) as SelectionPoint;
-            if (x >= (actObj.topLeftCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.topLeftCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.topLeftCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.topLeftCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            this.cursorTargetObjId = actObj.currIndex;
+            if (x >= (actObj.topLeftCircle.startX) &&
+                x <= (actObj.topLeftCircle.startX) &&
+                y >= (actObj.topLeftCircle.startY) &&
+                y <= (actObj.topLeftCircle.startY)) {
                 this.upperCanvas.style.cursor = 'nw-resize';
                 break;
             }
-            else if (x >= (actObj.topCenterCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.topCenterCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.topCenterCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.topCenterCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.topCenterCircle.startX) &&
+                x <= (actObj.topCenterCircle.startX) &&
+                y >= (actObj.topCenterCircle.startY) &&
+                y <= (actObj.topCenterCircle.startY)) {
                 this.upperCanvas.style.cursor = 'n-resize';
                 break;
             }
-            else if (x >= (actObj.topRightCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.topRightCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.topRightCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.topRightCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.topRightCircle.startX) &&
+                x <= (actObj.topRightCircle.startX) &&
+                y >= (actObj.topRightCircle.startY) &&
+                y <= (actObj.topRightCircle.startY)) {
                 this.upperCanvas.style.cursor = 'ne-resize';
                 break;
             }
-            else if (x >= (actObj.centerLeftCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.centerLeftCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.centerLeftCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.centerLeftCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.centerLeftCircle.startX) &&
+                x <= (actObj.centerLeftCircle.startX) &&
+                y >= (actObj.centerLeftCircle.startY) &&
+                y <= (actObj.centerLeftCircle.startY)) {
                 this.upperCanvas.style.cursor = 'w-resize';
                 break;
             }
-            else if (x >= (actObj.centerRightCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.centerRightCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.centerRightCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.centerRightCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.centerRightCircle.startX) &&
+                x <= (actObj.centerRightCircle.startX) &&
+                y >= (actObj.centerRightCircle.startY) &&
+                y <= (actObj.centerRightCircle.startY)) {
                 this.upperCanvas.style.cursor = 'e-resize';
                 break;
             }
-            else if (x >= (actObj.bottomLeftCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.bottomLeftCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.bottomLeftCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.bottomLeftCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.bottomLeftCircle.startX) &&
+                x <= (actObj.bottomLeftCircle.startX) &&
+                y >= (actObj.bottomLeftCircle.startY) &&
+                y <= (actObj.bottomLeftCircle.startY)) {
                 this.upperCanvas.style.cursor = 'sw-resize';
                 break;
             }
-            else if (x >= (actObj.bottomCenterCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.bottomCenterCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.bottomCenterCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.bottomCenterCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.bottomCenterCircle.startX) &&
+                x <= (actObj.bottomCenterCircle.startX) &&
+                y >= (actObj.bottomCenterCircle.startY) &&
+                y <= (actObj.bottomCenterCircle.startY)) {
                 this.upperCanvas.style.cursor = 's-resize';
                 break;
             }
-            else if (x >= (actObj.bottomRightCircle.startX - ((actObj.topLeftCircle.radius * 2))) &&
-                x <= (actObj.bottomRightCircle.startX + ((actObj.topLeftCircle.radius * 2))) &&
-                y >= (actObj.bottomRightCircle.startY - ((actObj.topLeftCircle.radius * 2))) &&
-                y <= (actObj.bottomRightCircle.startY + ((actObj.topLeftCircle.radius * 2)))) {
+            else if (x >= (actObj.bottomRightCircle.startX) &&
+                x <= (actObj.bottomRightCircle.startX) &&
+                y >= (actObj.bottomRightCircle.startY) &&
+                y <= (actObj.bottomRightCircle.startY)) {
                 this.upperCanvas.style.cursor = 'se-resize';
                 break;
             }
@@ -9710,6 +11395,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                                                                          this.objColl[i as number].activePoint.width;
                             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
                         }
+                        this.objColl[i as number].shapeFlip = this.currFlipState;
+                        this.updateArrowDirection(this.objColl[i as number], 'horizontal');
+                        this.updateTrianglePoints(this.objColl[i as number]);
                         this.objColl[i as number].imageRatio = {startX: ((this.objColl[i as number].activePoint.startX -
                                                                          this.destLeft) / this.destWidth),
                         startY: ((this.objColl[i as number].activePoint.startY - this.destTop) / this.destHeight),
@@ -9717,7 +11405,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         endY: ((this.objColl[i as number].activePoint.endY - this.destTop) / this.destHeight),
                         width: this.destWidth / this.objColl[i as number].activePoint.width,
                         height: this.destHeight / this.objColl[i as number].activePoint.height };
-                        this.objColl[i as number].shapeFlip = this.currFlipState;
                     }
                 }
             }
@@ -9737,6 +11424,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                             this.objColl[i as number].activePoint.height;
                             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
                         }
+                        this.objColl[i as number].shapeFlip = this.currFlipState;
+                        this.updateArrowDirection(this.objColl[i as number], 'vertical');
+                        this.updateTrianglePoints(this.objColl[i as number]);
                         this.objColl[i as number].imageRatio = {startX: ((this.objColl[i as number].activePoint.startX -
                                                                           this.destLeft) / this.destWidth),
                         startY: ((this.objColl[i as number].activePoint.startY - this.destTop) / this.destHeight),
@@ -9744,7 +11434,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         endY: ((this.objColl[i as number].activePoint.endY - this.destTop) / this.destHeight),
                         width: this.destWidth / this.objColl[i as number].activePoint.width,
                         height: this.destHeight / this.objColl[i as number].activePoint.height };
-                        this.objColl[i as number].shapeFlip = this.currFlipState;
                     }
                 }
             }
@@ -9777,6 +11466,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                             this.objColl[i as number].activePoint.height;
                             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
                         }
+                        this.objColl[i as number].shapeFlip = this.currFlipState;
+                        this.updateArrowDirection(this.objColl[i as number], this.currFlipState);
+                        this.updateTrianglePoints(this.objColl[i as number]);
                         this.objColl[i as number].imageRatio = {startX: ((this.objColl[i as number].activePoint.startX -
                                                                           this.destLeft) / this.destWidth),
                         startY: ((this.objColl[i as number].activePoint.startY - this.destTop) / this.destHeight),
@@ -9784,7 +11476,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         endY: ((this.objColl[i as number].activePoint.endY - this.destTop) / this.destHeight),
                         width: this.destWidth / this.objColl[i as number].activePoint.width,
                         height: this.destHeight / this.objColl[i as number].activePoint.height };
-                        this.objColl[i as number].shapeFlip = this.currFlipState;
                     }
                 }
             }
@@ -9823,6 +11514,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.objColl[i as number].activePoint.height = this.objColl[i as number].activePoint.endY -
             this.objColl[i as number].activePoint.startY;
             this.updateFontSize(this.objColl[i as number]);
+            if (this.objColl[i as number].shape === 'arrow') {
+                this.updateArrowDirection(this.objColl[i as number], null, 90);
+                this.updateTrianglePoints(this.objColl[i as number]);
+            }
         }
         for (let i: number = 0; i < this.objColl.length; i++) {
             this.updateActiveObject(this.objColl[i as number].activePoint, this.objColl[i as number]);
@@ -9854,7 +11549,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         else {this.drawObject('duplicate', null, null, null, true); }
     }
 
-    private applyActObj(): void {
+    private applyActObj(isMouseDown?: boolean): void {
         let isActObj: boolean = false;
         if (this.activeObj.shape !== undefined && this.activeObj.shape === 'text' && this.activeObj.keyHistory === '') {
             this.refreshActiveObj();
@@ -9867,7 +11562,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (splitWords !== undefined && splitWords[0] === 'crop'){
                 isCropSelection = true;
             }
-            if (!isNullOrUndefined(this.activeObj.shape) && !isCropSelection) {
+            if (!isNullOrUndefined(this.activeObj.shape) && !isCropSelection && this.activeObj.shape !== 'shape') {
                 for (let i: number = 0; i < this.objColl.length; i++) {
                     if (JSON.stringify(this.activeObj) === JSON.stringify(this.objColl[i as number])) {
                         isActObj = true;
@@ -9889,15 +11584,29 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     tempObjColl = []; this.refreshActiveObj();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.redrawImgWithObj();
-                    //this.zoomFreehandDrawColl();
                     this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
                     this.currObjType.shape = '';
                     this.refreshActiveObj();
                     if (this.isCircleCrop) {
                         this.cropCircle(this.lowerContext);
                     }
+                    this.destroyQuickAccessToolbar();
+                    if (isNullOrUndefined(isMouseDown)) {
+                        this.updateCurrentUndoRedoColl('ok');
+                        this.prevActObj = null;
+                    }
                 }
             }
+        }
+    }
+
+    private destroyQuickAccessToolbar(): void {
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbar')) &&
+            !isNullOrUndefined((getComponent(document.getElementById(this.element.id + '_quickAccessToolbar'), 'toolbar') as Toolbar))) {
+            (getComponent(document.getElementById(this.element.id + '_quickAccessToolbar'), 'toolbar') as Toolbar).destroy();
+        }
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+            document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
         }
     }
 
@@ -9923,7 +11632,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.currObjType.shape = shape !== undefined ? shape : this.currObjType.shape;
                 if (this.currObjType.shape !== '') {
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    this.drawObject(canvas, obj);
+                    if (this.activeObj.shape === 'text') {
+                        this.drawObject(canvas, obj, null, null, true);
+                        this.clearOuterCanvas(this.lowerContext);
+                    } else {
+                        this.drawObject(canvas, obj);
+                    }
                     this.activeObj.shape = this.currObjType.shape.toLowerCase();
                     if (!shape && this.currObjType.shape !== '' && !this.currObjType.isCustomCrop) {
                         this.objColl.push(extend({}, this.activeObj, {}, true) as SelectionPoint);
@@ -9951,6 +11665,76 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private updateTriangleRatio(obj: SelectionPoint): void {
+        obj.triangleRatio = [];
+        obj.triangleRatio.push({x: (obj.triangle[0].x - this.destLeft) / this.destWidth,
+            y: (obj.triangle[0].y - this.destTop) / this.destHeight});
+        obj.triangleRatio.push({x: (obj.triangle[1].x - this.destLeft) / this.destWidth,
+            y: (obj.triangle[1].y - this.destTop) / this.destHeight});
+        obj.triangleRatio.push({x: (obj.triangle[2].x - this.destLeft) / this.destWidth,
+            y: (obj.triangle[2].y - this.destTop) / this.destHeight});
+    }
+
+    private updateTrianglePoints(obj: SelectionPoint): void {
+        if (obj.shape === 'arrow') {
+            let degree: number; let arrowSize: number;
+            if (obj.shapeDegree === 0) {degree = this.degree; }
+            else {degree = this.degree - obj.shapeDegree; }
+            if (degree < 0) {degree = 360 + degree; }
+            if (degree % 90 === 0 && degree % 180 !== 0) {
+                arrowSize = obj.activePoint.width;
+            } else {
+                arrowSize = obj.activePoint.height;
+            }
+            obj.triangle = [];
+            switch (obj.triangleDirection) {
+            case 'right':
+                obj.triangle.push({x: obj.activePoint.endX - arrowSize, y: obj.activePoint.startY});
+                obj.triangle.push({x: obj.activePoint.endX, y: obj.activePoint.startY + (arrowSize / 2)});
+                obj.triangle.push({x: obj.activePoint.endX - arrowSize, y: obj.activePoint.endY});
+                break;
+            case 'left':
+                obj.triangle.push({x: obj.activePoint.startX + arrowSize, y: obj.activePoint.startY});
+                obj.triangle.push({x: obj.activePoint.startX, y: obj.activePoint.startY + (arrowSize / 2)});
+                obj.triangle.push({x: obj.activePoint.startX + arrowSize, y: obj.activePoint.endY});
+                break;
+            case 'top':
+                obj.triangle.push({x: obj.activePoint.startX, y: obj.activePoint.startY + arrowSize});
+                obj.triangle.push({x: obj.activePoint.startX + (arrowSize / 2), y: obj.activePoint.startY});
+                obj.triangle.push({x: obj.activePoint.startX + arrowSize, y: obj.activePoint.startY + arrowSize});
+                break;
+            case 'bottom':
+                obj.triangle.push({x: obj.activePoint.endX, y: obj.activePoint.endY - arrowSize});
+                obj.triangle.push({x: obj.activePoint.endX - (arrowSize / 2), y: obj.activePoint.endY});
+                obj.triangle.push({x: obj.activePoint.endX - arrowSize, y: obj.activePoint.endY - arrowSize});
+                break;
+            }
+            this.updateTriangleRatio(obj);
+        }
+    }
+
+    private setDimension(width: number, height: number): void {
+        if (!isNullOrUndefined(width) && !isNullOrUndefined(height)) {
+            this.activeObj.activePoint.width = width; this.activeObj.activePoint.height = height;
+            if (this.currObjType.shape.toLowerCase() === 'ellipse') {
+                this.activeObj.activePoint.width = 2 * width;
+                this.activeObj.activePoint.height = 2 * height;
+            }
+        }
+    }
+
+    private updateUndoRedo(): void {
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = this.getCurrentObj();
+        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+        this.objColl.push(this.activeObj);
+        this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+        this.objColl.pop();
+        this.applyActObj(); this.refreshActiveObj(); this.refreshMainToolbar();
+    }
+
     private drawShape(type: string, strokeWidth?: number, strokeColor?: string, fillColor?: string, start?: Point, width?: number,
                       height?: number): void {
         if (!this.disabled && this.isImageLoaded) {
@@ -9973,19 +11757,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 const tempWidth: number = this.destWidth > 100 ? 100 : this.destWidth / 2;
                 const tempHeight: number = this.destHeight > 100 ? 100 : this.destHeight / 2;
                 this.activeObj.activePoint.width = tempWidth; this.activeObj.activePoint.height = tempHeight;
-                if (this.currObjType.shape.toLowerCase() === 'line') {
+                if (this.currObjType.shape.toLowerCase() === 'line' || this.currObjType.shape.toLowerCase() === 'arrow') {
                     this.activeObj.lineDraw = 'horizontal';
                     this.activeObj.activePoint.height /= 2;
+                    this.activeObj.activePoint.height -= 20;
+                    if (this.currObjType.shape.toLowerCase() === 'arrow') {
+                        this.activeObj.activePoint.width += 50;
+                    }
                 } else if (this.currObjType.shape.toLowerCase() === 'rectangle') {
                     this.activeObj.activePoint.width += this.activeObj.activePoint.width / 2;
                 }
-                if (this.currObjType.shape.toLowerCase() === 'ellipse' && width) {
-                    this.activeObj.activePoint.width = 2 * width;
-                    this.activeObj.activePoint.height = 2 * height;
-                }
-                if (width && height) {
-                    this.activeObj.activePoint.width = width; this.activeObj.activePoint.height = height;
-                }
+                this.setDimension(width, height);
                 if (!isNullOrUndefined(start)) {
                     this.activeObj.activePoint.startX = start.x; this.activeObj.activePoint.startY = start.y;
                     this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + this.activeObj.activePoint.width;
@@ -9993,19 +11775,27 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 } else {
                     this.setCenterPoints();
                 }
+                if (this.currObjType.shape.toLowerCase() === 'arrow') {
+                    this.activeObj.triangleDirection = 'right';
+                    this.updateTrianglePoints(this.activeObj);
+                }
                 this.currObjType.isDragging = this.currObjType.isCustomCrop = false;
                 this.activeObj.shapeDegree = this.degree;
                 this.activeObj.shapeFlip = this.currFlipState;
+                this.activeObj.textFlip = this.currFlipState;
                 this.activeObj.flipObjColl = [];
                 const shapeSettings: ShapeSettings = this.updatePreviousShapeSettings();
                 const shapeChangingArgs: ShapeChangeEventArgs = {action: 'insert', previousShapeSettings: shapeSettings,
                     currentShapeSettings: shapeSettings};
                 this.trigger('shapeChanging', shapeChangingArgs);
                 this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
+                this.setDimension(width, height);
                 this.drawObject('duplicate');
+                this.renderQuickAccessToolbar();
                 this.isShapeInserted = true;
                 this.updateUndoRedoObj(objColl);
                 this.refreshToolbar('shapes');
+                this.updateToolbarItems();
             }
         }
     }
@@ -10045,11 +11835,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.activeObj.textSettings.bold = bold ? bold : this.activeObj.textSettings.bold;
             this.activeObj.textSettings.italic = italic ? italic : this.activeObj.textSettings.italic;
             if (isNullOrUndefined(this.activeObj.textSettings.fontSize)) {
-                if (this.lowerCanvas.width > this.lowerCanvas.height) {
-                    this.activeObj.textSettings.fontSize = Math.floor((this.lowerCanvas.width / 20));
+                if (this.destWidth > this.destHeight) {
+                    this.activeObj.textSettings.fontSize = (this.destWidth / 15);
                 }
                 else {
-                    this.activeObj.textSettings.fontSize = Math.floor((this.lowerCanvas.height / 20));
+                    this.activeObj.textSettings.fontSize = (this.destHeight / 15);
                 }
                 if (this.activeObj.textSettings.fontSize < 20) {
                     this.activeObj.textSettings.fontSize = 20;
@@ -10085,8 +11875,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             this.updateUndoRedoColl('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
             this.redrawShape(this.objColl[this.objColl.length - 1]);
+            this.renderQuickAccessToolbar();
             this.isShapeInserted = true;
             this.refreshToolbar('text');
+            this.updateToolbarItems();
         }
     }
 
@@ -10096,13 +11888,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.activeObj.activePoint.startY = shapeSettings.startY;
         this.activeObj.activePoint.width = shapeSettings.width;
         this.activeObj.activePoint.height = shapeSettings.height;
+        this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + this.activeObj.activePoint.width;
+        this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + this.activeObj.activePoint.height;
         this.activeObj.strokeSettings.strokeColor = shapeSettings.strokeColor;
         this.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
-        this.activeObj.shape === 'ellipse' ? this.activeObj.activePoint.width = shapeSettings.radius / 2 : null;
-        this.activeObj.shape === 'line' ? this.activeObj.activePoint.width = shapeSettings.length : null;
-        this.activeObj.shape === 'text' ? this.activeObj.keyHistory = shapeSettings.text : null;
-        this.activeObj.shape === 'text' ? this.activeObj.textSettings.fontSize = shapeSettings.fontSize : null;
-        this.activeObj.shape === 'text' ? this.activeObj.strokeSettings.strokeColor = shapeSettings.color : null;
+        switch (this.activeObj.shape) {
+        case 'ellipse':
+            this.activeObj.activePoint.width = shapeSettings.radius / 2;
+            break;
+        case 'line':
+        case 'arrow':
+            this.activeObj.activePoint.width = shapeSettings.length;
+            break;
+        case 'text':
+            this.activeObj.keyHistory = shapeSettings.text;
+            this.activeObj.textSettings.fontSize = shapeSettings.fontSize;
+            this.activeObj.strokeSettings.strokeColor = shapeSettings.color;
+            break;
+        }
         if (this.activeObj.shape === 'text' && !isNullOrUndefined(this.activeObj.textSettings)) {
             for (let i: number = 0; i < shapeSettings.fontStyle.length; i++) {
                 if (shapeSettings.fontStyle[i as number] === 'bold') {
@@ -10133,7 +11936,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.fillColor = obj.strokeSettings.fillColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
-        } else if (obj.shape === 'line') {
+        } else if (obj.shape === 'line' || obj.shape === 'arrow') {
             shapeDetails.length = obj.activePoint.width;
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
@@ -10154,17 +11957,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private getFreehandDrawDetails(index: number): ShapeSettings {
         const shapeDetails: ShapeSettings = {} as ShapeSettings;
-        shapeDetails.id = this.pointColl[index].id;
-        shapeDetails.type = 'FreehandDraw';
-        shapeDetails.points = extend([], this.pointColl[index].points) as Point[];
-        shapeDetails.strokeColor = this.pointColl[index].strokeColor;
-        shapeDetails.strokeWidth = this.pointColl[index].strokeWidth;
+        shapeDetails.id = this.pointColl[index as number].id;
+        shapeDetails.type = ShapeType.FreehandDraw;
+        shapeDetails.points = extend([], this.pointColl[index as number].points) as Point[];
+        shapeDetails.strokeColor = this.pointColl[index as number].strokeColor;
+        shapeDetails.strokeWidth = this.pointColl[index as number].strokeWidth;
         return shapeDetails;
     }
 
     private isPointsInRange(x: number, y: number): boolean {
         let inRange: boolean = false;
-        if (x >= 0 && y >= 0 && x <= this.lowerCanvas.width && y <= this.lowerCanvas.width) {
+        if (!isNullOrUndefined(x) && !isNullOrUndefined(y) && x >= 0 && y >= 0 &&
+            x <= this.lowerCanvas.width && y <= this.lowerCanvas.width) {
             inRange = true;
         }
         return inRange;
@@ -10603,16 +12407,30 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.updateUndoRedoColl(type, prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj, null, null, prevFilter);
     }
 
-    private renderImage(): void {
+    private renderImage(isMouseWheel?: boolean): void {
         const temp: string = this.lowerContext.filter;
         this.applyActObj();
         this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.updateCurrentTransformedState('initial');
+        if (isMouseWheel) {
+            this.iterateRotateFlipColl(this.lowerContext, 'initial');
+        } else {
+            if (this.zoomFactor > 0) {
+                this.isRotateZoom = true;
+            }
+            this.updateCurrentTransformedState('initial');
+        }
         this.updateBrightnessFilter();
+        this.setDestPointsForFlipState();
         this.lowerContext.drawImage(this.baseImg, this.srcLeft, this.srcTop, this.srcWidth, this.srcHeight,
                                     this.destLeft, this.destTop, this.destWidth, this.destHeight);
-        this.updateCurrentTransformedState('reverse');
+        this.setDestPointsForFlipState();
+        if (isMouseWheel) {
+            this.iterateRotateFlipColl(this.lowerContext, 'reverse');
+        } else {
+            this.updateCurrentTransformedState('reverse');
+            this.isRotateZoom = false;
+        }
         this.lowerContext.filter = 'none';
         this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
         this.lowerContext.filter = temp;
@@ -10625,6 +12443,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.redrawImgWithObj();
+        this.destroyQuickAccessToolbar();
         this.textArea.style.display = 'block';
         this.textArea.style.fontFamily = obj.textSettings.fontFamily;
         this.textArea.style.fontSize = obj.textSettings.fontSize + 'px';
@@ -10642,21 +12461,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         let points: ActivePoint;
         const cropShape: string = 'crop-' + type;
         if (cropShape.toLowerCase() === 'crop-custom') {
-            if (this.currObjType.shape === '') {
-                this.drawCustomSelection('crop-custom');
-            }
-            if (startX && startY) {
-                this.upperContext.clearRect(0, 0 , this.upperCanvas.width, this.upperCanvas.height);
-                this.currObjType.shape = this.activeObj.shape = cropShape.toLowerCase();
-                this.activeObj.activePoint.startX = startX; this.activeObj.activePoint.startY = startY;
-                this.activeObj.activePoint.endX = this.lowerCanvas.width;
-                this.activeObj.activePoint.endY = this.lowerCanvas.height;
-                this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
-                this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
-                this.drawObject('duplicate');
+            if (this.currObjType.shape === '' || this.currObjType.shape === 'crop-custom') {
+                this.drawCustomSelection('crop-custom', startX, startY, width, height);
             }
         } else if (cropShape.toLowerCase() === 'crop-canvas') {
-            this.upperCanvas.style.display = 'none';
+            this.upperCanvas.style.display = 'block';
             this.dragCanvas = true;
         } else {
             this.currObjType.isCustomCrop = false;
@@ -10673,7 +12482,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    private setDestPointsForFlipState(isUpdate?: boolean): void {
+    private setDestPointsForFlipState(): void {
         if (this.getCurrentPanRegion() !== '') {
             if (this.getCurrentPanRegion() === 'horizontal') {
                 this.destLeft = this.lowerCanvas.clientWidth - (this.destWidth + this.destLeft);
@@ -10690,6 +12499,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.lowerContext.filter = obj.previousObj.filter;
         this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
         this.setCurrentObj(obj.previousObj);
+        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+        this.refreshActiveObj();
         this.destLeft = obj.previousObj.destPoints.startX;
         this.destTop = obj.previousObj.destPoints.startY;
         const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
@@ -10697,7 +12508,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.pointColl = extend([], obj.previousPointColl, [], true) as Point[];
         this.freehandCounter = this.pointColl.length;
         this.lowerContext.filter = 'none';
-        this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
+        this.zoomObjColl(); this.zoomFreehandDrawColl();
         this.lowerContext.filter = obj.previousObj.filter;
         this.activeObj = activeObj;
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
@@ -10787,65 +12598,66 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
-    /**
-     * Clear a current selection.
-     *
-     * @returns {void}.
-     */
-    public clearSelection(): void {
-        if (!this.disabled && this.isImageLoaded) {
-            this.togglePen = false;
-            this.refreshActiveObj();
-            this.dragElement = '';
-            this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
-            this.currObjType.shape = '';
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-            this.currObjType.isActiveObj = true; this.currObjType.isCustomCrop = false;
-            this.upperCanvas.style.cursor = 'default';
-        }
-    }
-
-    /**
-     * Crops an image based on the selection.
-     * The selection can be done through programmatically using the select method or through UI interactions.
-     *
-     * @returns {boolean}.
-     */
-    public crop(): boolean {
-        let isCrop: boolean = false;
-        if (!this.disabled && this.isImageLoaded) {
-            if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
-            let splitWords: string[];
-            const transitionArgs: CropEventArgs = {startPoint: {x: this.activeObj.activePoint.startX, y:
-                this.activeObj.activePoint.startY}, endPoint: {x: this.activeObj.activePoint.endX, y: this.activeObj.activePoint.endY}};
-            this.trigger('cropping', transitionArgs);
-            if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-            if (!this.disabled && this.activeObj.horTopLine !== undefined && (this.currObjType.isCustomCrop || splitWords[0] === 'crop')) {
-                isCrop = true;
+    private rotateImage(degree: number): boolean {
+        let isRotate: boolean = false;
+        if (!this.disabled && this.isImageLoaded && (degree % 90 === 0)) {
+            const transitionArgs: RotateEventArgs = {degree: degree, cancel: false};
+            this.trigger('rotating', transitionArgs);
+            if (!transitionArgs.cancel) {
+                isRotate = true;
                 const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-                const prevObj: CurrentObject = this.getCurrentObj();
-                prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-                prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-                this.cropImg();
-                this.zoomFactor = 0;
-                this.enableDisableToolbarBtn();
-                this.updateUndoRedoColl('crop', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+                let prevObj: CurrentObject;
+                if (isNullOrUndefined(this.transformCurrentObj)) {
+                    prevObj = this.getCurrentObj();
+                    prevObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
+                    prevObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
+                    prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+                }
+                this.afterCropActions.push(degree === 90 ? 'rotateRight' : 'rotateLeft');
+                let splitWords: string[] = [];
+                let activeObjShape: string;
+                if (!isNullOrUndefined(this.activeObj.activePoint) && !isNullOrUndefined(this.activeObj.shape)) {
+                    if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+                    if (this.currObjType.isCustomCrop || splitWords[0] === 'crop') {
+                        activeObjShape = this.currObjType.isCustomCrop ? 'custom' : splitWords[1];
+                        this.updateImageRatioForActObj();
+                        this.objColl.push(this.activeObj);
+                        this.refreshActiveObj();
+                    }
+                }
+                this.redrawActObj(null, null, true);
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                this.drawRotatedImage(degree);
+                this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
+                if (this.isCircleCrop) {this.cropCircle(this.lowerContext); }
+                if (!isNullOrUndefined(activeObjShape)) {
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                    this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
+                    this.objColl.pop();
+                    this.drawObject('duplicate', this.activeObj);
+                    if (!this.isReverseRotate) {this.refreshToolbar('main', true, true); }
+                }
+                if (!this.isUndoRedo && isNullOrUndefined(this.transformCurrentObj)) {
+                    this.updateUndoRedoColl('rotate', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
+                }
+                this.isUndoRedo = false;
+                if (isNullOrUndefined(this.activeObj.shape) && !this.isReverseRotate) {
+                    this.refreshMainToolbar();
+                }
+                else if (!this.isReverseRotate) {
+                    this.refreshToolbar('main', true, true);
+                }
+                this.rotateFlipColl = this.alignRotateFlipColl(this.rotateFlipColl, true);
             }
         }
-        return isCrop;
+        return isRotate;
     }
 
-    /**
-     * Flips an image by horizontally or vertically.
-     *
-     * @param {Direction } direction - Specifies the direction to flip the image.
-     * @returns {void}.
-     */
-    public flip(direction: Direction): void {
+    private flipImage(direction: Direction): void {
         if (!this.disabled && this.isImageLoaded) {
-            const transitionArgs: FlipEventArgs = {direction: direction};
+            const transitionArgs: FlipEventArgs = {direction: direction, cancel: false};
             this.trigger('flipping', transitionArgs);
+            if (transitionArgs.cancel) { return; }
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             let prevObj: CurrentObject;
             if (isNullOrUndefined(this.transformCurrentObj)) {
@@ -10866,7 +12678,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.refreshActiveObj();
                 }
             }
-            this.redrawActObj();
+            this.redrawActObj(null, null, true);
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.upperContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
@@ -10952,6 +12764,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.isUndoRedo = false;
             this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
+            if (this.isCircleCrop) {this.cropCircle(this.lowerContext); }
             if (!isNullOrUndefined(activeObjShape)) {
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                 this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
@@ -10960,7 +12773,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (!this.isReverseFlip) {this.refreshToolbar('main', true, true); }
             }
             if (isNullOrUndefined(this.activeObj.shape) && !this.isReverseFlip) {
-                this.refreshToolbar('main');
+                this.refreshMainToolbar();
             } else if (!this.isReverseFlip) {
                 this.refreshToolbar('main', true, true);
             }
@@ -10968,8 +12781,94 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
     }
 
+    private componentToHex(rgb: number): string {
+        const hex = rgb.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }
+
+    private rgbToHex(r: number, g: number, b: number): string {
+        return '#' + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+    }
+
     /**
-     * Return an image as ImageData.
+     * Clears the current selection performed in the image editor.
+     *
+     * @returns {void}.
+     */
+    public clearSelection(): void {
+        if (!this.disabled && this.isImageLoaded) {
+            this.togglePen = false;
+            this.refreshActiveObj();
+            this.dragElement = '';
+            this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
+            this.currObjType.shape = '';
+            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            this.currObjType.isActiveObj = true; this.currObjType.isCustomCrop = false;
+            this.upperCanvas.style.cursor = 'default';
+        }
+    }
+
+    /**
+     * Crops an image based on the selection done in the image editor.
+     *
+     * @remarks
+     * The selection can be done through programmatically using the 'select' method or through UI interactions.
+     *
+     * @returns {boolean}.
+     *
+     * {% codeBlock src='image-editor/crop/index.md' %}{% endcodeBlock %}
+     *
+     */
+    public crop(): boolean {
+        let isCrop: boolean = false;
+        if (!this.disabled && this.isImageLoaded) {
+            if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
+            let splitWords: string[];
+            const transitionArgs: CropEventArgs = {cancel: false, startPoint: {x: this.activeObj.activePoint.startX, y:
+                this.activeObj.activePoint.startY}, endPoint: {x: this.activeObj.activePoint.endX, y: this.activeObj.activePoint.endY}};
+            this.trigger('cropping', transitionArgs);
+            if (!transitionArgs.cancel) {
+                if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+                if (!this.disabled && this.activeObj.horTopLine !== undefined && (this.currObjType.isCustomCrop || splitWords[0] === 'crop')) {
+                    isCrop = true;
+                    const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+                    const prevObj: CurrentObject = extend({}, this.previousCropCurrentObj, {}, true) as CurrentObject;
+                    this.cropImg();
+                    this.zoomFactor = 0;
+                    this.updateUndoRedoColl('crop', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj, null, null, null, this.isCircleCrop);
+                    this.updateCurrentUndoRedoColl('ok');
+                    this.refreshToolbar('main');
+                }
+            }
+        }
+        return isCrop;
+    }
+
+    /**
+     * Flips an image by horizontally or vertically in the image editor.
+     *
+     * @param { Direction } direction - Specifies the direction to flip the image.
+     * A horizontal direction for horizontal flipping and vertical direction for vertical flipping.
+     *
+     * @remarks
+     * It flips the shapes including rectangle, circle, line, text, and freehand drawings.
+     *
+     * @returns {void}.
+     *
+     * {% codeBlock src='image-editor/zoom/index.md' %}{% endcodeBlock %}
+     *
+     */
+    public flip(direction: Direction): void {
+        this.flipImage(direction);
+        this.updateCurrentUndoRedoColl('ok');
+    }
+
+    /**
+     * Returns an image as ImageData to load it in to a canvas.
+     *
+     * @remarks
+     * The data returned from this method is directly drawn in a canvas using 'putImageData' method.
+     * And then the user can get the base64 string from the canvas using toDataURL method.
      *
      * @returns {ImageData}.
      */
@@ -10979,9 +12878,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     *  Load/opens an image for editing within an image editor.
+     *  Opens an image as URL or ImageData for editing in an image editor.
      *
-     * @param {string | ImageData } data - Specifies url of the Image or image data.
+     * @param {string | ImageData } data - Specifies url of the image or image data.
+     *
+     * @remarks
+     * The supported file types are JPG, JPEG, PNG, and SVG.
      *
      * @returns {void}.
      */
@@ -11028,7 +12930,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     * Reset all the changes and revert to original image.
+     * Reset all the changes done in an image editor and revert to original image.
+     *
+     * @remarks
+     * The undo redo collection also cleared while resetting the image editor.
      *
      * @returns {void}.
      */
@@ -11048,14 +12953,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.objColl = []; this.isImageLoaded = false; this.degree = this.undoRedoStep = 0;
             this.keyHistory = this.currFlipState = '';
-            this.upperCanvas.style.display = 'none'; this.togglePan = this.togglePen =  false;
+            this.upperCanvas.style.display = 'block'; this.togglePan = this.togglePen =  false;
             this.upperCanvas.style.cursor = this.lowerCanvas.style.cursor = 'default';
             this.undoRedoColl = []; this.dragCanvas = this.isUndoRedo = false;
             this.tempKeyHistory = '';
             this.lowerContext.lineWidth = this.upperContext.lineWidth = undefined;
             this.touchEndPoint = {} as Point;
             this.currentToolbar = 'main'; this.textStartPoints = {x: 0, y: 0};
-            this.fontSizeColl = [];
+            this.fontSizeColl = []; this.currToolbar = '';
             this.textArea.value = this.textArea.textContent = ''; this.textArea.style.display = 'none';
             this.strokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
             this.textSettings =
@@ -11064,7 +12969,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.tempTextSettings =
             {text: 'Enter Text', fontFamily: 'Arial', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
             this.timer = undefined; this.penStrokeWidth = undefined;
-            this.currObjType.isUndoAction = false;
+            this.currObjType.isUndoAction = this.isShapeInserted = false;
             this.undoRedoStep = 0;
             this.tempObjColl = undefined;
             this.adjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0,
@@ -11085,7 +12990,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.pointCounter = this.freehandCounter = this.tempFreehandCounter = this.tempCurrentFreehandDrawIndex = 0;
             this.isFreehandDrawing = false;
             this.isReverseRotate = this.isReverseFlip = this.isPreventDragging = this.isRotateZoom = false;
-            this.currentPannedPoint = null; this.fileType = undefined;
+            this.currentPannedPoint = {x: 0, y: 0};
             this.rotateFlipColl = []; this.isCircleCrop = false; this.isCropTab = false;
             this.rotatedDestPoints = {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint;
             this.croppedDegree = 0; this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = null;
@@ -11096,25 +13001,33 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.lowerCanvas.style.top = this.upperCanvas.style.top = '';
             this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = '';
             this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = '';
-            this.currentSelectionPoint = null; this.totalPannedPoint = {x: 0, y: 0}; this.fileName = '';
-            this.isBrightnessAdjusted = this.isInitialLoading = false;
+            this.currentSelectionPoint = null; this.totalPannedPoint = {x: 0, y: 0};
+            this.isBrightnessAdjusted = this.isInitialLoading = this.isShapeTextInserted = false;
             this.defaultZoomFactor = this.cropZoomFactor = this.zoomFactor = 0;
-            this.tempActObj = null; this.lastPan = {x: 0, y: 0};
+            this.tempActObj = null; this.currentMouseMovePoint = {x: 0, y: 0};
             this.selectedFreehandColor = '#42a5f5'; this.isFreehandDrawCustomized = false;
-            this.isShapeInserted = false; this.isAllowCropPan = false; this.tempPannedPoint = {x: 0, y: 0};
+            this.isObjSelected = false; this.isAllowCropPan = false;
             this.currObjType = { shape: '', isDragging: false, isActiveObj: false, isText: false, isInitialText: false, isLine: false,
                 isInitialLine: false, isCustomCrop: false, isZoomed: false, isUndoZoom: false,
                 isUndoAction: false, isFiltered: false, isSave: false };
             this.cropObj = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
                 totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
-                rotateFlipColl: [], degree: 0, currFlipState: '',
+                rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0,
                 destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
                 srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '' };
             this.afterCropActions = []; this.isCancelAction = this.preventZoomBtn = this.isFreehandPointMoved = false;
             this.isTouch = false; this.freehandDownPoint = {x: 0, y: 0}; this.tempFlipPanPoint = {x: 0, y: 0};
-            this.currentFreehandDrawIndex = 0; this.tempCurrentFreehandDrawIndex = 0;
+            this.currentFreehandDrawIndex = 0; this.tempCurrentFreehandDrawIndex = 0; this.previousZoomValue = 1;
             this.cancelObjColl = []; this.cancelPointColl = []; this.freehandDrawSelectedId = null; this.transformCurrentObj = null;
-            this.rotatedFlipCropSelection = false; this.panStartObj = null; this.currDestinationPoint = null;
+            this.rotatedFlipCropSelection = false; this.currDestinationPoint = null; this.appliedUndoRedoColl = [];
+            this.zoomBtnHold = null; this.zoomType = 'Toolbar'; this.cursorTargetObjId = ''; this.isInitialTextEdited = false;
+            this.selPoints = []; this.selPointColl = {}; this.prevActObj = null; this.tempCurrSelectionPoint = null;
+            if (!isNullOrUndefined(this.initialZoomValue)) {
+                this.setProperties({zoomSettings: { zoomFactor: this.initialZoomValue}}, true);
+            }
+            if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+            }
             this.updateCanvas(); this.refreshDropDownBtn(false); this.enableDisableToolbarBtn();
         }
     }
@@ -11123,59 +13036,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * Rotate an image to clockwise and anti-clockwise.
      *
      * @param {number} degree - Specifies a degree to rotate an image.
-     * positive integer value for clockwise and negative integer value for anti-clockwise rotation. 
+     * A positive integer value for clockwise and negative integer value for anti-clockwise rotation. 
+     *
+     * @remarks
+     * It rotated the shapes including rectangle, circle, line, text, and freehand drawings.
      *
      * @returns {boolean}.
+     *
+     * {% codeBlock src='image-editor/rotate/index.md' %}{% endcodeBlock %}
+     *
      */
     public rotate(degree: number): boolean {
-        let isRotate: boolean = false;
-        if (!this.disabled && this.isImageLoaded && (degree % 90 === 0)) {
-            isRotate = true;
-            const transitionArgs: RotateEventArgs = {degree: degree};
-            this.trigger('rotating', transitionArgs);
-            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-            let prevObj: CurrentObject;
-            if (isNullOrUndefined(this.transformCurrentObj)) {
-                prevObj = this.getCurrentObj();
-                prevObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
-                prevObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
-                prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-            }
-            this.afterCropActions.push(degree === 90 ? 'rotateRight' : 'rotateLeft');
-            let splitWords: string[] = [];
-            let activeObjShape: string;
-            if (!isNullOrUndefined(this.activeObj.activePoint) && !isNullOrUndefined(this.activeObj.shape)) {
-                if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-                if (this.currObjType.isCustomCrop || splitWords[0] === 'crop') {
-                    activeObjShape = this.currObjType.isCustomCrop ? 'custom' : splitWords[1];
-                    this.updateImageRatioForActObj();
-                    this.objColl.push(this.activeObj);
-                    this.refreshActiveObj();
-                }
-            }
-            this.redrawActObj();
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-            this.drawRotatedImage(degree);
-            this.clearOuterCanvas(this.lowerContext); this.clearOuterCanvas(this.upperContext);
-            if (!isNullOrUndefined(activeObjShape)) {
-                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
-                this.objColl.pop();
-                this.drawObject('duplicate', this.activeObj);
-                if (!this.isReverseRotate) {this.refreshToolbar('main', true, true); }
-            }
-            if (!this.isUndoRedo && isNullOrUndefined(this.transformCurrentObj)) {
-                this.updateUndoRedoColl('rotate', prevObj, prevObj.objColl, prevObj.pointColl, prevCropObj);
-            }
-            this.isUndoRedo = false;
-            if (isNullOrUndefined(this.activeObj.shape) && !this.isReverseRotate) {
-                this.refreshToolbar('main');
-            }
-            else if (!this.isReverseRotate) {
-                this.refreshToolbar('main', true, true);
-            }
-            this.rotateFlipColl = this.alignRotateFlipColl(this.rotateFlipColl, true);
-        }
+        const isRotate: boolean = this.rotateImage(degree);
+        this.updateCurrentUndoRedoColl('ok');
         return isRotate;
     }
 
@@ -11184,6 +13057,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      * @param {string} type - Specifies a format of image to be saved. 
      * @param {string} fileName – Specifies a file name to be saved
+     *
+     * @remarks
+     * The supported file types are JPG, JPEG, PNG, and SVG.
      *
      * @returns {void}.
      */
@@ -11221,7 +13097,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         this.toBlobFn(fileName, type.toLowerCase());
                     }
                     this.trigger('saved', saved);
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                     this.lowerCanvas.style.left = this.upperCanvas.style.left = ''; this.lowerCanvas.style.top = this.upperCanvas.style.top = '';
                     this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = ''; this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = '';
                 }
@@ -11237,20 +13113,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {number} startY – Specifies the start y-coordinate point of the selection.
      * @param {number} width - Specifies the width of the selection area.
      * @param {number} height - Specifies the height of the selection area.
+     *
+     * @remarks
+     * The selection UI is based on the 'theme' property.
+     *
      * @returns {void}.
-     *   ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     *   created : () => {
-     *     imageObj.select('16:9', 10, 10);
-     *  }
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/select/index.md' %}{% endcodeBlock %}
+     *
      */
     public select(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
         if (!this.disabled && this.isImageLoaded) {
@@ -11264,7 +13134,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (splitWords !== undefined && splitWords[0] === 'crop'){
                 isPrevent = true;
             }
-            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             const prevObj: CurrentObject = this.getCurrentObj();
             prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
             prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
@@ -11283,7 +13152,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     const isUndoRedo: boolean = this.isUndoRedo;
                     for (let i: number = 0; i < (zoomFactor * 10); i++) {
                         this.isUndoRedo = true;
-                        this.zoom(-0.1);
+                        this.zoomAction(-0.1);
                     }
                     this.isUndoRedo = isUndoRedo;
                     this.resetPanPoints();
@@ -11291,13 +13160,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.cancelObjColl = extend([], this.objColl, [], true) as SelectionPoint[];
                 this.cancelPointColl = extend([], this.pointColl, [], true) as Point[];
                 this.updateObjAndFreeHandDrawColl();
-                this.isCropTab = true;
+                this.isCropTab = true; this.isCircleCrop = false;
                 this.setCurrSelectionPoints(true);
                 this.zoomFactor = this.cropZoomFactor;
                 if (isNullOrUndefined(this.cropObj.activeObj.shape)) {
                     this.drawNewSelection(type, startX, startY, width, height);
-                } else {
-                    this.updateUndoRedoColl('crop-selection', prevObj, prevObj.objColl, prevObj.pointColl ,prevCropObj);
                 }
             } else {
                 if (type === 'custom') {this.currObjType.shape = ''; }
@@ -11307,9 +13174,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     * Enable or disable a freehand drawing in an Image Editor.
+     * Enable or disable a freehand drawing option in an Image Editor.
      *
-     * @param {boolean} value - Specifies a value whether enable or disable freehand drawing. 
+     * @param {boolean} value - Specifies a value whether to enable or disable freehand drawing. 
      *
      * @returns {void}.
      * @private
@@ -11331,7 +13198,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         } else {
             this.upperCanvas.style.cursor = 'default';
             this.apply();
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
             this.currentToolbar = 'main';
             this.isFreehandDrawCustomized = false;
         }
@@ -11340,9 +13207,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     /**
      * Enable or disable a freehand drawing in an Image Editor.
      *
-     * @param {boolean} value - Specifies a value whether enable or disable freehand drawing. 
+     * @param {boolean} value - Specifies a value whether to enable or disable freehand drawing. 
      *
-     *  @returns {void}.
+     * @remarks
+     * User can directly drawing on a canvas after enabling this option.
+     *
+     * @returns {void}.
      */
     public freehandDraw(value: boolean): void {
         if (!this.disabled && this.isImageLoaded) {
@@ -11354,6 +13224,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * Enable or disable a panning on the Image Editor.
      *
      * @param {boolean} value - Specifies a value whether enable or disable panning.
+     *
+     * @remarks
+     * This option will take into effect once the image's visibility is hidden when zooming an image or selection has been performed.
      *
      * @returns {void}.
      */
@@ -11373,136 +13246,27 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     * Increase / Decrease the magnification of an image.
+     * Zoom in or out on a point in the image editor.
      *
-     * @param {boolean} value - Specifies a value to be zoomed on the image.
-     * @returns {void}.
+     * @param {number} zoomFactor - The percentage-based zoom factor to use (e.g. 20 for 2x zoom).
+     * @param {Point} zoomPoint - The point in the image editor to zoom in/out on.
+     *
+     * @remarks
+     * Zooming directly enables the panning option when the image's visibility is hidden.
+     * User can disable it by using 'Pan' method.
+     * @returns {void}
+     *
      */
-    public zoom(value: number): void {
+    public zoom(zoomFactor: number, zoomPoint?: Point): void {
         if (!this.disabled && this.isImageLoaded) {
-            if ((this.zoomFactor === 0 && value < 0) || (this.zoomFactor > 2 && value > 0 ||
-                (this.zoomFactor > 0 && value < 0 && this.disableZoomOutBtn()))) {
-                return;
-            }
-            let splitWords: string[]; let tempActiveObj: SelectionPoint; let isShape: boolean = false;
-            if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
-            if (splitWords !== undefined && splitWords[0] === 'crop') {
-                tempActiveObj = extend({}, this.activeObj, {}, true) as SelectionPoint;
-                this.isCropTab = true;
-            } else if (!isNullOrUndefined(this.activeObj.shape) && splitWords[0] !== 'crop') {
-                isShape = true;
-            }
-            let zoomPoint: Point; let zoomLevel: number;
-            if (this.isCropTab && !isNullOrUndefined(tempActiveObj)) {
-                zoomLevel = this.cropZoomFactor;
-                zoomPoint = {x: this.activeObj.activePoint.startX + (this.activeObj.activePoint.width / 2),
-                    y: this.activeObj.activePoint.startY + (this.activeObj.activePoint.height / 2) };
+            const value: number = this.getCurrentZoomFactor(zoomFactor);
+            if (isNullOrUndefined(zoomPoint)) {
+                this.zoomAction(value, zoomPoint);
             } else {
-                zoomLevel = this.defaultZoomFactor;
-                zoomPoint = {x: this.lowerCanvas.clientWidth / 2, y: this.lowerCanvas.clientHeight / 2 };
-            }
-            const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, zoomLevel: zoomLevel};
-            this.trigger('zooming', zoomEventArgs);
-            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-            const prevObj: CurrentObject = this.getCurrentObj();
-            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-            this.redrawActObj();
-            this.refreshActiveObj();
-            this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.lowerContext.filter = this.canvasFilter;
-            this.upperCanvas.style.cursor = 'default';
-            let zoomState: number; let objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
-            if (value === 3.75 || value === 1) {zoomState = 0.1; }
-            else if (value === -3.75) {zoomState = -0.1; }
-            else {
-                zoomState = value;
-            }
-            if (!this.isCropTab) {
-                if (this.degree !== 0) {
-                    this.redrawActObj();
-                    this.currentPannedPoint = {x: 0, y: 0};
-                    this.rotatePan(true, true);
+                const type: string = value > 0 ? 'zoomIn' : 'zoomOut';
+                for (let i: number = 0; i < (Math.abs(value) * 10); i++) {
+                    this.performPointZoom(zoomPoint.x, zoomPoint.y, type);
                 }
-                this.updateObjAndFreeHandDrawColl();
-            }
-            if (this.degree === 0) {
-                this.drawZoomImgToCanvas(value, tempActiveObj);
-                if (this.getCurrentPanRegion() !== '') {
-                    this.tempFlipPanPoint.x += this.totalPannedPoint.x;
-                    this.tempFlipPanPoint.y += this.totalPannedPoint.y;
-                    objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-                    this.objColl = [];
-                    const destLeft: number = this.destLeft; const destTop: number = this.destTop;
-                    this.setDestPointsForFlipState();
-                    this.rotatedFlip();
-                    this.destLeft = destLeft; this.destTop = destTop;
-                    this.objColl = objColl;
-                    this.zoomObjColl(); this.zoomFreehandDrawColl();
-                    this.updateObjAndFreeHandDrawColl();
-                }
-                if (this.zoomFactor === 0 && !this.isCropTab) {
-                    this.totalPannedPoint = { x: 0, y: 0 };
-                }
-            } else {
-                this.updateObjAndFreeHandDrawColl();
-                this.totalPannedClientPoint = { x: 0, y: 0 };
-                this.totalPannedInternalPoint = { x: 0, y: 0 };
-                this.rotateZoom(value);
-                if (this.getCurrentPanRegion() !== '') {
-                    const temp: string = this.lowerContext.filter;
-                    this.lowerContext.filter = 'none';
-                    this.zoomObjColl();
-                    this.zoomFreehandDrawColl();
-                    this.lowerContext.filter = temp;
-                }
-            }
-            if (this.getCurrentPanRegion() === '') {
-                const temp: string = this.lowerContext.filter;
-                this.lowerContext.filter = 'none';
-                this.zoomObjColl();
-                this.zoomFreehandDrawColl();
-                this.lowerContext.filter = temp;
-            }
-            if ((!isNullOrUndefined(this.currSelectionPoint) && this.currSelectionPoint.shape === 'crop-circle') || this.isCircleCrop) {
-                this.cropCircle(this.lowerContext);
-            }
-            this.clearOuterCanvas(this.lowerContext);
-            this.refreshActiveObj();
-            if (!isNullOrUndefined(tempActiveObj)) {
-                this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
-                this.drawObject('duplicate', this.activeObj);
-                if (this.zoomFactor === 0) {this.currSelectionPoint = null; }
-            }
-            if (!this.isUndoRedo) {
-                this.updateUndoRedoColl('zoom', prevObj, prevObj.objColl,prevObj.pointColl, prevCropObj);
-            }
-            this.isUndoRedo = false;
-            const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
-            if (!isNullOrUndefined(zoomOut) && this.zoomFactor === 0) {
-                zoomOut.classList.add('e-disabled');
-                zoomOut.parentElement.classList.add('e-overlay');
-            } else if (!isNullOrUndefined(zoomOut)) {
-                zoomOut.classList.remove('e-disabled');
-                zoomOut.parentElement.classList.remove('e-overlay');
-            }
-            this.autoEnablePan();
-            if (!isNullOrUndefined(tempActiveObj)) {
-                this.activeObj = extend({}, tempActiveObj, {}, true) as SelectionPoint;
-            }
-            if (this.activeObj.shape === 'crop-custom') {this.currObjType.isCustomCrop = true; }
-            const panBtn: HTMLElement = this.element.querySelector('.e-img-pan .e-btn');
-            if (!isNullOrUndefined(panBtn) && this.togglePan) {
-                panBtn.classList.add('e-selected-btn');
-            } else if (!isNullOrUndefined(panBtn)) {
-                panBtn.classList.remove('e-selected-btn');
-            }
-            if (isShape) {
-                this.activeObj = extend({}, this.objColl[this.objColl.length - 1], {}, true) as SelectionPoint;
-                this.objColl.pop();
-                this.drawObject('duplicate', this.activeObj);
-                this.updateToolbarItems();
             }
         }
     }
@@ -11512,26 +13276,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      * @param {number} x - Specifies x-coordinate of ellipse.
      * @param {number} y - Specifies y-coordinate of ellipse.
-     * @param {number} radiusX - the radius x point for the ellipse.
-     * @param {number} radiusY - the radius y point for the ellipse.
-     * @param {number} strokeWidth - the stroke width of ellipse.
-     * @param {string} strokeColor - the stroke color of ellipse.
-     * @param {string} fillColor - the fill color of the ellipse.
+     * @param {number} radiusX - Specifies the radius x point for the ellipse.
+     * @param {number} radiusY - Specifies the radius y point for the ellipse.
+     * @param {number} strokeWidth - Specifies the stroke width of ellipse.
+     * @param {string} strokeColor - Specifies the stroke color of ellipse.
+     * @param {string} fillColor - Specifies the fill color of the ellipse.
      * @returns {boolean}.
      *
-     * ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * * var imageObj = new ImageEditor({
-     * created: () => {
-     * imageObj.drawEllipse(10, 10, 40, 60);
-     * }
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     * {% codeBlock src='image-editor/ellipse/index.md' %}{% endcodeBlock %}
+     *
      */
     public drawEllipse(x?: number, y?: number, radiusX?: number, radiusY?: number, strokeWidth?: number, strokeColor?: string,
                        fillColor?: string): boolean {
@@ -11548,6 +13301,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.currObjType.isCustomCrop = false;
             const start: Point = {x: x, y: y};
             this.drawShape('ellipse', strokeWidth, strokeColor, fillColor, start, radiusX, radiusY);
+            this.updateUndoRedo();
         }
         return isEllipse;
     }
@@ -11578,8 +13332,41 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const start: Point = {x: startX, y: startY};
             const width: number = endX - startX; const height: number = endY - startY;
             this.drawShape('line', strokeWidth, strokeColor, null, start, width, height);
+            this.updateUndoRedo();
         }
         return isLine;
+    }
+
+    /**
+     * Draw arrow on an image.
+     *
+     * @param {number} startX – Specifies start point x-coordinate of arrow.
+     * @param {number} startY – Specifies start point y-coordinate of arrow.
+     * @param {number} endX - Specifies end point x-coordinates of arrow.
+     * @param {number} endY - Specifies end point y-coordinates of the arrow.
+     * @param {number} strokeWidth - Specifies the stroke width of arrow.
+     * @param {string} strokeColor - Specifies the stroke color of arrow.
+     * @returns {boolean}.
+     * @private
+     */
+    public drawArrow(startX?: number, startY?: number, endX?: number, endY?: number, strokeWidth?: number, strokeColor?: string): boolean {
+        let isArrow: boolean = false;
+        const inRange: boolean = this.isPointsInRange(startX, startY);
+        if (!this.disabled && this.isImageLoaded && inRange) {
+            isArrow = true;
+            this.redrawActObj();
+            this.activeObj.shape = 'arrow';
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.currObjType.isCustomCrop = false;
+            const start: Point = {x: startX, y: startY};
+            const width: number = endX - startX; const height: number = endY - startY;
+            this.drawShape('arrow', strokeWidth, strokeColor, null, start, width, height);
+            this.updateUndoRedo();
+        }
+        return isArrow;
     }
 
     /**
@@ -11591,7 +13378,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {number} height - Specifies the height of the rectangle.
      * @param {number} strokeWidth - Specifies the stroke width of rectangle.
      * @param {string} strokeColor - Specifies the stroke color of rectangle.
-     * @param {string} fillColor - the fill color of the rectangle.
+     * @param {string} fillColor - Specifies the fill color of the rectangle.
      * @returns {boolean}.
      */
     public drawRectangle(x?: number, y?: number, width?: number, height?: number, strokeWidth?: number, strokeColor?: string,
@@ -11609,6 +13396,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.currObjType.isCustomCrop = false;
             const start: Point = {x: x, y: y};
             this.drawShape('rectangle', strokeWidth, strokeColor, fillColor, start, width, height);
+            this.updateUndoRedo();
         }
         return isRectangle;
     }
@@ -11626,20 +13414,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {string} color - Specifies font color of the text.
      * @returns {boolean}.
      *
-     * ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     * created: () => {
-     *  imageObj.drawText(10, 10, 'Syncfusion', 'Arial', 12, true, true, '#000');
-     * }
-     * });
-     * imageObj.appendTo("#imageeditor");
+     * {% codeBlock src='image-editor/text/index.md' %}{% endcodeBlock %}
      *
-     * </script>
-     * ```
      */
     public drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                     color?: string): boolean {
@@ -11648,28 +13424,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (!this.disabled && this.isImageLoaded && inRange) {
             isText = true;
             this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y);
+            this.updateUndoRedo();
         }
         return isText;
     }
 
     /**
-     * Selects a shape based on the given shape id. The id can be got from the public method ‘getShapeSettings’.
+     * Select a shape based on the given shape id.
+     * Use 'getShapeSettings' method to get the shape id which is then passed to perform selection.
      *
      * @param {string} id - Specifies the shape id to select a shape on an image.
      * @returns {boolean}.
-     * ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     * created: () => {
-     *  imageObj.selectShape('shape_1');
-     * }
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/selectShape/index.md' %}{% endcodeBlock %}
+     *
      */
     public selectShape(id: string): boolean {
         let isSelected: boolean = false;
@@ -11716,23 +13484,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     * Deletes a shape based on the given shape id. The id can be got from the public method getShapeSettings.
+     * Deletes a shape based on the given shape id.
+     * Use 'getShapeSettings' method to get the shape id which is then passed to perform selection.
      *
      * @param {string} id - Specifies the shape id to delete the shape on an image.
      * @returns {void}.
-     * ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     * created: () => {
-     *  imageObj.deleteShape('shape_1');
-     * }
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/deleteShape/index.md' %}{% endcodeBlock %}
+     *
      */
     public deleteShape(id: string): void {
         if (!this.disabled && this.isImageLoaded) {
@@ -11752,7 +13511,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.lowerContext.filter = this.canvasFilter;
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.redrawImgWithObj();
-            this.refreshToolbar('main');
+            this.refreshMainToolbar();
         }
     }
 
@@ -11761,19 +13520,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      * @param {string} id - Specifies the shape id on an image.
      * @returns {ShapeSettings}.
-     * ```html
-     * <div id='imageeditor'></div>
-     * ```
-     * ```typescript
-     * <script>
-     * var imageObj = new ImageEditor({
-     * created: () => {
-     *  imageObj.getShapeSetting('shape_1');
-     * }
-     * });
-     * imageObj.appendTo("#imageeditor");
-     * </script>
-     * ```
+     *
+     * {% codeBlock src='image-editor/getShapeSetting/index.md' %}{% endcodeBlock %}
+     *
      */
     public getShapeSetting(id: string): ShapeSettings {
         let shapeDetails: ShapeSettings;
@@ -11844,14 +13593,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
-     * To apply the filters to an image
+     * Finetuning an image with the given type of finetune and its value in the image editor.
      *
-     * @param {ImageFinetuneOptions } finetuneOption - Specifies the finetune options to the image.
+     * @param {ImageFinetuneOption } finetuneOption - Specifies the finetune options to be performed in the image.
      * @param {number } value - Specifies the value for finetuning the image.
+     *
+     * @remarks
+     * The finetuning will not affect the shapes background and border color.
+     *
      * @returns {void}.
      *
      */
-    public finetuneImage(finetuneOption: ImageFinetuneOptions, value: number): void {
+    public finetuneImage(finetuneOption: ImageFinetuneOption, value: number): void {
         if (!this.disabled && this.isImageLoaded) {
             switch (finetuneOption.toLowerCase()) {
             case 'brightness':
@@ -11877,26 +13630,33 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 break;
             }
             this.canvasFilter = this.lowerContext.filter;
+            this.updateCurrentUndoRedoColl('ok');
         }
     }
 
     /**
-     * To apply the filters to an image
+     * Filtering an image with the given type of filters.
      *
-     * @param {ImageFilterOptions } filterOption - Specifies the filter options to the image.
+     * @param {ImageFilterOption } filterOption - Specifies the filter options to the image.
+     *
+     * @remarks
+     * The filtering will not affect the shape's background and border color.
      * @returns {void}.
      */
-    public applyImageFilter(filterOption: ImageFilterOptions): void {
+    public applyImageFilter(filterOption: ImageFilterOption): void {
         if (!this.disabled && this.isImageLoaded) {
             this.setFilter(filterOption.toString());
             this.canvasFilter = this.lowerContext.filter;
+            this.updateCurrentUndoRedoColl('ok');
         }
     }
 
     /**
-     * Undo the last user action.
+     * Reverse the last action which performed by the user in the Image Editor.
      *
-     * @private
+     * @remarks
+     * This method will take into effect once the 'allowUndoRedo' property is enabled.
+     *
      * @returns {void}.
      */
     public undo(): void {
@@ -11904,8 +13664,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (this.undoRedoStep > 0) {
                 if (!isNullOrUndefined(this.activeObj.shape)) {
                     this.refreshToolbar('shapes');
+                    this.updateToolbarItems();
                 } else {
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
                 if (!isNullOrUndefined(this.activeObj.activePoint) && this.activeObj.activePoint.width !== 0) {
                     this.tempActObj = this.activeObj;
@@ -11928,6 +13689,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 switch (obj.operation) {
                 case 'shapeTransform':
                     this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
@@ -11936,12 +13698,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 case 'freehanddraw':
                     this.pointColl = obj.previousPointColl;
                     this.freehandCounter = this.pointColl.length;
+                    this.zoomFreehandDrawColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'freehanddrawCustomized':
                     this.pointColl = obj.previousPointColl;
+                    this.zoomFreehandDrawColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
@@ -11951,27 +13715,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     if (obj.operation === 'deleteFreehandDrawing') {
                         this.pointColl = obj.previousPointColl;
                         this.freehandCounter = this.pointColl.length;
+                        this.zoomFreehandDrawColl();
                     } else if (obj.operation === 'deleteObj') {
                         this.objColl = obj.previousObjColl as SelectionPoint[];
+                        this.zoomObjColl();
                     }
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
-                case 'selectionTransform':
-                    this.activeObj = extend({}, obj.previousObj.activeObj, {}, true) as SelectionPoint;
-                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
-                        this.drawObject('duplicate', this.activeObj);
-                        this.refreshToolbar('main', true, true);
-                    } else {
-                        this.refreshToolbar('main');
-                        this.performUndoDefaultAction(obj);
-                    }
-                    this.currObjType.isCustomCrop = false;
-                    break;
                 case 'textAreaCustomization':
                     this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl(true);
+                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                    this.isUndoRedo = true; this.redrawImgWithObj();
                     for (let i: number = 0; i < (obj.previousObjColl as SelectionPoint[]).length; i++) {
                         if (!isNullOrUndefined(this.tempActObj)) {
                             if (this.tempActObj.currIndex === (obj.previousObjColl as SelectionPoint[])[i as number].currIndex) {
@@ -11987,6 +13744,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                     if (!isNullOrUndefined(activeObj)) {
                         this.updateTextBox(activeObj);
+                    }
+                    if (this.textArea.style.display === 'block') {
+                        this.redrawActObj();
                     }
                     break;
                 case 'text':
@@ -12010,21 +13770,25 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                     this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
                     this.objColl = extend([], obj.previousObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl(true);
+                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.isUndoRedo = true; this.redrawImgWithObj();
-                    if (!isNullOrUndefined(this.activeObj) && this.activeObj.activePoint.width !== 0
-                        && this.activeObj.activePoint.height !== 0) {
-                        this.drawObject('duplicate');
-                    } else {
-                        this.textArea.style.display = 'block';
-                        this.textArea.value = obj.previousText;
-                    }
+                    this.isUndoRedo = true; this.redrawImgWithObj(); this.refreshActiveObj();
                     break;
                 default:
                     this.performUndoDefaultAction(obj);
                     this.setAdjustment(obj.operation);
                     this.updateFilter(obj.operation, obj.filter);
                     break;
+                }
+                if (obj.operation === 'crop' && this.isCircleCrop) {
+                    this.isCircleCrop = false;
+                    this.tempCurrSelectionPoint = extend({}, this.currSelectionPoint, {}, true) as SelectionPoint;
+                    this.currSelectionPoint = null;
+                }
+                if ((!isNullOrUndefined(this.undoRedoColl[this.undoRedoStep - 1])
+                    && this.undoRedoColl[this.undoRedoStep - 1].isCircleCrop)) {
+                    this.isCircleCrop = true; this.cropCircle(this.lowerContext);
                 }
                 this.clearOuterCanvas(this.lowerContext);
                 if (this.isCircleCrop && obj.operation !== 'crop') {this.cropCircle(this.lowerContext); }
@@ -12033,25 +13797,31 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop') {
                     this.refreshToolbar('main', true, true);
                 } else {
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
+                if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                    document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+                }
+                this.enableDisableToolbarBtn();
             }
         }
     }
 
     /**
-     * Redo the last user action.
+     * Redo the last user action that was undone by the user or `undo` method.
      *
-     * @private
+     * @remarks
+     * This method will take into effect once the 'allowUndoRedo' property is enabled.
      * @returns {void}.
      */
     public redo(): void {
         if (!this.disabled && this.isImageLoaded) {
-            if (this.undoRedoStep < this.undoRedoColl.length) {
+            if (this.undoRedoStep < this.appliedUndoRedoColl.length) {
                 if (!isNullOrUndefined(this.activeObj.shape)) {
                     this.refreshToolbar('shapes');
+                    this.updateToolbarItems();
                 } else {
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
                 this.undoRedoStep++;
                 this.enableDisableToolbarBtn();
@@ -12067,10 +13837,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.cropObj = extend({}, obj.currentCropObj, {}, true) as CurrentObject;
                 this.afterCropActions = obj.currentObj.afterCropActions;
                 this.lowerContext.filter = this.canvasFilter = obj.currentObj.filter;
-                let activeObj: SelectionPoint; let tempUndoRedoColl: Transition[]; let tempUndoRedoStep: number;
+                let activeObj: SelectionPoint;
                 switch (obj.operation) {
                 case 'shapeTransform':
                     this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
@@ -12079,12 +13850,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 case 'freehanddraw':
                     this.pointColl = obj.currentPointColl;
                     this.freehandCounter = this.pointColl.length;
+                    this.zoomFreehandDrawColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
                 case 'freehanddrawCustomized':
                     this.pointColl = obj.currentPointColl;
+                    this.zoomFreehandDrawColl();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
 
@@ -12095,26 +13868,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     if (obj.operation === 'deleteFreehandDrawing') {
                         this.pointColl = obj.currentPointColl;
                         this.freehandCounter = this.pointColl.length;
+                        this.zoomFreehandDrawColl();
                     } else if (obj.operation === 'deleteObj') {
                         this.objColl = obj.currentObjColl as SelectionPoint[];
+                        this.zoomObjColl();
                     }
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                     this.isUndoRedo = true; this.redrawImgWithObj();
                     break;
-                case 'selectionTransform':
-                    this.activeObj = extend({}, obj.currentObj.activeObj, {}, true) as SelectionPoint;
-                    this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                    if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) {
-                        this.drawObject('duplicate', this.activeObj);
-                        this.refreshToolbar('main', true, true);
-                    } else {
-                        this.refreshToolbar('main');
-                    }
-                    this.currObjType.isCustomCrop = false;
-                    break;
                 case 'textAreaCustomization':
                     this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl(true);
+                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                    this.isUndoRedo = true; this.redrawImgWithObj();
                     for (let i: number = 0; i < (obj.currentObjColl as SelectionPoint[]).length; i++) {
                         if (!isNullOrUndefined(this.tempActObj)) {
                             if (this.tempActObj.currIndex === (obj.currentObjColl as SelectionPoint[])[i as number].currIndex) {
@@ -12130,6 +13897,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                     if (!isNullOrUndefined(activeObj)) {
                         this.updateTextBox(activeObj);
+                    }
+                    if (this.textArea.style.display === 'block') {
+                        this.redrawActObj();
                     }
                     break;
                 case 'text':
@@ -12152,21 +13922,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                         }
                     }
                     this.objColl = extend([], obj.currentObjColl, [], true) as SelectionPoint[];
+                    this.zoomObjColl(true);
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.isUndoRedo = true; this.redrawImgWithObj();
-                    if (!isNullOrUndefined(this.tempActObj)) {
-                        this.activeObj = extend({}, this.tempActObj, {}, true) as SelectionPoint;
-                    }
-                    this.textArea.style.display = 'block';
-                    this.textArea.value = obj.currentText;
-                    tempUndoRedoColl = extend([], this.undoRedoColl, [], true) as Transition[];
-                    tempUndoRedoStep = this.undoRedoStep;
-                    this.redrawActObj();
-                    this.undoRedoColl = tempUndoRedoColl;
-                    this.undoRedoStep = tempUndoRedoStep;
-                    this.textArea.style.display = 'none';
-                    this.textArea.value = '';
-                    this.redrawActObj();
+                    this.isUndoRedo = true; this.redrawImgWithObj(); this.refreshActiveObj();
                     break;
                 default:
                     this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
@@ -12178,7 +13936,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.pointColl = extend([], obj.currentPointColl, [], true) as Point[];
                     this.freehandCounter = this.pointColl.length;
                     this.lowerContext.filter = 'none';
-                    this.iterateObjColl(); this.freehandRedraw(this.lowerContext);
+                    this.zoomObjColl(); this.zoomFreehandDrawColl();
                     this.lowerContext.filter = obj.currentObj.filter;
                     this.activeObj = activeObj;
                     this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
@@ -12189,6 +13947,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.updateFilter(obj.operation);
                     break;
                 }
+                if (obj.operation === 'crop' && obj.isCircleCrop) {
+                    this.isCircleCrop = true;
+                    this.currSelectionPoint = extend({}, this.tempCurrSelectionPoint, {}, true) as SelectionPoint;
+                    this.tempCurrSelectionPoint = null;
+                }
+                if (obj.operation === 'crop' && !obj.isCircleCrop) {
+                    this.isCircleCrop = false;
+                }
                 this.clearOuterCanvas(this.lowerContext);
                 if (this.isCircleCrop) {this.cropCircle(this.lowerContext); }
                 if (this.zoomFactor > 0) {this.dragCanvas = true; }
@@ -12197,117 +13963,333 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (!isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop') {
                     this.refreshToolbar('main', true, true);
                 } else {
-                    this.refreshToolbar('main');
+                    this.refreshMainToolbar();
                 }
+                if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
+                    document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
+                }
+                this.enableDisableToolbarBtn();
             }
         }
+    }
+
+    /**
+     * Get the dimension of an image in the image editor such as x, y, width, and height.
+     * The method helps to get dimension after cropped an image.
+     *
+     * @returns {Dimension}.
+     * A Dimension object containing the x, y, width, and height of an image.
+     */
+    public getImageDimension(): Dimension {
+        return { x: this.destLeft, y: this.destTop, width: this.destWidth, height: this.destHeight };
     }
 }
 
 /**
- * Defines the Image Editor file type.
+ * An enum representing the file types supported by the image editor.
+ *
+ * @enum {string}
  */
-export type FileType = 'Png' | 'Jpeg' | 'Svg';
-
-/**
- * Defines the direction to flip the image on Image Editor.
- */
-export type Direction = 'Horizontal' | 'Vertical';
-
-/**
- * Defines the Image Editor shape type.
- */
-export type ShapeType = 'Rectangle' | 'Ellipse' | 'Line' | 'Text' | 'FreehandDraw';
-
-/**
- * Defines the theme for Image Editor.
- */
-export type Theme = 'Bootstrap5' | 'Bootstrap5Dark' | 'Tailwind' | 'TailwindDark' | 'Fluent'
-| 'FluentDark' | 'Bootstrap4' | 'Bootstrap' | 'BootstrapDark' | 'Material' | 'MaterialDark'
-| 'Fabric' | 'FabricDark' | 'Highcontrast';
-
-/**
- * Defines the toolbar items for Image Editor.
- */
-export type ImageEditorCommands = 'Crop' | 'Transform' | 'Annotate' | 'ZoomIn' | 'ZoomOut'
-| 'Open' | 'Reset' | 'Save' | 'Pan' | 'Move' | 'Pen' | 'Line' | 'Rectangle' | 'Ellipse' | 'Text'
-| 'CustomSelection' | 'CircleSelection' | 'SquareSelection' | 'RatioSelection'
-| 'RotateLeft' | 'RotateRight' | 'FlipHorizontal' | 'FlipVertical';
-
-/**
- * Defines the image filter options
- */
-export type ImageFilterOptions = 'Default' | 'Chrome' | 'Cold' | 'Warm' | 'Grayscale' | 'Sepia' | 'Invert';
-
-/**
- * Defines the image filter options
- */
-export type ImageFinetuneOptions = 'Brightness' | 'Contrast' | 'Hue' | 'Saturation' | 'Exposure' | 'Opacity' | 'Blur';
-
-/**
- * Interface for zoom transition occur in the imageEditor.
- */
-export interface ZoomEventArgs {
-    /**
-     * Returns the (x, y) point to be zoomed.
-     */
-    zoomPoint: Point;
-    /**
-     * Specifies the value of zooming. Zoom in or out can be defined based on the value.
-     */
-    zoomLevel: number;
+export enum FileType {
+    /** The PNG file type. */
+    Png = 'Png',
+    /** The JPEG file type. */
+    Jpeg = 'Jpeg',
+    /** The SVG file type. */
+    Svg = 'Svg'
 }
 
 /**
- * Interface for pan transition occur in the imageEditor.
+ * An enumeration representing the direction of an image editor operation.
+ *
+ * @enum {string}
+ */
+export enum Direction {
+    /** The horizontal direction. */
+    Horizontal = 'Horizontal',
+    /** The vertical direction. */
+    Vertical = 'Vertical'
+}
+
+/**
+ * An enumeration representing the type of shape to be added in the image editor.
+ *
+ * @enum {string}
+ */
+export enum ShapeType {
+    /** A rectangle shape. */
+    Rectangle = 'Rectangle',
+    /** An ellipse shape. */
+    Ellipse = 'Ellipse',
+    /** A line shape. */
+    Line = 'Line',
+    /** An arrow shape. */
+    Arrow = 'Arrow',
+    /** A text shape. */
+    Text = 'Text',
+    /** A freehand drawing shape. */
+    FreehandDraw = 'FreehandDraw'
+}
+
+/**
+ * An enumeration representing the different ways to trigger zooming in the image editor.
+ *
+ * @enum {number}
+ */
+export enum ZoomTrigger {
+    /** Zooming triggered by mouse wheel. */
+    MouseWheel = 1 << 0,
+    /** Zooming triggered by pinch gesture. */
+    Pinch = 1 << 1,
+    /** Zooming triggered by command keys. */
+    Commands = 1 << 2,
+    /** Zooming triggered by toolbar button click. */
+    Toolbar = 1 << 3
+}
+
+/**
+ * An enum representing the available themes in the image editor.
+ */
+export enum Theme {
+    /** The Bootstrap 5 theme. */
+    Bootstrap5 = 'Bootstrap5',
+    /** The dark variant of the Bootstrap 5 theme. */
+    Bootstrap5Dark = 'Bootstrap5Dark',
+    /** The Tailwind CSS theme. */
+    Tailwind = 'Tailwind',
+    /** The dark variant of the Tailwind CSS theme. */
+    TailwindDark = 'TailwindDark',
+    /** The Fluent UI theme. */
+    Fluent = 'Fluent',
+    /** The dark variant of the Fluent UI theme. */
+    FluentDark = 'FluentDark',
+    /** The Bootstrap 4 theme. */
+    Bootstrap4 = 'Bootstrap4',
+    /** The Bootstrap theme. */
+    Bootstrap = 'Bootstrap',
+    /** The dark variant of the Bootstrap theme. */
+    BootstrapDark = 'BootstrapDark',
+    /** The Material Design theme. */
+    Material = 'Material',
+    /** The dark variant of the Material Design theme. */
+    MaterialDark = 'MaterialDark',
+    /** The Fabric theme. */
+    Fabric = 'Fabric',
+    /** The dark variant of the Fabric theme. */
+    FabricDark = 'FabricDark',
+    /** The high contrast theme. */
+    Highcontrast = 'Highcontrast'
+}
+
+/**
+ * An enum representing the available toolbar commands in the image editor.
+ */
+export enum ImageEditorCommand {
+    Crop = 'Crop',
+    Transform = 'Transform',
+    Annotate = 'Annotate',
+    ZoomIn = 'ZoomIn',
+    ZoomOut = 'ZoomOut',
+    Open = 'Open',
+    Reset = 'Reset',
+    Save = 'Save',
+    Pan = 'Pan',
+    Move = 'Move',
+    Pen = 'Pen',
+    Line = 'Line',
+    Arrow = 'Arrow',
+    Rectangle = 'Rectangle',
+    Ellipse = 'Ellipse',
+    Text = 'Text',
+    CustomSelection = 'CustomSelection',
+    CircleSelection = 'CircleSelection',
+    SquareSelection = 'SquareSelection',
+    RatioSelection = 'RatioSelection',
+    RotateLeft = 'RotateLeft',
+    RotateRight = 'RotateRight',
+    FlipHorizontal = 'FlipHorizontal',
+    FlipVertical = 'FlipVertical'
+}
+
+/**
+ * An enumeration of available image filter options.
+ *
+ * @remarks
+ * These options can be used with the `applyImageFilter` method of the image editor control to apply filters to an image.
+ */
+export enum ImageFilterOption {
+    /** Default filter */
+    Default = 'Default',
+    /** Chrome filter */
+    Chrome = 'Chrome',
+    /** Cold filter */
+    Cold = 'Cold',
+    /** Warm filter */
+    Warm = 'Warm',
+    /** Grayscale filter */
+    Grayscale = 'Grayscale',
+    /** Sepia filter */
+    Sepia = 'Sepia',
+    /** Invert filter */
+    Invert = 'Invert'
+}
+
+/**
+ * An enumeration of available image finetune options.
+ *
+ * @remarks
+ * These options can be used with the `finetuneImage` method of the image editor control to apply finetuning to an image.
+ */
+export enum ImageFinetuneOption {
+    /** Adjust the brightness of the image */
+    Brightness = 'Brightness',
+    /** Adjust the contrast of the image */
+    Contrast = 'Contrast',
+    /** Adjust the hue of the image */
+    Hue = 'Hue',
+    /** Adjust the saturation of the image */
+    Saturation = 'Saturation',
+    /** Adjust the exposure of the image */
+    Exposure = 'Exposure',
+    /** Adjust the opacity of the image */
+    Opacity = 'Opacity',
+    /** Adjust the blur of the image */
+    Blur = 'Blur'
+}
+
+/**
+ * The Interface which contains the properties for zoom transition occur in the Image Editor.
+ */
+export interface ZoomEventArgs {
+    /**
+     * Returns the point in which the zooming action was performed.
+     *
+     * @remarks
+     * The given value is a point object which has x and y coordinates.
+     *
+     */
+    zoomPoint: Point;
+
+    /**
+     * Returns the previous zoom factor that already had before this current zooming action.
+     *
+     * @remarks
+     * The previous and current zoom factor is used for finding whether the performed zooming is a zoom in or zoom out.
+     *
+     */
+    previousZoomFactor: number
+
+    /**
+     * Returns the current zoomed level, in which the loaded image is enlarged in the image editor.
+     *
+     * @remarks
+     * The previous and current zoom factor is used for finding whether the performed zooming is a zoom in or zoom out.
+     *
+     */
+    currentZoomFactor: number
+
+    /**
+     * Specifies a value that indicates whether the zooming action can be canceled in image editor.
+     */
+    cancel: boolean;
+
+    /**
+     * Returns the type of zooming performed in the image editor.
+     *
+     * @remarks
+     * This property is used to get the type of zooming performed in the editor.
+     * The possible values of this property are 'MouseWheel', 'Pinch', 'Commands', and 'Toolbar'.
+     * The value of this property will be updated each time a zoom operation is performed.
+     * MouseWheel - It indicates the zooming performed using mouse wheel.
+     * Pinch - It indicates that zooming is performed using pinch gestures on touch-enabled devices.
+     * Commands - It indicates that zooming is performed by clicking the CTRL key and either the plus (+) or minus (-) buttons on the keyboard.
+     * Toolbar - It indicates that zooming is performed using toolbar buttons.
+     * By default, this property is set to 'Toolbar'.
+     *
+     *
+     */
+    zoomTrigger: string;
+}
+
+/**
+ * The Interface which contains the properties for pan transition occur in the Image Editor.
  */
 export interface PanEventArgs {
     /**
      * Returns the (x, y) point of panning started
      */
     startPoint: Point;
+
     /**
      * Returns the (x, y) point to be panning ended.
      */
     endPoint: Point;
+
+    /**
+     * Defines whether to cancel the panning action of image editor.
+     */
+    cancel: boolean;
 }
 
 /**
- * Interface for crop transition occur in the imageEditor.
+ * The Interface which contains the properties for crop transition occur in the Image Editor.
  */
 export interface CropEventArgs {
     /**
      * Returns the start point of the crop region.
+     *
+     * @remarks
+     * The start and end point is used get the cropping region in a image editor.
+     *
      */
     startPoint: Point;
+
     /**
      * Returns the end point of the crop region.
+     *
+     * @remarks
+     * The start and end point is used get the cropping region in a image editor.
+     *
      */
     endPoint: Point;
+
+    /**
+     * Defines whether to cancel the cropping action of image editor.
+     */
+    cancel: boolean;
 }
 
 /**
- * Interface for rotate transition in the imageEditor.
+ * The Interface which contains the properties for rotate transition in the Image Editor.
  */
 export interface RotateEventArgs {
     /**
      * Returns the degree to be rotated.
      */
     degree: number;
+
+    /**
+     * Defines whether to cancel the rotating action of image editor.
+     */
+    cancel: boolean;
 }
 
 /**
- * Interface for flip transition in the imageEditor.
+ * The Interface which contains the properties for flip transition in the Image Editor.
  */
 export interface FlipEventArgs {
     /**
      * Returns the direction(Horizontal and vertical) to be flipped.
      */
     direction: string;
+    /**
+     * Defines the cancel option to cancel the flip action.
+     */
+    cancel: boolean;
 }
 
 /**
- * Interface for shape change in imageEditor.
+ * The Interface which contains the properties for shape change in Image Editor.
  */
 export interface ShapeChangeEventArgs {
     /**
@@ -12325,11 +14307,11 @@ export interface ShapeChangeEventArgs {
 }
 
 /**
- * Interface for Toolbar events.
+ * The Interface which contains the properties for Toolbar events.
  */
 export interface ToolbarEventArgs {
     /**
-     * Defines the cancel option to cancel the toolbar action.
+     * Defines whether the to cancel the toolbar updating/refreshing action in the image editor.
      */
     cancel?: boolean;
 
@@ -12345,12 +14327,18 @@ export interface ToolbarEventArgs {
 
     /**
      * Specifies the toolbar item collection to be rendered as contextual toolbar.
+     *
+     * @remarks
+     * This property collection contains string and ItemModel values.
+     * The string values representing the names of the built-in toolbar items to be displayed.
+     * The ItemModel values representing the object of custom toolbar items to be displayed.
+     *
      */
     toolbarItems?: (string | ItemModel)[];
 }
 
 /**
- * Interface for opening the image.
+ * The Interface which contains the properties for opening the image.
  */
 export interface OpenEventArgs {
     /**
@@ -12364,7 +14352,7 @@ export interface OpenEventArgs {
 }
 
 /**
- * Interface for saving the canvas as image.
+ * The Interface which contains the properties for saving the canvas as image.
  */
 export interface SaveEventArgs {
     /**
@@ -12378,11 +14366,11 @@ export interface SaveEventArgs {
 }
 
 /**
- * Interface for before saving the canvas as image.
+ * The Interface which contains the properties for before saving the canvas as image.
  */
 export interface BeforeSaveEventArgs {
     /**
-     * Defines the cancel option to cancel the save action.
+     * Defines whether the to cancel the saving action in the image editor.
      */
     cancel: boolean;
     /**
@@ -12396,7 +14384,7 @@ export interface BeforeSaveEventArgs {
 }
 
 /**
- * Interface for Point Object in the image editor.
+ * The Interface which contains the properties for Point Object in the image editor.
  *
  */
 export interface Point {
@@ -12410,26 +14398,26 @@ export interface Point {
     y: number;
     /**
      * Returns the x ratio from in the image.
-     * 
+     *
      * @private
      */
     ratioX?: number;
     /**
      * Returns y ratio from the image.
-     * 
+     *
      * @private
      */
     ratioY?: number;
     /**
-     * Gets or sets the time.
-     * 
+     * Specifies the time.
+     *
      * @private
      */
     time?: number;
 }
 
 /**
- * Interface for ShapeSettings in the imageEditor.
+ * Interface for ShapeSettings in the Image Editor.
  */
 export interface ShapeSettings {
     /**
@@ -12473,7 +14461,7 @@ export interface ShapeSettings {
      */
     radius?: number;
     /**
-     * Returns the length of the line shape.
+     * Returns the length of the line or arrow shape.
      */
     length?: number;
     /**
@@ -12505,21 +14493,129 @@ export interface ImageFilterEventArgs {
     /**
      * Specifies the when applying filter to an image.
      */
-    filter: ImageFilterOptions;
+    filter: ImageFilterOption;
+    /**
+     * Defines the cancel option to cancel the filter action.
+     */
+    cancel: boolean;
 }
 
 /**
- * Interface for filter option for the image.
+ * Interface for fine tunes option for the image.
  */
 export interface FinetuneEventArgs {
     /**
      * Specifies the type of fine tunes.
      */
-    finetune: ImageFinetuneOptions;
+    finetune: ImageFinetuneOption;
     /**
      * Specifies the value of the fine tunes.
      */
     value: number;
+    /**
+     * Defines the cancel option to cancel the fine tunes action.
+     */
+    cancel: boolean;
+}
+
+/**
+ * Interface that provides information to the click event in the Image Editor.
+ */
+export interface ImageEditorClickEventArgs {
+    /**
+     * Returns the x and y coordinates of the mouse or touch action which performed in the Image Editor.
+     */
+    point: Point;
+}
+
+/**
+ * Interface for quick access toolbar for the image.
+ *
+ * @private
+ */
+export interface QuickAccessToolbarEventArgs {
+    /**
+     * Specifies whether to cancel the opening action of the quick access toolbar.
+     *
+     * @remarks
+     * Set this property to `true` to cancel the opening action of the quick access toolbar.
+     * By default, this property is set to `false`.
+     *
+     */
+    cancel: boolean;
+    /**
+     * Specifies the collection of toolbar items to be rendered as a quick access toolbar.
+     *
+     * @remarks
+     * This property collection contains string and ItemModel values.
+     * The string values representing the names of the built-in toolbar items to display.
+     * The ItemModel values representing the object of custom toolbar items to display.
+     *
+     */
+    toolbarItems: (string | ItemModel)[];
+
+    /**
+     * Returns the current toolbar type.
+     */
+    toolbarType?: string;
+}
+
+/**
+ * Interface for Dimension calculation in the imageEditor.
+ *
+ */
+export interface Dimension {
+    /**
+     * Gets x position from the canvas.
+     */
+    x?: number;
+    /**
+     * Gets y position from the canvas.
+     */
+    y?: number;
+    /**
+     * Gets width of the image.
+     */
+    width: number;
+    /**
+     * Gets height of the image.
+     */
+    height: number;
+}
+/**
+ * Interface for active object in the imageEditor.
+ *
+ * @private
+ */
+export interface ActivePoint {
+    /**
+     * Gets mouse down x-point.
+     */
+    startX: number;
+    /**
+     * Gets mouse down y-point.
+     */
+    startY: number;
+    /**
+     * Gets mouse move x-point.
+     */
+    endX?: number;
+    /**
+     * Gets mouse move y-point.
+     */
+    endY?: number;
+    /**
+     * Gets width of the selection.
+     */
+    width?: number;
+    /**
+     * Gets height of the selection.
+     */
+    height?: number;
+    /**
+     * Gets radius of the circle dot.
+     */
+    radius?: number;
 }
 
 /**
@@ -12529,67 +14625,75 @@ export interface FinetuneEventArgs {
  */
 interface CurrentObject {
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     cropZoom: number;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     defaultZoom: number;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
+     */
+    zoomFactor: number;
+    /**
+     * Specifies the stroke color for the object in Image Editor.
+     */
+    previousZoomValue: number;
+    /**
+     * Specifies the stroke color for the object in Image Editor.
      */
     totalPannedPoint: Point;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     totalPannedClientPoint: Point;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     totalPannedInternalPoint: Point;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     tempFlipPanPoint: Point;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     activeObj: SelectionPoint;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     rotateFlipColl: string[] | number[];
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     degree: number;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     currFlipState: string;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     destPoints: ActivePoint;
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     srcPoints: ActivePoint;
     /**
-     * Gets or sets the filter for the image in imageEditor.
+     * Specifies the filter for the image in Image Editor.
      */
     filter: string;
     /**
-     * Gets or sets the object collection in imageEditor.
+     * Specifies the object collection in Image Editor.
      */
     objColl?: SelectionPoint[];
     /**
-     * Gets or sets the point collections for freehand drawing in imageEditor.
+     * Specifies the point collections for freehand drawing in Image Editor.
      */
     pointColl?: Point[];
     /**
-     * Gets or sets the action collections performed after cropping in imageEditor.
+     * Specifies the action collections performed after cropping in Image Editor.
      */
     afterCropActions?: string[];
 }
@@ -12601,19 +14705,19 @@ interface CurrentObject {
  */
 interface StrokeSettings {
     /**
-     * Gets or sets the stroke color for the object in imageEditor.
+     * Specifies the stroke color for the object in Image Editor.
      */
     strokeColor: string;
     /**
-     * Gets or sets the background color for the object in imageEditor.
+     * Specifies the background color for the object in Image Editor.
      */
     fillColor: string;
     /**
-     * Gets or sets the stroke width for the object in imageEditor.
+     * Specifies the stroke width for the object in Image Editor.
      */
     strokeWidth: number;
     /**
-     * Gets or sets the flip state for the object in imageEditor.
+     * Specifies the flip state for the object in Image Editor.
      */
     flipState?: string;
 }
@@ -12625,125 +14729,129 @@ interface StrokeSettings {
  */
 interface TextSettings {
     /**
-     * Gets or sets pre-defined text on canvas.
+     * Specifies pre-defined text on canvas.
      */
     text: string;
     /**
-     * Gets or sets the fontFamily for the text content.
+     * Specifies the fontFamily for the text content.
      */
     fontFamily: string;
     /**
-     * Gets or sets the fontSize for the text content.
+     * Specifies the fontSize for the text content.
      */
     fontSize: number;
     /**
-     * Gets or sets the fontSize for the text content.
+     * Specifies the fontSize for the text content.
      */
     fontRatio: number;
     /**
-     * Gets or sets the bold styles for the text content.
+     * Specifies the bold styles for the text content.
      */
     bold: boolean;
     /**
-     * Gets or sets the italic styles for the text content.
+     * Specifies the italic styles for the text content.
      */
     italic: boolean;
     /**
-     * Gets or sets the underline styles for the text content.
+     * Specifies the underline styles for the text content.
      */
     underline: boolean;
 }
 
 /**
- * Interface for Transition occur in the imageEditor.
+ * Interface for Transition occur in the Image Editor.
  *
  * @private
  */
 interface Transition {
     /**
-     * Gets or sets the operation name for undo / redo in imageEditor.
+     * Specifies the operation name for undo / redo in Image Editor.
      */
     operation: string;
     /**
-     * Gets or sets all previous object in imageEditor.
+     * Specifies all previous object in Image Editor.
      */
     previousObj: CurrentObject;
     /**
-     * Gets or sets all current object in imageEditor.
+     * Specifies all current object in Image Editor.
      */
     currentObj: CurrentObject;
     /**
-     * Gets or sets the previous object collection in imageEditor.
+     * Specifies the previous object collection in Image Editor.
      */
     previousObjColl: SelectionPoint[];
     /**
-     * Gets or sets the current object collection in imageEditor.
+     * Specifies the current object collection in Image Editor.
      */
     currentObjColl: SelectionPoint[];
     /**
-     * Gets or sets the previous point collection in imageEditor.
+     * Specifies the previous point collection in Image Editor.
      */
     previousPointColl: Point[];
     /**
-     * Gets or sets the current point collection in imageEditor.
+     * Specifies the current point collection in Image Editor.
      */
     currentPointColl: Point[];
     /**
-     * Gets or sets the previous crop object in imageEditor.
+     * Specifies the previous crop object in Image Editor.
      */
     previousCropObj: CurrentObject;
     /**
-     * Gets or sets the current crop object in imageEditor.
+     * Specifies the current crop object in Image Editor.
      */
     currentCropObj: CurrentObject;
     /**
-     * Gets or sets the previous text from the textarea in imageEditor.
+     * Specifies the previous text from the textarea in Image Editor.
      */
     previousText?: string;
     /**
-     * Gets or sets the current text from the textarea in imageEditor.
+     * Specifies the current text from the textarea in Image Editor.
      */
     currentText?: string;
     /**
-     * Gets or sets the current filter in imageEditor.
+     * Specifies the current filter in Image Editor.
      */
     filter?: string;
+    /**
+     * Specifies the circle crop value in Image Editor.
+     */
+    isCircleCrop?: boolean;
 }
 
 /**
- * Interface for freehand drawing in the imageEditor.
+ * Interface for freehand drawing in the Image Editor.
  *
  * @private
  */
 interface FreehandDraw {
     /**
-     * Gets or sets the last width of freehandraw points in imageEditor.
+     * Specifies the last width of freehandraw points in Image Editor.
      */
     lastWidth: number;
 
     /**
-     * Gets or sets the last velocity of freehandraw points in imageEditor.
+     * Specifies the last velocity of freehandraw points in Image Editor.
      */
     lastVelocity: number;
 
     /**
-     * Gets or sets the time of freehandraw points in imageEditor.
+     * Specifies the time of freehandraw points in Image Editor.
      */
     time: number;
 
     /**
-     * Gets or sets the x point of freehandraw points in imageEditor.
+     * Specifies the x point of freehandraw points in Image Editor.
      */
     pointX: number;
 
     /**
-     * Gets or sets the y point of freehandraw points in imageEditor.
+     * Specifies the y point of freehandraw points in Image Editor.
      */
     pointY: number;
 }
 
 /**
- * Interface for Transition occur in the imageEditor.
+ * Interface for Transition occur in the Image Editor.
  *
  * @private
  */
@@ -12787,7 +14895,7 @@ interface Adjustment {
 }
 
 /**
- * Interface for interaction occur in the imageEditor.
+ * Interface for interaction occur in the Image Editor.
  *
  * @private
  */
@@ -12847,7 +14955,7 @@ interface Interaction {
 }
 
 /**
- * Interface for Selection Object in the imageEditor.
+ * Interface for Selection Object in the Image Editor.
  *
  * @private
  */
@@ -12968,4 +15076,16 @@ interface SelectionPoint {
      * Gets the flip object collection from the array.
      */
     flipObjColl?: string[];
+    /**
+     * Gets the triangle value from the object.
+     */
+    triangle?: Point[];
+    /**
+     * Gets the triangle ratio from the object.
+     */
+    triangleRatio?: Point[];
+    /**
+     * Gets the triangle direction from the object.
+     */
+    triangleDirection?: string;
 }

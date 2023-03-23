@@ -456,6 +456,35 @@ export interface DragSettingsModel {
 }
 
 /**
+ * Interface for a class CenterLabel
+ */
+export interface CenterLabelModel {
+
+    /**
+     * Define the label to be placed to the center of the pie and doughnut chart.
+     *
+     * @default null
+     */
+
+    text?: string;
+
+    /**
+     * Defines the font style of the center label.
+     */
+
+    textStyle?: FontModel;
+
+    /**
+     * Define the format for the center label when mouse hovered on the pie data.
+     *
+     * @default null
+     */
+
+    hoverTextFormat?: string;
+
+}
+
+/**
  * Interface for a class TooltipSettings
  */
 export interface TooltipSettingsModel {
@@ -649,7 +678,7 @@ export interface PeriodSelectorSettingsModel {
     /**
      * Buttons
      */
-    
+
     periods?: PeriodsModel[];
 
 }

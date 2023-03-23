@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { IntervalType } from '../../chart/utils/enum';
 import { firstToLowerCase, RectOption} from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';

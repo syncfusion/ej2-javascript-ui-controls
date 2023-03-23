@@ -15,15 +15,18 @@ import { svgLink, gradientType, stopElement } from '../model/constant';
  */
 export class Linear {
     private progress: ProgressBar;
-    private delay: number;
+    public delay: number;
     private segment: Segment = new Segment();
     private animation: ProgressAnimation = new ProgressAnimation();
     private isRange: boolean;
-    private bufferWidth: number;
+    // Defines linear progress width
+    public linearProgressWidth: number;
+    // Defines linear progress buffer width.
+    public bufferWidth: number;
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the linear track.  */
+    /** To render the linear track  */
     public renderLinearTrack(): void {
         const progress: ProgressBar = this.progress;
         const linearTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearTrackGroup' });
@@ -62,7 +65,7 @@ export class Linear {
         progress.svgObject.appendChild(linearTrackGroup);
     }
 
-    /** To render the linear progress.  */
+    /** To render the linear progress  */
     // tslint:disable-next-line:max-func-body-length
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
         const progress: ProgressBar = this.progress; let option: PathOption;
@@ -74,7 +77,7 @@ export class Linear {
         let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
         const previousProgressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
         const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
-        const linearProgressWidth: number = progress.progressRect.width *
+        this.linearProgressWidth = progress.progressRect.width *
                               ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
@@ -87,14 +90,14 @@ export class Linear {
             option = new PathOption(
                 progress.element.id + '_Linearprogress', stroke, 0, 'none', progress.themeStyle.progressOpacity, '0',
                 this.cornerRadius(
-                    progress.progressRect.x, progress.progressRect.y, linearProgressWidth, thickness, 4,
+                    progress.progressRect.x, progress.progressRect.y, this.linearProgressWidth, thickness, 4,
                     (ismaximum || progress.isIndeterminate) ? '' : 'start'
                 )
             );
         } else {
             option = new PathOption(
                 progress.element.id + '_Linearprogress', 'none', thickness, stroke, progress.themeStyle.progressOpacity, '0',
-                progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness)
+                progress.getPathLine(progress.progressRect.x, this.linearProgressWidth, thickness)
             );
         }
         progress.progressWidth = (<SVGPathElement>progress.renderer.drawPath(option)).getTotalLength();
@@ -108,7 +111,7 @@ export class Linear {
                 if (progress.segmentCount > 1) {
                     linearProgress = this.createRoundCornerSegment(
                         '_Linearprogress_', stroke, thickness, false,
-                        linearProgressWidth, progress, progress.themeStyle.progressOpacity
+                        this.linearProgressWidth, progress, progress.themeStyle.progressOpacity
                     );
                 } else {
                     linearProgress = progress.renderer.drawPath(option);
@@ -117,17 +120,17 @@ export class Linear {
                 if (progress.segmentColor.length !== 0 && !progress.isIndeterminate && !this.isRange) {
                     segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
                     linearProgress = this.segment.createLinearSegment(
-                        progress, '_LinearProgressSegment', linearProgressWidth,
+                        progress, '_LinearProgressSegment', this.linearProgressWidth,
                         progress.themeStyle.progressOpacity, thickness, segmentWidth
                     );
                 } else if (this.isRange && !progress.isIndeterminate) {
-                    linearProgress = this.segment.createLinearRange(linearProgressWidth, progress, progressWidth);
+                    linearProgress = this.segment.createLinearRange(this.linearProgressWidth, progress, progressWidth);
                 } else {
                     if (!refresh) {
                         linearProgress = progress.renderer.drawPath(option);
                     } else {
                         linearProgress = getElement(progress.element.id + '_Linearprogress');
-                        linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, linearProgressWidth, thickness));
+                        linearProgress.setAttribute('d', progress.getPathLine(progress.progressRect.x, this.linearProgressWidth, thickness));
                         linearProgress.setAttribute('stroke', stroke);
                     }
                     if (progress.segmentCount > 1) {
@@ -144,11 +147,11 @@ export class Linear {
                 this.renderLinearStriped(strippedStroke, linearProgressGroup, progress);
             }
             if (progress.isActive && !progress.isIndeterminate && !progress.isStriped) {
-                this.renderActiveState(linearProgressGroup, progressWidth, linearProgressWidth, thickness, refresh);
+                this.renderActiveState(linearProgressGroup, progressWidth, this.linearProgressWidth, thickness, refresh);
             }
             if (progress.animation.enable && !progress.isIndeterminate && !progress.isActive && !progress.isStriped) {
                 if ((progress.secondaryProgress !== null)) {
-                    animationdelay = progress.animation.delay + (this.bufferWidth - linearProgressWidth);
+                    animationdelay = progress.animation.delay + (this.bufferWidth - this.linearProgressWidth);
                 } else {
                     animationdelay = progress.animation.delay;
                 }
@@ -170,7 +173,7 @@ export class Linear {
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                 this.animation.doLinearIndeterminate(
                     ((!progress.enableProgressSegments) ? clipPathIndeterminate : linearProgress),
-                    linearProgressWidth, thickness, progress, clipPathIndeterminate
+                    this.linearProgressWidth, thickness, progress, clipPathIndeterminate
                 );
             }
             progress.svgObject.appendChild(linearProgressGroup);
@@ -178,7 +181,7 @@ export class Linear {
         }
     }
 
-    /** To render the linear buffer. */
+    /** To render the linear buffer */
     private renderLinearBuffer(progress: ProgressBar): void {
         let linearBuffer: Element;
         let clipPathBuffer: Element;
@@ -189,8 +192,9 @@ export class Linear {
         const secondaryProgressWidth: number = progress.calculateProgressRange(progress.secondaryProgress);
         this.bufferWidth = linearBufferWidth = progress.progressRect.width * secondaryProgressWidth;
         const linearBufferGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
-        const thickness: number = (progress.progressThickness || progress.themeStyle.linearProgressThickness);
-        const stroke: string = this.checkingLinearProgressColor();
+        const thickness: number = progress.secondaryProgressThickness ? progress.secondaryProgressThickness
+            : (progress.progressThickness || progress.themeStyle.linearProgressThickness);
+        const stroke: string = progress.secondaryProgressColor ? progress.secondaryProgressColor : this.checkingLinearProgressColor();
         if (progress.cornerRadius === 'Round4px') {
             if (progress.segmentCount > 1) {
                 linearBuffer = this.createRoundCornerSegment(
@@ -243,7 +247,7 @@ export class Linear {
         progress.svgObject.appendChild(linearBufferGroup);
     }
 
-    /** Render the Linear Label. */
+    /** Render the Linear Label */
     //tslint:disable-next-line:max-func-body-length
     public renderLinearLabel(isProgressRefresh: boolean = false): void {
         let linearlabel: Element;
@@ -348,7 +352,7 @@ export class Linear {
         }
     }
 
-    /** To render a progressbar active state. */
+    /** To render a progressbar active state */
     private renderActiveState(
         progressGroup: Element, progressWidth: number, linearProgressWidth: number,
         thickness: number, refresh: boolean
@@ -398,7 +402,7 @@ export class Linear {
         this.animation.doLinearAnimation(activeClip, progress, 0, 0, linearActive);
     }
 
-    /** To render a striped stroke. */
+    /** To render a striped stroke */
     private renderLinearStriped(color: string, group: Element, progress: ProgressBar): void {
         const defs: Element = progress.renderer.createDefs();
         let linearGradient: Element = document.createElementNS(svgLink, gradientType);
@@ -425,7 +429,7 @@ export class Linear {
         }
     }
 
-    /** checking progress color. */
+    /** checking progress color */
     private checkingLinearProgressColor(): string {
         let linearColor: string;
         const progress: ProgressBar = this.progress;
@@ -449,7 +453,7 @@ export class Linear {
         return linearColor;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner path. */
+    /** Bootstrap 3 & Bootstrap 4 corner path */
     private cornerRadius(x: number, y: number, width: number, height: number, radius: number, pathtype: string): string {
         let path: string = '';
         const endWidth: number = width;
@@ -498,7 +502,7 @@ export class Linear {
         return path;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner segment. */
+    /** Bootstrap 3 & Bootstrap 4 corner segment */
     public createRoundCornerSegment(
         id: string, stroke: string, thickness: number, isTrack: boolean,
         progressWidth: number, progress: ProgressBar, opacity?: number

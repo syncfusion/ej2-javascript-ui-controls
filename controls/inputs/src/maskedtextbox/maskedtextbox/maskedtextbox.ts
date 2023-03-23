@@ -560,13 +560,13 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 } else {
                     this.promptChar = '_';
                 }
-                // eslint-disable-next-line detect-non-literal-regexp
+                /* eslint-disable-next-line security/detect-non-literal-regexp */
                 let value: string = this.element.value.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 if (this.promptMask === this.element.value) {
-                // eslint-disable-next-line detect-non-literal-regexp
+                /* eslint-disable-next-line security/detect-non-literal-regexp */
                     value = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 }
-                // eslint-disable-next-line detect-non-literal-regexp
+                /* eslint-disable-next-line security/detect-non-literal-regexp */
                 this.promptMask = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 this.undoCollec = this.redoCollec = [];
                 setElementValue.call(this, value);

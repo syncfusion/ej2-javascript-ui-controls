@@ -91,3 +91,11 @@ export const ON_BEGIN: string = 'onBegin';
  * @hidden
  */
 export const SPACE_ACTION: string = 'actionBegin';
+
+
+/**
+ * Format painter event constant
+ *
+ * @hidden
+ */
+export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';

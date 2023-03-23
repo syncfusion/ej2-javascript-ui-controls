@@ -22,9 +22,33 @@ export const classNames: ClassNames = {
     rtl: 'e-rtl'
 };
 
-export type selectionType = 'index' | 'value' | 'text';
+export type selectionType = 
+   /**
+     * Refers to the position of the selected chip in the list of chips
+     */
+    'index' | 
+   /**
+     * Refers to the underlying data value associated with the selected chip.
+     */
+    'value' | 
+   /**
+     * Refers to the displayed text on the selected chip.
+     */
+    'text';
 
-export type Selection = 'Single' | 'Multiple' | 'None';
+export type Selection = 
+   /**
+     * Allows the user to select single chip at the same time.
+     */
+    'Single' | 
+   /**
+     * Allows the user to select multiple chips at the same time.
+     */
+    'Multiple' | 
+   /**
+     * Chips are displayed as read-only.
+     */
+    'None';
 
 export interface ClassNames {
     chipSet: string;
@@ -49,6 +73,7 @@ interface ChipFields {
     cssClass: string;
     avatarText: string;
     avatarIconCss: string;
+    htmlAttributes: { [key: string]: string };
     leadingIconCss: string;
     trailingIconCss: string;
     enabled: boolean;
@@ -263,6 +288,16 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public avatarIconCss: string;
 
     /**
+     * Allows additional HTML attributes such as aria labels, title, name, etc., and
+     * accepts n number of attributes in a key-value pair format.
+     * {% codeBlock src='chiplist/htmlAttributes/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+     @Property('')
+     public htmlAttributes: { [key: string]: string };
+
+    /**
      * Specifies the leading icon CSS class for the chip.
      * {% codeBlock src='chips/leadingIconCss/index.md' %}{% endcodeBlock %}
      *
@@ -474,8 +509,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private chipCreation(data: string[] | number[] | ChipModel[]): void {
         let chipListArray: HTMLElement[] = [];
+        let attributeArray = [];
         for (let i: number = 0; i < data.length; i++) {
             const fieldsData: ChipFields = this.getFieldValues(data[i as number]);
+            let attributesValue = fieldsData.htmlAttributes;
+            attributeArray.push(attributesValue);
             const chipArray: HTMLElement[] = this.elementCreation(fieldsData);
             const className: string[] = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
@@ -501,6 +539,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 else {
                     wrapper.removeAttribute('tabindex');
                     wrapper.setAttribute('aria-disabled', 'true');
+                }
+                if (!isNullOrUndefined(attributeArray[i as number])) {
+                    if(attributeArray.length > i && Object.keys(attributeArray[i as number]).length) {
+                        let htmlAttr = [];
+                        htmlAttr = (Object.keys(attributeArray[i as number]));
+                        for (var j=0; j < htmlAttr.length; j++) {
+                            wrapper.setAttribute(htmlAttr[j as number],attributeArray[i as number][htmlAttr[j as number]]);
+                        }
+                    }
                 }
                 append(chipArray, wrapper);
                 chipListArray.push(wrapper);
@@ -530,7 +577,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             leadingIconUrl:  typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
                 this.leadingIconUrl,
             trailingIconUrl:  typeof data === 'object' ? (data.trailingIconUrl ? data.trailingIconUrl.toString() : this.trailingIconUrl) :
-                this.trailingIconUrl
+                this.trailingIconUrl,
+            htmlAttributes: typeof data === 'object' ? (data.htmlAttributes ? data.htmlAttributes : this.htmlAttributes) : this.htmlAttributes
         };
         return fields;
     }
@@ -572,11 +620,10 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * A function that finds chip based on given input.
      *
+     * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
      * {% codeBlock src='chips/find/index.md' %}{% endcodeBlock %}
      * 
-     * @param  {number | HTMLElement } fields - We can pass index number or element of chip.
-     * 
-     * @returns {void}
+     *  @returns {void}
      */
 
     public find(fields: number | HTMLElement): ChipDataArgs {
@@ -599,10 +646,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      *
-     * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
-     * 
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
+     * {% codeBlock src='chips/add/index.md' %}{% endcodeBlock %}
      * 
      * @returns {void}
      * @deprecated
@@ -620,12 +666,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      *
-     * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
-     * 
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      * 
-     * @returns {void}
+     *  @returns {void}
      */
 
     public select(fields: number | number[] | HTMLElement | HTMLElement[] | string[], selectionType?: selectionType): void {
@@ -694,12 +739,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      *
-     * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
-     * 
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
+     * {% codeBlock src='chips/remove/index.md' %}{% endcodeBlock %}
      * 
-     * @returns {void}
+     *  @returns {void}
      */
 
     public remove(fields: number | number[] | HTMLElement | HTMLElement[]): void {
@@ -724,10 +768,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Returns the selected chip(s) data.
-     * 
      * {% codeBlock src='chips/getSelectedChips/index.md' %}{% endcodeBlock %}
      * 
-     * @returns {void}
+     *  @returns {void}
      */
 
     public getSelectedChips(): SelectedItem | SelectedItems {
@@ -918,10 +961,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
-     * 
      * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
      * 
-     * @returns {void}
+     *  @returns {void}
      */
 
     public destroy(): void {

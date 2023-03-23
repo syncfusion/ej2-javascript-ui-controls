@@ -94,7 +94,9 @@ export interface ProgressButtonModel {
      * * Top: The icon will be positioned at the top of the text content.
      * * Bottom: The icon will be positioned at the bottom of the text content.
      *
-     * @default "Left"
+     * @isenumeration true
+     * @default Syncfusion.EJ2.Buttons.IconPosition.Left
+     * @asptype Syncfusion.EJ2.Buttons.IconPosition
      */
     iconPosition?: string | IconPosition;
 

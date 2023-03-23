@@ -382,7 +382,7 @@ describe('Agenda View', () => {
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 height: '500px',
-                views:[{option:'Agenda', dateFormat: 'dd MMM yyyy'}],
+                views: [{option: 'Agenda', dateFormat: 'dd MMM yyyy'}],
                 dateHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
                 selectedDate: new Date(2017, 9, 30)
             };
@@ -406,17 +406,17 @@ describe('Agenda View', () => {
             expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
             expect(schObj.element.querySelector('.e-toolbar-items').children[0].className).toBe('e-toolbar-left');
             const dateRangeEle: Element = schObj.element.querySelector('.e-tbar-btn-text');
-            schObj.dateRangeTemplate ='<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>',
+            schObj.dateRangeTemplate = '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>';
             schObj.dataBind();
             expect(dateRangeEle.innerHTML).toEqual('<div class="date-text">9-10</div>');
             schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/30/17, 12:00 AM-11/5/17, 12:00 AM</div>');  
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/30/17, 12:00 AM-11/5/17, 12:00 AM</div>');
             schObj.dateRangeTemplate = '<div>${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';
             schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]["innerHTML"]).toBe('<div>30-5</div>');
+            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]['innerHTML']).toBe('<div>30-5</div>');
         });
-        
+
         it('remove daterange', () => {
             expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
             schObj.element.querySelector('.e-date-range').remove();
@@ -969,36 +969,36 @@ describe('Agenda View', () => {
         it('minDate and maxDate- date navigation testing - 1', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
-                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
-                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
+                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
                 done();
             };
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
 
         it('minDate and maxDate- date navigation testing - 2', () => {
             schObj.dataBound = null;
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
         });
 
         it('minDate and maxDate- date navigation testing - 3', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
-                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
                 done();
             };
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
@@ -1006,36 +1006,36 @@ describe('Agenda View', () => {
         it('minDate and maxDate- date navigation testing - 4', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
-                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
+                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
                 done();
             };
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
         it('minDate and maxDate- date navigation testing - 5', () => {
             schObj.dataBound = null;
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
         });
 
         it('minDate and maxDate- set-model changing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
-                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
-                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
+                expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
+                expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
                 done();
             };
-            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS).getAttribute('aria-disabled')).toEqual('false');
-            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS).getAttribute('aria-disabled')).toEqual('true');
+            expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
             schObj.minDate = new Date(2017, 9, 30);
             schObj.maxDate = new Date(2017, 9, 30);

@@ -2,55 +2,26 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
+## 21.1.35 (2023-03-23)
 
 ### Pivot Table
 
 #### Bug Fixes
 
-- `#I423348` - The "autoFit" property in the pivot table will now work properly.
-- `#I442142` - Headers are now properly exported when exporting a Pivot Table to an Excel sheet.
-- `#I441872` - The performance issue has now been fixed with the defer layout update, when the popup field list closes with a "Cancel" button click.
+- `#I437267` - During initial rendering, the spinner will now be properly displayed in the pivot table.
 
-## 20.4.48 (2023-02-01)
+#### New Features
 
-### Pivot Table
+- `#F165214` - Provided paging support in server side engine that allows to break and display large amounts of data page by page.
+- Provided the role option that allows access to restricted cube information such as measures, dimensions, hierarchy, and more when a SSAS OLAP cube is bound to the pivot table.
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#I431116` - The "clipMode" property now works properly in pivot table row headers.
+- The property type `pivotValues` has been changed from `IPivotValues` to `IAxisSet[][]`.
 
-## 20.4.44 (2023-01-18)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- When switching from table to chart using the toolbar, the fieldlist popup now renders properly.
-
-## 20.4.43 (2023-01-10)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- While performing inline editing, the pivot table cell will now properly update for empty values.
-
-## 20.4.42 (2023-01-04)
-
-### Pivot Table
-
-#### Bug Fixes
- 
-- `#F179497` - The field list popup will now properly refresh while dynamically updating the data source in the pivot table.
-
-## 20.4.40 (2022-12-28)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- Advanced filtering now works properly in a pivot table.
+| Property Name | Description | Previous Type | Current Type |
+|---|---|---|---|
+| pivotValues | It holds the collection of cell information that has been populated from the engine on the basis of the given pivot report to render the component as table and chart. | IPivotValues | IAxisSet[][] |
 
 ## 20.4.38 (2022-12-21)
 

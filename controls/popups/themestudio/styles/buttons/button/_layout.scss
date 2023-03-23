@@ -112,6 +112,13 @@
         }
       }
 
+      &.e-round-edge {
+        @if $skin-name == 'Material3' {
+          border-radius: 2px;
+          padding: $btn-padding;
+        }
+      }
+
       &.e-rtl {
         & .e-icon-right {
           margin-left: $btn-icon-margin;
@@ -134,6 +141,13 @@
         padding: $btn-small-padding;
         @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
           border-radius: 2px;
+        }
+
+        &.e-round-edge {
+          @if $skin-name == 'Material3' {
+            border-radius: 2px;
+            padding: $btn-small-padding;
+          }
         }
 
         & .e-btn-icon {
@@ -235,6 +249,13 @@
       border-radius: 2px;
     }
 
+    &.e-round-edge {
+      @if $skin-name == 'Material3' {
+        border-radius: 2px;
+        padding: $btn-small-padding;
+      }
+    }
+
     & .e-btn-icon {
       font-size: $btn-small-icon-font-size;
       width: $btn-icon-small-width;
@@ -327,6 +348,13 @@
       border-radius: 4px;
     }
 
+    &.e-round-edge {
+      @if $skin-name == 'Material3' {
+        border-radius: 4px;
+        padding: $btn-bigger-small-padding;
+      }
+    }
+
     & .e-btn-icon {
       font-size: $btn-bigger-small-icon-font-size;
       width: $btn-icon-bigger-small-width;
@@ -416,6 +444,13 @@
       border-radius: 4px;
     }
 
+    &.e-round-edge {
+      @if $skin-name == 'Material3' {
+        border-radius: 4px;
+        padding: $btn-bigger-padding;
+      }
+    }
+
     & .e-btn-icon {
       font-size: $btn-bigger-icon-font-size;
       width: $btn-icon-bigger-width;
@@ -502,6 +537,13 @@
       padding: $btn-bigger-small-padding;
       @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
         border-radius: 2px;
+      }
+
+      &.e-round-edge {
+        @if $skin-name == 'Material3' {
+          border-radius: 4px;
+          padding: $btn-bigger-small-padding;
+        }
       }
 
       & .e-btn-icon {

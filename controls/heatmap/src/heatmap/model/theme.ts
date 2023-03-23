@@ -72,6 +72,7 @@ export namespace Theme {
  *
  * @param  { HeatMapTheme } theme - specifies the value.
  * @returns { IThemeStyle } returns the theme style
+ * @private
  */
 export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
     let style: IThemeStyle;

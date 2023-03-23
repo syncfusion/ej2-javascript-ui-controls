@@ -730,8 +730,8 @@
         ul.e-menu {
           @if ($pivotgrid-skin == 'fabric') or ($pivotgrid-skin == 'fabric-dark') or
           ($pivotgrid-skin == 'highcontrast') or ($pivotgrid-skin == 'highcontrast-light') {
-            padding-right: 0 !important;
             padding-left: 0 !important;
+            padding-right: 0 !important;
           }
         }
       }
@@ -876,7 +876,7 @@
     }
 
     .e-drillthrough-body-header-value {
-      color: $pivotview-grid-header-font-color;
+      color: $pivotgrid-drillthrough-header-value-font-color;
       margin-right: 20px;
     }
 
@@ -1035,6 +1035,10 @@
 
     .e-value-field-settings {
       max-height: 510px !important;
+
+      .e-dlg-content {
+        padding: 0;
+      }
     }
     /* stylelint-enable */
 

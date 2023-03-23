@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { TitleModel } from '../../smithchart/title/title-model';
 import { SmithchartLegendSettingsModel } from '../../smithchart/legend/legend-model';
 import { Smithchart } from '../../smithchart';

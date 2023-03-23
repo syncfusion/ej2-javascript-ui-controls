@@ -73,8 +73,8 @@ export function findToolToActivate(
         const paddedBounds: Rect = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
         if (hasSingleConnection(diagram) && !(diagram.selectedItems as Selector).annotation) {
             const conn: Connector = diagram.selectedItems.connectors[0] as Connector;
-            const sourcePaddingValue: number = (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
-            const targetPaddingValue: number = (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
+            const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+            const targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
             if (canShowCorner(handle.constraints, 'ResizeAll')) {
                 if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
                     && canDragSourceEnd(conn as Connector) && contains(position, conn.sourcePoint, sourcePaddingValue)) {
@@ -99,8 +99,7 @@ export function findToolToActivate(
                 }
             }
         } else {
-            const ten: number = (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
-            const tenRotate = 10 / diagram.scroller.currentZoom;
+            const ten: number = 10 / diagram.scroller.currentZoom;
             const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
             //check for resizing tool
@@ -113,7 +112,7 @@ export function findToolToActivate(
             rotateThumb = transformPointByMatrix(matrix, rotateThumb);
             const labelSelection: boolean = (diagram.selectedItems as Selector).annotation ? true : false;
             const labelRotate: boolean = (labelSelection && (canRotate((diagram.selectedItems as Selector).annotation))) ? true : false;
-            if (canShowCorner(handle.constraints, 'Rotate') && contains(position, rotateThumb, tenRotate) &&
+            if (canShowCorner(handle.constraints, 'Rotate') && contains(position, rotateThumb, ten) &&
                 ((diagram.selectedItems as Selector).thumbsConstraints & ThumbsConstraints.Rotate)) {
                 if (labelSelection && labelRotate) { return 'LabelRotate'; } else if (!labelSelection) { return 'Rotate'; }
             }
@@ -317,7 +316,7 @@ function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement
 function checkForResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
     const forty: number = 40 / diagram.scroller.currentZoom;
-    const ten: number = (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
+    const ten: number = 10 / diagram.scroller.currentZoom;
     const selectedItems: Selector = diagram.selectedItems as Selector;
     const labelSelection: boolean = (selectedItems.annotation) ? true : false;
     if (element.actualSize.width >= forty && element.actualSize.height >= forty) {

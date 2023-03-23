@@ -1196,8 +1196,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             break;
         case 'ctrlU':
             e.preventDefault();
-            uploadEle = <HTMLElement>select('#' + this.element.id + CLS.UPLOAD_ID, this.element);
-            uploadEle.click();
+            if (this.toolbarSettings.items.indexOf('Upload') != -1){    
+                uploadEle = <HTMLElement>select('#' + this.element.id + CLS.UPLOAD_ID, this.element);
+                uploadEle.click();
+            }
             break;
 
         }

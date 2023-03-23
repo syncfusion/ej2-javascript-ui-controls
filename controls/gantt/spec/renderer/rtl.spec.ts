@@ -13,7 +13,7 @@ interface EJ2Instance extends HTMLElement {
 }
 describe('Gantt - Render with Enable RTL', () => {
 
-   /* describe('Edit Duration of new task', function () {
+    /*describe('Edit Duration of new task', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
             ganttObj = createGantt({
@@ -468,7 +468,7 @@ describe('Gantt - Render with Enable RTL', () => {
                 height: '450px',
                 projectStartDate: new Date('03/28/2019'),
                 projectEndDate: new Date('05/18/2019')
-    
+
             }, done);
         });
         afterAll(() => {
@@ -482,7 +482,7 @@ describe('Gantt - Render with Enable RTL', () => {
             let resourceTab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             resourceTab.selectedItem = 1;
         });
-    
+
         it('Add resources using add dialog', () => {
             ganttObj.actionBegin = function (args: any): void {
                 if (args.requestType === "beforeOpenEdiaDialog") {
@@ -584,7 +584,7 @@ describe('Gantt - Render with Enable RTL', () => {
                 height: '450px',
                 projectStartDate: new Date('03/28/2019'),
                 projectEndDate: new Date('05/18/2019')
-    
+
             }, done);
         });
         afterAll(() => {
@@ -668,7 +668,7 @@ describe('Gantt - Render with Enable RTL', () => {
                         allowTaskbarEditing: true,
                         showDeleteConfirmDialog: true
                     },
-                    toolbar: ['Add','Edit','Update','Delete','Cancel','ExpandAll','CollapseAll'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
                     enableContextMenu: true,
                     allowSelection: true,
                     height: '450px',
@@ -684,10 +684,10 @@ describe('Gantt - Render with Enable RTL', () => {
                     args.splitDate = ganttObj.dateValidationModule.setTime(ganttObj.defaultEndTime, args.splitDate);
                 }
             };
-            let ganttElement: HTMLElement = document.querySelector('#'+ ganttObj.element.id) as HTMLElement;
+            let ganttElement: HTMLElement = document.querySelector('#' + ganttObj.element.id) as HTMLElement;
             ganttElement.style.marginLeft = '350px';
             ganttObj.splitTask(4, new Date('02/04/2019'));
-            let segment : HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div') as HTMLElement;
+            let segment: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div') as HTMLElement;
             triggerMouseEvent(segment, 'contextmenu', 0, 0, false, false, 2);
             let e: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_SplitTask' },

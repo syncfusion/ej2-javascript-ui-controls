@@ -2,33 +2,22 @@
 
 ## [Unreleased]
 
-## 20.4.51 (2023-02-21)
+## 21.1.35 (2023-03-23)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I430220` - Issue with Value template issue with complex data binding of query builder has been fixed.
 - `#I428779` - Issue with Providing the single quotes in SQL string support to query builder has been fixed.
-
-## 20.4.42 (2023-01-04)
+- `#I430220` - Issue with Value template issue with complex data binding of query builder has been fixed.
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#F31632` -  Accessibility issue in Query Builder has been resolved.
-
-## 20.4.40 (2022-12-28)
-
-### QueryBuilder
-
-#### Bug Fixes
-
 - `#F178375` - Issue with Browser window get freezes when we set the Invalid SQL rule to query builder has been fixed.
 - `#I423706` - Issue with Field Dropdown list popups get collapses when we use `validateFields` method in query builder has been fixed
-
-## 20.4.38 (2022-12-21)
 
 ### QueryBuilder
 
@@ -36,7 +25,6 @@
 
 - `#F420982` - Issue with `getValidRules` method of query builder returns empty group has been fixed.
 - `#I404520` - Provided Localization support SQL query builder operators.
-- `#F178375` - Issue with Browser window get freezes when we set the Invalid SQL rule to query builder has been fixed.
 - `#I408324` - Issue with Script errors throwing in validating query builder fields while double click has been fixed.
 - `#I408658` - Issue with Value getting removed while closing fields Dropdown without change the value when we set rule property of query builder has been fixed
 

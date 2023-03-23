@@ -5,6 +5,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
 import { DocumentEditorContainer } from '../document-editor-container';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 /**
  * Paragraph Properties
  *
@@ -616,6 +617,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleTextAlignment('Left');
+            this.documentEditor.focusIn();
         }
     }
     private lineSpacingAction(args: any): void {
@@ -665,7 +667,7 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.applyStyle(this.documentEditor.stylesDialogModule.getStyleName(args.itemData.StyleName), true);
+            this.documentEditor.editor.applyStyle(this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName)), true);
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -675,6 +677,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleTextAlignment('Right');
+            this.documentEditor.focusIn();
         }
     }
     private centerAlignmentAction(): void {
@@ -683,6 +686,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleTextAlignment('Center');
+            this.documentEditor.focusIn();
         }
     }
 
@@ -692,6 +696,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.toggleTextAlignment('Justify');
+            this.documentEditor.focusIn();
         }
     }
     private increaseIndentAction(): void {
@@ -700,6 +705,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.increaseIndent();
+            this.documentEditor.focusIn();
         }
     }
     private decreaseIndentAction(): void {
@@ -708,6 +714,7 @@ export class Paragraph {
         }
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
             this.documentEditor.editor.decreaseIndent();
+            this.documentEditor.focusIn();
         }
     }
     private numberedNoneClick(): void {

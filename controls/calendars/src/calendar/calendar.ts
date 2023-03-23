@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
 import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
-import { getValue, getUniqueID, extend, Browser , ChildProperty} from '@syncfusion/ej2-base';
+import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
 import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';
 import { CalendarModel, CalendarBaseModel } from './calendar-model';
 import { Islamic, IslamicDateArgs } from './index';
@@ -98,6 +99,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected previousIconClicked: boolean;
     protected tabIndex: string;
     protected todayDate: Date;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected islamicPreviousHeader: any;
     //this.element clone
     protected calendarElement: HTMLElement;
@@ -464,7 +466,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 'data-role': 'calendar'
             });
         }
-        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+        if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }
         this.createHeader();
@@ -771,7 +773,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.footer && detach(this.footer);
         this.todayElement = null;
         this.renderDayCellArgs = null;
-        this.calendarElement = this.tableBodyElement = this.footer = this.tableHeadElement = this.nextIcon = this.previousIcon = this.table = null;
+        this.calendarElement = this.tableBodyElement = this.footer = this.tableHeadElement =
+         this.nextIcon = this.previousIcon = this.table = null;
     }
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
         const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
@@ -985,7 +988,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
         }
     }
-    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean, e?: Event): HTMLElement[] {
+    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?:
+    Date[], isTodayDate?: boolean, e?: Event): HTMLElement[] {
         const tdEles: HTMLElement[] = [];
         const cellsCount: number = 42;
         const todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
@@ -1076,9 +1080,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let currentTarget: any;
-            if ( !isNullOrUndefined(e) && e.type == 'click') {
-            currentTarget = e.currentTarget; }
+            if ( !isNullOrUndefined(e) && e.type === 'click') {
+                currentTarget = e.currentTarget; }
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
@@ -1088,7 +1093,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue as number]))
                         || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
-                    } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText && this.previousDates && tdEle.classList.contains(SELECTED) && currentTarget.classList.contains(SELECTED)) {
+                    } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText &&
+                     this.previousDates && tdEle.classList.contains(SELECTED) && currentTarget.classList.contains(SELECTED)) {
                         removeClass([tdEle], SELECTED);
                         this.previousDates = false;
                         const copyValues: Date[] = this.copyValues(values);
@@ -1335,7 +1341,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 if (this.weekNumber && rowIterator === otherMonthCell + 1 && elements[otherMonthCell + 1].classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
-                if (!this.weekNumber && rowIterator === otherMonthCell && elements[otherMonthCell as number].classList.contains(OTHERMONTH)) {
+                if (!this.weekNumber && rowIterator === otherMonthCell && elements[otherMonthCell as number].
+                    classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
                 if (this.weekNumber) {
@@ -2492,7 +2499,8 @@ export class Calendar extends CalendarBase {
     protected renderMonths(e?: Event, value?: Date, isCustomDate?: boolean): void {
         super.renderMonths(e, this.value, isCustomDate);
     }
-    protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?: Date[], isCustomDate?: boolean, e?: Event): HTMLElement[] {
+    protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?:
+    Date[], isCustomDate?: boolean, e?: Event): HTMLElement[] {
         const tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate, e);
         if (this.isMultiSelection) {
             super.validateValues(this.isMultiSelection, this.values);
@@ -2530,9 +2538,9 @@ export class Calendar extends CalendarBase {
             if (this.isMultiSelection) {
                 const copyValues: Date[] = this.copyValues(this.values);
                 if (copyValues.toString().indexOf(this.getIdValue(e, null).toString()) === -1) {
-                copyValues.push(this.getIdValue(e, null));
-                this.setProperties({ values: copyValues }, true);
-                this.setProperties({ value: this.values[this.values.length - 1] }, true);
+                    copyValues.push(this.getIdValue(e, null));
+                    this.setProperties({ values: copyValues }, true);
+                    this.setProperties({ value: this.values[this.values.length - 1] }, true);
                 }
                 else {
                     this.previousDates = true;
@@ -2806,7 +2814,9 @@ export class Calendar extends CalendarBase {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
-        if (!this.isMultiSelection && +this.value !== Number.NaN && (!isNullOrUndefined(this.value) && !isNullOrUndefined(this.previousDate) || this.previousDate == null
+        // eslint-disable-next-line use-isnan
+        if (!this.isMultiSelection && +this.value !== Number.NaN && (!isNullOrUndefined(this.value) &&
+         !isNullOrUndefined(this.previousDate) || this.previousDate === null
             && !isNaN(+this.value))) {
             this.changeEvent(e);
         } else if (!isNullOrUndefined(this.values) && this.previousValues !== this.values.length) {

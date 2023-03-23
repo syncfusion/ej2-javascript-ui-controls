@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
@@ -406,6 +406,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * It specifies alignment of the line break labels.
+     *
      * @default 'Center'
      */
 
@@ -1020,6 +1021,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * This property is used to place the vertical axis in opposed position and horizontal axis in inversed
      * when RTL is enabled in chart
+     *
      * @private */
     public isRTLEnabled: boolean = false;
 

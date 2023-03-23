@@ -151,7 +151,7 @@ export class PagerDropDown {
             return false;
         }
     }
-    
+
     public setDropDownValue(prop: string, value: string | number): void {
         if (this.dropDownListObject) {
             this.pagerModule.isAllPage = this.isPageSizeAll(value);

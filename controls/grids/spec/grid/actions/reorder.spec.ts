@@ -525,7 +525,7 @@ describe('Reorder module', () => {
             expect(stackedHdrElem[1]).toBe(reorderElem);
         });
 
-        it('hide contact column and simulate reorder action', () => {
+        it('hide and simulate reorder action', () => {
             gridObj.showHider.hide('Extension', 'field');
             gridObj.showHider.hide('HomePhone', 'field');
             gridObj.dataBind();
@@ -546,7 +546,7 @@ describe('Reorder module', () => {
             (gridObj.headerModule as any).drop({ target: gridObj.getColumnHeaderByField('Title'), droppedElement: dropClone });
         });
 
-        it("check first level stacked header reorder element dropped index", () => {
+        it("check reorder element dropped index", () => {
             const stackedHdrElem: NodeListOf<Element> = document.querySelectorAll(".e-headercell.e-firstcell");
             const reorderElem: Element = gridObj.getColumnHeaderByField('LastName');
             expect(stackedHdrElem[3]).toBe(reorderElem);
@@ -579,6 +579,74 @@ describe('Reorder module', () => {
             expect(stackedHdrElem[0].classList.contains('e-stackedheadercell')).toBe(true);
         });
 
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
+    describe('Column reordering index is wrong when Grid has hidden columns', () => {
+        let gridObj: Grid;
+        window['browserDetails'].isIE = false;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: normalData,
+                height: 410,
+                allowReordering: true,
+                columns: [
+                    {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        width: 120,
+                        textAlign: 'Right',
+                        minWidth: 10,
+                        visible: false
+                    },
+                    { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                    {
+                        field: 'CustomerID',
+                        headerText: 'Customer ID',
+                        width: 130,
+                        minWidth: 10
+                    },
+                    {
+                        field: 'CustomerName',
+                        headerText: 'Customer Name',
+                        width: 180,
+                        minWidth: 10
+                    }
+                ]
+            }, done);
+        });
+        it('simulate Reorder Column action with set visible false columns', () => {
+            const headers: NodeListOf<HTMLElement> = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            const srcHeaderCell: HTMLElement = headers[1];
+            const destHeaderCell: HTMLElement = headers[2];
+            const dropClone: HTMLElement = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+            document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
+            (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
+            (gridObj.headerModule as any).dragStart({
+                target: srcHeaderCell.children[0], event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+            (gridObj.headerModule as any).dragStart({
+                target: srcHeaderCell, event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+            (gridObj.headerModule as any).drag({
+                target: destHeaderCell, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] } });
+            (gridObj.headerModule as any).dragStop({
+                target: destHeaderCell,
+                element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] }
+            });
+            (gridObj.reorderModule as any).element = srcHeaderCell;
+            (gridObj.reorderModule as any).chkDropPosition = function () { return true; };
+            (gridObj.reorderModule as any).chkDropAllCols = function () { return true; };
+            (gridObj.headerModule as any).drop({ target: destHeaderCell, droppedElement: dropClone });
+        });
+        it('check reorder index', () => {
+            const headers: NodeListOf<HTMLElement> = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('Customer ID');
+            expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('Freight');
+            expect(headers[3].querySelector('.e-headercelldiv').textContent).toBe('Customer Name');
+        });
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

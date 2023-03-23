@@ -220,7 +220,7 @@ describe('Waterfall Series', () => {
                 let stroke: string = seriesElements.getAttribute('stroke-width');
                 expect(stroke == '0').toBe(true);
                 let labelElement: HTMLElement = document.getElementById('container0_AxisLabel_3');
-                expect(labelElement.textContent == '26').toBe(true); done();
+                expect(labelElement.textContent == 'Jun 26').toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.valueType = 'DateTime';
@@ -723,6 +723,7 @@ describe('Waterfall Series', () => {
                 expect((parseInt(legendElement.getAttribute('x'), 10)) == (325) || (parseInt(legendElement.getAttribute('x'), 10)) == (328)).toBe(true);
                 expect((parseInt(legendElement.getAttribute('y'), 10)) == (46) ||
                        (parseInt(legendElement.getAttribute('y'), 10)) == (43)).toBe(true);
+                console.log(parseInt(legendElement.getAttribute('y'), 10));
                 done();
             };
             chartObj.loaded = loaded;
@@ -830,7 +831,7 @@ describe('Waterfall Series', () => {
                 let point: Element = document.getElementById('containerSeriesGroup1');
                 expect(point != null).toBe(true);
                 expect(point.getAttribute('transform') == 'translate(82.5,79.25)' ||
-                      point.getAttribute('transform') == 'translate(78.5,75.25)').toBe(true);
+                      point.getAttribute('transform') == 'translate(78.5,77.25)').toBe(true); 
                 done();
             };
             chartObj.loaded = loaded;
@@ -888,9 +889,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
                 expect(svg.getAttribute('transform') == 'translate(77.5,79.25)' ||
-                        svg.getAttribute('transform') == 'translate(73.5,75.25)' ).toBe(true);
+                        svg.getAttribute('transform') == 'translate(73.5,77.25)' ).toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '75.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -928,11 +929,11 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
                 expect(svg.getAttribute('transform').indexOf('translate(477.5,296.69200897216797') > -1 ||
-                       svg.getAttribute('transform') === 'translate(473.5,257.625)').toBe(true);
+                       svg.getAttribute('transform') === 'translate(473.5,258.625)').toBe(true);     
                 svg = document.getElementById('container_AxisBottom_Column0');
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '477.5' || svg.getAttribute('d').split(' ')[1] == '478.5' || svg.getAttribute('d').split(' ')[1] == '473.5').toBe(true);               
+                expect(svg.getAttribute('d').split(' ')[1] == '477.5' || svg.getAttribute('d').split(' ')[1] == '473.5' || svg.getAttribute('d').split(' ')[1] == '473.5').toBe(true);            
                 svg = document.getElementById('container_AxisBottom_Column1');
                 expect(svg.getAttribute('stroke') == 'blue').toBe(true);
                 done();

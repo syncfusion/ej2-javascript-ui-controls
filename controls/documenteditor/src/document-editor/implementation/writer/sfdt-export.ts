@@ -25,6 +25,9 @@ import { DocumentEditor } from '../../document-editor';
 import { Revision } from '../track-changes/track-changes';
 import { Themes } from '../themes/themes';
 import { MajorMinorFontScheme } from '../themes/major-minor-font-scheme';
+import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
+import { AutoShapeType, CellVerticalAlignment, CheckBoxSizeType, CompatibilityMode, ContentControlType, FollowCharacterType, FootEndNoteNumberFormat, FootnoteRestartIndex, FootnoteType, HeightType, HorizontalAlignment, HorizontalOrigin, LineDashing, LineFormatType, LineSpacingType, LineStyle, ListLevelPattern, OutlineLevel, ProtectionType, RevisionType, StyleType, TabJustification, TabLeader, TableAlignment, TextAlignment, TextFormFieldType, TextureStyle, TextWrappingStyle, TextWrappingType, VerticalAlignment, VerticalOrigin, WidthType } from '../../base/types';
+import { sectionsProperty, imagesProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, columnCountProperty, gridProperty , isAfterParagraphMarkProperty, isAfterCellMarkProperty, isAfterRowMarkProperty, isAfterTableMarkProperty } from '../../index';
 /**
  * Exports the document to Sfdt format.
  */
@@ -56,6 +59,10 @@ export class SfdtExport {
     private contentInline: any = [];
     private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
+    /**
+     * @private
+     */
+    public keywordIndex: number = undefined;
     /**
      * @private
      */
@@ -96,6 +103,7 @@ export class SfdtExport {
         this.startBlock = undefined;
         this.endBlock = undefined;
         this.isPartialExport = false;
+        this.keywordIndex = undefined;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -103,7 +111,26 @@ export class SfdtExport {
      * @private
      */
     public serialize(): string {
-        return JSON.stringify(this.write());
+        return this.seralizeInternal(this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0);
+    }
+    /**
+     * Serialize the data as Syncfusion document text.
+     *
+     * @private
+     */
+    public seralizeInternal(index: number): string {
+        return JSON.stringify(this.write(index));
+    }
+    /**
+     * @private
+     * @param documentHelper - Specifies document helper instance.
+     * @returns {Promise<Blob>}
+     */
+    public saveAsBlobNonOptimized(documentHelper: DocumentHelper): Promise<Blob> {
+        let sfdt: Blob = new Blob([this.serialize()], { type: 'text/plain' });
+        return new Promise((resolve: Function, reject: Function) => {
+            resolve(sfdt);
+        });
     }
     /**
      * @private
@@ -111,10 +138,14 @@ export class SfdtExport {
      * @returns {Promise<Blob>}
      */
     public saveAsBlob(documentHelper: DocumentHelper): Promise<Blob> {
-        let sfdt: Blob = new Blob([this.serialize()], { type: 'text/plain' });
-        return new Promise((resolve: Function, reject: Function) => {
-            resolve(sfdt);
-        });
+        const jsonString: string = this.serialize();
+            const blob: Blob = new Blob([jsonString], {
+                type: 'application/json'
+            });
+            const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, "sfdt");
+            const mArchive: ZipArchive = new ZipArchive();
+            mArchive.addItem(archiveItem);
+            return mArchive.saveAsBlob();
     }
     private updateEditRangeId(): void {
         let index: number = -1;
@@ -134,10 +165,11 @@ export class SfdtExport {
      * @private
      */
     /* eslint-disable  */
-    public write(line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean, isExport?: boolean): any {
+    public write(index?: number, line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean, isExport?: boolean): any {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
+        this.keywordIndex = index;
         this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
@@ -158,7 +190,7 @@ export class SfdtExport {
             // Creates section
             let bodyWidget: BlockContainer = startPara.bodyWidget as BlockContainer;
             let section: any = this.createSection(line.paragraph.bodyWidget as BlockContainer);
-            this.document.sections.push(section);
+            this.document[sectionsProperty[this.keywordIndex]].push(section);
             let selectionStartCell: TableCellWidget = startCell;
             let selectionEndCell: TableCellWidget = endCell;
             if (startCell instanceof TableCellWidget) {
@@ -195,19 +227,19 @@ export class SfdtExport {
             let nextBlock: BlockWidget;
             if ((isSameCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
                 let paragraph: any = this.createParagraph(line.paragraph);
-                section.blocks.push(paragraph);
+                section[blocksProperty[this.keywordIndex]].push(paragraph);
                 let lastBlock: BlockWidget = line.paragraph;
-                nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                nextBlock = this.writeParagraph(line.paragraph, paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
                 if (this.isPartialExport) {
                     nextBlock = this.getNextBlock(nextBlock, lastBlock);
-                    section = this.document.sections[this.document.sections.length - 1];
+                    section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
-                        section = this.document.sections[this.document.sections.length - 1];
+                        section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                     }
                 }
                 // Todo:continue in next section
@@ -228,19 +260,19 @@ export class SfdtExport {
                     this.startColumnIndex = startCell.columnIndex;
                 }
                 let table: any = this.createTable(startCell.ownerTable);
-                section.blocks.push(table);
+                section[blocksProperty[this.keywordIndex]].push(table);
                 let lastBlock: BlockWidget = startCell.ownerTable;
-                nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section[blocksProperty[this.keywordIndex]]);
                 if (this.isPartialExport) {
                     nextBlock = this.getNextBlock(nextBlock, lastBlock);
-                    section = this.document.sections[this.document.sections.length - 1];
+                    section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
-                        section = this.document.sections[this.document.sections.length - 1];
+                        section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                     }
                 }
             }
@@ -256,6 +288,7 @@ export class SfdtExport {
         this.writeComments(this.documentHelper);
         this.writeRevisions(this.documentHelper);
         this.writeCustomXml(this.documentHelper);
+        this.writeImages(this.documentHelper);
         this.footnotes(this.documentHelper);
         this.endnotes(this.documentHelper);
         let doc: Document = this.document;
@@ -269,7 +302,7 @@ export class SfdtExport {
             nextBlock = lastBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
             if (nextBlock && lastBlock.bodyWidget.index !== nextBlock.bodyWidget.index) {
                 let section: any = this.createSection(nextBlock.bodyWidget as BlockContainer);
-                this.document.sections.push(section);
+                this.document[sectionsProperty[this.keywordIndex]].push(section);
             } else {
                 nextBlock = undefined;
             }
@@ -282,23 +315,24 @@ export class SfdtExport {
     public Initialize(): void {
         this.lists = [];
         this.document = {};
-        this.document.sections = [];
-        this.document.characterFormat = this.writeCharacterFormat(this.documentHelper.characterFormat);
-        this.document.paragraphFormat = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
-        this.document.themeFontLanguages = this.writeCharacterFormat(this.documentHelper.themeFontLanguage);
-        this.document.defaultTabWidth = this.documentHelper.defaultTabWidth;
-        this.document.trackChanges = this.owner.enableTrackChanges;
-        this.document.enforcement = this.documentHelper.isDocumentProtected;
-        this.document.hashValue = this.documentHelper.hashValue;
-        this.document.saltValue = this.documentHelper.saltValue;
-        this.document.formatting = this.documentHelper.restrictFormatting;
-        this.document.protectionType = this.documentHelper.protectionType;
-        this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
-        this.document.formFieldShading = this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading;
-        this.document.compatibilityMode = this.documentHelper.compatibilityMode;
-        this.document.allowSpaceOfSameStyleInTable = this.documentHelper.allowSpaceOfSameStyleInTable;
+        this.document.optimizeSfdt = this.owner.documentEditorSettings.optimizeSfdt;
+        this.document[sectionsProperty[this.keywordIndex]] = [];
+        this.document[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(this.documentHelper.characterFormat);
+        this.document[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
+        this.document[themeFontLanguagesProperty[this.keywordIndex]] = this.writeCharacterFormat(this.documentHelper.themeFontLanguage);
+        this.document[defaultTabWidthProperty[this.keywordIndex]] = this.documentHelper.defaultTabWidth;
+        this.document[trackChangesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.owner.enableTrackChanges, this.keywordIndex);
+        this.document[enforcementProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.isDocumentProtected, this.keywordIndex);
+        this.document[hashValueProperty[this.keywordIndex]] = this.documentHelper.hashValue;
+        this.document[saltValueProperty[this.keywordIndex]] = this.documentHelper.saltValue;
+        this.document[formattingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.restrictFormatting, this.keywordIndex);
+        this.document[protectionTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getProtectionTypeEnumValue(this.documentHelper.protectionType) : this.documentHelper.protectionType;
+        this.document[doNotUseHTMLParagraphAutoSpacingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.dontUseHtmlParagraphAutoSpacing, this.keywordIndex);
+        this.document[formFieldShadingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading, this.keywordIndex);
+        this.document[compatibilityModeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getCompatibilityModeEnumValue(this.documentHelper.compatibilityMode) : this.documentHelper.compatibilityMode;
+        this.document[allowSpaceOfSameStyleInTableProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.documentHelper.allowSpaceOfSameStyleInTable, this.keywordIndex);
         if (this.documentHelper.hasThemes) {
-            this.document.themes = this.writeThemes(this.documentHelper.themes);
+            this.document[themesProperty[this.keywordIndex]] = this.writeThemes(this.documentHelper.themes);
         }
     }
     /**
@@ -319,11 +353,11 @@ export class SfdtExport {
             return undefined;
         }
         let section: any = this.createSection(bodyWidget);
-        this.document.sections.push(section);
+        this.document[sectionsProperty[this.keywordIndex]].push(section);
         this.writeHeaderFooters(this.documentHelper.headersFooters[bodyWidget.index], section);
         let firstBlock: BlockWidget = bodyWidget.childWidgets[index] as BlockWidget;
         do {
-            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, section.blocks);
+            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, section[blocksProperty[this.keywordIndex]]);
         } while (firstBlock);
         let next: BodyWidget = bodyWidget;
         do {
@@ -339,12 +373,12 @@ export class SfdtExport {
         if (isNullOrUndefined(hfs)) {
             return;
         }
-        section.headersFooters.header = this.writeHeaderFooter(hfs[0]);
-        section.headersFooters.footer = this.writeHeaderFooter(hfs[1]);
-        section.headersFooters.evenHeader = this.writeHeaderFooter(hfs[2]);
-        section.headersFooters.evenFooter = this.writeHeaderFooter(hfs[3]);
-        section.headersFooters.firstPageHeader = this.writeHeaderFooter(hfs[4]);
-        section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
+        section[headersFootersProperty[this.keywordIndex]][headerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[0]);
+        section[headersFootersProperty[this.keywordIndex]][footerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[1]);
+        section[headersFootersProperty[this.keywordIndex]][evenHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[2]);
+        section[headersFootersProperty[this.keywordIndex]][evenFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[3]);
+        section[headersFootersProperty[this.keywordIndex]][firstPageHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[4]);
+        section[headersFootersProperty[this.keywordIndex]][firstPageFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[5]);
     }
     private writeHeaderFooter(widget: HeaderFooterWidget): any {
         if (isNullOrUndefined(widget) || widget.isEmpty) {
@@ -352,62 +386,62 @@ export class SfdtExport {
         }
         let headerFooter: any = {};
         if (widget && widget.childWidgets && widget.childWidgets.length > 0) {
-            headerFooter.blocks = [];
+            headerFooter[blocksProperty[this.keywordIndex]] = [];
             let firstBlock: BlockWidget = widget.firstChild as BlockWidget;
             do {
-                firstBlock = this.writeBlock(firstBlock, 0, headerFooter.blocks);
+                firstBlock = this.writeBlock(firstBlock, 0, headerFooter[blocksProperty[this.keywordIndex]]);
             } while (firstBlock);
         }
         return headerFooter;
     }
     private createSection(bodyWidget: BlockContainer): any {
         let section: any = {};
-        section.sectionFormat = {};
-        section.sectionFormat.pageWidth = bodyWidget.sectionFormat.pageWidth;
-        section.sectionFormat.pageHeight = bodyWidget.sectionFormat.pageHeight;
-        section.sectionFormat.leftMargin = bodyWidget.sectionFormat.leftMargin;
-        section.sectionFormat.rightMargin = bodyWidget.sectionFormat.rightMargin;
-        section.sectionFormat.topMargin = bodyWidget.sectionFormat.topMargin;
-        section.sectionFormat.bottomMargin = bodyWidget.sectionFormat.bottomMargin;
-        section.sectionFormat.differentFirstPage = bodyWidget.sectionFormat.differentFirstPage;
-        section.sectionFormat.differentOddAndEvenPages = bodyWidget.sectionFormat.differentOddAndEvenPages;
-        section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
-        section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
-        section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
+        section[sectionFormatProperty[this.keywordIndex]] = {};
+        section[sectionFormatProperty[this.keywordIndex]][pageWidthProperty[this.keywordIndex]] = bodyWidget.sectionFormat.pageWidth;
+        section[sectionFormatProperty[this.keywordIndex]][pageHeightProperty[this.keywordIndex]] = bodyWidget.sectionFormat.pageHeight;
+        section[sectionFormatProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] = bodyWidget.sectionFormat.leftMargin;
+        section[sectionFormatProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]] = bodyWidget.sectionFormat.rightMargin;
+        section[sectionFormatProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]] = bodyWidget.sectionFormat.topMargin;
+        section[sectionFormatProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]] = bodyWidget.sectionFormat.bottomMargin;
+        section[sectionFormatProperty[this.keywordIndex]][differentFirstPageProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.differentFirstPage, this.keywordIndex);
+        section[sectionFormatProperty[this.keywordIndex]][differentOddAndEvenPagesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.differentOddAndEvenPages, this.keywordIndex);
+        section[sectionFormatProperty[this.keywordIndex]][headerDistanceProperty[this.keywordIndex]] = bodyWidget.sectionFormat.headerDistance;
+        section[sectionFormatProperty[this.keywordIndex]][footerDistanceProperty[this.keywordIndex]] = bodyWidget.sectionFormat.footerDistance;
+        section[sectionFormatProperty[this.keywordIndex]][bidiProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.bidi, this.keywordIndex);
         if (!isNullOrUndefined(bodyWidget.sectionFormat.breakCode)) {
-            section.sectionFormat.breakCode = bodyWidget.sectionFormat.breakCode;
+            section[sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]] = bodyWidget.sectionFormat.breakCode;
         }
         if (bodyWidget.sectionFormat.restartPageNumbering) {
-            section.sectionFormat.restartPageNumbering = bodyWidget.sectionFormat.restartPageNumbering;
-            section.sectionFormat.pageStartingNumber = bodyWidget.sectionFormat.pageStartingNumber;
+            section[sectionFormatProperty[this.keywordIndex]][restartPageNumberingProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.restartPageNumbering, this.keywordIndex);
+            section[sectionFormatProperty[this.keywordIndex]][pageStartingNumberProperty[this.keywordIndex]] = bodyWidget.sectionFormat.pageStartingNumber;
         }
         if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
-            section.sectionFormat.endnoteNumberFormat = bodyWidget.sectionFormat.endnoteNumberFormat;
-            section.sectionFormat.footNoteNumberFormat = bodyWidget.sectionFormat.footNoteNumberFormat;
-            section.sectionFormat.restartIndexForFootnotes = bodyWidget.sectionFormat.restartIndexForFootnotes;
-            section.sectionFormat.restartIndexForEndnotes = bodyWidget.sectionFormat.restartIndexForEndnotes;
-            section.sectionFormat.initialFootNoteNumber = bodyWidget.sectionFormat.initialFootNoteNumber;
-            section.sectionFormat.initialEndNoteNumber = bodyWidget.sectionFormat.initialEndNoteNumber;
+            section[sectionFormatProperty[this.keywordIndex]][endnoteNumberFormatProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootEndNoteNumberFormatEnumValue(bodyWidget.sectionFormat.endnoteNumberFormat) : bodyWidget.sectionFormat.endnoteNumberFormat;
+            section[sectionFormatProperty[this.keywordIndex]][footNoteNumberFormatProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootEndNoteNumberFormatEnumValue(bodyWidget.sectionFormat.footNoteNumberFormat) : bodyWidget.sectionFormat.footNoteNumberFormat;
+            section[sectionFormatProperty[this.keywordIndex]][restartIndexForFootnotesProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootnoteRestartIndexEnumValue(bodyWidget.sectionFormat.restartIndexForFootnotes) : bodyWidget.sectionFormat.restartIndexForFootnotes;
+            section[sectionFormatProperty[this.keywordIndex]][restartIndexForEndnotesProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootnoteRestartIndexEnumValue(bodyWidget.sectionFormat.restartIndexForEndnotes) : bodyWidget.sectionFormat.restartIndexForEndnotes;
+            section[sectionFormatProperty[this.keywordIndex]][initialFootNoteNumberProperty[this.keywordIndex]] = bodyWidget.sectionFormat.initialFootNoteNumber;
+            section[sectionFormatProperty[this.keywordIndex]][initialEndNoteNumberProperty[this.keywordIndex]] = bodyWidget.sectionFormat.initialEndNoteNumber;
 
         }
         if(!isNullOrUndefined(bodyWidget.sectionFormat.pageNumberStyle)) {
-            section.sectionFormat.pageNumberStyle = bodyWidget.sectionFormat.pageNumberStyle;
+            section[sectionFormatProperty[this.keywordIndex]][pageNumberStyleProperty[this.keywordIndex]] = bodyWidget.sectionFormat.pageNumberStyle;
         }
         if(!isNullOrUndefined(bodyWidget.sectionFormat.columns) && !isNullOrUndefined(bodyWidget.sectionFormat.numberOfColumns && bodyWidget.sectionFormat.numberOfColumns > 1 )) {
             let cols: WColumnFormat[] = bodyWidget.sectionFormat.columns;
-            section.sectionFormat.numberOfColumns = bodyWidget.sectionFormat.numberOfColumns;
-            section.sectionFormat.equalWidth = bodyWidget.sectionFormat.equalWidth;
-            section.sectionFormat.lineBetweenColumns = bodyWidget.sectionFormat.lineBetweenColumns;
-            section.sectionFormat.columns = [];
+            section[sectionFormatProperty[this.keywordIndex]][numberOfColumnsProperty[this.keywordIndex]] = bodyWidget.sectionFormat.numberOfColumns;
+            section[sectionFormatProperty[this.keywordIndex]][equalWidthProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.equalWidth, this.keywordIndex);
+            section[sectionFormatProperty[this.keywordIndex]][lineBetweenColumnsProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(bodyWidget.sectionFormat.lineBetweenColumns, this.keywordIndex);
+            section[sectionFormatProperty[this.keywordIndex]][columnsProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < cols.length; i++) {
                 let newCol: any = {};
-                newCol.width = HelperMethods.convertPixelToPoint(cols[i].width as number);
-                newCol.space = HelperMethods.convertPixelToPoint(cols[i].space as number); 
-                section.sectionFormat.columns.push(newCol);
+                newCol[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(cols[i].width as number);
+                newCol[spaceProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(cols[i].space as number); 
+                section[sectionFormatProperty[this.keywordIndex]][columnsProperty[this.keywordIndex]].push(newCol);
             }
         }
-        section.blocks = [];
-        section.headersFooters = {};
+        section[blocksProperty[this.keywordIndex]] = [];
+        section[headersFootersProperty[this.keywordIndex]] = {};
         return section;
     }
     private writeBlock(widget: BlockWidget, index: number, blocks: any): BlockWidget {
@@ -487,58 +521,80 @@ export class SfdtExport {
     private contentControlProperty(contentControlPropertie: ContentControlProperties): any {
         let contentControlProperties: any = {};
         let contentControlListItems: any = [];
-        contentControlProperties.lockContentControl = contentControlPropertie.lockContentControl;
-        contentControlProperties.lockContents = contentControlPropertie.lockContents;
-        contentControlProperties.tag = contentControlPropertie.tag;
-        contentControlProperties.color = contentControlPropertie.color;
-        contentControlProperties.title = contentControlPropertie.title;
+        contentControlProperties[lockContentControlProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContentControl, this.keywordIndex);
+        contentControlProperties[lockContentsProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.lockContents, this.keywordIndex);
+        contentControlProperties[tagProperty[this.keywordIndex]] = contentControlPropertie.tag;
+        contentControlProperties[colorProperty[this.keywordIndex]] = contentControlPropertie.color;
+        contentControlProperties[titleProperty[this.keywordIndex]] = contentControlPropertie.title;
         if (!isNullOrUndefined(contentControlPropertie.appearance)) {
-            contentControlProperties.appearance = contentControlPropertie.appearance;
+            contentControlProperties[appearanceProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getContentControlAppearanceEnumValue(contentControlPropertie.appearance) : contentControlPropertie.appearance;
         }
-        contentControlProperties.type = contentControlPropertie.type;
-        contentControlProperties.hasPlaceHolderText = contentControlPropertie.hasPlaceHolderText;
-        contentControlProperties.multiline = contentControlPropertie.multiline;
-        contentControlProperties.isTemporary = contentControlPropertie.isTemporary;
+        contentControlProperties[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getContentControlTypeEnumValue(contentControlPropertie.type) : contentControlPropertie.type;
+        contentControlProperties[hasPlaceHolderTextProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.hasPlaceHolderText, this.keywordIndex);
+        contentControlProperties[multiLineProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.multiline, this.keywordIndex);
+        contentControlProperties[isTemporaryProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isTemporary, this.keywordIndex);
         if (!isNullOrUndefined(contentControlPropertie.isChecked)) {
-            contentControlProperties.isChecked = contentControlPropertie.isChecked;
+            contentControlProperties[isCheckedProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.isChecked, this.keywordIndex);
         }
         if (!isNullOrUndefined(contentControlPropertie.uncheckedState)) {
-            contentControlProperties.uncheckedState = this.tounCheckedState(contentControlPropertie.uncheckedState);
+            contentControlProperties[uncheckedStateProperty[this.keywordIndex]] = this.tounCheckedState(contentControlPropertie.uncheckedState);
         }
         if (!isNullOrUndefined(contentControlPropertie.checkedState)) {
-            contentControlProperties.checkedState = this.toCheckedState(contentControlPropertie.checkedState);
+            contentControlProperties[checkedStateProperty[this.keywordIndex]] = this.toCheckedState(contentControlPropertie.checkedState);
         }
         if (!isNullOrUndefined(contentControlPropertie.dateCalendarType)) {
-            contentControlProperties.dateCalendarType = contentControlPropertie.dateCalendarType;
+            contentControlProperties[dateCalendarTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getDateCalendarTypeEnumValue(contentControlPropertie.dateCalendarType) : contentControlPropertie.dateCalendarType;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateStorageFormat)) {
-            contentControlProperties.dateStorageFormat = contentControlPropertie.dateStorageFormat;
+            contentControlProperties[dateStorageFormatProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getDateStorageFormatEnumValue(contentControlPropertie.dateStorageFormat) : contentControlPropertie.dateStorageFormat;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateDisplayLocale)) {
-            contentControlProperties.dateDisplayLocale = contentControlPropertie.dateDisplayLocale;
+            contentControlProperties[dateDisplayLocaleProperty[this.keywordIndex]] = contentControlPropertie.dateDisplayLocale;
         }
         if (!isNullOrUndefined(contentControlPropertie.dateDisplayFormat)) {
-            contentControlProperties.dateDisplayFormat = contentControlPropertie.dateDisplayFormat;
+            contentControlProperties[dateDisplayFormatProperty[this.keywordIndex]] = contentControlPropertie.dateDisplayFormat;
         }
         if (!isNullOrUndefined(contentControlPropertie.xmlMapping)) {
-            contentControlProperties.xmlMapping = contentControlPropertie.xmlMapping;
+            let xmlMapping: any = {};
+            let customXmlPart: any = {};
+            xmlMapping[isMappedProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isMapped, this.keywordIndex);
+            xmlMapping[isWordMlProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(contentControlPropertie.xmlMapping.isWordMl, this.keywordIndex);
+            if (!isNullOrUndefined(contentControlPropertie.xmlMapping.prefixMapping)) {
+                xmlMapping[prefixMappingProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.prefixMapping;
+            }
+            xmlMapping[xPathProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.xPath;
+            xmlMapping[storeItemIdProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.storeItemId;
+            if (!isNullOrUndefined(contentControlPropertie.xmlMapping.customXmlPart)) {
+                customXmlPart[idProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.id;
+                customXmlPart[xmlProperty[this.keywordIndex]] = contentControlPropertie.xmlMapping.customXmlPart.xml;
+                xmlMapping[customXmlPartProperty[this.keywordIndex]] = customXmlPart;
+            }
+            contentControlProperties[xmlMappingProperty[this.keywordIndex]] = xmlMapping;
         }
         if (!isNullOrUndefined(contentControlPropertie.characterFormat)) {
-            contentControlProperties.characterFormat = this.writeCharacterFormat(contentControlPropertie.characterFormat);
+            contentControlProperties[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(contentControlPropertie.characterFormat);
         }
-        contentControlProperties.contentControlListItems = contentControlPropertie.contentControlListItems;
+        if (!isNullOrUndefined(contentControlPropertie.contentControlListItems)) {
+            for (let i: number = 0; i < contentControlPropertie.contentControlListItems.length; i++) {
+                let listItems: any = {};
+                listItems[displayTextProperty[this.keywordIndex]] = contentControlPropertie.contentControlListItems[i].displayText;
+                listItems[valueProperty[this.keywordIndex]] = contentControlPropertie.contentControlListItems[i].value;
+                contentControlListItems.push(listItems);
+            }
+        }
+        contentControlProperties[contentControlListItemsProperty[this.keywordIndex]] = contentControlListItems;
         return contentControlProperties;
     }
     private tounCheckedState(state: any): any {
         let unCheckedState: any = {};
-        unCheckedState.font = state.font;
-        unCheckedState.value = state.value;
+        unCheckedState[fontProperty[this.keywordIndex]] = state.font;
+        unCheckedState[valueProperty[this.keywordIndex]] = state.value;
         return unCheckedState;
     }
     private toCheckedState(state: any): any {
         let checkedState: any = {};
-        checkedState.font = state.font;
-        checkedState.value = state.value;
+        checkedState[fontProperty[this.keywordIndex]] = state.font;
+        checkedState[valueProperty[this.keywordIndex]] = state.value;
         return checkedState;
     }
     private blockContentControl(widget: ParagraphWidget): any {
@@ -547,17 +603,17 @@ export class SfdtExport {
             this.nextBlock = widget.nextWidget;
             return undefined;
         }
-        block.blocks = this.writeParagraphs(widget);    
+        block[blocksProperty[this.keywordIndex]] = this.writeParagraphs(widget);    
         if (!isNullOrUndefined(this.nextBlock)) {
             if (widget.contentControlProperties === this.nextBlock.contentControlProperties) {
                 this.isBlockClosed = false;
                 this.nestedBlockContent = true;
-                return this.blocks = block.blocks;
+                return this.blocks = block[blocksProperty[this.keywordIndex]];
             } else {
                 this.isBlockClosed = true;
             }
         }        
-        if (!isNullOrUndefined(block.blocks)) {
+        if (!isNullOrUndefined(block[blocksProperty[this.keywordIndex]])) {
             let child: LineWidget = widget.childWidgets[0] as LineWidget;
             let firstChild: ElementBox = child.children[0];
             let secondChild: ElementBox = child.children[1];
@@ -567,31 +623,31 @@ export class SfdtExport {
             }
             if ((firstChild instanceof ContentControl && secondChild instanceof ContentControl && !this.nestedBlockContent) || (this.blockContent && firstChild instanceof ContentControl && !this.nestedBlockContent)) {
                 if (!(secondChild instanceof ContentControl)) {
-                    block.contentControlProperties = this.contentControlProperty(firstChild.contentControlProperties);
+                    block[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(firstChild.contentControlProperties);
                     return block;
                 } else if ((secondChild as ContentControl).contentControlWidgetType === 'Block') {
-                    block.contentControlProperties = this.contentControlProperty(secondChild.contentControlProperties);
+                    block[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(secondChild.contentControlProperties);
                 } else {
-                    block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+                    block[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(widget.contentControlProperties);
                 }
             } else {
-                block.contentControlProperties = this.contentControlProperty(widget.contentControlProperties);
+                block[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(widget.contentControlProperties);
             }
             return block;
         }
     }
     private tableContentControl(tableWidget: TableWidget): any {
         let block: any = {};
-        block.blocks = this.tableContentControls(tableWidget);
+        block[blocksProperty[this.keywordIndex]] = this.tableContentControls(tableWidget);
         if (!isNullOrUndefined(this.nextBlock)) {
             if (tableWidget.contentControlProperties === this.nextBlock.contentControlProperties) {
                 this.isBlockClosed = false;
-                return this.blocks = block.blocks;
+                return this.blocks = block[blocksProperty[this.keywordIndex]];
             } else {
                 this.isBlockClosed = true;
             }
         }
-        block.contentControlProperties = this.contentControlProperty(tableWidget.contentControlProperties);        
+        block[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(tableWidget.contentControlProperties);        
         return block;
     }
     private tableContentControls(tableWidget: TableWidget): any {
@@ -613,7 +669,7 @@ export class SfdtExport {
         }
         let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
-            if (this.writeLines(next, lineIndex, start, paragraph.inlines)) {
+            if (this.writeLines(next, lineIndex, start, paragraph[inlinesProperty[this.keywordIndex]])) {
                 return undefined;
             }
             lineIndex = 0;
@@ -673,35 +729,35 @@ export class SfdtExport {
         let nestedContentInline: any = [];
         if (!isNullOrUndefined(inlines)) {
             if (this.nestedContent) {
-                inlines = inlines[inlines.length - 1].inlines;
-                inline = this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+                inlines = inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]];
+                inline = this.inlineContentControls(element, inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]);
                 let nestedContentinline: any = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
                 if (!isNullOrUndefined(nestedContentinline)) {
                     this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             } else {
-                this.inlineContentControls(element, inlines[inlines.length - 1].inlines);
+                this.inlineContentControls(element, inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]);
             }
         } else {
             if (this.nestedContent) {
-                inline.inlines = this.inlineContentControls(element, undefined, nestedContentInline);
+                inline[inlinesProperty[this.keywordIndex]] = this.inlineContentControls(element, undefined, nestedContentInline);
                 let nestedContentinline: any = this.nestedContentProperty(nextElement, inline);
                 if (!isNullOrUndefined(nestedContentinline) || this.multipleLineContent) {
                     this.contentInline.push(inline);
                     nestedContentInline = [];
                 }
             } else {
-                inline.inlines = this.inlineContentControls(element, this.contentInline);
+                inline[inlinesProperty[this.keywordIndex]] = this.inlineContentControls(element, this.contentInline);
             }
         }
         if (nextElement instanceof ContentControl && nextElement.type === 1 && !this.nestedContent) {
             if (this.multipleLineContent) {
-                inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                inlines[inlines.length - 1][contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
                 this.multipleLineContent = false;
                 return;
             } else {
-                inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                inline[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
             }
             return inline;
         } else if (this.startContent) {
@@ -712,7 +768,7 @@ export class SfdtExport {
     private nestedContentProperty(nextElement: any, inline: any, inlines?: any): any {
         if (!isNullOrUndefined(nextElement)) {
             if (nextElement.type === 1) {
-                inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                inline[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(nextElement.contentControlProperties);
                 return inline;
             } else if (this.startContent) {
                 this.multipleLineContent = true;
@@ -740,35 +796,35 @@ export class SfdtExport {
                 element.revisions[i] = this.documentHelper.revisionsInternal.get(element.removedIds[i]);
             }
         }
-        inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
+        inline[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
-            inline.fieldType = element.fieldType;
+            inline[fieldTypeProperty[this.keywordIndex]] = element.fieldType;
             if (element.fieldType === 0) {
-                inline.hasFieldEnd = true;
+                inline[hasFieldEndProperty[this.keywordIndex]] = true;
                 if (element.formFieldData) {
-                    inline.formFieldData = {};
-                    inline.formFieldData.name = element.formFieldData.name;
-                    inline.formFieldData.enabled = element.formFieldData.enabled;
-                    inline.formFieldData.helpText = element.formFieldData.helpText;
-                    inline.formFieldData.statusText = element.formFieldData.statusText;
+                    inline[formFieldDataProperty[this.keywordIndex]] = {};
+                    inline[formFieldDataProperty[this.keywordIndex]][nameProperty[this.keywordIndex]] = element.formFieldData.name;
+                    inline[formFieldDataProperty[this.keywordIndex]][enabledProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.formFieldData.enabled, this.keywordIndex);
+                    inline[formFieldDataProperty[this.keywordIndex]][helpTextProperty[this.keywordIndex]] = element.formFieldData.helpText;
+                    inline[formFieldDataProperty[this.keywordIndex]][statusTextProperty[this.keywordIndex]] = element.formFieldData.statusText;
                     if (element.formFieldData instanceof TextFormField) {
-                        inline.formFieldData.textInput = {};
-                        inline.formFieldData.textInput.type = (element.formFieldData as TextFormField).type;
-                        inline.formFieldData.textInput.maxLength = (element.formFieldData as TextFormField).maxLength;
-                        inline.formFieldData.textInput.defaultValue = (element.formFieldData as TextFormField).defaultValue;
-                        inline.formFieldData.textInput.format = (element.formFieldData as TextFormField).format;
+                        inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]] = {};
+                        inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextFormFieldTypeEnumValue((element.formFieldData as TextFormField).type) : (element.formFieldData as TextFormField).type;
+                        inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][maxLengthProperty[this.keywordIndex]] = (element.formFieldData as TextFormField).maxLength;
+                        inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]] = (element.formFieldData as TextFormField).defaultValue;
+                        inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][formatProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextFormFieldFormatEnumValue((element.formFieldData as TextFormField).format) : (element.formFieldData as TextFormField).format;
                     } else if (element.formFieldData instanceof CheckBoxFormField) {
-                        inline.formFieldData.checkBox = {};
+                        inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]] = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.checkBox.sizeType = (element.formFieldData as CheckBoxFormField).sizeType;
-                        inline.formFieldData.checkBox.size = (element.formFieldData as CheckBoxFormField).size;
-                        inline.formFieldData.checkBox.defaultValue = (element.formFieldData as CheckBoxFormField).defaultValue;
-                        inline.formFieldData.checkBox.checked = (element.formFieldData as CheckBoxFormField).checked;
+                        inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][sizeTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getCheckBoxSizeTypeEnumValue((element.formFieldData as CheckBoxFormField).sizeType) : (element.formFieldData as CheckBoxFormField).sizeType;
+                        inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][sizeProperty[this.keywordIndex]] = (element.formFieldData as CheckBoxFormField).size;
+                        inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]] = HelperMethods.getBoolInfo((element.formFieldData as CheckBoxFormField).defaultValue, this.keywordIndex);
+                        inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][checkedProperty[this.keywordIndex]] = HelperMethods.getBoolInfo((element.formFieldData as CheckBoxFormField).checked, this.keywordIndex);
                     } else {
-                        inline.formFieldData.dropDownList = {};
+                        inline[formFieldDataProperty[this.keywordIndex]][dropDownListProperty[this.keywordIndex]] = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropDownItems = (element.formFieldData as DropDownFormField).dropdownItems;
-                        inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
+                        inline[formFieldDataProperty[this.keywordIndex]][dropDownListProperty[this.keywordIndex]][dropDownItemsProperty[this.keywordIndex]] = (element.formFieldData as DropDownFormField).dropdownItems;
+                        inline[formFieldDataProperty[this.keywordIndex]][dropDownListProperty[this.keywordIndex]][selectedIndexProperty[this.keywordIndex]] = (element.formFieldData as DropDownFormField).selectedIndex;
                     }
                 }
             }
@@ -778,59 +834,81 @@ export class SfdtExport {
         } else if (element instanceof ChartElementBox) {
             this.writeChart(element, inline);
         } else if (element instanceof ImageElementBox) {
-            inline.imageString = element.imageString;
-            inline.metaFileImageString = element.metaFileImageString;
-            inline.isMetaFile = element.isMetaFile;
-            inline.isCompressed = element.isCompressed;
-            inline.width = HelperMethods.convertPixelToPoint(element.width);
-            inline.height = HelperMethods.convertPixelToPoint(element.height);
-            inline.iscrop = element.isCrop;
+            inline[imageStringProperty[this.keywordIndex]] = element.imageString;
+            inline[metaFileImageStringProperty[this.keywordIndex]] = element.metaFileImageString;
+            inline[isMetaFileProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.isMetaFile, this.keywordIndex);
+            inline[isCompressedProperty[this.keywordIndex]] = element.isCompressed;
+            inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
+            inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+            //inline.iscrop = element.isCrop;
             if (element.isCrop) {
-                inline.bottom = element.bottom;
-                inline.right = element.right;
-                inline.left = element.left;
-                inline.top = element.top;
-                inline.getimagewidth = element.cropWidthScale;
-                inline.getimageheight = element.cropHeightScale;
+                inline[bottomProperty[this.keywordIndex]] = element.bottom;
+                inline[rightProperty[this.keywordIndex]] = element.right;
+                inline[leftProperty[this.keywordIndex]] = element.left;
+                inline[topProperty[this.keywordIndex]] = element.top;
+                inline[getImageWidthProperty[this.keywordIndex]] = element.cropWidthScale;
+                inline[getImageHeightProperty[this.keywordIndex]] = element.cropHeightScale;
             }
-            inline.name = element.name;
-            inline.alternativeText = element.alternativeText;
-            inline.title = element.title;
-            inline.visible = element.visible;
-            inline.widthScale = element.widthScale;
-            inline.heightScale = element.heightScale;
-            inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
-            inline.verticalOrigin = element.verticalOrigin;
-            inline.verticalAlignment = element.verticalAlignment;
-            inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
-            inline.horizontalOrigin = element.horizontalOrigin;
-            inline.horizontalAlignment = element.horizontalAlignment;
-            inline.allowOverlap = element.allowOverlap;
-            inline.textWrappingStyle = element.textWrappingStyle;
-            inline.textWrappingType = element.textWrappingType;
+            inline[nameProperty[this.keywordIndex]] = element.name;
+            inline[alternativeTextProperty[this.keywordIndex]] = element.alternativeText;
+            inline[titleProperty[this.keywordIndex]] = element.title;
+            inline[visibleProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.visible, this.keywordIndex);
+            inline[widthScaleProperty[this.keywordIndex]] = element.widthScale;
+            inline[heightScaleProperty[this.keywordIndex]] = element.heightScale;
+            inline[verticalPositionProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.verticalPosition);
+            inline[verticalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getVerticalOriginEnumValue(element.verticalOrigin) : element.verticalOrigin;
+            inline[verticalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getShapeVerticalAlignmentEnumValue(element.verticalAlignment) : element.verticalAlignment;
+            inline[horizontalPositionProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.horizontalPosition);
+            inline[horizontalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getHorizontalOriginEnumValue(element.horizontalOrigin) : element.horizontalOrigin;
+            inline[horizontalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getShapeHorizontalAlignmentEnumValue(element.horizontalAlignment) : element.horizontalAlignment;
+            inline[allowOverlapProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.allowOverlap, this.keywordIndex);
+            inline[textWrappingStyleProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextWrappingStyleEnumValue(element.textWrappingStyle) : element.textWrappingStyle;
+            inline[textWrappingTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextWrappingTypeEnumValue(element.textWrappingType) : element.textWrappingType;
             if(!isNullOrUndefined(element.distanceBottom)) {
-                inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+                inline[distanceBottomProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceBottom);
             }
             if(!isNullOrUndefined(element.distanceLeft)) {
-                inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+                inline[distanceLeftProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceLeft);
             }
             if(!isNullOrUndefined(element.distanceRight)) {
-                inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+                inline[distanceRightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceRight);
             }
             if(!isNullOrUndefined(element.distanceTop)) {
-                inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+                inline[distanceTopProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceTop);
             }
-            inline.layoutInCell = element.layoutInCell;
-            inline.zOrderPosition = element.zOrderPosition;
+            inline[layoutInCellProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.layoutInCell, this.keywordIndex);
+            inline[zOrderPositionProperty[this.keywordIndex]] = element.zOrderPosition;
         } else if (element instanceof BookmarkElementBox) {
-            inline.bookmarkType = element.bookmarkType;
-            inline.name = element.name;
+            inline[bookmarkTypeProperty[this.keywordIndex]] = element.bookmarkType;
+            inline[nameProperty[this.keywordIndex]] = element.name;
+            if (!isNullOrUndefined(element.properties)) {
+                let properties: any = {};
+                if (!isNullOrUndefined(element.properties['isAfterParagraphMark'])) {
+                    properties[isAfterParagraphMarkProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.properties['isAfterParagraphMark'], this.keywordIndex);
+                }
+                if (!isNullOrUndefined(element.properties['isAfterTableMark'])) {
+                    properties[isAfterTableMarkProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.properties['isAfterTableMark'], this.keywordIndex);
+                }
+                if (!isNullOrUndefined(element.properties['isAfterRowMark'])) {
+                    properties[isAfterRowMarkProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.properties['isAfterRowMark'], this.keywordIndex);
+                }
+                if (!isNullOrUndefined(element.properties['isAfterCellMark'])) {
+                    properties[isAfterCellMarkProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.properties['isAfterCellMark'], this.keywordIndex);
+                }
+                if (!isNullOrUndefined(element.properties['columnFirst'])) {
+                    properties[columnFirstProperty[this.keywordIndex]] = element.properties['columnFirst'];
+                }
+                if (!isNullOrUndefined(element.properties['columnLast'])) {
+                    properties[columnLastProperty[this.keywordIndex]] = element.properties['columnLast'];
+                }
+                inline[propertiesProperty[this.keywordIndex]] = properties;
+            }
         } else if (element instanceof TextElementBox) {
             // replacing the no break hyphen character by '-'
             if (element.text.indexOf(String.fromCharCode(30)) !== -1) {
-                inline.text = element.text.replace(/\u001e/g, '-');
+                inline[textProperty[this.keywordIndex]] = element.text.replace(/\u001e/g, '-');
             } else if (element.text.indexOf(String.fromCharCode(31)) !== -1) {
-                inline.text = element.text.replace(/\u001f/g, '');
+                inline[textProperty[this.keywordIndex]] = element.text.replace(/\u001f/g, '');
             } else if (element.revisions.length !== 0) {
                 if (!this.isExport && this.owner.enableTrackChanges && !this.isPartialExport) {
                     this.copyWithTrackChange = true;
@@ -840,53 +918,42 @@ export class SfdtExport {
                             this.selectedRevisionId.push(revision.revisionID);
                         }
                         if (element.revisions[x].revisionType !== 'Deletion') {
-                            inline.text = element.text;
+                            inline[textProperty[this.keywordIndex]] = element.text;
                         }
                     }
                 } else {
-                    inline.text = element.text;
+                    inline[textProperty[this.keywordIndex]] = element.text;
                 }
             } else {
-                inline.text = element.text;
+                inline[textProperty[this.keywordIndex]] = element.text;
             }
         } else if (element instanceof EditRangeStartElementBox) {
             if(element.user !== ''){
-                inline.user = element.user;
+                inline[userProperty[this.keywordIndex]] = element.user;
             }
-            inline.group = element.group;
-            inline.columnFirst = element.columnFirst;
-            inline.columnLast = element.columnLast;
-            inline.editRangeId = element.editRangeId.toString();
+            inline[groupProperty[this.keywordIndex]] = element.group;
+            inline[columnFirstProperty[this.keywordIndex]] = element.columnFirst;
+            inline[columnLastProperty[this.keywordIndex]] = element.columnLast;
+            inline[editRangeIdProperty[this.keywordIndex]] = element.editRangeId.toString();
         } else if (element instanceof EditRangeEndElementBox) {
-            inline.editableRangeStart = {
-                'user': element.editRangeStart.user,
-                'group': element.editRangeStart.group,
-                'columnFirst': element.editRangeStart.columnFirst,
-                'columnLast': element.editRangeStart.columnLast
-            };
-            inline.editRangeId = element.editRangeId.toString();
+            inline[editableRangeStartProperty[this.keywordIndex]] = {};
+            inline[editableRangeStartProperty[this.keywordIndex]][userProperty[this.keywordIndex]] = element.editRangeStart.user;
+            inline[editableRangeStartProperty[this.keywordIndex]][groupProperty[this.keywordIndex]] = element.editRangeStart.group;
+            inline[editableRangeStartProperty[this.keywordIndex]][columnFirstProperty[this.keywordIndex]] = element.editRangeStart.columnFirst;
+            inline[editableRangeStartProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]] = element.editRangeStart.columnLast;
+            inline[editRangeIdProperty[this.keywordIndex]] = element.editRangeId.toString();
         } else if (element instanceof CommentCharacterElementBox) {
             if (!this.isExport && element.commentType === 0) {
                 this.selectedCommentsId.push(element.commentId);
             }
-            inline.commentCharacterType = element.commentType;
-            inline.commentId = element.commentId;
+            inline[commentCharacterTypeProperty[this.keywordIndex]] = element.commentType;
+            inline[commentIdProperty[this.keywordIndex]] = element.commentId;
         } else if (element instanceof ShapeElementBox) {
             this.writeShape(element, inline);
         } else {
             inline = undefined;
         }
-        if ((element.revisions.length > 0) && (this.isExport || !this.isExport && !this.owner.enableTrackChanges)) {
-            inline.revisionIds = [];
-            for (let x: number = 0; x < element.revisions.length; x++) {
-                //revisionIdes[x] = element.revisions[x];
-                if (this.selectedRevisionId.indexOf(element.revisions[x].revisionID) === -1) {
-                    this.selectedRevisionId.push(element.revisions[x].revisionID);
-                }
-                inline.revisionIds.push(element.revisions[x].revisionID);
-                //this.document.revisionIdes.push(inline.revisionIds)
-            }
-        }
+        this.writeInlineRevisions(inline, element);
         /*if(element.removedIds.length > 0){
             inline.revisionIds = [];
             for(let x:number = 0;x < element.removedIds.length; x++){
@@ -895,160 +962,173 @@ export class SfdtExport {
         }*/
         return inline;
     }
+    private writeInlineRevisions(inline: any, element: ElementBox): void {
+        if ((element.revisions.length > 0) && (this.isExport || !this.isExport && !this.owner.enableTrackChanges)) {
+            inline[revisionIdsProperty[this.keywordIndex]] = [];
+            for (let x: number = 0; x < element.revisions.length; x++) {
+                //revisionIdes[x] = element.revisions[x];
+                if (this.selectedRevisionId.indexOf(element.revisions[x].revisionID) === -1) {
+                    this.selectedRevisionId.push(element.revisions[x].revisionID);
+                }
+                inline[revisionIdsProperty[this.keywordIndex]].push(element.revisions[x].revisionID);
+                //this.document.revisionIdes.push(inline.revisionIds)
+            }
+        }
+    }
     private writeShape(element: ShapeElementBox, inline: any): void {
-        inline.shapeId = element.shapeId;
-        inline.name = element.name;
-        inline.alternativeText = element.alternativeText;
-        inline.title = element.title;
-        inline.visible = element.visible;
-        inline.width = HelperMethods.convertPixelToPoint(element.width);
-        inline.height = HelperMethods.convertPixelToPoint(element.height);
-        inline.widthScale = element.widthScale;
-        inline.heightScale = element.heightScale;
-        inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
-        inline.verticalOrigin = element.verticalOrigin;
-        inline.verticalAlignment = element.verticalAlignment;
-        inline.verticalRelativePercent = element.verticalRelativePercent;
-        inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
-        inline.horizontalOrigin = element.horizontalOrigin;
-        inline.horizontalAlignment = element.horizontalAlignment;
-        inline.horizontalRelativePercent = element.horizontalRelativePercent;
-        inline.zOrderPosition = element.zOrderPosition;
-        inline.allowOverlap = element.allowOverlap;
-        inline.textWrappingStyle = element.textWrappingStyle;
-        inline.textWrappingType = element.textWrappingType;
+        inline[shapeIdProperty[this.keywordIndex]] = element.shapeId;
+        inline[nameProperty[this.keywordIndex]] = element.name;
+        inline[alternativeTextProperty[this.keywordIndex]] = element.alternativeText;
+        inline[titleProperty[this.keywordIndex]] = element.title;
+        inline[visibleProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.visible, this.keywordIndex);
+        inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
+        inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+        inline[widthScaleProperty[this.keywordIndex]] = element.widthScale;
+        inline[heightScaleProperty[this.keywordIndex]] = element.heightScale;
+        inline[verticalPositionProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.verticalPosition);
+        inline[verticalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getVerticalOriginEnumValue(element.verticalOrigin) : element.verticalOrigin;
+        inline[verticalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getShapeVerticalAlignmentEnumValue(element.verticalAlignment) : element.verticalAlignment;
+        inline[verticalRelativePercentProperty[this.keywordIndex]] = element.verticalRelativePercent;
+        inline[horizontalPositionProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.horizontalPosition);
+        inline[horizontalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getHorizontalOriginEnumValue(element.horizontalOrigin) : element.horizontalOrigin;
+        inline[horizontalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getShapeHorizontalAlignmentEnumValue(element.horizontalAlignment) : element.horizontalAlignment;
+        inline[horizontalRelativePercentProperty[this.keywordIndex]] = element.horizontalRelativePercent;
+        inline[zOrderPositionProperty[this.keywordIndex]] = element.zOrderPosition;
+        inline[allowOverlapProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.allowOverlap, this.keywordIndex);
+        inline[textWrappingStyleProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextWrappingStyleEnumValue(element.textWrappingStyle) : element.textWrappingStyle;
+        inline[textWrappingTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextWrappingTypeEnumValue(element.textWrappingType) : element.textWrappingType;
         if(!isNullOrUndefined(element.distanceBottom)) {
-            inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+            inline[distanceBottomProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceBottom);
         }
         if(!isNullOrUndefined(element.distanceLeft)) {
-            inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+            inline[distanceLeftProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceLeft);
         }
         if(!isNullOrUndefined(element.distanceRight)) {
-            inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+            inline[distanceRightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceRight);
         }
         if(!isNullOrUndefined(element.distanceTop)) {
-            inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
+            inline[distanceTopProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.distanceTop);
         }
-        inline.layoutInCell = element.layoutInCell;
-        inline.lockAnchor = element.lockAnchor;
-        inline.autoShapeType = element.autoShapeType;
+        inline[layoutInCellProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.layoutInCell, this.keywordIndex);
+        inline[lockAnchorProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.lockAnchor, this.keywordIndex);
+        inline[autoShapeTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getAutoShapeTypeEnumValue(element.autoShapeType) : element.autoShapeType;
         if (element.fillFormat) {
-            inline.fillFormat = {};
-            inline.fillFormat.color = element.fillFormat.color;
-            inline.fillFormat.fill = element.fillFormat.fill;
+            inline[fillFormatProperty[this.keywordIndex]] = {};
+            inline[fillFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]] = element.fillFormat.color;
+            inline[fillFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.fillFormat.fill, this.keywordIndex);
         }
         if (element.lineFormat) {
-            inline.lineFormat = {};
-            inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
-            inline.lineFormat.color = element.lineFormat.color;
-            inline.lineFormat.weight = element.lineFormat.weight;
-            inline.lineFormat.lineStyle = element.lineFormat.dashStyle;
-            inline.lineFormat.line = element.lineFormat.line;
+            inline[lineFormatProperty[this.keywordIndex]] = {};
+            inline[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getLineFormatTypeEnumValue(element.lineFormat.lineFormatType) : element.lineFormat.lineFormatType;
+            inline[lineFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]] = element.lineFormat.color;
+            inline[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]] = element.lineFormat.weight;
+            inline[lineFormatProperty[this.keywordIndex]][lineStyleProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getLineDashStyleEnumValue(element.lineFormat.dashStyle) : element.lineFormat.dashStyle;
+            inline[lineFormatProperty[this.keywordIndex]][lineProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.lineFormat.line, this.keywordIndex);
         }
         if (element.textFrame) {
-            inline.textFrame = {};
-            inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
-            inline.textFrame.leftMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
-            inline.textFrame.rightMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
-            inline.textFrame.topMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
-            inline.textFrame.bottomMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
-            inline.textFrame.blocks = [];
+            inline[textFrameProperty[this.keywordIndex]] = {};
+            inline[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTextVerticalAlignmentEnumValue(element.textFrame.textVerticalAlignment) : element.textFrame.textVerticalAlignment;
+            inline[textFrameProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]] = [];
             for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
                 let textFrameBlock: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
-                this.writeBlock(textFrameBlock, 0, inline.textFrame.blocks);
+                this.writeBlock(textFrameBlock, 0, inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]]);
             }
         }
     }
     public writeChart(element: ChartElementBox, inline: any): void {
-        inline.chartLegend = {};
-        inline.chartTitleArea = {};
-        inline.chartArea = {};
-        inline.plotArea = {};
-        inline.chartCategory = [];
-        inline.chartSeries = [];
-        inline.chartPrimaryCategoryAxis = {};
-        inline.chartPrimaryValueAxis = {};
-        this.writeChartTitleArea(element.chartTitleArea, inline.chartTitleArea);
-        this.writeChartArea(element.chartArea, inline.chartArea);
-        this.writeChartArea(element.chartPlotArea, inline.plotArea);
-        this.writeChartCategory(element, inline.chartCategory);
-        this.createChartSeries(element, inline.chartSeries);
-        this.writeChartLegend(element.chartLegend, inline.chartLegend);
-        this.writeChartCategoryAxis(element.chartPrimaryCategoryAxis, inline.chartPrimaryCategoryAxis);
-        this.writeChartCategoryAxis(element.chartPrimaryValueAxis, inline.chartPrimaryValueAxis);
+        inline[chartLegendProperty[this.keywordIndex]] = {};
+        inline[chartTitleAreaProperty[this.keywordIndex]] = {};
+        inline[chartAreaProperty[this.keywordIndex]] = {};
+        inline[plotAreaProperty[this.keywordIndex]] = {};
+        inline[chartCategoryProperty[this.keywordIndex]] = [];
+        inline[chartSeriesProperty[this.keywordIndex]] = [];
+        inline[chartPrimaryCategoryAxisProperty[this.keywordIndex]] = {};
+        inline[chartPrimaryValueAxisProperty[this.keywordIndex]] = {};
+        this.writeChartTitleArea(element.chartTitleArea, inline[chartTitleAreaProperty[this.keywordIndex]]);
+        this.writeChartArea(element.chartArea, inline[chartAreaProperty[this.keywordIndex]]);
+        this.writeChartArea(element.chartPlotArea, inline[plotAreaProperty[this.keywordIndex]]);
+        this.writeChartCategory(element, inline[chartCategoryProperty[this.keywordIndex]]);
+        this.createChartSeries(element, inline[chartSeriesProperty[this.keywordIndex]]);
+        this.writeChartLegend(element.chartLegend, inline[chartLegendProperty[this.keywordIndex]]);
+        this.writeChartCategoryAxis(element.chartPrimaryCategoryAxis, inline[chartPrimaryCategoryAxisProperty[this.keywordIndex]]);
+        this.writeChartCategoryAxis(element.chartPrimaryValueAxis, inline[chartPrimaryValueAxisProperty[this.keywordIndex]]);
         if (element.chartDataTable.showSeriesKeys !== undefined) {
-            inline.chartDataTable = {};
-            this.writeChartDataTable(element.chartDataTable, inline.chartDataTable);
+            inline[chartDataTableProperty[this.keywordIndex]] = {};
+            this.writeChartDataTable(element.chartDataTable, inline[chartDataTableProperty[this.keywordIndex]]);
         }
-        inline.chartTitle = element.title;
-        inline.chartType = element.type;
-        inline.gapWidth = element.chartGapWidth;
-        inline.overlap = element.chartOverlap;
-        inline.height = HelperMethods.convertPixelToPoint(element.height);
-        inline.width = HelperMethods.convertPixelToPoint(element.width);
+        inline[chartTitleProperty[this.keywordIndex]] = element.title;
+        inline[chartTypeProperty[this.keywordIndex]] = element.type;
+        inline[gapWidthProperty[this.keywordIndex]] = element.chartGapWidth;
+        inline[overlapProperty[this.keywordIndex]] = element.chartOverlap;
+        inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+        inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
     }
     private writeChartTitleArea(titleArea: ChartTitleArea, chartTitleArea: any): void {
-        chartTitleArea.fontName = titleArea.chartfontName;
-        chartTitleArea.fontSize = titleArea.chartFontSize;
-        chartTitleArea.layout = {};
-        chartTitleArea.dataFormat = this.writeChartDataFormat(titleArea.dataFormat);
-        this.writeChartLayout(titleArea.layout, chartTitleArea.layout);
+        chartTitleArea[fontNameProperty[this.keywordIndex]] = titleArea.chartfontName;
+        chartTitleArea[fontSizeProperty[this.keywordIndex]] = titleArea.chartFontSize;
+        chartTitleArea[layoutProperty[this.keywordIndex]]= {};
+        chartTitleArea[dataFormatProperty[this.keywordIndex]] = this.writeChartDataFormat(titleArea.dataFormat);
+        this.writeChartLayout(titleArea.layout, chartTitleArea[layoutProperty[this.keywordIndex]]);
     }
     private writeChartDataFormat(format: ChartDataFormat): any {
         let chartDataFormat: any = {};
-        chartDataFormat.fill = {};
-        chartDataFormat.line = {};
+        chartDataFormat[fillProperty[this.keywordIndex]] = {};
+        chartDataFormat[lineProperty[this.keywordIndex]] = {};
         if (!isNullOrUndefined(format.fill.color)) {
             if (format.fill.color.length > 6) {
-                chartDataFormat.fill.foreColor = format.fill.color.substring(2);
+                chartDataFormat[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]] = format.fill.color.substring(2);
             }
             else {
-                chartDataFormat.fill.foreColor = format.fill.color;
+                chartDataFormat[fillProperty[this.keywordIndex]][fontColorProperty[this.keywordIndex]] = format.fill.color;
             }
         }
-        chartDataFormat.fill.rgb = format.fill.rgb;
-        chartDataFormat.line.color = format.line.color;
-        chartDataFormat.line.rgb = format.line.rgb;
+        chartDataFormat[fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]] = format.fill.rgb;
+        chartDataFormat[lineProperty[this.keywordIndex]][colorProperty[this.keywordIndex]] = format.line.color;
+        chartDataFormat[lineProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]] = format.line.rgb;
         return chartDataFormat;
     }
     private writeChartLayout(layout: ChartLayout, chartLayout: any): void {
-        chartLayout.layoutX = layout.chartLayoutLeft;
-        chartLayout.layoutY = layout.chartLayoutTop;
+        chartLayout[layoutXProperty[this.keywordIndex]] = layout.chartLayoutLeft;
+        chartLayout[layoutYProperty[this.keywordIndex]] = layout.chartLayoutTop;
     }
     private writeChartArea(area: ChartArea, chartArea: any): void {
-        chartArea.foreColor = area.chartForeColor;
+        chartArea[foreColorProperty[this.keywordIndex]] = area.chartForeColor;
     }
     private writeChartLegend(legend: ChartLegend, chartLegend: any): void {
-        chartLegend.position = legend.chartLegendPostion;
-        chartLegend.chartTitleArea = {};
-        this.writeChartTitleArea(legend.chartTitleArea, chartLegend.chartTitleArea);
+        chartLegend[positionProperty[this.keywordIndex]] = legend.chartLegendPostion;
+        chartLegend[chartTitleAreaProperty[this.keywordIndex]] = {};
+        this.writeChartTitleArea(legend.chartTitleArea, chartLegend[chartTitleAreaProperty[this.keywordIndex]]);
     }
     private writeChartCategoryAxis(categoryAxis: ChartCategoryAxis, primaryCategoryAxis: any): void {
-        primaryCategoryAxis.chartTitle = categoryAxis.categoryAxisTitle;
-        primaryCategoryAxis.chartTitleArea = {};
-        this.writeChartTitleArea(categoryAxis.chartTitleArea, primaryCategoryAxis.chartTitleArea);
-        primaryCategoryAxis.categoryType = categoryAxis.categoryAxisType;
-        primaryCategoryAxis.fontSize = categoryAxis.axisFontSize;
-        primaryCategoryAxis.fontName = categoryAxis.axisFontName;
-        primaryCategoryAxis.numberFormat = categoryAxis.categoryNumberFormat;
-        primaryCategoryAxis.maximumValue = categoryAxis.max;
-        primaryCategoryAxis.minimumValue = categoryAxis.min;
-        primaryCategoryAxis.majorUnit = categoryAxis.interval;
-        primaryCategoryAxis.hasMajorGridLines = categoryAxis.majorGridLines;
-        primaryCategoryAxis.hasMinorGridLines = categoryAxis.minorGridLines;
-        primaryCategoryAxis.majorTickMark = categoryAxis.majorTick;
-        primaryCategoryAxis.minorTickMark = categoryAxis.minorTick;
-        primaryCategoryAxis.tickLabelPosition = categoryAxis.tickPosition;
+        primaryCategoryAxis[chartTitleProperty[this.keywordIndex]] = categoryAxis.categoryAxisTitle;
+        primaryCategoryAxis[chartTitleAreaProperty[this.keywordIndex]] = {};
+        this.writeChartTitleArea(categoryAxis.chartTitleArea, primaryCategoryAxis[chartTitleAreaProperty[this.keywordIndex]]);
+        primaryCategoryAxis[categoryTypeProperty[this.keywordIndex]] = categoryAxis.categoryAxisType;
+        primaryCategoryAxis[fontSizeProperty[this.keywordIndex]] = categoryAxis.axisFontSize;
+        primaryCategoryAxis[fontNameProperty[this.keywordIndex]] = categoryAxis.axisFontName;
+        primaryCategoryAxis[numberFormatProperty[this.keywordIndex]] = categoryAxis.categoryNumberFormat;
+        primaryCategoryAxis[maximumValueProperty[this.keywordIndex]] = categoryAxis.max;
+        primaryCategoryAxis[minimumValueProperty[this.keywordIndex]] = categoryAxis.min;
+        primaryCategoryAxis[majorUnitProperty[this.keywordIndex]] = categoryAxis.interval;
+        primaryCategoryAxis[hasMajorGridLinesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(categoryAxis.majorGridLines, this.keywordIndex);
+        primaryCategoryAxis[hasMinorGridLinesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(categoryAxis.minorGridLines, this.keywordIndex);
+        primaryCategoryAxis[majorTickMarkProperty[this.keywordIndex]] = categoryAxis.majorTick;
+        primaryCategoryAxis[minorTickMarkProperty[this.keywordIndex]] = categoryAxis.minorTick;
+        primaryCategoryAxis[tickLabelPositionProperty[this.keywordIndex]] = categoryAxis.tickPosition;
     }
     private writeChartDataTable(chartDataTable: ChartDataTable, dataTable: any): void {
-        dataTable.showSeriesKeys = chartDataTable.showSeriesKeys;
-        dataTable.hasHorzBorder = chartDataTable.hasHorzBorder;
-        dataTable.hasVertBorder = chartDataTable.hasVertBorder;
-        dataTable.hasBorders = chartDataTable.hasBorders;
+        dataTable[showSeriesKeysProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(chartDataTable.showSeriesKeys, this.keywordIndex);
+        dataTable[hasHorizontalBorderProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(chartDataTable.hasHorzBorder, this.keywordIndex);
+        dataTable[hasVerticalBorderProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(chartDataTable.hasVertBorder, this.keywordIndex);
+        dataTable[hasBordersProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(chartDataTable.hasBorders, this.keywordIndex);
     }
     private writeChartCategory(element: any, chartCategory: any): void {
         let data: any = element.chartCategory;
-        chartCategory.chartData = [];
+        chartCategory[chartDataProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < data.length; i++) {
             let xData: any = data[i];
             let categories: any = this.createChartCategory(xData, element.chartType);
@@ -1057,9 +1137,9 @@ export class SfdtExport {
     }
     private createChartCategory(data: any, type: string): any {
         let chartCategory: any = {};
-        chartCategory.chartData = [];
-        this.writeChartData(data, chartCategory.chartData, type);
-        chartCategory.categoryXName = data.categoryXName;
+        chartCategory[chartDataProperty[this.keywordIndex]] = [];
+        this.writeChartData(data, chartCategory[chartDataProperty[this.keywordIndex]], type);
+        chartCategory[categoryXNameProperty[this.keywordIndex]] = data.categoryXName;
         return chartCategory;
     }
     private writeChartData(element: any, chartData: any, type: string): any {
@@ -1072,9 +1152,9 @@ export class SfdtExport {
     }
     private createChartData(data: any, type: string): any {
         let chartData: any = {};
-        chartData.yValue = data.yValue;
+        chartData[yValueProperty[this.keywordIndex]] = data.yValue;
         if (type === 'Bubble') {
-            chartData.size = data.size;
+            chartData[sizeProperty[this.keywordIndex]] = data.size;
         }
         return chartData;
     }
@@ -1092,72 +1172,72 @@ export class SfdtExport {
         let chartSeries: any = {};
         let errorBar: any = {};
         let errorBarData: any = series.errorBar;
-        chartSeries.dataPoints = [];
-        chartSeries.seriesName = series.seriesName;
+        chartSeries[dataPointsProperty[this.keywordIndex]] = [];
+        chartSeries[seriesNameProperty[this.keywordIndex]] = series.seriesName;
         if (isPieType) {
             if (!isNullOrUndefined(series.firstSliceAngle)) {
-                chartSeries.firstSliceAngle = series.firstSliceAngle;
+                chartSeries[firstSliceAngleProperty[this.keywordIndex]] = series.firstSliceAngle;
             }
             if (type === 'Doughnut') {
-                chartSeries.holeSize = series.doughnutHoleSize;
+                chartSeries[holeSizeProperty[this.keywordIndex]] = series.doughnutHoleSize;
             }
         }
         if (!isNullOrUndefined(series.dataLabels.labelPosition)) {
             let dataLabel: any = this.writeChartDataLabels(series.dataLabels);
-            chartSeries.dataLabel = dataLabel;
+            chartSeries[dataLabelProperty[this.keywordIndex]] = dataLabel;
         }
         if (!isNullOrUndefined(series.seriesFormat.markerStyle)) {
             let seriesFormat: any = {};
             let format: any = series.seriesFormat;
-            seriesFormat.markerStyle = format.markerStyle;
-            seriesFormat.markerSize = format.numberValue;
-            seriesFormat.markerColor = format.markerColor;
-            chartSeries.seriesFormat = seriesFormat;
+            seriesFormat[markerStyleProperty[this.keywordIndex]] = format.markerStyle;
+            seriesFormat[markerSizeProperty[this.keywordIndex]] = format.numberValue;
+            seriesFormat[markerColorProperty[this.keywordIndex]] = format.markerColor;
+            chartSeries[seriesFormatProperty[this.keywordIndex]] = seriesFormat;
         }
         if (!isNullOrUndefined(errorBarData.type)) {
-            errorBar.type = errorBarData.type;
-            errorBar.direction = errorBarData.direction;
-            errorBar.endStyle = errorBarData.endStyle;
-            errorBar.numberValue = errorBarData.numberValue;
-            chartSeries.errorBar = errorBarData;
+            errorBar[typeProperty[this.keywordIndex]] = errorBarData.type;
+            errorBar[directionProperty[this.keywordIndex]] = errorBarData.direction;
+            errorBar[endStyleProperty[this.keywordIndex]] = errorBarData.endStyle;
+            errorBar[numberValueProperty[this.keywordIndex]] = errorBarData.numberValue;
+            chartSeries[errorBarProperty[this.keywordIndex]] = errorBar;
         }
         if (series.trendLines.length > 0) {
-            chartSeries.trendLines = [];
+            chartSeries[trendLinesProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < series.trendLines.length; i++) {
                 let trendLine: any = this.writeChartTrendLines(series.trendLines[i]);
-                chartSeries.trendLines.push(trendLine);
+                chartSeries[trendLinesProperty[this.keywordIndex]].push(trendLine);
             }
         }
         for (let i: number = 0; i < series.chartDataFormat.length; i++) {
             let format: any = this.writeChartDataFormat(series.chartDataFormat[i]);
-            chartSeries.dataPoints.push(format);
+            chartSeries[dataPointsProperty[this.keywordIndex]].push(format);
         }
         return chartSeries;
     }
     private writeChartDataLabels(dataLabels: any): any {
         let dataLabel: any = {};
-        dataLabel.position = dataLabels.position;
-        dataLabel.fontName = dataLabels.fontName;
-        dataLabel.fontColor = HelperMethods.convertArgbToRgb(dataLabels.fontColor);
-        dataLabel.fontSize = dataLabels.fontSize;
-        dataLabel.isLegendKey = dataLabels.isLegendKey;
-        dataLabel.isBubbleSize = dataLabels.isBubbleSize;
-        dataLabel.isCategoryName = dataLabels.isCategoryName;
-        dataLabel.isSeriesName = dataLabels.isSeriesName;
-        dataLabel.isValue = dataLabels.isValue;
-        dataLabel.isPercentage = dataLabels.isPercentage;
-        dataLabel.isLeaderLines = dataLabels.isLeaderLines;
+        dataLabel[positionProperty[this.keywordIndex]] = dataLabels.position;
+        dataLabel[fontNameProperty[this.keywordIndex]] = dataLabels.fontName;
+        dataLabel[fontColorProperty[this.keywordIndex]] = HelperMethods.convertArgbToRgb(dataLabels.fontColor);
+        dataLabel[fontSizeProperty[this.keywordIndex]] = dataLabels.fontSize;
+        dataLabel[isLegendKeyProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isLegendKey, this.keywordIndex);
+        dataLabel[isBubbleSizeProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isBubbleSize, this.keywordIndex);
+        dataLabel[isCategoryNameProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isCategoryName, this.keywordIndex);
+        dataLabel[isSeriesNameProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isSeriesName, this.keywordIndex);
+        dataLabel[isValueProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isValue, this.keywordIndex);
+        dataLabel[isPercentageProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isPercentage, this.keywordIndex);
+        dataLabel[isLeaderLinesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(dataLabels.isLeaderLines, this.keywordIndex);
         return dataLabel;
     }
     private writeChartTrendLines(trendLines: any): any {
         let trendLine: any = {};
-        trendLine.name = trendLines.trendLineName;
-        trendLine.type = trendLines.trendLineType;
-        trendLine.forward = trendLines.forwardValue;
-        trendLine.backward = trendLines.backwardValue;
-        trendLine.intercept = trendLines.interceptValue;
-        trendLine.isDisplayEquation = trendLines.isDisplayEquation;
-        trendLine.isDisplayRSquared = trendLines.isDisplayRSquared;
+        trendLine[nameProperty[this.keywordIndex]] = trendLines.trendLineName;
+        trendLine[typeProperty[this.keywordIndex]] = trendLines.trendLineType;
+        trendLine[forwardProperty[this.keywordIndex]] = trendLines.forwardValue;
+        trendLine[backwardProperty[this.keywordIndex]] = trendLines.backwardValue;
+        trendLine[interceptProperty[this.keywordIndex]] = trendLines.interceptValue;
+        trendLine[isDisplayEquationProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(trendLines.isDisplayEquation, this.keywordIndex);
+        trendLine[isDisplayRSquaredProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(trendLines.isDisplayRSquared, this.keywordIndex);
         return trendLine;
     }
     private writeLines(paragraph: ParagraphWidget, lineIndex: number, offset: number, inlines: any): boolean {
@@ -1227,11 +1307,11 @@ export class SfdtExport {
             inline = this.writeInline(element);
             inlines[inlines.length] = inline;
             if (length > offset || ended) {
-                if (inline.hasOwnProperty('text')) {
+                if (inline.hasOwnProperty(textProperty[this.keywordIndex])) {
                     let startIndex: number = length - element.length;
                     let indexInInline: number = offset - startIndex;
                     let endIndex: number = ended ? this.endOffset - startIndex : element.length;
-                    inline.text = inline.text.substring(indexInInline, endIndex);
+                    inline[textProperty[this.keywordIndex]] = inline[textProperty[this.keywordIndex]].substring(indexInInline, endIndex);
                 }
                 offset = -1;
             }
@@ -1242,16 +1322,17 @@ export class SfdtExport {
     }
     private writeInlinesFootNote(paragraph: any, element: any, line: any, inlines: any): any {
         let inline: any = {};
-        inline.footnoteType = element.footnoteType;
-        inline.characterFormat = {};
-        inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
-        inline.blocks = [];
+        inline[footnoteTypeProperty[this.keywordIndex]] = this.getFootnoteTypeEnumValue(element.footnoteType);
+        inline[characterFormatProperty[this.keywordIndex]] = {};
+        inline[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(element.characterFormat);
+        inline[blocksProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
-            this.writeBlock(element.bodyWidget.childWidgets[i], 0, inline.blocks);
+            this.writeBlock(element.bodyWidget.childWidgets[i], 0, inline[blocksProperty[this.keywordIndex]]);
         }
-        inline.symbolCode = element.symbolCode;
-        inline.symbolFontName = element.symbolFontName;
-        inline.customMarker = element.customMarker;
+        inline[symbolCodeProperty[this.keywordIndex]] = element.symbolCode;
+        inline[symbolFontNameProperty[this.keywordIndex]] = element.symbolFontName;
+        inline[customMarkerProperty[this.keywordIndex]] = element.customMarker;
+        this.writeInlineRevisions(inline, element);
         return inline;
     }
     private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
@@ -1283,7 +1364,7 @@ export class SfdtExport {
                 return true;
             } else if (this.startContent && this.nestedContent) {
                 let inline: any = {};
-                inline.inlines = this.contentInline;
+                inline[inlinesProperty[this.keywordIndex]] = this.contentInline;
                 if (this.contentInline.length > 0) {
                     let nestedContent: any = this.nestedContentProperty(lineWidget.children[i + 1], inline);
                     inlines.push(nestedContent);
@@ -1310,7 +1391,7 @@ export class SfdtExport {
                 if (!isNullOrUndefined(contentinline)) {
                     if (this.nestedContent && this.multipleLineContent) {
                         let inline: any = {};
-                        inline.inlines = this.contentInline;
+                        inline[inlinesProperty[this.keywordIndex]] = this.contentInline;
                         inlines.push(inline);
                         this.contentInline = [];
                     } else {
@@ -1341,9 +1422,9 @@ export class SfdtExport {
         } else {
             isParaSelected = true;
         }
-        paragraph.paragraphFormat = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
-        paragraph.characterFormat = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
-        paragraph.inlines = [];
+        paragraph[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
+        paragraph[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
+        paragraph[inlinesProperty[this.keywordIndex]] = [];
         return paragraph;
     }
     /**
@@ -1351,74 +1432,80 @@ export class SfdtExport {
      */
     public writeCharacterFormat(format: WCharacterFormat, isInline?: boolean): any {
         let characterFormat: any = {};
-        HelperMethods.writeCharacterFormat(characterFormat, isInline, format);
-        characterFormat.boldBidi = isInline ? format.bold : format.getValue('bold');
-        characterFormat.italicBidi = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSizeBidi = isInline ? format.fontSize : format.getValue('fontSize');
+        HelperMethods.writeCharacterFormat(characterFormat, isInline, format, this.keywordIndex);
+        characterFormat[boldBidiProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bold, this.keywordIndex) : format.getValue('bold');
+        characterFormat[italicBidiProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italic, this.keywordIndex) : format.getValue('italic');
+        characterFormat[fontSizeBidiProperty[this.keywordIndex]] = isInline ? format.fontSize : format.getValue('fontSize');
         if (format.revisions.length > 0) {
-            characterFormat.revisionIds = [];
+            characterFormat[revisionIdsProperty[this.keywordIndex]] = [];
             for (let x: number = 0; x < format.revisions.length; x++) {
-                characterFormat.revisionIds.push(format.revisions[x].revisionID);
+                characterFormat[revisionIdsProperty[this.keywordIndex]].push(format.revisions[x].revisionID);
             }
         }
         if (this.writeInlineStyles && !isInline) {
-            characterFormat.inlineFormat = this.writeCharacterFormat(format, true);
+            characterFormat[inlineFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(format, true);
         }
         return characterFormat;
     }
     private writeParagraphFormat(format: WParagraphFormat, isInline?: boolean): any {
         let paragraphFormat: any = {};
-        paragraphFormat.borders = this.writeParagraphBorders(format.borders);
-        paragraphFormat.leftIndent = isInline ? format.leftIndent : format.getValue('leftIndent');
-        paragraphFormat.rightIndent = isInline ? format.rightIndent : format.getValue('rightIndent');
-        paragraphFormat.firstLineIndent = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
-        paragraphFormat.textAlignment = isInline ? format.textAlignment : format.getValue('textAlignment');
-        paragraphFormat.beforeSpacing = isInline ? format.beforeSpacing : format.getValue('beforeSpacing');
-        paragraphFormat.afterSpacing = isInline ? format.afterSpacing : format.getValue('afterSpacing');
-        paragraphFormat.spaceBeforeAuto = isInline ? format.spaceBeforeAuto : format.getValue('spaceBeforeAuto');
-        paragraphFormat.spaceAfterAuto = isInline ? format.spaceAfterAuto : format.getValue('spaceAfterAuto');
-        paragraphFormat.lineSpacing = isInline ? format.lineSpacing : format.getValue('lineSpacing');
-        paragraphFormat.lineSpacingType = isInline ? format.lineSpacingType : format.getValue('lineSpacingType');
-        paragraphFormat.styleName = !isNullOrUndefined(format.baseStyle) ? format.baseStyle.name : undefined;
-        paragraphFormat.outlineLevel = isInline ? format.outlineLevel : format.getValue('outlineLevel');
-        paragraphFormat.listFormat = this.writeListFormat(format.listFormat, isInline);
-        paragraphFormat.tabs = this.writeTabs(format.tabs);
-        paragraphFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
-        paragraphFormat.keepLinesTogether = isInline ? format.keepLinesTogether : format.getValue('keepLinesTogether');
-        paragraphFormat.keepWithNext = isInline ? format.keepWithNext : format.getValue('keepWithNext');
-        paragraphFormat.contextualSpacing = isInline ? format.contextualSpacing : format.getValue('contextualSpacing');
-        paragraphFormat.widowControl = isInline ? format.widowControl : format.getValue('widowControl');
+        paragraphFormat[bordersProperty[this.keywordIndex]] = this.writeParagraphBorders(format.borders);
+        paragraphFormat[leftIndentProperty[this.keywordIndex]] = isInline ? format.leftIndent : format.getValue('leftIndent');
+        paragraphFormat[rightIndentProperty[this.keywordIndex]] = isInline ? format.rightIndent : format.getValue('rightIndent');
+        paragraphFormat[firstLineIndentProperty[this.keywordIndex]] = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
+        paragraphFormat[textAlignmentProperty[this.keywordIndex]] = isInline ? 
+        this.keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.textAlignment): format.textAlignment : 
+        this.keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.getValue('textAlignment') as TextAlignment) : format.getValue('textAlignment') as TextAlignment;
+        paragraphFormat[beforeSpacingProperty[this.keywordIndex]] = isInline ? format.beforeSpacing : format.getValue('beforeSpacing');
+        paragraphFormat[afterSpacingProperty[this.keywordIndex]] = isInline ? format.afterSpacing : format.getValue('afterSpacing');
+        paragraphFormat[spaceBeforeAutoProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceBeforeAuto, this.keywordIndex) : format.getValue('spaceBeforeAuto');
+        paragraphFormat[spaceAfterAutoProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceAfterAuto, this.keywordIndex) : format.getValue('spaceAfterAuto');
+        paragraphFormat[lineSpacingProperty[this.keywordIndex]] = isInline ? format.lineSpacing : format.getValue('lineSpacing');
+        paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] = isInline ? 
+        this.keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.lineSpacingType): format.lineSpacingType : 
+        this.keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.getValue('lineSpacingType') as LineSpacingType): format.getValue('lineSpacingType') as LineSpacingType;
+        paragraphFormat[styleNameProperty[this.keywordIndex]] = !isNullOrUndefined(format.baseStyle) ? format.baseStyle.name : undefined;
+        paragraphFormat[outlineLevelProperty[this.keywordIndex]] = isInline ? 
+        this.keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.outlineLevel):format.outlineLevel : 
+        this.keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.getValue('outlineLevel') as OutlineLevel) : format.getValue('outlineLevel') as OutlineLevel;
+        paragraphFormat[listFormatProperty[this.keywordIndex]] = this.writeListFormat(format.listFormat, isInline);
+        paragraphFormat[tabsProperty[this.keywordIndex]] = this.writeTabs(format.tabs);
+        paragraphFormat[bidiProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bidi, this.keywordIndex) : format.getValue('bidi');
+        paragraphFormat[keepLinesTogetherProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepLinesTogether, this.keywordIndex) : format.getValue('keepLinesTogether');
+        paragraphFormat[keepWithNextProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepWithNext, this.keywordIndex) : format.getValue('keepWithNext');
+        paragraphFormat[contextualSpacingProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.contextualSpacing, this.keywordIndex) : format.getValue('contextualSpacing');
+        paragraphFormat[widowControlProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.widowControl, this.keywordIndex) : format.getValue('widowControl');
         if (this.writeInlineStyles && !isInline) {
-            paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
+            paragraphFormat[inlineFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(format, true);
         }
         return paragraphFormat;
     }
     private writeThemes(source: Themes): any {
         let themes: any = {};
-        themes.fontScheme = {};
-        themes.fontScheme.fontSchemeName = source.fontScheme.fontSchemeName;
-        themes.fontScheme.majorFontScheme = this.writeMajorMinorFontScheme(source.fontScheme.majorFontScheme);
-        themes.fontScheme.minorFontScheme = this.writeMajorMinorFontScheme(source.fontScheme.minorFontScheme);
+        themes[fontSchemeProperty[this.keywordIndex]] = {};
+        themes[fontSchemeProperty[this.keywordIndex]][fontSchemeNameProperty[this.keywordIndex]] = source.fontScheme.fontSchemeName;
+        themes[fontSchemeProperty[this.keywordIndex]][majorFontSchemeProperty[this.keywordIndex]] = this.writeMajorMinorFontScheme(source.fontScheme.majorFontScheme);
+        themes[fontSchemeProperty[this.keywordIndex]][minorFontSchemeProperty[this.keywordIndex]] = this.writeMajorMinorFontScheme(source.fontScheme.minorFontScheme);
         return themes;
     }
     private writeMajorMinorFontScheme(source: MajorMinorFontScheme): any {
         let majorMinorFontScheme: any = {};
-        majorMinorFontScheme.fontSchemeList = this.writeFontSchemeList(source.fontSchemeList);
+        majorMinorFontScheme[fontSchemeListProperty[this.keywordIndex]] = this.writeFontSchemeList(source.fontSchemeList);
         let keys: string [] = source.fontTypeface.keys;
         let fontTypeface: any = {};
         for(let key of keys) {
             fontTypeface[key] = source.fontTypeface.get(key);
         }
-        majorMinorFontScheme.fontTypeface = fontTypeface;
+        majorMinorFontScheme[fontTypefaceProperty[this.keywordIndex]] = fontTypeface;
         return majorMinorFontScheme;
     }
     private writeFontSchemeList(source: FontSchemeStruct[]): any {
         let fontSchemeStructs: any = [];
         source.forEach(val => {
             let schemeStruct: any = {};
-            schemeStruct.name = val.name;
-            schemeStruct.typeface = val.typeface;
-            schemeStruct.panose = val.panose;
+            schemeStruct[nameProperty[this.keywordIndex]] = val.name;
+            schemeStruct[typefaceProperty[this.keywordIndex]] = val.typeface;
+            schemeStruct[panoseProperty[this.keywordIndex]] = val.panose;
             fontSchemeStructs.push(schemeStruct);
         });
         return fontSchemeStructs;
@@ -1431,10 +1518,10 @@ export class SfdtExport {
         for (let i: number = 0; i < tabStops.length; i++) {
             let tabStop: WTabStop = tabStops[i];
             let tab: any = {};
-            tab.position = tabStop.position;
-            tab.deletePosition = tabStop.deletePosition;
-            tab.tabJustification = tabStop.tabJustification;
-            tab.tabLeader = tabStop.tabLeader;
+            tab[positionProperty[this.keywordIndex]] = tabStop.position;
+            tab[deletePositionProperty[this.keywordIndex]] = tabStop.deletePosition;
+            tab[tabJustificationProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTabJustificationEnumValue(tabStop.tabJustification) : tabStop.tabJustification;
+            tab[tabLeaderProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTabLeaderEnumValue(tabStop.tabLeader) : tabStop.tabLeader;
             tabs.push(tab);
         }
         return tabs;
@@ -1446,21 +1533,21 @@ export class SfdtExport {
         let listFormat: any = {};
         let listIdValue: Object = format.getValue('listId');
         if (!isNullOrUndefined(listIdValue)) {
-            listFormat.listId = listIdValue;
+            listFormat[listIdProperty[this.keywordIndex]] = listIdValue;
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }
         }
         let listLevelNumber: Object = format.getValue('listLevelNumber');
         if (!isNullOrUndefined(listLevelNumber)) {
-            listFormat.listLevelNumber = listLevelNumber;
+            listFormat[listLevelNumberProperty[this.keywordIndex]] = listLevelNumber;
         }
         return listFormat;
     }
     private writeTable(tableWidget: TableWidget, table: any, index: number, blocks: any): BlockWidget {
         let widget: IWidget = tableWidget.childWidgets[index];
         if (widget instanceof TableRowWidget) {
-            if (this.writeRow(widget, table.rows)) {
+            if (this.writeRow(widget, table[rowsProperty[this.keywordIndex]])) {
                 return undefined;
             }
         }
@@ -1499,7 +1586,7 @@ export class SfdtExport {
                 if (rowWidget.index === widget.rowIndex
                     && (isNullOrUndefined(this.startColumnIndex) || widget.columnIndex >= this.startColumnIndex)
                     && (isNullOrUndefined(this.endColumnIndex) || widget.columnIndex < this.endColumnIndex)) {
-                    if (this.writeCell(widget, row.cells)) {
+                    if (this.writeCell(widget, row[cellsProperty[this.keywordIndex]])) {
                         return rowWidget;
                     }
                 }
@@ -1522,154 +1609,156 @@ export class SfdtExport {
         cells.push(cell);
         let firstBlock: BlockWidget = cellWidget.firstChild as BlockWidget;
         do {
-            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, cell.blocks);
+            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, cell[blocksProperty[this.keywordIndex]]);
         } while (firstBlock);
         return this.endCell instanceof TableCellWidget ? this.endCell.cellFormat === cellWidget.cellFormat : false;
     }
     private createTable(tableWidget: TableWidget): any {
         let table: any = {};
-        table.rows = [];
-        table.grid = [];
+        table[rowsProperty[this.keywordIndex]] = [];
+        table[gridProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
-            table.grid[i] = tableWidget.tableHolder.columns[i].preferredWidth;
+            table[gridProperty[this.keywordIndex]][i] = tableWidget.tableHolder.columns[i].preferredWidth;
         }
-        table.tableFormat = this.writeTableFormat(tableWidget.tableFormat);
-        table.description = tableWidget.description;
-        table.title = tableWidget.title;
-        table.columnCount = tableWidget.tableHolder.columns.length;
+        table[tableFormatProperty[this.keywordIndex]] = this.writeTableFormat(tableWidget.tableFormat);
+        table[descriptionProperty[this.keywordIndex]] = tableWidget.description;
+        table[titleProperty[this.keywordIndex]] = tableWidget.title;
+        table[columnCountProperty[this.keywordIndex]] = tableWidget.tableHolder.columns.length;
         this.writeTablePositioning(table, tableWidget);
         return table;
     }
     private writeTablePositioning(table: any, tableWidget: TableWidget): void {
         if (tableWidget.wrapTextAround) {
-            table.wrapTextAround = tableWidget.wrapTextAround;
-            table.positioning = {};
-            table.positioning.allowOverlap = tableWidget.positioning.allowOverlap;
+            table[wrapTextAroundProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(tableWidget.wrapTextAround, this.keywordIndex);
+            table[positioningProperty[this.keywordIndex]] = {};
+            table[positioningProperty[this.keywordIndex]][allowOverlapProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(tableWidget.positioning.allowOverlap, this.keywordIndex);
             if(!isNullOrUndefined(tableWidget.positioning.distanceBottom)) {
-                table.positioning.distanceBottom = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceBottom);
+                table[positioningProperty[this.keywordIndex]][distanceBottomProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceBottom);
             }
             if(!isNullOrUndefined(tableWidget.positioning.distanceLeft)) {
-                table.positioning.distanceLeft = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceLeft);
+                table[positioningProperty[this.keywordIndex]][distanceLeftProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceLeft);
             }
             if(!isNullOrUndefined(tableWidget.positioning.distanceRight)) {
-                table.positioning.distanceRight = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceRight);
+                table[positioningProperty[this.keywordIndex]][distanceRightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceRight);
             }
             if(!isNullOrUndefined(tableWidget.positioning.distanceTop)) {
-                table.positioning.distanceTop = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceTop);
+                table[positioningProperty[this.keywordIndex]][distanceTopProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceTop);
             }
             if (!isNullOrUndefined(tableWidget.positioning.verticalAlignment)) {
-                table.positioning.verticalAlignment = tableWidget.positioning.verticalAlignment;
+                table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTableVerticalPositionEnumValue(tableWidget.positioning.verticalAlignment): tableWidget.positioning.verticalAlignment;
             }
             if (!isNullOrUndefined(tableWidget.positioning.verticalOrigin)) {
-                table.positioning.verticalOrigin = tableWidget.positioning.verticalOrigin;
+                table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTableVerticalRelationEnumValue(tableWidget.positioning.verticalOrigin): tableWidget.positioning.verticalOrigin;
             }
-            table.positioning.verticalPosition = tableWidget.positioning.verticalPosition;
+            table[positioningProperty[this.keywordIndex]][verticalPositionProperty[this.keywordIndex]] = tableWidget.positioning.verticalPosition;
             if (!isNullOrUndefined(tableWidget.positioning.horizontalAlignment)) {
-                table.positioning.horizontalAlignment = tableWidget.positioning.horizontalAlignment;
+                table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTableHorizontalPositionEnumValue(tableWidget.positioning.horizontalAlignment): tableWidget.positioning.horizontalAlignment;
             }
             if (!isNullOrUndefined(tableWidget.positioning.horizontalOrigin)) {
-                table.positioning.horizontalOrigin = tableWidget.positioning.horizontalOrigin;
+                table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getTableHorizontalRelationEnumValue(tableWidget.positioning.horizontalOrigin): tableWidget.positioning.horizontalOrigin;
             }
-            table.positioning.horizontalPosition = tableWidget.positioning.horizontalPosition;
+            table[positioningProperty[this.keywordIndex]][horizontalPositionProperty[this.keywordIndex]] = tableWidget.positioning.horizontalPosition;
         }
     }
     private createRow(rowWidget: TableRowWidget): any {
         let row: any = {};
-        row.cells = [];
-        row.rowFormat = this.writeRowFormat(rowWidget.rowFormat);
+        row[cellsProperty[this.keywordIndex]] = [];
+        row[rowFormatProperty[this.keywordIndex]] = this.writeRowFormat(rowWidget.rowFormat);
         if (rowWidget.hasOwnProperty('contentControlProperties')) {
-            row.contentControlProperties = this.contentControlProperty(rowWidget.contentControlProperties);
+            row[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(rowWidget.contentControlProperties);
         }
         return row;
     }
     private createCell(cellWidget: TableCellWidget): any {
         let cell: any = {};
-        cell.blocks = [];
-        cell.cellFormat = this.writeCellFormat(cellWidget.cellFormat);
-        cell.columnIndex = cellWidget.columnIndex;
+        cell[blocksProperty[this.keywordIndex]] = [];
+        cell[cellFormatProperty[this.keywordIndex]] = this.writeCellFormat(cellWidget.cellFormat);
+        cell[columnIndexProperty[this.keywordIndex]] = cellWidget.columnIndex;
         if (cellWidget.hasOwnProperty('contentControlProperties')) {
-            cell.contentControlProperties = this.contentControlProperty(cellWidget.contentControlProperties);
+            cell[contentControlPropertiesProperty[this.keywordIndex]] = this.contentControlProperty(cellWidget.contentControlProperties);
         }
         return cell;
     }
     private writeShading(wShading: WShading): any {
         let shading: any = {};
-        shading.backgroundColor = wShading.hasValue('backgroundColor') ? wShading.backgroundColor : undefined;
-        shading.foregroundColor = wShading.hasValue('foregroundColor') ? wShading.foregroundColor : undefined;
-        shading.textureStyle = wShading.hasValue('textureStyle') ? wShading.textureStyle : undefined;
+        shading[backgroundColorProperty[this.keywordIndex]] = wShading.hasValue('backgroundColor') ? wShading.backgroundColor : undefined;
+        shading[foregroundColorProperty[this.keywordIndex]] = wShading.hasValue('foregroundColor') ? wShading.foregroundColor : undefined;
+        shading[textureProperty[this.keywordIndex]] = wShading.hasValue('textureStyle') ? 
+        this.keywordIndex == 1 ? this.getTextureStyleEnumValue(wShading.textureStyle) : wShading.textureStyle : undefined;
         return shading;
     }
     private writeBorder(wBorder: WBorder): any {
         let border: any = {};
-        border.color = wBorder.hasValue('color') ? wBorder.color : undefined;
-        border.hasNoneStyle = wBorder.hasValue('hasNoneStyle') ? wBorder.hasNoneStyle : undefined;
-        border.lineStyle = wBorder.hasValue('lineStyle') ? wBorder.lineStyle : undefined;
-        border.lineWidth = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
-        border.shadow = wBorder.hasValue('shadow') ? wBorder.shadow : undefined;
-        border.space = wBorder.hasValue('space') ? wBorder.space : undefined;
+        border[colorProperty[this.keywordIndex]] = wBorder.hasValue('color') ? wBorder.color : undefined;
+        border[hasNoneStyleProperty[this.keywordIndex]] = wBorder.hasValue('hasNoneStyle') ? HelperMethods.getBoolInfo(wBorder.hasNoneStyle, this.keywordIndex) : undefined;
+        border[lineStyleProperty[this.keywordIndex]] = wBorder.hasValue('lineStyle') ? 
+        this.keywordIndex == 1 ? this.getLineStyleEnumValue(wBorder.lineStyle) : wBorder.lineStyle : undefined;
+        border[lineWidthProperty[this.keywordIndex]] = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
+        border[shadowProperty[this.keywordIndex]] = wBorder.hasValue('shadow') ? HelperMethods.getBoolInfo(wBorder.shadow, this.keywordIndex) : undefined;
+        border[spaceProperty[this.keywordIndex]] = wBorder.hasValue('space') ? wBorder.space : undefined;
         return border;
     }
 
     private writeParagraphBorders(wBorders: WBorders): any {
         let borders: any = {};
-        borders.top = this.writeBorder(wBorders.getBorder('top'));
-        borders.left = this.writeBorder(wBorders.getBorder('left'));
-        borders.right = this.writeBorder(wBorders.getBorder('right'));
-        borders.bottom = this.writeBorder(wBorders.getBorder('bottom'));
-        borders.horizontal = this.writeBorder(wBorders.getBorder('horizontal'));
-        borders.vertical = this.writeBorder(wBorders.getBorder('vertical'));
+        borders[topProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('top'));
+        borders[leftProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('left'));
+        borders[rightProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('right'));
+        borders[bottomProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('bottom'));
+        borders[horizontalProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('horizontal'));
+        borders[verticalProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('vertical'));
         return borders;
     }
 
     private writeBorders(wBorders: WBorders): any {
         let borders: any = {};
-        borders.top = this.writeBorder(wBorders.top);
-        borders.left = this.writeBorder(wBorders.left);
-        borders.right = this.writeBorder(wBorders.right);
-        borders.bottom = this.writeBorder(wBorders.bottom);
-        borders.diagonalDown = this.writeBorder(wBorders.diagonalDown);
-        borders.diagonalUp = this.writeBorder(wBorders.diagonalUp);
-        borders.horizontal = this.writeBorder(wBorders.horizontal);
-        borders.vertical = this.writeBorder(wBorders.vertical);
+        borders[topProperty[this.keywordIndex]] = this.writeBorder(wBorders.top);
+        borders[leftProperty[this.keywordIndex]] = this.writeBorder(wBorders.left);
+        borders[rightProperty[this.keywordIndex]] = this.writeBorder(wBorders.right);
+        borders[bottomProperty[this.keywordIndex]] = this.writeBorder(wBorders.bottom);
+        borders[diagonalDownProperty[this.keywordIndex]] = this.writeBorder(wBorders.diagonalDown);
+        borders[diagonalUpProperty[this.keywordIndex]] = this.writeBorder(wBorders.diagonalUp);
+        borders[horizontalProperty[this.keywordIndex]] = this.writeBorder(wBorders.horizontal);
+        borders[verticalProperty[this.keywordIndex]] = this.writeBorder(wBorders.vertical);
         return borders;
     }
     private writeCellFormat(wCellFormat: WCellFormat): any {
         let cellFormat: any = {};
-        cellFormat.borders = this.writeBorders(wCellFormat.borders);
-        cellFormat.shading = this.writeShading(wCellFormat.shading);
-        cellFormat.topMargin = wCellFormat.hasValue('topMargin') ? wCellFormat.topMargin : undefined;
-        cellFormat.rightMargin = wCellFormat.hasValue('rightMargin') ? wCellFormat.rightMargin : undefined;
-        cellFormat.leftMargin = wCellFormat.hasValue('leftMargin') ? wCellFormat.leftMargin : undefined;
-        cellFormat.bottomMargin = wCellFormat.hasValue('bottomMargin') ? wCellFormat.bottomMargin : undefined;
-        cellFormat.preferredWidth = wCellFormat.hasValue('preferredWidth') ? wCellFormat.preferredWidth : undefined;
-        cellFormat.preferredWidthType = wCellFormat.hasValue('preferredWidthType') ? wCellFormat.preferredWidthType : undefined;
-        cellFormat.cellWidth = wCellFormat.hasValue('cellWidth') ? wCellFormat.cellWidth : undefined;
-        cellFormat.columnSpan = wCellFormat.columnSpan;
-        cellFormat.rowSpan = wCellFormat.rowSpan;
-        cellFormat.verticalAlignment = wCellFormat.hasValue('verticalAlignment') ? wCellFormat.verticalAlignment : undefined;
+        cellFormat[bordersProperty[this.keywordIndex]] = this.writeBorders(wCellFormat.borders);
+        cellFormat[shadingProperty[this.keywordIndex]] = this.writeShading(wCellFormat.shading);
+        cellFormat[topMarginProperty[this.keywordIndex]] = wCellFormat.hasValue('topMargin') ? wCellFormat.topMargin : undefined;
+        cellFormat[rightMarginProperty[this.keywordIndex]] = wCellFormat.hasValue('rightMargin') ? wCellFormat.rightMargin : undefined;
+        cellFormat[leftMarginProperty[this.keywordIndex]] = wCellFormat.hasValue('leftMargin') ? wCellFormat.leftMargin : undefined;
+        cellFormat[bottomMarginProperty[this.keywordIndex]] = wCellFormat.hasValue('bottomMargin') ? wCellFormat.bottomMargin : undefined;
+        cellFormat[preferredWidthProperty[this.keywordIndex]] = wCellFormat.hasValue('preferredWidth') ? wCellFormat.preferredWidth : undefined;
+        cellFormat[preferredWidthTypeProperty[this.keywordIndex]] = wCellFormat.hasValue('preferredWidthType') ? this.keywordIndex == 1 ? this.getWidthTypeEnumValue(wCellFormat.preferredWidthType) : wCellFormat.preferredWidthType : undefined;
+        cellFormat[cellWidthProperty[this.keywordIndex]] = wCellFormat.hasValue('cellWidth') ? wCellFormat.cellWidth : undefined;
+        cellFormat[columnSpanProperty[this.keywordIndex]] = wCellFormat.columnSpan;
+        cellFormat[rowSpanProperty[this.keywordIndex]] = wCellFormat.rowSpan;
+        cellFormat[verticalAlignmentProperty[this.keywordIndex]] = wCellFormat.hasValue('verticalAlignment') ? this.keywordIndex == 1 ? this.getCellVerticalAlignmentEnumValue(wCellFormat.verticalAlignment) : wCellFormat.verticalAlignment : undefined;
         return cellFormat;
     }
     private writeRowFormat(wRowFormat: WRowFormat): any {
         let rowFormat: any = {};
         let revisionIds: any = [];
-        rowFormat.height = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
-        rowFormat.allowBreakAcrossPages = wRowFormat.hasValue('allowBreakAcrossPages') ? wRowFormat.allowBreakAcrossPages : undefined;
-        rowFormat.heightType = wRowFormat.hasValue('heightType') ? wRowFormat.heightType : undefined;
-        rowFormat.isHeader = wRowFormat.hasValue('isHeader') ? wRowFormat.isHeader : undefined;
-        rowFormat.borders = this.writeBorders(wRowFormat.borders);
-        rowFormat.gridBefore = wRowFormat.gridBefore;
-        rowFormat.gridBeforeWidth = wRowFormat.hasValue('gridBeforeWidth') ? wRowFormat.gridBeforeWidth : undefined;
-        rowFormat.gridBeforeWidthType = wRowFormat.hasValue('gridBeforeWidthType') ? wRowFormat.gridBeforeWidthType : undefined;
-        rowFormat.gridAfter = wRowFormat.gridAfter;
-        rowFormat.gridAfterWidth = wRowFormat.hasValue('gridAfterWidth') ? wRowFormat.gridAfterWidth : undefined;
-        rowFormat.gridAfterWidthType = wRowFormat.hasValue('gridAfterWidthType') ? wRowFormat.gridAfterWidthType : undefined;
-        rowFormat.leftMargin = wRowFormat.hasValue('leftMargin') ? wRowFormat.leftMargin : undefined;
-        rowFormat.topMargin = wRowFormat.hasValue('topMargin') ? wRowFormat.topMargin : undefined;
-        rowFormat.rightMargin = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
-        rowFormat.bottomMargin = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
-        rowFormat.leftIndent = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
+        rowFormat[heightProperty[this.keywordIndex]] = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
+        rowFormat[allowBreakAcrossPagesProperty[this.keywordIndex]] = wRowFormat.hasValue('allowBreakAcrossPages') ? HelperMethods.getBoolInfo(wRowFormat.allowBreakAcrossPages, this.keywordIndex) : undefined;
+        rowFormat[heightTypeProperty[this.keywordIndex]] = wRowFormat.hasValue('heightType') ? this.keywordIndex == 1 ? this.getHeighTypeEnumValue(wRowFormat.heightType) : wRowFormat.heightType : undefined;
+        rowFormat[isHeaderProperty[this.keywordIndex]] = wRowFormat.hasValue('isHeader') ? HelperMethods.getBoolInfo(wRowFormat.isHeader, this.keywordIndex) : undefined;
+        rowFormat[bordersProperty[this.keywordIndex]] = this.writeBorders(wRowFormat.borders);
+        rowFormat[gridBeforeProperty[this.keywordIndex]] = wRowFormat.gridBefore;
+        rowFormat[gridBeforeWidthProperty[this.keywordIndex]] = wRowFormat.hasValue('gridBeforeWidth') ? wRowFormat.gridBeforeWidth : undefined;
+        rowFormat[gridBeforeWidthTypeProperty[this.keywordIndex]] = wRowFormat.hasValue('gridBeforeWidthType') ? this.keywordIndex == 1 ? this.getWidthTypeEnumValue(wRowFormat.gridBeforeWidthType) : wRowFormat.gridBeforeWidthType : undefined;
+        rowFormat[gridAfterProperty[this.keywordIndex]] = wRowFormat.gridAfter;
+        rowFormat[gridAfterWidthProperty[this.keywordIndex]] = wRowFormat.hasValue('gridAfterWidth') ? wRowFormat.gridAfterWidth : undefined;
+        rowFormat[gridAfterWidthTypeProperty[this.keywordIndex]] = wRowFormat.hasValue('gridAfterWidthType') ? this.keywordIndex == 1 ? this.getWidthTypeEnumValue(wRowFormat.gridAfterWidthType) : wRowFormat.gridAfterWidthType : undefined;
+        rowFormat[leftMarginProperty[this.keywordIndex]] = wRowFormat.hasValue('leftMargin') ? wRowFormat.leftMargin : undefined;
+        rowFormat[topMarginProperty[this.keywordIndex]] = wRowFormat.hasValue('topMargin') ? wRowFormat.topMargin : undefined;
+        rowFormat[rightMarginProperty[this.keywordIndex]] = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
+        rowFormat[bottomMarginProperty[this.keywordIndex]] = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
+        rowFormat[leftIndentProperty[this.keywordIndex]] = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
         for (let j: number = 0; j < wRowFormat.revisions.length; j++) {
-            rowFormat.revisionIds = this.writeRowRevisions(wRowFormat.revisions[j], revisionIds);
+            rowFormat[revisionIdsProperty[this.keywordIndex]] = this.writeRowRevisions(wRowFormat.revisions[j], revisionIds);
         }
         return rowFormat;
     }
@@ -1682,20 +1771,20 @@ export class SfdtExport {
     }
     private writeTableFormat(wTableFormat: WTableFormat): any {
         let tableFormat: any = {};
-        tableFormat.borders = this.writeBorders(wTableFormat.borders);
-        tableFormat.shading = this.writeShading(wTableFormat.shading);
-        tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
-        tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
-        tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
-        tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
-        tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
-        tableFormat.bottomMargin = wTableFormat.hasValue('bottomMargin') ? wTableFormat.bottomMargin : undefined;
-        tableFormat.preferredWidth = wTableFormat.hasValue('preferredWidth') ? wTableFormat.preferredWidth : undefined;
-        tableFormat.preferredWidthType = wTableFormat.hasValue('preferredWidthType') ? wTableFormat.preferredWidthType : undefined;
-        tableFormat.bidi = wTableFormat.hasValue('bidi') ? wTableFormat.bidi : undefined;
-        tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
-        tableFormat.styleName = !isNullOrUndefined(wTableFormat.styleName) ? wTableFormat.styleName : undefined;
+        tableFormat[bordersProperty[this.keywordIndex]] = this.writeBorders(wTableFormat.borders);
+        tableFormat[shadingProperty[this.keywordIndex]] = this.writeShading(wTableFormat.shading);
+        tableFormat[cellSpacingProperty[this.keywordIndex]] = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
+        tableFormat[leftIndentProperty[this.keywordIndex]] = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
+        tableFormat[tableAlignmentProperty[this.keywordIndex]] = wTableFormat.hasValue('tableAlignment') ? this.keywordIndex == 1 ? this.getTableAlignmentEnumValue(wTableFormat.tableAlignment) : wTableFormat.tableAlignment : undefined;
+        tableFormat[topMarginProperty[this.keywordIndex]] = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
+        tableFormat[rightMarginProperty[this.keywordIndex]] = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
+        tableFormat[leftMarginProperty[this.keywordIndex]] = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
+        tableFormat[bottomMarginProperty[this.keywordIndex]] = wTableFormat.hasValue('bottomMargin') ? wTableFormat.bottomMargin : undefined;
+        tableFormat[preferredWidthProperty[this.keywordIndex]] = wTableFormat.hasValue('preferredWidth') ? wTableFormat.preferredWidth : undefined;
+        tableFormat[preferredWidthTypeProperty[this.keywordIndex]] = wTableFormat.hasValue('preferredWidthType') ? this.keywordIndex == 1 ? this.getWidthTypeEnumValue(wTableFormat.preferredWidthType) : wTableFormat.preferredWidthType : undefined;
+        tableFormat[bidiProperty[this.keywordIndex]] = wTableFormat.hasValue('bidi') ? HelperMethods.getBoolInfo(wTableFormat.bidi, this.keywordIndex) : undefined;
+        tableFormat[allowAutoFitProperty[this.keywordIndex]] = wTableFormat.hasValue('allowAutoFit') ? HelperMethods.getBoolInfo(wTableFormat.allowAutoFit, this.keywordIndex) : undefined;
+        tableFormat[styleNameProperty[this.keywordIndex]] = !isNullOrUndefined(wTableFormat.styleName) ? wTableFormat.styleName : undefined;
         return tableFormat;
     }
     private footnotes(documentHelper: DocumentHelper): void {
@@ -1705,22 +1794,22 @@ export class SfdtExport {
     }
     private seprators(documentHelper: any): any {
         if (documentHelper.footnotes.separator.length > 0) {
-            this.document.footnotes = {};
-            this.document.footnotes.separator = [];
+            this.document[footnotesProperty[this.keywordIndex]] = {};
+            this.document[footnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.footnotes.separator.length; i++) {
-                this.writeBlock(documentHelper.footnotes.separator[i], 0, this.document.footnotes.separator);
+                this.writeBlock(documentHelper.footnotes.separator[i], 0, this.document[footnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]]);
             }
         }
         if (documentHelper.footnotes.continuationSeparator.length > 0) {
-            this.document.footnotes.continuationSeparator = [];
+            this.document[footnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.footnotes.continuationSeparator.length; i++) {
-                this.writeBlock(documentHelper.footnotes.continuationSeparator[i], 0, this.document.footnotes.continuationSeparator);
+                this.writeBlock(documentHelper.footnotes.continuationSeparator[i], 0, this.document[footnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]]);
             }
         }
         if (documentHelper.footnotes.continuationNotice.length > 0) {
-            this.document.footnotes.continuationNotice = [];
+            this.document[footnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.footnotes.continuationNotice.length; i++) {
-                this.writeBlock(documentHelper.footnotes.continuationNotice[i], 0, this.document.footnotes.continuationNotice);
+                this.writeBlock(documentHelper.footnotes.continuationNotice[i], 0, this.document[footnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]]);
             }
         }
     }
@@ -1731,172 +1820,182 @@ export class SfdtExport {
     }
     private endnoteSeparator(documentHelper: DocumentHelper): void {
         if (documentHelper.endnotes.separator.length > 0) {
-            this.document.endnotes = {};
-            this.document.endnotes.separator = [];
+            this.document[endnotesProperty[this.keywordIndex]] = {};
+            this.document[endnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.endnotes.separator.length; i++) {
-                this.writeBlock(documentHelper.endnotes.separator[i], 0, this.document.endnotes.separator);
+                this.writeBlock(documentHelper.endnotes.separator[i], 0, this.document[endnotesProperty[this.keywordIndex]][separatorProperty[this.keywordIndex]]);
             }
         }
         if (documentHelper.endnotes.continuationSeparator.length > 0) {
-            this.document.endnotes.continuationSeparator = [];
+            this.document[endnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.endnotes.continuationSeparator.length; i++) {
-                this.writeBlock(documentHelper.endnotes.continuationSeparator[i], 0, this.document.endnotes.continuationSeparator);
+                this.writeBlock(documentHelper.endnotes.continuationSeparator[i], 0, this.document[endnotesProperty[this.keywordIndex]][continuationSeparatorProperty[this.keywordIndex]]);
             }
         }
         if (documentHelper.endnotes.continuationNotice.length > 0) {
-            this.document.endnotes.continuationNotice = [];
+            this.document[endnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]] = [];
             for (let i: number = 0; i < documentHelper.endnotes.continuationNotice.length; i++) {
-                this.writeBlock(documentHelper.endnotes.continuationNotice[i], 0, this.document.endnotes.continuationNotice);
+                this.writeBlock(documentHelper.endnotes.continuationNotice[i], 0, this.document[endnotesProperty[this.keywordIndex]][continuationNoticeProperty[this.keywordIndex]]);
             }
         }
     }
     private writeStyles(documentHelper: DocumentHelper): void {
         let styles: Object[] = [];
-        this.document.styles = [];
+        this.document[stylesProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.styles.length; i++) {
-            this.document.styles.push(this.writeStyle(documentHelper.styles.getItem(i) as WStyle));
+            this.document[stylesProperty[this.keywordIndex]].push(this.writeStyle(documentHelper.styles.getItem(i) as WStyle));
         }
     }
     private writeStyle(style: WStyle): any {
         let wStyle: any = {};
-        wStyle.name = style.name;
+        wStyle[nameProperty[this.keywordIndex]] = style.name;
         if (style.type === 'Paragraph') {
-            wStyle.type = 'Paragraph';
-            wStyle.paragraphFormat = this.writeParagraphFormat((style as any).paragraphFormat);
-            wStyle.characterFormat = this.writeCharacterFormat((style as any).characterFormat);
+            wStyle[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getStyleTypeEnumValue(style.type) : style.type;
+            wStyle[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat((style as any).paragraphFormat);
+            wStyle[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat((style as any).characterFormat);
         }
         if (style.type === 'Character') {
-            wStyle.type = 'Character';
-            wStyle.characterFormat = this.writeCharacterFormat((style as any).characterFormat);
+            wStyle[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getStyleTypeEnumValue(style.type) : style.type;
+            wStyle[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat((style as any).characterFormat);
         }
         if (!isNullOrUndefined(style.basedOn)) {
-            wStyle.basedOn = style.basedOn.name;
+            wStyle[basedOnProperty[this.keywordIndex]] = style.basedOn.name;
         }
         if (!isNullOrUndefined(style.link)) {
-            wStyle.link = style.link.name;
+            wStyle[linkProperty[this.keywordIndex]] = style.link.name;
         }
         if (!isNullOrUndefined(style.next)) {
-            wStyle.next = style.next.name;
+            wStyle[nextProperty[this.keywordIndex]] = style.next.name;
         }
         return wStyle;
     }
     public writeRevisions(documentHelper: DocumentHelper): void {
-        this.document.revisions = [];
+        this.document[revisionsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.owner.revisions.changes.length; i++) {
             if (this.isExport ||
                 (!this.isExport && !this.owner.enableTrackChanges && this.selectedRevisionId.indexOf(documentHelper.owner.revisions.changes[i].revisionID) !== -1)) {
-                this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
+                this.document[revisionsProperty[this.keywordIndex]].push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
             }
         }
     }
     private writeRevision(revisions: Revision): any {
         let revision: any = {};
-        revision.author = revisions.author;
-        revision.date = revisions.date;
-        revision.revisionType = revisions.revisionType;
-        revision.revisionId = revisions.revisionID;
+        revision[authorProperty[this.keywordIndex]] = revisions.author;
+        revision[dateProperty[this.keywordIndex]] = revisions.date;
+        revision[revisionTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getRevisionTypeEnumValue(revisions.revisionType) : revisions.revisionType;
+        revision[revisionIdProperty[this.keywordIndex]] = revisions.revisionID;
         return revision;
     }
     public writeComments(documentHelper: DocumentHelper): void {
-        this.document.comments = [];
+        this.document[commentsProperty[this.keywordIndex]] = [];
 
         for (let i: number = 0; i < documentHelper.comments.length; i++) {
             if (this.isExport ||
                 (!this.isExport && this.selectedCommentsId.indexOf(this.documentHelper.comments[i].commentId) !== -1)) {
-                this.document.comments.push(this.writeComment(this.documentHelper.comments[i]));
+                this.document[commentsProperty[this.keywordIndex]].push(this.writeComment(this.documentHelper.comments[i]));
             }
         }
     }
     public writeCustomXml(documentHelper: DocumentHelper): void {
-        this.document.customXml = [];
+        this.document[customXmlProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.customXmlData.length; i++) {
             let customXml: any = {};
             let key: string = documentHelper.customXmlData.keys[i];
-            customXml.itemID = key;
+            customXml[itemIDProperty[this.keywordIndex]] = key;
             let xmlValue: string = this.documentHelper.customXmlData.get(key);
-            customXml.xml = xmlValue;
-            this.document.customXml.push(customXml);
+            customXml[xmlProperty[this.keywordIndex]] = xmlValue;
+            this.document[customXmlProperty[this.keywordIndex]].push(customXml);
         }
+    }
+    public writeImages(documentHelper: DocumentHelper): void {
+        this.document[imagesProperty[this.keywordIndex]] = {};
+        documentHelper.images.keys.forEach(key => {
+            let base64ImageString: string[] = this.documentHelper.images.get(key);
+            this.document[imagesProperty[this.keywordIndex]][key] = base64ImageString;
+        });
     }
     private writeComment(comments: CommentElementBox): any {
         let comment: any = {};
-        comment.commentId = comments.commentId;
-        comment.author = comments.author;
-        comment.date = comments.date;
-        comment.blocks = [];
-        comment.blocks.push(this.commentInlines(comments.text));
-        comment.done = comments.isResolved;
-        comment.replyComments = [];
+        comment[commentIdProperty[this.keywordIndex]] = comments.commentId;
+        comment[authorProperty[this.keywordIndex]] = comments.author;
+        comment[dateProperty[this.keywordIndex]] = comments.date;
+        comment[blocksProperty[this.keywordIndex]] = [];
+        comment[blocksProperty[this.keywordIndex]].push(this.commentInlines(comments.text));
+        comment[doneProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(comments.isResolved, this.keywordIndex);
+        comment[replyCommentsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < comments.replyComments.length; i++) {
-            comment.replyComments.push(this.writeComment(comments.replyComments[i]));
+            comment[replyCommentsProperty[this.keywordIndex]].push(this.writeComment(comments.replyComments[i]));
         }
         return comment;
     }
     private commentInlines(ctext: string): any {
         let blocks: any = {};
-        blocks.inlines = [{ text: ctext }];
+        blocks[inlinesProperty[this.keywordIndex]] = [];
+        let inlines: any = {};
+        inlines[textProperty[this.keywordIndex]] = ctext;
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines);
         return blocks;
     }
 
     private writeLists(documentHelper: DocumentHelper): void {
         let abstractLists: number[] = [];
-        this.document.lists = [];
+        this.document[listsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.lists.length; i++) {
             let list: WList = documentHelper.lists[i];
             if (this.lists.indexOf(list.listId) > -1) {
-                this.document.lists.push(this.writeList(list));
+                this.document[listsProperty[this.keywordIndex]].push(this.writeList(list));
                 if (abstractLists.indexOf(list.abstractListId) < 0) {
                     abstractLists.push(list.abstractListId);
                 }
             }
         }
-        this.document.abstractLists = [];
+        this.document[abstractListsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < documentHelper.abstractLists.length; i++) {
             let abstractList: WAbstractList = documentHelper.abstractLists[i];
             if (abstractLists.indexOf(abstractList.abstractListId) > -1) {
-                this.document.abstractLists.push(this.writeAbstractList(abstractList));
+                this.document[abstractListsProperty[this.keywordIndex]].push(this.writeAbstractList(abstractList));
             }
         }
     }
     private writeAbstractList(wAbstractList: WAbstractList): any {
         let abstractList: any = {};
-        abstractList.abstractListId = wAbstractList.abstractListId;
-        abstractList.levels = [];
+        abstractList[abstractListIdProperty[this.keywordIndex]] = wAbstractList.abstractListId;
+        abstractList[levelsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < wAbstractList.levels.length; i++) {
-            abstractList.levels[i] = this.writeListLevel(wAbstractList.levels[i]);
+            abstractList[levelsProperty[this.keywordIndex]][i] = this.writeListLevel(wAbstractList.levels[i]);
         }
         return abstractList;
     }
     private writeList(wList: WList): any {
         let list: any = {};
-        list.abstractListId = wList.abstractListId;
-        list.levelOverrides = [];
+        list[abstractListIdProperty[this.keywordIndex]] = wList.abstractListId;
+        list[levelOverridesProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < wList.levelOverrides.length; i++) {
-            list.levelOverrides.push(this.writeLevelOverrides(wList.levelOverrides[i]));
+            list[levelOverridesProperty[this.keywordIndex]].push(this.writeLevelOverrides(wList.levelOverrides[i]));
         }
-        list.listId = wList.listId;
+        list[listIdProperty[this.keywordIndex]] = wList.listId;
         return list;
     }
     private writeLevelOverrides(wlevel: WLevelOverride): any {
         let levelOverrides: any = {};
-        levelOverrides.levelNumber = wlevel.levelNumber;
+        levelOverrides[levelNumberProperty[this.keywordIndex]] = wlevel.levelNumber;
         if (wlevel.overrideListLevel) {
-            levelOverrides.overrideListLevel = this.writeListLevel(wlevel.overrideListLevel);
+            levelOverrides[overrideListLevelProperty[this.keywordIndex]] = this.writeListLevel(wlevel.overrideListLevel);
         }
-        levelOverrides.startAt = wlevel.startAt;
+        levelOverrides[startAtProperty[this.keywordIndex]] = wlevel.startAt;
         return levelOverrides;
     }
     private writeListLevel(wListLevel: WListLevel): any {
         let listLevel: any = {};
 
-        listLevel.characterFormat = this.writeCharacterFormat(wListLevel.characterFormat);
-        listLevel.paragraphFormat = this.writeParagraphFormat(wListLevel.paragraphFormat);
+        listLevel[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(wListLevel.characterFormat);
+        listLevel[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(wListLevel.paragraphFormat);
 
-        listLevel.followCharacter = wListLevel.followCharacter;
-        listLevel.listLevelPattern = wListLevel.listLevelPattern;
-        listLevel.numberFormat = wListLevel.numberFormat;
-        listLevel.restartLevel = wListLevel.restartLevel;
-        listLevel.startAt = wListLevel.startAt;
+        listLevel[followCharacterProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFollowCharacterType(wListLevel.followCharacter) : wListLevel.followCharacter;
+        listLevel[listLevelPatternProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getListLevelPatternEnumValue(wListLevel.listLevelPattern) : wListLevel.listLevelPattern;
+        listLevel[numberFormatProperty[this.keywordIndex]] = wListLevel.numberFormat;
+        listLevel[restartLevelProperty[this.keywordIndex]] = wListLevel.restartLevel;
+        listLevel[startAtProperty[this.keywordIndex]] = wListLevel.startAt;
 
         return listLevel;
     }
@@ -1912,6 +2011,765 @@ export class SfdtExport {
         }
         return cell;
     }
+    private getLineSpacingTypeEnumValue(lineSpacing: LineSpacingType): number {
+        switch (lineSpacing) {
+            case 'Multiple':
+                return 0;
+            case 'AtLeast':
+                return 1;
+            case 'Exactly':
+                return 2;
+        }
+    }
+    private getOutlineLevelEnumValue(outlineLevel: OutlineLevel): number {
+        switch (outlineLevel) {
+            case 'BodyText':
+                return 0;
+            case 'Level1':
+                return 1;
+            case 'Level2':
+                return 2;
+            case 'Level3':
+                return 3;
+            case 'Level4':
+                return 4;
+            case 'Level5':
+                return 5;
+            case 'Level6':
+                return 6;
+            case 'Level7':
+                return 7;
+            case 'Level8':
+                return 8;
+            case 'Level9':
+                return 9;
+        }
+    }
+    private getTextAlignmentEnumValue(textAlignment: TextAlignment): number {
+        switch (textAlignment) {
+            case 'Left':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Right':
+                return 2;
+            case 'Justify':
+                return 3;
+        }
+    }
+    private getWidthTypeEnumValue(widthType: WidthType): number {
+        switch (widthType) {
+            case 'Auto':
+                return 0;
+            case 'Percent':
+                return 1;
+            case 'Point':
+                return 2;
+        }
+    }
+    private getTableAlignmentEnumValue(tableAlignment: TableAlignment): number {
+        switch (tableAlignment) {
+            case 'Left':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Right':
+                return 2;
+        }
+    }
+    private getLineStyleEnumValue(lineStyle: LineStyle): number {
+        switch (lineStyle) {
+            case 'Single':
+                return 0;
+            case 'None':
+                return 1;
+            case 'Dot':
+                return 2;
+            case 'DashSmallGap':
+                return 3;
+            case 'DashLargeGap':
+                return 4;
+            case 'DashDot':
+                return 5;
+            case 'DashDotDot':
+                return 6;
+            case 'Double':
+                return 7;
+            case 'Triple':
+                return 8;
+            case 'ThinThickSmallGap':
+                return 9;
+            case 'ThickThinSmallGap':
+                return 10;
+            case 'ThinThickThinSmallGap':
+                return 11;
+            case 'ThinThickMediumGap':
+                return 12;
+            case 'ThickThinMediumGap':
+                return 13;
+            case 'ThinThickThinMediumGap':
+                return 14;
+            case 'ThinThickLargeGap':
+                return 15;
+            case 'ThickThinLargeGap':
+                return 16;
+            case 'ThinThickThinLargeGap':
+                return 17;
+            case 'SingleWavy':
+                return 18;
+            case 'DoubleWavy':
+                return 19;
+            case 'DashDotStroked':
+                return 20;
+            case 'Emboss3D':
+                return 21;
+            case 'Engrave3D':
+                return 22;
+            case 'Outset':
+                return 23;
+            case 'Inset':
+                return 24;
+            case 'Thick':
+                return 25;
+            case 'Cleared':
+                return 26;
+        }
+    }
+    private getTextureStyleEnumValue(textureStyle: TextureStyle): number {
+        switch (textureStyle) {
+            case 'TextureNone':
+                return 0;
+            case 'Texture2Pt5Percent':
+                return 1;
+            case 'Texture5Percent':
+                return 2;
+            case 'Texture7Pt5Percent':
+                return 3;
+            case 'Texture10Percent':
+                return 4;
+            case 'Texture12Pt5Percent':
+                return 5;
+            case 'Texture15Percent':
+                return 6;
+            case 'Texture17Pt5Percent':
+                return 7;
+            case 'Texture20Percent':
+                return 8;
+            case 'Texture22Pt5Percent':
+                return 9;
+            case 'Texture25Percent':
+                return 10;
+            case 'Texture27Pt5Percent':
+                return 11;
+            case 'Texture30Percent':
+                return 12;
+            case 'Texture32Pt5Percent':
+                return 13;
+            case 'Texture35Percent':
+                return 14;
+            case 'Texture37Pt5Percent':
+                return 15;
+            case 'Texture40Percent':
+                return 16;
+            case 'Texture42Pt5Percent':
+                return 17;
+            case 'Texture45Percent':
+                return 18;
+            case 'Texture47Pt5Percent':
+                return 19;
+            case 'Texture50Percent':
+                return 20;
+            case 'Texture52Pt5Percent':
+                return 21;
+            case 'Texture55Percent':
+                return 22;
+            case 'Texture57Pt5Percent':
+                return 23;
+            case 'Texture60Percent':
+                return 24;
+            case 'Texture62Pt5Percent':
+                return 25;
+            case 'Texture65Percent':
+                return 26;
+            case 'Texture67Pt5Percent':
+                return 27;
+            case 'Texture70Percent':
+                return 28;
+            case 'Texture72Pt5Percent':
+                return 29;
+            case 'Texture75Percent':
+                return 30;
+            case 'Texture77Pt5Percent':
+                return 31;
+            case 'Texture80Percent':
+                return 32;
+            case 'Texture82Pt5Percent':
+                return 33;
+            case 'Texture85Percent':
+                return 34;
+            case 'Texture87Pt5Percent':
+                return 35;
+            case 'Texture90Percent':
+                return 36;
+            case 'Texture92Pt5Percent':
+                return 37;
+            case 'Texture95Percent':
+                return 38;
+            case 'Texture97Pt5Percent':
+                return 39;
+            case 'TextureSolid':
+                return 40;
+            case 'TextureDarkHorizontal':
+                return 41;
+            case 'TextureDarkVertical':
+                return 42;
+            case 'TextureDarkDiagonalDown':
+                return 43;
+            case 'TextureDarkDiagonalUp':
+                return 44;
+            case 'TextureDarkCross':
+                return 45;
+            case 'TextureDarkDiagonalCross':
+                return 46;
+            case 'TextureHorizontal':
+                return 47;
+            case 'TextureVertical':
+                return 48;
+            case 'TextureDiagonalDown':
+                return 49;
+            case 'TextureDiagonalUp':
+                return 50;
+            case 'TextureCross':
+                return 51;
+            case 'TextureDiagonalCross':
+                return 52;
+        }
+    }
+    private getHeighTypeEnumValue(heightType: HeightType): number {
+        switch (heightType) {
+            case 'AtLeast':
+                return 0;
+            case 'Exactly':
+                return 1;
+            default:
+                return 0;
+        }
+    }
+    private getCellVerticalAlignmentEnumValue(cellVerticalAlignment: CellVerticalAlignment): number {
+        switch (cellVerticalAlignment) {
+            case 'Top':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Bottom':
+                return 2;
+        }
+    }
+    private getListLevelPatternEnumValue(listLevelPattern: ListLevelPattern): number {
+        switch (listLevelPattern) {
+            case 'None':
+                return 0;
+            case 'Arabic':
+                return 1;
+            case 'UpRoman':
+                return 2;
+            case 'LowRoman':
+                return 3;
+            case 'UpLetter':
+                return 4;
+            case 'LowLetter':
+                return 5;
+            case 'Ordinal':
+                return 6;
+            case 'Number':
+                return 7;
+            case 'OrdinalText':
+                return 8;
+            case 'LeadingZero':
+                return 9;
+            case 'Bullet':
+                return 10;
+            case 'FarEast':
+                return 11;
+            case 'Special':
+                return 12;
+        }
+    }
+    private getStyleTypeEnumValue(styleType: StyleType): number {
+        switch (styleType) {
+            case 'Paragraph':
+                return 0;
+            case 'Character':
+                return 1;
+        }
+    }
+    private getProtectionTypeEnumValue(protectionType: ProtectionType): number {
+        switch (protectionType) {
+            case 'NoProtection':
+                return 0;
+            case 'ReadOnly':
+                return 1;
+            case 'FormFieldsOnly':
+                return 2;
+            case 'CommentsOnly':
+                return 3;
+            case 'RevisionsOnly':
+                return 4;
+        }
+    }
+    private getRevisionTypeEnumValue(revisionType: RevisionType): number {
+        switch (revisionType) {
+            case 'Insertion':
+                return 0;
+            case 'Deletion':
+                return 1;
+            case 'MoveTo':
+                return 2;
+            case 'MoveFrom':
+                return 3;
+        }
+    }
+    private getFootnoteTypeEnumValue(footnoteType: FootnoteType): number {
+        switch (footnoteType) {
+            case 'Footnote':
+                return 0;
+            case 'Endnote':
+                return 1;
+        }
+    }
+    private getFootnoteRestartIndexEnumValue(footnoteRestartIndex: FootnoteRestartIndex): number {
+        switch (footnoteRestartIndex) {
+            case 'DoNotRestart':
+                return 0;
+            case 'RestartForEachSection':
+                return 1;
+            case 'RestartForEachPage':
+                return 2;
+        }
+    }
+    private getFootEndNoteNumberFormatEnumValue(footEndNoteNumberFormat: FootEndNoteNumberFormat): number {
+        switch (footEndNoteNumberFormat) {
+            case 'Arabic':
+                return 0;
+            case 'UpperCaseRoman':
+                return 1;
+            case 'LowerCaseRoman':
+                return 2;
+            case 'UpperCaseLetter':
+                return 3;
+            case 'LowerCaseLetter':
+                return 4;
+        }
+    }
+    private getTextVerticalAlignmentEnumValue(textVerticalAlignment: VerticalAlignment): number {
+        switch (textVerticalAlignment) {
+            case 'Top':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Bottom':
+                return 2;
+            default:
+                return 0;
+        }
+    }
+    private getShapeVerticalAlignmentEnumValue(shapeVerticalAlignment: VerticalAlignment): number {
+        switch (shapeVerticalAlignment) {
+            case 'None':
+                return 0;
+            case 'Top':
+                return 1;
+            case 'Center':
+                return 2;
+            case 'Bottom':
+                return 3;
+            case 'Inline':
+                return 4;
+            case 'Inside':
+                return 5;
+            case 'Outside':
+                return 6;
+        }
+    }
+    private getShapeHorizontalAlignmentEnumValue(shapeHorizontalAlignment: HorizontalAlignment): number {
+        switch (shapeHorizontalAlignment) {
+            case 'None':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Inside':
+                return 2;
+            case 'Left':
+                return 3;
+            case 'Outside':
+                return 4;
+            case 'Right':
+                return 5;
+        }
+    }
+    private getVerticalOriginEnumValue(verticalOrigin: VerticalOrigin): number {
+        switch (verticalOrigin) {
+            case 'Paragraph':
+                return 0;
+            case 'BottomMargin':
+                return 1;
+            case 'InsideMargin':
+                return 2;
+            case 'Line':
+                return 3;
+            case 'Margin':
+                return 4;
+            case 'OutsideMargin':
+                return 5;
+            case 'Page':
+                return 6;
+            case 'TopMargin':
+                return 7;
+        }
+    }
+    private getHorizontalOriginEnumValue(horizontalOrigin: HorizontalOrigin): number {
+        switch (horizontalOrigin) {
+            case 'Column':
+                return 0;
+            case 'Character':
+                return 1;
+            case 'InsideMargin':
+                return 2;
+            case 'LeftMargin':
+                return 3;
+            case 'Margin':
+                return 4;
+            case 'OutsideMargin':
+                return 5;
+            case 'Page':
+                return 6;
+            case 'RightMargin':
+                return 7;
+        }
+    }
+    private getTableVerticalRelationEnumValue(tableRelation: string): number {
+        switch (tableRelation) {
+            case 'Paragraph':
+                return 0;
+            case 'Margin':
+                return 1;
+            case 'Page':
+                return 2;
+            default:
+                return 0;
+        }
+    }
+    private getTableHorizontalRelationEnumValue(tableRelation: string): number {
+        switch (tableRelation) {
+            case 'Column':
+                return 0;
+            case 'Margin':
+                return 1;
+            case 'Page':
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
+    private getTableVerticalPositionEnumValue(tableVerticalPosition: VerticalAlignment): number {
+        switch (tableVerticalPosition) {
+            case 'None':
+                return 0;
+            case 'Top':
+                return 1;
+            case 'Center':
+                return 2;
+            case 'Bottom':
+                return 3;
+            case 'Inside':
+                return 4;
+            case 'Outside':
+                return 5;
+            default:
+                return 0;
+        }
+    }
+    private getTableHorizontalPositionEnumValue(tableHorizontalPosition: HorizontalAlignment): number {
+        switch (tableHorizontalPosition) {
+            case 'Left':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Inside':
+                return 2;
+            case 'Outside':
+                return 3;
+            case 'Right':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    private getLineDashStyleEnumValue(lineDashStyle: LineDashing): number {
+        switch (lineDashStyle) {
+            case 'Solid':
+                return 0;
+            case 'Dash':
+                return 1;
+            case 'DashDot':
+                return 2;
+            case 'DashDotDot':
+                return 3;
+            case 'DashDotGEL':
+                return 4;
+            case 'DashGEL':
+                return 5;
+            case 'Dot':
+                return 6;
+            case 'DotGEL':
+                return 7;
+            case 'LongDashDotDotGEL':
+                return 8;
+            case 'LongDashDotGEL':
+                return 9;
+            case 'LongDashGEL':
+                return 10;
+        }
+    }
+    private getHorizontalPositionAbsEnumValue(horizontalPositionAbs: HorizontalAlignment): number {
+        switch (horizontalPositionAbs) {
+            case 'Left':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Right':
+                return 2;
+            case 'Inside':
+                return 3;
+            case 'Outside':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    private getTabJustificationEnumValue(tabJustification: TabJustification): number {
+        switch (tabJustification) {
+            case 'Left':
+                return 0;
+            case 'Bar':
+                return 1;
+            case 'Center':
+                return 2;
+            case 'Decimal':
+                return 3;
+            case 'List':
+                return 4;
+            case 'Right':
+                return 5;
+        }
+    }
+    private getTabLeaderEnumValue(tabLeader: TabLeader): number {
+        switch (tabLeader) {
+            case 'None':
+                return 0;
+            case 'Single':
+                return 1;
+            case 'Dot':
+                return 2;
+            case 'Hyphen':
+                return 3;
+            case 'Underscore':
+                return 4;
+        }
+    }
+    private getTextFormFieldTypeEnumValue(textFormFieldType: TextFormFieldType): number {
+        switch (textFormFieldType) {
+            case 'Text':
+                return 0;
+            case 'Number':
+                return 1;
+            case 'Date':
+                return 3;
+            case 'Calculation':
+                return 4;
+        }
+    }
+    private getTextFormFieldFormatEnumValue(textFormFieldFormat: string): number {
+        switch (textFormFieldFormat) {
+            case 'None':
+                return 0;
+            case 'FirstCapital':
+                return 1;
+            case 'Lowercase':
+                return 2;
+            case 'Uppercase':
+                return 3;
+            case 'Titlecase':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    private getCheckBoxSizeTypeEnumValue(checkBoxSizeType: CheckBoxSizeType): number {
+        switch (checkBoxSizeType) {
+            case 'Auto':
+                return 0;
+            case 'Exactly':
+                return 1;
+        }
+    }
+    private getContentControlAppearanceEnumValue(contentControlAppearance: string): number {
+        switch (contentControlAppearance) {
+            case 'BoundingBox':
+                return 1;
+            case 'Hidden':
+                return 2;
+            case 'Tags':
+                return 3;
+            default:
+                return 1;
+        }
+    }
+    private getContentControlTypeEnumValue(contentControlType: ContentControlType): number {
+        switch (contentControlType) {
+            case 'RichText':
+                return 0;
+            case 'BuildingBlockGallery':
+                return 1;
+            case 'CheckBox':
+                return 2;
+            case 'ComboBox':
+                return 3;
+            case 'Date':
+                return 4;
+            case 'DropDownList':
+                return 5;
+            case 'Group':
+                return 6;
+            case 'Picture':
+                return 7;
+            case 'RepeatingSection':
+                return 8;
+            case 'Text':
+                return 9;
+        }
+    }
+    private getDateCalendarTypeEnumValue(dateCalendarType: string): number {
+        switch (dateCalendarType) {
+            case 'Gregorian':
+                return 0;
+            case 'GregorianArabic':
+                return 1;
+            case 'GregorianEnglish':
+                return 2;
+            case 'GregorianMiddleEastFrench':
+                return 3;
+            case 'GregorianTransliteratedEnglish':
+                return 4;
+            case 'GregorianTransliteratedFrench':
+                return 5;
+            case 'Hebrew':
+                return 6;
+            case 'Hijri':
+                return 7;
+            case 'Japan':
+                return 8;
+            case 'Korean':
+                return 9;
+            case 'Saka':
+                return 10;
+            case 'Taiwan':
+                return 11;
+            case 'Thai':
+                return 12;
+            default:
+                return 0;
+        }
+    }
+    private getDateStorageFormatEnumValue(dateStorageFormat: string): number {
+        switch (dateStorageFormat) {
+            case 'DateStorageDate':
+                return 1;
+            case 'DateStorageDateTime':
+                return 2;
+            case 'DateStorageText':
+                return 3;
+            default:
+                return 0;
+        }
+    }
+    private getTextWrappingStyleEnumValue(textWrappingStyle: TextWrappingStyle): number {
+        switch (textWrappingStyle) {
+            case 'Inline':
+                return 0;
+            case 'InFrontOfText':
+                return 1;
+            case 'Square':
+                return 2;
+            case 'TopAndBottom':
+                return 3;
+            case 'Behind':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    private getTextWrappingTypeEnumValue(textWrappingType: TextWrappingType): number {
+        switch (textWrappingType) {
+            case 'Both':
+                return 0;
+            case 'Left':
+                return 1;
+            case 'Right':
+                return 2;
+            case 'Largest':
+                return 3;
+        }
+    }
+    private getCompatibilityModeEnumValue(compatibilityMode: CompatibilityMode): number {
+        switch (compatibilityMode) {
+            case 'Word2013':
+                return 0;
+            case 'Word2003':
+                return 1;
+            case 'Word2007':
+                return 2;
+            case 'Word2010':
+                return 3;
+        }
+    }
+    private getLineFormatTypeEnumValue(lineFormatType: LineFormatType): number {
+        switch (lineFormatType) {
+            case 'Solid':
+                return 0;
+            case 'Patterned':
+                return 1;
+            case 'Gradient':
+                return 2;
+            case 'None':
+                return 3;
+        }
+    }
+    private getAutoShapeTypeEnumValue(autoShapeType: AutoShapeType): number {
+        switch (autoShapeType) {
+            case 'Rectangle':
+                return 1;
+            case 'RoundedRectangle':
+                return 2;
+            case 'StraightConnector':
+                return 3;
+            default:
+                return 1;
+        }
+    }
+    private getFollowCharacterType(followCharacterType: FollowCharacterType): number {
+        switch (followCharacterType) {
+            case 'Tab':
+                return 0;
+            case 'Space':
+                return 1;
+            case 'None':
+                return 2;
+        }
+    }
+
+
     /** 
      * @private
      * @returns {void}

@@ -84,15 +84,12 @@ export class EditTooltip {
             this.parent.tooltipModule.toolTipObj.close();
             this.updateTooltip(segmentIndex);
             if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointLeftDrag') {
-               // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(
                     this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointLeft));
             } else if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointRightDrag') {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(
                     this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointRight));
             } else {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(this.taskbarEdit.taskBarEditElement);
             }
         } else if (!isNullOrUndefined(this.toolTipObj)) {

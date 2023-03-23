@@ -7,7 +7,7 @@ import {
     Page, Rect, IWidget, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
@@ -309,27 +309,37 @@ export class Renderer {
         if (this.isFieldCode) {
             this.isFieldCode = false;
         }
+        /* eslint-disable */
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
                 this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
             }
         }
+        /* eslint-enable */
         let isClipped: boolean = false;
         if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1) {
             let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
             let xPos: number;
             let width: number;
-            if (colIndex === 0) {
+            if (bodyWidget.columnIndex === 0) {
+                /* eslint-disable */
                 xPos = page.bodyWidgets[colIndex].x - HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin);
-                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin) + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
+                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin) + (bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).space / 2);
+                /* eslint-enable */
             } else if (colIndex === bodyWidget.sectionFormat.columns.length - 1) {
-                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[colIndex - 1] as WColumnFormat).space / 2);
-                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.rightMargin) + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex - 1] as WColumnFormat).space / 2);
+                /* eslint-disable */
+                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[bodyWidget.columnIndex - 1] as WColumnFormat).space / 2);
+                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.rightMargin) + (bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[bodyWidget.columnIndex - 1] as WColumnFormat).space / 2);
+                /* eslint-enable */
             } else {
-                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
-                width = (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space;
+                /* eslint-disable */
+                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).space / 2);
+                width = (bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).width + (bodyWidget.sectionFormat.columns[bodyWidget.columnIndex] as WColumnFormat).space;
+                /* eslint-enable */
             }
+            /* eslint-disable */
             this.clipRect(xPos, page.bodyWidgets[colIndex].y, this.getScaledValue(width), this.getScaledValue(page.boundingRectangle.height));
+            /* eslint-enable */
             isClipped = true;
         }
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
@@ -346,14 +356,16 @@ export class Renderer {
         if (isClipped) {
             this.pageContext.restore();
         }
+        /* eslint-disable */
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
                 this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'InFrontOfText');
             }
         }
+        /* eslint-enable */
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             if (page.bodyWidgets[parseInt(i.toString(), 10)].sectionFormat.lineBetweenColumns === true) {
-                if (page.bodyWidgets[parseInt(i.toString(), 10)].indexInOwner !== 0 && page.bodyWidgets.length > 1) {
+                if (page.bodyWidgets[parseInt(i.toString(), 10)].columnIndex !== 0 && page.bodyWidgets.length > 1) {
                     const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
                     let linestartY: number = this.getScaledValue(Math.max((page.headerWidgetIn.y + page.headerWidgetIn.height), topMargin));
                     const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
@@ -372,6 +384,10 @@ export class Renderer {
                     } else {
                         endY = (footerHeight - (page.footerWidgetIn.height / 2)) / this.documentHelper.zoomFactor;
                     }
+                    let firstBody: BodyWidget = this.documentHelper.layout.getBodyWidget(page.bodyWidgets[parseInt(i.toString(), 10)], true);
+                    let height: number = this.documentHelper.layout.getNextWidgetHeight(firstBody);
+                    startY = page.bodyWidgets[parseInt(i.toString(), 10)].y;
+                    endY = height;
                     let color: string = '#000000';
                     this.renderSingleBorder(color, startX, startY, endX, endY, 0.5, "Single");
                 }
@@ -435,7 +451,7 @@ export class Renderer {
         for (let i: number = 0; i < blocks.length; i++) {
             this.renderWidget(page, blocks[i]);
             if (isZeroShapeHeight && shapeType !== 'StraightConnector') {
-                shape.height += blocks[i].height;
+                shape.height = HelperMethods.round((shape.height + blocks[i].height), 5);
             }
         }
         if (isZeroShapeHeight) {
@@ -645,7 +661,7 @@ export class Renderer {
             } else {
                 let section: BodyWidget = paraWidget.bodyWidget as BodyWidget;
                 if (section instanceof BodyWidget && section.sectionFormat.columns.length > 1) {
-                    let colIndex: number = section.page.bodyWidgets.indexOf(section);
+                    let colIndex: number = section.columnIndex;
                     return (section.sectionFormat.columns[colIndex] as WColumnFormat).width + HelperMethods.convertPointToPixel(hangingIndent - (paraWidget.rightIndent + paraWidget.leftIndent));
                 }
                 else {
@@ -664,13 +680,6 @@ export class Renderer {
             if (!isNullOrUndefined(widget.margin)) {
                 topMargin = widget.margin.top;
             }
-            for (let i: number = 0; i < widget.children.length; i++) {
-                const element: ElementBox = widget.children[i] as ElementBox;
-                if (element instanceof TextElementBox) {
-                    topMargin = element.margin.top;
-                    break;
-                }
-            }
             return topMargin;
         }
     }
@@ -682,15 +691,6 @@ export class Renderer {
             let bottomMargin: number = 0;
             if (!isNullOrUndefined(widget.margin)) {
                 bottomMargin = widget.margin.bottom;
-            }
-            if (widget.children.length > 0) {
-                for (let i: number = widget.children.length - 1; i >= 0; i--) {
-                    const element: ElementBox = widget.children[i] as ElementBox;
-                    if (element instanceof TextElementBox) {
-                        bottomMargin = element.margin.bottom;
-                        break;
-                    }
-                }
             }
             return bottomMargin;
         }
@@ -716,7 +716,7 @@ export class Renderer {
                 if (i === 0 && j === 0) {
                     let ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
                     let xPos: number = page.bodyWidgets[0].x;
-                    if (page.bodyWidgets.length > 1) {
+                    if (page.bodyWidgets.length > 1 && !isNullOrUndefined(bodyWidget.nextWidget) && !((bodyWidget.nextWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak')) {
                         let footWidth = page.bodyWidgets[0].width;
                         this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), footWidth * this.documentHelper.zoomFactor, '#000000');
 
@@ -745,12 +745,31 @@ export class Renderer {
             if (tableWidget.tableFormat.cellSpacing > 0) {
                 this.renderTableOutline(tableWidget);
             }
+            if((widget as TableRowWidget).isRenderBookmarkEnd && this.documentHelper.owner.documentEditorSettings.showBookmarks){
+                let cellWidget: TableCellWidget = widget.lastChild as TableCellWidget;
+                let border = cellWidget.ownerTable.isBidiTable ? TableCellWidget.getCellLeftBorder(cellWidget) : TableCellWidget.getCellRightBorder(cellWidget);
+                let lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
+                let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(widget.lastChild as TableCellWidget);
+                let height: number = (lastPara.lastChild as LineWidget).height - (lastPara.lastChild as LineWidget).margin.bottom;
+                this.renderBookmark(this.getScaledValue((cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2) + this.documentHelper.textHelper.getParagraphMarkWidth(lastPara.characterFormat), 1), this.getScaledValue(cellWidget.y - cellWidget.margin.top, 2), this.getScaledValue(height), 1);
+            }
         }
     }
     private renderTableRowWidget(page: Page, rowWidget: Widget): void {
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             let widget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
             this.renderTableCellWidget(page, widget);
+            if (widget.isRenderBookmarkEnd && this.documentHelper.owner.documentEditorSettings.showBookmarks) {
+                let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(widget) as ParagraphWidget;
+                let lastLine: LineWidget = lastPara.lastChild as LineWidget;
+                let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
+                if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
+                    let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
+                    this.renderBookmark(this.getScaledValue(xLeft, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
+                } else {
+                    this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
+                }
+            }
         }
     }
     private renderTableCellWidget(page: Page, cellWidget: TableCellWidget): void {
@@ -929,6 +948,13 @@ export class Renderer {
         
         let children: ElementBox[] = lineWidget.renderedElements;
         let underlineY: number = this.getUnderlineYPosition(lineWidget);
+        let bookmarks: any = [];
+        if (!isNullOrUndefined(lineWidget.paragraph.associatedCell) && lineWidget.paragraph.associatedCell.isRenderBookmarkStart) {
+            let firstLineInFirstPara: LineWidget = ((lineWidget.paragraph.associatedCell.firstChild as ParagraphWidget).firstChild as LineWidget);
+            if(firstLineInFirstPara == lineWidget){
+                bookmarks.push({ x: left, y: top, height: lineWidget.height - lineWidget.margin.bottom, type: 0 });
+            }
+        }
         for (let i: number = 0; i < children.length; i++) {
             let elementBox: ElementBox = children[i] as ElementBox;
             if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
@@ -986,6 +1012,69 @@ export class Renderer {
                 }
 
             }
+            if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks) {
+                var height = elementBox.line.height - elementBox.line.margin.bottom;
+                let xLeft = left;
+                let yTop = top;
+                if(elementBox.bookmarkType == 1){
+                    if(this.isBookmarkEndAtStart(elementBox) && isNullOrUndefined(elementBox.properties)){
+                        let previousParaElement: ParagraphWidget = elementBox.paragraph;
+                        let prevRenderableElement: any;
+                        let isRenderablePresent: boolean = false;
+                        while(!isRenderablePresent && !isNullOrUndefined(previousParaElement)){
+                            let lineIndex: number = previousParaElement.childWidgets.indexOf(elementBox.line) >= 0 ? previousParaElement.childWidgets.indexOf(elementBox.line) : previousParaElement.childWidgets.length - 1;
+                            for(let i = lineIndex; i >= 0; i --){
+                                let line: LineWidget = previousParaElement.childWidgets[i] as LineWidget;
+                                let elementIndex: number = line.children.indexOf(elementBox) >= 0 ? line.children.indexOf(elementBox) : line.children.length - 1;
+                                for(let j = elementIndex; j >= 0; j --){
+                                    if(this.isRenderable(line.children[j])){
+                                        prevRenderableElement = line.children[j];
+                                        isRenderablePresent = true;
+                                        break;
+                                    }
+                                }
+                                if(isRenderablePresent){
+                                    break;
+                                }
+                            }
+                            if(!isRenderablePresent){
+                                previousParaElement = this.documentHelper.selection.getPreviousParagraphBlock(previousParaElement);
+                            }
+                        }
+                        if(!isNullOrUndefined(prevRenderableElement)){
+                            xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                            yTop = this.documentHelper.selection.getTop(prevRenderableElement.line);
+                        }
+                    }
+                    if(!isNullOrUndefined(elementBox.properties)){
+                        if(elementBox.properties['isAfterParagraphMark']){
+                            xLeft += this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
+                        }
+                        if (elementBox.properties['isAfterCellMark']) {
+                            xLeft += this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lineWidget.paragraph.characterFormat);
+                        }
+                    }
+                }
+                if(elementBox.bookmarkType == 1){
+                    if(!isNullOrUndefined(elementBox.reference)){
+                        if(isNullOrUndefined(elementBox.reference.properties)){
+                            if(!this.documentHelper.selection.isRenderBookmarkAtEnd(elementBox)){
+                                bookmarks.push({ x: xLeft, y: yTop, height: height, type: elementBox.bookmarkType });
+                            }
+                        }
+                        else{
+                            let bookmarkEndCell: TableCellWidget = elementBox.paragraph.associatedCell;
+                            if(isNullOrUndefined(bookmarkEndCell)){
+                                bookmarks.push({ x: xLeft, y: yTop, height: height, type: elementBox.bookmarkType });
+                            }
+                        }
+                    }
+                }else{
+                    if(isNullOrUndefined(elementBox.properties)){
+                        bookmarks.push({ x: xLeft, y: yTop, height: height, type: elementBox.bookmarkType });
+                    }
+                }
+            }
             if (elementBox instanceof FieldElementBox || this.isFieldCode ||
                 (elementBox.width === 0 && elementBox.height === 0)) {
                 if (this.isFieldCode) {
@@ -1000,8 +1089,8 @@ export class Renderer {
                     this.getScaledValue(top + elementBox.margin.top, 2) > this.documentHelper.visibleBounds.height) {
                     left += elementBox.width + elementBox.margin.left;
                     if (elementBox instanceof TextElementBox) {
-                        if (this.documentHelper.owner.isSpellCheck) {
-                            elementBox.canTrigger = true;
+                        if(this.documentHelper.owner.isSpellCheck){
+                        elementBox.canTrigger = true;
                         }
                         elementBox.isVisible = false;
                         if (!elementBox.isSpellChecked || elementBox.line.paragraph.isChangeDetected) {
@@ -1033,6 +1122,12 @@ export class Renderer {
                 x = left;
             }
         }
+        if (this.documentHelper.owner.documentEditorSettings.showBookmarks && bookmarks.length > 0) {
+            for (let i = 0; i < bookmarks.length; i++) {
+                let bookmark = bookmarks[i];
+                this.renderBookmark(this.getScaledValue(bookmark.x, 1), this.getScaledValue(bookmark.y, 2), this.getScaledValue(bookmark.height), bookmark.type);
+            }
+        }
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             let text: string = '';
             let currentCharFormat: WCharacterFormat = lineWidget.paragraph.characterFormat;
@@ -1041,18 +1136,14 @@ export class Renderer {
             let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
             l10n.setLocale(this.documentHelper.owner.locale);
             this.pageContext.fillStyle = HelperMethods.getColor(currentCharFormat.fontColor);
-            if (children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) {
+            if ((children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) || (lineWidget.paragraph.childWidgets.length === 1)) {
                 y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph);
                 //Paragraph with empty linewidgets with mutiple line breaks
                 if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
                     y = top + lineWidget.previousLine.maxBaseLine;
                 }
             } else {
-                if (lineWidget.paragraph.childWidgets.length === 1) {
-                    y = top + lineWidget.maxBaseLine + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph);
-                } else {
-                    y = top + lineWidget.maxBaseLine;
-                }
+                y = top + lineWidget.maxBaseLine;
             }
             if (currentCharFormat.revisions.length > 0) {
                 //CharacterFormat Track changes is not supported., Hence only the Para mark changes are parsed and preserved in the charcterForamt. 
@@ -1163,7 +1254,63 @@ export class Renderer {
                 this.pageContext.font = characterFont;
                 this.pageContext.fillText(text, this.getScaledValue(x, 1), this.getScaledValue(y, 2));
             }
-        }    
+        }  
+    }
+    private isBookmarkEndAtStart(bookmark: BookmarkElementBox): boolean{
+        let para: ParagraphWidget = bookmark.paragraph;
+        let index: number = 0;
+        let firstLine: LineWidget = para.childWidgets[index] as LineWidget;
+        let isBookmarkAtStart: boolean = true;
+        while(firstLine.children.indexOf(bookmark) == -1){
+            firstLine = para.childWidgets[++index] as LineWidget;
+            if(index == para.childWidgets.length){
+                break;
+            }
+        }
+        if (bookmark.line != firstLine) {
+            return false;
+        }
+        let bookmarkIndex: number = firstLine.children.indexOf(bookmark) >= 0 ? firstLine.children.indexOf(bookmark) : -1;
+        for (let i: number = bookmarkIndex; i >= 0; i--) {
+            let element: any = firstLine.children[i];
+            if(this.isRenderable(element)){
+                isBookmarkAtStart = false;
+            }
+        }
+        if(isBookmarkAtStart){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    private isRenderable(element: any): boolean{
+        if(!(element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)){
+            return true;
+        }
+        return false;
+    }
+    private renderBookmark(x: number, y: number, height: number, type: number): void {
+        if(this.isPrinting) {
+            return;    
+        }
+        this.pageContext.beginPath();
+        this.pageContext.lineWidth = 1.5;
+        let extensionLength = 3;
+        if (type == 0) {
+            this.pageContext.moveTo(x + extensionLength, y);
+            this.pageContext.lineTo(x, y);
+            this.pageContext.lineTo(x, y + height);
+            this.pageContext.lineTo(x + extensionLength, y + height);
+        }
+        if (type == 1) {
+            this.pageContext.moveTo(x - extensionLength, y);
+            this.pageContext.lineTo(x, y);
+            this.pageContext.lineTo(x, y + height);
+            this.pageContext.lineTo(x - extensionLength, y + height);
+        }
+        this.pageContext.strokeStyle = "#7F7F7F";
+        this.pageContext.stroke();
+        this.pageContext.closePath();
     }
     private retriveCharacterformat(character: WCharacterFormat, fontSizeFactor?: number): string {
         if(isNullOrUndefined(fontSizeFactor)){

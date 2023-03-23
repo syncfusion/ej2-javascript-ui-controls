@@ -1051,6 +1051,57 @@ describe('OData Adaptor', () => {
                 expect(result.result.length).toBe(1);
             });
         });
+        describe('To check OData Filter Queries Generations', () => {
+            beforeAll((done: Function) => {
+                dataManager = new DataManager({
+                    url: '/api/Employees',
+                    adaptor: new ODataAdaptor
+                });
+                done();
+            });
+            it('check doesnotcontain filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotcontain', 'in'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not substringof(\'in\',FirstName)');
+            });
+            it('check doesnotstartwith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotstartwith', 'ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not startswith(FirstName,\'ki\')');
+            });
+            it('check doesnotendwith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotendwith', 'ng'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not endswith(FirstName,\'ng\')');
+            });
+            it('check wildcard startswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', 'ki*'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'ki\')');
+            });
+            it('check wildcard endswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', '*ng'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng\')');
+            });
+            it('check wildcard contains filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', '*in*'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=substringof(\'in\',FirstName)');
+            });
+            it('check like startswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'ki\')');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%%ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'%25ki\')');
+            });
+            it('check like endswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', 'ng%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng\')');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', 'ng%%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng%25\')');
+            });
+            it('check like contains filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%in%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=substringof(\'in\',FirstName)');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%%n%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=substringof(\'%25n\',FirstName)');
+            });
+        });
     });
     describe('search method - field as string', () => {
         let result: ResponseType; let mAjax: MockAjaxReturn; let request: JasmineAjaxRequest;
@@ -1634,6 +1685,61 @@ describe('ODataV4 Adaptor', () => {
             it('generated guid filter url properly', () => {
                 expect(request.url).
                     toEqual('/api/Employees/?$filter=Guid eq ' + 'f89dee73-af9f-4cd4-b330-db93c25ff3c9');
+            });
+        });
+        describe('To check ODataV4 Filter Queries Generations', () => {
+            beforeAll((done: Function) => {
+                dataManager = new DataManager({
+                    url: '/api/Employees',
+                    adaptor: new ODataV4Adaptor
+                });
+                done();
+            });
+            it('check isempty filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'isempty', 'in'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=FirstName eq \'\'');
+            });
+            it('check doesnotcontain filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotcontain', 'in'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not contains(FirstName,\'in\')');
+            });
+            it('check doesnotstartwith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotstartwith', 'ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not startswith(FirstName,\'ki\')');
+            });
+            it('check doesnotendwith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'doesnotendwith', 'ng'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=not endswith(FirstName,\'ng\')');
+            });
+            it('check wildcard startswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', 'ki*'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'ki\')');
+            });
+            it('check wildcard endswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', '*ng'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng\')');
+            });
+            it('check wildcard contains filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'wildcard', '*in*'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=contains(FirstName,\'in\')');
+            });
+            it('check like startswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'ki\')');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%%ki'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=startswith(FirstName,\'%25ki\')');
+            });
+            it('check like endswith filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', 'ng%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng\')');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', 'ng%%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=endswith(FirstName,\'ng%25\')');
+            });
+            it('check like contains filter query generate properly', () => {
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%in%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=contains(FirstName,\'in\')');
+                dataManager.executeQuery(new Query().where('FirstName', 'like', '%%n%'));
+                expect(dataManager['requests'][0].url).toBe('/api/Employees/?$filter=contains(FirstName,\'%25n\')');
             });
         });
         describe('startsWith guid filtering', () => {

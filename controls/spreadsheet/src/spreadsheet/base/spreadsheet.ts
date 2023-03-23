@@ -997,18 +997,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - To protect the particular sheet.
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?: string): void {
-        if (typeof (sheet) === 'string') {
-            sheet = getSheetIndex(this as Workbook, sheet);
-        }
-        if (sheet) {
-            const sheetModel: SheetModel = this.sheets[sheet as number];
-            this.setSheetPropertyOnMute(sheetModel, 'isProtected', true);
-            this.setSheetPropertyOnMute(sheetModel, 'password', password ? password : '');
-            this.setSheetPropertyOnMute(sheetModel, 'protectSettings', protectSettings);
-        }
-        sheet = this.getActiveSheet().index;
-        this.setSheetPropertyOnMute(this.getActiveSheet(), 'isProtected', true);
-        this.setSheetPropertyOnMute(this.getActiveSheet(), 'password', password ? password : '');
         super.protectSheet(sheet, protectSettings, password);
     }
 
@@ -1021,15 +1009,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - To unprotect the particular sheet.
      */
     public unprotectSheet(sheet?: number | string): void {
-        if (typeof (sheet) === 'string') {
-            sheet = getSheetIndex(this as Workbook, sheet);
-        }
-        if (sheet) {
-            this.sheets[sheet as number].isProtected = false;
-
-        } else {
-            this.getActiveSheet().isProtected = false;
-        }
         super.unprotectSheet(sheet);
     }
 
@@ -1857,7 +1836,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public open(options: OpenOptions): void {
         this.isOpen = true;
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         super.open(options);
         if (this.isOpen) {
             this.showSpinner();
@@ -2226,10 +2204,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     if (td.querySelector('a')) {
                         td.querySelector('a').textContent = args.result.split(curSymbol).join('');
                     } else {
-                        td.innerHTML = '';
+                        (td as HTMLElement).innerText = '';
                     }
-                    td.appendChild(
-                        this.createElement('span', { id: this.element.id + '_currency', innerHTML: curSymbol, styles: 'float: left' }));
+                    const curSymEle: HTMLElement = this.createElement('span', { id: this.element.id + '_currency', styles: 'float: left' });
+                    curSymEle.innerText = curSymbol;
+                    td.appendChild(curSymEle);
                     if (!td.querySelector('a')) {
                         td.innerHTML += args.result.split(curSymbol).join('');
                     }
@@ -2727,7 +2706,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - If Spreadsheet is in editable state, you can save the cell by invoking endEdit.
      */
     public endEdit(): void {
-        this.notify(editOperation, { action: 'endEdit' });
+        this.notify(editOperation, { action: 'endEdit', isPublic: true });
     }
 
     /**

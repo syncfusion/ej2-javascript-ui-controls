@@ -513,8 +513,8 @@ describe('Toolbar Control', () => {
                 }],
             });
             toolbar.appendTo('#ej2Toolbar');
-            expect(toolbar.element.querySelectorAll('.e-toolbar-item')[0].getAttribute('aria-disabled')).toBe('false');
-            expect(toolbar.element.querySelectorAll('.e-toolbar-item')[1].getAttribute('aria-disabled')).toBe('false');
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstElementChild.getAttribute('aria-disabled')).toBe('false');
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstElementChild.getAttribute('aria-disabled')).toBe('false');
             let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
             scrollELe.style.display = 'inline-block';
@@ -7138,7 +7138,6 @@ describe('Toolbar Control', () => {
                 ],
             }, '#ej2Toolbar');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[2], false);
-            expect(element.querySelectorAll('.e-toolbar-item')[2].getAttribute("aria-disabled")).toBe('true');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
@@ -7147,15 +7146,14 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML).toEqual('ChartButton');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[3], false);
-            expect(element.querySelectorAll('.e-toolbar-item')[3].getAttribute("aria-disabled")).toBe('true');
+            expect(element.querySelectorAll('.e-toolbar-item')[3].firstElementChild.getAttribute("aria-disabled")).toBe('true');
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[1].innerHTML).toEqual('LeftButton');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[3], true);
-            expect(element.querySelectorAll('.e-toolbar-item')[3].getAttribute("aria-disabled")).toBe('false');
+            expect(element.querySelectorAll('.e-toolbar-item')[3].firstElementChild.getAttribute("aria-disabled")).toBe('false');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[2], true);
-            expect(element.querySelectorAll('.e-toolbar-item')[2].getAttribute("aria-disabled")).toBe('false');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[5], false);
-            expect(element.querySelectorAll('.e-toolbar-item')[5].getAttribute("aria-disabled")).toBe('true');
+            expect(element.querySelectorAll('.e-toolbar-item')[5].firstElementChild.getAttribute("aria-disabled")).toBe('true');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
@@ -11932,7 +11930,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             }, '#ej2Toolbar');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[4], false);
             toolbar.hideItem(element.querySelectorAll('.e-toolbar-item')[5], true);
-            expect(element.querySelectorAll('.e-toolbar-item')[4].getAttribute("aria-disabled")).toBe('true');
+            expect(element.querySelectorAll('.e-toolbar-item')[4].firstElementChild.getAttribute("aria-disabled")).toBe('true');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',

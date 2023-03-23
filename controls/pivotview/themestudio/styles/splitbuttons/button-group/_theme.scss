@@ -5,10 +5,12 @@
   .e-btn-group,
   .e-css.e-btn-group {
     &:not(.e-outline) {
-      box-shadow: $btn-box-shadow;
+      @if $theme-name != 'Material3' {
+        box-shadow: $btn-box-shadow;
+      }
     }
 
-    @if $skin-name == 'material' or $skin-name == 'bootstrap4' {
+    @if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'Material3' {
       .e-btn {
         box-shadow: none;
       }

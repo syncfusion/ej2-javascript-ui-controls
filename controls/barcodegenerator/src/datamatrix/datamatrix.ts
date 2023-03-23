@@ -214,7 +214,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         const arg: ValidateEvent = {
             message: message
         };
-        this.trigger(BarcodeEvent[eventName], arg);
+        this.trigger(BarcodeEvent[`${eventName}`], arg);
     }
 
     protected preRender(): void {

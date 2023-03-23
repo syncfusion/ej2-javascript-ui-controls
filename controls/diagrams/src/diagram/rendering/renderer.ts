@@ -290,7 +290,7 @@ export class DiagramRenderer {
             x: x, y: y, fill: 'transparent', stroke: '#00cc00', angle: element.rotateAngle,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: isFirst? 2 : 1,
             dashArray: '', opacity: 1, cornerRadius: 0,
-            visible: true, id: element.id + '_highlighter', class: 'e-diagram-selection-rect'
+            visible: true, id: element.id + '_highlighter', class: 'e-diagram-selection-indicator'
         };
         const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
@@ -323,7 +323,7 @@ export class DiagramRenderer {
         }
         options.stroke = "#00cc00";
         options.strokeWidth = isFirst ? 2 : 1;
-        options.class = "e-diagram-selection-line";
+        options.class = "e-diagram-selection-indicator";
         const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
         this.svgRenderer.drawPath(canvas as SVGElement, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel, transform.scale);
     }
@@ -559,7 +559,7 @@ export class DiagramRenderer {
             canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
             constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource,
             undefined, { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
-            'e-diagram-endpoint-handle e-targetend', handleSize);
+            'e-diagram-endpoint-handle e-sourceend', handleSize);
         this.renderCircularHandle(
             'connectorTargetThumb', wrapper, targetPoint.x, targetPoint.y, canvas,
             canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
@@ -570,9 +570,10 @@ export class DiagramRenderer {
             if ((selector.type === 'Straight' || selector.type === 'Bezier') && selector.segments.length > 0) {
                 for (i = 0; i < selector.segments.length - 1; i++) {
                     segment = selector.segments[parseInt(i.toString(), 10)] as StraightSegment | BezierSegment;
+                    let className: string = selector.type === 'Bezier' ? "e-diagram-bezier-segment-handle" : "e-diagram-straight-segment-handle";
                     this.renderCircularHandle(
                         ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
-                        constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, handleSize);
+                        constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, className, handleSize);
                 }
             } else {
                 // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
@@ -626,7 +627,7 @@ export class DiagramRenderer {
                         canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
                         constraints & ThumbsConstraints.ConnectorSource, transform, undefined, undefined,
                         { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
-                        'e-diagram-bezier-handle e-source', handleSize);
+                        'e-diagram-bezier-control-handle e-source', handleSize);
                     if (canShowCorner(selectorConstraints, 'ConnectorSourceThumb')) {
                         this.renderBezierLine(
                             'bezierLine_' + (i + 1) + '_1', wrapper, canvas, segment.points[0],
@@ -643,7 +644,7 @@ export class DiagramRenderer {
                         canvas, canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
                         constraints & ThumbsConstraints.ConnectorTarget, transform, undefined,
                         undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
-                        'e-diagram-bezier-handle e-target', handleSize);
+                        'e-diagram-bezier-control-handle e-target', handleSize);
                     if (canShowCorner(selectorConstraints, 'ConnectorTargetThumb')) {
                         this.renderBezierLine(
                             'bezierLine_' + (i + 1) + '_2', wrapper, canvas, segment.points[1],
@@ -802,7 +803,7 @@ export class DiagramRenderer {
             x: ((x + t.tx) * t.scale) + h, y: ((y + t.ty) * t.scale) + v, angle: 0,
             fill: '#e2e2e2', stroke: 'black', strokeWidth: 1, dashArray: '', data: path,
             width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id,
-            class:'e-orthogonal-thumb'
+            class:'e-diagram-ortho-segment-handle'
         };
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }
@@ -869,7 +870,7 @@ export class DiagramRenderer {
         options.strokeWidth = 1;
         options.dashArray = dashArray;
         options.fill = 'None';
-        options.class = 'e-diagram-bezier-line';
+        options.class = 'e-diagram-bezier-control-line';
         options.x = 0;
         options.y = 0;
         const scale: number = transform.scale;
@@ -981,7 +982,7 @@ export class DiagramRenderer {
         options.fill = 'transparent'; options.stroke = '#097F7F';
         options.strokeWidth = 1.2; options.gradient = null;
         options.dashArray = '6,3';
-        options.class = 'e-diagram-border';
+        options.class = 'e-diagram-selector';
         if (isSwimlane) { options.class += ' e-diagram-lane'; }
         options.id = 'borderRect';
         options.id = (this.rendererActions & RendererAction.DrawSelectorBorder) ? 'borderRect_symbol' : 'borderRect';

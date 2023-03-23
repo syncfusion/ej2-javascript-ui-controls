@@ -570,7 +570,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('dateRange template', () => {
             const model: ScheduleModel = {
-                currentView: 'TimelineMonth', views: ['Day', 'Week', 'TimelineMonth', 'Month'], 
+                currentView: 'TimelineMonth', views: ['Day', 'Week', 'TimelineMonth', 'Month'],
                 selectedDate: new Date(2017, 9, 5),
                 dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
             };
@@ -615,8 +615,8 @@ describe('Schedule Timeline Month view', () => {
                 maxDate: new Date(2017, 10, 12)
             };
             schObj = util.createSchedule(model, []);
-            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
@@ -3759,13 +3759,15 @@ describe('Schedule Timeline Month view', () => {
         });
         it('Check events offsetleft - slot count 2', () => {
             const colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child');
-            expect(colElement.style.width).toEqual('50px');
+            const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+            expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child');
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 6;
@@ -3775,7 +3777,8 @@ describe('Schedule Timeline Month view', () => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child');
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;
@@ -3841,13 +3844,15 @@ describe('Schedule Timeline Month view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-            expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
+            expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 6;
@@ -3859,7 +3864,7 @@ describe('Schedule Timeline Month view', () => {
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-                expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
+                expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;
@@ -4190,6 +4195,60 @@ describe('Schedule Timeline Month view', () => {
             expect(contentArea.scrollTop).toEqual(120);
             expect(contentArea.scrollLeft).toEqual(140);
             expect(resourceArea.scrollTop).toEqual(120);
+        });
+    });
+
+    describe('Timeline views resource rendering without horizontal scrollbar', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px', width: '2600px', currentView: 'TimelineMonth',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineMonth'],
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2', Expand: false },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', expandedField: 'Expand'
+                }],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking the horizontal scrollbar rendering', () => {
+            const elementClick: HTMLElement = schObj.element.querySelector('.' + cls.RESOURCE_EXPAND_CLASS);
+            elementClick.click();
+            const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            expect(contentArea.offsetHeight - contentArea.clientHeight).toEqual(0);
         });
     });
 

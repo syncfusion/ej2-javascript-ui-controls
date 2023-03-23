@@ -118,7 +118,7 @@ export interface EnginePopulatedEventArgs {
     /** Defines the updated field list information from the populated engine to update the field list. */
     pivotFieldList?: IFieldListOptions;
     /** Defines the updated pivot table cell information from the populated engine to update the pivot table. */
-    pivotValues?: IPivotValues;
+    pivotValues?: IAxisSet[][];
 }
 
 /**
@@ -186,7 +186,7 @@ export interface BeforeExportEventArgs {
     /** Defines footer text */
     footer?: string;
     /** Defines pivot table cell collections */
-    dataCollections?: IPivotValues[];
+    dataCollections?: IAxisSet[][];
     /** Defines option to disable the repeat headers */
     allowRepeatHeader?: boolean;
     /** Defines the theme style for PDF */
@@ -407,7 +407,7 @@ export interface PivotCellSelectedEventArgs extends CellSelectingEventArgs {
     /** Defines the collection of selected cells item. */
     selectedCellsInfo?: CellSelectedObject[];
     /** Defines pivot table cell collections */
-    pivotValues?: IPivotValues;
+    pivotValues?: IAxisSet[][];
     /** Defines the cell element that is selected. */
     currentTarget?: Element;
     /** Defines an option to restrict the cell selection operation. */
@@ -577,6 +577,7 @@ export interface CommonArgs {
     localeObj: L10n;
     dataType: string;
     cssClass: string;
+    enableHtmlSanitizer: boolean;
 }
 
 /**
@@ -845,7 +846,7 @@ export interface FieldListRefreshedEventArgs {
     /** Defines the current report. */
     dataSourceSettings?: IDataOptions;
     /** Defines the updated pivot table cell collections to update the pivot table. */
-    pivotValues?: IPivotValues;
+    pivotValues?: IAxisSet[][];
 }
 
 /**

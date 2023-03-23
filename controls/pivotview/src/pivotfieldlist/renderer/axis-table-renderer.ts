@@ -53,9 +53,9 @@ export class AxisTableRenderer {
             });
             const axisTitle: HTMLElement = createElement('div', {
                 className: cls.AXIS_HEADER_CLASS,
-                attrs: { title: this.parent.localeObj.getConstant(fieldLabels[len as number]) },
-                innerHTML: this.parent.localeObj.getConstant(fieldLabels[len as number])
+                attrs: { title: this.parent.localeObj.getConstant(fieldLabels[len as number]) }
             });
+            axisTitle.innerText = this.parent.localeObj.getConstant(fieldLabels[len as number]);
             axisTitleWrapper.appendChild(this.getIconupdate(fieldLabels[len as number]));
             axisTitleWrapper.appendChild(axisTitle);
             const axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + fieldLabels[len as number] });
@@ -70,9 +70,9 @@ export class AxisTableRenderer {
                 localePrompt = this.parent.localeObj.getConstant('dropFilterPrompt');
             }
             const axisPrompt: HTMLElement = createElement('span', {
-                className: cls.AXIS_PROMPT_CLASS,
-                innerHTML: localePrompt
+                className: cls.AXIS_PROMPT_CLASS
             });
+            axisPrompt.innerText = localePrompt;
             let droppable: Droppable = new Droppable(axisContent, {});  /* eslint-disable-line */
             axis.appendChild(axisTitleWrapper);
             axis.appendChild(axisContent);

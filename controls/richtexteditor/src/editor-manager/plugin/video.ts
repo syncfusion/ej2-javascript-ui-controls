@@ -162,6 +162,8 @@ export class VideoCommand {
                 : (Browser.isIE ? (selectedNode as Element) : !e.item.isEmbedUrl ? (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe'));
             videoElm.addEventListener(videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load', () => {
                 if (e.value !== 'VideoReplace' || !isReplaced) {
+                    if (e.item.isEmbedUrl && videoElm)
+                    videoElm.classList.add('e-rte-embed-url');
                     e.callBack({
                         requestType: 'Videos',
                         editorMode: 'HTML',

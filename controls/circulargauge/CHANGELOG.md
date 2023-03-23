@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### Circular Gauge
+
+#### New Features
+
+- `#I416334` - The entire circular gauge, including the tooltip and legend, can now be rendered in the right-to-left (RTL) direction, which may be useful in some cultures.
+
 ## 20.4.40 (2022-12-28)
 
 ### Circular Gauge

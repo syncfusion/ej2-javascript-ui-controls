@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { ChartAnnotationSettings } from '../../chart/model/chart-base';

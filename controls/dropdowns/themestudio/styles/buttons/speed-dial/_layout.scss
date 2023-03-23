@@ -113,7 +113,7 @@
     }
 
     .e-speeddial-li-icon {
-      border-radius: 99999px;
+      border-radius: $sd-li-icon-border-radius;
       border: 1px solid;
       height: $sd-li-icon-height;
       width: $sd-li-icon-width;

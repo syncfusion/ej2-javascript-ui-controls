@@ -80,9 +80,11 @@ export interface BreadcrumbModel extends ComponentModel{
      * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
      * - None: Shows all the items on a single line.
      *
-     * @default 'Menu'
+     * @isenumeration true
+     * @default BreadcrumbOverflowMode.Menu
+     * @asptype BreadcrumbOverflowMode
      */
-    overflowMode?: BreadcrumbOverflowMode;
+    overflowMode?: string | BreadcrumbOverflowMode;
 
     /**
      * Defines class/multiple classes separated by a space in the Breadcrumb element.

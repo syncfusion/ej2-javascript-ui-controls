@@ -203,10 +203,8 @@ export class SpreadsheetHyperlink {
             this.parent.element.querySelector('.e-hyperlink-alert-span').remove();
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const hyperlinkSpan: Element = this.parent.createElement('span', {
-            className: 'e-hyperlink-alert-span',
-            innerHTML: l10n.getConstant('HyperlinkAlert')
-        });
+        const hyperlinkSpan: HTMLElement = this.parent.createElement('span', { className: 'e-hyperlink-alert-span' });
+        hyperlinkSpan.innerText = l10n.getConstant('HyperlinkAlert');
         const dlgEle: HTMLElement =
             this.parent.element.querySelector('.e-hyperlink-dlg') || this.parent.element.querySelector('.e-edithyperlink-dlg');
         (dlgEle.querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
@@ -372,7 +370,6 @@ export class SpreadsheetHyperlink {
                 }
             } else {
                 if (this.isValidUrl(address)) {
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename
                     window.open(address, befArgs.target);
                 } else {
                     this.showInvalidHyperlinkDialog();
@@ -718,8 +715,10 @@ export class SpreadsheetHyperlink {
         }
         const textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
-        const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Url') });
+        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH.innerText = l10n.getConstant('DisplayText');
+        const urlH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        urlH.innerText = l10n.getConstant('Url');
         const textInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput.classList.add('e-disabled');
@@ -778,17 +777,16 @@ export class SpreadsheetHyperlink {
             fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
         });
         const cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const cellrefH: HTMLElement = this.parent.createElement(
-            'div', { className: 'e-header', innerHTML: l10n.getConstant('CellReference') });
-        const cellrefInput: HTMLElement = this.parent.createElement('input', {
-            className: 'e-input e-text e-hyp-text',
-            attrs: { 'type': 'Text' }
-        });
+        const cellrefH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        cellrefH.innerText = l10n.getConstant('CellReference');
+        const cellrefInput: HTMLElement = this.parent.createElement(
+            'input', { className: 'e-input e-text e-hyp-text', attrs: { 'type': 'Text' } });
         cellrefInput.setAttribute('value', 'A1');
         cellrefCont.appendChild(cellrefInput);
         cellrefCont.insertBefore(cellrefH, cellrefInput);
         const textCont1: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('DisplayText') });
+        const textH1: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        textH1.innerText = l10n.getConstant('DisplayText');
         const textInput1: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'Text' } });
         if (!isEnable) {
             textInput1.classList.add('e-disabled');
@@ -802,7 +800,8 @@ export class SpreadsheetHyperlink {
         textCont1.appendChild(textInput1);
         textCont1.insertBefore(textH1, textInput1);
         const sheetCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header', innerHTML: l10n.getConstant('Sheet') });
+        const sheetH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+        sheetH.innerText = l10n.getConstant('Sheet');
         const refCont: HTMLElement = this.parent.createElement('div', { className: 'e-refcont' });
         sheetCont.appendChild(refCont);
         sheetCont.insertBefore(sheetH, refCont);

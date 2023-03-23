@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, CallbackFunction } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, CallbackFunction } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -61,18 +61,18 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
      *  view options. The view option specified in this property will be initially loaded on the schedule.
-     * * Day
-     * * Week
-     * * WorkWeek
-     * * Month
-     * * Year
-     * * Agenda
-     * * MonthAgenda
-     * * TimelineDay
-     * * TimelineWeek
-     * * TimelineWorkWeek
-     * * TimelineMonth
-     * * TimelineYear
+     * * `Day`: Denotes Day view of the scheduler.
+     * * `Week`: Denotes Week view of the scheduler.
+     * * `WorkWeek`: Denotes Work Week view of the scheduler.
+     * * `Month`: Denotes Month view of the scheduler.
+     * * `Year`: Denotes Year view of the scheduler.
+     * * `Agenda`: Denotes Agenda view of the scheduler.
+     * * `MonthAgenda`: Denotes Month Agenda view of the scheduler.
+     * * `TimelineDay`: Denotes Timeline Day view of the scheduler.
+     * * `TimelineWeek`: Denotes Timeline Week view of the scheduler.
+     * * `TimelineWorkWeek`: Denotes Timeline Work Week view of the scheduler.
+     * * `TimelineMonth`: Denotes Timeline Month view of the scheduler.
+     * * `TimelineYear`: Denotes Timeline Year view of the scheduler.
      *
      * {% codeBlock src='schedule/currentView/index.md' %}{% endcodeBlock %}
      *
@@ -86,13 +86,12 @@ export interface ScheduleModel extends ComponentModel{
      * Schedule displays all the views namely `Day`, `Week`, `Work Week`, `Month` and `Agenda`.
      *
      * Example for array of views:
-     * {% codeBlock src="schedule/view-api/index.ts" %}{% endcodeBlock %}
+     * {% codeBlock src="schedule/views/index.md" %}{% endcodeBlock %}
      *
      * Example for array of view objects:
-     * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
-     * {% codeBlock src='schedule/views/index.md' %}{% endcodeBlock %}
+     * {% codeBlock src='schedule/viewOption/index.md' %}{% endcodeBlock %}
      *
-     * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
+     * @default '["Day", "Week", "WorkWeek", "Month", "Agenda"]'
      */
     views?: View[] | ViewsModel[];
 
@@ -182,9 +181,9 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * It allows the Scheduler to display week numbers based on following available week options. The week
      *  option specified in this property will be initially loaded on the schedule.
-     * * FirstDay
-     * * FirstFourDayWeek
-     * * FirstFullWeek
+     * * `FirstDay`: Denotes that the first week of the year starts on the first day of the year and ends before the following designated first day of the week.
+     * * `FirstFourDayWeek`:Denotes that the first week of the year is the first week with four or more days before the designated first day of the week.
+     * * `FirstFullWeek`:  Denotes that the first week of the year begins on the first occurrence of the designated first day of the week on or after the first day of the year.
      *
      * {% codeBlock src='schedule/weekRule/index.md' %}{% endcodeBlock %}
      *
@@ -241,6 +240,14 @@ export interface ScheduleModel extends ComponentModel{
      * @default null
      */
     timeFormat?: string;
+
+    /**
+     * Specifies whether to enable the rendering of untrusted HTML values in the Schedule component.
+     * When this property is enabled, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * When set to `true`, If valid, the scroll on the all day row is activated when the all day row
@@ -362,9 +369,9 @@ export interface ScheduleModel extends ComponentModel{
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
-     * * date
-     * * groupIndex
-     * * type
+     * * `date`: Returns the date of the cell.
+     * * `groupIndex`: Returns the group index of the cell.
+     * * `type`: Returns the type of the work cell.
      *
      * Refer to the below code snippet.
      *
@@ -551,8 +558,8 @@ export interface ScheduleModel extends ComponentModel{
      * Template option to customize the resource header bar. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the resource header cells.
      * The following can be accessible via template.
-     * * resource - All the resource fields.
-     * * resourceData - object collection of current resource.
+     * * `resource` - All the resource fields.
+     * * `resourceData` - Object collection of current resource.
      *
      * Refer to the below code snippet.
      *
@@ -586,7 +593,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Allows defining the collection of resources to be displayed on the Schedule. The resource collection needs to be defined
-     *  with unique resource names to identify it along with the respective dataSource and field mapping options.
+     * with unique resource names to identify it along with the respective dataSource and field mapping options.
      *
      * {% codeBlock src='schedule/resources/index.md' %}{% endcodeBlock %}
      *
@@ -596,7 +603,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Allows defining the collection of custom header rows to display the year, month, week, date and hour label as an individual row
-     *  on the timeline view of the scheduler.
+     * on the timeline view of the scheduler.
      *
      * {% codeBlock src='schedule/headerRows/index.md' %}{% endcodeBlock %}
      *

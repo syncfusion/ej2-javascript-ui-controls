@@ -501,6 +501,10 @@ export abstract class BlockContainer extends Widget {
      * @private
      */
     public sectionFormatIn: WSectionFormat = undefined;
+    /**
+    * @private
+    */
+    public columnIndex: number = 0;
     public get sectionFormat(): WSectionFormat {
         let container: BlockContainer = this;
         if (container instanceof BodyWidget) {
@@ -952,7 +956,7 @@ export abstract class BlockWidget extends Widget {
                 padding = (firstRow.firstChild as TableCellWidget).leftMargin + ((firstRow).lastChild as TableCellWidget).rightMargin;
             }
             if (bodyWidget instanceof BodyWidget && sectionFormat.columns.length > 1) {
-                let colIndex: number = bodyWidget.page.bodyWidgets.indexOf(bodyWidget);
+                let colIndex: number = bodyWidget.columnIndex;
                 return HelperMethods.convertPixelToPoint((sectionFormat.columns[colIndex] as WColumnFormat).width);
             }
             else {
@@ -2792,7 +2796,10 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
-
+    /**
+     * @private
+     */
+    public isRenderBookmarkEnd: boolean = false;
     /**
      * @private
      */
@@ -2875,6 +2882,23 @@ export class TableRowWidget extends BlockWidget {
             if (cell.rowIndex === rowIndex && cell.index === cellIndex) {
                 return cell;
             }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public getCellUsingColumnIndex(rowIndex: number, columnIndex: number): TableCellWidget {
+        let cell: TableCellWidget;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            cell = this.childWidgets[i] as TableCellWidget;
+            if (cell.rowIndex === rowIndex && cell.columnIndex === columnIndex) {
+                return cell;
+            }
+        }
+        cell = this.getCell(rowIndex, columnIndex);
+        if(!isNullOrUndefined(cell)){
+            return cell;
         }
         return undefined;
     }
@@ -3140,6 +3164,7 @@ export class TableRowWidget extends BlockWidget {
         row.rowFormat.copyFormat(this.rowFormat);
         row.topBorderWidth = this.topBorderWidth;
         row.bottomBorderWidth = this.bottomBorderWidth;
+        row.isRenderBookmarkEnd = this.isRenderBookmarkEnd;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = (this.childWidgets[i] as TableCellWidget).clone();
             row.childWidgets.push(cell);
@@ -3235,6 +3260,7 @@ export class TableRowWidget extends BlockWidget {
         this.rowFormat = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
+        this.isRenderBookmarkEnd = undefined;
         super.componentDestroy();
     }
 }
@@ -3263,6 +3289,14 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public updatedTopBorders: BorderInfo[] = [];
+    /**
+     * @private
+     */
+    public isRenderBookmarkStart: boolean = false;
+    /**
+     * @private
+     */
+    public isRenderBookmarkEnd: boolean = false;
     /**
      * @private
      */
@@ -4089,6 +4123,8 @@ export class TableCellWidget extends BlockWidget {
         }
         cell.leftBorderWidth = this.leftBorderWidth;
         cell.rightBorderWidth = this.rightBorderWidth;
+        cell.isRenderBookmarkEnd = this.isRenderBookmarkEnd;
+        cell.isRenderBookmarkStart = this.isRenderBookmarkStart;
         if (this.margin) {
             cell.margin = this.margin.clone();
         }
@@ -4126,6 +4162,8 @@ export class TableCellWidget extends BlockWidget {
         this.contentControlProperties = undefined;
         this.rowIndex = undefined;
         this.columnIndex = undefined;
+        this.isRenderBookmarkStart = undefined;
+        this.isRenderBookmarkEnd = undefined;
         super.componentDestroy();
     }
 }
@@ -5732,11 +5770,24 @@ export class BookmarkElementBox extends ElementBox {
     private bookmarkTypeIn: number = 0;
     private refereneceIn: BookmarkElementBox = undefined;
     private nameIn: string = '';
+    private propertiesIn: object;
     /**
      * @private
      */
     get bookmarkType(): number {
         return this.bookmarkTypeIn;
+    }
+    /**
+     * @private
+     */
+    get properties(): object {
+        return this.propertiesIn;
+    }
+    /**
+     * @private
+     */
+    set properties(properties: object) {
+        this.propertiesIn = properties;
     }
     /**
      * @private
@@ -5801,6 +5852,7 @@ export class BookmarkElementBox extends ElementBox {
         let span: BookmarkElementBox = new BookmarkElementBox(this.bookmarkType);
         span.name = this.name;
         span.reference = this.reference;
+        span.properties = this.properties;
         if (this.margin) {
             span.margin = this.margin.clone();
         }
@@ -6670,9 +6722,6 @@ export class ImageElementBox extends ShapeBase {
      */
     set imageString(value: string) {
         this.imageStr = value;
-        if (!isNullOrUndefined(value)) {
-            this.element.src = this.imageStr;
-        }
     }
     constructor(isInlineImage?: boolean) {
         super();
@@ -6691,6 +6740,7 @@ export class ImageElementBox extends ShapeBase {
         let image: ImageElementBox = new ImageElementBox(this.isInlineImage);
         image.characterFormat.copyFormat(this.characterFormat);
         image.imageString = this.imageString;
+        image.element.src = this.element.src;
         image.isMetaFile = this.isMetaFile;
         image.isCompressed = this.isCompressed;
         image.metaFileImageString = this.metaFileImageString;
@@ -7098,6 +7148,7 @@ export class ChartElementBox extends ImageElementBox {
     private onChartLoaded(): void {
         this.officeChart.convertChartToImage(this.officeChart.chart, this.width, this.height).then((dataURL: string) => {
             this.imageString = dataURL;
+            this.element.src = dataURL;
         });
     }
     /**

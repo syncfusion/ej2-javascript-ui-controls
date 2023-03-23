@@ -32,6 +32,7 @@ export class TreeMapHighlight {
      *
      * @param {PointerEvent} e - Specifies the pointer argument.
      * @returns {boolean} - return the highlight process is true or false.
+     * @private
      */
     public mouseMove(e: PointerEvent): boolean {
         const treemap: TreeMap = this.treemap;
@@ -249,6 +250,7 @@ export class TreeMapSelection {
      *
      * @param {PointerEvent} e - Specifies the pointer argument.
      * @returns {void}
+     * @private
      */
     public mouseDown(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -256,7 +258,7 @@ export class TreeMapSelection {
         const treemap: TreeMap = this.treemap;
         treemap.levelSelection = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const items: any[] = []; const targetId: string = targetEle.id; const labelText : string = targetEle.innerHTML;
+        const items: any[] = []; const targetId: string = targetEle.id; const labelText : string = (targetEle as HTMLElement).innerHTML;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let item: any; const selectionElements: Element[] = [];
         let treeMapElement: Element; let element: Element; let orders: string[];

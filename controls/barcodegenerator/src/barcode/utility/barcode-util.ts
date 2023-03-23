@@ -166,7 +166,7 @@ export function imageExport(type: string, fileName: string, element: Element, is
             context.scale(2 / 3, 2 / 3);
         } else {
             image.src = window.URL.createObjectURL(
-                new Blob([new window[serializer]().serializeToString(element.children[0])], { type: 'image/svg+xml' }
+                new Blob([new window[`${serializer}`]().serializeToString(element.children[0])], { type: 'image/svg+xml' }
                 ));
         }
     });

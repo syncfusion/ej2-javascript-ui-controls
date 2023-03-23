@@ -364,11 +364,11 @@ export interface DataSourceChangedEventArgs {
      * Return the action which triggers the event
      * 
      */
-    action: string;
-    /**
-     * Return the new node data of updated data source
-     * 
-     */
+     action: string;
+     /**
+      * Return the new node data of updated data source
+      * 
+      */
      nodeData: { [key: string]: Object }[];
 }
 
@@ -503,8 +503,8 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     public query: Query;
 
     /**
-     * Specifies whether the node can be selected by users or not 
-     * When set to false, the user interaction is prevented for the corresponding node. 
+     * Specifies whether the node can be selected by users or not
+     * When set to false, the user interaction is prevented for the corresponding node.
      */
     @Property('selectable')
     public selectable: string;
@@ -544,12 +544,40 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 /**
  * Defines the expand type of the TreeView node.
  */
-export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
+ export type ExpandOnSettings =
+ /**
+ * The expand/collapse operation happens when you double-click on the node in desktop.
+ */
+ 'Auto' |
+ /**
+ * The expand/collapse operation happens when you single-click on the node in desktop.
+ */
+ 'Click' |
+ /**
+ * The expand/collapse operation happens when you double-click on the node in desktop.
+ */
+ 'DblClick' |
+ /**
+ * The expand/collapse operation will not happen.
+ */
+ 'None';
 
 /**
  * Defines the sorting order type for TreeView.
  */
-export type SortOrder = 'None' | 'Ascending' | 'Descending';
+ export type SortOrder =
+ /**
+ * Indicates that the nodes are sorted in the ascending order.
+ */
+  'Ascending' |
+  /**
+  *  Indicates that the nodes are sorted in the descending order
+  */
+   'Descending' |
+  /**
+  * Indicates that the nodes are not sorted.
+  */
+   'None';
 
 /**
  * Configures animation settings for the TreeView component.
@@ -720,8 +748,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Enables or disables multi-selection of nodes. To select multiple nodes:
-     * * Select the nodes by holding down the CTRL key while clicking on the nodes.
-     * * Select consecutive nodes by clicking the first node to select and hold down the **SHIFT** key
+     * * Select the nodes by holding down the **Ctrl** key while clicking on the nodes.
+     * * Select consecutive nodes by clicking the first node to select and hold down the **Shift** key
      * and click the last node to select.
      *
      * For more information on multi-selection, refer to
@@ -2910,7 +2938,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
             this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
-                if ((!observedArgs.cancel) && !observedArgs.node.classList.contains(PREVENTSELECT)) {
+                if ((!observedArgs.cancel)  && !observedArgs.node.classList.contains(PREVENTSELECT)) {
                     this.nodeSelectAction(li, e, observedArgs, multiSelect);
                 }
             });
@@ -2947,6 +2975,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isLoaded) {
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
+            this.isRightClick = false;
         }
         this.isRightClick = false;
     }
@@ -3820,7 +3849,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.renderNodeTemplate(newData, txtEle, dataId);
                 this.renderReactTemplates();
             } else {
-                txtEle.innerText = newText;
+                this.enableHtmlSanitizer ? txtEle.innerText = newText : txtEle.innerHTML = newText;
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
@@ -5752,7 +5781,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView nodes.
      */
     public ensureVisible(node: string | Element): void {
-        let parentsId: string[] = [];
+        let parentsId: string[] = []; 
             if(this.dataType == 1){
                 let nodeData: {[key: string]: Object}[] = this.getTreeData(node);
                 while(nodeData.length != 0 && !isNOU(nodeData[0][this.fields.parentID])){
@@ -5854,7 +5883,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         for (let i: number = 0; i < sourceNodes.length; i++) {
             let dragLi: Element = this.getElement(sourceNodes[i]);
-            nodeData.push(this.getNode(dragLi));
+            nodeData.push(this.getNode(dragLi))
             if (isNOU(dragLi) || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
                 continue;
             }

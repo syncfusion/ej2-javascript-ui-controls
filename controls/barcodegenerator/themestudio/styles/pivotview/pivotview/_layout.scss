@@ -621,20 +621,6 @@
 
       .e-toolbar-items {
         background: $pivotgrid-grp-bg-color;
-
-        .e-toolbar-item {
-          .e-tbar-btn.e-btn.e-control {
-            @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='material') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') or ($skin-name =='bootstrap4') {
-              background: $pivotgrid-grp-bg-color;
-
-              &:hover {
-                @if ($skin-name =='material') or ($skin-name =='material-dark') or ($skin-name =='fabric-dark') or ($skin-name =='bootstrap4') {
-                  background: $pivotgrid-grp-bg-hover-color;
-                }
-              }
-            }
-          }
-        }
       }
 
       .e-toolbar-item .e-tbar-btn.e-btn {
@@ -727,19 +713,27 @@
           @if ($pivotgrid-skin == 'bootstrap4') {
             background-color: $gray-600;
             border-radius: $pivotgrid-default-border-radius;
-        }
-
-        .e-menu-icon,
-        .e-icons{
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            color: $white;
           }
 
-          @if ($pivotgrid-skin == 'FluentUI') {
-            color: $pivotgrid-active-color;
+          .e-menu-icon,
+          .e-icons{
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              color: $white;
+            }
+
+            @if ($pivotgrid-skin == 'FluentUI') {
+              color: $pivotgrid-active-color;
+            }
           }
         }
-      }
+
+        ul.e-menu {
+          @if ($pivotgrid-skin == 'fabric') or ($pivotgrid-skin == 'fabric-dark') or
+          ($pivotgrid-skin == 'highcontrast') or ($pivotgrid-skin == 'highcontrast-light') {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
       }
 
       .e-tab .e-tab-header .e-toolbar-item.e-active {
@@ -882,7 +876,7 @@
     }
 
     .e-drillthrough-body-header-value {
-      color: $pivotview-grid-header-font-color;
+      color: $pivotgrid-drillthrough-header-value-font-color;
       margin-right: 20px;
     }
 
@@ -1041,6 +1035,10 @@
 
     .e-value-field-settings {
       max-height: 510px !important;
+
+      .e-dlg-content {
+        padding: 0;
+      }
     }
     /* stylelint-enable */
 

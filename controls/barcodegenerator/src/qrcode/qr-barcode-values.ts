@@ -1111,7 +1111,7 @@ export class PdfQRBarcodeValues {
         case 30:
             index += 3; break;
         }
-        return this.numberOfErrorCorrectingCodeWords[index];
+        return this.numberOfErrorCorrectingCodeWords[parseInt(index.toString(), 10)];
     }
 
     /**

@@ -13,7 +13,7 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
 
     public element: HTMLElement = this.parent.createElement('TD', {
         className: 'e-detailrowcollapse',
-        attrs: { 'aria-expanded': 'false', role: 'gridcell', tabindex: '-1' }
+        attrs: { 'aria-expanded': 'false', tabindex: '-1' }
     });
 
     /**
@@ -30,12 +30,12 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
             node.className = '';
             node.className = attributes['class'];
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonaldown e-icon-gdownarrow', attrs: {
-                href: 'javascript:void(0);', 'title': this.localizer.getConstant('Expanded')
+                href: '#', 'title': this.localizer.getConstant('Expanded'), 'onclick': 'event.preventDefault()'
             } }));
         } else {
 
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonalright e-icon-grightarrow', attrs: {
-                href: 'javascript:void(0);', 'title': this.localizer.getConstant('Collapsed')
+                href: '#', 'title': this.localizer.getConstant('Collapsed'), 'onclick': 'event.preventDefault()'
             } }));
         }
 

@@ -137,13 +137,13 @@ $ddl-bigger-chip-close-font: $text-xl !default;
 // Small size
 $ddl-select-all-height-small: 24px !default;
 $ddl-small-chip-height: 18px !default;
-$ddl-chip-small-font-size: 12px !default;
+$ddl-chip-small-font-size: $text-xs !default;
 $ddl-small-chip-close-square: $text-sm !default;
 $ddl-small-chip-close-width: $text-sm !default;
 $ddl-small-chip-close-font: $text-sm !default;
 $ddl-control-small-height: 24px !default;
 $ddl-small-input-height: 24px !default;
-$ddl-delim-small-font-size: 12px !default;
+$ddl-delim-small-font-size: $text-xs !default;
 $ddl-small-closer-margin-top: -1.65em !default;
 $ddl-chip-close-hooker-small-left: 6px !default;
 $ddl-chip-close-hooker-small-bigger-left: 6px !default;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Size } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../bullet-chart';
 import { ScaleGroup } from '../renderer/scale-render';

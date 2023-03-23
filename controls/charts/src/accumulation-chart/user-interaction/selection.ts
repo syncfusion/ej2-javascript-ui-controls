@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**
@@ -88,7 +87,7 @@ export class AccumulationSelection extends BaseSelection {
      * To get series selection style by series.
      */
     private generateStyle(series: AccumulationSeriesModel, point?: number): string {
-        return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index + '_point_'+ point);
+        return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index + '_point_' + point);
     }
     /**
      * To get series selection style while hovering legend

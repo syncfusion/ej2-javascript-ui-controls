@@ -1,6 +1,6 @@
 //layout variables
 $radio-btn-border: 1px solid !default;
-$radio-btn-bigger-font-size: 16px !default;
+$radio-btn-bigger-font-size: $text-base !default;
 $radio-btn-bigger-height: 18px !default;
 $radio-btn-bigger-line-height: 1 !default;
 $radio-btn-bigger-padding: 28px !default;
@@ -44,7 +44,7 @@ $radio-btn-padding-left: 24px !default;
 $radio-btn-small-line-height: 1 !default;
 $radio-btn-small-padding: 22px !default;
 $radio-btn-focus-outline-offset: 0 !default;
-$radio-btn-font-size: 14px !default;
+$radio-btn-font-size: $text-sm !default;
 $radio-btn-background-color: $content-bg-color !default;
 $radio-btn-border-color: $border !default;
 $radio-btn-checked-border-color: $primary !default;

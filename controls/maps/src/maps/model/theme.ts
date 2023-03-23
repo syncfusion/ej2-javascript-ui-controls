@@ -310,6 +310,7 @@ export namespace DarkTheme {
  *
  * @param {MapsTheme} theme - Specifies the theme.
  * @returns {IThemeStyle} - Returns the theme style.
+ * @private
  */
 export function getThemeStyle(theme: MapsTheme): IThemeStyle {
     let style: IThemeStyle; let color: string;

@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';
 import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
@@ -1394,7 +1393,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (this.isTouchEvent(e)) {
             // tslint:disable-next-line:no-any
             if ((this as any).isReact) { this.clearTemplate(); }
-            remove(document.getElementById(('tooltipDiv' + this.element.id)));
+            const Element: HTMLElement = document.getElementById(('tooltipDiv' + this.element.id));
+            if (Element) {
+            remove(Element);
+            }
             const targetId: string = (e.target as Element).id;
             // tslint:disable-next-line:no-string-literal
             const targetClass: string = (e.target as Element).className['baseVal'];
@@ -1580,7 +1582,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         this.removeSvg();
         this.svgObject = null;
         this.element.classList.remove('e-BulletChart');
-        this.element.innerHTML = '';
+        this.element.innerText = '';
     }
 
 }

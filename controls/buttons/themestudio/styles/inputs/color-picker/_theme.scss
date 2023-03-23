@@ -153,6 +153,9 @@
         @if $skin-name == 'tailwind' {
           border-color: $btn-disabled-border-color;
         }
+        @if $skin-name == 'Material3' {
+          border: none;
+        }
       }
     }
   }

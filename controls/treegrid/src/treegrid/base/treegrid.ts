@@ -1,4 +1,4 @@
-import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend, merge} from '@syncfusion/ej2-base';
+import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend, merge, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
@@ -207,11 +207,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public frozenColumns: number;
     /**
      *  Defines the mode of clip. The available modes are,
-     * `Clip`: Truncates the cell content when it overflows its area.
-     * `Ellipsis`: Displays ellipsis when the cell content overflows its area.
-     * `EllipsisWithTooltip`:  Displays ellipsis when the cell content overflows its area,
-     *  also it will display the tooltip while hover on ellipsis is applied..
-     *
+     * ```props
+     * * Clip :- Truncates the cell content when it overflows its area.
+     * * Ellipsis :- Displays ellipsis when the cell content overflows its area.
+     * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area,
+     * ```
+     * also it will display the tooltip while hover on ellipsis is applied.
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @isEnumeration true
@@ -344,9 +345,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public cloneQuery: Query;
     /**
      * Defines the print modes. The available print modes are
-     * * `AllPages`: Prints all pages of the TreeGrid.
-     * * `CurrentPage`: Prints the current page of the TreeGrid.
-     *
+     * ```props
+     * * AllPages :- Prints all pages of the TreeGrid.
+     * * CurrentPage :- Prints the current page of the TreeGrid.
+     * ```
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.PrintMode
@@ -543,12 +545,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public toolbarTemplate: string;
     /**
      * Defines the mode of TreeGrid lines. The available modes are,
-     * * `Both`: Displays both horizontal and vertical TreeGrid lines.
-     * * `None`: No TreeGrid lines are displayed.
-     * * `Horizontal`: Displays the horizontal TreeGrid lines only.
-     * * `Vertical`: Displays the vertical TreeGrid lines only.
-     * * `Default`: Displays TreeGrid lines based on the theme.
-     *
+     * ```props
+     * * Both :- Displays both horizontal and vertical TreeGrid lines.
+     * * None :- No TreeGrid lines are displayed.
+     * * Horizontal :- Displays the horizontal TreeGrid lines only.
+     * * Vertical :- Displays the vertical TreeGrid lines only.
+     * * Default :- Displays TreeGrid lines based on the theme.
+     * ```
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.GridLine
@@ -726,6 +729,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public enableColumnVirtualization: boolean;
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
+     * If `enableHtmlSanitizer` set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
     /**
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in TreeGrid when the scrollbar reaches the end.
      * This helps to load large dataset in TreeGrid.
@@ -1805,6 +1816,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         if ((<{ isVue?: boolean }>this).isVue) {
             (<{ isVue?: boolean }>this.grid).isVue = true;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (<{ vueInstance?: any }>this.grid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
         }
         createSpinner({ target: this.element }, this.createElement);
         this.log(['mapping_fields_missing']);
@@ -1968,6 +1981,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid[`${templateInstance}`] = this[`${templateInstance}`];
         const isJsComponent: string = 'isJsComponent';
         this.grid[`${isJsComponent}`] = true;
+        const enableHtmlSanitizer: string = 'enableHtmlSanitizer';
+        this.grid[`${enableHtmlSanitizer}`] = this.enableHtmlSanitizer;
     }
     private triggerEvents(args?: Object): void {
         this.trigger(getObject('name', args), args);
@@ -3470,13 +3485,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             for (let i: number = 0; i < this.columns.length; i++) {
                 if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns)) {
                     for (let j: number = 0; j < (this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns.length; j++) {
-                        const stackedColumn: Column | ColumnModel | string = (this.columns[parseInt(i.toString(), 10)] as ColumnModel).columns[parseInt(j.toString(), 10)];
-                        const currentColumn: any = this.grid.getColumnByField((stackedColumn as ColumnModel).field);
+                        const stackedColumn: Column | ColumnModel | string = (this.columns[parseInt(i.toString(), 10)] as ColumnModel)
+                            .columns[parseInt(j.toString(), 10)];
+                        const currentColumn: GridColumn = this.grid.getColumnByField((stackedColumn as ColumnModel).field);
                         (stackedColumn as ColumnModel).width = (currentColumn as ColumnModel).width;
                     }
                 }
                 else if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).field)) {
-                    const currentColumn: any = this.grid.getColumnByField((this.columns[parseInt(i.toString(), 10)] as ColumnModel).field);
+                    const fieldName: string = (this.columns[parseInt(i.toString(), 10)] as ColumnModel).field;
+                    const currentColumn: GridColumn = this.grid.getColumnByField(fieldName);
                     (this.columns[parseInt(i.toString(), 10)] as ColumnModel).width = (currentColumn as ColumnModel).width;
                 }
             }
@@ -4424,8 +4441,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         for (let i: number = 0; i < detailrows.length; i++) {
-            if (!isNullOrUndefined(detailrows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization
-                || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
+            if (!isNullOrUndefined(detailrows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization ||
+                this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
                 gridRowsObject[detailrows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'none' ? true : false;
                 detailrows[parseInt(i.toString(), 10)].style.display = displayAction;
             }
@@ -4533,6 +4550,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
+    }
+
+    /**
+     * Method to sanitize html element
+     *
+     * @param {any} value - Specifies the html value to sanitize
+     * @returns {any} Returns the sanitized html value
+     * @hidden
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private sanitize(value: any): any {
+        if (this.enableHtmlSanitizer && typeof (value) === 'string') {
+            return SanitizeHtmlHelper.sanitize(value);
+        }
+        return value;
     }
 
     /**

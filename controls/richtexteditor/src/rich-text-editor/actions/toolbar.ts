@@ -329,9 +329,9 @@ export class Toolbar {
      * @deprecated
      */
     public updateItem(args: IUpdateItemsModel): void {
-        let item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
-        if(this.parent.locale !== 'en-US'){
-            item.tooltip = getTooltipText(args.updateItem.toLocaleLowerCase(),this.locator);
+        const item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
+        if (this.parent.locale !== 'en-US'){
+            item.tooltip = getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator);
         }
         const trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
         const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
@@ -342,6 +342,7 @@ export class Toolbar {
             args.baseToolbar.toolbarObj.items[index as number].tooltipText = item.tooltip;
             (args.baseToolbar.toolbarObj.items as IToolbarItemModel[])[index as number].subCommand = item.subCommand;
             args.baseToolbar.toolbarObj.dataBind();
+            args.baseToolbar.toolbarObj.refreshOverflow();
         } else {
             this.addTBarItem(args, 0);
         }
@@ -491,7 +492,11 @@ export class Toolbar {
      * @deprecated
      */
     public refreshToolbarOverflow(): void {
+        this.parent.element.classList.remove(classes.CLS_RTL);
         this.baseToolbar.toolbarObj.refreshOverflow();
+        if (this.parent.enableRtl) {
+            this.parent.element.classList.add(classes.CLS_RTL);
+        }
     }
 
     private isToolbarDestroyed(): boolean {

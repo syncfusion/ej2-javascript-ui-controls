@@ -4037,9 +4037,10 @@ describe('EJ2-68574 Multiple Triggers of Ok Button Click Event in Modal Dialog o
         setTimeout(function () {
             expect(count === 1).toBe(true);
             done();
-        }); 
+        });  
     });
     afterAll(() => {
         destroyDialog(dlgObj);
     });
 });
+

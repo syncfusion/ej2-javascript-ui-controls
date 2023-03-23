@@ -239,7 +239,6 @@ export class CommandHandler {
         if (isTooltipVisible) {
             setTimeout(
                 () => {
-                    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                     (this.diagram.tooltipObject as Tooltip).open(targetEle);
                 },
                 1);
@@ -4012,11 +4011,11 @@ export class CommandHandler {
 
     // EJ2-65063 - Added below method to check if target has inConnect or outConnect. If it does not have inconnect and outconnect means then return false
     private canConnect(connector: ConnectorModel, target: NodeModel): boolean {
-        if (canInConnect(target) && canOutConnect(target)) {
-            return true;
-        } else {
-            return false;
-        }
+            if (canInConnect(target) && canOutConnect(target)) {
+                return true;
+            } else {
+                return false;
+            }
     }
 
     /**
@@ -4944,9 +4943,10 @@ Remove terinal segment in initial
         selector.wrapper.offsetX = obj.offsetX;
         selector.wrapper.offsetY = obj.offsetY;
         const selectorEle: (SVGElement | HTMLCanvasElement) = getSelectorElement(this.diagram.element.id);
+        // EJ2-69511 - Added handleSize parameter to avoid exception when we perform multiselect of connectors, rotate and resize it.
         this.diagram.diagramRenderer.renderResizeHandle(
             selector.wrapper, selectorEle, selector.thumbsConstraints, this.diagram.scroller.currentZoom,
-            selector.constraints, this.diagram.scroller.transform, false, canMove(selector)
+            selector.constraints, this.diagram.scroller.transform, false, canMove(selector),null,null,selector.handleSize
         );
     }
 
@@ -5698,7 +5698,7 @@ Remove terinal segment in initial
                     // EJ2-65876 - Exception occurs on line routing injection module
                     if(connector.sourceID != connector.targetID && connector.segments.length>1){
                         //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
-                         this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                            this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                     }
                     if (isBlazor()) {
                         updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { append, createElement, extend, EventHandler, prepend, Animation, formatUnit } from '@syncfusion/ej2-base';
+import { append, createElement, extend, EventHandler, Animation, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove, removeClass, addClass } from '@syncfusion/ej2-base';
 import { EventFieldsMapping, ElementData, EventRenderedArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -338,7 +338,8 @@ export class VerticalEvent extends EventBase {
             const templateName: string = 'eventTemplate' + (this.isResourceEventTemplate ? '_' + resIndex : '');
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
-            const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
+            const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
+            appointmentSubject.innerText = this.parent.sanitize(recordSubject);
             if (isAllDay) {
                 if (record[fieldMapping.isAllDay]) {
                     templateElement = [appointmentSubject];
@@ -368,10 +369,8 @@ export class VerticalEvent extends EventBase {
                     className: cls.APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + cls.DISABLE_CLASS : ''),
                     innerHTML: timeStr
                 });
-                const appointmentLocation: HTMLElement = createElement('div', {
-                    className: cls.LOCATION_CLASS,
-                    innerHTML: (record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '') as string
-                });
+                const appointmentLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS });
+                appointmentLocation.innerText = this.parent.sanitize((record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '') as string);
                 templateElement = [appointmentSubject, appointmentTime, appointmentLocation];
             }
         }
@@ -387,7 +386,7 @@ export class VerticalEvent extends EventBase {
                 appointmentWrapper.appendChild(recurrenceIcon);
             }
         }
-        this.renderSpannedIcon(isAllDay ? appointmentDetails : appointmentWrapper, eventData);
+        this.parent.eventBase.renderSpannedIcon(isAllDay ? appointmentDetails : appointmentWrapper, eventData);
         if (!isNullOrUndefined(this.cssClass)) {
             addClass([appointmentWrapper], this.cssClass);
         }
@@ -417,30 +416,6 @@ export class VerticalEvent extends EventBase {
             const moreCount: number = parseInt(countCell.getAttribute('data-count'), 10) + 1;
             countCell.setAttribute('data-count', moreCount.toString());
             countCell.innerHTML = '+' + this.parent.globalize.formatNumber(moreCount) + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
-        }
-    }
-
-    private renderSpannedIcon(element: HTMLElement, spanEvent: Record<string, any>): void {
-        const iconElement: HTMLElement = createElement('div', { className: cls.EVENT_INDICATOR_CLASS + ' ' + cls.ICON });
-        if (spanEvent.isLeft) {
-            const iconLeft: HTMLElement = iconElement.cloneNode() as HTMLElement;
-            addClass([iconLeft], cls.EVENT_ICON_LEFT_CLASS);
-            prepend([iconLeft], element);
-        }
-        if (spanEvent.isRight) {
-            const iconRight: HTMLElement = iconElement.cloneNode() as HTMLElement;
-            addClass([iconRight], cls.EVENT_ICON_RIGHT_CLASS);
-            append([iconRight], element);
-        }
-        if (spanEvent.isTop) {
-            const iconTop: HTMLElement = iconElement.cloneNode() as HTMLElement;
-            addClass([iconTop], cls.EVENT_ICON_UP_CLASS);
-            prepend([iconTop], element);
-        }
-        if (spanEvent.isBottom) {
-            const iconBottom: HTMLElement = iconElement.cloneNode() as HTMLElement;
-            addClass([iconBottom], cls.EVENT_ICON_DOWN_CLASS);
-            append([iconBottom], element);
         }
     }
 

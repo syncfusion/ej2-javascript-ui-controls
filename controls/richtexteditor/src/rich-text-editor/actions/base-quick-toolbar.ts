@@ -1,6 +1,6 @@
 import { detach, getUniqueID, append, closest, selectAll, select, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { addClass, removeClass, Browser, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
-import { Popup, isCollide } from '@syncfusion/ej2-popups';
+import { Popup, isCollide, Tooltip } from '@syncfusion/ej2-popups';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -34,6 +34,7 @@ export class BaseQuickToolbar {
     private popupRenderer: IRenderer;
     public toolbarElement: HTMLElement;
     private renderFactory: RendererFactory;
+    private tooltip: Tooltip;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
@@ -94,7 +95,9 @@ export class BaseQuickToolbar {
         let x: number;
         let y: number;
         const imgWrapper: HTMLElement = <HTMLElement>closest(e.target, '.e-img-caption');
-        const target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
+        const isAligned: boolean = (e.target.classList.contains('e-imginline') ||
+            e.target.classList.contains('e-imgbreak')) ? false : true;
+        let target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
         const targetOffsetTop: number = target.offsetTop;
         const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
@@ -105,6 +108,7 @@ export class BaseQuickToolbar {
         } else {
             y = e.y;
         }
+        target = isAligned ? e.target : target;
         if (target.offsetWidth > e.popWidth) {
             x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + target.offsetLeft;
         } else {
@@ -227,6 +231,13 @@ export class BaseQuickToolbar {
                     this.parent.enableToolbarItem(['Undo', 'Redo']);
                 }
                 append([this.element], document.body);
+                if (this.parent.showTooltip) {
+                    this.tooltip  = new Tooltip({
+                        target: '#' + this.element.id + ' [title]',
+                        showTipPointer: true
+                    });
+                    this.tooltip.appendTo(this.element);
+                }
                 this.popupObj.position.X = x + 20;
                 this.popupObj.position.Y = y + 20;
                 this.popupObj.dataBind();
@@ -293,6 +304,16 @@ export class BaseQuickToolbar {
         const viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
         if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
+        }
+        if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))) {
+            if (!isNullOrUndefined(document.querySelector('#' + this.element.id + ' [data-tooltip-id]'))){
+                let tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
+                let dataContent:string = tooltipTargetEle.getAttribute('data-content')
+                tooltipTargetEle.removeAttribute('data-content');
+                tooltipTargetEle.setAttribute('title', dataContent);
+                tooltipTargetEle.removeAttribute('data-tooltip-id'); 
+            }
+        this.tooltip.destroy();
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {
             if (isNullOrUndefined(viewSourcePanel) || viewSourcePanel.style.display === 'none') {

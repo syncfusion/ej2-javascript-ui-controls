@@ -1,8 +1,7 @@
+/* eslint-disable jsdoc/valid-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization, NotifyPropertyChanges, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -1328,7 +1327,29 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Destroy method
      */
     public destroy(): void {
-        //Perform destroy here
+        this.cartesianChart = null;
+        this.chart = null;
+        this.periodSelector = null;
+        this.rangeNavigator = null;
+        this.rangeSelector = null;
+        this.tempPeriods = [];
+        this.toolbarSelector = null;
+        this.visibleSeries = [];
+        this.yAxisElements = null;
+        let element: HTMLElement = document.getElementById(this.element.id + '_stockChart_chartKeyboard_chart_focus');
+        if (element) {
+            element.remove();
+        }
+        let borderElement: HTMLElement = document.getElementById(this.element.id + '_stock_border');
+        if (borderElement) {
+            borderElement.remove();
+        }
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            this.removeSvg();
+            this.svgObject = null;
+        }
     }
 
     private renderBorder(): void {
@@ -1402,6 +1423,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * To render the legend
+     *
      * @private
      */
     public renderLegend(): void {

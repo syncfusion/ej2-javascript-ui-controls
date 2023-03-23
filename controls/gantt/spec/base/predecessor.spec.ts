@@ -538,3 +538,107 @@ describe('Parent predecessor for unscheduled task', () => {
             destroyGantt(ganttObj);
         });
     });
+ describe('Parent predecessor for unscheduled task', () => {
+        let ganttObj: Gantt;
+        let editingData = [
+            {
+                TaskID: 1,
+                TaskName: 'Parent 1',
+                StartDate: new Date('07/01/2022'),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: 'Child 1',
+                        StartDate: new Date('07/01/2022'),
+                        EndDate: new Date('07/04/2022'),
+                    }
+                ],
+            },
+            {
+                TaskID: 5,
+                TaskName: 'Parent 2',
+                Predecessor: '1FS',
+                subtasks: [
+                    {
+                        TaskID: 6,
+                        TaskName: 'Child 1',
+                    },
+                ],
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    dateFormat: 'MMM dd, y',
+                    allowUnscheduledTasks: true,
+                    allowParentDependency: false,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        notes: 'info',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                    allowSelection: true,
+                    gridLines: 'Both',
+                    height: '450px',
+                    treeColumnIndex: 1,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'MMM dd, y',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                        },
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        { field: 'Duration' },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' }
+                    ],
+                    eventMarkers: [
+                        { day: '4/17/2019', label: 'Project approval and kick-off' },
+                        { day: '5/3/2019', label: 'Foundation inspection' },
+                        { day: '6/7/2019', label: 'Site manager inspection' },
+                        { day: '7/16/2019', label: 'Property handover and sign-off' },
+                    ],
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        rightLabel: 'resources'
+                    },
+                    editDialogFields: [
+                        { type: 'General', headerText: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                }, done);
+        });
+        it('dynamically change parent Predecessor API ', () => {
+            expect(ganttObj.currentViewData[2]['Predecessor']).toBe(null);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });

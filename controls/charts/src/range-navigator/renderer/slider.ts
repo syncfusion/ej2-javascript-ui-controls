@@ -136,7 +136,7 @@ export class RangeSlider {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
+            (<HTMLElement>shadowElement).innerText = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -147,7 +147,7 @@ export class RangeSlider {
                 '</filter>';
             sliderGroup.appendChild(shadowElement);
         }
-        parent.innerHTML += '<use xmlns="http://www.w3.org/2000/svg" fill="black" fill-opacity="1" filter="url(#ej2-range-shadow)"' +
+        (<HTMLElement>parent).innerText += '<use xmlns="http://www.w3.org/2000/svg" fill="black" fill-opacity="1" filter="url(#ej2-range-shadow)"' +
             ' xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#path-1"/>';
         if (thump.type === 'Circle') {
             parent.appendChild(drawSymbol(
@@ -240,7 +240,7 @@ export class RangeSlider {
             this.control.rangeTooltipModule.renderLeftTooltip(this);
             this.control.rangeTooltipModule.renderRightTooltip(this);
         }
-        let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+        const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
         if (periodSelectorModule && this.control.redraw && (this.control.getModuleName() === 'rangeNavigator')) {
             const selectedIndex: number = periodSelectorModule.findSelectedIndex(start, end, periodSelectorModule.control.periods);
             periodSelectorModule.setSelectedStyle(selectedIndex);

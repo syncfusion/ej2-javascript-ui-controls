@@ -381,7 +381,7 @@ describe('Touch functionalities', () => {
             touchTestObj.moveEvent(moveArgs1);
             touchTestObj.moveEvent(moveArgs2);
             touchTestObj.endEvent(movedEnd);
-            EventHandler.trigger(<HTMLElement>node, 'transitionend'); debugger
+            EventHandler.trigger(<HTMLElement>node, 'transitionend');
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
                 .toEqual('<div class="e-header-day">Thu</div><div class="e-header-date e-navigate" role="link">2</div>');
         });

@@ -65,7 +65,18 @@ export class FlMenuOptrUI {
             fields: { text: 'text', value: 'value' },
             cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
             enableRtl: this.parent.enableRtl,
-            text: selectedValue
+            text: selectedValue,
+            // eslint-disable-next-line @typescript-eslint/tslint/config
+            change: function() {
+                const valInput: HTMLInputElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
+                if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
+                    (this as DropDownList).value === 'isnull' || (this as DropDownList).value === 'isnotnull') {
+                    valInput.setAttribute('disabled', '');
+                }
+                else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+                    valInput.removeAttribute('disabled');
+                }
+            }
         });
         this.dropOptr.addEventListener(literals['open'], this.ddOpen);
         this.dropOptr.appendTo('#' + column.uid + '-floptr');

@@ -1198,8 +1198,11 @@ export class SpellChecker {
         let content: string = '';
         if (this.documentHelper.owner.sfdtExportModule) {
             const sfdtExport: SfdtExport = this.documentHelper.owner.sfdtExportModule;
-            sfdtExport.Initialize();
+            let index: number = sfdtExport.keywordIndex;
+            sfdtExport.keywordIndex = 0;
+            sfdtExport.Initialize(); 
             const document: any = sfdtExport.writePage(page);
+            sfdtExport.keywordIndex = index;
             if (this.documentHelper.owner.textExportModule) {
                 const textExport: TextExport = this.documentHelper.owner.textExportModule;
                 textExport.pageContent = '';

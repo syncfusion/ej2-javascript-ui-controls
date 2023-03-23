@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
@@ -131,7 +130,7 @@ export class NiceInterval extends Double {
             if (isBlazor) {
                 skeleton = 'd';
             } else {
-                skeleton = axis.isChart ? this.getDayFormat(axis, currentValue, previousValue) : 'MMMd';
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'MMMd' : 'yMd') : 'MMMd';
             }
         } else if (intervalType === 'Hours') {
             if (isBlazor) {
@@ -156,31 +155,6 @@ export class NiceInterval extends Double {
     }
 
     /**
-     * Get intervalType month format
-     *
-     * @param {Axis} axis axis
-     * @param {number} currentValue currentValue
-     * @param {number} previousValue previousValue
-     */
-    private getMonthFormat(axis: Axis, currentValue: number, previousValue: number): string {
-        return ((new Date(currentValue).getFullYear() === new Date(previousValue).getFullYear()) ?
-            (axis.isIntervalInDecimal ? 'MMM' : 'MMM d') : 'y MMM');
-    }
-
-    /**
-     * Get intervalType day label format for the axis
-     *
-     * @param {Axis} axis axis
-     * @param {number} currentValue currentValue
-     * @param {number} previousValue previousValue
-     */
-    private getDayFormat(axis: Axis, currentValue: number, previousValue: number): string {
-        return (axis.valueType === 'DateTime' ?
-            ((new Date(currentValue).getMonth() !== new Date(previousValue).getMonth()) ? 'MMMd' :
-                (axis.isIntervalInDecimal ? 'd' : 'Ehm')) : 'yMd');
-    }
-
-    /**
      * Find label format for axis
      *
      * @param {Axis} axis axis
@@ -191,7 +165,7 @@ export class NiceInterval extends Double {
     public findCustomFormats(axis: Axis, currentValue: number, previousValue: number): string {
         let labelFormat: string = axis.labelFormat ? axis.labelFormat : '';
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
-            labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
+            labelFormat = axis.valueType === 'DateTime' ? 'MMM yyyy' : 'yMMM';
         }
         return labelFormat;
     }

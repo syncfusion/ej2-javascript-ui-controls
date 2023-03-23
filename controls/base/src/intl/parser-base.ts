@@ -106,7 +106,8 @@ export class ParserBase {
         const regexStr: string = props.map((str: string): string => {
             return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
         }).join('|');
-        return new RegExp(regexStr, 'g');
+        const regExp: RegExpConstructor = RegExp;
+        return new regExp(regexStr, 'g');
     }
     /**
      *
@@ -182,7 +183,8 @@ export class ParserBase {
             const digits: string = blazorMode ? getValue('obj.mapperDigits', cur) : getValue(cur.nSystem + '._digits', numberSystem);
             if (!isUndefined(digits)) {
                 ret.numericPair = this.reverseObject(digits, latnNumberSystem);
-                ret.numberParseRegex = new RegExp(this.constructRegex(digits), 'g');
+                const regExp: RegExpConstructor = RegExp;
+                ret.numberParseRegex = new regExp(this.constructRegex(digits), 'g');
                 ret.numericRegex = '[' + digits[0] + '-' + digits[9] + ']';
                 if (needSymbols) {
                     ret.numericRegex = digits[0] + '-' + digits[9];

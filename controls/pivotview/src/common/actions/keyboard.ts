@@ -157,7 +157,7 @@ export class CommonKeyboardInteraction {
                 }
                 firstLi.setAttribute('id', '_active');
                 addClass([firstLi], ['e-hover', 'e-node-focus']);
-                memberEditorTree.focus();
+                firstLi.focus();
                 e.preventDefault();
                 return;
             }
@@ -172,7 +172,7 @@ export class CommonKeyboardInteraction {
                     const firstLi: HTMLElement = allMemberEditorTree.querySelector('li');
                     firstLi.setAttribute('id', '_active');
                     addClass([firstLi], ['e-hover', 'e-node-focus']);
-                    allMemberEditorTree.focus();
+                    firstLi.focus();
                     e.preventDefault();
                     return;
                 }

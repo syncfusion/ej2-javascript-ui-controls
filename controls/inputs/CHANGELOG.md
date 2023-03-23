@@ -2,48 +2,13 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#F178267` - Fixed issue unable to upload the same file again after using the remove method.
-
-## 20.4.52 (2023-02-28)
-
-### MaskedTextBox
-
-#### Bug Fixes
-
-- `#I435597` - Resolved issue with pasting using keyboard shortcuts not working properly in Safari browser.
+## 21.1.35 (2023-03-23)
 
 ### Signature
 
 #### Bug Fixes
 
 - `#I433821` - Correcting the signature scaling issue while resizing the web browser has been resolved.
-
-## 20.4.48 (2023-02-01)
-
-### Signature
-
-#### Bug Fixes
-
-- `#F179949` - Provide the change event fires support for draw method of signature.
-
-## 20.4.38 (2022-12-21)
-
-### Rating
-
-**Key features**:
-
-The Rating component lets the user provide a star rating or view other people’s ratings on a numeric scale for any service provided, such as for movies, applications, or products.
-
-- **Precision** - Different precision modes to provide more accurate rating.
-- **Tooltip and Label** - Provide more expressive rating with tooltip and label.
-- **Template** - Support to customize the rating item to heart, svg or any content that precisely match our unique needs.
-- **Accessibility** - The Rating provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
 
 ## 19.4.38 (2021-12-17)
 

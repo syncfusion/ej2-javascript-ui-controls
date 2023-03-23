@@ -412,7 +412,7 @@ describe('Schedule event tooltip module', () => {
             util.destroy(schObj);
         });
         it('Checking tooltip time after changing time format', (done: Function) => {
-            schObj.dataBound = function () {
+            schObj.dataBound = () => {
                 const target: HTMLElement = schObj.element.querySelector('.e-appointment');
                 expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
                 expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();

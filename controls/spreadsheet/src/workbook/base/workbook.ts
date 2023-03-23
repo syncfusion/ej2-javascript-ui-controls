@@ -1275,7 +1275,19 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - protect the active sheet.
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?: string): void {
-        this.notify(events.protectsheetHandler, { protectSettings: protectSettings, password: password, sheetIndex: sheet } );
+        if (isNullOrUndefined(sheet)) {
+            sheet = this.activeSheetIndex;
+        } else if (typeof (sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        const sheetModel: SheetModel = this.sheets[sheet as number];
+        if (!sheetModel) {
+            return;
+        }
+        this.setSheetPropertyOnMute(sheetModel, 'isProtected', true);
+        this.setSheetPropertyOnMute(sheetModel, 'password', password ? password : '');
+        this.setSheetPropertyOnMute(sheetModel, 'protectSettings', protectSettings ? protectSettings : {});
+        this.notify(events.protectsheetHandler, { protectSettings: sheetModel.protectSettings, password: sheetModel.password, sheetIndex: sheet } );
     }
 
     /**
@@ -1284,7 +1296,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} sheet - Specifies the sheet to Unprotect.
      * @returns {void} - Unprotect the active sheet.
      */
-    public unprotectSheet(sheet: number): void {
+    public unprotectSheet(sheet: number | string): void {
+        if (isNullOrUndefined(sheet)) {
+            sheet = this.activeSheetIndex;
+        } else if (typeof (sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        if (!this.sheets[sheet as number]) {
+            return;
+        }
         const args: UnprotectArgs = { sheet: sheet};
         this.notify(events.unprotectsheetHandler, args);
     }

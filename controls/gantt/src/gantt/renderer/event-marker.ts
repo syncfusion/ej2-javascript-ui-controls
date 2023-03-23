@@ -2,7 +2,7 @@
  * To render and update event markers in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 export class EventMarker {
     public parent: Gantt;
@@ -72,6 +72,9 @@ export class EventMarker {
                 });
                 const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
                 spanElement[property as string] = this.parent.eventMarkers[i as number].label;
+                if (this.parent.enableHtmlSanitizer && typeof (spanElement[property as string]) === 'string') {
+                    spanElement[property as string] = SanitizeHtmlHelper.sanitize(spanElement[property as string]);
+                }
                 if (this.parent.enableRtl) {
                    spanElement.style.right = '5px';
                 }

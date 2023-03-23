@@ -322,6 +322,23 @@ export class Gantt extends Component<HTMLElement>
     public enableImmutableMode: boolean;
 
     /**
+     * Specifies whether to allow dependency connection support for parent records.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowParentDependency: boolean;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
+     * If `enableHtmlSanitizer` set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
      *
      * @default true
@@ -342,6 +359,20 @@ export class Gantt extends Component<HTMLElement>
      */
      @Property(true)
     public enableVirtualMaskRow: boolean;
+    /**
+     * Specifies whether to update offset value on a task for all the predecessor edit actions.
+     *
+     * @default true
+     */
+     @Property(true)
+    public UpdateOffsetOnTaskbarEdit: boolean;
+    /**
+     * Specifies whether to auto calculate start and end-date  based on various factors such as working time, holidays, weekends, and predecessors.
+     *
+     * @default true
+     */
+     @Property(true)
+    public autoCalculateDateScheduling: boolean;
     /**
      * Enables or disables the focusing the task bar on click action.
      *
@@ -475,6 +506,22 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public renderBaseline: boolean;
+
+    /**
+     * Defines whether to enable or disable taskbar drag and drop.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowTaskbarDragAndDrop: boolean;
+
+    /**
+     * Defines whether taskbar to get overlapped or not.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowTaskbarOverlap: boolean;
 
     /**
      * Configures the grid lines in tree grid and gantt chart.
@@ -1730,13 +1777,13 @@ export class Gantt extends Component<HTMLElement>
     }
     public hideMaskRow () {
         let isTablePresent:any = this.element.querySelectorAll('.e-masked-table').length
-        if (!isNullOrUndefined(this.contentMaskTable) && isTablePresent !=0) {
+        if (!isNullOrUndefined(this.contentMaskTable) && (isTablePresent != 0 || this.contentMaskTable)) {
             const maskTable: Element = this.contentMaskTable;
             remove(maskTable);
             this.contentMaskTable = null
         }
         isTablePresent = this.element.querySelectorAll('.e-masked-table').length
-        if (!isNullOrUndefined(this.headerMaskTable) && isTablePresent !=0) {
+        if (!isNullOrUndefined(this.headerMaskTable) && (isTablePresent != 0 || this.headerMaskTable)) {
             const maskTable: Element = this.headerMaskTable;
             remove(maskTable);
             this.headerMaskTable = null
@@ -1749,8 +1796,8 @@ export class Gantt extends Component<HTMLElement>
         }
         if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length != 0) {
             for (var i = 0; i < this.singleTier; i++) {
-                if (!isNullOrUndefined(this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i])) {
-                    this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i]['style'].visibility = "visible";
+                if (!isNullOrUndefined(this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[parseInt(i.toString(), 10)])) {
+                    this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[parseInt(i.toString(), 10)]['style'].visibility = "visible";
                 }
             }
         }
@@ -1758,7 +1805,7 @@ export class Gantt extends Component<HTMLElement>
             this.element.querySelector('.' + cls.timelineHeaderContainer)['style'].position = "relative";
         }
         if (!isNullOrUndefined(this.element.getElementsByClassName(cls.chartBodyContent)[0])) {
-            this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility  = "visible"
+            this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility  = "visible";
         }
     }
     public showMaskRow (){
@@ -1772,7 +1819,7 @@ export class Gantt extends Component<HTMLElement>
                 if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length != 0) {
                     this.singleTier = this.timelineModule.isSingleTier ? 1:2;
                     for (var i = 0; i < this.singleTier; i++) {
-                        this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i]['style'].visibility = "hidden";
+                        this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[parseInt(i.toString(), 10)]['style'].visibility = "hidden";
                     }
                 }
                 if (this.singleTier === 0) {
@@ -1889,7 +1936,7 @@ export class Gantt extends Component<HTMLElement>
         }
         this.topBottomHeader = 0;
         for (let i: number = 0; i < row.length; i++) {
-            tbody.appendChild(this.applyTimelineMaskRow(row[i]));
+            tbody.appendChild(this.applyTimelineMaskRow(row[parseInt(i.toString(), 10)]));
             this.topBottomHeader = this.topBottomHeader + 1;
         }
         table.appendChild(tbody);
@@ -1903,11 +1950,11 @@ export class Gantt extends Component<HTMLElement>
         maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
         maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
         for (let i:number = 0; i < maskRow.childNodes.length-1; i++) {
-            maskRow.childNodes[i]['style']['width'] = 166 + 'px'
+            maskRow.childNodes[parseInt(i.toString(), 10)]['style']['width'] = 166 + 'px'
         }
         const maskCells: Element[] = [].slice.call(maskRow.childNodes);
         for (let i: number = 0; i < maskCells.length; i++) {
-            const maskCell: Element = maskCells[i];
+            const maskCell: Element = maskCells[parseInt(i.toString(), 10)];
             switch (this.topBottomHeader) {
                 case 0 :
                     if (this.enableRtl) {
@@ -1923,7 +1970,7 @@ export class Gantt extends Component<HTMLElement>
                     maskCell.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
                     const innerMaskCells: Element[] = [].slice.call(maskCell.childNodes);
                     for (let i: number = 0; i < innerMaskCells.length; i++) {
-                        const htmlInner: Element = innerMaskCells[i];
+                        const htmlInner: Element = innerMaskCells[parseInt(i.toString(), 10)];
                         if (i === 0) {
                             if (this.enableRtl) {
                                 htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML"></span>';
@@ -1970,7 +2017,7 @@ export class Gantt extends Component<HTMLElement>
             else if (this.columnLoop === 4) {
                 this.columnLoop = 1;
             }
-            tbody.appendChild(this.applyMaskRow(row[j]));
+            tbody.appendChild(this.applyMaskRow(row[parseInt(j.toString(), 10)]));
         }
         table.appendChild(tbody);
         (table as HTMLElement).style.width = 100 +'%';
@@ -1990,7 +2037,7 @@ export class Gantt extends Component<HTMLElement>
         }
         const maskCells: Element[] = [].slice.call(maskRow.childNodes);
         for (let i: number = 0; i < maskCells.length; i++) {
-            const maskCell: Element = maskCells[i];
+            const maskCell: Element = maskCells[parseInt(i.toString(), 10)];
             switch (this.columnLoop) {
                 case 1:
                     if (i === 0) {
@@ -2083,7 +2130,7 @@ export class Gantt extends Component<HTMLElement>
             this.predecessorModule['parentIds'] = [];
             this.predecessorModule['parentRecord'] = [];
             this.predecessorModule.updatePredecessors();
-            if (this.isInPredecessorValidation && this.enableValidation) {
+            if (this.isInPredecessorValidation && this.enableValidation && this.autoCalculateDateScheduling) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
@@ -2096,7 +2143,9 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }
-            this.predecessorModule.updateParentPredecessor();
+            if (this.allowParentDependency) {
+               this.predecessorModule.updateParentPredecessor();
+            }
             if (this.dataSource instanceof Object && isCountRequired(this)) {
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
@@ -2107,7 +2156,9 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }
-            this.predecessorModule.updateParentPredecessor();
+            if (this.allowParentDependency) {
+               this.predecessorModule.updateParentPredecessor();
+            }
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
             this.notify('dataReady', {});
@@ -2226,20 +2277,25 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public updateContentHeight(args?: object): void {
-        if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
-            const length: number = getValue('result.length', args);
-            this.contentHeight = length * this.rowHeight;
-        } else {
-            const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
-                this.currentViewData : this.getExpandedRecords(this.currentViewData);
-            let height: number;
-            const chartRow: Element = !isNullOrUndefined(this.ganttChartModule.getChartRows()) ? this.ganttChartModule.getChartRows()[0] : null;
-            if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
-                height = chartRow.getBoundingClientRect().height;
+        if (!this.allowTaskbarOverlap && this.viewType === 'ResourceView' && !this.isLoad) {
+            return
+        }
+        else {
+            if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
+                const length: number = getValue('result.length', args);
+                this.contentHeight = length * this.rowHeight;
             } else {
-                height = this.rowHeight;
+                const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
+                    this.currentViewData : this.getExpandedRecords(this.currentViewData);
+                let height: number;
+                const chartRow: Element = !isNullOrUndefined(this.ganttChartModule.getChartRows()) ? this.ganttChartModule.getChartRows()[0] : null;
+                if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
+                    height = chartRow.getBoundingClientRect().height;
+                } else {
+                    height = this.rowHeight;
+                }
+                this.contentHeight = expandedRecords.length * height;
             }
-            this.contentHeight = expandedRecords.length * height;
         }
     }
     /**
@@ -2742,7 +2798,6 @@ export class Gantt extends Component<HTMLElement>
                 this.chartRowsModule.refreshGanttRows();
                 break;
             case 'includeWeekend':
-            case 'dayWorkingTime':
             case 'allowUnscheduledTasks':
             case 'holidays':
                 this.isLoad=true;
@@ -2834,6 +2889,10 @@ export class Gantt extends Component<HTMLElement>
             case 'readOnly':
             case 'viewType':
             case 'taskFields':
+            case 'dayWorkingTime':
+            case 'allowTaskbarDragAndDrop':
+            case 'allowTaskbarOverlap':
+            case 'allowParentDependency':
                 if (prop === 'locale') {
                    this.isLocaleChanged = true;
                 }
@@ -2848,6 +2907,9 @@ export class Gantt extends Component<HTMLElement>
             }
         }
         if (isRefresh) {
+            if (this.isLoad && this.contentMaskTable) {
+                this.contentMaskTable = null
+            }
             this.refresh();
         }
     }
@@ -2977,7 +3039,7 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.allowRowDragAndDrop) {
+        if (this.allowRowDragAndDrop || this.allowTaskbarDragAndDrop) {
             modules.push({
                 member: 'rowDragAndDrop',
                 args: [this]
@@ -3525,10 +3587,11 @@ export class Gantt extends Component<HTMLElement>
      * @param  {PdfExportProperties} pdfExportProperties - Defines the export properties of the Gantt.
      * @param  {isMultipleExport} isMultipleExport - Define to enable multiple export.
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
+     * @param  {boolean} isBlob - If the 'isBlob' parameter is set to true, the method returns PDF data as a blob instead of exporting it as a down-loadable PDF file. The default value is false.  
      * @returns {Promise<any>} .
      */
-    public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
-        return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
+    public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+        return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc, isBlob)
             : null;
     }
     /**
@@ -3560,7 +3623,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public renderWorkingDayCell(args: RenderDayCellEventArgs): void {
-        const includeWeekend: boolean = this.taskMode !== 'Auto' ? true : this.includeWeekend ? true : false;
+        const includeWeekend: boolean = this.taskMode !== 'Auto' ? true : (this.includeWeekend || !this.autoCalculateDateScheduling) ? true : false;
         const nonWorkingDays: number[] = !includeWeekend ? this.nonWorkingDayIndex : [];
         const holidays: number[] = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
@@ -3569,7 +3632,11 @@ export class Gantt extends Component<HTMLElement>
             const tempDate: Date = new Date(args.date.getTime());
             tempDate.setHours(0, 0, 0);
             if (holidays.indexOf(tempDate.getTime()) !== -1) {
-                args.isDisabled = true;
+                if (!this.autoCalculateDateScheduling) {
+                    args.isDisabled = false;
+                } else {
+                    args.isDisabled = true;
+                }
             }
         }
     }
@@ -3695,8 +3762,8 @@ export class Gantt extends Component<HTMLElement>
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
-            if (isNullOrUndefined(value) || (!isNullOrUndefined(value) && !isNullOrUndefined(ganttData[field]) && (value instanceof Date ? value.getTime() !==
-                ganttData[field].getTime() : ganttData[field] !== value))) {
+            if (isNullOrUndefined(value) || (!isNullOrUndefined(value) && !isNullOrUndefined(ganttData[`${field}`]) && (value instanceof Date ? value.getTime() !==
+                ganttData[`${field}`].getTime() : ganttData[`${field}`] !== value))) {
                 isValid = true;
             }
             if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {

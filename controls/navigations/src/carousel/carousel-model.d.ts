@@ -51,10 +51,10 @@ export interface CarouselModel extends ComponentModel{
 
     /**
      *  Specifies the type of animation effects. The possible values for this property as follows
-     *  * None
-     *  * Slide
-     *  * Fade
-     *  * Custom
+    * * `None`: The carousel item transition happens without animation.
+    * * `Slide`: The carousel item transition happens with slide animation.
+    * * `Fade`: The Carousel item transition happens with fade animation.
+    * * `Custom`: The Carousel item transition happens with custom animation.
      *
      *  @default 'Slide'
      */
@@ -182,9 +182,9 @@ export interface CarouselModel extends ComponentModel{
 
     /**
      * Defines how to show the previous, next and play pause buttons visibility. The possible values for this property as follows
-     * * Hidden
-     * * Visible
-     * * VisibleOnHover
+     * * `Hidden`: Navigation buttons are hidden.
+     * * `Visible`: Navigation buttons are visible.
+     * * `VisibleOnHover`: Navigation buttons are visible only when we hover the carousel.
      *
      * @default 'Visible'
      */

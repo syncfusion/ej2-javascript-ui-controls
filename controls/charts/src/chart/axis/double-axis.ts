@@ -1,8 +1,7 @@
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Axis } from '../axis/axis';
 import { getMinPointsDelta, getActualDesiredIntervalsCount, setRange, triggerLabelRender } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';

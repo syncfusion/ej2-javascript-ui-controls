@@ -22,6 +22,21 @@ export interface GanttModel extends ComponentModel{
     enableImmutableMode?: boolean;
 
     /**
+     * Specifies whether to allow dependency connection support for parent records.
+     *
+     * @default true
+     */
+    allowParentDependency?: boolean;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
+     * If `enableHtmlSanitizer` set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
      *
      * @default true
@@ -41,6 +56,20 @@ export interface GanttModel extends ComponentModel{
      * @default true
      */
     enableVirtualMaskRow?: boolean;
+
+    /**
+     * Specifies whether to update offset value on a task for all the predecessor edit actions.
+     *
+     * @default true
+     */
+    UpdateOffsetOnTaskbarEdit?: boolean;
+
+    /**
+     * Specifies whether to auto calculate start and end-date  based on various factors such as working time, holidays, weekends, and predecessors.
+     *
+     * @default true
+     */
+    autoCalculateDateScheduling?: boolean;
 
     /**
      * Enables or disables the focusing the task bar on click action.
@@ -167,6 +196,20 @@ export interface GanttModel extends ComponentModel{
      * @default false
      */
     renderBaseline?: boolean;
+
+    /**
+     * Defines whether to enable or disable taskbar drag and drop.
+     *
+     * @default false
+     */
+    allowTaskbarDragAndDrop?: boolean;
+
+    /**
+     * Defines whether taskbar to get overlapped or not.
+     *
+     * @default true
+     */
+    allowTaskbarOverlap?: boolean;
 
     /**
      * Configures the grid lines in tree grid and gantt chart.

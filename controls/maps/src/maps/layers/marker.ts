@@ -1,12 +1,12 @@
 import { Maps } from '../../index';
 import {
     LayerSettings, MarkerSettings, IMarkerRenderingEventArgs, markerRendering,
-    convertTileLatLongToPoint, MapLocation, MarkerClusterData
+    convertTileLatLongToPoint, MapLocation, MarkerClusterData, markerDragStart
 } from '../index';
 import {
     IMarkerClickEventArgs, markerClick, IMarkerMoveEventArgs, markerMouseMove,
     IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, markerClusterClick, markerClusterMouseMove,
-    MarkerSettingsModel
+    MarkerSettingsModel, IMarkerDragEventArgs
 } from '../index';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
@@ -171,6 +171,7 @@ export class Marker {
      *
      * @param {LayerSettings[]} layersCollection - Specifies the layer settings instance.
      * @returns {void}
+     * @private
      */
     public calculateZoomCenterPositionAndFactor(layersCollection: LayerSettings[]): void {
         if (!isNullOrUndefined(this.maps)) {
@@ -288,6 +289,7 @@ export class Marker {
      * To check and trigger marker click event
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
+     * @private
      */
     public markerClick(e: PointerEvent): void {
         const target: string = (e.target as Element).id;
@@ -298,6 +300,9 @@ export class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
+        if (options.marker.enableDrag){
+            document.getElementById(this.maps.element.id + "_svg").style.cursor = 'grabbing';
+        }
         const eventArgs: IMarkerClickEventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
             marker: options.marker, target: target, x: e.clientX, y: e.clientY,
@@ -306,11 +311,39 @@ export class Marker {
             value: options.data['name']
         };
         this.maps.trigger(markerClick, eventArgs);
+        if (options.marker.enableDrag) {
+            let isCluster = false;
+            const layerIndex: number = parseInt(target.split('_LayerIndex_')[1].split('_')[0], 10);
+            const markerIndex: number = parseInt(target.split('_MarkerIndex_')[1].split('_')[0], 10);
+            const dataIndex: number = parseInt(target.split('_dataIndex_')[1].split('_')[0], 10);
+            const marker: MarkerSettingsModel = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number];
+            if (this.sameMarkerData.length > 0) {
+                isCluster = (this.sameMarkerData[0].data.filter((el) => { return ((el['index'] as number) == dataIndex); })).length > 0 &&
+                    this.sameMarkerData[0].layerIndex === layerIndex && this.sameMarkerData[0].markerIndex === markerIndex
+            }
+            if (!isCluster) {
+                const dragEventArgs: IMarkerDragEventArgs = {
+                    name: markerDragStart, x: e.clientX, y: e.clientY,
+                    latitude: options.data['latitude'] || options.data['Latitude'],
+                    longitude: options.data['longitude'] || options.data['Longitude'],
+                    layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex
+                };
+                this.maps.trigger(markerDragStart, dragEventArgs);
+                this.maps.markerDragArgument = {
+                    targetId: target, x: e.clientX, y: e.clientY,
+                    latitude: options.data['latitude'] || options.data['Latitude'],
+                    longitude: options.data['longitude'] || options.data['Longitude'],
+                    shape: isNullOrUndefined(marker.shapeValuePath) ? marker.shape : marker.dataSource[dataIndex as number][marker.shapeValuePath],
+                    layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex
+                }
+            }
+        }
     }
     /**
      * To check and trigger Cluster click event
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
+     * @private
      */
     public markerClusterClick(e: PointerEvent): void {
         const target: string = (e.target as Element).id;
@@ -383,7 +416,7 @@ export class Marker {
                 if ((target.indexOf('_cluster_') > -1)) {
                     let isClusterSame: boolean = false;
                     const clusterElement: HTMLElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? layer.markerClusterSettings.shape === 'Balloon' ? target.split('_datalabel_')[0] + '_Group' : target.split('_datalabel_')[0] : layer.markerClusterSettings.shape === 'Balloon' ? target + '_Group' : target);
-                    const indexes: number[] = layer.markerClusterSettings.shape === 'Balloon' ? clusterElement.children[0].innerHTML.split(',').map(Number) : clusterElement.innerHTML.split(',').map(Number);
+                    const indexes: number[] = layer.markerClusterSettings.shape === 'Balloon' ? (clusterElement.children[0] as HTMLElement).innerText.split(',').map(Number) : (clusterElement as HTMLElement).innerText.split(',').map(Number);
                     collection = [];
                     for (const i of indexes) {
                         collection.push({ data: marker.dataSource[i as number], index: i });
@@ -406,6 +439,7 @@ export class Marker {
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
+     * @private
      */
     public markerMove(e: PointerEvent): void {
         const targetId: string = (e.target as Element).id;
@@ -415,6 +449,10 @@ export class Marker {
         const options: { marker: MarkerSettingsModel, data: object } = this.getMarker(targetId);
         if (isNullOrUndefined(options)) {
             return;
+        }
+        if (options.marker.enableDrag){
+            document.getElementById(this.maps.element.id + "_svg").style.cursor = isNullOrUndefined(this.maps.markerDragArgument) ?
+                    'pointer' : 'grabbing';
         }
         const eventArgs: IMarkerMoveEventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
@@ -427,6 +465,7 @@ export class Marker {
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
+     * @private
      */
     public markerClusterMouseMove(e: PointerEvent): void {
         const targetId: string = (e.target as Element).id;

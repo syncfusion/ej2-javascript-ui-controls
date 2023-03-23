@@ -65,7 +65,7 @@ export interface AccordionItemModel {
      *   let accordionObj: Accordion = new Accordion( {
      *        items: [
      *          { header: 'Accordion Header', content: 'Accordion Content' },
-     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
+     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div>' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -83,7 +83,7 @@ export interface AccordionItemModel {
      *   let accordionObj: Accordion = new Accordion( {
      *        items: [
      *          { header: 'Accordion Header', content: 'Accordion Content' },
-     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div' },
+     *          { header: '<div>Accordion Header</div>', content: '<div>Accordion Content</div>' },
      *          { header: '#headerContent', content: '#panelContent' }]
      *        });
      *   accordionObj.appendTo('#accordion');
@@ -216,8 +216,8 @@ export interface AccordionModel extends ComponentModel{
     /**
      * Specifies the options to expand single or multiple panel at a time.
      * The possible values are:
-     * - Single: Sets to expand only one Accordion item at a time.
-     * - Multiple: Sets to expand more than one Accordion item at a time.
+     * * `Single`: Sets to expand only one Accordion item at a time.
+     * * `Multiple`: Sets to expand more than one Accordion item at a time.
      *
      * @default 'Multiple'
      */

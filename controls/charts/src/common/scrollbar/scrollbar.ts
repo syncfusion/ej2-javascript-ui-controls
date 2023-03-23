@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { EventHandler, Browser, remove } from '@syncfusion/ej2-base';
 import { DateFormatOptions  } from '@syncfusion/ej2-base';
 import { ScrollElements, createScrollSvg } from './scrollbar-elements';

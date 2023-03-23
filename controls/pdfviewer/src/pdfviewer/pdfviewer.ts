@@ -20,6 +20,7 @@ import { ThumbnailView } from './index';
 import { BookmarkView } from './index';
 import { TextSelection } from './index';
 import { TextSearch } from './index';
+import { AccessibilityTags } from './index';
 import { FormFields } from './index';
 import { FormDesigner } from './index';
 import { Print, CalibrationUnit } from './index';
@@ -3919,15 +3920,9 @@ export class RectangleBounds extends ChildProperty<RectangleBounds> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the tile rendering settings.
  *  viewer.tileRenderingSettings = { 
- *      author: 'Guest', 
- *      minHeight: 0, 
- *      minWidth: 0, 
- *      maxWidth: 0, 
- *      maxHeight: 0, 
- *      isLock: false, 
- *      skipPrint: false, 
- *      skipDownload: false, 
- *      allowedInteractions: ['None'] 
+ *      enableTileRendering: false, 
+ *      x: 0, 
+ *      y: 0
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -4158,8 +4153,22 @@ export class FormField extends ChildProperty<FormField> {
  * ```
  * ```ts
  *  let viewer: PdfViewer = new PdfViewer();
- * // Change the settings of the context menu option.
- *  viewer.contextMenuOption = "RightClick";
+ *  // Change the settings of the context menu option.
+ *  viewer.contextMenuSettings = { 
+ *      contextMenuAction: 'RightClick', 
+ *      contextMenuItems: [
+ *          ContextMenuItem.Comment, 
+ *          ContextMenuItem.Copy, 
+ *          ContextMenuItem.Cut, 
+ *          ContextMenuItem.Delete, 
+ *          ContextMenuItem.Highlight, 
+ *          ContextMenuItem.Paste, 
+ *          ContextMenuItem.Properties, 
+ *          ContextMenuItem.ScaleRatio, 
+ *          ContextMenuItem.Strikethrough, 
+ *          ContextMenuItem.Underline
+ *         ] 
+ *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
  * 
@@ -5662,8 +5671,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets a boolean value if initial field selected in form designer toolbar.
-     * 
-     * {% codeBlock src='pdfviewer/isInitialFieldToolbarSelection/index.md' %}{% endcodeBlock %}
      *
      * @private
      * @default false
@@ -5732,7 +5739,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableZoomOptimization: boolean;
 
     /**
-     * Enable or disable the get the document text collections.
+     * Enable or disable the text extract from the PDF viewer.
      * 
      * {% codeBlock src='pdfviewer/isExtractText/index.md' %}{% endcodeBlock %}
      *
@@ -5769,6 +5776,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public showDigitalSignatureAppearance: boolean;
+
+    /**
+     *  Determines whether accessibility tags are enabled or disabled. 
+     *  Accessibility tags can help make web content more accessible to users with disabilities.
+     * 
+     * {% codeBlock src='pdfviewer/enableAccessibilityTags/index.md' %}{% endcodeBlock %}
+     * 
+     * @default true
+     */
+    @Property(true)
+    public enableAccessibilityTags: boolean;
 
     /**
      * Customize desired date and time format
@@ -6265,6 +6283,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public formDesignerModule: FormDesigner;
+     /**
+     * @private
+     */
+    public accessibilityTagsModule: AccessibilityTags;
     private isTextSelectionStarted: boolean = false;
     /**
      * @private
@@ -6377,6 +6399,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public get textSelection(): TextSelection {
         return this.textSelectionModule;
+    }
+
+    /**
+     * Gets the Accessibility Tags object of the pdf viewer.
+     *
+     * @asptype AccessibilityTags
+     * @blazorType AccessibilityTags
+     * @returns { AccessibilityTags }
+     */
+    public get accessibilityTags(): AccessibilityTags {
+        return this.accessibilityTagsModule;
     }
 
     /**
@@ -7336,6 +7369,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'FormDesigner', args: [this, this.viewerBase]
             });
         }
+        modules.push({
+            member: 'AccessibilityTags', args: [this, this.viewerBase]
+        });
+        
         return modules;
     }
     /** @hidden */
@@ -7782,10 +7819,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     else
                         this.annotation.deleteAnnotationById(fieldValue.id);
                 }
-                if (!fieldValue.signatureType || !fieldValue.value){
+                if (!fieldValue.signatureType || !fieldValue.value) {
                     fieldValue.value = currentValue;
-                    if(fieldValue.value){
-                        fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+                    if (this.viewerBase.isSignaturePathData(fieldValue.value)) {
+                        fieldValue.signatureType = 'Path';
+                    }
+                    else if (this.viewerBase.isSignatureImageData(fieldValue.value)) {
+                        fieldValue.signatureType = 'Image';
+                    }
+                    else {
+                        fieldValue.signatureType = 'Type';
                     }
                 }
                 if(!isSameValue)
@@ -7808,6 +7851,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         fieldName = currentData.Text;
                     } else {
                         fieldName = currentData.FieldName;
+                    }
+                    //map the signature field and its data object to find the signature field name.
+                    if (FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "SignatureField" ||
+                        FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "InitialField") {
+                        fieldName = currentData.FieldName.split('_')[0];
+                        currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
                     }
                     if (fieldName === fieldValue.name) {
                         if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
@@ -7865,7 +7914,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // eslint-disable-next-line
     private updateSignatureValue(currentData: any, fieldValue: any): any {
         if (!fieldValue.signatureType) {
-            fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+            fieldValue.signatureType = this.viewerBase.isSignatureImageData(fieldValue.value) ? 'Image' :(this.viewerBase.isSignaturePathData(fieldValue.value) ? 'Path' : 'Type');
         }
         let bound: any = currentData.LineBounds;
         const left: any = this.ConvertPointToPixel(bound.X);
@@ -8024,16 +8073,32 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
             if (typeof (importData) === 'string') {
-                let isXfdfFile: boolean =((importData.indexOf('.xfdf') > -1) || (annotationDataFormat.indexOf('Xfdf') > -1)) ? true : false;
+                let isXfdfFile: boolean = ((importData.indexOf('.xfdf') > -1) || (annotationDataFormat.indexOf('Xfdf') > -1)) ? true : false;
                 if (annotationDataFormat) {
                     if (importData.indexOf('</xfdf>') > -1) {
                         this.viewerBase.importAnnotations(importData, annotationDataFormat, false);
                     } else {
-                        this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
+                        if (annotationDataFormat == 'Json') {
+                            if (importData.includes('pdfAnnotation')) {
+                                this.importAnnotationsAsJson(importData);
+                            } else {
+                                let newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
+                                importData = decodeURIComponent(escape(atob(newImportData)));
+                                this.importAnnotationsAsJson(importData);
+                            }
+                        } else {
+                            this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
+                        }
                     }
                 } else {
                     if (importData.split('.')[1] === 'json') {
-                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
+                        if (importData.includes('pdfAnnotation')) {
+                            this.importAnnotationsAsJson(importData);
+                        } else {
+                            let newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
+                            importData = decodeURIComponent(escape(atob(newImportData)));
+                            this.importAnnotationsAsJson(importData);
+                        }
                     } else {
                         this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf, isXfdfFile);
                     }
@@ -8041,6 +8106,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             } else {
                 this.viewerBase.importAnnotations(importData);
             }
+        }
+    }
+
+     // eslint-disable-next-line
+    private importAnnotationsAsJson(importData: any): void {
+        let jsonData: any = JSON.parse(importData);
+        let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
+        if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation || firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation || firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation || (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {
+            this.viewerBase.isPDFViewerJson = true;
+            this.viewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
+        } else {
+            this.viewerBase.isPDFViewerJson = false;
+            this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
         }
     }
 

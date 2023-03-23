@@ -43,6 +43,12 @@ export class MonthAgenda extends Month {
         return 'abbreviated';
     }
 
+    public updateSelectedCellClass(data: TdData): void {
+        if (util.resetTime(data.date).getTime() === util.resetTime(this.monthAgendaDate).getTime()) {
+            data.className.push(cls.SELECTED_CELL_CLASS);
+        }
+    }
+
     private setEventWrapperHeight(): void {
         let headerHeight: number = (this.parent.headerModule ? this.parent.headerModule.getHeaderElement().offsetHeight : 0) + 2;
         const resourceWrapper: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR) as HTMLElement;

@@ -124,7 +124,6 @@
              triggerMouseEvent(dragElement, 'mouseup');
          });
          it('Delete dependency', () => {
-             debugger
              ganttObj.actionComplete = (args) => {
                  if (args.requestType == 'save') {
                      expect(ganttObj.flatData[18].isCritical).toBe(false);
@@ -1207,7 +1206,6 @@
              expect(ganttObj.flatData[5].isCritical).toBe(true);
          });
          it('Editing start date column without predecessor', () => {
-             debugger
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType == 'save') {
                     expect(args.data.isCritical).toBe(true);
@@ -1222,7 +1220,6 @@
             triggerMouseEvent(element, 'click');
         });
         it('Editing start date column with predecessor', () => {
-            debugger
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType == 'save') {
                     expect(args.data.isCritical).toBe(true);
@@ -1562,7 +1559,6 @@
            expect(ganttObj.currentViewData[15].ganttProperties.isCritical).toBe(true);
         });
         it('Multitaskbar Resource view', () => {
-            debugger
             ganttObj.actionComplete = function (args: any): void {
                 if (args.requestType === "save") {
                     expect(ganttObj.currentViewData[1].ganttProperties.isCritical).toBe(true);

@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, Internationalization } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
@@ -105,6 +105,7 @@ export class WorkbookAutoFill {
         let patterns: PatternInfo[] | number[]; let patrn: PatternInfo | number;
         let pRanges: { patternRange: number[], fillRange: number[] }; let patrnRange: number[];
         let fillRange: number[]; let data: CellModel[];
+        let nextStringValue: string; let match: RegExpMatchArray;
         let temp: string; let dlen: number;
         let j: number; let k: number;
         let l: number; let tlen: number;
@@ -171,9 +172,15 @@ export class WorkbookAutoFill {
                         val = dateToInt(dateVal).toString();
                     } else {
                         val = (this.round(patrn['regVal'].a + (patrn['regVal'].b * patrn['i']), 5)).toString();
+                        if (patrn.val) {
+                            match = (typeof(patrn.val[0]) === 'string') && patrn.val[0].match(/^0+/);
+                            if (match) {
+                                nextStringValue = this.getNextFormattedValue(patrn.val[0], Number(val));
+                            }
+                        }
                     }
                     if (patrn.dataVal) {
-                        if (patrn.copy === undefined) {
+                        if (patrn.copy === undefined && !match) {
                             patrn.copy = (patrn.val as number[]).length > 2;
                             if (patrn.copy) {
                                 for (let m: number = 2; m < (patrn.val as number[]).length; m++) {
@@ -184,7 +191,7 @@ export class WorkbookAutoFill {
                             }
                         }
                         val = patrn.copy ? (data[l as number] && !isNullOrUndefined(data[l as number].value) ? data[l as number].value : '') :
-                            (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : patrn.dataVal + Math.abs(Number(val)));
+                            (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : (match ? patrn.dataVal + nextStringValue : patrn.dataVal + Math.abs(Number(val)))); 
                     }
                     if (isReverseFill) {
                         patrn['i']--;
@@ -374,6 +381,7 @@ export class WorkbookAutoFill {
 
     private getDataPattern(range: number[]): { val: string[] | number[], type: string }[] {
         let val: string[] | string | number;
+        let numValue: string;
         let type: string;
         let i: number = 0;
         let obj: { val: string[] | number[], type: string, dataVal?: string, start?: boolean, isStartWithMonth?: boolean } = { val: null,
@@ -428,7 +436,9 @@ export class WorkbookAutoFill {
                         } while (isNumber(val[val.length - count]));
                         type = 'number';
                         count -= 1;
-                        dataVal = val.slice(0, val.length - count); val = Number(val.slice(val.length - count, val.length));
+                        dataVal = val.slice(0, val.length - count);
+                        numValue = val.slice(val.length - count, val.length);
+                        val = numValue.match(/^0+/) ? numValue : Number(numValue);
                         if (obj.dataVal && obj.dataVal !== dataVal && obj.dataVal === minusOperator(dataVal)) { dataVal = obj.dataVal; }
                     }
                 }
@@ -500,7 +510,11 @@ export class WorkbookAutoFill {
                     diff = options.isReverseFill ? -1 : len;
                     if (len === 1) {
                         const newVal: number = parseFloat(patrn.val[0] as string) + 1;
-                        (patrn.val as number[]).push(newVal);
+                        if (typeof(patrn.val[0]) === 'string' && patrn.val[0].match(/^0+/)) {
+                            (patrn.val as string[]).push(this.getNextFormattedValue((patrn.val[0] as string), newVal));
+                        } else {
+                            (patrn.val as number[]).push(newVal);
+                        }   
                     }
                     regVal = this.getPredictionValue(patrn.dataVal ? (patrn.val as number[]).slice(0, 2) : patrn.val as number[]);
                     temp = { regVal: regVal, type: patrn.type, i: diff, isStartWithMonth: patrn.isStartWithMonth };
@@ -575,6 +589,10 @@ export class WorkbookAutoFill {
             }
             return pattern;
         } else { return [{ regVal: null }]; }
+    }
+
+    private getNextFormattedValue(value: string, numValue: number): string {
+        return new Internationalization().formatNumber(Math.abs(numValue), { minimumIntegerDigits: value.length, useGrouping: false });   
     }
 
     private isCellReference(text: string): string | boolean {

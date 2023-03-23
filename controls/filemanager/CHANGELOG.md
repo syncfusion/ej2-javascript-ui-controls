@@ -2,51 +2,7 @@
 
 ## [Unreleased]
 
-## 20.4.54 (2023-03-14)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I440329` - Resolved the issue of folders disappearing from the navigation pane when the `directoryUpload` setting is enabled in the File Manager component.
-
-## 20.4.53 (2023-03-07)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I439470` - Resolved the files and folders in the navigation pane disappear when using the `sortOrder` setting in the `navigationPaneSettings` property in the File Manager component.
-
-## 20.4.51 (2023-02-21)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I434942` - Resolved the `fileSelect` event not triggering when folders are clicked in the File Manager navigation pane.
-
-## 20.4.48 (2023-02-01)
-
-### File Manager
-
-#### New Features
-
-- `#FB8030` - Implemented virtualization support for the File Manager component.
-
-#### Bug Fixes
-
-- `#I425006` - Resolved the right click and left click selection issue while cancelling the file or folder open in the File Manager component.
-
-## 20.4.43 (2023-01-10)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I426172` - Resolved the console error while creating a folder with invalid text when `showFileExtension` is disabled in the File Manager component.
-
-## 20.4.38 (2022-12-21)
+## 21.1.35 (2023-03-23)
 
 ### File Manager
 

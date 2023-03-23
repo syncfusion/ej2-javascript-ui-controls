@@ -1,6 +1,4 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
@@ -41,7 +39,7 @@ export class BollingerBands extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         const enableBand: boolean = indicator.bandColor !== 'transparent' && indicator.bandColor !== 'none';
         const start: number = enableBand ? 1 : 0;
         const signalCollection: Points[] = [];

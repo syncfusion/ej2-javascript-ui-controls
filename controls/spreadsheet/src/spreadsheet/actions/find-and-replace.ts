@@ -252,10 +252,8 @@ export class FindAndReplace {
 
     private gotoAlert(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const gotoSpan: Element = this.parent.createElement('span', {
-            className: 'e-goto-alert-span',
-            innerHTML: l10n.getConstant('InsertingEmptyValue')
-        });
+        const gotoSpan: HTMLElement = this.parent.createElement('span', { className: 'e-goto-alert-span' });
+        gotoSpan.innerText = l10n.getConstant('InsertingEmptyValue');
         if (this.parent.element.querySelector('.e-goto-alert-span')) {
             this.parent.element.querySelector('.e-goto-alert-span').remove();
         }
@@ -267,10 +265,8 @@ export class FindAndReplace {
             this.parent.element.querySelector('.e-replace-alert-span').remove();
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const findSpan: Element = this.parent.createElement('span', {
-            className: 'e-find-alert-span',
-            innerHTML: l10n.getConstant('NoElements')
-        });
+        const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-find-alert-span' });
+        findSpan.innerText = l10n.getConstant('NoElements');
         if (this.parent.element.querySelector('.e-find-dlg')) {
             (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
         }
@@ -280,10 +276,8 @@ export class FindAndReplace {
             this.parent.element.querySelector('.e-find-alert-span').remove();
         }
         const l10n: L10n = (this.parent.serviceLocator.getService(locale));
-        const replaceSpan: Element = this.parent.createElement('span', {
-            className: 'e-replace-alert-span',
-            innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
-        });
+        const replaceSpan: HTMLElement = this.parent.createElement('span', { className: 'e-replace-alert-span' });
+        replaceSpan.innerText = options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue;
         if (this.parent.element.querySelector('.e-find-dlg')) {
             (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
         }
@@ -326,7 +320,8 @@ export class FindAndReplace {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         dialogElem.appendChild(findElem);
         const findTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const findTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FindWhat') });
+        const findTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
+        findTextH.innerText = l10n.getConstant('FindWhat');
         const findTextIp: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text-findNext', attrs: {
                 'type': 'Text', 'placeholder': l10n.getConstant('FindValue'),
@@ -340,8 +335,8 @@ export class FindAndReplace {
         findTextBox.createElement = this.parent.createElement;
         findTextBox.appendTo(findTextIp);
         const replaceTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const replaceTextH: HTMLElement =
-            this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('ReplaceWith') });
+        const replaceTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
+        replaceTextH.innerText = l10n.getConstant('ReplaceWith');
         const replaceTextIp: HTMLElement = this.parent.createElement('input', {
             className: 'e-input e-text-replaceInp', attrs: { 'type': 'Text', 'placeholder': l10n.getConstant('ReplaceValue') }
         });
@@ -364,8 +359,8 @@ export class FindAndReplace {
         const withIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
         });
-        const withinTextH: HTMLElement =
-            this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchWithin') });
+        const withinTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
+        withinTextH.innerText = l10n.getConstant('SearchWithin');
         findElem.appendChild(withinTextH);
         findElem.appendChild(withIn);
         withInDDL.createElement = this.parent.createElement;
@@ -383,7 +378,8 @@ export class FindAndReplace {
         const searchIn: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-searchby', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
         });
-        const searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('SearchBy') });
+        const searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
+        searchTextH.innerText = l10n.getConstant('SearchBy');
         findElem.appendChild(searchTextH);
         findElem.appendChild(searchIn);
         searchDDL.createElement = this.parent.createElement;
@@ -418,7 +414,8 @@ export class FindAndReplace {
         const gotoElem: HTMLElement = this.parent.createElement('div', { className: 'e-goto' });
         dialogElem.appendChild(gotoElem);
         const gotoTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
-        const gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
+        const gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
+        gotoTextH.innerText = l10n.getConstant('Reference');
         const gotoTextBox: TextBox = new TextBox({
             placeholder: l10n.getConstant('EnterCellAddress')
         });

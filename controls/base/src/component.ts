@@ -461,7 +461,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                 const value: any = obj[key];
                 if (typeof value === 'object' && !(value instanceof Array)) {
                     const newList: string[] = ignoreList.filter((str: string): boolean => {
-                        return new RegExp(key + '.').test(str);
+                        const regExp: RegExpConstructor = RegExp;
+                        return new regExp(key + '.').test(str);
                     }).map((str: string): string => {
                         return str.replace(key + '.', '');
                     });

@@ -136,8 +136,9 @@ export class AjaxHandler {
         return isSkip;
     }
     private sendRequest(jsonObj: object): void {
-        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+        /* eslint-disable */
         this.httpRequest.open(this.type, this.url, this.mode);
+        /* eslint-enable */
         this.httpRequest.withCredentials = this.pdfViewer.ajaxRequestSettings.withCredentials;
         this.httpRequest.setRequestHeader('Content-Type', this.contentType);
         jsonObj = this.addExtraData(jsonObj);

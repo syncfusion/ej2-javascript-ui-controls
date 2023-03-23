@@ -37,7 +37,7 @@
           border: none;
           margin-top: $image-editor-ddbtn-margin-top;
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' $skin-name == 'bootstrap5-dark' {
-            background-color: $tbar-default-bg;
+            background: $tbar-default-bg;
             color: $tbar-default-icon-color;
           }
 
@@ -46,19 +46,19 @@
           }
 
           &:hover {
-            background-color: $btn-hover-bgcolor;
+            background: $btn-hover-bgcolor;
             box-shadow: none;
             color: $btn-hover-color;
           }
 
           &:focus {
-            background-color: $btn-focus-bgcolor;
+            background: $btn-focus-bgcolor;
             box-shadow: none;
             color: $btn-focus-color;
           }
 
           &:active {
-            background-color: $btn-active-bgcolor;
+            background: $btn-active-bgcolor;
             box-shadow: none;
             color: $btn-active-color;
           }

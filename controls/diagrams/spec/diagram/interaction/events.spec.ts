@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Connector } from '../../../src/diagram/objects/connector';
+import { BezierSegment, Connector, OrthogonalSegment, StraightSegment } from '../../../src/diagram/objects/connector';
 import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel, OrthogonalSegmentModel, ConnectorSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
@@ -11,7 +11,7 @@ import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
 import { DiagramTools, ConnectorConstraints, PortConstraints } from '../../../src/diagram/enum/enum';
-import { ISelectionChangeEventArgs, IClickEventArgs, IDoubleClickEventArgs, ITextEditEventArgs, ICollectionChangeEventArgs, IHistoryChangeArgs, IDraggingEventArgs, IEndChangeEventArgs, ISizeChangeEventArgs, IRotationEventArgs, IPropertyChangeEventArgs, IConnectionChangeEventArgs, IElementDrawEventArgs } from '../../../src/diagram/objects/interface/IElement'
+import { ISelectionChangeEventArgs, IClickEventArgs, IDoubleClickEventArgs, ITextEditEventArgs, ICollectionChangeEventArgs, IHistoryChangeArgs, IDraggingEventArgs, IEndChangeEventArgs, ISizeChangeEventArgs, IRotationEventArgs, IPropertyChangeEventArgs, IConnectionChangeEventArgs, IElementDrawEventArgs, ISegmentChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DiagramModel } from '../../../src';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
@@ -1245,5 +1245,174 @@ describe('History change id for changed properties', () => {
             expect(args.sourceId[0] == 'connector1').toBe(true);
         };
        done();
+    });
+});
+
+describe('Segment change event', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let connector:ConnectorModel;
+    let seg:StraightSegment|BezierSegment|OrthogonalSegment;
+    let newValue:StraightSegment|BezierSegment|OrthogonalSegment;
+    let oldValue:StraightSegment|BezierSegment|OrthogonalSegment;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'segmentChange' });
+        document.body.appendChild(ele);
+        let connector1: ConnectorModel = {
+            id: 'connector1',type:'Orthogonal', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 },
+            constraints:ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb
+        };
+        let connector2: ConnectorModel = {
+            id: 'connector2',type:'Bezier', sourceID:'node1',targetID:'node2',targetPortID:'port1',
+            constraints:ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb
+        };
+        let connector3: ConnectorModel = {
+            id: 'connector3', type: 'Straight', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 450, y: 200 },
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+            segments: [{ type: 'Straight', length: 50, point: { x: 350, y: 100 } }, { type: 'Straight', point: { x: 400, y: 170 } }]
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 200, offsetY: 250, annotations: [ { content: 'Node1'}]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 80, height: 130, offsetX: 300, offsetY: 400, annotations: [ { content: 'Node2'}],ports:[{id:'port1',offset:{x:1,y:0.5}}]
+        };
+
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+            nodes: [node, node2],
+             connectors: [connector1,connector2,connector3],
+        });
+
+        diagram.appendTo('#segmentChange');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking segment change event for straight segment', (done: Function) => {
+        diagram.select([diagram.connectors[2]]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        
+        diagram.segmentChange = (args: ISegmentChangeEventArgs) => {
+            if(args.state==='Start'){
+                expect(args.source.type === 'Straight').toBe(true);
+                newValue  =  args.newValue as StraightSegment;
+                oldValue = args.oldValue as StraightSegment;
+                expect(newValue.point.x === oldValue.point.x && newValue.point.y === oldValue.point.y).toBe(true);
+            }
+            if(args.state === 'Progress'){
+                expect(args.source.type === 'Straight').toBe(true);
+                newValue  =  args.newValue as StraightSegment;
+                oldValue = args.oldValue as StraightSegment;
+                expect(newValue.point.x !== oldValue.point.x || newValue.point.y !== oldValue.point.y).toBe(true);
+            }
+            if(args.state ==='Completed'){
+                expect(args.source.type === 'Straight').toBe(true);
+                newValue  =  args.newValue as StraightSegment;
+                oldValue = args.oldValue as StraightSegment;
+                expect(oldValue.point.x === 350 && oldValue.point.y === 100).toBe(true);
+            }
+        }
+        let element: HTMLElement = document.getElementById('segementThumb_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+20, bounds.y+20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+40, bounds.y+40);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x+60, bounds.y+60);
+        done();
+    });
+    it('Checking segment change event for bezier segment', (done: Function) => {
+        diagram.select([diagram.connectors[1]]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+      
+        diagram.segmentChange = (args: ISegmentChangeEventArgs) => {
+            if(args.state==='Start'){
+                expect(args.source.type === 'Bezier').toBe(true);
+                newValue  =  args.newValue as BezierSegment;
+                oldValue = args.oldValue as BezierSegment;
+                expect(newValue.point.x === oldValue.point.x && newValue.point.y === oldValue.point.y).toBe(true);
+            }
+            if(args.state === 'Progress'){
+                expect(args.source.type === 'Bezier').toBe(true);
+                newValue  =  args.newValue as BezierSegment;
+                oldValue = args.oldValue as BezierSegment;
+                expect(newValue.point.x !== oldValue.point.x || newValue.point.y !== oldValue.point.y).toBe(true);
+            }
+            if(args.state ==='Completed'){
+                expect(args.source.type === 'Bezier').toBe(true);
+                newValue  =  args.newValue as BezierSegment;
+                oldValue = args.oldValue as BezierSegment;
+                expect(oldValue.point.x === 280 && oldValue.point.y === 317.5).toBe(true);
+            }
+        }
+        let element: HTMLElement = document.getElementById('segementThumb_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+20, bounds.y+20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+40, bounds.y+40);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x+60, bounds.y+60);
+        done();
+    });
+    it('Checking segment change event for orthogonal segment', (done: Function) => {
+        diagram.select([diagram.connectors[0]]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    
+        diagram.segmentChange = (args: ISegmentChangeEventArgs) => {
+            if(args.state==='Start'){
+                expect(args.source.type === 'Orthogonal').toBe(true);
+            }
+            if(args.state === 'Progress'){
+                expect(args.source.type === 'Orthogonal').toBe(true);
+                newValue  =  args.newValue as OrthogonalSegment;
+                oldValue = args.oldValue as OrthogonalSegment;
+                expect(newValue.direction === 'Bottom' && oldValue.direction === 'Bottom').toBe(true);
+            }
+            if(args.state ==='Completed'){
+                expect(args.source.type === 'Orthogonal').toBe(true);
+                newValue  =  args.newValue as OrthogonalSegment;
+                oldValue = args.oldValue as OrthogonalSegment;
+                expect(newValue.direction === 'Bottom' && oldValue.direction === 'Bottom').toBe(true);
+            }
+        }
+        let element: HTMLElement = document.getElementById('orthoThumb_1_3');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 20, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 50, bounds.y);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 50, bounds.y);
+        done();
+    });
+    it('Checking cancel in segment change event', (done: Function) => {
+        diagram.select([diagram.connectors[2]]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+      
+        let isHit:boolean = false;
+        diagram.segmentChange = (args: ISegmentChangeEventArgs) => {
+            if(args.state==='Start'){
+                args.cancel = true;
+                diagram.dataBind();
+                expect(args.source.type ==='Straight').toBe(true);
+            }
+            if(args.state === 'Progress' || args.state === 'Completed'){
+                isHit = true;
+            }
+            expect(isHit).toBe(false);
+        }
+        let element: HTMLElement = document.getElementById('segementThumb_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+20, bounds.y+20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x+40, bounds.y+40);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x+60, bounds.y+60);
+        done();
     });
 });

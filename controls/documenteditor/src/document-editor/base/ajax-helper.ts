@@ -42,9 +42,10 @@ export class XmlHttpRequestHandler {
      *
      * @param  {object} jsonObject - To send to service
      */
-    public send(jsonObject: object, httpRequestEventArgs?: XmlHttpRequestEventArgs): void {
+    public send(jsonObject: object, httpRequestEventArgs?: XmlHttpRequestEventArgs,isAsync?:boolean): void {
         this.xmlHttpRequest = new XMLHttpRequest();
         let timeout: number = 0;
+        isAsync = isNullOrUndefined(isAsync)? true: isAsync;
         if (!isNullOrUndefined(httpRequestEventArgs)) {
             this.xmlHttpRequest.withCredentials = httpRequestEventArgs.withCredentials;
             timeout = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
@@ -59,16 +60,18 @@ export class XmlHttpRequestHandler {
         };
         if (!this.mode) {
             setTimeout(() => {
-                this.sendRequest(jsonObject, timeout);
+                this.sendRequest(jsonObject, timeout, isAsync);
             });
         } else {
-            this.sendRequest(jsonObject, timeout);
+            this.sendRequest(jsonObject, timeout, isAsync);
         }
     }
 
-    private sendRequest(jsonObj: object, timeout: number): void {
-        this.xmlHttpRequest.open('POST', this.url, true);
-        this.xmlHttpRequest.timeout = timeout;
+    private sendRequest(jsonObj: object, timeout: number, isAsync:boolean): void {
+        this.xmlHttpRequest.open('POST', this.url, isAsync);
+        if(isAsync) {
+            this.xmlHttpRequest.timeout = timeout;
+        }
         if (this.contentType) {
             this.xmlHttpRequest.setRequestHeader('Content-Type', this.contentType);
         }

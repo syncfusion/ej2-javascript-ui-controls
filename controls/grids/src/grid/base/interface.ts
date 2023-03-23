@@ -93,6 +93,13 @@ export interface IGrid extends Component<HTMLElement> {
     enableStickyHeader?: boolean;
 
     /**
+     * If 'enableHtmlSanitizer' set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default null
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Specifies whether the allowTextWrap is enabled or not.
      *
      * @default null
@@ -141,10 +148,22 @@ export interface IGrid extends Component<HTMLElement> {
      */
     enableVirtualMaskRow?: boolean;
 
+    /**
+     * Specifies whether the Virtualization is enable or not.
+     *
+     */
     enableVirtualization: boolean;
 
+    /**
+     * Specifies whether the ColumnVirtualization is enable or not.
+     *
+     */
     enableColumnVirtualization: boolean;
 
+    /**
+     * Specifies whether the InfiniteScrolling is enable or not.
+     *
+     */
     enableInfiniteScrolling: boolean;
 
     /**
@@ -275,6 +294,13 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     showColumnMenu?: boolean;
+
+    /**
+     * Specifies whether to auto fit the columns based on given width.
+     *
+     * @default null
+     */
+    autoFit?: boolean;
 
     /**
      * Specifies the groupSettings for Grid.
@@ -678,6 +704,7 @@ export interface IGrid extends Component<HTMLElement> {
     getEditHeaderTemplate?(): Function;
     getFilterTemplate?(): Function;
     sortColumn?(columnName: string, sortDirection: SortDirection, isMultiSort?: boolean): void;
+    changeDataSource?(columns?: Column[] | string[] | ColumnModel[], data?: Object | DataManager | DataResult): void;
     clearSorting?(): void;
     removeSortColumn?(field: string): void;
     clearGridActions?(): void;
@@ -701,12 +728,14 @@ export interface IGrid extends Component<HTMLElement> {
     addMovableRows?(fRows: HTMLElement[], mrows: HTMLElement[]): HTMLElement[];
     getPrimaryKeyFieldNames?(): string[];
     autoFitColumns(fieldNames?: string | string[]): void;
+    preventAdjustColumns?(): void;
     groupColumn(columnName: string): void;
     ungroupColumn(columnName: string): void;
     ensureModuleInjected(module: Function): boolean;
     isContextMenuOpen(): boolean;
     goToPage(pageNo: number): void;
     updateVisibleExpandCollapseRows?(): void;
+    sanitize?(value: string): string;
     getFrozenColumns(): number;
     getFrozenRightColumnsCount?(): number;
     getFrozenLeftColumnsCount?(): number;
@@ -984,29 +1013,53 @@ export interface IFilterOperator {
     lessThanOrEqual: string;
     notEqual: string;
     startsWith: string;
+    isNull: string;
+    notNull: string;
+    wildCard: string;
+    like: string;
 }
 
 export interface NotifyArgs {
+    /** Defines the total records. */
     records?: Object[];
+    /** Defines the record count. */
     count?: number;
+    /** Defines the request type. */
     requestType?: Action;
+    /** Defines the module. */
     module?: string;
+    /** Defines the enable property. */
     enable?: boolean;
+    /** Defines the properties. */
     properties?: Object;
+    /** Defines the virtualization info like block, event name and next page need to be loaded. */
     virtualInfo?: VirtualInfo;
+    /** Defines whether the action needs to be cancel or not. */
     cancel?: boolean;
+    /** Defines the rows. */
     rows?: Row<Column>[];
+    /** Defines whether the grid is frozen or not. */
     isFrozen?: boolean;
+    /** Defines the arguments. */
     args?: NotifyArgs;
+    /** Defines the scroll top value. */
     scrollTop?: Object;
+    /** Defines the old properties. */
     oldProperties?: string[];
+    /** Defines the focus element. */
     focusElement?: HTMLElement;
+    /** Defines the row object. */
     rowObject?: Row<Column>;
+    /** Defines the movable content to be rendered. */
     renderMovableContent?: boolean;
+    /** Defines the frozen right content. */
     renderFrozenRightContent?: boolean;
+    /** Defines the promise. */
     promise?: Promise<Object>;
+    /** Defines the frozen rows are rendered or not. */
     isFrozenRowsRender?: boolean;
-    action?: string;
+    /** Defines the action. */
+    action?: string;
 }
 
 export interface LoadEventArgs {
@@ -1032,26 +1085,44 @@ export interface LazyLoadArgs {
 }
 
 export interface LazyLoadGroupArgs extends LazyLoadArgs {
+    /** Defines the makeRequest. */
     makeRequest?: boolean;
+    /** Defines the no of records to skip. */
     skip?: number;
+    /** Defines the no of records to take. */
     take?: number;
+    /** Defines the fields. */
     fields?: string[];
+    /** Defines the keys. */
     keys?: string[];
+    /** Defines whether the caption row is expanded. */
     isExpand?: boolean;
+    /** Defines the virtual scroll action */
     isScroll?: boolean;
+    /** Defines the scroll direction. */
     scrollUp?: boolean;
+    /** Defines the cached row index. */
     cachedRowIndex?: number;
+    /** Defines the row index. */
     rowIndex?: number;
 }
 
 export interface InfiniteScrollArgs {
+    /** Defines the request type. */
     requestType?: Action;
+    /** Defines the current page. */
     currentPage?: number;
+    /** Defines the previous page. */
     prevPage?: number;
+    /** Defines the row start index. */
     startIndex?: number;
+    /** Defines the scroll direction. */
     direction?: string;
+    /** Defines whether the grid is frozen or not. */
     isFrozen?: boolean;
+    /** Defines whether the caption collapse. */
     isCaptionCollapse?: boolean;
+    /** Defines the ParentUid. */
     parentUid?: string;
 }
 
@@ -2780,8 +2851,11 @@ export interface ActionArgs {
 }
 
 export interface CheckBoxBeforeRenderer {
+    /** Defines the checkbox datasource. */
     dataSource?: object[];
+    /** Defines the checkbox field property. */
     field?: string;
+    /** Defines whether the execute query is executed or not. */
     executeQuery?: boolean;
 }
 

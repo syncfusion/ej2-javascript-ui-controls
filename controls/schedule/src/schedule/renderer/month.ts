@@ -444,9 +444,12 @@ export class Month extends ViewBase implements IRenderer {
         if (!this.parent.isMinMaxDate(data.date)) {
             data.className.push(cls.DISABLE_DATES);
         }
-        if (this.parent.currentView === 'MonthAgenda' && this.parent.isSelectedDate(data.date)) {
-            data.className.push(cls.SELECTED_CELL_CLASS);
-        }
+        this.updateSelectedCellClass(data);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public updateSelectedCellClass(data: TdData): void {
+        return;
     }
 
     private isOtherMonth(date: Date): boolean {

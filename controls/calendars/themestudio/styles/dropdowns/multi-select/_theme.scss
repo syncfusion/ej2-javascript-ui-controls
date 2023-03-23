@@ -3,11 +3,21 @@
 }
 
 .e-multi-select-wrapper .e-chips.e-chip-selected {
-  background-color: $ddl-sel-chip-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-sel-chip-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-sel-chip-bg-color;
+  }
 }
 
 .e-multiselect:not(.e-disabled) .e-multi-select-wrapper .e-chips.e-chip-selected:hover {
-  background-color: $ddl-sel-hover-chip-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-sel-hover-chip-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-sel-hover-chip-bg-color;
+  }
 }
 
 #{&}.e-multiselect {
@@ -31,13 +41,24 @@
 }
 
 .e-multi-select-wrapper .e-chips {
-  background-color: $ddl-chip-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-chip-bg-color;
+    border: $ddl-chip-border;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-chip-bg-color;
+  }
   border-radius: $ddl-chip-radius;
   height: $ddl-chip-height;
 }
 
 .e-multiselect:not(.e-disabled) .e-multi-select-wrapper .e-chips:hover {
-  background-color: $ddl-chip-hover-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-chip-hover-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-chip-hover-bg-color;
+  }
 }
 
 .e-multi-select-wrapper .e-chips > .e-chipcontent:hover {
@@ -57,7 +78,12 @@
 }
 
 .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected {
-  background-color: $ddl-chip-mobile-bg;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-chip-mobile-bg;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-chip-mobile-bg;
+  }
   border-radius: $ddl-chip-mobile-radius;
   color: $ddl-chip-mobile-font;
   height: $ddl-chip-sel-mobile-height;
@@ -89,7 +115,12 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active {
-  background-color: transparent;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: transparent;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: transparent;
+  }
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
 }
@@ -115,7 +146,12 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active {
-  background-color: transparent;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: transparent;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: transparent;
+  }
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
   @if $ddl-multiselect-skin-name == 'FluentUI' {
@@ -139,14 +175,24 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-hover {
-  background-color: $ddl-multi-list-hover-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-multi-list-hover-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-multi-list-hover-bg-color;
+  }
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     color: $ddl-multi-list-default-font-color;
   }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-hover {
-  background-color: $ddl-multi-list-hover-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-multi-list-hover-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-multi-list-hover-bg-color;
+  }
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     color: $content-text-color-alt3;
   }
@@ -175,7 +221,12 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus {
-  background-color: $ddl-popup-active-focus-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-popup-active-focus-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-popup-active-focus-bg-color;
+  }
   @if $ddl-multiselect-skin-name != 'FluentUI' {
     box-shadow: $ddl-popup-active-focus-shadow-item;
   }
@@ -186,7 +237,12 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item.e-active.e-item-focus {
-  background-color: $ddl-popup-active-focus-bg-color;
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-popup-active-focus-bg-color;
+  }
+  @if $ddl-multiselect-skin-name != 'Material3' {
+    background-color: $ddl-popup-active-focus-bg-color;
+  }
   box-shadow: $ddl-popup-active-focus-shadow-item;
   color: $ddl-popup-active-focus-font-color;
   @if $ddl-multiselect-skin-name != 'tailwind' {
@@ -351,11 +407,17 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-chip-bg-color;
   }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $outline-multiselect-chip-bg-color;
+  }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $filled-multiselect-chip-bg-color;
+  }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $filled-multiselect-chip-bg-color;
   }
 }
 
@@ -363,11 +425,17 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-chip-hover-bg-color;
   }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $outline-multiselect-chip-hover-bg-color;
+  }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips:hover {
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $filled-multiselect-chip-hover-bg-color;
+  }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $filled-multiselect-chip-hover-bg-color;
   }
 }
 
@@ -376,6 +444,9 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-sel-chip-bg-color;
   }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $outline-multiselect-sel-chip-bg-color;
+  }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected:hover,
@@ -383,60 +454,63 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-sel-hover-chip-bg-color;
   }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $outline-multiselect-sel-hover-chip-bg-color;
+  }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $ddl-chip-font-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent:hover,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent:hover {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $ddl-chip-font-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $outline-multiselect-close-icon-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $outline-multiselect-close-icon-hover-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected .e-chips-close::before,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $ddl-chip-close;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $ddl-chip-mobile-font;
   }
 }
 
 .e-multiselect.e-outline:not(.e-disabled) .e-multi-select-wrapper .e-chips:not(.e-chip-selected) .e-chips-close:hover::before,
 .e-multiselect.e-filled:not(.e-disabled) .e-multi-select-wrapper .e-chips:not(.e-chip-selected) .e-chips-close:hover::before {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $outline-multiselect-close-icon-hover-bg-color;
   }
 }
 
 .e-multiselect.e-outline .e-multi-select-wrapper .e-delim-values .e-remain,
 .e-multiselect.e-filled .e-multi-select-wrapper .e-delim-values .e-remain {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $outline-multiselect-remains-font-color;
   }
 }
@@ -446,7 +520,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips > .e-chipcontent,
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips .e-chips-close::before,
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $outline-multiselect-disabled-font-color;
   }
 }
@@ -459,6 +533,9 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips {
   @if $ddl-multiselect-skin-name == 'material' {
     background-color: $outline-multiselect-disabled-chip-bg-color;
+  }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $outline-multiselect-disabled-chip-bg-color;
   }
 }
 
@@ -475,18 +552,29 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
     margin-right: 0;
     width: 100%;
   }
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-chip-mobile-bg;
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: $ddl-chip-mobile-font;
+    height: $ddl-chip-sel-mobile-height;
+    line-height: $ddl-chip-sel-mobile-height;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chips-close {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     width: 33px;
   }
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chipcontent,
 .e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-mob-chip.e-chip-selected .e-chipcontent {
-  @if $ddl-multiselect-skin-name == 'material' {
+  @if $ddl-multiselect-skin-name == 'material' or $ddl-multiselect-skin-name == 'Material3' {
     color: $ddl-chip-mobile-font;
   }
 }

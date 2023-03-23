@@ -557,9 +557,9 @@ export class Toolbar {
     public getFocusableToolbarItems(): Element[] {
         const getFocusToolbarElements : Element[] = [].slice.call(this.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)'));
         const getFocusToolbarItems : Element[] = [];
-        for (let i=0; i<getFocusToolbarElements.length; i++) {
-            if (!isNullOrUndefined(getFocusToolbarElements[i].querySelector('.e-btn,.e-input,.e-toolbar-item-focus'))) {
-                getFocusToolbarItems.push(getFocusToolbarElements[i]);
+        for (let i: number = 0; i < getFocusToolbarElements.length; i++) {
+            if (!isNullOrUndefined(getFocusToolbarElements[parseInt(i.toString(), 10)].querySelector('.e-btn,.e-input,.e-toolbar-item-focus'))) {
+                getFocusToolbarItems.push(getFocusToolbarElements[parseInt(i.toString(), 10)]);
             }
         }
         return getFocusToolbarItems;

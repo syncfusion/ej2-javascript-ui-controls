@@ -2,7 +2,7 @@
  * To render holidays and weekends in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -97,6 +97,9 @@ export class NonWorkingDay {
             });
             const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
             spanElement[property as string] = this.parent.holidays[i as number].label ? this.parent.holidays[i as number].label : '';
+            if (this.parent.enableHtmlSanitizer && typeof (spanElement[property as string]) === 'string') {
+                spanElement[property as string] = SanitizeHtmlHelper.sanitize(spanElement[property as string]);
+            }
             holidayDiv.appendChild(spanElement);
             if (this.parent.holidays[i as number].cssClass) {
                 holidayDiv.classList.add(this.parent.holidays[i as number].cssClass);

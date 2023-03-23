@@ -287,6 +287,7 @@ export interface AxisModel {
 
     /**
      * It specifies alignment of the line break labels.
+     *
      * @default 'Center'
      */
 

@@ -25,7 +25,7 @@ export class PdfExport {
      * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @param {ExportType} type - Specifies the type of the document.
      * @param {string} fileName - Specifies the name of the document.
-     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the treemap.
      * @param {boolean} allowDownload - Specifies whether to download the document or not.
      * @returns {Promise} - Returns the string.
      * @private

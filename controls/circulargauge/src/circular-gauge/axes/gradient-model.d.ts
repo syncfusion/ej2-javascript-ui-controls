@@ -20,7 +20,7 @@ export interface ColorStopModel {
     opacity?: number;
 
     /**
-     * Defines the gradient color begin and end in percentage
+     * Defines the gradient color begin and end in percentage.
      *
      * @default '0%'
      */

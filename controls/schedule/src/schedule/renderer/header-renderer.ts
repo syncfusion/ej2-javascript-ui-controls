@@ -86,6 +86,7 @@ export class HeaderRenderer {
                 overflowMode: 'Popup',
                 clicked: this.toolbarClickHandler.bind(this),
                 enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale
             });
             this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);

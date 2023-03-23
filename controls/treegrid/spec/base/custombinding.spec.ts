@@ -627,8 +627,6 @@ describe('Custom Binding', () => {
         destroy(gridObj);
       });
       });
-
-
       describe('EJ2-68426 - Child record not shown properly issue', () => {
         let gridObj: TreeGrid;
         let rows: Element[];
@@ -835,7 +833,7 @@ describe('Custom Binding', () => {
                       },
                     ];
                   }
-        
+
                   state.childData = childData;
                   state.childDataBind();
                 }

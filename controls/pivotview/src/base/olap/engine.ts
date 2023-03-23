@@ -121,7 +121,7 @@ export class OlapEngine {
     /** @hidden */
     public xmlaCellSet: NodeListOf<Element>;
     /** @hidden */
-    public pivotValues: IPivotValues = [];
+    public pivotValues: IAxisSet[][] = [];
     /** @hidden */
     public dataSourceSettings: IDataOptions;
     /** @hidden */
@@ -154,7 +154,7 @@ export class OlapEngine {
     private xmlDoc: Document;
     private request: Ajax;
     private customArgs: FieldData;
-    private onDemandDrillEngine: IPivotValues;
+    private onDemandDrillEngine: IAxisSet[][];
     private showRowSubTotals: boolean = true;
     private showColumnSubTotals: boolean = true;
     private hideRowTotalsObject: { [key: string]: number } = {};
@@ -368,7 +368,7 @@ export class OlapEngine {
         this.lastLevel = [];
         let isGrandTotalAdd: boolean = true;
         let position: number = this.pivotValues.length;
-        let pivotValues: IPivotValues = [];
+        let pivotValues: IAxisSet[][] = [];
         let valueContent: IGridValues = [];
         if (this.customArgs.action !== 'down') {
             pivotValues = this.pivotValues;
@@ -645,7 +645,7 @@ export class OlapEngine {
     }
 
     private insertRowSubTotal(
-        pivotValues: IPivotValues, valueContent: IGridValues, subTotals: IAxisSet[], position: number, lvl: number,
+        pivotValues: IAxisSet[][], valueContent: IGridValues, subTotals: IAxisSet[], position: number, lvl: number,
         levelName: string): number {
         const prevRowParent: IAxisSet = PivotUtil.frameHeaderWithKeys(pivotValues[position - 1][0] as IAxisSet);
         if (prevRowParent.level < lvl && prevRowParent.type !== 'grand sum' && (prevRowParent.isDrilled ||
@@ -661,7 +661,7 @@ export class OlapEngine {
                     for (let i: number = 0, axislength: number = valueCells.length; i < axislength; i++) {
                         valueCells[i as number].formattedText =
                             (pivotValues[position - index][0] as IAxisSet).formattedText + ' ' + valueCells[i as number].formattedText;
-                        valueCells[i as number].isSum = true;
+                        valueCells[i as number].isSum = true; valueCells[i as number].type = 'sum';
                         valueCells[i as number].parentUniqueName = (pivotValues[position - index][0] as IAxisSet).levelUniqueName;
                         subTotals[subTotals.length] = valueCells[i as number] as IAxisSet;
                     }
@@ -669,10 +669,8 @@ export class OlapEngine {
                     position -= index;
                 }
             } else {
-                prevRowParent.hasChild = false;
-                prevRowParent.isDrilled = false;
-                prevRowParent.isSum = true;
-                prevRowParent.formattedText = prevRowParent.formattedText + ' Total';
+                prevRowParent.hasChild = false; prevRowParent.isDrilled = false; prevRowParent.isSum = true;
+                prevRowParent.type = 'sum'; prevRowParent.formattedText = prevRowParent.formattedText + ' Total';
                 subTotals[Object.keys(subTotals).length] = prevRowParent;
             }
         }
@@ -698,7 +696,7 @@ export class OlapEngine {
     }
 
     private insertRowGrandTotal(
-        gTotals: IAxisSet[], valueContent: IGridValues, pivotValues: IPivotValues, tuples: Element[],
+        gTotals: IAxisSet[], valueContent: IGridValues, pivotValues: IAxisSet[][], tuples: Element[],
         position: number): IAxisSet[] {
         if (gTotals.length > 1 && gTotals[0].memberType !== 3) {
             gTotals[0].ordinal = -1;
@@ -979,7 +977,7 @@ export class OlapEngine {
         } while (axis < 2);
     }
 
-    private updateRowEngine(pivotValues: IPivotValues, valueContent: IGridValues, tuplesLength: number): void {
+    private updateRowEngine(pivotValues: IAxisSet[][], valueContent: IGridValues, tuplesLength: number): void {
         let currEngineCount: number = this.pivotValues.length - 1;
         const newEngineCount: number = Object.keys(pivotValues).length;
         while (currEngineCount > this.customArgs.drillInfo.currentCell.rowIndex) {
@@ -1932,13 +1930,13 @@ export class OlapEngine {
                         this.pivotValues[index as number][m as number] = (temporary[index as number] as Object[])[m as number];
                     }   /* eslint-enable @typescript-eslint/ban-types */
                     for (let n: number = j; n < this.pivotValues.length; n++) {
-                        const pElement: IPivotRows = extend({}, this.pivotValues[n + 1], null, true) as IPivotValues;
-                        const cElement: IPivotRows = extend({}, this.pivotValues[n as number], null, true) as IPivotValues;
+                        const pElement: IPivotRows = extend({}, this.pivotValues[n + 1], null, true) as IAxisSet[][];
+                        const cElement: IPivotRows = extend({}, this.pivotValues[n as number], null, true) as IAxisSet[][];
                         if (Object.keys(pElement).length === Object.keys(cElement).length && Object.keys(pElement).length > 2) {
                             for (let o: number = 1; o < this.pivotValues[j as number].length; o++) {
                                 if (Object.keys(pElement).length > 0 && (cElement[o as number] as IAxisSet).colIndex
                                     !== (pElement[o as number] as IAxisSet).colIndex) {
-                                    this.pivotValues[n + 1][o as number] = pElement[(cElement[o as number] as IAxisSet).colIndex];
+                                    this.pivotValues[n + 1][o as number] = pElement[(cElement[o as number] as IAxisSet).colIndex] as IAxisSet;
                                 }
                             }
                             break;
@@ -2806,7 +2804,8 @@ export class OlapEngine {
             cube: dataSourceSettings.cube,
             url: dataSourceSettings.url,
             LCID: dataSourceSettings.localeIdentifier.toString(),
-            request: 'MDSCHEMA_HIERARCHIES'
+            request: 'MDSCHEMA_HIERARCHIES',
+            roles: dataSourceSettings.roles
         };
         this.getTreeData(args, this.getFieldListItems.bind(this), { dataSourceSettings: dataSourceSettings, action: 'loadFieldElements' });
     }
@@ -2815,7 +2814,7 @@ export class OlapEngine {
         const soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body><Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><RequestType>' +
             args.request + '</RequestType><Restrictions><RestrictionList><CATALOG_NAME>' + args.catalog +
             '</CATALOG_NAME><CUBE_NAME>' + args.cube + '</CUBE_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + args.catalog +
-            '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList></Properties></Discover></Body></Envelope>';
+            '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (args.roles ? '<Roles>' + args.roles + '</Roles>' : '') + '</PropertyList></Properties></Discover></Body></Envelope>';
         this.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
     }
     private getAxisFields(): void {
@@ -3325,7 +3324,8 @@ export class OlapEngine {
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
             LCID: customArgs.dataSourceSettings.localeIdentifier.toString(),
-            request: 'MDSCHEMA_DIMENSIONS'
+            request: 'MDSCHEMA_DIMENSIONS',
+            roles: customArgs.dataSourceSettings.roles
         };
         this.getTreeData(args, this.loadDimensionElements.bind(this), customArgs);
     }
@@ -3456,7 +3456,8 @@ export class OlapEngine {
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
             LCID: customArgs.dataSourceSettings.localeIdentifier.toString(),
-            request: 'MDSCHEMA_SETS'
+            request: 'MDSCHEMA_SETS',
+            roles: customArgs.dataSourceSettings.roles
         };
         this.getTreeData(args, this.loadNamedSetElements.bind(this), customArgs);
     }
@@ -3658,7 +3659,8 @@ export class OlapEngine {
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
             LCID: customArgs.dataSourceSettings.localeIdentifier.toString(),
-            request: 'MDSCHEMA_LEVELS'
+            request: 'MDSCHEMA_LEVELS',
+            roles: customArgs.dataSourceSettings.roles
         };
         this.getTreeData(args, this.loadLevelElements.bind(this), customArgs);
     }
@@ -3711,7 +3713,8 @@ export class OlapEngine {
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
             LCID: customArgs.dataSourceSettings.localeIdentifier.toString(),
-            request: 'MDSCHEMA_MEASURES'
+            request: 'MDSCHEMA_MEASURES',
+            roles: customArgs.dataSourceSettings.roles
         };
         this.getTreeData(args, this.loadMeasureElements.bind(this), customArgs);
     }
@@ -3730,7 +3733,8 @@ export class OlapEngine {
                 cube: customArgs.dataSourceSettings.cube,
                 url: customArgs.dataSourceSettings.url,
                 LCID: customArgs.dataSourceSettings.localeIdentifier.toString(),
-                request: 'MDSCHEMA_MEASUREGROUPS'
+                request: 'MDSCHEMA_MEASUREGROUPS',
+                roles: customArgs.dataSourceSettings.roles
             };
             this.getTreeData(args, this.loadMeasureGroups.bind(this), customArgs);
         }
@@ -4012,6 +4016,7 @@ export interface ConnectionInfo {
     catalog?: string;
     cube?: string;
     request?: string;
+    roles?: string;
 }
 /**
  * @hidden

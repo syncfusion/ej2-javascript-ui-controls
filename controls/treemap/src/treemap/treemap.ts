@@ -37,7 +37,7 @@ import { Print } from './model/print';
 import { ImageExport } from './model/image-export';
 import { PdfExport } from './model/pdf-export';
 /**
- * Represents the treemap component.
+ * Represents the treemap control. It is used to visualize both hierarchical and flat data.
  * ```html
  * <div id="container"/>
  * <script>
@@ -52,18 +52,22 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     //Module Declaration for treemap.
     /**
      * Sets and gets the module that is used to add tooltip in the treemap.
+     * @private
      */
     public treeMapTooltipModule: TreeMapTooltip;
     /**
      * Sets and gets the module that is used to add highlight functionality in the treemap.
+     * @private
      */
     public treeMapHighlightModule: TreeMapHighlight;
     /**
      * Sets and gets the module that is used to add selection functionality in the treemap.
+     * @private
      */
     public treeMapSelectionModule: TreeMapSelection;
     /**
      * Sets and gets the module that is used to add legend in the treemap.
+     * @private
      */
     public treeMapLegendModule: TreeMapLegend;
     /**
@@ -106,14 +110,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(false)
     public allowPdfExport: boolean;
     /**
-     * Sets and gets the width of the treemap component.
+     * Sets and gets the width of the treemap.
      *
      * @default null
      */
     @Property(null)
     public width: string;
     /**
-     * Sets and gets the height of the treemap component.
+     * Sets and gets the height of the treemap.
      *
      * @default null
      */
@@ -125,32 +129,38 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
     /**
-     * Sets and gets the options for customizing the margin in the treemap component.
+     * Sets and gets the options for customizing the margin in the treemap.
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
     /**
      * Sets and gets the background color of the treemap.
+     * 
+     * @default null
      */
     @Property(null)
     public background: string;
     /**
-     * Sets and gets the options for customizing the theme of the treemap component.
+     * Sets and gets the theme styles supported for treemap. When the theme is set, the styles associated with the theme will be set in the treemap.
+     * 
+     * @default Material
      */
     @Property('Material')
     public theme: TreeMapTheme;
     /**
-     * Sets and gets the options for customizing the title of the treemap component.
+     * Sets and gets the options for customizing the title of the treemap.
      */
     @Complex<TitleSettingsModel>({}, TitleSettings)
     public titleSettings: TitleSettingsModel;
     /**
-     * Specifies the rendering type of layout of the treemap component.
+     * Specifies the rendering type for the layout of the treemap.
+     * 
+     * @default 'Squarified'
      */
     @Property('Squarified')
     public layoutType: LayoutMode;
     /**
-     * Sets and gets the data source for the treemap component.
+     * Sets and gets the data source for the treemap.
      *
      * @isGenericType true
      * @isObservable true
@@ -167,27 +177,39 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(null)
     public query: Query;
     /**
-     * Sets and gets the value path of the weight from the data source, based on which the map item is rendered.
+     * Sets and gets the value path of the weight from the data source, based on which the treemap item is rendered.
+     * 
+     * @default null
      */
     @Property(null)
     public weightValuePath: string;
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * This property is used when range color mapping is set in the treemap.
+     * 
+     * @default ''
      */
     @Property('')
     public rangeColorValuePath: string;
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * This property is used when equal color mapping is set in the treemap.
+     * 
+     * @default ''
      */
     @Property('')
     public equalColorValuePath: string;
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
+     * 
+     * @default null
      */
     @Property(null)
     public colorValuePath: string;
     /**
-     * Sets and gets the set of colors to apply in the treemap items.
+     * Sets and gets a set of colors to apply in the treemap items.
+     * 
+     * @default []
      */
     @Property([])
     public palette: string[];
@@ -200,21 +222,29 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public renderDirection: RenderingMode;
     /**
      * Enables or disables the drill down functionality in treemap.
+     * 
+     * @default false
      */
     @Property(false)
     public enableDrillDown: boolean;
     /**
-     * Enables or disables the connection text in the header of the treemap.
+     * Enables or disables the connection text in the header of the treemap when drill down is enabled.
+     * 
+     * @default false
      */
     @Property(false)
     public enableBreadcrumb: boolean;
     /**
-     * Specifies the connection between the two words.
+     * Specifies the symbol to show connection between the two words in the header of the treemap during drill down.
+     * 
+     * @default ' - '
      */
     @Property(' - ')
     public breadcrumbConnector: string;
     /**
      * Enables or disables the initial drill in the treemap.
+     * 
+     * @default false
      */
     @Property(false)
     public drillDownView: boolean;
@@ -229,17 +259,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Complex<LeafItemSettingsModel>({}, LeafItemSettings)
     public leafItemSettings: LeafItemSettingsModel;
     /**
-     * Sets and gets the options for customizing the levels of the treemap.
+     * Sets and gets the options to configure and customize the levels of treemap items.
      */
     @Collection<LevelSettingsModel>([], LevelSettings)
     public levels: LevelSettingsModel[];
     /**
-     * Sets and gets the options for customizing the highlight of the treemap item on mouse over on the treemap component.
+     * Sets and gets the options to customize the highlight functionality of the treemap.
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
-     * Sets and gets the options for customizing the selection of the treemap item on click event on the treemap component.
+     * Sets and gets the options for customizing the selection functionality of the treemap.
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
@@ -276,21 +306,21 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(1)
     public tabIndex: number;
     /**
-     * Sets and gets format for the texts in the treemap.
+     * Sets and gets format for the texts in the treemap. This property accepts any global string format like 'C', 'N1', 'P' etc.
      *
      * @default null
      */
     @Property(null)
     public format: string;
     /**
-     * Triggers when the treemap is on load.
+     * Triggers before the treemap is rendered.
      *
      * @event load
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the print gets started.
      *
      * @event beforePrint
      */
@@ -304,7 +334,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
-     * Triggers before item rendering in the treemap component.
+     * Triggers before item rendering in the treemap.
      *
      * @event itemRendering
      */
@@ -339,7 +369,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public itemHighlight: EmitType<IItemHighlightEventArgs>;
     /**
-     * Triggers on rendering of the tooltip in the treemap component.
+     * Triggers on rendering of the tooltip in the treemap.
      *
      * @event tooltipRendering
      */
@@ -388,7 +418,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public mouseMove: EmitType<IMouseMoveEventArgs>;
     /**
-     * Triggers after resizing the treemap component.
+     * Triggers to notify the resize of the treemap when the window is resized.
      *
      * @event resize
      */
@@ -445,7 +475,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public areaRect: Rect;
     /**
-     * Define the theme style for treemap components
+     * Define the theme style for treemap.
      *
      * @private
      */
@@ -485,11 +515,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public legendId: string[] = [];
     /** @private */
     public selectionId: string;
+    /** @private */
+    public treemapLevelData: LevelsData;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private resizeEvent: any;
 
     /**
-     * Constructor for TreeMap component.
+     * Constructor for TreeMap.
      *
      * @param {TreeMapModel} options - Specifies the treemap instance.
      * @param {string | HTMLElement} element - Specifies the treemap element.
@@ -514,16 +546,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderElements(): void {
-        LevelsData.levelsData = null;
-        LevelsData.defaultLevelsData = null;
-        LevelsData.hierarchyData = null;
+        this.treemapLevelData = new LevelsData();
+        this.treemapLevelData.levelsData = null;
+        this.treemapLevelData.defaultLevelsData = null;
+        this.treemapLevelData.hierarchyData = null;
         this.createSecondaryElement();
         this.addTabIndex();
         this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
-        if (!isNullOrUndefined(LevelsData.levelsData)) {
-            LevelsData.defaultLevelsData = LevelsData.levelsData;
+        if (!isNullOrUndefined(this.treemapLevelData.levelsData)) {
+            this.treemapLevelData.defaultLevelsData = this.treemapLevelData.levelsData;
         }
         this.processDataManager();
     }
@@ -712,7 +745,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.dataSource = this.dataSource as any[];
         if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0 && this.weightValuePath) {
-            LevelsData.levelsData = [];
+            this.treemapLevelData.levelsData = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.dataSource.map((data: any) => {
                 data[this.weightValuePath] = (data[this.weightValuePath]) ? (data[this.weightValuePath] as string).toString() :
@@ -752,26 +785,26 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 }
-                LevelsData.levelsData.push(data);
+                this.treemapLevelData.levelsData.push(data);
             } else {
                 if (this.isHierarchicalData) {
-                    LevelsData.hierarchyData = [];
+                    this.treemapLevelData.hierarchyData = [];
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    LevelsData.hierarchyData = extend([], this.dataSource, LevelsData.hierarchyData, true) as any[];
-                    for (let i: number = 0; i < LevelsData.hierarchyData.length; i++) {
-                        this.processHierarchicalData(LevelsData.hierarchyData[i as number], i);
+                    this.treemapLevelData.hierarchyData = extend([], this.dataSource, this.treemapLevelData.hierarchyData, true) as any[];
+                    for (let i: number = 0; i < this.treemapLevelData.hierarchyData.length; i++) {
+                        this.processHierarchicalData(this.treemapLevelData.hierarchyData[i as number], i);
                     }
-                    LevelsData.levelsData = LevelsData.hierarchyData;
+                    this.treemapLevelData.levelsData = this.treemapLevelData.hierarchyData;
                 } else {
                     this.processFlatJsonData();
-                    if (LevelsData.levelsData.length > 1) {
-                        this.reOrderLevelData(LevelsData.levelsData.length - 1);
+                    if (this.treemapLevelData.levelsData.length > 1) {
+                        this.reOrderLevelData(this.treemapLevelData.levelsData.length - 1);
                     }
                 }
                 path = this.levels[0].groupPath;
             }
             if (!this.isHierarchicalData) {
-                this.findTotalWeight(LevelsData.levelsData[0][path as string], 'Parent');
+                this.findTotalWeight(this.treemapLevelData.levelsData[0][path as string], 'Parent');
             }
         }
     }
@@ -831,19 +864,19 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.processHierarchicalData(currentData, dataCount);
             });
         }
-        if (dataCount === LevelsData.hierarchyData.length - 1) {
+        if (dataCount === this.treemapLevelData.hierarchyData.length - 1) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let mainData: any[] = LevelsData.hierarchyData[0][this.levels[0].groupPath];
-            for (let k: number = 0; k < LevelsData.hierarchyData.length; k++) {
-                childData = findChildren(LevelsData.hierarchyData[k as number])['values'];
+            let mainData: any[] = this.treemapLevelData.hierarchyData[0][this.levels[0].groupPath];
+            for (let k: number = 0; k < this.treemapLevelData.hierarchyData.length; k++) {
+                childData = findChildren(this.treemapLevelData.hierarchyData[k as number])['values'];
                 if (k !== 0 && childData) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     childData.forEach((currentData: any) => { mainData.push(currentData); });
-                    LevelsData.hierarchyData.splice(k, 1);
+                    this.treemapLevelData.hierarchyData.splice(k, 1);
                     k -= 1;
                 }
             }
-            mainData = LevelsData.hierarchyData[0][this.levels[0].groupPath];
+            mainData = this.treemapLevelData.hierarchyData[0][this.levels[0].groupPath];
             for (let l: number = 0; l < mainData.length; l++) {
                 newData[this.levels[0].groupPath] = mainData;
                 mainData[l as number]['parent'] = newData;
@@ -900,7 +933,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             const level: any = {};
             level['level'] = i;
             level[groupPath as string] = [];
-            LevelsData.levelsData.push(level);
+            this.treemapLevelData.levelsData.push(level);
             for (let j: number = 0; j < this.dataSource.length; j++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentData: any = {}; let childName: string = '';
@@ -921,7 +954,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         currentData['groupName'] = groupPath;
                         currentData['data'] = this.dataSource[j as number];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (<any[]>LevelsData.levelsData[(LevelsData.levelsData.length - 1) as number][groupPath as string]).push(currentData);
+                        (<any[]>this.treemapLevelData.levelsData[(this.treemapLevelData.levelsData.length - 1) as number][groupPath as string]).push(currentData);
                         orderNames.push((childName) ? childName : name);
                     }
                 }
@@ -934,15 +967,16 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {number} start - Specifies the start value of the treemap level.
      * @returns {void}
+     * @private
      */
     public reOrderLevelData(start: number): void {
         let currentName: string;
         const currentPath: string = this.levels[start as number] ? this.levels[start as number].groupPath : this.leafItemSettings.labelPath;
         const prevPath: string = this.levels[start - 1].groupPath;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentData: any[] = LevelsData.levelsData[start as number][currentPath as string] as any[];
+        const currentData: any[] = this.treemapLevelData.levelsData[start as number][currentPath as string] as any[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const previousData: any[] = LevelsData.levelsData[start - 1][prevPath as string] as any[];
+        const previousData: any[] = this.treemapLevelData.levelsData[start - 1][prevPath as string] as any[];
         for (let i: number = 0; i < currentData.length; i++) {
             currentName = currentData[i as number]['levelOrderName'] as string;
             for (let j: number = 0; j < previousData.length; j++) {
@@ -958,8 +992,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        this.findTotalWeight(LevelsData.levelsData[LevelsData.levelsData.length - 1][currentPath as string], 'Child');
-        LevelsData.levelsData.splice(start, 1);
+        this.findTotalWeight(this.treemapLevelData.levelsData[this.treemapLevelData.levelsData.length - 1][currentPath as string], 'Child');
+        this.treemapLevelData.levelsData.splice(start, 1);
         if ((start - 1) > 0) {
             this.reOrderLevelData(start - 1);
         }
@@ -987,6 +1021,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {any[]} processData - Specifies the treemap data.
      * @param {string} type - Specifies the type of the data.
      * @returns {void}
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public findTotalWeight(processData: any[], type: string): void {
@@ -1016,6 +1051,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To unbind event handlers for treemap.
      *
      * @returns {void}
+     * @private
      */
     private unWireEVents(): void {
         EventHandler.remove(this.element, 'click', this.clickOnTreeMap);
@@ -1070,6 +1106,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {Event} e - Specifies the pointer event.
      * @returns {void}
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public resizeOnTreeMap(e: Event): void {
@@ -1108,13 +1145,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the mouse click event in the treemap.
      * @returns {void}
+     * @private
      */
     public clickOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
         const targetId: string = targetEle.id;
         let eventArgs: IItemClickEventArgs;
         let itemIndex: number;
-        const labelText : string = targetEle.innerHTML;
+        const labelText : string = (targetEle as HTMLElement).innerHTML;
         const clickArgs: IClickEventArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
         this.trigger(click, clickArgs);
         if (targetId.indexOf('_Item_Index') > -1) {
@@ -1129,7 +1167,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 if (observedArgs.text !== labelText || observedArgs.contentItemTemplate !== labelText) {
                     if (isNullOrUndefined(this.leafItemSettings.labelTemplate)) {
                         observedArgs.text = textFormatter(observedArgs.text, observedArgs['item']['data'], observedArgs.treemap);
-                        targetEle.innerHTML = observedArgs.text;
+                        (targetEle as HTMLElement).textContent = observedArgs.text;
                     } else {
                         setItemTemplateContent(targetId, targetEle, observedArgs.contentItemTemplate);
                     }
@@ -1164,6 +1202,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the pointer event of mouse click.
      * @returns {void}
+     * @private
      */
     public rightClickOnTreeMap(e: PointerEvent): void {
         const rightClickArgs: IRightClickEventArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
@@ -1176,6 +1215,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the pointer event of mouse click.
      * @returns {void}
+     * @private
      */
     public mouseDownOnTreeMap(e: PointerEvent): void {
         if ((<Element>e.target).id.indexOf('_Item_Index') > -1) {
@@ -1189,6 +1229,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the pointer event of mouse click.
      * @returns {void}
+     * @private
      */
     public mouseMoveOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -1218,6 +1259,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {string} labelText - Specifies the label text.
      * @param {any} item - Specifies the treemap item.
      * @returns {any} - Returns label of the drilled level.
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public calculateSelectedTextLevels(labelText: string, item: any): any {
@@ -1280,6 +1322,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {any} item - Specifies the treemap item.
      * @param {number} i - Specifies the treemap item.
      * @returns {any} - return the new drill down object.
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public compareSelectedLabelWithDrillDownItems(drillLevelValues: any, item: any, i: number): any {
@@ -1305,6 +1348,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the pointer event of mouse.
      * @returns {void}
+     * @private
      */
     public mouseEndOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target; const targetId: string = targetEle.id; let totalRect: Rect;
@@ -1320,7 +1364,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
             index = parseFloat(targetId.split('_Item_Index_')[1]);
             item = this.layout.renderItems[index as number];
-            const labelText: string = targetEle.innerHTML;
+            const labelText: string = (targetEle as HTMLElement).textContent;
             if (this.enableBreadcrumb) {
                 drillLevelValues = this.calculateSelectedTextLevels(labelText, item);
                 drillLevel = drillLevelValues['drillLevel'];
@@ -1427,6 +1471,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @param {PointerEvent} e - Specifies the pointer event of mouse.
      * @return {void}
+     * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public mouseLeaveOnTreeMap(e: PointerEvent): void {
@@ -1447,7 +1492,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * This method is used to select or remove the selection of treemap item based on the provided selection settings.
      *
      * @param {string[]} levelOrder - Specifies the order of the level.
-     * @param {boolean} isSelected - check whether it is selected or not.
+     * @param {boolean} isSelected - Specifies whether the treemap item should be selected or the selection should be removed.
      * @return {void}
      */
     public selectItem(levelOrder: string[], isSelected ?: boolean): void {
@@ -1562,13 +1607,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Gets component name.
      *
      * @returns {string} - return the treemap instance.
+     * @private
      */
     public getModuleName(): string {
         return 'treemap';
     }
 
     /**
-     * This method is used to dispose the treemap component.
+     * This method destroys the treemap. This method removes the events associated with the treemap and disposes the objects created for rendering and updating the treemap.
      */
     public destroy(): void {
         this.unWireEVents();
@@ -1608,9 +1654,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
  */
 export class LevelsData {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static levelsData : any[];
+    levelsData : any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static defaultLevelsData : any[];
+    defaultLevelsData : any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static hierarchyData : any[];
+    hierarchyData : any[];
 }

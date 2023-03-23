@@ -16,7 +16,7 @@ import { headerCellInfo } from '../base/constant';
 export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent
-        .createElement('TH', { className: 'e-headercell', attrs: { role: 'columnheader', tabindex: '-1' } });
+        .createElement('TH', { className: 'e-headercell', attrs: { tabindex: '-1' } });
     private ariaService: AriaService = new AriaService();
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons', attrs: {'aria-hidden': 'true'} });
@@ -82,7 +82,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             if (!isNullOrUndefined(hValueAccer)) {
                 value = hValueAccer; }
             const headerText: Element = <Element>this.hTxtEle.cloneNode();
-            headerText[column.getDomSetter()] = value;
+            headerText[column.getDomSetter()] = this.parent.sanitize(value);
             innerDIV.appendChild(headerText);
         } else {
             column.editType = 'booleanedit';

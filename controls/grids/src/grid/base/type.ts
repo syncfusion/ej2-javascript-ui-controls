@@ -2,6 +2,12 @@ import { ColumnModel, AggregateColumnModel } from '../models/models';
 
 /**
  * Exports types used by Grid.
+ * ```props
+ * * number :- Sets value type as number.
+ * * string :- Sets value type as string.
+ * * Date :- Sets value type as date.
+ * * boolean :- Sets value type as boolean.
+ * ```
  */
 
 export type ValueType = number | string | Date | boolean;
@@ -25,5 +31,5 @@ export type SentinelType = {
 export type SentinelInfo = { up?: SentinelType, down?: SentinelType, right?: SentinelType, left?: SentinelType };
 
 export type Offsets = { top?: number, left?: number };
-
+/** @hidden */
 export type BatchChanges = { addedRecords?: Object[], changedRecords?: Object[], deletedRecords?: Object[] };

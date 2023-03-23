@@ -46,7 +46,7 @@ export function measureText(text: string, font: FontModel): Size {
         htmlObject = createElement('text', { id: 'gauge-measuretext' });
         document.body.appendChild(htmlObject);
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -249,6 +249,7 @@ export function getElementOffset(childElement: HTMLElement, parentElement: HTMLE
  * @param {ExportType} type - Specifies the extension type of the file to which the Linear Gauge must be exported.
  * @param {string} url - Specifies the blob URL of the exported file of Linear Gauge.
  * @param {boolean} isDownload - Specifies whether the exported file must be downloaded or not.
+ * @private
  */
 export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
     createElement('a', {
@@ -278,15 +279,15 @@ export class VisibleRange {
 }
 
 /**
- * Internal use of gauge location
+ * Specifies the location of the element in the linear gauge.
  */
 export class GaugeLocation {
     /**
-     * To specify x value
+     * Specifies the x position of the location in pixels.
      */
     public x: number;
     /**
-     * To specify y value
+     * Specifies the y position of the location in pixels.
      */
     public y: number;
 
@@ -298,15 +299,15 @@ export class GaugeLocation {
 }
 
 /**
- * Internal class size for height and width
+ * Specifies the size information of an element.
  */
 export class Size {
     /**
-     * height of the size
+     * Specifies the height of an element.
      */
     public height: number;
     /**
-     * width of the size
+     * Specifies the width of an element.
      */
     public width: number;
     constructor(width: number, height: number) {
@@ -513,6 +514,7 @@ export function getRangeColor(value: number, ranges: Range[]): string {
  * @param {number} pageX - Specifies the horizontal position of the click event.
  * @param {number} pageY - Specifies the vertical position of the click event.
  * @param {number} element - Specifies the target element of the client event.
+ * @private
  */
 export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
     const elementRect: ClientRect = element.getBoundingClientRect();

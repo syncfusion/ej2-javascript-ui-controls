@@ -12,20 +12,41 @@ import { VScroll } from '../common/v-scroll';
 import { ToolbarModel, ItemModel } from './toolbar-model';
 /**
  * Specifies the options for supporting element types of Toolbar command.
+ * ```props
+ * Button :- Creates the Button control with its given properties like text, prefixIcon, etc.
+ * Separator :- Adds a horizontal line that separates the Toolbar commands.
+ * Input :- Creates an input element that is applicable to template rendering with Syncfusion controls like DropDownList, AutoComplete, etc.
+ * ```
  */
 export type ItemType = 'Button' | 'Separator' | 'Input';
 /**
  * Specifies the options of where the text will be displayed in popup mode of the Toolbar.
+ * ```props
+ * Toolbar :-  Text will be displayed on Toolbar only.
+ * Overflow :- Text will be displayed only when content overflows to popup.
+ * Both :- Text will be displayed on popup and Toolbar.
+ * ```
  */
 export type DisplayMode = 'Both' | 'Overflow' | 'Toolbar';
 /**
  * Specifies the options of the Toolbar item display area when the Toolbar content overflows to available space.Applicable to `popup` mode.
+ * ```props
+ * Show :- Always shows the item as the primary priority on the *Toolbar*.
+ * Hide :- Always shows the item as the secondary priority on the *popup*.
+ * None :- No priority for display, and as per normal order moves to popup when content exceeds.
+ * ```
  */
 export type OverflowOption = 'None' | 'Show' | 'Hide';
 /**
  * Specifies the options of Toolbar display mode. Display option is considered when Toolbar content exceeds the available space.
+ * ```props
+ * Scrollable :- All the elements are displayed in a single line with horizontal scrolling enabled.
+ * Popup :- Prioritized elements are displayed on the Toolbar and the rest of elements are moved to the popup.
+ * MultiRow :- Displays the overflow toolbar items as an in-line of a toolbar.
+ * Extended :- Hide the overflowing toolbar items in the next row. Show the overflowing toolbar items when you click the expand icons, if the popup content overflows the height of the page, the rest of the elements will be hidden.
+ * ```
  */
-export type OverflowMode = 'Scrollable' | 'Popup' | 'MultiRow' | 'Extended';
+export type OverflowMode = 'Scrollable' |'Popup' | 'MultiRow' | 'Extended';
 
 type HTEle = HTMLElement;
 type Str = string;
@@ -33,6 +54,11 @@ type ItmAlign = 'lefts' | 'centers' | 'rights';
 
 /**
  * Specifies the options for aligning the Toolbar items.
+ * ```props
+ * Left :- To align commands to the left side of the Toolbar.
+ * Center :- To align commands at the center of the Toolbar.
+ * Right :- To align commands to the right side of the Toolbar.
+ * ```
  */
 export type ItemAlign = 'Left' | 'Center' | 'Right';
 
@@ -183,10 +209,10 @@ export class Item extends ChildProperty<Item>  {
     public visible: boolean;
     /**
      * Specifies the Toolbar command display area when an element's content is too large to fit available space.
-     * This is applicable only to `popup` mode. Possible values are:
-     * - Show:  Always shows the item as the primary priority on the *Toolbar*.
-     * - Hide: Always shows the item as the secondary priority on the *popup*.
-     * - None: No priority for display, and as per normal order moves to popup when content exceeds.
+     * This is applicable only to `popup` mode. The possible values for this property as follows
+     * * `Show`:  Always shows the item as the primary priority on the *Toolbar*.
+     * * `Hide`: Always shows the item as the secondary priority on the *popup*.
+     * * `None`: No priority for display, and as per normal order moves to popup when content exceeds.
      *
      * @default 'None'
      */
@@ -205,9 +231,9 @@ export class Item extends ChildProperty<Item>  {
     /**
      * Specifies the types of command to be rendered in the Toolbar.
      * Supported types are:
-     * - Button: Creates the Button control with its given properties like text, prefixIcon, etc.
-     * - Separator: Adds a horizontal line that separates the Toolbar commands.
-     * - Input: Creates an input element that is applicable to template rendering with Syncfusion controls like DropDownList,
+     * * `Button`: Creates the Button control with its given properties like text, prefixIcon, etc.
+     * * `Separator`: Adds a horizontal line that separates the Toolbar commands.
+     * * `Input`: Creates an input element that is applicable to template rendering with Syncfusion controls like DropDownList,
      * AutoComplete, etc.
      *
      * @default 'Button'
@@ -216,10 +242,10 @@ export class Item extends ChildProperty<Item>  {
     public type: ItemType;
     /**
      * Specifies where the button text will be displayed on *popup mode* of the Toolbar.
-     * Possible values are:
-     * - Toolbar:  Text will be displayed on *Toolbar* only.
-     * - Overflow: Text will be displayed only when content overflows to *popup*.
-     * - Both: Text will be displayed on *popup* and *Toolbar*.
+     * The possible values for this property as follows
+     * * `Toolbar`:  Text will be displayed on *Toolbar* only.
+     * * `Overflow`: Text will be displayed only when content overflows to *popup*.
+     * * `Both`: Text will be displayed on *popup* and *Toolbar*.
      *
      * @default 'Both'
      */
@@ -242,10 +268,10 @@ export class Item extends ChildProperty<Item>  {
     public tooltipText: string;
     /**
      * Specifies the location for aligning Toolbar items on the Toolbar. Each command will be aligned according to the `align` property.
-     * Possible values are:
-     * - Left: To align commands to the left side of the Toolbar.
-     * - Center: To align commands at the center of the Toolbar.
-     * - Right: To align commands to the right side of the Toolbar.
+     * The possible values for this property as follows
+     * * `Left`: To align commands to the left side of the Toolbar.
+     * * `Center`: To align commands at the center of the Toolbar.
+     * * `Right`: To align commands to the right side of the Toolbar.
      * ```html
      * <div id="element"> </div>
      * ```
@@ -357,7 +383,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public cssClass: string;
     /**
      * Specifies the Toolbar display mode when Toolbar content exceeds the viewing area.
-     * Possible modes are:
+     * The possible values for this property as follows
      * - Scrollable: All the elements are displayed in a single line with horizontal scrolling enabled.
      * - Popup: Prioritized elements are displayed on the Toolbar and the rest of elements are moved to the *popup*.
      * - MultiRow: Displays the overflow toolbar items as an in-line of a toolbar.
@@ -370,6 +396,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public overflowMode: OverflowMode;
     /**
      * Specifies the scrolling distance in scroller.
+     * The possible values for this property as follows
+     * * Scrollable - All the elements are displayed in a single line with horizontal scrolling enabled.
+     * * Popup - Prioritized elements are displayed on the Toolbar and the rest of elements are moved to the *popup*.
+     * * MultiRow - Displays the overflow toolbar items as an in-line of a toolbar.
+     * * Extended - Hide the overflowing toolbar items in the next row.  Show the overflowing toolbar items when you click the expand icons.
+     * * If the popup content overflows the height of the page, the rest of the elements will be hidden.
      *
      * @default null
      */
@@ -1748,7 +1780,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         innerEle.forEach((ele: HTEle) => {
             if (ele.tagName === 'DIV') {
                 this.tbarEle.push(ele);
-                ele.setAttribute('aria-disabled', 'false');
+                if (!isNOU(ele.firstElementChild)) {
+                    ele.firstElementChild.setAttribute('aria-disabled', 'false');
+                }
                 this.add(ele, CLS_ITEM);
             }
         });
@@ -1800,10 +1834,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const enable: (isEnable: boolean, ele: HTEle) => void = (isEnable: boolean, ele: HTEle) => {
             if (isEnable) {
                 ele.classList.remove(CLS_DISABLE);
-                ele.setAttribute('aria-disabled', 'false');
+                if (!isNOU(ele.firstElementChild)) {
+                    ele.firstElementChild.setAttribute('aria-disabled', 'false');
+                }
             } else {
                 ele.classList.add(CLS_DISABLE);
-                ele.setAttribute('aria-disabled', 'true');
+                if (!isNOU(ele.firstElementChild)) {
+                    ele.firstElementChild.setAttribute('aria-disabled', 'true');
+                }
             }
         };
         if (!isNOU(len) && len >= 1) {
@@ -2060,7 +2098,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private renderSubComponent(item: ItemModel, index: number): HTEle {
         let dom: HTEle;
         const innerEle: HTEle = this.createElement('div', { className: CLS_ITEM });
-        innerEle.setAttribute('aria-disabled', 'false');
         const tempDom: HTEle = this.createElement('div', {
             innerHTML: this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(item.tooltipText) : item.tooltipText
         });
@@ -2085,6 +2122,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 dom.setAttribute('tabindex', isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString());
                 dom.setAttribute('data-tabindex', isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString());
                 dom.setAttribute('aria-label', (item.text || item.tooltipText));
+                dom.setAttribute('aria-disabled', 'false');
                 innerEle.appendChild(dom);
                 innerEle.addEventListener('click', this.itemClick.bind(this));
                 break;
@@ -2380,7 +2418,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public hideItem(index: number | HTMLElement | Element, value?: boolean): void {
         const isElement: boolean = (typeof (index) === 'object') ? true : false;
-        let eleIndex: number = index as number;
+        const eleIndex: number = index as number;
         let ele: HTMLElement;
         if (!isElement && isNOU(eleIndex)) {
             return;

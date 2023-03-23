@@ -381,18 +381,16 @@ export class FormulaBar {
             const formulaDescription: HTMLElement = this.parent.createElement(
                 'div', { className: 'e-formula-description', id: this.parent.element.id + '_description_content' });
             const categoryContent: HTMLElement = this.parent.createElement(
-                'div', {
-                    className: 'e-category-content', id: this.parent.element.id + '_category_content',
-                    innerHTML: l10n.getConstant('PickACategory')
-                });
+                'div', { className: 'e-category-content', id: this.parent.element.id + '_category_content' });
+            categoryContent.innerText = l10n.getConstant('PickACategory');
             const dropDownElement: HTMLElement = this.parent.createElement(
                 'input', { className: 'e-formula-category', id: this.parent.element.id + '_formula_category' });
             const listViewElement: HTMLElement = this.parent.createElement(
                 'div', { className: 'e-formula-list', id: this.parent.element.id + '_formula_list' });
-            const descriptionContent: HTMLElement = this.parent.createElement(
-                'div', { className: 'e-description-content', innerHTML: l10n.getConstant('Description') });
-            const headerContent: HTMLElement = this.parent.createElement(
-                'div', { className: 'e-header-content', innerHTML: l10n.getConstant('InsertFunction') });
+            const descriptionContent: HTMLElement = this.parent.createElement('div', { className: 'e-description-content' });
+            descriptionContent.innerText = l10n.getConstant('Description');
+            const headerContent: HTMLElement = this.parent.createElement('div', { className: 'e-header-content' });
+            headerContent.innerText = l10n.getConstant('InsertFunction');
             const categoryArgs: { action: string, categoryCollection: string[] } = { action: 'getFormulaCategory', categoryCollection: [] };
             this.parent.notify(workbookFormulaOperation, categoryArgs);
             this.categoryCollection = categoryArgs.categoryCollection;

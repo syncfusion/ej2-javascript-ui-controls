@@ -1,5 +1,4 @@
 export type HightLightType = 'Contains' | 'StartsWith' | 'EndsWith';
-/* eslint-disable jsdoc/require-param, valid-jsdoc */
 /**
  * Function helps to find which highlightSearch is to call based on your data.
  *
@@ -18,6 +17,7 @@ export function highlightSearch(element: HTMLElement, query: string, ignoreCase:
         query = /^[a-zA-Z0-9- ]*$/.test(query) ? query : query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
         const replaceQuery: string = type === 'StartsWith' ? '^(' + query + ')' : type === 'EndsWith' ?
             '(' + query + ')$' : '(' + query + ')';
+        // eslint-disable-next-line security/detect-non-literal-regexp
         findTextNode(element, new RegExp(replaceQuery, ignoreRegex));
     }
 }
@@ -30,13 +30,13 @@ export function highlightSearch(element: HTMLElement, query: string, ignoreCase:
  */
 function findTextNode(element: HTMLElement, pattern: RegExp): void {
     for (let index: number = 0; element.childNodes && (index < element.childNodes.length); index++) {
-        if (element.childNodes[index].nodeType === 3 && element.childNodes[index].textContent.trim() !== '') {
-            const value: string = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
-            element.childNodes[index].nodeValue = '';
+        if (element.childNodes[index as number].nodeType === 3 && element.childNodes[index as number].textContent.trim() !== '') {
+            const value: string = element.childNodes[index as number].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
+            element.childNodes[index as number].nodeValue = '';
             element.innerHTML = element.innerHTML.trim() + value;
             break;
         } else {
-            findTextNode(element.childNodes[index] as HTMLElement, pattern);
+            findTextNode(element.childNodes[index as number] as HTMLElement, pattern);
         }
     }
 }
@@ -50,8 +50,8 @@ function findTextNode(element: HTMLElement, pattern: RegExp): void {
 export function revertHighlightSearch(content: HTMLElement): void {
     const contentElement: NodeListOf<Element> = content.querySelectorAll('.e-highlight');
     for (let i: number = contentElement.length - 1; i >= 0; i--) {
-        const parent: Node = contentElement[i].parentNode;
-        const text: Text = document.createTextNode(contentElement[i].textContent);
-        parent.replaceChild(text, contentElement[i]);
+        const parent: Node = contentElement[i as number].parentNode;
+        const text: Text = document.createTextNode(contentElement[i as number].textContent);
+        parent.replaceChild(text, contentElement[i as number]);
     }
 }

@@ -770,7 +770,15 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * Destroy the component
      */
     public destroy(): void {
-        super.destroy();
+        this.sparklineData = [];
+        // let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
+        // if (element) { element.remove(); }
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            this.removeSvg();
+            this.svgObject = null;
+        }
     }
 
     /**

@@ -131,9 +131,11 @@ export class GanttChart {
                 }
                 else {
                     if (this.parent.viewType === 'ProjectView') {
-                        (<HTMLElement>this.parent.chartRowsModule.ganttChartTableBody.children[i as number].children[0].children[1].children[1]).setAttribute('tabindex', '-1');
+                        if (!isNullOrUndefined(this.parent.chartRowsModule.ganttChartTableBody.children[parseInt(i.toString(), 10)].children[0].children[1].children[1])) {
+                            (<HTMLElement>this.parent.chartRowsModule.ganttChartTableBody.children[i as number].children[0].children[1].children[1]).setAttribute('tabindex', '-1');
+                        }
                     }
-                    else if (this.parent.chartRowsModule.ganttChartTableBody.children[i].children[0].children[1].children[0]) {
+                    else if (this.parent.chartRowsModule.ganttChartTableBody.children[parseInt(i.toString(), 10)].children[0].children[1].children[0]) {
                         (<HTMLElement>this.parent.chartRowsModule.ganttChartTableBody.children[i as number].children[0].children[1].children[0]).setAttribute('tabindex', '-1');
                     }
                 }
@@ -186,7 +188,14 @@ export class GanttChart {
             Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight));
     }
     private renderRange(rangeCollection: IWorkTimelineRanges[], currentRecord: IGanttData): void {
-        const topValue: number = this.getTopValue(currentRecord);
+        let topValue: number = 0;
+        let rowIndex: number = this.parent.currentViewData.indexOf(currentRecord);
+        if (!this.parent.allowTaskbarOverlap && this.parent.enableMultiTaskbar) {
+            topValue = !currentRecord.expanded ? this.parent.getRowByIndex(rowIndex as number).offsetTop : this.parent.getRowByIndex(rowIndex as number).offsetTop + this.parent.rowHeight;
+        }
+        else {
+            topValue = this.getTopValue(currentRecord);
+        }
         const sameIDElement: Element = this.rangeViewContainer.querySelector('.' + 'rangeContainer' + currentRecord.ganttProperties.rowUniqueID);
         if (sameIDElement) {
             sameIDElement.remove();
@@ -199,7 +208,14 @@ export class GanttChart {
             return;
         }
         for (let i: number = 0; i < rangeCollection.length; i++) {
-            const height: number = this.getRangeHeight(currentRecord);
+            let height: number;
+            if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar) {
+                height = parseInt((this.parent.chartRowsModule.ganttChartTableBody.childNodes[rowIndex as number] as HTMLElement).style.height) -
+                         (this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight);
+            }
+            else {
+                height = this.getRangeHeight(currentRecord);
+            }
             const leftDiv: HTMLElement = createElement('div', {
                 className: cls.rangeChildContainer + ' ' +  'e-leftarc', styles: (this.parent.enableRtl? 'right:' : 'left:') +
                 `${(this.parent.enableRtl ? rangeCollection[i as number].left + rangeCollection[i as number].width - 5 : rangeCollection[i as number].left)}px;

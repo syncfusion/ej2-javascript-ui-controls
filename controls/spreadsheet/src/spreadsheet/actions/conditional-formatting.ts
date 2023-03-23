@@ -198,13 +198,15 @@ export class ConditionalFormatting {
         const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfmain' });
         const subDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfsub' });
 
-        const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
+        const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header' });
+        value1Text.innerText = dlgText;
         const value1Inp: HTMLInputElement =
         this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text', 
         'aria-label': dlgText } }) as HTMLInputElement;
         const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
-        const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
+        const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header' });
+        subDivText.innerText = l10n.getConstant('With');
         const colorSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
@@ -235,7 +237,8 @@ export class ConditionalFormatting {
         }
         if (action === l10n.getConstant('Between') + '...') {
             const value2Text: HTMLElement = this.parent.createElement(
-                'span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
+                'span', { className: 'e-header e-header-2' });
+            value2Text.innerText = l10n.getConstant('And');
             const value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input e-between' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
@@ -427,8 +430,8 @@ export class ConditionalFormatting {
             if (isTopBottom) {
                 let endIdx: number = parseFloat(input);
                 if (cf.type.includes('Percentage')) {
-                    endIdx = Math.round(endIdx / (100 / count));
-                    endIdx = endIdx ? endIdx : 1;
+                    endIdx = endIdx / (100 / result.length);
+                    endIdx = (endIdx < 1) ? 1 : endIdx;
                 }
                 result = result.slice(0, endIdx);
             }
@@ -828,7 +831,10 @@ export class ConditionalFormatting {
             }
         }
         dataSpan.style.fontSize = td.style.fontSize || '11pt';
-        dataSpan.innerHTML = td.textContent;
+        dataSpan.innerText = td.textContent;
+        if (td.textContent === '') {
+            dataSpan.appendChild(document.createTextNode(td.textContent));
+        }
         databar.appendChild(leftSpan);
         databar.appendChild(rightSpan);
         databar.appendChild(dataSpan);
@@ -936,6 +942,9 @@ export class ConditionalFormatting {
             this.parent.notify(checkDateFormat, dateEventArgs2);
             if ((dateEventArgs1.isDate || dateEventArgs1.isTime) && (dateEventArgs2.isDate || dateEventArgs2.isTime)) {
                 cf.value = dateEventArgs1.updatedVal + ',' + dateEventArgs2.updatedVal;
+                if (dateEventArgs1.updatedVal > dateEventArgs2.updatedVal) {
+                    [dateEventArgs1.updatedVal, dateEventArgs2.updatedVal] = [dateEventArgs2.updatedVal, dateEventArgs1.updatedVal];
+                }
                 return value >= dateEventArgs1.updatedVal && value <= dateEventArgs2.updatedVal;
             } else {
                 return value.toLowerCase() >= input1.toLowerCase() && value.toLowerCase() <= input2.toLowerCase();

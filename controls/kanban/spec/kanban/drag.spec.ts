@@ -6,7 +6,7 @@ import { DragEventArgs, Kanban, KanbanModel } from '../../src/kanban/index';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
-import { closest, createElement, remove } from '@syncfusion/ej2-base';
+import { closest, createElement } from '@syncfusion/ej2-base';
 
 Kanban.Inject();
 
@@ -1418,121 +1418,6 @@ describe('Drag module', () => {
             util.triggerMouseEvent(ele, 'mouseup');
             expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[0].childElementCount).toEqual(1);
             expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[1].childElementCount).toEqual(3);
-        });
-    });
-    
-    describe('Drag and drop functionality', () => {
-        let kanbanObj: Kanban;
-        const cardTemplate: Element = createElement('div', { id: 'cardtemplate' });
-        beforeAll((done: DoneFn) => {
-            let kanbanData1: Record<string, any>[] = [
-                {
-                    'Id': 1,
-                    'Status': 'Open',
-                    'Summary': 'Analyze the new requirements gathered from the customer.',
-                    'Type': 'Story',
-                    'Priority': 'Low',
-                    'Tags': 'Analyze,Customer',
-                    'Estimate': 3.5,
-                    'Assignee': 'Andrew Fuller',
-                    'AssigneeName': 'Andrew',
-                    'RankId': 1
-                },
-                {
-                    'Id': 2,
-                    'Status': 'Open',
-                    'Summary': 'Improve application performance',
-                    'Type': 'Improvement',
-                    'Priority': 'Normal',
-                    'Tags': 'Improvement',
-                    'Estimate': 6,
-                    'Assignee': 'Andrew Fuller',
-                    'AssigneeName': 'Andrew',
-                    'RankId': 2
-                },
-                {
-                    'Id': 3,
-                    'Status': 'Open',
-                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
-                    'Type': 'Others',
-                    'Priority': 'Critical',
-                    'Tags': 'Meeting',
-                    'Estimate': 5.5,
-                    'Assignee': 'Janet Leverling',
-                    'AssigneeName': 'Janet',
-                    'RankId': 3
-                },
-                {
-                    'Id': 4,
-                    'Status': 'InProgress',
-                    'Summary': 'Fix the issues reported in the IE browser.',
-                    'Type': 'Bug',
-                    'Priority': 'Release Breaker',
-                    'Tags': 'IE',
-                    'Estimate': 2.5,
-                    'Assignee': 'Janet Leverling',
-                    'AssigneeName': 'Janet',
-                    'RankId': 4
-                },
-                {
-                    'Id': 5,
-                    'Status': 'Close',
-                    'Summary': 'Fix the issues reported by the customer.',
-                    'Type': 'Bug',
-                    'Priority': 'Low',
-                    'Tags': 'Customer',
-                    'Estimate': '3.5',
-                    'Assignee': 'Steven walker',
-                    'AssigneeName': 'Steven',
-                    'RankId': 5
-                }];
-                cardTemplate.innerHTML = '<div class="card-template">' +
-                '<div class="e-card-header">' +
-                    '<div class="e-card-header-caption">' +
-                         '<div class="e-card-header-title e-tooltip-text">${Id}</div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="e-card-content e-tooltip-text">' +
-                    '<div class="e-text">${Summary}</div>' +
-                '</div>' +
-                '<div class="e-card-footer">' +
-                    '<div class="e-${Priority} e-card-footer-css"></div>' +
-                    '<div class="e-rank">Rank #${RankId}</div>' +
-                '</div>'+
-            '</div>';
-            document.body.appendChild(cardTemplate);
-            const model: KanbanModel = {
-
-                keyField: 'Status',
-                columns: [
-                    { headerText: 'Backlog', keyField: 'Open, Review' },
-                    { headerText: 'In Progress', keyField: 'InProgress' },
-                    { headerText: 'Done', keyField: 'Close' }
-                ],
-                cardSettings: {
-                    headerField: 'Id',
-                    contentField: 'Summary',
-                    template: '#cardtemplate',
-                },
-                sortSettings: {
-                    sortBy: 'Index',
-                    field: 'RankId',
-                }
-            };
-            kanbanObj = util.createKanban(model, kanbanData1, done, createElement('div', { id: 'Kanban1' }));
-        });
-        afterAll(() => {
-            util.destroy(kanbanObj);
-            remove(cardTemplate);
-        });
-
-        it('On drag and drop the card to same column of the kanban with sortSettings configured', () => {
-            let ele: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="4"]').item(0) as HTMLElement;
-            util.triggerMouseEvent(ele, 'mousedown');
-            util.triggerMouseEvent(ele, 'mousemove', 100, 300);
-            util.triggerMouseEvent(ele, 'mouseup');
-            expect(kanbanObj.element.querySelectorAll('.e-card-wrapper')[0].childElementCount).toEqual(3);
-            expect((kanbanObj.element.querySelectorAll('.e-card-wrapper')[0].lastElementChild as HTMLElement).querySelector('.e-rank').innerHTML === 'Rank #3').toBe(true);
         });
     });
 

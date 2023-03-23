@@ -371,7 +371,7 @@ describe('Chart', () => {
                 let point: Element = document.getElementById('container_Series_0');
                 expect(point !== null).toBe(true);
                 let axisLabel: Element = document.getElementById('container0_AxisLabel_0');
-                expect(axisLabel.textContent == 'May').toBe(true);
+                expect(axisLabel.textContent == 'May 2000').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -390,7 +390,7 @@ describe('Chart', () => {
 
         it('Checking with Months and its Round rangePadding', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == 'Mar').toBe(true);
+                expect(document.getElementById('containerAxisLabels0').childNodes[0].textContent == 'Mar 2000').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -845,9 +845,9 @@ describe('Chart', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '359.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '360.375').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '75.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

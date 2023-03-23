@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable radix */
 /* eslint-disable curly */
 /* eslint-disable jsdoc/valid-types */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /**
@@ -13,7 +13,7 @@ import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotif
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
-import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';
+import { Font, Margin, Border, TooltipSettings, Indexes, CenterLabel } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
 import { AccumulationType, AccumulationSelectionMode, AccumulationHighlightMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
@@ -24,12 +24,12 @@ import { IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, pointClick } from '../common/model/constants';
 import { pointMove, chartDoubleClick, chartMouseClick, chartMouseDown } from '../common/model/constants';
 import { chartMouseLeave, chartMouseMove, chartMouseUp, resized, beforeResize } from '../common/model/constants';
-import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';
+import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel, CenterLabelModel } from '../common/model/base-model';
 import { AccumulationSeriesModel, PieCenterModel } from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor, stringToNumber } from '../common/utils/helper';
+import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor, stringToNumber, textWrap } from '../common/utils/helper';
 import { RectOption, showTooltip, ImageOption } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
@@ -56,6 +56,8 @@ import { IAccResizeEventArgs, IAccBeforeResizeEventArgs, IAccLegendClickEventArg
 import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
 import { ExportUtils } from '../common/utils/export';
+import { Animation, AnimationOptions, compile as templateComplier} from '@syncfusion/ej2-base';
+
 /**
  * Represents the AccumulationChart control.
  * ```html
@@ -241,19 +243,27 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public tooltip: TooltipSettingsModel;
 
     /**
+     * Options for customizing the center label of accumulation chart.
+     */
+
+    @Complex<CenterLabelModel>({}, CenterLabel)
+    public centerLabel: CenterLabelModel;
+
+    /**
      * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
      * None: Disables the selection.
      * Point: selects a point.
+     *
      * @default None
      */
     @Property('None')
     public selectionMode: AccumulationSelectionMode;
 
     /**
-    * Defines the highlight color for the data point when user hover the data point.
-    *
-    * @default ''
-    */
+     * Defines the highlight color for the data point when user hover the data point.
+     *
+     * @default ''
+     */
 
     @Property('')
     public highlightColor: string;
@@ -262,6 +272,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Specifies whether point has to get highlighted or not. Takes value either 'None 'or 'Point'
      * None: Disables the highlight.
      * Point: highlight a point.
+     *
      * @default None
      */
     @Property('None')
@@ -626,6 +637,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Triggers before window resize.
+     *
      * @event
      * @blazorProperty 'BeforeResize'
      */
@@ -784,6 +796,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public redraw: boolean;
     /** @private */
     public animateSeries: boolean;
+    /**
+     * Defines the format of center label
+     *
+     * @private
+     */
+    private format: string;
     private titleCollection: string[];
     private subTitleCollection: string[];
     /** @private */
@@ -973,6 +991,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 this.accumulationLegendModule.move(e);
             }
         }
+        if (this.centerLabel.hoverTextFormat) {
+            this.updateCenterLabel(e);
+        }
         this.notify(Browser.touchEndEvent, e);
         return false;
     }
@@ -1102,7 +1123,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         const style: HTMLStyleElement = document.createElement('style');
         style.setAttribute('id', element.id + 'Keyboard_accumulationchart_focus');
-        style.innerHTML = '.e-accumulationchart-focused:focus,path[id*=_Series_0_Point_]:focus, text[id*=_title]:focus' +
+        style.innerText = '.e-accumulationchart-focused:focus,path[id*=_Series_0_Point_]:focus, text[id*=_title]:focus' +
         '{outline: none} .e-accumulationchart-focused:focus-visible,path[id*=_Series_0_Point_]:focus-visible, text[id*=_title]:focus-visible' +
             '{outline: 1.5px ' + tabColor + ' solid}';
         document.body.appendChild(style);
@@ -1152,6 +1173,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         if (this.accumulationDataLabelModule && this.visibleSeries[0] && this.visibleSeries[0].dataLabel.visible) {
             this.accumulationDataLabelModule.move(e, this.mouseX, this.mouseY);
+        }
+        if (this.centerLabel.hoverTextFormat) {
+            this.updateCenterLabel(e);
         }
         if (!this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY);
@@ -1677,6 +1701,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
         this.renderTitle();
 
+        this.renderCenterLabel(true);
+
         this.renderLegend();
 
         appendChildElement(false, this.element, this.svgObject, this.redraw);
@@ -1839,7 +1865,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             titleHeight,
             getAnchor, this.titleCollection, '', 'auto'
         );
-        const space = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length , this.accBaseModule.radius) : 0;
+        const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length , this.accBaseModule.radius) : 0;
         if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid')) {
             options.x = parseInt(this.series[0].radius) >= 80 ? options.x : this.accBaseModule.center.x;
             options.y = parseInt(this.series[0].radius) >= 80 ? options.y :
@@ -1864,6 +1890,112 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.renderSubTitle(options);
         }
     }
+
+    /**
+     * To update center label on mouse move.
+     */
+    private updateCenterLabel(event: Event): void {
+        const data: AccPointData = this.getPieData(event as PointerEvent);
+        this.format = (data.point == null) ? '' : this.parseFormat(data.point, this.visibleSeries[0], this.centerLabel.hoverTextFormat);
+        this.renderCenterLabel();
+    }
+
+    /**
+     * Function to get pie data on mouse move.
+     */
+    private getPieData(e: PointerEvent | TouchEvent): AccPointData {
+        const dataIndex: Index = indexFinder((e.target as Element).id, true);
+        if (!isNaN(dataIndex.series)) {
+            return new AccPointData(this.visibleSeries[0].points[dataIndex.point as number], this.visibleSeries[0]);
+        }
+        return new AccPointData(null, null);
+    }
+
+    /**
+     * Function to get format of pie data on mouse move.
+     */
+    private parseFormat(point: AccPoints, series: AccumulationSeries, format: string): string {
+        let value: RegExp;
+        let textValue: string;
+        for (const dataValue of Object.keys(point)) {
+            // eslint-disable-next-line security/detect-non-literal-regexp
+            value = new RegExp('${point' + '.' + dataValue + '}', 'gm');
+            format = format.replace(value.source, point[dataValue as string]);
+        }
+        for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
+            // eslint-disable-next-line security/detect-non-literal-regexp
+            value = new RegExp('${series' + '.' + dataValue + '}', 'gm');
+            textValue = series[dataValue as string];
+            format = format.replace(value.source, textValue);
+        }
+        return format;
+    }
+
+    /**
+     * To render center label for accumulation chart.
+     */
+    private renderCenterLabel(isanimate?: boolean): void {
+        if (!this.centerLabel.text) {
+            return null;
+        }
+        const series: AccumulationSeries = <AccumulationSeries>this.series[0];
+        let ypos: number;
+        const getAnchor: string = getTextAnchor(this.centerLabel.textStyle.textAlignment, this.enableRtl);
+        const padding: number = 10;
+        // To get side of square inside the circle , which is considered as maxwidth , d*sqrt(0.5)
+        const maxwidth: number = (((2 * this.pieSeriesModule.innerRadius) * (0.7071067)));
+        const labelCollection: string[] = (this.format || this.centerLabel.text).split('<br>');
+        const centerLabelSize: Size = measureText(labelCollection[0], this.centerLabel.textStyle);
+        const collectionLength: number = labelCollection.length;
+        for (let i: number = 0; i < collectionLength; i++) {
+            const labelSize: Size = measureText(labelCollection[i as number], this.centerLabel.textStyle);
+            if (labelSize.width > maxwidth) {
+                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle)));
+            }
+        }
+        if (centerLabelSize.height * (labelCollection.length) > maxwidth) {
+            ypos = this.accBaseModule.center.y + ((centerLabelSize.height + padding) / 2) - (maxwidth / 2);
+        }
+        else if (series.startAngle && series.endAngle) {
+            ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
+            ((centerLabelSize.height + padding) / 2) - this.pieSeriesModule.innerRadius / 2 + padding;
+            if ((centerLabelSize.height * (labelCollection.length) + this.pieSeriesModule.innerRadius / 2 + padding > maxwidth)) {
+                ypos = this.accBaseModule.center.y + ((centerLabelSize.height + padding) / 2) - (maxwidth / 2);
+            }
+        }
+        else {
+            ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
+            ((centerLabelSize.height + padding) / 2);
+        }
+        const options: TextOption = new TextOption(
+            this.element.id + '_centerLabel',
+            (this.series[0].animation.enable && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
+            ypos,
+            getAnchor, labelCollection, '', 'auto'
+        );
+        const element: Element = textElement(
+            this.renderer, options, this.centerLabel.textStyle, this.centerLabel.textStyle.color ||
+             this.themeStyle.chartTitle, this.svgObject, false, this.redraw
+        );
+        if (isanimate && this.series[0].animation.enable && this.animateSeries) {
+            this.centerLabelDelay(element);
+        }
+    }
+
+    /**
+     * Function to delay Center label at initial stage of accumulation chart.
+     */
+    private centerLabelDelay(element: Element): void {
+        (element as HTMLElement).style.visibility = 'hidden';
+        const animation: Animation = new Animation({});
+        animation.animate(<HTMLElement>element, {
+            delay: this.duration ? this.duration : this.series[0].animation.duration,
+            progress: (args: AnimationOptions): void => {
+                args.element.style.visibility = 'visible';
+            }
+        });
+    }
+
     private renderSubTitle(options: TextOption): void {
         let maxWidth: number = 0;
         let titleWidth: number = 0;
@@ -2133,6 +2265,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                         this.accumulationSelectionModule.invokeSelection(this);
                     } else {
                         this.accumulationSelectionModule.redrawSelection(this);
+                    }
+                }
+                break;
+            case 'tooltip':
+                if (this.accumulationTooltipModule) { // To check the tooltip enable is true.
+                    this.accumulationTooltipModule.previousPoints = [];
+                    if (this.tooltip.template) {
+                        this.accumulationTooltipModule.template = this.tooltip.template;
                     }
                 }
                 break;

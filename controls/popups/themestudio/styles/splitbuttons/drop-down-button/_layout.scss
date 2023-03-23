@@ -24,6 +24,12 @@
       }
     }
 
+    &:focus-visible { // only for keybord
+      @if $skin-name == 'Material3' {
+        box-shadow: $btn-keyboard-focus-box-shadow !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
     &:active {
       box-shadow: $btn-active-box-shadow;
     }
@@ -56,6 +62,9 @@
 
         & .e-item  {
           padding: $drop-down-btn-small-li-padding;
+          @if $skin-name == 'Material3' {
+            height: $drop-down-btn-small-li-height;
+          }
         }
       }
 
@@ -143,6 +152,9 @@
         &.e-disabled {
           cursor: auto;
           pointer-events: none;
+          @if $skin-name == 'Material3' {
+            box-shadow: $drop-down-btn-sub-ul-box-shadow;
+          }
         }
 
         &.e-separator {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
@@ -14,7 +13,7 @@ import { Axis } from '../axis/axis';
 
 export class RangeAreaSeries extends LineBase {
 
-    public borderDirection : string ='';
+    public borderDirection : string = '';
     /**
      * Render RangeArea Series.
      *
@@ -97,7 +96,7 @@ export class RangeAreaSeries extends LineBase {
         /**
          * To draw border for the path directions of area
          */
-         if (series.border.width !== 0) {
+        if (series.border.width !== 0) {
             this.appendLinePath(
                 new PathOption(
                     series.chart.element.id + '_Series_border_' + series.index, 'transparent',
@@ -124,7 +123,7 @@ export class RangeAreaSeries extends LineBase {
             if (visiblePoints[j as number].visible && visiblePoints[j as number].symbolLocations[0]) {
                 point = visiblePoints[j as number];
                 direction += 'L' + ' ' + (point.symbolLocations[0].x) + ' ' + ((point.symbolLocations[0].y)) + ' ';
-                this.borderDirection += (j === i ? 'M' : "L") + ' ' + (point.symbolLocations[0].x) + ' ' + ((point.symbolLocations[0].y)) + ' ';
+                this.borderDirection += (j === i ? 'M' : 'L') + ' ' + (point.symbolLocations[0].x) + ' ' + ((point.symbolLocations[0].y)) + ' ';
             } else {
                 break;
             }

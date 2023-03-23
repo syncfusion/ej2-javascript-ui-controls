@@ -2,7 +2,7 @@
 import { RevisionType } from '../../base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -80,6 +80,7 @@ export class Revision {
         this.skipUnLinkElement = false;
         // Implement to accept/reject the revision
         if (this.revisionType === 'Insertion' || this.revisionType === 'Deletion' || this.revisionType === 'MoveFrom' || this.revisionType === 'MoveTo') {
+            this.owner.isShiftingEnabled = true;
             let rangeIndex: number = 0;
             while (this.range.length > 0) {
                 if (this.range[rangeIndex] instanceof ElementBox || this.range[rangeIndex] instanceof WCharacterFormat || this.range[rangeIndex] instanceof WRowFormat) {
@@ -238,6 +239,11 @@ export class Revision {
         if (item instanceof ElementBox && removeChanges) {
             let currentPara: ParagraphWidget = item.line.paragraph;
             this.removeRevisionItemsFromRange(item);
+            if(item instanceof FootnoteElementBox) {
+                if(item.footnoteType === 'Footnote') {
+                    this.owner.editor.removeFootnote(item);
+                }
+            }
             this.removeItem(item);
             this.isContentRemoved = true;
             this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);

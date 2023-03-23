@@ -1,5 +1,5 @@
 /* eslint-disable valid-jsdoc */
-import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { TooltipSettings } from '../model/base';
@@ -15,6 +15,8 @@ import { TooltipTheme } from '@syncfusion/ej2-svg-base/src/tooltip/enum';
 
 /**
  * Represent the tooltip rendering for gauge
+ * 
+ * @hidden
  */
 export class GaugeTooltip {
     private gauge: LinearGauge;
@@ -44,6 +46,7 @@ export class GaugeTooltip {
      * Internal use for tooltip rendering
      *
      * @param {PointerEvent} e - Specifies the pointer event argument
+     * @private
      */
 
     public renderTooltip(e: PointerEvent): void {
@@ -192,7 +195,7 @@ export class GaugeTooltip {
             header: '',
             data: { value: args.content },
             template: template,
-            content: [args.content],
+            content: [SanitizeHtmlHelper.sanitize(args.content)],
             shapes: [],
             location: args.location,
             palette: [],
@@ -286,6 +289,8 @@ export class GaugeTooltip {
 
     /**
      * To bind events for tooltip module
+     * 
+     * @private
      */
     public addEventListener(): void {
         if (this.gauge.isDestroyed) {
@@ -296,6 +301,8 @@ export class GaugeTooltip {
     }
     /**
      * To unbind events for tooltip module
+     * 
+     * @private
      */
     public removeEventListener(): void {
         if (this.gauge.isDestroyed) {

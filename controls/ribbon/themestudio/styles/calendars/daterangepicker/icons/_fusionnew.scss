@@ -1,0 +1,72 @@
+@include export-module('daterangepicker-fusionnew-icons') {
+
+  /*! component icons */
+  .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon {
+    border-bottom-right-radius: $range-icon-bottom-right-radius;
+    border-right: $range-control-border-right;
+    border-top-right-radius: $range-icon-top-right-radius;
+    font-size: $range-icon-font-size;
+    margin: $range-icon-margin;
+    min-height: $range-icon-container-min-height;
+    min-width: $range-icon-container-min-width;
+    outline: none;
+
+    #{if(&, '&', '*')}::before {
+      content: '\e74c';
+      font-family: 'e-icons';
+    }
+
+    #{if(&, '&', '*')}:focus {
+      background: $range-icon-hover-color;
+      border-radius: $range-icon-border-radius;
+    }
+  }
+
+  .e-daterangepicker {
+    #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
+      content: '\e748';
+    }
+    #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
+      content: '\e765';
+    }
+    #{if(&, '&', '*')} .e-change-icon::before {
+      content: '\e7f9';
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
+      content: '\e765';
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
+      content: '\e748';
+    }
+    #{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
+      content: '\e773';
+    }
+  }
+
+  .e-bigger {
+    #{if(&, '&', '*')} .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon,
+    #{if(&, '&', '*')} .e-control-wrapper .e-input-group-icon.e-range-icon {
+      font-size: $range-bigger-icon-font-size;
+      margin: $range-icon-bigger-margin;
+      min-height: $range-bigger-icon-container-min-height;
+      min-width: $range-bigger-icon-container-min-width;
+      outline: none;
+    }
+  }
+
+  // mouse small icon
+  .e-small .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-small-icon-font-size;
+  }
+
+  // Touch small icon
+  .e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-range-icon,
+  #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-bigger-small-icon-font-size;
+  }
+}

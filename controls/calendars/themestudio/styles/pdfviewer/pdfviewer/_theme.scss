@@ -2473,6 +2473,12 @@
   .e-pv-mobile-view .e-pv-password-popup.e-dialog {
     height: $pv-password-dialog-height-mobile;
   }
+  .e-bigger .e-pv-password-popup.e-dialog,
+  .e-pv-mobile-view .e-pv-password-popup.e-dialog {
+    @if ($skin-name == 'FluentUI') {
+      height: 270px;
+    }
+  }
 
   .e-bigger .e-pv-notification-popup.e-dialog,
   .e-pv-mobile-view .e-pv-notification-popup.e-dialog {
@@ -2484,6 +2490,12 @@
     height: $pv-notification-dialog-height-large-mobile;
   }
 
+  .e-bigger .e-pv-notification-popup.e-pv-notification-large-content.e-dialog,
+  .e-pv-mobile-view .e-pv-notification-popup.e-pv-notification-large-content.e-dialog {
+    @if ($skin-name == 'FluentUI') {
+      height: 280px;
+    }
+  }
   .e-bigger .e-pv-corrupted-popup.e-dialog,
   .e-pv-mobile-view .e-pv-corrupted-popup.e-dialog {
     height: $pv-corrupted-dialog-height-mobile;
@@ -2799,13 +2811,6 @@
     }
   }
 
-  .e-btn.e-outline.e-primary,
-  .e-css.e-btn.e-outline.e-primary {
-    @if $theme-name == 'material'  {
-      color: $pv-comment-panel-post-button-color;
-    }
-  }
-
   .e-pdfviewer .e-editable-inline .e-editable-form {
     margin-bottom: 1px;
   }
@@ -3098,7 +3103,7 @@
 
   .e-pdfviewer .e-input-group.e-control-wrapper.e-editable-elements.e-input-focus {
     @if $skin-name != 'bootstrap5' {
-      caret-color: $pv-comment-text-curser-color;
+      caret-color: $pv-comment-text-cursor-color;
     }
   }
 
@@ -3354,9 +3359,9 @@
   .e-pv-custom-annotation-stamp-container.e-menu-container .e-ul .e-menu-item.e-selected,
   .e-pv-custom-annotation-stamp-container.e-menu-container.e-menu-container .e-ul .e-menu-item.e-focused {
     @if $skin-name == 'bootstrap4' {
-      background-color: $pv-comment-text-curser-color;
+      background-color: $pv-comment-text-cursor-color;
       color: $pv-icon-color-hover;
-      outline: 0 solid $pv-comment-text-curser-color;
+      outline: 0 solid $pv-comment-text-cursor-color;
       outline-offset: 0;
     }
   }
@@ -4024,6 +4029,12 @@
     height: $pv-formfield-designer-dialog-height;
   }
 
+  .e-bigger .e-pv-properties-form-field-window {
+    @if ($skin-name == 'FluentUI') {
+      height: 585px;
+    }
+  }
+
   .e-pv-properties-header-spliter {
     border-bottom-color: $pv-properties-header-spliter-border-bottom-color;
     border-bottom-style: $pv-properties-header-spliter-border-bottom-style;
@@ -4098,6 +4109,13 @@
     }
   }
 
+  .e-bigger .e-dialog.e-pv-signature-dialog-height {
+    @if ($skin-name == 'FluentUI') {
+      height: 627px;
+      min-height: 591px;
+    }
+  }
+  
   .e-bigger .e-pv-signature-dialog-height {
     @if ($skin-name == 'FluentUI') {
       min-height: 592px;

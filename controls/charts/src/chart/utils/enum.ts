@@ -128,6 +128,7 @@ export type SizeType =
  * * hiloOpenClose - Renders the HiloOpenClose Series
  * * Waterfall - Renders the Waterfall Series
  * * rangeArea - Renders the rangeArea series.
+ * * rangeStepArea - Renders the rangeStepArea series.
  * * splineRangeArea - Renders the splineRangeArea series.
  * * Pareto-Render the Pareto series
  */
@@ -172,6 +173,8 @@ export type ChartSeriesType =
     'StackingArea100' |
     /** Define the RangeColumn Series */
     'RangeColumn' |
+    /** Define the RangeStepArea Series */
+    'RangeStepArea' |
     /** Define the Hilo Series */
     'Hilo' |
     /** Define the HiloOpenClose Series */

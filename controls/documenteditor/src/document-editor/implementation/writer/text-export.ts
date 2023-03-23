@@ -51,7 +51,7 @@ export class TextExport {
         });
     }
     private serialize(documentHelper: DocumentHelper): void {
-        const document: any = documentHelper.owner.sfdtExportModule.write();
+        const document: any = documentHelper.owner.sfdtExportModule.write(0);
         this.setDocument(document);
     }
     /**

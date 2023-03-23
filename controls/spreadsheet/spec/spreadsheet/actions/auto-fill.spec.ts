@@ -92,6 +92,101 @@ describe('Auto fill ->', () => {
             expect(helper.invoke('getCell', [10, 6]).textContent).toBe('9');
             done();
         });
+        it('fillType - FillSeries Having Text and Integer preceeds with 0 as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 001');
+            helper.invoke('autoFill',['J3:J11','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('Adjustment 002');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Adjustment 003');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Adjustment 004');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('Adjustment 006');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('Adjustment 008');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('Adjustment 009');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('Adjustment 010');
+            done();
+        });
+        it('fillType - FillSeries Input Having 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('K2', 'Adjustment 001');
+            helper.edit('K3', 'Adjustment 003');
+            helper.invoke('autoFill',['K4:K10','K2:K3','Down','FillSeries']);
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('Adjustment 009');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('Adjustment 011');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('Adjustment 013');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('Adjustment 015');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('Adjustment 017');
+            done();
+        });
+        it('fillType - FillSeries Input Having more than 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('L2', 'Adjustment 001');
+            helper.edit('L3', 'Adjustment 005');
+            helper.edit('L4', 'Adjustment 009');
+            helper.invoke('autoFill',['L5:L10','L2:L4','Down','FillSeries']);
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('Adjustment 013');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('Adjustment 017');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('Adjustment 021');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('Adjustment 025');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('Adjustment 029');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('Adjustment 033');
+            done();
+        });
+        it('fillType - FillSeries Having mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 01 Adjust 005');
+            helper.invoke('autoFill',['J3:J11','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('Adjustment 01 Adjust 006');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Adjustment 01 Adjust 007');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Adjustment 01 Adjust 008');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('Adjustment 01 Adjust 009');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('Adjustment 01 Adjust 010');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('Adjustment 01 Adjust 011');
+            done();
+        });
+        it('fillType - FillSeries Having preceeds with integer and  mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', '001 Ad 01 Adjust 002');
+            helper.invoke('autoFill',['J3:J8','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('2 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('3 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('4 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('5 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('6 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('7 Ad 01 Adjust 002');
+            done();
+        });
+        it('fillType - FillSeries input having without space.', (done: Function) => {
+            helper.edit('J2', '001ADJUST007');
+            helper.invoke('autoFill',['J3:J8','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('001ADJUST008');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('001ADJUST009');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('001ADJUST010');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('001ADJUST011');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('001ADJUST012');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('001ADJUST013');
+            done();
+        });
+        it('fillType - FillSeries input having with space inbetween', (done: Function) => {
+            helper.edit('J2', '001 ADJUST007');
+            helper.invoke('autoFill',['J3:J8','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('2 ADJUST007');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('3 ADJUST007');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('4 ADJUST007');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('5 ADJUST007');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('6 ADJUST007');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('7 ADJUST007');
+            done();
+        });
+        it('fillType - FillSeries input with space inbetween of mix of text and integer', (done: Function) => {
+            helper.edit('J2', '001ADJUST 005 ADJUST004');
+            helper.invoke('autoFill',['J3:J8','J2','Down','FillSeries']);
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('001ADJUST 005 ADJUST005');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('001ADJUST 005 ADJUST006');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('001ADJUST 005 ADJUST007');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('001ADJUST 005 ADJUST008');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('001ADJUST 005 ADJUST009');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('001ADJUST 005 ADJUST010');
+            done();
+        });
         it('fillType - FillFormattingOnly', (done: Function) => {
             helper.invoke('cellFormat', [{ fontWeight: 'bold' }, 'F2']);
             helper.invoke('autoFill',['F4:F10','F2:F3','Down','FillFormattingOnly']);
@@ -159,6 +254,63 @@ describe('Auto fill ->', () => {
             expect(helper.invoke('getCell', [2, 6]).textContent).toBe('3');
             done();
         });
+        it('fillType - FillSeries Having Text and Integer preceeds with 0 as input', (done: Function) => {
+            helper.edit('J7', 'Adjustment 001');
+            helper.invoke('autoFill',['J6:J2','J7','Up','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 004');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('Adjustment 003');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Adjustment 002');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Adjustment 001');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('Adjustment 000');
+            done();
+        });
+        it('fillType - FillSeries Having mix of text and integer as input', (done: Function) => {
+            helper.edit('J7', 'Adjustment 01 Adjust 005');
+            helper.invoke('autoFill',['J6:J2','J7','Up','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 01 Adjust 000');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('Adjustment 01 Adjust 001');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Adjustment 01 Adjust 002');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Adjustment 01 Adjust 003');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('Adjustment 01 Adjust 004');
+            done();
+        });
+        it('fillType - FillSeries Having preceeds with integer and  mix of text and integer as input', (done: Function) => {
+            helper.edit('J8', '001 Ad 01 Adjust 002');
+            helper.invoke('autoFill',['J7:J2','J8','Up','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('5 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('4 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('3 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('2 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('1 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0 Ad 01 Adjust 002');
+            done();
+        });
+        it('fillType - FillSeries Input Having 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('K9', 'Adjustment 001');
+            helper.edit('K10', 'Adjustment 003');
+            helper.invoke('autoFill',['K8:K2','K10:K9','Up','FillSeries']);
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 013');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('Adjustment 011');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('Adjustment 009');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('Adjustment 003');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('Adjustment 001');
+            done();
+        });
+        it('fillType - FillSeries Input Having more than 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('K8', 'Adjustment 001');
+            helper.edit('K9', 'Adjustment 005');
+            helper.edit('K10', 'Adjustment 009');
+            helper.invoke('autoFill',['K7:K2','K10:K8','Up','FillSeries']);
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 023');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('Adjustment 019');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('Adjustment 015');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('Adjustment 011');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('Adjustment 003');
+            done();
+        });
         it('fillType - FillFormattingOnly', (done: Function) => {
             helper.invoke('cellFormat', [{ fontWeight: 'bold' }, 'F5']);
             helper.invoke('autoFill',['F3:F1','F5:F4','Up','FillFormattingOnly']);
@@ -224,6 +376,59 @@ describe('Auto fill ->', () => {
             expect(format).toBe(undefined);
             done();
         });
+        it('fillType - FillSeries Having Text and Integer preceeds with 0 as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 001');
+            helper.invoke('autoFill',['J2:E2','J2','Left','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 000');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('Adjustment 001');
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('Adjustment 002');
+            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('Adjustment 003');
+            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('Adjustment 004');
+            done();
+        });
+        it('fillType - FillSeries Having mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 01 Adjust 005');
+            helper.invoke('autoFill',['J2:E2','J2','Left','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 01 Adjust 004');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('Adjustment 01 Adjust 003');
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('Adjustment 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('Adjustment 01 Adjust 001');
+            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('Adjustment 01 Adjust 000');
+            done();
+        });
+        it('fillType - FillSeries Having preceeds with integer and  mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', '001 Ad 01 Adjust 002');
+            helper.invoke('autoFill',['J2:E2','J2','Left','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('2 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('3 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('4 Ad 01 Adjust 002');
+            done();
+        });
+        it('fillType - FillSeries Input Having 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('K2', 'Adjustment 001');
+            helper.edit('J2', 'Adjustment 003');
+            helper.invoke('autoFill',['K2:E2','K2:J2','Left','FillSeries']);
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('Adjustment 009');
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('Adjustment 011');
+            expect(helper.invoke('getCell', [1, 6]).textContent).toBe('Adjustment 013');
+            done();
+        });
+        it('fillType - FillSeries Input Having more than 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('L2', 'Adjustment 001');
+            helper.edit('K2', 'Adjustment 005');
+            helper.edit('J2', 'Adjustment 009');
+            helper.invoke('autoFill',['L2:E2','L2:J2','Left','FillSeries']);
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Adjustment 013');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 017');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 021');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('Adjustment 025');
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('Adjustment 029');
+            done();
+        });  
     });
     describe('Autofill getFillType Type - Right ->', () => {
         beforeAll((done: Function) => {
@@ -266,6 +471,58 @@ describe('Auto fill ->', () => {
             expect(cells[3].value).toBe(0.3082638888888889);
             expect(cells[4].format).toBeUndefined();
             expect(cells[4].value).toBe(0.34993055555555563);
+            done();
+        });
+        it('fillType - FillSeries Having Text and Integer preceeds with 0 as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 001');
+            helper.invoke('autoFill',['J2:O2','J2','Right','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 002');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 003');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Adjustment 004');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('Adjustment 006');
+            done();
+        });
+        it('fillType - FillSeries Having mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', 'Adjustment 01 Adjust 005');
+            helper.invoke('autoFill',['J2:O2','J2','Right','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Adjustment 01 Adjust 006');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 01 Adjust 007');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Adjustment 01 Adjust 008');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Adjustment 01 Adjust 009');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('Adjustment 01 Adjust 010');
+            done();
+        });
+        it('fillType - FillSeries Having preceeds with integer and  mix of text and integer as input', (done: Function) => {
+            helper.edit('J2', '001 Ad 01 Adjust 002');
+            helper.invoke('autoFill',['J2:O2','J2','Right','FillSeries']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('2 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('3 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('4 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('5 Ad 01 Adjust 002');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('6 Ad 01 Adjust 002');
+            done();
+        });
+        it('fillType - FillSeries Input Having 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('J2', 'Adjustment 001');
+            helper.edit('K2', 'Adjustment 003');
+            helper.invoke('autoFill',['K2:O2','J2:K2','Right','FillSeries']);
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('Adjustment 005');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Adjustment 007');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Adjustment 009');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('Adjustment 011');
+            done();
+        });
+        it('fillType - FillSeries Input Having more than 2 cells of Text and Integer preceeds with 0', (done: Function) => {
+            helper.edit('J2', 'Adjustment 001');
+            helper.edit('K2', 'Adjustment 005');
+            helper.edit('L2', 'Adjustment 009');
+            helper.invoke('autoFill',['L2:P2','J2:L2','Right','FillSeries']);
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Adjustment 013');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Adjustment 017');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('Adjustment 021');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('Adjustment 025');
+            expect(helper.invoke('getCell', [1, 15]).textContent).toBe('Adjustment 029');
             done();
         });
         it('Fill series right with date and currency cells', (done: Function) => {
@@ -1306,6 +1563,48 @@ describe('Auto fill ->', () => {
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[1].cells[13].formula).toEqual('=((10^2)&(10%2))');
                     expect(helper.invoke('getCell', [1, 13]).textContent).toBe('100,1,2');
+                    done();
+                });
+            });
+        });
+        it('Autofill icon is not displayed for formula dependency cells', (done: Function) => {
+            helper.edit('J3', '=SUM(H2:H3)');
+            helper.invoke('selectRange', ['H2']);
+            setTimeout(() => {
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                expect(autoFill.classList).not.toContain('e-hide');
+                expect(getComputedStyle(autoFill).display).not.toBe('none');
+                done();
+            });
+        });
+        it('Autofill option is not shown for merged cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('H2:H3');
+            helper.invoke('selectRange', ['H2']);
+            setTimeout(() => {
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [9, 7]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                setTimeout(() => {
+                    const fillOption: HTMLElement = helper.getElementFromSpreadsheet('.e-filloption');
+                    expect(fillOption.classList).not.toContain('e-hide');
+                    expect(getComputedStyle(fillOption).display).not.toBe('none');
+                    helper.click('#spreadsheet_autofilloptionbtn');
+                    helper.click('.e-dragfill-ddb ul li:nth-child(1)');
+                    expect(helper.invoke('getCell', [9, 7]).textContent).toBe('10');
+                    helper.click('#spreadsheet_autofilloptionbtn');
+                    helper.click('.e-dragfill-ddb ul li:nth-child(3)');
+                    expect(helper.invoke('getCell', [9, 7]).textContent).toBe('166');
+                    expect(helper.invoke('getCell', [9, 7]).rowSpan).toBe(2);
+                    helper.click('#spreadsheet_autofilloptionbtn');
+                    helper.click('.e-dragfill-ddb ul li:nth-child(4)');
+                    expect(helper.invoke('getCell', [9, 7]).textContent).toBe('14');
+                    expect(helper.invoke('getCell', [9, 7]).rowSpan).toBe(1);
                     done();
                 });
             });

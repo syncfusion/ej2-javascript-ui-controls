@@ -427,7 +427,7 @@
       padding: $select-file-padding;
 
       .e-icons:focus {
-        @if ($skin-name == 'material') {
+        @if ($skin-name == 'material' or $skin-name == 'Material3') {
           outline: none;
         }
       }
@@ -593,7 +593,12 @@
       #{if(&, '&', '*')} .e-file-reload-btn.e-icons:hover,
       #{if(&, '&', '*')} .e-file-abort-btn.e-icons:not(.e-disabled):hover,
       #{if(&, '&', '*')} .e-clear-icon-focus {
-        background-color: $clear-icon-focus-color;
+        @if $skin-name == 'Material3' {
+          background: $clear-icon-focus-color;
+        }
+        @if $skin-name != 'Material3' {
+          background-color: $clear-icon-focus-color;
+        }
         border-color: transparent;
         border-radius: $uploader-icons-hover-radius;
         box-shadow: 0 0 0 transparent;

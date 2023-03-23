@@ -631,6 +631,9 @@ export class Edit implements IAction {
                             DataUtil.setValue(column.field, value, editedData);
                         }
                     } else {
+                        if (typeof value === 'string') {
+                            this.parent.sanitize(value as string);
+                        }
                         DataUtil.setValue(column.field, value, editedData);
                     }
                 }
@@ -649,8 +652,11 @@ export class Edit implements IAction {
                     temp = inputElements.filter((e: HTMLInputElement) => e.hasAttribute('name'));
                 }
                 for (let k: number = 0; k < temp.length; k++) {
-                    const value: number | string | Date | boolean = this.getValue(col[parseInt(j.toString(), 10)],
+                    let value: number | string | Date | boolean = this.getValue(col[parseInt(j.toString(), 10)],
                                                                                   temp[parseInt(k.toString(), 10)], editedData);
+                    if (col[parseInt(j.toString(), 10)].type === 'string') {
+                        value = this.parent.sanitize(value as string);
+                    }
                     DataUtil.setValue(col[parseInt(j.toString(), 10)].field, value, editedData);
                 }
             }
@@ -660,7 +666,10 @@ export class Edit implements IAction {
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             const col: Column = gObj.getColumnByUid(inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                const value:  number | string | Date | boolean = this.getValue(col, inputs[parseInt(i.toString(), 10)], editedData);
+                let value:  number | string | Date | boolean = this.getValue(col, inputs[parseInt(i.toString(), 10)], editedData);
+                if (col.type === 'string') {
+                    value = this.parent.sanitize(value as string);
+                }
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
@@ -931,10 +940,11 @@ export class Edit implements IAction {
 
     /**
      * @param {Column[]} cols - specifies the column
+     * @param {Object} newRule - specifies the new rule object
      * @returns {void}
      * @hidden
      */
-    public applyFormValidation(cols?: Column[], newRule?:Object): void {
+    public applyFormValidation(cols?: Column[], newRule?: Object): void {
         const gObj: IGrid = this.parent;
         const frzCols: boolean = gObj.isFrozenGrid();
         const isInline: boolean = this.parent.editSettings.mode === 'Normal';
@@ -1074,10 +1084,10 @@ export class Edit implements IAction {
     public resetMovableContentValidation(): void {
         if (this.isValidationApplied && this.parent.getMovableVirtualContent() &&
             !(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
-                const elem: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
-                elem.style.overflowX = 'auto';
-                elem.style.overflowY = 'hidden';
-                this.isValidationApplied = false;
+            const elem: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
+            elem.style.overflowX = 'auto';
+            elem.style.overflowY = 'hidden';
+            this.isValidationApplied = false;
         }
     }
 

@@ -687,7 +687,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('dateRange template', () => {
             const model: ScheduleModel = {
-                currentView: 'TimelineWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], 
+                currentView: 'TimelineWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2017, 9, 5),
                 dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
             };
@@ -753,8 +753,8 @@ describe('Schedule Timeline Week view', () => {
                 maxDate: new Date(2017, 9, 12)
             };
             schObj = util.createSchedule(model, []);
-            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
-            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button');
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
@@ -3931,13 +3931,15 @@ describe('Schedule Timeline Week view', () => {
         it('Check events offsetleft - slot count 2', () => {
             const colElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-            expect(colElement.style.width).toEqual('50px');
+            const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+            expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 6;
@@ -3947,7 +3949,8 @@ describe('Schedule Timeline Week view', () => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;
@@ -4013,13 +4016,15 @@ describe('Schedule Timeline Week view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-            expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
+            expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                expect(colElement.style.width).toEqual('50px');
+                const tdElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+                expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 6;
@@ -4031,7 +4036,7 @@ describe('Schedule Timeline Week view', () => {
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-                expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
+                expect(colElement.offsetWidth).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;

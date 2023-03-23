@@ -223,7 +223,7 @@ export class ResourceBase {
                     classList(target, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
                     hide = false;
                 }
-                const eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+                const eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS + ',.' + cls.MORE_INDICATOR_CLASS));
                 for (const element of eventElements) {
                     remove(element);
                 }
@@ -354,6 +354,7 @@ export class ResourceBase {
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
+            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             fields: {
                 dataSource: [].slice.call(this.generateTreeData()) as Record<string, any>[],
                 id: 'resourceId',
@@ -451,10 +452,8 @@ export class ResourceBase {
             const resourceText: Record<string, any>[] =
                 (resourceLevel.dataSource as Record<string, any>[]).filter((resData: Record<string, any>) =>
                     resData[resourceLevel.idField] === resource.groupOrder[parseInt(i.toString(), 10)]);
-            const resourceName: HTMLElement = createElement('div', {
-                className: cls.RESOURCE_NAME,
-                innerHTML: (<Record<string, any>>resourceText[0])[resourceLevel.textField] as string
-            });
+            const resourceName: HTMLElement = createElement('div', { className: cls.RESOURCE_NAME });
+            resourceName.innerText = this.parent.sanitize((<Record<string, any>>resourceText[0])[resourceLevel.textField] as string);
             headerCollection.push(resourceName);
             const levelIcon: HTMLElement = createElement('div', { className: 'e-icons e-icon-next' });
             headerCollection.push(levelIcon);
@@ -531,7 +530,7 @@ export class ResourceBase {
         this.parent.showSpinner();
         const promises: Promise<any>[] = [];
         for (const resource of this.parent.resources) {
-            const dataModule: Data = new Data(resource.dataSource, resource.query);
+            const dataModule: Data = new Data(this.parent, resource.dataSource, resource.query);
             promises.push(dataModule.getData(dataModule.generateQuery()));
         }
         Promise.all(promises).then((e: ReturnType[]) => this.dataManagerSuccess(e, isSetModel))

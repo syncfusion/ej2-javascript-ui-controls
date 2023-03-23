@@ -92,9 +92,9 @@ export class Ean8 extends OneDimension {
         let code: string;
         for (let i: number = isLeft ? 0 : this.value.length - 4; i < (isLeft ? this.value.length - 4 : this.value.length); i++) {
             if (i === 0 || i === 4) {
-                code = codes[this.value[i]];
+                code = codes[this.value[parseInt(i.toString(), 10)]];
             } else {
-                code += codes[this.value[i]];
+                code += codes[this.value[parseInt(i.toString(), 10)]];
             }
         }
         return code;

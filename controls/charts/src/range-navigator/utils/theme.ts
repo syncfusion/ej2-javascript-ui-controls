@@ -1,6 +1,5 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-/* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/no-namespace */
 import { ChartTheme, IFontMapping } from '../../index';
 import { IRangeStyle } from '../model/range-navigator-interface';

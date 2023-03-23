@@ -385,8 +385,8 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Method to handle the dynamic changes of the Message component properties.
      *
-     * @param {MessageModel} newProp - Specifies the old property.
-     * @param {MessageModel} oldProp - Specifies the new property.
+     * @param {MessageModel} newProp - Specifies the new property.
+     * @param {MessageModel} oldProp - Specifies the old property.
      * @returns {void}
      * @private
      */

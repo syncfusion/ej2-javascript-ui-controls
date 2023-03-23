@@ -37,7 +37,7 @@ export class ToolbarStatus {
         const nodeSelection: NodeSelection = new NodeSelection();
         const range: Range = nodeSelection.getRange(docElement);
         const nodes: Node[] = documentNode ? [documentNode] : range.collapsed ? nodeSelection.getNodeCollection(range) :
-        nodeSelection.getSelectionNodeCollectionBr(range);
+            nodeSelection.getSelectionNodeCollectionBr(range);
         const nodesLength: number = nodes.length;
         let isNodeChanged: boolean = false;
         for (let index: number = 0; index < nodes.length; index++) {
@@ -243,7 +243,7 @@ export class ToolbarStatus {
     private static isFontSize(docElement: Document, node: Node, fontSize?: string[]): string {
         let size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
         if ((size === null || size === undefined || size === '') && node.nodeType !== 3 &&
-        (node as HTMLElement).parentElement.classList.contains('e-content')) {
+            (node as HTMLElement).parentElement.classList.contains('e-content')) {
             size = this.getComputedStyle(docElement, (node as HTMLElement), 'font-size');
         }
         if ((size !== null && size !== '' && size !== undefined)

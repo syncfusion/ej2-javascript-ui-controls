@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
@@ -41,7 +39,7 @@ export class StochasticIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         let signalCollection: Points[] = [];
         const upperCollection: Points[] = [];
         const lowerCollection: Points[] = [];

@@ -17,6 +17,7 @@ export class NavigationLine {
      * @param {number} factor - Specifies the current zoom factor of the Maps.
      * @param {number} layerIndex -Specifies the index of current layer.
      * @returns {Element} - Returns the navigation line element.
+     * @private
      */
     public renderNavigation(layer: LayerSettings, factor: number, layerIndex: number): Element {
         let group: Element;

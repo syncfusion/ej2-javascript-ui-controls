@@ -288,7 +288,7 @@ export class CollaborativeEditing {
         end.setPosition(endElement.line, false);
         this.owner.sfdtExportModule.isPartialExport = true;
         /* eslint-disable-next-line max-len */
-        const sfdtContent: string = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false);
+        const sfdtContent: string = this.owner.sfdtExportModule.write(0, start.currentWidget, start.offset, end.currentWidget, end.offset, false);
         this.owner.sfdtExportModule.isPartialExport = false;
         return sfdtContent;
     }

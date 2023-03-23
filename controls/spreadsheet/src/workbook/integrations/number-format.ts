@@ -177,9 +177,7 @@ export class WorkbookNumberFormat {
 
     private isCustomType(cell: CellModel): boolean {
         const format: string = getTypeFromFormat(cell.format);
-        const l10n: L10n = this.parent.serviceLocator.getService('spreadsheetLocale');
-        return (format === l10n.getConstant('General') && cell.format !== l10n.getConstant('General')) ||
-            (format === l10n.getConstant('Time') && this.parent.isEdit);
+        return (format === 'General' && cell.format !== 'General') || (format === 'Time' && this.parent.isEdit);
     }
 
     private processCustomFill(format: string, cell: CellModel, args: NumberFormatArgs, formatText?: string): string {
@@ -427,10 +425,10 @@ export class WorkbookNumberFormat {
         return count;
     }
 
-    private processDigits(cell: CellModel): string {
-        const custFormat: string = cell.format.split('?').join('0');
+    private processDigits(cell: CellModel, customFormat: string): string {
+        customFormat = customFormat.split('?').join('0');
         let cellValue: string = cell.value.toString();
-        cellValue = this.getFormattedNumber(custFormat, parseFloat(cellValue));
+        cellValue = this.getFormattedNumber(customFormat, parseFloat(cellValue));
         if (cellValue && cellValue.includes(this.decimalSep)) {
             const valArr: string[] = cellValue.split(this.decimalSep);
             cellValue = valArr[0] + this.decimalSep + valArr[1].split('0').join('  ');
@@ -519,8 +517,8 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('?') > -1) {
                 isFormatted = true;
-                customFormat = cell.format.split('?').join('');
-                formattedText = this.processDigits(cell);
+                formattedText = this.processDigits(cell, customFormat);
+                customFormat = customFormat.split('?').join('');
             }
             if (customFormat.indexOf('_') > -1) {
                 isFormatted = true;
@@ -1207,7 +1205,9 @@ export class WorkbookNumberFormat {
     private checkCustomDateFormat(val: string, cell: CellModel, isEdit: boolean): { val: string, format: string } {
         let separator: string;
         const cellFormat: string = cell.format; let timeArgs: { val: string, format: string };
-        if (val.includes(this.localeObj.dateSeparator)) {
+        if (val.includes(this.localeObj.dateSeparator) && ((!val.includes(` ${this.localeObj.am}`) &&
+            !val.includes(` ${this.localeObj.pm}`)) ||
+            val.replace(` ${this.localeObj.am}`, '').replace(` ${this.localeObj.pm}`, '').includes(this.localeObj.dateSeparator))) {
             separator = this.localeObj.dateSeparator;
             if (val.includes(this.localeObj.timeSeparator) && val.includes(' ')) {
                 const valArr: string[] = val.split(' ');

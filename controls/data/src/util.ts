@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+/* eslint-disable security/detect-object-injection */
 import { merge, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from './manager';
 import { Query, Predicate } from './query';
@@ -6,17 +8,20 @@ const consts: { [key: string]: string } = { GroupGuid: '{271bbba0-1ee7}' };
 
 /**
  * Data manager common utility methods.
+ *
  * @hidden
  */
 export class DataUtil {
     /**
      * Specifies the value which will be used to adjust the date value to server timezone.
+     *
      * @default null
      */
     public static serverTimezoneOffset: number = null;
 
     /**
      * Species whether are not to be parsed with serverTimezoneOffset value.
+     *
      * @hidden
      */
     public static timeZoneHandling: boolean = true;
@@ -24,8 +29,10 @@ export class DataUtil {
     /**
      * Returns the value by invoking the provided parameter function.
      * If the paramater is not of type function then it will be returned as it is.
-     * @param  {Function|string|string[]|number} value
-     * @param  {Object} inst?
+     *
+     * @param {Function|string|string[]|number} value
+     * @param {Object} inst?
+     * @param inst
      * @hidden
      */
     public static getValue<T>(value: T | Function, inst?: Object): T {
@@ -37,6 +44,7 @@ export class DataUtil {
 
     /**
      * Returns true if the input string ends with given string.
+     *
      * @param  {string} input
      * @param  {string} substr
      */
@@ -45,16 +53,111 @@ export class DataUtil {
     }
 
     /**
+     * Returns true if the input string not ends with given string.
+     *
+     * @param  {string} input
+     * @param  {string} substr
+     */
+    public static notEndsWith(input: string, substr: string): boolean {
+        return input.slice && input.slice(-substr.length) !== substr;
+    }
+
+    /**
      * Returns true if the input string starts with given string.
-     * @param  {string} str
-     * @param  {string} startstr
+     *
+     * @param {string} str
+     * @param {string} startstr
+     * @param input
+     * @param start
      */
     public static startsWith(input: string, start: string): boolean {
         return input.slice(0, start.length) === start;
     }
 
     /**
+     * Returns true if the input string not starts with given string.
+     *
+     * @param {string} str
+     * @param {string} startstr
+     * @param input
+     * @param start
+     */
+    public static notStartsWith(input: string, start: string): boolean {
+        return input.slice(0, start.length) !== start;
+    }
+
+    /**
+     * Returns true if the input string pattern(wildcard) matches with given string.
+     *
+     * @param {string} str
+     * @param {string} startstr
+     * @param input
+     * @param pattern
+     */
+    public static wildCard(input: string, pattern: string): boolean {
+        let asteriskSplit: string[];
+        let optionalSplit: string[];
+        if (pattern.indexOf('*') !== -1) {
+            if (pattern.charAt(0) !== '*') {
+                pattern = '^' + pattern;
+            }
+            if (pattern.charAt(pattern.length - 1) !== '*') {
+                pattern = pattern + '$';
+            }
+            asteriskSplit = pattern.split('*');
+            for (let i: number = 0; i < asteriskSplit.length; i++) {
+                if (asteriskSplit[i].indexOf('.') === -1) {
+                    asteriskSplit[i] = asteriskSplit[i] + '.*';
+                }
+                else {
+                    asteriskSplit[i] = asteriskSplit[i] + '*';
+                }
+            }
+            pattern = asteriskSplit.join('');
+        }
+        if (pattern.indexOf('%3f') !== -1 || pattern.indexOf('?') !== -1) {
+            optionalSplit = pattern.indexOf('%3f') !== -1 ? pattern.split('%3f') : pattern.split('?');
+            pattern = optionalSplit.join('.');
+        }
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        const regexPattern: RegExp = new RegExp(pattern, 'g');
+        return regexPattern.test(input);
+    }
+
+    /**
+     * Returns true if the input string pattern(like) matches with given string.
+     *
+     * @param {string} str
+     * @param {string} startstr
+     * @param input
+     * @param pattern
+     */
+    public static like(input: string, pattern: string): boolean {
+        if (pattern.indexOf('%') !== -1) {
+            if (pattern.charAt(0) === '%' && pattern.lastIndexOf('%') < 2) {
+                pattern = pattern.substring(1, pattern.length);
+                return DataUtil.startsWith(DataUtil.toLowerCase(input), DataUtil.toLowerCase(pattern));
+            }
+            else if (pattern.charAt(pattern.length - 1) === '%' && pattern.indexOf('%') > pattern.length - 3) {
+                pattern = pattern.substring(0, pattern.length - 1);
+                return DataUtil.endsWith(DataUtil.toLowerCase(input), DataUtil.toLowerCase(pattern));
+            }
+            else if (pattern.lastIndexOf('%') !== pattern.indexOf('%') && pattern.lastIndexOf('%') > pattern.indexOf('%') + 1) {
+                pattern = pattern.substring(pattern.indexOf('%') + 1, pattern.lastIndexOf('%'));
+                return input.indexOf(pattern) !== -1;
+            }
+            else {
+                return input.indexOf(pattern) !== -1;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
      * To return the sorting function based on the string.
+     *
      * @param  {string} order
      * @hidden
      */
@@ -68,6 +171,7 @@ export class DataUtil {
 
     /**
      * Comparer function which is used to sort the data in ascending order.
+     *
      * @param  {string|number} x
      * @param  {string|number} y
      * @returns number
@@ -90,6 +194,7 @@ export class DataUtil {
     }
     /**
      * Comparer function which is used to sort the data in descending order.
+     *
      * @param  {string|number} x
      * @param  {string|number} y
      * @returns number
@@ -121,13 +226,14 @@ export class DataUtil {
         return newObj;
     }
 
-    /**    
+    /**
      * Select objects by given fields from jsonArray.
+     *
      * @param  {Object[]} jsonArray
      * @param  {string[]} fields
      */
     public static select(jsonArray: Object[], fields: string[]): Object[] {
-        let newData: Object[] = [];
+        const newData: Object[] = [];
 
         for (let i: number = 0; i < jsonArray.length; i++) {
             newData.push(this.extractFields(jsonArray[i], fields));
@@ -138,24 +244,31 @@ export class DataUtil {
     /**
      * Group the input data based on the field name.
      * It also performs aggregation of the grouped records based on the aggregates paramater.
-     * @param  {Object[]} jsonArray
-     * @param  {string} field?
-     * @param  {Object[]} agg?
-     * @param  {number} level?
-     * @param  {Object[]} groupDs?
+     *
+     * @param {Object[]} jsonArray
+     * @param {string} field?
+     * @param {Object[]} agg?
+     * @param {number} level?
+     * @param {Object[]} groupDs?
+     * @param field
+     * @param aggregates
+     * @param level
+     * @param groupDs
+     * @param format
+     * @param isLazyLoad
      */
     public static group(
         jsonArray: Object[], field?: string, aggregates?: Object[], level?: number,
         groupDs?: Object[], format?: Function, isLazyLoad?: boolean
     ): Object[] {
         level = level || 1;
-        let jsonData: Group[] = jsonArray;
-        let guid: string = 'GroupGuid';
+        const jsonData: Group[] = jsonArray;
+        const guid: string = 'GroupGuid';
         if ((<Group>jsonData).GroupGuid === consts[guid]) {
             for (let j: number = 0; j < jsonData.length; j++) {
                 if (!isNullOrUndefined(groupDs)) {
                     let indx: number = -1;
-                    let temp: Group[] = groupDs.filter((e: { key: string }) => { return e.key === jsonData[j].key; });
+                    const temp: Group[] = groupDs.filter((e: { key: string }) => { return e.key === jsonData[j].key; });
                     indx = groupDs.indexOf(temp[0]);
                     jsonData[j].items = this.group(
                         jsonData[j].items, field, aggregates, (jsonData as Group).level + 1,
@@ -174,8 +287,8 @@ export class DataUtil {
             return jsonData;
         }
 
-        let grouped: { [key: string]: Group } = {};
-        let groupedArray: Group[] = [];
+        const grouped: { [key: string]: Group } = {};
+        const groupedArray: Group[] = [];
 
         (groupedArray as Group).GroupGuid = consts[guid];
         (groupedArray as Group).level = level;
@@ -197,7 +310,7 @@ export class DataUtil {
                 };
                 groupedArray.push(grouped[val]);
                 if (!isNullOrUndefined(groupDs)) {
-                    let tempObj: Group[] = groupDs.filter((e: { key: string }) => { return e.key === grouped[val].key; });
+                    const tempObj: Group[] = groupDs.filter((e: { key: string }) => { return e.key === grouped[val].key; });
                     grouped[val].count = tempObj[0].count;
                 }
             }
@@ -210,13 +323,13 @@ export class DataUtil {
         if (aggregates && aggregates.length) {
 
             for (let i: number = 0; i < groupedArray.length; i++) {
-                let res: { [key: string]: Object } = {};
+                const res: { [key: string]: Object } = {};
                 let fn: Function;
-                let aggs: Aggregates[] = aggregates as Aggregates[];
+                const aggs: Aggregates[] = aggregates as Aggregates[];
                 for (let j: number = 0; j < aggregates.length; j++) {
                     fn = DataUtil.aggregates[(aggregates[j] as Aggregates).type];
                     if (!isNullOrUndefined(groupDs)) {
-                        let temp: Group[] = groupDs.filter((e: { key: string }) => { return e.key === groupedArray[i].key; });
+                        const temp: Group[] = groupDs.filter((e: { key: string }) => { return e.key === groupedArray[i].key; });
                         if (fn) {
                             res[aggs[j].field + ' - ' + aggs[j].type] = fn(temp[0].items, aggs[j].field);
                         }
@@ -240,16 +353,19 @@ export class DataUtil {
     /**
      * It is used to categorize the multiple items based on a specific field in jsonArray.
      * The hierarchical queries are commonly required when you use foreign key binding.
-     * @param  {string} fKey
-     * @param  {string} from
-     * @param  {Object[]} source
-     * @param  {Group} lookup?
-     * @param  {string} pKey?
+     *
+     * @param {string} fKey
+     * @param {string} from
+     * @param {Object[]} source
+     * @param {Group} lookup?
+     * @param {string} pKey?
+     * @param lookup
+     * @param pKey
      * @hidden
      */
     public static buildHierarchy(fKey: string, from: string, source: Group, lookup?: Group, pKey?: string): void {
         let i: number;
-        let grp: { [key: string]: Object[] } = {};
+        const grp: { [key: string]: Object[] } = {};
         let temp: Object[];
         if (lookup.result) { lookup = lookup.result; }
 
@@ -258,25 +374,28 @@ export class DataUtil {
         }
 
         for (i = 0; i < (<Group[]>lookup).length; i++) {
-            let fKeyData: number = (<number>this.getObject(fKey, (<Group[]>lookup)[i]));
+            const fKeyData: number = (<number>this.getObject(fKey, (<Group[]>lookup)[i]));
             temp = grp[fKeyData] || (grp[fKeyData] = []);
             temp.push((<Group[]>lookup)[i]);
         }
 
         for (i = 0; i < (<Group[]>source).length; i++) {
-            let fKeyData: number = (<number>this.getObject(pKey || fKey, (<Group[]>source)[i]));
+            const fKeyData: number = (<number>this.getObject(pKey || fKey, (<Group[]>source)[i]));
             (<Group[]>source)[i][from] = grp[fKeyData];
         }
     }
 
     /**
-     * Throw error with the given string as message. 
-     * @param  {string} er
+     * Throw error with the given string as message.
+     *
+     * @param {string} er
+     * @param error
      */
     public static throwError: Function = (error: string) => {
         try {
             throw new Error(error);
         } catch (e) {
+            // eslint-disable-next-line no-throw-literal
             throw e.message + '\n' + e.stack;
         }
     }
@@ -284,13 +403,14 @@ export class DataUtil {
     public static aggregates: Aggregates = {
         /**
          * Calculate sum of the given field in the data.
+         *
          * @param  {Object[]} ds
          * @param  {string} field
          */
         sum: (ds: Object[], field: string): number => {
             let result: number = 0;
             let val: number;
-            let castRequired: boolean = typeof DataUtil.getVal(ds, 0, field) !== 'number';
+            const castRequired: boolean = typeof DataUtil.getVal(ds, 0, field) !== 'number';
 
             for (let i: number = 0; i < ds.length; i++) {
                 val = DataUtil.getVal(ds, i, field) as number;
@@ -305,6 +425,7 @@ export class DataUtil {
         },
         /**
          * Calculate average value of the given field in the data.
+         *
          * @param  {Object[]} ds
          * @param  {string} field
          */
@@ -313,6 +434,7 @@ export class DataUtil {
         },
         /**
          * Returns the min value of the data based on the field.
+         *
          * @param  {Object[]} ds
          * @param  {string|Function} field
          */
@@ -326,6 +448,7 @@ export class DataUtil {
         },
         /**
          * Returns the max value of the data based on the field.
+         *
          * @param  {Object[]} ds
          * @param  {string} field
          * @returns number
@@ -340,6 +463,7 @@ export class DataUtil {
         },
         /**
          * Returns the total number of true value present in the data based on the given boolean field name.
+         *
          * @param  {Object[]} ds
          * @param  {string} field
          */
@@ -348,6 +472,7 @@ export class DataUtil {
         },
         /**
          * Returns the total number of false value present in the data based on the given boolean field name.
+         *
          * @param  {Object[]} ds
          * @param  {string} field
          */
@@ -356,8 +481,10 @@ export class DataUtil {
         },
         /**
          * Returns the length of the given data.
-         * @param  {Object[]} ds
-         * @param  {string} field?
+         *
+         * @param {Object[]} ds
+         * @param {string} field?
+         * @param field
          * @returns number
          */
         count: (ds: Object[], field?: string): number => {
@@ -367,9 +494,12 @@ export class DataUtil {
 
     /**
      * The method used to get the field names which started with specified characters.
-     * @param  {Object} obj
-     * @param  {string[]} fields?
-     * @param  {string} prefix?
+     *
+     * @param {Object} obj
+     * @param {string[]} fields?
+     * @param {string} prefix?
+     * @param fields
+     * @param prefix
      * @hidden
      */
     public static getFieldList(obj: Object, fields?: string[], prefix?: string): string[] {
@@ -379,9 +509,9 @@ export class DataUtil {
         if (fields === undefined || fields === null) {
             return this.getFieldList(obj, [], prefix);
         }
-        let copyObj: { [key: string]: Object } = (obj as { [key: string]: Object });
-        let keys: string[] = Object.keys(obj);
-        for (let prop of keys) {
+        const copyObj: { [key: string]: Object } = (obj as { [key: string]: Object });
+        const keys: string[] = Object.keys(obj);
+        for (const prop of keys) {
             if (typeof copyObj[prop] === 'object' && !(copyObj[prop] instanceof Array)) {
                 this.getFieldList((copyObj[prop] as Object), fields, prefix + prop + '.');
             } else {
@@ -394,7 +524,8 @@ export class DataUtil {
     /**
      * Gets the value of the property in the given object.
      * The complex object can be accessed by providing the field names concatenated with dot(.).
-     * @param  {string} nameSpace - The name of the property to be accessed. 
+     *
+     * @param  {string} nameSpace - The name of the property to be accessed.
      * @param  {Object} from - Defines the source object.
      */
     public static getObject(nameSpace: string, from: Object): Object {
@@ -404,7 +535,7 @@ export class DataUtil {
             return from[nameSpace];
         }
         let value: Object = from;
-        let splits: string[] = nameSpace.split('.');
+        const splits: string[] = nameSpace.split('.');
 
         for (let i: number = 0; i < splits.length; i++) {
             if (value == null) { break; }
@@ -415,6 +546,7 @@ export class DataUtil {
 
     /**
      * To set value for the nameSpace in desired object.
+     *
      * @param {string} nameSpace - String value to the get the inner object.
      * @param {Object} value - Value that you need to set.
      * @param {Object} obj - Object to get the inner object value.
@@ -422,11 +554,11 @@ export class DataUtil {
      * @hidden
      */
     public static setValue(nameSpace: string, value: Object | null, obj: Object): { [key: string]: Object; } | Object {
-        let keys: string[] = nameSpace.toString().split('.');
-        let start: Object = obj || {};
+        const keys: string[] = nameSpace.toString().split('.');
+        const start: Object = obj || {};
         let fromObj: Object = start;
         let i: number;
-        let length: number = keys.length;
+        const length: number = keys.length;
         let key: string;
         for (i = 0; i < length; i++) {
             key = keys[i];
@@ -442,6 +574,7 @@ export class DataUtil {
 
     /**
      * Sort the given data based on the field and comparer.
+     *
      * @param  {Object[]} ds - Defines the input data.
      * @param  {string} field - Defines the field to be sorted.
      * @param  {Function} comparer - Defines the comparer function used to sort the records.
@@ -451,7 +584,7 @@ export class DataUtil {
             return ds;
         }
 
-        let middle: number = parseInt((ds.length / 2).toString(), 10);
+        const middle: number = parseInt((ds.length / 2).toString(), 10);
 
         let left: Object[] = ds.slice(0, middle);
         let right: Object[] = ds.slice(middle);
@@ -465,13 +598,13 @@ export class DataUtil {
         if (typeof value !== 'string') {
             return value;
         }
-        let result: string[] = value.split('');
-        let newValue: string[] = result.map((temp: string) => temp in DataUtil.diacritics ? DataUtil.diacritics[temp] : temp);
+        const result: string[] = value.split('');
+        const newValue: string[] = result.map((temp: string) => temp in DataUtil.diacritics ? DataUtil.diacritics[temp] : temp);
         return newValue.join('');
     }
 
     private static merge(left: Object[], right: Object[], fieldName: string, comparer: Function): Object[] {
-        let result: Object[] = [];
+        const result: Object[] = [];
         let current: Object[];
 
         while (left.length > 0 || right.length > 0) {
@@ -537,7 +670,12 @@ export class DataUtil {
         '*=': 'substringof',
         'endswith': 'endswith',
         'startswith': 'startswith',
-        'contains': 'substringof'
+        'contains': 'substringof',
+        'doesnotendwith': 'not endswith',
+        'doesnotstartwith': 'not startswith',
+        'doesnotcontain': 'not substringof',
+        'wildcard': 'wildcard',
+        'like': 'like'
     };
 
     /**
@@ -550,7 +688,12 @@ export class DataUtil {
         '*=': 'contains',
         'endswith': 'endswith',
         'startswith': 'startswith',
-        'contains': 'contains'
+        'contains': 'contains',
+        'doesnotendwith': 'not endswith',
+        'doesnotstartwith': 'not startswith',
+        'doesnotcontain': 'not contains',
+        'wildcard': 'wildcard',
+        'like': 'like'
     };
     public static diacritics: { [key: string]: string } = {
         '\u24B6': 'A',
@@ -1397,13 +1540,16 @@ export class DataUtil {
     public static fnOperators: Operators = {
         /**
          * Returns true when the actual input is equal to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
-         * @param  {boolean} ignoreAccent?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param {boolean} ignoreAccent?
+         * @param ignoreCase
+         * @param ignoreAccent
          */
         equal: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean,
-            ignoreAccent?: boolean): boolean => {
+                ignoreAccent?: boolean): boolean => {
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1415,12 +1561,15 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input is not equal to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
+         * @param ignoreAccent
          */
         notequal: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean,
-            ignoreAccent?: boolean): boolean => {
+                   ignoreAccent?: boolean): boolean => {
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1429,9 +1578,11 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input is less than to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
          */
         lessthan: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean): boolean => {
             if (ignoreCase) {
@@ -1444,9 +1595,11 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input is greater than to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
          */
         greaterthan: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean): boolean => {
             if (ignoreCase) {
@@ -1456,9 +1609,11 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input is less than or equal to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
          */
         lessthanorequal: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean): boolean => {
             if (ignoreCase) {
@@ -1471,9 +1626,11 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input is greater than or equal to the given input.
-         * @param  {string|number|boolean} actual
-         * @param  {string|number|boolean} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number|boolean} actual
+         * @param {string|number|boolean} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
          */
         greaterthanorequal: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean): boolean => {
             if (ignoreCase) {
@@ -1483,9 +1640,12 @@ export class DataUtil {
         },
         /**
          * Returns true when the actual input contains the given string.
-         * @param  {string|number} actual
-         * @param  {string|number} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string|number} actual
+         * @param {string|number} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
+         * @param ignoreAccent
          */
         contains: (actual: string | number, expected: string | number, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
             if (ignoreAccent) {
@@ -1500,26 +1660,50 @@ export class DataUtil {
                 actual.toString().indexOf(expected as string) !== -1;
         },
         /**
+         * Returns true when the actual input not contains the given string.
+         *
+         * @param  {string|number} actual
+         * @param  {string|number} expected
+         * @param  {boolean} ignoreCase?
+         */
+        doesnotcontain: (actual: string | number, expected: string | number, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expected = <string>DataUtil.ignoreDiacritics(expected);
+            }
+            if (ignoreCase) {
+                return !isNullOrUndefined(actual) && !isNullOrUndefined(expected) &&
+                    DataUtil.toLowerCase(actual).indexOf(DataUtil.toLowerCase(expected)) === -1;
+            }
+            return !isNullOrUndefined(actual) && !isNullOrUndefined(expected) &&
+                actual.toString().indexOf(expected as string) === -1;
+        },
+        /**
          * Returns true when the given input value is not null.
+         *
          * @param  {string|number} actual
          * @returns boolean
          */
-        notnull: (actual: string | number): boolean => {
-            return actual !== null;
+        isnotnull: (actual: string | number): boolean => {
+            return actual !== null && actual !== undefined;
         },
         /**
          * Returns true when the given input value is null.
+         *
          * @param  {string|number} actual
          * @returns boolean
          */
         isnull: (actual: string | number): boolean => {
-            return actual === null;
+            return actual === null || actual === undefined;
         },
         /**
          * Returns true when the actual input starts with the given string
-         * @param  {string} actual
-         * @param  {string} expected
-         * @param  {boolean} ignoreCase?
+         *
+         * @param {string} actual
+         * @param {string} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
+         * @param ignoreAccent
          */
         startswith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
             if (ignoreAccent) {
@@ -1532,10 +1716,82 @@ export class DataUtil {
             return actual && expected && DataUtil.startsWith(actual, expected);
         },
         /**
-         * Returns true when the actual input ends with the given string.
+         * Returns true when the actual input not starts with the given string
+         *
          * @param  {string} actual
          * @param  {string} expected
          * @param  {boolean} ignoreCase?
+         */
+        doesnotstartwith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expected = <string>DataUtil.ignoreDiacritics(expected);
+            }
+            if (ignoreCase) {
+                return actual && expected && DataUtil.notStartsWith(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
+            }
+            return actual && expected && DataUtil.notStartsWith(actual, expected);
+        },
+        /**
+         * Returns true when the actual input like with the given string.
+         *
+         * @param  {string} actual
+         * @param  {string} expected
+         * @param  {boolean} ignoreCase?
+         */
+        like: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expected = <string>DataUtil.ignoreDiacritics(expected);
+            }
+            if (ignoreCase) {
+                return actual && expected && DataUtil.like(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
+            }
+            return actual && expected && DataUtil.like(actual, expected);
+        },
+        /**
+         * Returns true when the given input value is empty.
+         *
+         * @param  {string|number} actual
+         * @returns boolean
+         */
+        isempty: (actual: string): boolean => {
+            return actual === undefined || actual === '';
+        },
+        /**
+         * Returns true when the given input value is not empty.
+         *
+         * @param  {string|number} actual
+         * @returns boolean
+         */
+        isnotempty: (actual: string): boolean => {
+            return actual !== undefined && actual !== '';
+        },
+        /**
+         * Returns true when the actual input pattern(wildcard) matches with the given string.
+         *
+         * @param  {string} actual
+         * @param  {string} expected
+         * @param  {boolean} ignoreCase?
+         */
+        wildcard: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expected = <string>DataUtil.ignoreDiacritics(expected);
+            }
+            if (ignoreCase) {
+                return actual && expected && DataUtil.wildCard(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
+            }
+            return actual && expected && DataUtil.wildCard(actual, expected);
+        },
+        /**
+         * Returns true when the actual input ends with the given string.
+         *
+         * @param {string} actual
+         * @param {string} expected
+         * @param {boolean} ignoreCase?
+         * @param ignoreCase
+         * @param ignoreAccent
          */
         endswith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
             if (ignoreAccent) {
@@ -1548,25 +1804,44 @@ export class DataUtil {
             return actual && expected && DataUtil.endsWith(actual, expected);
         },
         /**
+         * Returns true when the actual input not ends with the given string.
+         *
+         * @param  {string} actual
+         * @param  {string} expected
+         * @param  {boolean} ignoreCase?
+         */
+        doesnotendwith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expected = <string>DataUtil.ignoreDiacritics(expected);
+            }
+            if (ignoreCase) {
+                return actual && expected && DataUtil.notEndsWith(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
+            }
+            return actual && expected && DataUtil.notEndsWith(actual, expected);
+        },
+        /**
          * It will return the filter operator based on the filter symbol.
+         *
          * @param  {string} operator
          * @hidden
          */
         processSymbols: (operator: string): string => {
-            let fnName: string = DataUtil.operatorSymbols[operator];
+            const fnName: string = DataUtil.operatorSymbols[operator];
             if (fnName) {
-                let fn: string = DataUtil.fnOperators[fnName];
+                const fn: string = DataUtil.fnOperators[fnName];
                 return fn;
             }
             return DataUtil.throwError('Query - Process Operator : Invalid operator');
         },
         /**
          * It will return the valid filter operator based on the specified operators.
+         *
          * @param  {string} operator
          * @hidden
          */
         processOperator: (operator: string): string => {
-            let fn: string = DataUtil.fnOperators[operator];
+            const fn: string = DataUtil.fnOperators[operator];
             if (fn) { return fn; }
             return DataUtil.fnOperators.processSymbols(operator);
         }
@@ -1574,29 +1849,32 @@ export class DataUtil {
 
     /**
      * To perform the filter operation with specified adaptor and returns the result.
-     * @param  {Object} adaptor
-     * @param  {string} fnName
-     * @param  {Object} param1?
-     * @param  {Object} param2?
+     *
+     * @param {Object} adaptor
+     * @param {string} fnName
+     * @param {Object} param1?
+     * @param {Object} param2?
+     * @param param1
+     * @param param2
      * @hidden
      */
     public static callAdaptorFunction(adaptor: Object, fnName: string, param1?: Object, param2?: Object): Object {
         if (fnName in adaptor) {
-            let res: Query = adaptor[fnName](param1, param2);
+            const res: Query = adaptor[fnName](param1, param2);
             if (!isNullOrUndefined(res)) { param1 = res; }
         }
         return param1;
     }
 
     public static getAddParams(adp: Object, dm: DataManager, query: Query): Object {
-    let req: Object = {};
-    DataUtil.callAdaptorFunction(adp, 'addParams', {
-        dm: dm,
-        query: query,
-        params: query.params,
-        reqParams: req
+        const req: Object = {};
+        DataUtil.callAdaptorFunction(adp, 'addParams', {
+            dm: dm,
+            query: query,
+            params: query.params,
+            reqParams: req
         });
-    return req;
+        return req;
     }
     /**
      * To perform the parse operation on JSON data, like convert to string from JSON or convert to JSON from string.
@@ -1604,6 +1882,7 @@ export class DataUtil {
     public static parse: ParseOption = {
         /**
          * Parse the given string to the plain JavaScript object.
+         *
          * @param  {string|Object|Object[]} jsonText
          */
         parseJson: (jsonText: string | Object | Object[]): Object => {
@@ -1618,6 +1897,7 @@ export class DataUtil {
         },
         /**
          * It will perform on array of values.
+         *
          * @param  {string[]|Object[]} array
          * @hidden
          */
@@ -1625,6 +1905,7 @@ export class DataUtil {
             for (let i: number = 0; i < array.length; i++) {
                 if (typeof array[i] === 'object' && array[i] !== null) {
                     DataUtil.parse.iterateAndReviveJson(array[i]);
+                // eslint-disable-next-line no-useless-escape
                 } else if (typeof array[i] === 'string' && !/^[\s]*\[|^[\s]*\{(.)+:|\"/g.test(<string>array[i])) {
                     array[i] = DataUtil.parse.jsonReviver('', array[i]);
                 } else {
@@ -1634,14 +1915,15 @@ export class DataUtil {
         },
         /**
          * It will perform on JSON values
+         *
          * @param  {JSON} json
          * @hidden
          */
         iterateAndReviveJson: (json: JSON): void => {
             let value: Object | string;
 
-            let keys: string[] = Object.keys(json);
-            for (let prop of keys) {
+            const keys: string[] = Object.keys(json);
+            for (const prop of keys) {
                 if (DataUtil.startsWith(prop, '__')) {
                     continue;
                 }
@@ -1660,19 +1942,22 @@ export class DataUtil {
         },
         /**
          * It will perform on JSON values
+         *
          * @param  {string} field
          * @param  {string|Date} value
          * @hidden
          */
         jsonReviver: (field: string, value: string | Date): string | Date => {
             if (typeof value === 'string') {
-                let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
-                let offSet: number = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
+                // eslint-disable-next-line security/detect-unsafe-regex
+                const ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                const offSet: number = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                        return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
+                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
+                // eslint-disable-next-line no-useless-escape, security/detect-unsafe-regex
                 } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
-                    let isUTC: boolean = value.indexOf('Z') > -1 || value.indexOf('z') > -1;
-                    let arr: string[] = (<string>value).split(/[^0-9.]/);
+                    const isUTC: boolean = value.indexOf('Z') > -1 || value.indexOf('z') > -1;
+                    const arr: string[] = (<string>value).split(/[^0-9.]/);
                     if (isUTC) {
                         if (arr[5].indexOf('.') > -1) {
                             const secondsMs: string[] = arr[5].split('.');
@@ -1682,20 +1967,20 @@ export class DataUtil {
                             arr[6] = '00';
                         }
                         value = DataUtil.dateParse
-                        .toTimeZone(new Date(
-                                    parseInt(arr[0], 10),
-                                    parseInt(arr[1], 10) - 1,
-                                    parseInt(arr[2], 10),
-                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10), parseInt(arr[6], 10)),
-                                    DataUtil.serverTimezoneOffset, false);
+                            .toTimeZone(new Date(
+                                parseInt(arr[0], 10),
+                                parseInt(arr[1], 10) - 1,
+                                parseInt(arr[2], 10),
+                                parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10), parseInt(arr[6], 10)),
+                                        DataUtil.serverTimezoneOffset, false);
                     } else {
-                        let utcFormat: Date = new Date(
+                        const utcFormat: Date = new Date(
                             parseInt(arr[0], 10),
                             parseInt(arr[1], 10) - 1,
                             parseInt(arr[2], 10),
                             parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10));
-                        let hrs: number = parseInt(arr[6], 10);
-                        let mins: number = parseInt(arr[7], 10);
+                        const hrs: number = parseInt(arr[6], 10);
+                        const mins: number = parseInt(arr[7], 10);
                         if (isNaN(hrs) && isNaN(mins)) {
                             return utcFormat;
                         }
@@ -1716,6 +2001,7 @@ export class DataUtil {
         },
         /**
          * Check wheather the given value is JSON or not.
+         *
          * @param  {Object[]} jsonData
          */
         isJson: (jsonData: Object[]): Object => {
@@ -1725,16 +2011,19 @@ export class DataUtil {
             return DataUtil.parse.parseJson(jsonData);
         },
         /**
-         * Checks wheather the given value is GUID or not. 
+         * Checks wheather the given value is GUID or not.
+         *
          * @param  {string} value
          */
         isGuid: (value: string): boolean => {
-            let regex: RegExp = /[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}/i;
-            let match: RegExpExecArray = regex.exec(value);
+            // eslint-disable-next-line security/detect-unsafe-regex
+            const regex: RegExp = /[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}/i;
+            const match: RegExpExecArray = regex.exec(value);
             return match != null;
         },
         /**
          * The method used to replace the value based on the type.
+         *
          * @param  {Object} value
          * @param  {boolean} stringify
          * @hidden
@@ -1756,14 +2045,16 @@ export class DataUtil {
         },
         /**
          * It will replace the JSON value.
-         * @param  {string} key
-         * @param  {Object} val
+         *
+         * @param {string} key
+         * @param {Object} val
+         * @param stringify
          * @hidden
          */
         jsonReplacer: (val: Object, stringify: boolean): Object => {
             let value: Date;
-            let keys: string[] = Object.keys(val);
-            for (let prop of keys) {
+            const keys: string[] = Object.keys(val);
+            for (const prop of keys) {
                 value = val[prop];
 
                 if (!(value instanceof Date)) {
@@ -1782,6 +2073,7 @@ export class DataUtil {
         },
         /**
          * It will replace the Array of value.
+         *
          * @param  {string} key
          * @param  {Object[]} val
          * @hidden
@@ -1800,26 +2092,31 @@ export class DataUtil {
         },
         /**
          * It will replace the Date object with respective to UTC format value.
+         *
          * @param  {string} key
          * @param  {any} value
          * @hidden
          */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         /* tslint:disable-next-line:no-any */
         jsonDateReplacer: (key: string, value: any): any => {
+            /* eslint-enable @typescript-eslint/no-explicit-any */
             if (key === 'value' && value) {
                 if (typeof value === 'string') {
-                    let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                    // eslint-disable-next-line security/detect-unsafe-regex
+                    const ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
                     if (ms) {
                         value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    // eslint-disable-next-line no-useless-escape, security/detect-unsafe-regex
                     } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
-                        let arr: string[] = (<string>value).split(/[^0-9]/);
+                        const arr: string[] = (<string>value).split(/[^0-9]/);
                         value = DataUtil.dateParse
-                        .toTimeZone(new Date(
-                                    parseInt(arr[0], 10),
-                                    parseInt(arr[1], 10) - 1,
-                                    parseInt(arr[2], 10),
-                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
-                                    null, true);
+                            .toTimeZone(new Date(
+                                parseInt(arr[0], 10),
+                                parseInt(arr[1], 10) - 1,
+                                parseInt(arr[2], 10),
+                                parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                        null, true);
                     }
                 }
                 if (value instanceof Date) {
@@ -1840,6 +2137,7 @@ export class DataUtil {
 
     /**
      * Checks wheather the given input is a plain object or not.
+     *
      * @param  {Object|Object[]} obj
      */
     public static isPlainObject(obj: Object | Object[]): boolean {
@@ -1851,7 +2149,7 @@ export class DataUtil {
      */
     public static isCors(): boolean {
         let xhr: XMLHttpRequest = null;
-        let request: string = 'XMLHttpRequest';
+        const request: string = 'XMLHttpRequest';
         try {
             xhr = new window[request]();
         } catch (e) {
@@ -1861,14 +2159,15 @@ export class DataUtil {
     }
     /**
      * Generate random GUID value which will be prefixed with the given value.
+     *
      * @param  {string} prefix
      */
     public static getGuid(prefix: string): string {
-        let hexs: string = '0123456789abcdef';
+        const hexs: string = '0123456789abcdef';
         let rand: number;
         return (prefix || '') + '00000000-0000-4000-0000-000000000000'.replace(/0/g, (val: string, i: number) => {
             if ('crypto' in window && 'getRandomValues' in crypto) {
-                let arr: Uint8Array = new Uint8Array(1);
+                const arr: Uint8Array = new Uint8Array(1);
                 window.crypto.getRandomValues(arr);
                 rand = arr[0] % 16 | 0;
             } else {
@@ -1879,6 +2178,7 @@ export class DataUtil {
     }
     /**
      * Checks wheather the given value is null or not.
+     *
      * @param  {string|Object} val
      * @returns boolean
      */
@@ -1887,6 +2187,7 @@ export class DataUtil {
     }
     /**
      * To get the required items from collection of objects.
+     *
      * @param  {Object[]} array
      * @param  {string} field
      * @param  {Function} comparer
@@ -1898,7 +2199,7 @@ export class DataUtil {
         let current: Object;
         let key: Object;
         let i: number = 0;
-        let castRequired: boolean = typeof DataUtil.getVal(array, 0, field) === 'string';
+        const castRequired: boolean = typeof DataUtil.getVal(array, 0, field) === 'string';
         if (array.length) {
             while (isNullOrUndefined(keyVal) && i < array.length) {
                 keyVal = DataUtil.getVal(array, i, field);
@@ -1924,18 +2225,20 @@ export class DataUtil {
 
     /**
      * To get distinct values of Array or Array of Objects.
-     * @param  {Object[]} json
-     * @param  {string} field
-     * @param  {boolean} requiresCompleteRecord
+     *
+     * @param {Object[]} json
+     * @param {string} field
+     * @param fieldName
+     * @param {boolean} requiresCompleteRecord
      * @returns Object[]
      * * distinct array of objects is return when requiresCompleteRecord set as true.
      * @hidden
      */
     public static distinct(json: Object[], fieldName: string, requiresCompleteRecord?: boolean): Object[] {
         requiresCompleteRecord = isNullOrUndefined(requiresCompleteRecord) ? false : requiresCompleteRecord;
-        let result: Object[] = [];
+        const result: Object[] = [];
         let val: string;
-        let tmp: Object = {};
+        const tmp: Object = {};
         json.forEach((data: Object, index: number) => {
             val = typeof(json[index]) === 'object' ? DataUtil.getVal(json, index, fieldName) as string : json[index] as string;
             if (!(val in tmp)) {
@@ -1957,18 +2260,18 @@ export class DataUtil {
         },
         toTimeZone: (input: Date, offset?: number, utc?: boolean) => {
             if (offset === null) { return input; }
-            let unix: Date = utc ? DataUtil.dateParse.toUTC(input) : input;
+            const unix: Date = utc ? DataUtil.dateParse.toUTC(input) : input;
             return new Date(+unix - (offset * 3600000));
         },
         toLocalTime: (input: Date) => {
-            let datefn: Date = input;
-            let timeZone: number = -datefn.getTimezoneOffset();
-            let differenceString: string = timeZone >= 0 ? '+' : '-';
-            let localtimefn: Function =  (num: number) => {
-                let norm: number = Math.floor(Math.abs(num));
+            const datefn: Date = input;
+            const timeZone: number = -datefn.getTimezoneOffset();
+            const differenceString: string = timeZone >= 0 ? '+' : '-';
+            const localtimefn: Function =  (num: number) => {
+                const norm: number = Math.floor(Math.abs(num));
                 return (norm < 10 ? '0' : '') + norm;
             };
-            let val: string = datefn.getFullYear() + '-' + localtimefn(datefn.getMonth() + 1) + '-' + localtimefn(datefn.getDate()) +
+            const val: string = datefn.getFullYear() + '-' + localtimefn(datefn.getMonth() + 1) + '-' + localtimefn(datefn.getDate()) +
             'T' + localtimefn(datefn.getHours()) +
             ':' + localtimefn(datefn.getMinutes()) +
             ':' + localtimefn(datefn.getSeconds()) +
@@ -1978,60 +2281,67 @@ export class DataUtil {
         }
     };
     /**
-     * Process the given records based on the datamanager string. 
-     * @param  {string} datamanager
-     * @param  {Object[]} records
+     * Process the given records based on the datamanager string.
+     *
+     * @param {string} datamanager
+     * @param dm
+     * @param {Object[]} records
      */
-     public static processData(dm: GraphQLParams, records: Object[]): ReturnType {
-         let query: Query = this.prepareQuery(dm);
-         let sampledata: DataManager = new DataManager(records);
-         if (dm.requiresCounts) {
-             query.requiresCount()
-         }
-         let result: ReturnType | any = sampledata.executeLocal(query);
-         let returnValue: ReturnType = {
-             result: dm.requiresCounts ? result.result : result,
-             count: result.count,
-             aggregates: JSON.stringify(result.aggregates)
-         };
-         return dm.requiresCounts ? returnValue : result;
+    public static processData(dm: GraphQLParams, records: Object[]): ReturnType {
+        const query: Query = this.prepareQuery(dm);
+        const sampledata: DataManager = new DataManager(records);
+        if (dm.requiresCounts) {
+            query.requiresCount();
+        }
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        // tslint:disable-next-line:no-any
+        const result: ReturnType | any = sampledata.executeLocal(query);
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        const returnValue: ReturnType = {
+            result: dm.requiresCounts ? result.result : result,
+            count: result.count,
+            aggregates: JSON.stringify(result.aggregates)
+        };
+        return dm.requiresCounts ? returnValue : result;
     }
 
     private static prepareQuery(dm: GraphQLParams): Query {
-        let query: Query = new Query();
+        const query: Query = new Query();
 
         if (dm.select) {
             query.select(dm.select as string[]);
         }
 
         if (dm.where) {
-            let where: Predicate[] = DataUtil.parse.parseJson(dm.where);
-            where.filter((pred: Predicate) => {    
+            const where: Predicate[] = DataUtil.parse.parseJson(dm.where);
+            where.filter((pred: Predicate) => {
                 if (isNullOrUndefined(pred.condition)) {
                     query.where(pred.field, pred.operator, (pred.value as string | number | boolean | Date), pred.ignoreCase,
-                        pred.ignoreAccent);
+                                pred.ignoreAccent);
                 } else {
                     let predicateList: Predicate[] = [];
                     if ((pred as Predicate).field) {
                         predicateList.push(new Predicate(pred.field, pred.operator, pred.value, pred.ignoreCase,
-                            pred.ignoreAccent))
+                                                         pred.ignoreAccent));
                     } else {
                         predicateList = predicateList.concat(this.getPredicate(pred.predicates));
                     }
-                    if (pred.condition == 'or') {
+                    if (pred.condition === 'or') {
                         query.where(Predicate.or(predicateList));
-                    } else if (pred.condition == 'and') {
+                    } else if (pred.condition === 'and') {
                         query.where(Predicate.and(predicateList));
                     }
-            }
+                }
             });
-            
+
         }
 
         if (dm.search) {
-            let search: object[] = DataUtil.parse.parseJson(dm.search);
+            const search: object[] = DataUtil.parse.parseJson(dm.search);
+            // tslint:disable-next-line:no-string-literal
             search.filter((e: { key: string, fields: string[] }) => query.search(e.key, e.fields, e['operator'],
-                e['ignoreCase'], e['ignoreAccent']));
+                                                                                 // tslint:disable-next-line:no-string-literal
+                                                                                 e['ignoreCase'], e['ignoreAccent']));
         }
         if (dm.aggregates) {
             dm.aggregates.filter((e: { type: string, field: string }) => query.aggregate(e.type, e.field));
@@ -2054,19 +2364,20 @@ export class DataUtil {
     }
 
     private static getPredicate(pred: Predicate[]): Predicate[] {
-        let mainPred: Predicate[] = [];
+        const mainPred: Predicate[] = [];
         for (let i: number = 0; i < pred.length; i++) {
-            let e: Predicate = pred[i];
+            const e: Predicate = pred[i];
             if (e.field) {
                 mainPred.push(new Predicate(e.field, e.operator, e.value, e.ignoreCase,
-                    e.ignoreAccent));
+                                            e.ignoreAccent));
             } else {
-                let childPred: Predicate[] = [];
-                let cpre = this.getPredicate(e.predicates);
+                const childPred: Predicate[] = [];
+                // tslint:disable-next-line:typedef
+                const cpre = this.getPredicate(e.predicates);
                 for (const prop of Object.keys(cpre)) {
                     childPred.push(cpre[prop]);
                 }
-                mainPred.push(e.condition == 'or' ? Predicate.or(childPred) : Predicate.and(childPred));
+                mainPred.push(e.condition === 'or' ? Predicate.or(childPred) : Predicate.and(childPred));
             }
         }
         return mainPred;
@@ -2076,7 +2387,7 @@ export class DataUtil {
 /**
  * @hidden
  */
- export interface GraphQLParams {
+export interface GraphQLParams {
     skip?: number;
     take?: number;
     sorted?: {name: string, direction: string}[];
@@ -2116,10 +2427,17 @@ export interface Operators {
     lessthanorequal?: Function;
     greaterthanorequal?: Function;
     contains?: Function;
-    notnull?: Function;
+    doesnotcontain?: Function;
+    isnotnull?: Function;
     isnull?: Function;
     startswith?: Function;
+    doesnotstartwith?: Function;
+    like?: Function;
+    isempty?: Function;
+    isnotempty?: Function;
+    wildcard?: Function;
     endswith?: Function;
+    doesnotendwith?: Function;
     processSymbols?: Function;
     processOperator?: Function;
 }
@@ -2154,8 +2472,10 @@ export interface ParseOption {
     replacer?: Function;
     jsonReplacer?: Function;
     arrayReplacer?: Function;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     /* tslint:disable-next-line:no-any */
     jsonDateReplacer?: (key: string, value: any) => any;
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 /**
  * @hidden

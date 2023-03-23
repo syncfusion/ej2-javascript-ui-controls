@@ -250,8 +250,8 @@ export class PDFExport {
         const firstColumnWidth: number = 100 + (indent * 20);
         let size: number = Math.floor((540 - firstColumnWidth) / 90) + 1;
         /** Fill data and export */
-        let dataCollIndex: number = 0; let pivotValues: IPivotValues =
-            eventParams.args.pivotValues[dataCollIndex as number] as IPivotValues;
+        let dataCollIndex: number = 0; let pivotValues: IAxisSet[][] =
+            eventParams.args.pivotValues[dataCollIndex as number] as IAxisSet[][];
         if (this.exportProperties.columnSize || this.exportProperties.width || this.exportProperties.height) {
             size = this.exportProperties.columnSize > 0 ? this.exportProperties.columnSize : pivotValues[0].length;
         }
@@ -433,7 +433,7 @@ export class PDFExport {
             integratedCnt = integratedCnt + pageSize;
             if (integratedCnt >= colLength && eventParams.args.pivotValues.length > (dataCollIndex + 1)) {
                 dataCollIndex++;
-                pivotValues = eventParams.args.pivotValues[dataCollIndex as number] as IPivotValues;
+                pivotValues = eventParams.args.pivotValues[dataCollIndex as number] as IAxisSet[][];
                 colLength = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
                 integratedCnt = 0;
             }
@@ -554,15 +554,15 @@ export class PDFExport {
 
     private applyEvent(): { document: PdfDocument, args: EnginePopulatedEventArgs } {
         /** Event trigerring */
-        let clonedValues: IPivotValues;
-        const currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
+        let clonedValues: IAxisSet[][];
+        const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
         if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
             const pageSettings: IPageSettings = this.engine.pageSettings;
             this.engine.pageSettings = null;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
             this.parent.applyFormatting(this.engine.pivotValues);
-            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
+            clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
@@ -570,7 +570,7 @@ export class PDFExport {
             clonedValues = currentPivotValues;
         }
         const args: EnginePopulatedEventArgs = {
-            pivotValues: [clonedValues]
+            pivotValues: [clonedValues] as IAxisSet[][]
         };
         this.parent.trigger(events.enginePopulated, args);
         this.document = new PdfDocument();

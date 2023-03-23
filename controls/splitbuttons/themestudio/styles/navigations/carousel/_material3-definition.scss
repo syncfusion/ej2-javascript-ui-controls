@@ -2,12 +2,12 @@
 
 // COLORS VARIABLES
 $carousel-navigator-btn-bg: transparent !default;
-$carousel-navigator-btn-bg-hover: rgba($primary-text-color, .4) !default;
-$carousel-navigator-icon-color: $primary-text-color !default;
-$carousel-indicator-bar-bg: $primary-text-color !default;
-$carousel-indicator-bar-border: 1px solid rgba($primary-text-color, .4) !default;
+$carousel-navigator-btn-bg-hover: rgba($content-bg-color-hover, .05) !default;
+$carousel-navigator-icon-color: $icon-color !default;
+$carousel-indicator-bar-bg: rgba($overlay-bg-color, .5) !default;
+$carousel-indicator-bar-border: 1px solid rgba($content-text-color, .4) !default;
 $carousel-indicator-bar-bg-active: $primary !default;
-$carousel-indicator-border-color-focus: $black !default;
+$carousel-indicator-border-color-focus: $content-text-color !default;
 
 // ANIMATION VARIABLES
 $carousel-animation-duration: .6s !default;
@@ -15,8 +15,8 @@ $carousel-animation-timing-function: ease-in-out !default;
 
 // DIMENSION VARIABLES
 $carousel-navigator-btn-border-radius-hover: 50% !default;
-$carousel-indicator-padding: 4px !default;
+$carousel-indicator-padding: 8px !default;
 $carousel-indicator-height: 48px !default;
-$carousel-indicator-bar-border-radius: 2px !default;
-$carousel-indicator-bar-height: 5px !default;
-$carousel-indicator-bar-width: 20px !default;
+$carousel-indicator-bar-border-radius: 4px !default;
+$carousel-indicator-bar-height: 12px !default;
+$carousel-indicator-bar-width: 12px !default;

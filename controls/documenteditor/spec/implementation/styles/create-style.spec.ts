@@ -44,7 +44,7 @@ describe('New Document - Create and Apply Style', () => {
 console.log('Character Style');
         editor.openBlank();
         let styleJson: string = '{"type":"Character","name":"Style1","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Algerian"}}'
-        let style: WStyle = editor.editorModule.createStyleIn(styleJson) as WStyle;
+        let style: WStyle = editor.editorModule.createStyleIn(styleJson,undefined) as WStyle;
         editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle(style.name);
         expect(editor.selection.characterFormat.fontFamily).toBe("Algerian");

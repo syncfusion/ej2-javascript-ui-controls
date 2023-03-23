@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### Common
+
+#### Bug Fixes
+
+- `#I435907` - The issue with the "`drag and drop` on the `ipad` device" has been resolved.
+
 ## 20.4.51 (2023-02-21)
 
 ### Common

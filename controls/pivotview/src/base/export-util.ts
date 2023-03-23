@@ -1,4 +1,4 @@
-import { IPivotValues } from './engine';
+import { IAxisSet, IPivotValues } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ExcelExportProperties, ExcelRow } from '@syncfusion/ej2-grids';
 
@@ -27,8 +27,8 @@ export class PivotExportUtil {
         return framedSet;
     }
 
-    public static getClonedPivotValues(pivotValues: IPivotValues): IPivotValues {
-        const clonedSets: IPivotValues = [];
+    public static getClonedPivotValues(pivotValues: IAxisSet[][]): IAxisSet[][] {
+        const clonedSets: IAxisSet[][] = [];
         for (let i: number = 0; i < pivotValues.length; i++) {
             if (pivotValues[i as number]) {
                 clonedSets[i as number] = [];

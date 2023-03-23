@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
@@ -22,8 +22,8 @@ import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
 import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
-import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel , FormatPainterSettingsModel} from '../models/models';
+import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings } from '../models/toolbar-settings';
 import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
@@ -52,6 +52,7 @@ import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadE
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
 import { EditorManager } from '../../editor-manager';
+import { FormatPainter } from '../actions/format-painter';
 
 /**
  * Represents the Rich Text Editor component.
@@ -204,7 +205,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public fileManagerModule: FileManager;
-
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public formatPainterModule: FormatPainter;
     public needsID: boolean;
     /**
      * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
@@ -293,12 +298,31 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<PasteCleanupSettingsModel>({}, PasteCleanupSettings)
     public pasteCleanupSettings: PasteCleanupSettingsModel;
     /**
+     * Specifies the format painter options in Rich Text Editor with the following properties.
+     * * allowedContext - Sets the context or contexts in which styles will be copied.
+     * * allowedFormats - Sets the tag name selectors  for elements from which the formats  can be copied.
+     * * deniedFormats - Sets the selectors  for elements from which formats  cannot be copied.
+     *
+     * {% codeBlock src='rich-text-editor/format-painter-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default
+     * {
+     * allowedContext: ['Text', 'List', 'Table'],
+     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
+     * deniedFormats: null
+     * }
+     * @aspignore
+     * @private
+     */
+    @Complex<FormatPainterSettingsModel>({}, FormatPainterSettings)
+    public formatPainterSettings: FormatPainterSettingsModel
+    /**
      * Specifies the items to be rendered in an iframe mode, and it has the following properties.
      * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
      * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
      * * resources - we can add both styles and scripts to the iframe.
-     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content.
-     * 2. scripts[] - An array of JS script files to inject inside the iframe.
+     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
+     * 2. scripts[] - An array of JS script files to inject inside the iframe
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *
@@ -487,6 +511,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enablePersistence: boolean;
+    /**
+     * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
+     *
+     * @default false.
+     */
+    @Property(true)
+    public showTooltip: boolean;
     /**
      * Enables or disables the resizing option in the editor.
      * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
@@ -1155,7 +1186,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @event 'afterPasteCleanup'
      */
     @Event()
-    public afterPasteCleanup: EmitType<Object>;
+    public afterPasteCleanup: EmitType<object>;
 
     /**
      * Triggers before drop the image.
@@ -1242,6 +1273,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 member: 'video',
                 args: [this, this.serviceLocator]
             });
+            modules.push({
+                member: 'formatPainter',
+                args: [this ]
+            });
         }
         if (this.fileManagerSettings.enable) {
             modules.push(
@@ -1315,7 +1350,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.setContainer();
         this.persistData();
         setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-        attributes(this.element, { role: 'application' });
+        attributes(this.element, { role: 'application', 'aria-label' : 'Rich Text Editor' });
     }
 
     private persistData (): void {
@@ -1458,9 +1493,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public executeCommand(
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-        IImageCommandsArgs | ITableCommandsArgs,
+        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel,
         option?: ExecuteCommandOption): void {
         value = this.htmlPurifier(commandName, value);
+        let internalValue: string | HTMLElement | ILinkCommandsArgs |
+        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IFormatPainterArgs;
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
             if (this.iframeSettings.enable) {
@@ -1506,13 +1543,22 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 return;
             }
         }
+        internalValue = value;
+        if (tool.command === 'FormatPainter') {
+            if (!isNOU(value)) {
+                this.formatPainterSettings = value as FormatPainterSettingsModel;
+            }
+            internalValue = {
+                formatPainterAction: tool.value
+            };
+        }
         this.formatter.editorManager.execCommand(
             tool.command,
-            tool.subCommand ? tool.subCommand : (value ? value : tool.value),
+            tool.subCommand ? tool.subCommand : (internalValue ? internalValue : tool.value),
             null,
             null,
-            (value ? value : tool.value),
-            (value ? value : tool.value)
+            (internalValue ? internalValue : tool.value),
+            (internalValue ? internalValue : tool.value)
         );
         if (option && option.undo) {
             this.formatter.saveData();
@@ -1523,7 +1569,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private htmlPurifier(
         command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-        IImageCommandsArgs | ITableCommandsArgs): string {
+        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel): string {
         if (this.editorMode === 'HTML') {
             switch (command) {
             case 'insertHTML':
@@ -1705,7 +1751,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             // eslint-disable-next-line max-len
             if (!audioElm[i as number].parentElement.classList.contains(classes.CLS_CLICKELEM) && !audioElm[i as number].parentElement.classList.contains(classes.CLS_AUDIOWRAP)) {
                 const audioWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_AUDIOWRAP });
-                audioWrapElem.setAttribute('style','width:300px; margin:0 auto;');
+                audioWrapElem.setAttribute('style', 'width:300px; margin:0 auto;');
                 audioWrapElem.contentEditable = 'false';
                 const audioInnerWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_CLICKELEM });
                 audioWrapElem.appendChild(audioInnerWrapElem);
@@ -1768,6 +1814,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
+        const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
@@ -1858,14 +1905,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
+        (e as KeyboardEventArgs).action !== 'format-copy' && (e as KeyboardEventArgs).action !== 'format-paste' &&
         ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
         || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
-            this.formatter.process(this, null, e);
+            let FormatPainterEscapeAction: boolean = false;
+            if (!isNOU(this.formatPainterModule)) {
+                FormatPainterEscapeAction = this.formatPainterModule.previousAction === 'escape';
+            }
+            if (!FormatPainterEscapeAction) {
+                this.formatter.process(this, null, e);
+            }
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':
                 if (this.toolbarSettings.enable) {
                     // eslint-disable-next-line
-                    let selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                    let selector: string = '.e-toolbar-item[title] [tabindex]';
                     (this.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
                 }
                 break;
@@ -2801,6 +2855,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.setProperties({ value: this.valueTemplate });
             } else {
                 const compiledTemplate: NodeList = compile(this.valueTemplate)('', this, 'valueTemplate');
+                // eslint-disable-next-line
                 if (typeof this.valueTemplate !== 'string' && (this as any).isReact) {
                     this.displayTempElem = this.createElement('div');
                     for (let i: number = 0; i < compiledTemplate.length; i++) {
@@ -2838,7 +2893,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line
     public renderTemplates(callBack: any): void {
         this.renderReactTemplates(callBack);
     }
@@ -3211,8 +3266,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (this.editorMode === 'HTML') {
-            value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>'
-                     || this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
+            value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
+            this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
                     this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             if (getTextArea && getTextArea.style.display === 'block') {
                 value = getTextArea.value;

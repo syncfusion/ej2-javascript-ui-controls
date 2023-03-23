@@ -79,6 +79,7 @@ export class ActionBase {
                 parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
             if (+eventObj[this.parent.eventFields.startTime] === +this.actionObj.event[this.parent.eventFields.startTime] &&
                 +eventObj[this.parent.eventFields.endTime] === +this.actionObj.event[this.parent.eventFields.endTime] && isSameResource) {
+                this.parent.crudModule.crudObj.isCrudAction = false;
                 return;
             }
 
@@ -365,6 +366,10 @@ export class ActionBase {
                 (<{ [key: string]: number }>eventObj.isSpanned).count = 1;
             }
             appWidth = (<{ [key: string]: number }>eventObj.isSpanned).count * this.actionObj.cellWidth;
+        }
+        if (!isResize && this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length !== 0) {
+            const eventObj: Record<string, any> = this.yearEvent.isSpannedEvent(event, event[this.parent.eventFields.startTime]);
+            appWidth = eventObj.isSpanned.count * this.actionObj.cellWidth;
         }
         const appointmentElement: HTMLElement =
             this.createAppointmentElement(this.actionObj.groupIndex, event[this.parent.eventFields.subject] as string);

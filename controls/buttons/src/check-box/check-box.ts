@@ -5,6 +5,10 @@ import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
 /**
  * Defines the label position of CheckBox.
+ * ```props
+ * After :- When the label is positioned After, it appears to the right of the CheckBox.
+ * Before :- When the label is positioned Before, it appears to the left of the CheckBox.
+ * ```
  */
 export type LabelPosition = 'After' | 'Before';
 
@@ -204,6 +208,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'mixed';
             this.element.indeterminate = true;
+            this.indeterminate = true;
         }
     }
 

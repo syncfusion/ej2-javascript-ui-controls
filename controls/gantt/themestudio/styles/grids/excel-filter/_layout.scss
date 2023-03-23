@@ -415,3 +415,8 @@
     padding-top: $grid-checkbox-padding-topbottom;
   }
 }
+
+.e-excel-menu.e-contextmenu.e-menu-parent {
+  max-height: $grid-exlfltr-ctxtmnu-max-height;
+  overflow-y: auto;
+}

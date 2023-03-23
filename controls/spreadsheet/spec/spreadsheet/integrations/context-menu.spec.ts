@@ -323,7 +323,7 @@ describe('Spreadsheet context menu module ->', () => {
                 });
             });
         });
-        it('Apply protect sheet and open hyperlink with hyperlink already applied in cell', (done: Function) => {
+        it('Apply protect sheet with invalid sheet name and open hyperlink with hyperlink already applied in cell', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
             helper.invoke('addHyperlink', ['www.google.com', 'A1']);
             const spreadsheet: Spreadsheet = helper.getInstance();
@@ -334,9 +334,26 @@ describe('Spreadsheet context menu module ->', () => {
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
+                    expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-menu-item');
+                    done();
+                });
+            });
+        });
+        it('Apply protect sheet and open hyperlink with hyperlink already applied in cell', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('addHyperlink', ['www.google.com', 'A1']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Price Details 1', { selectCells: true });
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
                     expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
                     (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
-                    helper.invoke('unprotectSheet', ['Sheet1']);
+                    helper.invoke('unprotectSheet', ['Price Details 1']);
                     done();
                 });   
             });

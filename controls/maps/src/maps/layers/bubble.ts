@@ -13,9 +13,11 @@ import { BorderModel } from '../model/base-model';
 export class Bubble {
     private maps: Maps;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /** @private */
     public bubbleCollection: any[];
     /**
      * Bubble Id for current layer
+     * @private
      */
     public id: string = '';
     constructor(maps: Maps) {
@@ -165,8 +167,8 @@ export class Bubble {
                 const bubbleDataSource: any[] = bubbleSettings.dataSource as any[];
                 const scale: number = translate['scale']; const transPoint: Point = translate['location'] as Point;
                 const position: MapLocation = new MapLocation(
-                    (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),
-                    (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
+                    (this.maps.isTileMap ? ((eventArgs.cx + this.maps.translatePoint.x) * this.maps.tileZoomLevel) : ((eventArgs.cx + transPoint.x) * scale)),
+                    (this.maps.isTileMap ? ((eventArgs.cy + this.maps.translatePoint.y) * this.maps.tileZoomLevel) : ((eventArgs.cy + transPoint.y) * scale)));
                 bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
                 const bubble: string = (bubbleDataSource.length - 1) === dataIndex ? 'bubble' : null;
                 if (bubbleSettings.bubbleType === 'Square') {

@@ -56,6 +56,7 @@ export class DataLabel {
      * @param {number} index - Specifies the index number.
      * @param {any[]} intersect - Specifies the intersect.
      * @returns {void}
+     * @private
      */
     public renderLabel(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

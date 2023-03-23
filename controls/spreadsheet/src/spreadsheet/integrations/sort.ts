@@ -234,7 +234,11 @@ export class Sort {
                 }
                 return count === 2; //breaks the loop when 2 errors added.
             });
-            errorElem.innerHTML = '<strong>' + errorField + '</strong>' + l10n.getConstant('SortDuplicateFieldError');
+            errorElem.innerText = '';
+            const errorFieldEle: HTMLElement = this.parent.createElement('strong');
+            errorFieldEle.innerText = errorField;
+            errorElem.appendChild(errorFieldEle);
+            errorElem.appendChild(document.createTextNode(l10n.getConstant('SortDuplicateFieldError')));
             return true;
         }
         return false;
@@ -318,16 +322,11 @@ export class Sort {
      */
     private setHeaderTab(dialogElem: HTMLElement, listviewObj: ListView, fields: { [key: string]: string }[]): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const headerTabElement: HTMLElement = this.parent.createElement('div', {
-            className: 'e-sort-header',
-            styles: '',
-            innerHTML: ''
-        });
+        const headerTabElement: HTMLElement = this.parent.createElement('div', { className: 'e-sort-header' });
         dialogElem.appendChild(headerTabElement);
-        const addButton: HTMLElement = this.parent.createElement('button', {
-            className: 'e-btn e-sort-addbtn e-flat',
-            innerHTML: l10n.getConstant('AddColumn'), attrs: { 'type': 'button' }
-        });
+        const addButton: HTMLElement = this.parent.createElement(
+            'button', { className: 'e-btn e-sort-addbtn e-flat', attrs: { 'type': 'button' } });
+        addButton.innerText = l10n.getConstant('AddColumn');
         const footer: Element = this.parent.element.querySelector('.e-customsort-dlg .e-footer-content');
         footer.insertBefore(addButton, footer.firstElementChild);
         addButton.addEventListener('click', () => {

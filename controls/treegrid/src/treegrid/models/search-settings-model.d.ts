@@ -60,11 +60,17 @@ export interface SearchSettingsModel {
     key?: string;
 
     /**
-     * Defines the filter types. The available options are,
-     * * `Parent`: Initiates filter operation after Enter key is pressed.
-     * * `Child`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
+     *  Defines the search hierarchy modes. The available options are,
+     * ```props
+     * * Parent :- Shows the searched record with parent record.
+     * * Child :- Shows the searched record with child record.
+     * * Both :- shows the searched record with both parent and child record.
+     * * None :- Shows only the searched record.
+     * ```
      *
      * @default Parent
+     * @isEnumeration true
+     * @aspType FilterHierarchyMode
      */
     hierarchyMode?: FilterHierarchyMode;
 

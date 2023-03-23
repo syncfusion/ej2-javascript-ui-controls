@@ -30,9 +30,9 @@ export class CellRenderer implements ICellRenderer {
     }
 
     public renderColHeader(index: number, row: Element, refChild?: Element): void {
-        const headerCell: Element = this.th.cloneNode() as Element;
+        const headerCell: HTMLElement = this.th.cloneNode() as HTMLElement;
         const headerText: string = getColumnHeaderText(index + 1);
-        headerCell.innerHTML = headerText;
+        headerCell.innerText = headerText;
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (isHiddenCol(sheet, index + 1)) { headerCell.classList.add('e-hide-start'); }
         if (index !== 0 && isHiddenCol(sheet, index - 1)) { headerCell.classList.add('e-hide-end'); }
@@ -46,10 +46,10 @@ export class CellRenderer implements ICellRenderer {
         attributes(headerCell, { 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
     }
     public renderRowHeader(index: number, row: Element, refChild?: Element): void {
-        const headerCell: Element = this.element.cloneNode() as Element;
+        const headerCell: HTMLElement = this.element.cloneNode() as HTMLElement;
         addClass([headerCell], 'e-header-cell');
         attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
-        headerCell.innerHTML = (index + 1).toString();
+        headerCell.innerText = (index + 1).toString();
         if (refChild) {
             row.insertBefore(headerCell, refChild);
         } else {
@@ -105,7 +105,7 @@ export class CellRenderer implements ICellRenderer {
                     (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${dprHgt}px`;
                     setRowHeight(sheet, args.rowIdx, rowHeight);
                 }
-                this.tableRow.innerHTML = '';
+                this.tableRow.innerText = '';
             }
         }
         this.setWrapByValue(sheet, args);

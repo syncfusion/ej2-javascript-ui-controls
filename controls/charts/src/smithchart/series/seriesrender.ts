@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { Smithchart } from '../../smithchart';
 import { Marker } from './marker';
 import { SmithchartFontModel } from '../../smithchart/utils/utils-model';

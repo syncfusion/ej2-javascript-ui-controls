@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
@@ -135,10 +135,10 @@ export class BaseTooltip extends ChartData {
             if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
                 && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
                 if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
-                    element.setAttribute('fill', (highlight && this.chart.highlightColor !== "transparent" ? this.chart.highlightColor : series.pointColorMapping !== '' ? ((series as Series).points[0]).color : (series as Series).points[pointIndex].color || (series as Series).interior));
+                    element.setAttribute('fill', (highlight && this.chart.highlightColor !== 'transparent' ? this.chart.highlightColor : series.pointColorMapping !== '' ? ((series as Series).points[0]).color : (series as Series).points[pointIndex as number].color || (series as Series).interior));
                 }
                 else {
-                    element.setAttribute('opacity', (highlight && this.chart.highlightColor !== "transparent" ? series.opacity / 2 : series.opacity).toString());
+                    element.setAttribute('opacity', (highlight && this.chart.highlightColor !== 'transparent' ? series.opacity / 2 : series.opacity).toString());
                 }
             } else {
                 element.setAttribute('opacity', series.opacity.toString());
@@ -331,9 +331,8 @@ export class BaseTooltip extends ChartData {
     public removeTooltip(duration: number): void {
         const tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
         const tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
-        const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
+        const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerText !== '<div></div>';
         this.stopAnimation();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = +setTimeout(
                 (): void => {

@@ -24,7 +24,7 @@ export type TextAlign =
  * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
  * also it will display tooltip while hover on ellipsis applied cell.
  */
-export type ClipMode =
+export type ClipMode = 
     /**  Truncates the cell content when it overflows its area */
     'Clip' |
     /** Displays ellipsis when the cell content overflows its area */

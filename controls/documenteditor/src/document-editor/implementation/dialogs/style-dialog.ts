@@ -12,6 +12,7 @@ import { ColorPicker, ColorPickerEventArgs, TextBox } from '@syncfusion/ej2-inpu
 import { DropDownButton, ItemModel, MenuEventArgs as DropDownButtonMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * The Style dialog is used to create or modify styles.
@@ -666,7 +667,7 @@ export class StyleDialog {
      * @returns {void}
      */
     public onOkButtonClick = (): void => {
-        let styleName: string = this.styleNameElement.value;
+        let styleName: string = SanitizeHtmlHelper.sanitize(this.styleNameElement.value);
         if (styleName.length > 0) {
             let style: WStyle = this.documentHelper.styles.findByName(styleName) as WStyle;
             let name: string;

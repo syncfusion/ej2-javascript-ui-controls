@@ -25,7 +25,7 @@ export class PdfExport {
      * @param {CircularGauge} gauge - Specifies the instance of Circular Gauge.
      * @param {ExportType} type - Specifies the type of the document.
      * @param {string} fileName Specfies the file name of the document.
-     * @param {PdfPageOrientation} orientation - Specfies the orientation of the PDF document to export the component.
+     * @param {PdfPageOrientation} orientation - Specfies the orientation of the PDF document to export the gauge.
      * @param {boolean} allowDownload - Specfies whether to download the document or not.
      * @returns {Promise<string>} - Returns the promise string
      * @private

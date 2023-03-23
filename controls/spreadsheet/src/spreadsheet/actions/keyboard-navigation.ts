@@ -196,14 +196,15 @@ export class KeyboardNavigation {
         if (!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)) || (e.shiftKey && e.keyCode === 9)) {
             /*left key*/
             if (actIdxes[1] > 0) {
-                if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                if (!sheet.isProtected || sheet.protectSettings.selectCells) {
                     actIdxes[1] -= 1;
-                } else {
+                    isNavigate = true;
+                } else if (sheet.protectSettings.selectUnLockedCells) {
                     const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                    isNavigate = actIdxes[1] !== idx[1] || actIdxes[0] !== idx[0];
                     actIdxes[1] = idx[1];
                     actIdxes[0] = idx[0];
                 }
-                isNavigate = true;
             } else {
                 const content: Element = this.parent.getMainContent();
                 if (actIdxes[1] === 0 && content.scrollLeft && !isRtl) { content.scrollLeft = 0; }
@@ -211,14 +212,15 @@ export class KeyboardNavigation {
         } else if (e.shiftKey && e.keyCode === 13) {
             if (!this.parent.element.querySelector('.e-find-toolbar')) {
                 if (actIdxes[0] > 0) {
-                    if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                    if (!sheet.isProtected || sheet.protectSettings.selectCells) {
                         actIdxes[0] -= 1;
-                    } else {
+                        isNavigate = true;
+                    } else if (sheet.protectSettings.selectUnLockedCells) {
                         const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                        isNavigate = actIdxes[1] !== idx[1] || actIdxes[0] !== idx[0];
                         actIdxes[1] = idx[1];
                         actIdxes[0] = idx[0];
                     }
-                    isNavigate = true;
                 } else {
                     const content: Element = this.parent.getMainContent().parentElement;
                     if (actIdxes[0] === 0 && content.scrollTop) { content.scrollTop = 0; }
@@ -226,14 +228,15 @@ export class KeyboardNavigation {
             }
         } else if (!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 38) {  /*Up key*/
             if (actIdxes[0] > 0) {
-                if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                if (!sheet.isProtected || sheet.protectSettings.selectCells) {
                     actIdxes[0] -= 1;
-                } else {
+                    isNavigate = true;
+                } else if (sheet.protectSettings.selectUnLockedCells) {
                     const cellIdx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                    isNavigate = actIdxes[0] !== cellIdx[0] || actIdxes[1] !== cellIdx[1];
                     actIdxes[1] = cellIdx[1];
                     actIdxes[0] = cellIdx[0];
                 }
-                isNavigate = true;
             } else {
                 const contentEle: Element = this.parent.getMainContent().parentElement;
                 if (actIdxes[0] === 0 && contentEle.scrollTop) { contentEle.scrollTop = 0; }
@@ -242,27 +245,29 @@ export class KeyboardNavigation {
             const cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
             if (cell && cell.colSpan > 1) { actIdxes[1] += (cell.colSpan - 1); }
             if (actIdxes[1] < sheet.colCount - 1) {
-                if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                if (!sheet.isProtected || sheet.protectSettings.selectCells) {
                     actIdxes[1] += 1;
-                } else {
+                    isNavigate = true;
+                } else if (sheet.protectSettings.selectUnLockedCells) {
                     const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                    isNavigate = actIdxes[1] !== idx[1] || actIdxes[0] !== idx[0];
                     actIdxes[1] = idx[1];
                     actIdxes[0] = idx[0];
                 }
-                isNavigate = true;
             }
         } else if ((!filterArgs.isFilterCell && !e.shiftKey && !e.ctrlKey && e.keyCode === 40) || e.keyCode === 13) { /*Down Key*/
             const cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
             if (cell && cell.rowSpan > 1) { actIdxes[0] += (cell.rowSpan - 1); }
             if (actIdxes[0] < sheet.rowCount - 1) {
-                if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                if (!sheet.isProtected || sheet.protectSettings.selectCells) {
+                    isNavigate = true;
                     actIdxes[0] += 1;
-                } else {
+                } else if (sheet.protectSettings.selectUnLockedCells) {
                     const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                    isNavigate = actIdxes[0] !== idx[0] || actIdxes[1] !== idx[1];
                     actIdxes[1] = idx[1];
                     actIdxes[0] = idx[0];
                 }
-                isNavigate = true;
             }
         } else if (!e.shiftKey && (e.keyCode === 34 || e.keyCode === 33) && (!this.parent.scrollModule ||
             this.parent.scrollModule.isKeyScroll)) { /*Page Up and Page Down*/

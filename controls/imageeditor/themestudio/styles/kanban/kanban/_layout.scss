@@ -89,7 +89,12 @@
       }
 
       .e-header-cells {
-        border-radius: 4px;
+        @if ($skin-name != 'material3') {
+          border-radius: 4px;
+        }
+        @if ($skin-name == 'material3') {
+          border-radius: 4px 4px 0 0;
+        }
         height: $kanban-header-cell-height;
         overflow: hidden;
         padding: $kanban-header-cell-padding;
@@ -136,7 +141,7 @@
         }
 
         &.e-collapsed {
-          background-color: $kanban-column-bg-color;
+          background: $kanban-column-bg-color;
           text-align: center;
           width: $kanban-toggle-header-collapse-width;
 
@@ -452,7 +457,7 @@
             }
 
             .e-target-dragged-clone {
-              background-color: $kanban-target-dragged-clone-bg-color;
+              background: $kanban-target-dragged-clone-bg-color;
               border: 1px dashed $kanban-dragged-clone-border-color;
             }
 
@@ -472,11 +477,11 @@
                 opacity: .5;
                 text-align: center;
 
-                @if ($kanban-skin == 'highcontrast') {
+                @if ($skin-name == 'highcontrast') {
                   color: $kanban-default-font-color;
                 }
 
-                @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
+                @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
                   color: $content-text-color-disabled;
                   font-size: $kanban-text-base;
                   opacity: 1;
@@ -695,7 +700,7 @@
           position: absolute;
 
           &.e-enable {
-            background-color: $kanban-popup-overlay-bg-color;
+            background: $kanban-popup-overlay-bg-color;
             height: 100%;
             opacity: $kanban-mb-swl-overlay-opacity;
             width: 100%;
@@ -753,7 +758,7 @@
 
     .e-kanban-table .e-header-cells {
       height: $kanban-header-cell-bgr-height;
-      @if $kanban-skin == 'tailwind' {
+      @if $skin-name == 'tailwind' {
         padding: $kanban-header-cell-bgr-padding;
       }
 
@@ -806,13 +811,13 @@
         .e-swimlane-row-expand,
         .e-swimlane-row-collapse {
           font-size: $kanban-swl-header-icon-bgr-font-size;
-          @if $kanban-skin == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' {
             padding-top: 4px;
           }
 
           &:hover,
           &:focus {
-            @if $kanban-skin == 'bootstrap5' {
+            @if $skin-name == 'bootstrap5' {
               padding-top: 4px;
             }
           }
@@ -874,7 +879,7 @@
 
   .e-mobile-popup-wrapper.e-device,
   .e-mobile-popup-container.e-device {
-    background-color: $kanban-bg-color;
+    background: $kanban-bg-color;
     border-radius: 2px;
     bottom: 0;
     box-shadow: $kanban-mb-popup-container-box-shadow;
@@ -895,16 +900,16 @@
     z-index: 1004;
 
     .e-popup-header {
-      @if $kanban-skin == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         padding-top: 3px;
       }
 
       .e-close {
-        @if $kanban-skin != 'bootstrap4' {
-          background-color: transparent;
+        @if $skin-name != 'bootstrap4' {
+          background: transparent;
         }
 
-        @if ($kanban-skin == 'fabric' or $kanban-skin == 'bootstrap') {
+        @if ($skin-name == 'fabric' or $skin-name == 'bootstrap') {
           border: 0;
         }
       }

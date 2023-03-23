@@ -7,6 +7,7 @@ import { WCharacterFormat } from '../format/character-format';
 import { Underline, Strikethrough, BaselineAlignment } from '../../base/types';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper } from '../viewer';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 /* eslint-disable */
 /**
  * The Font dialog is used to modify formatting of selected text.
@@ -430,11 +431,12 @@ export class FontDialog {
             format.underline = this.underline;
         }
         if (!isNullOrUndefined(this.fontFamily)) {
-            format.fontFamily = this.fontFamily;
-            format.fontFamilyAscii = this.fontFamily;
-            format.fontFamilyFarEast = this.fontFamily;
-            format.fontFamilyNonFarEast = this.fontFamily;
-            format.fontFamilyBidi =  this.fontFamily;
+            let fontFamily :string = SanitizeHtmlHelper.sanitize(this.fontFamily)
+            format.fontFamily = fontFamily;
+            format.fontFamilyAscii = fontFamily;
+            format.fontFamilyFarEast = fontFamily;
+            format.fontFamilyNonFarEast = fontFamily;
+            format.fontFamilyBidi =  fontFamily;
         }
         if (!isNullOrUndefined(this.allCaps)) {
             format.allCaps = this.allCaps;

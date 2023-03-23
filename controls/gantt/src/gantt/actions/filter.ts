@@ -14,7 +14,7 @@ import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 
 export class Filter {
     public parent: Gantt;
-    private filterMenuElement: HTMLElement;
+    public filterMenuElement: HTMLElement;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         TreeGrid.Inject(TreeGridFilter);
@@ -267,13 +267,97 @@ export class Filter {
         }
     }
 
+    private setPosition(li: Element, ul: HTMLElement): void {
+        const gridPos: any = this.parent.element.getBoundingClientRect();
+        let gridPosTop:number = gridPos.top;
+        let gridPosLeft:number = gridPos.left;
+        let parentNode: any;
+        let parentNodeTop:number;
+        let parentNodeLeft:number;
+        let paddingTop:number;
+        let paddingLeft:number;
+        let marginTop:any;
+        let marginLeft:any;
+        if (!isNullOrUndefined(this.parent.element.parentNode) && this.parent.element.parentNode['tagName'] !='BODY') {
+            parentNode = this.parent.element.parentNode;
+            parentNodeTop = parentNode.getBoundingClientRect().top;
+            marginTop = parentNode.style.marginTop;
+            while (true) {
+                if (Math.abs(gridPosTop) > Math.abs(parentNodeTop)) {
+                    paddingTop = gridPosTop - parentNodeTop;
+                    break;
+                }
+                if (!isNullOrUndefined(this.parent.element.parentNode)) {
+                    parentNode = parentNode.parentNode;
+                    marginTop = parentNode.parentNode.style.marginTop;
+                }
+                parentNodeTop = parentNode.getBoundingClientRect().top;
+            }
+            parentNodeLeft = parentNode.getBoundingClientRect().left;
+            marginLeft = parentNode.style.marginLeft;
+            while (true) {
+                if (Math.abs(gridPosLeft) > Math.abs(parentNodeLeft)) {
+                    paddingLeft = gridPosLeft - parentNodeLeft;
+                    break;
+                }
+                if (!isNullOrUndefined(this.parent.element.parentNode)) {
+                    parentNode = parentNode.parentNode;
+                    marginLeft = parentNode.style.marginLeft;
+                }
+                parentNodeLeft = parentNode.getBoundingClientRect().left
+            }
+        }
+        let liPos: any = li.getBoundingClientRect();
+        let left: number = liPos.right + window.scrollX;
+        let top: number = liPos.top + window.scrollY;
+        if (gridPos.right < (left + ul.offsetWidth)) {
+            if ((liPos.left - ul.offsetWidth) > gridPos.left) {
+                left = (liPos.left - ul.offsetWidth);
+            } else {
+                left -= (left + ul.offsetWidth) - gridPos.right;
+            }
+        } else {
+            if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
+                left = Math.abs(liPos.right - gridPos.left)
+                top = Math.abs(liPos.top - gridPos.top)
+            }
+        }
+        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
+            ul.style.top = typeof(parseInt(marginTop)) === "string" ? (top + paddingTop + parseInt(marginTop)) + 'px' : (top + paddingTop) + 'px'
+            ul.style.left = typeof(parseInt(marginLeft)) === "string" ? (left + paddingLeft + parseInt(marginLeft) + 8) + 'px' : (left + paddingLeft) + 'px' 
+        } else {
+            ul.style.top = top + 'px';
+            ul.style.left = left + 'px';
+        }
+    }
+
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         addClass([element], 'e-gantt');
-        document.querySelector('#' + this.parent.treeGrid.grid.element.id).appendChild(element);
+        document.querySelector('#' + this.parent.controlId).appendChild(element);
+        let targetElement: HTMLElement;
+        if (this.parent.showColumnMenu) {
+            targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
+            element.style.zIndex = targetElement.parentElement.style.zIndex;
+            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
+                this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
+            }
+            else {
+                this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
+            }
+        } else {
+            targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
+            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
+                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args));
+            }
+            else {
+                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
+            }
+        }
         if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }
     }
+
     private removeEventListener(): void {
         if (this.parent.isDestroyed) {
             return;

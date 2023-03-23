@@ -427,7 +427,7 @@ describe('Recurrence Editor Base Module', () => {
         const colIndex: number[] = [];
         const elements: NodeListOf<Element> = editor.element.querySelectorAll('.e-days button.e-primary');
         for (let index: number = 0; index < elements.length; index++) {
-            colIndex.push(parseInt(elements[index].getAttribute('data-index'), 10));
+            colIndex.push(parseInt(elements[parseInt(index.toString(), 10)].getAttribute('data-index'), 10));
         }
         return colIndex;
     }

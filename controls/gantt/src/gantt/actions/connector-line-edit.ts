@@ -150,9 +150,10 @@ export class ConnectorLineEdit {
                     predecessor = predecessorsCollection[predecessorCount as number];
                     const from: string = 'from'; const to: string = 'to';
                     this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from as string] + 'child' + predecessor[to as string]);
-                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
-                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
-                    if (parentGanttRecord || childGanttRecord) {
+                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${from}`]);
+                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${to}`]);
+                    if ((!this.parent.allowParentDependency && (parentGanttRecord && parentGanttRecord.expanded === true) ||
+                    (childGanttRecord && childGanttRecord.expanded === true)) || (this.parent.allowParentDependency &&(parentGanttRecord || childGanttRecord))) {
                         connectorObj =
                             this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                         if (!isNullOrUndefined(connectorObj)) {
@@ -202,11 +203,11 @@ export class ConnectorLineEdit {
                 values = preArray[j as number].split('-');
                 offsetValue = '-';
             }
-            if(!isNullOrUndefined(values[0])) {
+            if (!isNullOrUndefined(values[0])) {
                 const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
                 if (ids.indexOf(values[0]) === -1) {
-                    if (values[0].indexOf(" ") != -1) {
-                        match = values[0].split(" ");
+                    if (values[0].indexOf(' ') !== -1) {
+                        match = values[0].split(' ');
                         if (match.length === 1) {
                             match = values[0].match(/(\d+|[A-z]+)/g);
                         }
@@ -220,7 +221,7 @@ export class ConnectorLineEdit {
                         }
                     }
                 } else {
-                    strArray.push(values[0])
+                    strArray.push(values[0]);
                 }
             }
             preIdArray.push((strArray.join('')));
@@ -274,11 +275,11 @@ export class ConnectorLineEdit {
 
     }
     // Get the root parent of the record
-    public getRootParent(rec: IGanttData) {
+    public getRootParent(rec: IGanttData): IGanttData {
         let parentRec: IGanttData = rec;
         if (rec.parentItem) {
             parentRec = this.parent.flatData.filter((item: IGanttData) => {
-                return item.uniqueID == rec.parentUniqueID;
+                return item.uniqueID === rec.parentUniqueID;
             })[0];
             if (parentRec.parentItem) {
                 parentRec = this.getRootParent(parentRec);
@@ -291,59 +292,59 @@ export class ConnectorLineEdit {
     public validateParentPredecessor(fromRecord: IGanttData, toRecord: IGanttData) {
         if (toRecord.hasChildRecords && !fromRecord.hasChildRecords) {
             if (fromRecord.parentUniqueID === toRecord.uniqueID) {
-                return false
+                return false;
             }
             else {
                 do {
                     if (fromRecord.parentItem) {
                         fromRecord = this.parent.flatData[this.parent.ids.indexOf(fromRecord.parentItem.taskId)];
                         if (fromRecord.uniqueID === toRecord.uniqueID) {
-                            return false
+                            return false;
                         }
                     }
                 }
-                while (fromRecord.parentItem)
+                while (fromRecord.parentItem);
             }
         }
         else if (!toRecord.hasChildRecords && fromRecord.hasChildRecords) {
             if (toRecord.parentUniqueID === fromRecord.uniqueID) {
-                return false
+                return false;
             }
             else {
                 do {
                     if (toRecord.parentItem) {
                         toRecord = this.parent.flatData[this.parent.ids.indexOf(toRecord.parentItem.taskId)];
                         if (toRecord.uniqueID === fromRecord.uniqueID) {
-                            return false
+                            return false;
                         }
                     }
                 }
-                while (toRecord.parentItem)
+                while (toRecord.parentItem);
             }
         }
         else if (toRecord.hasChildRecords && fromRecord.hasChildRecords) {
             if (toRecord.parentItem && fromRecord.parentItem) {
                 if (fromRecord.parentUniqueID === toRecord.uniqueID || fromRecord.uniqueID === toRecord.parentUniqueID) {
-                    return false
+                    return false;
                 }
 
             }
             else {
                 if (!toRecord.parentItem && fromRecord.parentItem) {
-                    let fromRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(fromRecord);
+                    const fromRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(fromRecord);
                     if (fromRootParent.uniqueID === toRecord.uniqueID) {
-                        return false
+                        return false;
                     }
                 }
                 else if (toRecord.parentItem && !fromRecord.parentItem) {
-                    let toRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(toRecord);
+                    const toRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(toRecord);
                     if (toRootParent.uniqueID === fromRecord.uniqueID) {
-                        return false
+                        return false;
                     }
                 }
             }
         }
-        return true
+        return true;
     }
     /**
      * To validate predecessor relations
@@ -362,11 +363,20 @@ export class ConnectorLineEdit {
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
             predecessorIdArray = this.idFromPredecessor(predecessorString);
             for (let count: number = 0; count < predecessorIdArray.length; count++) {
-                if (parseInt(predecessorIdArray[predecessorIdArray.length - 1]) !== ganttRecord[this.parent.taskFields.id]) {
-                    let num: number = this.parent.ids.indexOf(predecessorIdArray[predecessorIdArray.length - 1]);
-                    let fromRecord: IGanttData = this.parent.currentViewData[num];
-                    if (fromRecord && ganttRecord) {
-                       flag = this.validateParentPredecessor(fromRecord, ganttRecord);
+                //Check edited item has parent item in predecessor collection
+                if (!this.parent.allowParentDependency) {
+                    const checkParent: boolean = this.checkParentRelation(ganttRecord, predecessorIdArray);
+                    if (!checkParent) {
+                        return false;
+                    }
+                }
+                else {
+                    if (parseInt(predecessorIdArray[predecessorIdArray.length - 1]) !== ganttRecord[this.parent.taskFields.id]) {
+                        let num: number = this.parent.ids.indexOf(predecessorIdArray[predecessorIdArray.length - 1]);
+                        let fromRecord: IGanttData = this.parent.currentViewData[num as number];
+                        if (fromRecord && ganttRecord) {
+                            flag = this.validateParentPredecessor(fromRecord, ganttRecord);
+                        }
                     }
                 }
                 // Check if predecessor exist more then one
@@ -599,32 +609,34 @@ export class ConnectorLineEdit {
     public applyPredecessorOption(): void {
         const args: IValidateArgs = this.parent.currentEditedArgs;
         const ganttRecord: IGanttData = args.data;
-        let parentData :any;
         if (args.validateMode.respectLink) {
             this.parent.editModule.reUpdatePreviousRecords();
             this.parent.chartRowsModule.refreshRecords([args.data]);
         } else if (args.validateMode.removeLink) {
-            this.checkChildRecords(ganttRecord)
+            this.checkChildRecords(ganttRecord);
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         } else if (args.validateMode.preserveLinkWithEditing) {
-            this.calculateOffset(ganttRecord);
+            if (this.parent.UpdateOffsetOnTaskbarEdit) {
+                this.calculateOffset(ganttRecord);
+            }
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         }
     }
+    
     private checkChildRecords(ganttRecord: IGanttData): void {
         this.validationPredecessor = ganttRecord.ganttProperties.predecessor;
         if (!isNullOrUndefined(this.validationPredecessor)) {
             this.removePredecessors(ganttRecord, this.validationPredecessor);
         }
         if (ganttRecord.childRecords.length > 0) {
-            for (let i = 0; i < ganttRecord.childRecords.length; i++) {
-                let childRecord = ganttRecord.childRecords[i]
+            for (let i: number = 0; i < ganttRecord.childRecords.length; i++) {
+                let childRecord = ganttRecord.childRecords[i as number];
                 this.validationPredecessor = childRecord.ganttProperties.predecessor;
                 if (!isNullOrUndefined(this.validationPredecessor)) {
                     this.removePredecessors(childRecord, this.validationPredecessor);
                 }
                 if (childRecord.childRecords.length > 0) {
-                    this.checkChildRecords(childRecord)
+                    this.checkChildRecords(childRecord);
                 }
             }
         } else if (!isNullOrUndefined(ganttRecord.parentItem)) {
@@ -633,11 +645,12 @@ export class ConnectorLineEdit {
             this.removePredecessors(parentRecord, this.validationPredecessor);
         }
     }
+
     private calculateOffset(record: IGanttData): void {
         const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
         const validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);
         for (let i: number = 0; i < validPredecessor.length; i++) {
-            const predecessor: IPredecessor = validPredecessor[i];
+            const predecessor: IPredecessor = validPredecessor[parseInt(i.toString(), 10)];
             const parentTask: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from);
             let offset: number;
             if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
@@ -717,7 +730,7 @@ export class ConnectorLineEdit {
                 extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
             const index: number = getIndex(predecessor[i as number], 'from', prevPredecessor, 'to');
             prevPredecessor.splice(index, 1);
-            const parentIndex: number = getIndex(predecessor[i], 'from', parentPredecessor, 'to');
+            const parentIndex: number = getIndex(predecessor[parseInt(i.toString(), 10)], 'from', parentPredecessor, 'to');
             parentPredecessor.splice(parentIndex, 1);
             this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
         }
@@ -802,7 +815,7 @@ export class ConnectorLineEdit {
      * @returns {boolean} .
      * @private
      */
-    public validateTypes(ganttRecord: IGanttData,data?:any): object {
+    public validateTypes(ganttRecord: IGanttData, data?:any): object {
         const predecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
         let parentGanttRecord: IGanttData;
         let ganttTaskData: ITaskData;
@@ -823,34 +836,34 @@ export class ConnectorLineEdit {
             let violationType: string = null;
             if (predecessor[i as number].type === 'FS') {
                 if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_FS';
                 } else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_FS';
                 }
             } else if (predecessor[i as number].type === 'SS') {
                 if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_SS';
                 } else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_SS';
                 }
             } else if (predecessor[i as number].type === 'FF') {
                 if (endDate <= parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_FF';
                 } else if (endDate > parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_FF';
                 }
             } else if (predecessor[i as number].type === 'SF') {
                 if (endDate < parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskBeforePredecessor_SF';
                 } else if (endDate >= parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
+                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                     violationType = 'taskAfterPredecessor_SF';
                 }
             }
@@ -882,13 +895,13 @@ export class ConnectorLineEdit {
             const prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;
             if (!isNullOrUndefined(prevPredecessor)) {
                 for (let p: number = 0; p < prevPredecessor.length; p++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[p as number].from as string);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[parseInt(p.toString(), 10)].from as string);
                     if (parentGanttRecord === data) {
-                        data.ganttProperties.predecessor.push(prevPredecessor[p]);
+                        data.ganttProperties.predecessor.push(prevPredecessor[parseInt(p.toString(), 10)]);
                     } else {
                         const parentPredecessor: IPredecessor[] =
                             extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                        const parentIndex: number = getIndex(prevPredecessor[p], 'from', parentPredecessor, 'to');
+                        const parentIndex: number = getIndex(prevPredecessor[parseInt(p.toString(), 10)], 'from', parentPredecessor, 'to');
                         if (parentIndex !== -1) {
                             parentPredecessor.splice(parentIndex, 1);
                             this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
@@ -898,10 +911,10 @@ export class ConnectorLineEdit {
             }
             if (!isNullOrUndefined(newPredecessor)) {
                 for (let n: number = 0; n < newPredecessor.length; n++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[n].from as string);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[parseInt(n.toString(), 10)].from as string);
                     const parentPredecessor: IPredecessor[] =
                         extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                    parentPredecessor.push(newPredecessor[n]);
+                    parentPredecessor.push(newPredecessor[parseInt(n.toString(), 10)]);
                     this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
                 }
             }

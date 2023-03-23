@@ -4,7 +4,7 @@ import * as events from '../../common/base/constant';
 import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * `DrillThrough` module.
@@ -186,9 +186,10 @@ export class DrillThrough {
     /** @hidden */
 
     public triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
-        const valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+        let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;
+        valuetText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(valuetText) : valuetText;
         const rowHeaders: string = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.getRowText(Number(element.getAttribute('index')), 0) :
             pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
         let eventArgs: DrillThroughEventArgs = {

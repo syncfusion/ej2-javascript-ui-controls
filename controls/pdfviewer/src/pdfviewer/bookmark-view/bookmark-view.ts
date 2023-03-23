@@ -269,9 +269,12 @@ export class BookmarkView {
     private setHeight(element: any): void {
         if (this.treeObj) {
             if (this.treeObj.fullRowSelect && element.classList) {
-                if (element.classList.contains('e-treeview')) {
-                    element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
-                } else if (element.classList.contains('e-list-parent')) {
+                if (element.classList.contains('e-treeview') && element.classList.contains('.e-active')) {
+                    element = element.querySelector('.e-active').querySelector('.e-fullrow');
+                }
+                else if (element.classList.contains('e-treeview')) {
+                    element = element.querySelector('.e-fullrow');
+                }else if (element.classList.contains('e-list-parent')) {
                     element = element.querySelector('.e-fullrow');
                 } else if (element.classList.value !== ('e-fullrow')) {
                     if (element.closest && element.closest('.e-list-item')) {
@@ -300,8 +303,11 @@ export class BookmarkView {
             // eslint-disable-next-line
             let element: any = this.treeObj.element;
             if (this.treeObj.fullRowSelect) {
-                if (element.classList.contains('e-treeview')) {
-                    element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+                if (element.classList.contains('e-treeview') && element.classList.contains('.e-active')) {
+                    element = element.querySelector('.e-active').querySelector('.e-fullrow');
+                }
+                else if (element.classList.contains('e-treeview')) {
+                    element = element.querySelector('.e-fullrow');
                 }
                 if (element.nextElementSibling) {
                     element.style.height = element.nextElementSibling.offsetHeight + 'px';

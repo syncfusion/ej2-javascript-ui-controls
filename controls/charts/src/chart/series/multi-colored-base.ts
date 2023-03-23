@@ -1,8 +1,6 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable @typescript-eslint/ban-types */
 import { getPoint, ChartLocation, appendClipElement, pathAnimation } from '../../common/utils/helper';
 import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';

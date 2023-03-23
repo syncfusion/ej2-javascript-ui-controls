@@ -17,7 +17,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
     public cellUid : number = 0;
     public element: HTMLElement = this.parent
         .createElement('TD', { className: 'e-groupcaption',
-            attrs: { id: this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
+            attrs: { id: this.parent.element.id + 'captioncell', tabindex: '-1' } });
 
     /**
      * Function to render the cell content based on Column object.
@@ -77,10 +77,11 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             }
         } else {
             if (gObj.groupSettings.enableLazyLoading) {
-                node[`${domSetter}`] = cell.column.headerText + ': ' + value + (gTemplateValue ? '   ' + gTemplateValue : '');
+                node[`${domSetter}`] = this.parent.sanitize(cell.column.headerText) + ': ' + this.parent.sanitize(value) +
+                (gTemplateValue ? '   ' + gTemplateValue : '');
             } else {
-                node[`${domSetter}`] = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
-                (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'))
+                node[`${domSetter}`] =  this.parent.sanitize(cell.column.headerText) + ': ' + this.parent.sanitize(value) +
+                ' - ' + data.count + ' ' + (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'))
                 + (gTemplateValue ? '   ' + gTemplateValue : '');
             }
         }

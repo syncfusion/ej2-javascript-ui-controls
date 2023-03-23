@@ -319,7 +319,7 @@
     padding: 0 16px 0 10px;
 
     .e-menu-icon {
-      font-size: 30px;
+      font-size: $spreadsheet-chart-icon-font-size;
       margin-right: 10px;
     }
 
@@ -332,7 +332,7 @@
   }
 
   .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
-    font-size: 32px;
+    font-size: $spreadsheet-chart-icon-font-size;
   }
 
   .e-chart-menu,
@@ -660,7 +660,7 @@
   }
 
   .e-cf-menu .e-ul .e-menu-item .e-menu-icon {
-    font-size: 16px;
+    font-size: $cf-menu-icon-font-size;
   }
 
   .e-cf-menu {

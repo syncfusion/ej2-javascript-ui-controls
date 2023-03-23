@@ -138,7 +138,7 @@ describe('Chart Control', () => {
         });
         it('Checking interval type with Months', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('chartContainerAxisLabels0').childNodes[2].textContent == '2001 May').toBe(true);
+                expect(document.getElementById('chartContainerAxisLabels0').childNodes[2].textContent == 'May 2001').toBe(true);
                 done();
             };
             chart.series = [];
@@ -154,7 +154,7 @@ describe('Chart Control', () => {
             chart.primaryXAxis.maximum = new Date(2000, 9, 1);
             chart.loaded = null;
             chart.dataBind();
-            expect(document.getElementById('chartContainerAxisLabels0').childNodes[2].textContent == '21').toBe(true);
+            expect(document.getElementById('chartContainerAxisLabels0').childNodes[2].textContent == 'Jul 21').toBe(true);
 
         });
         it('Checking interval type with Hours', () => {
@@ -208,7 +208,7 @@ describe('Chart Control', () => {
         });
         it('Checking with Months and its rangePadding', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Mar').toBe(true);
+                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Mar 2000').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -223,7 +223,7 @@ describe('Chart Control', () => {
         });
         it('Checking with Months and its Round rangePadding', (done: Function) => {
             loaded1 = (args: Object): void => {
-                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Mar').toBe(true);
+                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Mar 2000').toBe(true);
                 done();
             };
             chart.loaded = loaded1;
@@ -232,7 +232,7 @@ describe('Chart Control', () => {
         });
         it('Checking with Days and its rangePadding', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == '20').toBe(true);
+                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Aug 20').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -246,7 +246,7 @@ describe('Chart Control', () => {
         });
         it('Checking with Days and its Round rangePadding', (done: Function) => {
             loaded1 = (args: Object): void => {
-                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == '25cus').toBe(true);
+                expect(document.getElementById('chartContainerAxisLabels0').childNodes[0].textContent == 'Aug 25cus').toBe(true);
                 done();
             };
             chart.loaded = loaded1;

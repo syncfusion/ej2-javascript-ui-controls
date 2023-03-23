@@ -77,12 +77,13 @@ export class Print {
                         let a4PrintHeight: number = 1110;
                         this.printWidth = 816;
                         this.printHeight = 1056;
-                        // Check if the A4 document is protrait or landscape 
+                        // Check if the A4 document is protrait or landscape
                         if (pageWidth > pageHeight) {
                             a4StdWidth = 1122;
                             a4StdHeight = 793;
                         }
                         if (!(pageWidth >= (a4StdWidth + bufferWidth) || pageWidth <= (a4StdWidth - bufferWidth)) && !(pageHeight >= (a4StdHeight + bufferHeight) || pageHeight <= (a4StdHeight - bufferHeight))) {
+
                             this.printWidth = a4PrintWidth;
                             this.printHeight = a4PrintHeight;
                         }

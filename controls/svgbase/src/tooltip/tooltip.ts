@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-returns */
@@ -94,10 +96,11 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
     /**
      * The dash-array of the border.
+     *
      * @default ''
      */
-     @Property('')
-     public dashArray: string;
+    @Property('')
+    public dashArray: string;
 
 }
 
@@ -209,8 +212,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * @default false.
      * @private
      */
-     @Property(false)
-     public crosshair: boolean;
+    @Property(false)
+    public crosshair: boolean;
 
     /**
      * To enable shadow for the tooltip.
@@ -490,8 +493,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * @default ''
      * @private
      */
-     @Property('')
-     public controlName: string;
+    @Property('')
+    public controlName: string;
 
     /**
      * Triggers before each axis range is rendered.
@@ -553,7 +556,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private isWrap: boolean;
     private leftSpace: number;
     private rightSpace: number;
-    private wrappedText: string;    
+    private wrappedText: string;
     private revert: boolean;
     private outOfBounds: boolean;
 
@@ -673,15 +676,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         for (const shape of this.shapes) {
             if (shape !== 'None') {
                 shapeOption = new PathOption(
-                    this.element.id + '_Trackball_' + count, this.palette[count],
+                    this.element.id + '_Trackball_' + count, this.palette[count as number],
                     1, '#cccccc', 1, null);
-                if (this.markerPoint[count]) {
+                if (this.markerPoint[count as number]) {
                     let padding: number = 0;
                     if (this.header.indexOf('<br') > -1) {
                         padding = this.header.split(/<br.*?>/g).length + count;
                     }
                     markerGroup.appendChild(drawSymbol(
-                        new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : padding)),
+                        new TooltipLocation(x, this.markerPoint[count as number] - this.padding + (isBottom ? this.arrowPadding : padding)),
                         shape, new Size(size, size), '', shapeOption, null));
                 }
                 count++;
@@ -783,7 +786,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             defElement.innerHTML = shadow;
         }
 
-        let borderColor: string = this.theme === "Fluent" ? "#FFFFFF" : this.theme === "FluentDark" ? "#323130" : this.border.color;
+        const borderColor: string = this.theme === 'Fluent' ? '#FFFFFF' : this.theme === 'FluentDark' ? '#323130' : this.border.color;
         pathElement.setAttribute('stroke', borderColor);
         if (!isNullOrUndefined(this.border.dashArray)) {
             pathElement.setAttribute('stroke-dasharray', this.border.dashArray);
@@ -826,7 +829,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let height: number = 0; let width: number = 0; // Padding for text;
         let subWidth: number = 0; let lines: string[];
         const key: string = 'properties';
-        const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key];
+        const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key as string];
         const groupElement: Element = getElement(this.element.id + '_group');
         let tspanElement: HTMLElement; let textCollection: string[];
         let tspanStyle: string = ''; let line: string; let tspanOption: Object;
@@ -864,7 +867,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const isHeader: boolean = this.header !== '';
         const size: number = isHeader && isBoldTag ? 16 : 13;
         for (let k: number = 0, pointsLength: number = this.formattedText.length; k < pointsLength; k++) {
-            textCollection = this.formattedText[k].replace(/<(b|strong)>/g, '<b>')
+            textCollection = this.formattedText[k as number].replace(/<(b|strong)>/g, '<b>')
                 .replace(/<\/(b|strong)>/g, '</b>')
                 .split(/<br.*?>/g);
             if (k === 0 && !withoutHeader && this.isTextWrap &&
@@ -872,7 +875,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 (this.rightSpace < headerWidth || isRightSpace)
             ) {
                 subStringLength = Math.round(this.leftSpace > this.rightSpace ? (this.leftSpace / size) : (this.rightSpace / size));
-                header = headerContent !== '' ? headerContent : this.formattedText[k];
+                header = headerContent !== '' ? headerContent : this.formattedText[k as number];
                 textCollection = header.match(new RegExp('.{1,' + subStringLength + '}', 'g'));
                 this.wrappedText = isBoldTag ? '<b>' + textCollection.join('<br>') + '</b>' : textCollection.join('<br>');
                 this.isWrap = textCollection.length > 1;
@@ -884,9 +887,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
-                lines = textCollection[i].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')
+                lines = textCollection[i as number].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')
                     .split('<br>');
-                if (this.enableRTL && lines.length > 0 && textCollection[i].match(/:/g)) {
+                if (this.enableRTL && lines.length > 0 && textCollection[i as number].match(/:/g)) {
                     lines[0] = lines[0].trim();
                     lines.reverse();
                 }
@@ -894,7 +897,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 isColumn = true;
                 height += dy;
                 for (let j: number = 0, len: number = lines.length; j < len; j++) {
-                    line = lines[j];
+                    line = lines[j as number];
                     if (this.enableRTL && line !== '' && this.isRTLText(line)) {
                         line = line.concat('\u200E');
                     }
@@ -906,7 +909,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         if (isColumn && !isRow) {
                             if (this.header.indexOf('<br') > -1 && k !== 0) {
                                 headerSpace += this.header.split(/<br.*?>/g).length;
-                            } 
+                            }
                             tspanOption = {
                                 x: (this.marginX * 2) + (markerSize + markerPadding),
                                 dy: dy + ((isColumn) ? headerSpace : 0), fill: ''
@@ -972,9 +975,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             let tspanElement: HTMLElement;
             let contentWidthIndex: number = isHeader ? 1 : 0;
             for (let i: number = 0; i < textElement.childNodes.length; i++) {
-                tspanElement = <HTMLElement>(textElement.childNodes[i]);
+                tspanElement = <HTMLElement>(textElement.childNodes[i as number]);
                 if ((!isHeader || i > 0) && !isNullOrUndefined(tspanElement.getAttribute('x'))) {
-                    tspanElement.setAttribute('x', (this.elementSize.width - (markerSize + contentWidth[contentWidthIndex])).toString());
+                    tspanElement.setAttribute('x', (this.elementSize.width - (markerSize + contentWidth[contentWidthIndex as number])).toString());
                     contentWidthIndex++;
                 }
             }
@@ -982,21 +985,21 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private getTooltipTextContent(tooltipText: string): string {
-        let characterCollection: string[] = tooltipText.match(/<[a-zA-Z\/](.|\n)*?>/g);
+        const characterCollection: string[] = tooltipText.match(/<[a-zA-Z\/](.|\n)*?>/g);
         if (isNullOrUndefined(characterCollection)) {
             return tooltipText;
         }
         const isRtlText: boolean = this.isRTLText(tooltipText);
         for (let i: number = 0; i < characterCollection.length; i++) {
-            if (this.isValidHTMLElement(characterCollection[i].replace('<', '').replace('/', '').replace('>', '').trim())) {
-                tooltipText = tooltipText.replace(characterCollection[i], isRtlText ? '\u200E' : '');
+            if (this.isValidHTMLElement(characterCollection[i as number].replace('<', '').replace('/', '').replace('>', '').trim())) {
+                tooltipText = tooltipText.replace(characterCollection[i as number], isRtlText ? '\u200E' : '');
             }
         }
         return tooltipText;
     }
 
     private isValidHTMLElement(element: string): boolean {
-        return document.createElement(element).toString() != "[object HTMLUnknownElement]";
+        return document.createElement(element).toString() !== '[object HTMLUnknownElement]';
     }
 
     private isRTLText(tooltipContent: string): boolean {
@@ -1071,7 +1074,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             tooltipRect.x -= (tooltipRect.width + 4 * this.padding);
         }
         if (tooltipRect.x < bounds.x) {
-            tooltipRect.x = bounds.x
+            tooltipRect.x = bounds.x;
         }
         return tooltipRect;
     }
@@ -1145,28 +1148,28 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 location.y + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight
             );
             arrowLocation.x = tipLocation.x = width / 2;
-            if (location.y < boundsY || (this.isNegative)) {
+            if ((location.y < boundsY || (this.isNegative)) && !(this.controlName === 'Progressbar')) {
                 location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
             }
             if (location.y + height + this.arrowPadding > boundsY + bounds.height) {
                 location.y = Math.min(symbolLocation.y, boundsY + bounds.height) + clipY
                     - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight;
             }
-            if ((location.x + width > boundsX + bounds.width) && location.y < boundsY || (this.isNegative)) {
+            if (((location.x + width > boundsX + bounds.width) && location.y < boundsY || (this.isNegative)) && !(this.controlName === 'Progressbar')) {
                 location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + clipY + markerHeight;
             }
             tipLocation.x = width / 2;
-            if (location.x < boundsX) {
+            if (location.x < boundsX && !(this.controlName === 'Progressbar')) {
                 arrowLocation.x -= (boundsX - location.x);
                 tipLocation.x -= (boundsX - location.x);
                 location.x = boundsX;
             }
-            if (location.x + width > boundsX + bounds.width) {
+            if (location.x + width > boundsX + bounds.width && !(this.controlName === 'Progressbar')) {
                 arrowLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 tipLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 location.x -= ((location.x + width) - (boundsX + bounds.width));
             }
-            if (location.x < boundsX) {
+            if (location.x < boundsX && !(this.controlName === 'Progressbar')) {
                 arrowLocation.x -= (boundsX - location.x);
                 tipLocation.x -= (boundsX - location.x);
                 location.x = boundsX;
@@ -1180,10 +1183,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
 
             if (this.controlName === 'Chart') {
-                if (((bounds.x + bounds.width) - (location.x + arrowLocation.x)) < this.areaMargin + this.arrowPadding || (location.x + arrowLocation.x) < this.areaMargin + this.arrowPadding) {
+                if (((bounds.x + bounds.width) - (location.x + arrowLocation.x)) < this.areaMargin + this.arrowPadding ||
+                 (location.x + arrowLocation.x) < this.areaMargin + this.arrowPadding) {
                     this.outOfBounds = true;
                 }
-    
+
                 if (!withInAreaBounds(location.x, location.y, bounds) || this.outOfBounds ) {
                     this.inverted = !this.inverted;
                     this.revert = true;
@@ -1257,10 +1261,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
 
             if (this.controlName === 'Chart') {
-                if ((location.y + arrowLocation.y) < this.areaMargin + this.arrowPadding || ((bounds.y + bounds.height) - (location.y + arrowLocation.y)) < this.areaMargin + this.arrowPadding) {
+                if ((location.y + arrowLocation.y) < this.areaMargin + this.arrowPadding ||
+                    ((bounds.y + bounds.height) - (location.y + arrowLocation.y)) < this.areaMargin + this.arrowPadding) {
                     this.outOfBounds = true;
                 }
-    
+
                 if (!withInAreaBounds(location.x, location.y, bounds) || this.outOfBounds) {
                     this.inverted = !this.inverted;
                     location = new TooltipLocation(
@@ -1310,8 +1315,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
                 if ((this.controlName === 'Chart' && this.shared) && !this.enableRTL) {
-                    tooltipDiv.style.transition = "transform " + 0.1 + "s";
-                    tooltipDiv.style.transform = "translate(" + (x + currenDiff * (rect.x - x)) + "px," + (y + currenDiff * (rect.y - y)) + "px)";
+                    tooltipDiv.style.transition = isBlazor() ? 'transform 0.3s' : 'transform 0.1s';
+                    tooltipDiv.style.transform = 'translate(' + (x + currenDiff * (rect.x - x)) + 'px,' + (y + currenDiff * (rect.y - y)) + 'px)';
                 } else {
                     tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
                     tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
@@ -1327,7 +1332,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updateDiv(tooltipDiv: HTMLDivElement, x: number, y: number): void {
         if ((this.controlName === 'Chart' && this.shared && !this.crosshair) && !this.enableRTL) {
-            tooltipDiv.style.transform = "translate(" + x + "px," + y + "px)";
+            tooltipDiv.style.transform = 'translate(' + x + 'px,' + y + 'px)';
         } else {
             tooltipDiv.style.left = x + 'px';
             tooltipDiv.style.top = y + 'px';
@@ -1356,7 +1361,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const tooltipDiv: HTMLElement = <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
-            if (tooltipGroup.nodeType != Node.ELEMENT_NODE) {
+            if (tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
                 tooltipGroup = tooltipElement.firstElementChild as HTMLElement;
             }
             if (this.isCanvas && !this.template) {
@@ -1377,7 +1382,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 end: () => {
                     this.fadeOuted = true;
                     this.endAnimation(tooltipGroup);
-                    tooltipDiv.style.transition = "";
+                    tooltipDiv.style.transition = '';
                 }
             });
         }

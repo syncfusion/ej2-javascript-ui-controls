@@ -1,6 +1,6 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
-import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { setValue, getElement } from '@syncfusion/ej2-base';
 import { Deferred, Query } from '@syncfusion/ej2-data';
@@ -34,6 +34,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid = new TreeGrid();
         this.parent.treeGrid.allowSelection = false;
         this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
+        this.parent.treeGrid['${enableHtmlSanitizer}'] = this.parent.enableHtmlSanitizer;
         this.parent.treeGrid.enableImmutableMode = this.parent.enableImmutableMode;
         this.treeGridColumns = [];
 	if (!this.parent.isLocaleChanged && this.parent.isLoad) {
@@ -227,6 +228,12 @@ export class GanttTreeGrid {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
             const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
+            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && collapsedArgs['gridRow']) {
+               collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
+	       this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                            this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+               document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
+            }
         }
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
             this.parent.hideMaskRow();
@@ -239,6 +246,12 @@ export class GanttTreeGrid {
             if(!args['data'].length) {
                 const expandedArgs: object = this.createExpandCollapseArgs(args);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
+                if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && args['row']) {
+                    args['row'].style.height = this.parent.rowHeight + 'px';
+                    this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                                                this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+                    document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
+                }
             }
         }
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
@@ -280,6 +293,15 @@ export class GanttTreeGrid {
     private columnMenuOpen = (args: ColumnMenuOpenEventArgs) => {
         this.parent.notify('columnMenuOpen', args);
         this.parent.trigger('columnMenuOpen', args);
+        document.querySelector(".e-colmenu").addEventListener('mousemove', (event) => {
+            const filPopOptions: HTMLElement = document.querySelector(".e-filter-popup");
+            const filOptions: HTMLElement = document.querySelector(".e-filter-item");
+            if (!isNullOrUndefined(filPopOptions)) {
+                if (!filOptions.classList.contains('e-focused')) {
+                    remove(this.parent.filterModule.filterMenuElement);
+                }
+            }
+        });
     }
     private columnMenuClick = (args: ColumnMenuClickEventArgs) => {
         this.parent.trigger('columnMenuClick', args);
@@ -363,6 +385,14 @@ export class GanttTreeGrid {
             this.parent.addDeleteRecord = false;
         }
         this.parent.trigger('actionComplete', updatedArgs);
+        if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
+            for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
+                if (this.parent.currentViewData[i as number].hasChildRecords && !this.parent.currentViewData[i as number].expanded) {
+                    this.parent.chartRowsModule.updateDragDropRecords(this.parent.currentViewData[i as number]);
+                }
+            }
+            this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
+        } 
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
             this.parent.hideMaskRow()
         } else {

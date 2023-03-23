@@ -5,7 +5,18 @@
  * Theme of the progressbar
  */
 import { ProgressTheme } from './index';
-import { IProgressStyle } from '../model/progress-interface';
+import { IProgressStyle, IFontMapping } from '../model/progress-interface';
+
+export namespace Theme {
+    /** @private */
+    export const tooltipLabelFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+}
 /** @private */
 export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
     let style: IProgressStyle;
@@ -33,6 +44,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 4,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#4caf50',
             danger: '#ff6652',
             warning: '#ff9800',
@@ -62,6 +75,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 20,
             circularTrackThickness: 6,
             circularProgressThickness: 6,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#48b14c',
             danger: '#d44f4f',
             warning: '#fac168',
@@ -91,6 +106,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 6,
             circularProgressThickness: 6,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#28a745',
             danger: '#dc3545',
             warning: '#ffc107',
@@ -120,6 +137,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 2,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#2bc700',
             danger: '#ff6161',
             warning: '#ff7d1a',
@@ -149,6 +168,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 2,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#15803D',
             danger: '#DC2626',
             warning: '#C2410C',
@@ -178,6 +199,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 2,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#22C55E',
             danger: '#F87171',
             warning: '#ea580c',
@@ -209,6 +232,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#22b24b',
             danger: '#ac2a2a',
             warning: '#ffca1c',
@@ -238,6 +263,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#198754',
             danger: '#DC3545',
             warning: '#FFC107',
@@ -267,6 +294,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#21B26F',
             danger: '#E4606D',
             warning: '#FFC107',
@@ -296,6 +325,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#0B6A0B',
             danger: '#D13438',
             warning: '#CA5010',
@@ -325,6 +356,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 16,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#0B6A0B',
             danger: '#D13438',
             warning: '#CA5010',
@@ -354,6 +387,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             linearProgressThickness: 2,
             circularTrackThickness: 4,
             circularProgressThickness: 4,
+            tooltipFill: '#ffffff',
+            tooltipLightLabel: '#000000',
             success: '#166600',
             danger: '#b30900',
             warning: '#944000',

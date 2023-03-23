@@ -82,7 +82,8 @@ export class FieldList implements IAction {
                 aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
                 onHeadersSort: this.parent.bindTriggerEvents.bind(this.parent),
                 cssClass: this.parent.cssClass,
-                enableFieldSearching: this.parent.enableFieldSearching
+                enableFieldSearching: this.parent.enableFieldSearching,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             this.parent.pivotFieldListModule.isPopupView = true;
             this.parent.pivotFieldListModule.pivotGridModule = this.parent;
@@ -91,7 +92,9 @@ export class FieldList implements IAction {
     }
 
     private updateControl(): void {
-        this.parent.actionObj.actionName = 'Field list refreshed';
+        if (this.parent.allowDeferLayoutUpdate) {
+            this.parent.actionObj.actionName = 'Field list refreshed';
+        }
         if (this.element) {
             this.element.style.display = 'block';
             prepend([this.element], this.parent.element);

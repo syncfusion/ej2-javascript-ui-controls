@@ -1,10 +1,7 @@
 /* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Series, Points } from '../series/chart-series';
-import { Chart } from '../chart';
 import { TechnicalIndicator } from './technical-indicator';
 import { TechnicalAnalysis } from './indicator-base';
 
@@ -19,7 +16,7 @@ export class AtrIndicator extends TechnicalAnalysis {
      *
      * @private
      */
-    public initDataSource(indicator: TechnicalIndicator, chart: Chart): void {
+    public initDataSource(indicator: TechnicalIndicator): void {
         const validData: Points[] = indicator.points;
         if (validData.length > 0 && validData.length > indicator.period) {
             this.calculateATRPoints(indicator, validData);

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-03-23)
+
+### ProgressBar
+
+#### New Features
+
+- `#I386691` - Provided support to display tooltips during initial load of progress bars and mouse hover with numeric or text values of the progress.
+- Provided support to customize the width and color of the secondary progress bar.
+
 ## 20.4.38 (2022-12-21)
 
 ### ProgressBar

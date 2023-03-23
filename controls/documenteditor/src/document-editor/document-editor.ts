@@ -41,6 +41,7 @@ import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, sele
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
 import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
+import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -92,6 +93,16 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public enableOptimizedTextMeasuring: boolean;
 
     /**
+     * Enable or Disable moving selected content within Document Editor
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` moving selected content within Document Editor is enabled; otherwise, `false`
+     */
+    @Property(true)
+    public allowDragAndDrop: boolean;
+
+    /**
      * Gets or sets the maximum number of rows allowed while inserting a table in Document editor component.
      * > The maximum value is 32767, as per Microsoft Word application and you can set any value less than 32767 to this property. If you set any value greater than 32767, then Syncfusion Document editor will automatically reset as 32767.
      * @default 32767
@@ -109,6 +120,26 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(false)
     public showHiddenMarks: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to show square brackets around bookmarked items.
+     *
+     * @returns {boolean}
+     * @aspType bool
+     * @default false
+     */
+    @Property(false)
+    public showBookmarks: boolean;
+
+    /**
+     * Describes whether to reduce the resultant SFDT file size by minifying the file content
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` if sfdt content generated is optimized. Otherwise `false`.
+     */
+    @Property(true)
+    public optimizeSfdt: boolean;
 }
 
 /**
@@ -456,6 +487,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableWordExport: boolean;
+    /**
+     * Gets or sets a value indicating whether the automatic focus behavior is enabled for Document editor or not.
+     *
+     * > By default, the Document editor gets focused automatically when the page loads. If you want the Document editor not to be focused automatically, then set this property to false.
+     *
+     * @returns {boolean}
+     * @aspType bool
+     * @default true
+     */
+    @Property(true)
+    public enableAutoFocus: boolean;
     /**
      * Gets or sets a value indicating whether text export needs to be enabled or not.
      *
@@ -1184,6 +1226,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             case 'isReadOnly':
                 if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                     this.optionsPaneModule.showHideOptionsPane(false);
+                    this.documentHelper.updateFocus();
                 }
                 if (this.showComments) {
                     this.commentReviewPane.showHidePane(true, 'Comments');
@@ -1269,6 +1312,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             case 'width':
                 this.element.style.width = formatUnit(this.width);
                 this.resize();
+                break;
+            case 'enableAutoFocus':
+                this.enableAutoFocus = model.enableAutoFocus;
                 break;
             }
         }
@@ -2298,7 +2344,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Width and Spacing': 'Width and Spacing',
         'Equal column width': 'Equal column width',
         'Column': 'Column',
-        'Discard': 'Discard'
+        'Paste Content Dialog' : 'Due to browser’s security policy, paste from system clipboard is restricted. Alternatively use the keyboard shortcut',
+        'Paste Content CheckBox' : 'Don’t show again',
+        'BookMarkList':'List of bookmarks in the document',
+        'Discard':'Discard'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2319,7 +2368,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.cachedPages = [];
             this.clearSpellCheck();
             if (this.isSpellCheck) {
-                if (!this.spellChecker.enableOptimizedSpellCheck) {
+                if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                     this.documentHelper.triggerElementsOnLoading = true;
                     this.documentHelper.triggerSpellCheck = true;
                 }
@@ -2332,7 +2381,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
             if (this.isSpellCheck) {
-                if (!this.spellChecker.enableOptimizedSpellCheck) {
+                if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                     this.documentHelper.triggerElementsOnLoading = false;
                     this.documentHelper.triggerSpellCheck = false;
                 }
@@ -2663,15 +2712,42 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         } else if (formatType === 'Txt' && this.textExportModule) {
             this.textExportModule.save(this.documentHelper, fileName);
         } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
+            if (this.documentEditorSettings.optimizeSfdt) {
+            const jsonString: string = this.serialize();
+            const blob: Blob = new Blob([jsonString], {
+                type: 'application/json'
+            });
+            const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, "sfdt");
+            const mArchive: ZipArchive = new ZipArchive();
+            mArchive.addItem(archiveItem);
+            mArchive.saveAsBlob().then((blob: Blob): void => {
+                this.zipArchiveBlobToSfdtFile(blob, fileName);
+            });
+        }else {
             const jsonString: string = this.serialize();
             const blob: Blob = new Blob([jsonString], {
                 type: 'application/json'
             });
             Save.save(fileName + '.sfdt', blob);
+        }
         } else {
             throw new Error('Invalid operation. Specified export is not enabled.');
         }
     }
+    private zipArchiveBlobToSfdtFile(blob: Blob, fileName: string): void {
+        let reader: FileReader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onload = function () {
+            let dataUrl: string = reader.result as string;
+            let base64 = dataUrl.split(',')[1];
+            const jsonString: any = {};
+            jsonString.sfdt = base64;
+            const blob: Blob = new Blob([JSON.stringify(jsonString)], {
+                type: 'application/json'
+            });
+            Save.save(fileName + '.sfdt', blob);
+        };
+    };
     /**
      * Saves the document as blob.
      *
@@ -2688,8 +2764,32 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             } else if (formatType === 'Txt' && this.textExportModule) {
                 resolve(this.textExportModule.saveAsBlob(this.documentHelper));
             } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
-                resolve(this.sfdtExportModule.saveAsBlob(this.documentHelper));
+                if (this.documentEditorSettings.optimizeSfdt) {
+                    this.sfdtExportModule.saveAsBlob(this.documentHelper).then((blob: Blob) => {
+                        this.getBase64StringFromBlob(blob).then((base64: string) => {
+                            const jsonString: any = {};
+                            jsonString.sfdt = base64;
+                            const blob: Blob = new Blob([JSON.stringify(jsonString)], {
+                                type: 'application/json'
+                            });
+                            resolve(blob);
+                        });
+                    });
+                } else {
+                    resolve(this.sfdtExportModule.saveAsBlobNonOptimized(this.documentHelper));
+                }
             }
+        });
+    }
+    private getBase64StringFromBlob(blob: Blob): Promise<string> {
+        return new Promise((resolve: (value: string | PromiseLike<string>) => void, reject: (value: string | PromiseLike<string>) => void) => {
+            const reader: FileReader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onload = function () {
+                const dataUrl: string = reader.result as string;
+                const base64: string = dataUrl.split(',')[1];
+                resolve(base64);
+            };
         });
     }
     /**
@@ -2896,7 +2996,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
         if (this.sectionFormat) {
-            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat);
+            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat, true);
         }
         const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;

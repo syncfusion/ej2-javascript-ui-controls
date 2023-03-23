@@ -130,7 +130,7 @@ export class Scroll implements IAction {
     /**
      * Refresh makes the Grid adoptable with the height of parent container.
      *
-     * > The [`height`](grid/#height/) must be set to 100%.
+     * > The [`height`](./#height) must be set to 100%.
      *
      * @returns {void}
      */

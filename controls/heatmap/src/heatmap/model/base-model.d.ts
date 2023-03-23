@@ -6,47 +6,47 @@ import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-ba
 export interface FontModel {
 
     /**
-     * Font size for the text.
+     * Specifies the font size for the text.
      *
      * @default '16px'
      */
     size?: string;
 
     /**
-     * Color for the text.
+     * Specifies the color for the text.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * FontFamily for the text.
+     * Specifies the font family for the text.
      */
     fontFamily?: string;
 
     /**
-     * FontWeight for the text.
+     * Specifies the font weight for the text.
      *
      * @default 'Normal'
      */
     fontWeight?: string;
 
     /**
-     * FontStyle for the text.
+     * Specifies the font style for the text.
      *
      * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
-     * text alignment
+     * Specifies the text alignment.
      *
      * @default 'Center'
      */
     textAlignment?: Alignment;
 
     /**
-     * Specifies the heat map text overflow
+     * Specifies the overflow style for the text in heatmap.
      *
      * @default 'Trim'
      */
@@ -60,28 +60,28 @@ export interface FontModel {
 export interface MarginModel {
 
     /**
-     * Left margin in pixels.
+     * Specifies the left margin in pixels.
      *
      * @default 10
      */
     left?: number;
 
     /**
-     * Right margin in pixels.
+     * Specifies the right margin in pixels.
      *
      * @default 10
      */
     right?: number;
 
     /**
-     * Top margin in pixels.
+     * Specifies the top margin in pixels.
      *
      * @default 10
      */
     top?: number;
 
     /**
-     * Bottom margin in pixels.
+     * Specifies the bottom margin in pixels.
      *
      * @default 10
      */
@@ -95,21 +95,21 @@ export interface MarginModel {
 export interface BorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border that accepts value in hex value and rgba as a valid CSS color string.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * Specifies the width of the border in pixels.
      *
      * @default 1
      */
     width?: number;
 
     /**
-     * The radius of the border in pixels.
+     * Specifies the radius of the border in pixels.
      *
      * @default ''
      */
@@ -123,14 +123,14 @@ export interface BorderModel {
 export interface TooltipBorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Specifies the color of the border that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * Sets and gets the width of the border in pixels.
      *
      * @default 0
      */
@@ -144,14 +144,14 @@ export interface TooltipBorderModel {
 export interface BubbleDataModel {
 
     /**
-     * Mapping property to set size.
+     * Specifies the mapping value to set size from the data source.
      *
      * @default null
      */
     size?: string;
 
     /**
-     * Mapping property to set color.
+     * Specifies the mapping value to set color from the data source.
      *
      * @default null
      */
@@ -165,14 +165,14 @@ export interface BubbleDataModel {
 export interface TitleModel {
 
     /**
-     * Title text
+     * Sets and gets the text for the title.
      *
      * @default ''
      */
     text?: string;
 
     /**
-     * Options for customizing the title.
+     * Sets and gets the options to customize the text of the title.
      */
     textStyle?: FontModel;
 
@@ -184,14 +184,14 @@ export interface TitleModel {
 export interface FillColorModel {
 
     /**
-     * minimum fill color for cell color range
+     * Specifies the minimum fill color for cell color range.
      *
      * @default '#eeeeee'
      */
     minColor?: string;
 
     /**
-     * maximum fill color for cell color range
+     * Specifies the maximum fill color for cell color range.
      *
      * @default '#eeeeee'
      */
@@ -205,49 +205,49 @@ export interface FillColorModel {
 export interface PaletteCollectionModel {
 
     /**
-     * Palette color value
+     * Sets and gets the value in the heatmap data to set the palette color.
      *
      * @default null
      */
     value?: number;
 
     /**
-     * Palette color text
+     * Sets and gets the color for a palette.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * Palette color label
+     * Sets and gets the label to be set in the corresponding legend for the palette color.
      *
      * @default ''
      */
     label?: string;
 
     /**
-     * Palette start value
+     * Sets and gets the start value in the heatmap data to set the palette color.
      *
      * @default null
      */
     startValue?: number;
 
     /**
-     * Palette end value
+     * Sets and gets the end value in the heatmap data to set the palette color.
      *
      * @default null
      */
     endValue?: number;
 
     /**
-     * Palette minColor value
+     * Sets and gets the minimum color for color range in a palette.
      *
      * @default null
      */
     minColor?: string;
 
     /**
-     * Palette maxColor value
+     * Sets and gets the maximum color for color range in a palette.
      *
      * @default null
      */
@@ -261,21 +261,21 @@ export interface PaletteCollectionModel {
 export interface AxisLabelBorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border that accepts value in hex value and rgba as a valid CSS color string.
      *
      * @default ''
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * Specifies the width of the border in pixels.
      *
      * @default 1
      */
     width?: number;
 
     /**
-     * Border type for labels
+     * Specifies the type of the border for the axis labels. The following are the available types.
      * * Rectangle
      * * Without Top Border
      * * Without Top/Bottom Border
@@ -317,7 +317,7 @@ export interface BubbleSizeModel {
 export interface MultiLevelCategoriesModel {
 
     /**
-     * Start value of the multi level labels
+     * Specifies the start value of the multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -325,7 +325,7 @@ export interface MultiLevelCategoriesModel {
     start?: number | Date | string;
 
     /**
-     * End value of the multi level labels
+     * Specifies the end value of the multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -333,14 +333,14 @@ export interface MultiLevelCategoriesModel {
     end?: number | Date | string;
 
     /**
-     * multi level labels text.
+     * Specifies the text for multi-level label.
      *
      * @default ''
      */
     text?: string;
 
     /**
-     * Maximum width of the text for multi level labels.
+     * Specifies the maximum width of the text for multi-level label.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -355,37 +355,37 @@ export interface MultiLevelCategoriesModel {
 export interface MultiLevelLabelsModel {
 
     /**
-     * Defines the position of the multi level labels. They are,
-     * * Near: Places the multi level labels at Near.
-     * * Center: Places the multi level labels at Center.
-     * * Far: Places the multi level labels at Far.
+     * Specifies the position of the multi-level labels. The available positions are,
+     * * Near: Places the multi-level labels at left end of the available space.
+     * * Center: Places the multi-level labels at center of the available space.
+     * * Far: Places the multi-level labels at right end of the available space.
      *
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Defines the textOverFlow for multi level labels. They are,
-     * * Trim: Trim textOverflow for multi level labels.
-     * * Wrap: Wrap textOverflow for multi level labels.
-     * * none: None textOverflow for multi level labels.
+     * Sets and gets the overflow style of the multi-level labels. The available types are,
+     * * None: No action is taken when the text overflows.
+     * * Wrap: Wraps the multi-level labels when the text overflows.
+     * * Trim: Trims the multi-level labels when the text overflows.
      *
      * @default 'Wrap'
      */
     overflow?: TextOverflow;
 
     /**
-     * Options to customize the multi level labels.
+     * Sets and gets the options to customize the text of the multi-level labels.
      */
     textStyle?: FontModel;
 
     /**
-     * Border of the multi level labels.
+     * Sets and gets the options to customize the border of the multi-level labels.
      */
     border?: AxisLabelBorderModel;
 
     /**
-     * multi level categories for multi level labels.
+     * Sets and gets the options to configure the multi-level labels.
      */
     categories?: MultiLevelCategoriesModel[];
 
@@ -393,6 +393,7 @@ export interface MultiLevelLabelsModel {
 
 /**
  * Interface for a class ColorCollection
+ * @private
  */
 export interface ColorCollectionModel {
 
@@ -407,6 +408,7 @@ export interface BubbleTooltipDataModel {
 
 /**
  * Interface for a class LegendColorCollection
+ * @private
  */
 export interface LegendColorCollectionModel {
 
@@ -414,6 +416,7 @@ export interface LegendColorCollectionModel {
 
 /**
  * Interface for a class MultipleRow
+ * @private
  */
 export interface MultipleRowModel {
 

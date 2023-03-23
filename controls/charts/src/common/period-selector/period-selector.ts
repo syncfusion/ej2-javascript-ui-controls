@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 import { createElement, isNullOrUndefined, Browser, remove } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DateRangePicker, RangeEventArgs } from '@syncfusion/ej2-calendars';
@@ -141,17 +140,27 @@ export class PeriodSelector {
             selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
         };
         if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
-                styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
-            align: 'Right'});
+            let resetElement: HTMLElement = createElement('button', {
+                id: controlId + '_reset',
+                styles: buttonStyles, className: 'e-dropdown-btn e-btn'
+            });
+            resetElement.innerText = 'Reset';
+            selector.push({
+                template: resetElement,
+                align: 'Right'
+            });
             if ((<StockChart>this.rootControl).exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
-                    className: 'e-dropdown-btn e-btn' }),
+                let printElement: HTMLElement = createElement('button', { id: controlId + '_print', styles: buttonStyles,
+                className: 'e-dropdown-btn e-btn' });
+                printElement.innerText = 'Print';
+                selector.push({ template: printElement,
                 align: 'Right'});
             }
             if ((<StockChart>this.rootControl).exportType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
-                    className: 'e-dropdown-btn e-btn' }),
+                let exportElement: HTMLElement = createElement('button', { id: controlId + '_export', styles: buttonStyles,
+                className: 'e-dropdown-btn e-btn' });
+                exportElement.innerText = 'Export';
+                selector.push({ template: exportElement,
                 align: 'Right'});
             }
         }
@@ -206,11 +215,13 @@ export class PeriodSelector {
                             }
                         }
                         datePickerElement.style.display = 'none';
-                        datePickerElement.insertAdjacentElement('afterend', createElement('div', {
+                        let element: HTMLElement = createElement('div', {
                             id: dateRangeId,
-                            innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
+                            className: 'e-btn e-dropdown-btn',
                             styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
-                        }));
+                        });
+                        element.innerText = selctorArgs.content;
+                        datePickerElement.insertAdjacentElement('afterend', element);
                         getElement(dateRangeId).insertAdjacentElement('afterbegin', (createElement('span', {
                             id: controlId + 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
                             styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
@@ -289,18 +300,24 @@ export class PeriodSelector {
         const buttonStyles: string = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
-                    styles: buttonStyles }),
+                let seriesElement:HTMLElement = createElement('button', { id: controlId + '_seriesType',
+                styles: buttonStyles });
+                seriesElement.innerText = 'Series';
+                selector.push({ template: seriesElement ,
                 align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
-                    styles: buttonStyles }),
+                let indicatorElement: HTMLElement = createElement('button', { id: controlId + '_indicatorType',
+                styles: buttonStyles });
+                indicatorElement.innerText = 'Indicators';
+                selector.push({ template: indicatorElement,
                 align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
-                selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
-                    styles: buttonStyles }),
+                let trendlineElement: HTMLElement = createElement('button', { id: controlId + '_trendType',
+                styles: buttonStyles });
+                trendlineElement.innerText = 'Trendline';
+                selector.push({ template: trendlineElement,
                 align: 'Left'});
             }
         }
@@ -349,7 +366,7 @@ export class PeriodSelector {
                 this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
                 if (this.rootControl.getModuleName() !== 'stockChart') {
                     period.selected = true;
-                } 
+                }
             }
         });
         if (args.item.text !== '') {

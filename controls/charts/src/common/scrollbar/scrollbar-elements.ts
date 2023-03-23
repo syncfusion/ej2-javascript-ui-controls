@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { ScrollBar } from './scrollbar';
 import { Chart } from '../../chart/chart';
@@ -214,8 +213,8 @@ export class ScrollElements {
         const shadowGroup: Element = renderer.createGroup({
             id: this.chartId + scroll.axis.name + '_thumb_shadow'
         });
-        defElement.innerHTML = scrollShadowEle;
-        shadowGroup.innerHTML = '<use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
+        (<HTMLElement>defElement).innerText = scrollShadowEle;
+        (<HTMLElement>shadowGroup).innerText = '<use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
         this.chartId + 'scrollBar_leftCircle_' +
         scroll.axis.name + '"></use><use fill="black" fill-opacity="1" filter="url(#scrollbar_shadow)" xlink:href="#' +
         this.chartId + 'scrollBar_rightCircle_' + scroll.axis.name + '"></use>';

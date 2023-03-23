@@ -5,7 +5,7 @@ import { Editor } from "../../../src/document-editor/implementation/editor/edito
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { EditorHistory } from "../../../src/document-editor/implementation/editor-history/editor-history";
 import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
-import { LineWidget, ParagraphWidget, ShapeElementBox } from "../../../src";
+import { LineWidget, ParagraphWidget, ShapeElementBox, WordExport } from "../../../src";
 describe('cut copy paste with Track changes', () => {
     let container: DocumentEditor;
     beforeAll(() => {
@@ -1005,5 +1005,96 @@ describe('Multiple User insertion and Deletion Validation', () => {
     });
     it('Two different User insertion and deletion test', () => {
         expect(container.open(revisionTest)).not.toThrowError;
+    });
+});
+
+describe('Footnote delete validation while track changes enabled', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport, WordExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Do not remove footnote while deleting the footnote reference while track changes enabled', () => {
+        console.log('Do not remove footnote while deleting the footnote reference while track changes enabled');
+        container.openBlank();
+        container.editor.insertText('Hello');
+        container.selection.select('0;0;2','0;0;2');
+        container.editor.insertFootnote();
+        container.editor.insertText('One');
+        container.enableTrackChanges = true;
+        container.selection.selectAll();
+        container.editor.delete();
+        container.selection.select('0;0;2','0;0;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].footnoteWidget).not.toBe(undefined);
+    });
+    it('To check revision parsed for FootNote Reference', () => {
+        console.log('To check revision parsed for FootNote Reference');
+        let sfdt : any = container.sfdtExportModule.write();
+        expect(sfdt.sec[0].b[0].i[1].rids.length).toBe(1);
+    });
+});
+
+describe('Undo/Redo validation in Footnote', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport, WordExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Undo/Redo validation in Footnote', () => {
+        console.log('Undo/Redo validation in Footnote');
+        container.openBlank();
+        container.editor.insertText('Hello');
+        container.selection.select('0;0;2','0;0;2');
+        container.editor.insertFootnote();
+        container.editor.insertText('One');
+        container.enableTrackChanges = true;
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(0);
+
+        container.selection.select('0;0;2','0;0;2');
+        container.editor.delete();
+        expect(container.revisions.length).toBe(2);
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(0);
+        container.editorHistory.redo();
+        expect(container.revisions.length).toBe(2);
     });
 });

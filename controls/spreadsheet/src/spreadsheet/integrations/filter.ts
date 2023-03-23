@@ -187,8 +187,8 @@ export class Filter {
      * @returns {void} - Creates new menu item element
      */
     private addMenuItem(ul: Element, text: string, className?: string, iconCss?: string): void {
-        const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
-        li.innerHTML = text;
+        const li: HTMLElement = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        li.innerText = text;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconCss }), li.firstChild);
         ul.insertBefore(li, ul.firstChild);
     }
@@ -944,8 +944,9 @@ export class Filter {
                 const wrapper: Element = treeViewObj.element.parentElement;
                 wrapper.getElementsByClassName('e-spreadsheet-ftrchk')[0].classList.add('e-hide');
                 const noRecordEle: Element = this.parent.createElement('div', { className: 'e-checkfltrnmdiv' });
-                noRecordEle.appendChild(this.parent.createElement(
-                    'span', { innerHTML: this.parent.serviceLocator.getService<L10n>(locale).getConstant('NoResult') }));
+                const noRecordText: HTMLElement = this.parent.createElement('span');
+                noRecordText.innerText = this.parent.serviceLocator.getService<L10n>(locale).getConstant('NoResult');
+                noRecordEle.appendChild(noRecordText);
                 wrapper.appendChild(noRecordEle);
             }
         } else {
@@ -1497,7 +1498,13 @@ export class Filter {
                 { value: 'endswith', text: l10n.getConstant('EndsWith') },
                 { value: 'contains', text: l10n.getConstant('Contains') },
                 { value: 'equal', text: l10n.getConstant('Equal') },
-                { value: 'notequal', text: l10n.getConstant('NotEqual') }],
+                { value: 'isempty', text: l10n.getConstant('IsEmpty') },
+                { value: 'doesnotstartswith', text: l10n.getConstant('NotStartsWith') },
+                { value: 'doesnotendswith', text: l10n.getConstant('NotEndsWith') },
+                { value: 'doesnotcontains', text: l10n.getConstant('NotContains') },
+                { value: 'notequal', text: l10n.getConstant('NotEqual') },
+                { value: 'isnotempty', text: l10n.getConstant('IsNotEmpty') }
+            ],
             numberOperator: numOptr,
             dateOperator: numOptr,
             datetimeOperator: numOptr,
@@ -1616,6 +1623,21 @@ export class Filter {
             break;
         case 'GreaterOrEqual':
             value = 'greaterthanorequal';
+            break;
+        case 'NotContains':
+            value = 'doesnotcontains';
+            break;
+        case 'NotBeginsWith':
+            value = 'doesnotstartswith';
+            break;
+        case 'NotEndsWith':
+            value = 'doesnotendswith';
+            break;
+        case 'Empty':
+            value = 'isempty';
+            break;
+        case 'NotEmpty':
+            value = 'isnotempty';
             break;
         }
         return value;
