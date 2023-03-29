@@ -835,7 +835,16 @@ export class StickyNotesAnnotation {
             this.pdfViewerBase.navigationPane.commentsContentContainer.scrollTop = scrollValue;
         }
     }
-
+    // eslint-disable-next-line
+    private getButtonState(editObj: any, commentTextBox: any){
+        commentTextBox.addEventListener('keyup', function (event: any) {
+            if (editObj.element.querySelector('.e-btn-save')) {
+                 if ((event.srcElement.value !== '' || event.srcElement.defaultValue != '') && event.srcElement.defaultValue !== event.srcElement.value) {
+                    editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
+                }
+            }
+        });
+    }
     /**
      * @param data
      * @param pageIndex
@@ -948,16 +957,7 @@ export class StickyNotesAnnotation {
             if (!data) {
                 editObj.enableEditMode = true;
             }
-            // eslint-disable-next-line
-            commentTextBox.addEventListener('keydown', function (event: any) {
-                if (editObj.element.querySelector('.e-btn-save')) {
-                    if (event.srcElement.value !== '') {
-                        editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
-                    } else {
-                        editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
-                    }
-                }
-            });
+            this.getButtonState(editObj, commentTextBox);
             editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
             commentDiv.appendChild(commentTextBox);
             if (data) {
@@ -1092,16 +1092,7 @@ export class StickyNotesAnnotation {
         commentObj.appendTo(newCommentDiv);
         newCommentDiv.lastChild.firstChild.click();
         // eslint-disable-next-line
-        newCommentDiv.addEventListener('keydown', function (event: any) {
-            if (commentObj.element.querySelector('.e-btn-save')) {
-                if (event.srcElement.value !== '') {
-                    commentObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
-                } else {
-                    commentObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
-                    commentObj.enableEditMode = true;
-                }
-            }
-        });
+        this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
             if (args.value != null && args.value !== '' && args.value !== ' ') {
                 // eslint-disable-next-line max-len
@@ -1182,7 +1173,8 @@ export class StickyNotesAnnotation {
                 value: commentValue,
                 saveButton: {
                     content: this.pdfViewer.localeObj.getConstant('Post'),
-                    cssClass: 'e-outline'
+                    cssClass: 'e-outline',
+                    disabled: true
                 },
                 cancelButton: {
                     content: this.pdfViewer.localeObj.getConstant('Cancel'),
@@ -1203,15 +1195,7 @@ export class StickyNotesAnnotation {
             replyCommentDiv.style.paddingLeft = 24 + 'px';
             commentsContainer.appendChild(replyCommentDiv);
             // eslint-disable-next-line
-            replyTextBox.addEventListener('keydown', function (event: any) {
-                if (saveObj.element.querySelector('.e-btn-save')) {
-                    if (event.srcElement.value !== '') {
-                        saveObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
-                    } else {
-                        saveObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
-                    }
-                }
-            });
+            this.getButtonState(saveObj, replyTextBox);
             replyCommentDiv.addEventListener('click', this.commentsDivClickEvent.bind(this));
             replyCommentDiv.addEventListener('dblclick', this.commentsDivDoubleClickEvent.bind(this));
             this.createCommentDiv(replyCommentDiv.parentElement);
@@ -1260,7 +1244,8 @@ export class StickyNotesAnnotation {
             value: '',
             saveButton: {
                 content: this.pdfViewer.localeObj.getConstant('Post'),
-                cssClass: 'e-outline'
+                cssClass: 'e-outline',
+                disabled: true
             },
             cancelButton: {
                 content: this.pdfViewer.localeObj.getConstant('Cancel'),
@@ -1298,15 +1283,7 @@ export class StickyNotesAnnotation {
         }
         replyDiv.style.paddingLeft = 24 + 'px';
         // eslint-disable-next-line
-        replyTextBox.addEventListener('keydown', function (event: any) {
-            if (saveObj.element.querySelector('.e-btn-save')) {
-                if (event.srcElement.value !== '') {
-                    saveObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
-                } else {
-                    saveObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
-                }
-            }
-        });
+        this.getButtonState(saveObj, replyTextBox);
         if (undoRedoAction) {
             if (isCommentAction) {
                 commentDiv.appendChild(replyDiv);
@@ -2450,6 +2427,9 @@ export class StickyNotesAnnotation {
             }
         } else {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
+        }
+        if (annotationName) {
+            currentAnnotation = this.pdfViewer.annotationCollection.filter(function (annot) { return annot.annotationId === annotationName; })[0];
         }
         if (annotationName && (currentAnnotation.annotName !== annotationName)) {
             for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
@@ -3645,7 +3625,7 @@ export class StickyNotesAnnotation {
              IsCommentLock: false,
              IsLock: annotationObject.isLock?annotationObject.isLock:false,
              IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
-             ModifiedDate: currentDateString,
+             ModifiedDate: '',
              Note: "",
              Opacity: annotationObject.opacity?annotationObject.opacity:1,
              Reference: null,

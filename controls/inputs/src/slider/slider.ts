@@ -2573,7 +2573,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             focusedElement.classList.remove(classNames.sliderTabHandle);
         }
         let handle: HTMLElement = this.activeHandle === 1 ? this.firstHandle : this.secondHandle;
-        if (evt.target === handle) {
+        let behindElement;
+        if ((evt.type === 'click' || evt.type === 'mousedown') && evt.target === handle) {
+            const { clientX: eventX, clientY: eventY } = evt;
+            behindElement = document.elementFromPoint(eventX, eventY);
+        }
+        if (evt.target === handle && behindElement != handle) {
             if (this.isMaterial && !this.tooltip.isVisible &&
                 !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
                 this.materialChange();

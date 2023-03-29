@@ -132,7 +132,7 @@
           border-style: solid;
           border-width: $ribbon-hscroll-nav-border-width;
           border-radius: $ribbon-hscroll-nav-border-radius;
-          z-index: 2;
+          z-index: 3;
 
           &.e-overlay {
             display: none;
@@ -283,7 +283,6 @@
     &:not(.e-rtl) {
 
       .e-ribbon-collapse-btn,
-      .e-ribbon-launcher-icon,
       .e-ribbon-help-template,
       .e-ribbon-group::after {
         right: 0;
@@ -300,15 +299,10 @@
 
     &.e-rtl {
 
-      .e-ribbon-launcher-icon,
       .e-ribbon-collapse-btn,
       .e-ribbon-help-template,
       .e-ribbon-group::after {
         left: 0;
-      }
-
-      .e-ribbon-launcher-icon {
-        margin: $ribbon-rtl-launcher-icon-margin;
       }
 
       .e-ribbon-overall-of-btn {
@@ -393,12 +387,25 @@
       border: $ribbon-items-border;
     }
 
-    &:not(.e-rtl) .e-ribbon-launcher .e-ribbon-group-header {
-      margin-right: $ribbon-group-header-margin;
+    &:not(.e-rtl) .e-ribbon-launcher {
+      .e-ribbon-group-header {
+        margin-right: $ribbon-group-header-margin;
+      }
+
+      .e-ribbon-launcher-icon {
+        right: 0;
+      }
     }
 
-    &.e-rtl .e-ribbon-launcher .e-ribbon-group-header {
-      margin-left: $ribbon-group-header-margin;
+    &.e-rtl .e-ribbon-launcher {
+      .e-ribbon-group-header {
+        margin-left: $ribbon-group-header-margin;
+      }
+
+      .e-ribbon-launcher-icon {
+        left: 0;
+        margin: $ribbon-rtl-launcher-icon-margin;
+      }
     }
 
     .e-ribbon-column {
@@ -590,6 +597,11 @@
           .e-btn-icon.e-icon-left {
             width: auto;
           }
+
+          &.e-dropdown-btn:not(.e-icon-btn) .e-caret {
+            margin: $ribbon-items-margin;
+            padding: 0;
+          }
         }
       }
     }
@@ -777,6 +789,10 @@
         height: $ribbon-bigger-help-template-height;
       }
 
+      .e-hscroll {
+        min-height: auto;
+      }
+
       .e-tab-header {
         .e-hor-nav {
           height: $ribbon-bigger-horizontal-nav-height;
@@ -866,7 +882,7 @@
       margin: $ribbon-bigger-launcher-icon-margin;
     }
 
-    .e-rtl .e-ribbon-launcher-icon {
+    &.e-rtl .e-ribbon-launcher-icon {
       margin: $ribbon-bigger-rtl-launcher-icon-margin;
     }
 

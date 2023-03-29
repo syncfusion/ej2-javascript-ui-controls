@@ -52,7 +52,7 @@ export class RibbonDropDown {
             beforeClose: dropDownSettings.beforeClose,
             beforeItemRender: dropDownSettings.beforeItemRender,
             beforeOpen: dropDownSettings.beforeOpen,
-            close: (e: OpenCloseMenuEventArgs) => {  
+            close: (e: OpenCloseMenuEventArgs) => {
                 if (dropDownSettings.close) { dropDownSettings.close.call(this, e); }
             },
             created: dropDownSettings.created,
@@ -62,7 +62,7 @@ export class RibbonDropDown {
     }
     /**
      * Adds the additional event handlers as the item moved into overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
      * @param {DropDownButton} overflowButton - Gets the overflow button.
@@ -74,17 +74,16 @@ export class RibbonDropDown {
         const dropdown: DropDownButton = getComponent(dropdownElement, DropDownButton);
         dropdown.cssClass = dropdown.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         dropdown.dataBind();
-        dropdown.close = (e: OpenCloseMenuEventArgs) => {  
+        dropdown.close = (e: OpenCloseMenuEventArgs) => {
             if (item.dropDownSettings.close) { item.dropDownSettings.close.call(this, e); }
             overflowButton.toggle();
         };
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
@@ -92,10 +91,10 @@ export class RibbonDropDown {
         const dropdownElement: HTMLElement = itemEle.querySelector('#' + item.id);
         const dropdown: DropDownButton = getComponent(dropdownElement, DropDownButton);
         let cssClass: string[] = dropdown.cssClass.split(SPACE);
-        cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);      
+        cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         dropdown.cssClass = cssClass.join(SPACE);
         dropdown.dataBind();
-        dropdown.close = (e: OpenCloseMenuEventArgs) => {  
+        dropdown.close = (e: OpenCloseMenuEventArgs) => {
             if (item.dropDownSettings.close) { item.dropDownSettings.close.call(this, e); }
         };
     }
@@ -110,7 +109,8 @@ export class RibbonDropDown {
      * @returns {void}
      * @hidden
      */
-    public createOverFlowDropDown(id: string, name: string, iconCss: string, groupEle: HTMLElement, overflowEle: HTMLElement): DropDownButton {
+    public createOverFlowDropDown(id: string, name: string, iconCss: string,
+                                  groupEle: HTMLElement, overflowEle: HTMLElement): DropDownButton {
         const buttonEle: HTMLButtonElement = this.parent.createElement('button', {
             id: id + OVERFLOW_ID + DROPDOWN_ID
         });
@@ -125,7 +125,7 @@ export class RibbonDropDown {
             iconPosition: 'Top',
             content: name,
             beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
-              args.cancel = !isNullOrUndefined(args.event && closest(args.event.target as HTMLElement, '.' + RIBBON_POPUP_CONTROL));
+                args.cancel = !isNullOrUndefined(args.event && closest(args.event.target as HTMLElement, '.' + RIBBON_POPUP_CONTROL));
             }
         }, buttonEle);
         createTooltip(groupEle, this.parent);

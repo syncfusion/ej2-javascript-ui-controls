@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I448219` - Issue with Query builder validation not shown using `validateFields` method and scroll the page has been fixed.
+
 ## 21.1.35 (2023-03-23)
 
 ### QueryBuilder

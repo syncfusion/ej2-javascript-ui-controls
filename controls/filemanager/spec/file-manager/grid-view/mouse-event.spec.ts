@@ -99,6 +99,19 @@ describe('FileManager control Grid view', () => {
             }, 500)
         });
 
+        it('navigation pane folder open cancel testing', () => {
+            var restrict = true;
+            feObj.fileOpen = function (args) {
+                args.cancel = restrict;
+            };
+            var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+            expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+            expect(li.length).toEqual(5);
+            mouseEventArgs.target = li[1].querySelector('.e-fullrow');
+            treeObj.touchClickObj.tap(tapEvent);
+        });
+
         it('mouse click on grid element with row selection', () => {
             var gridObj: any = (document.getElementById("file") as any).ej2_instances[0];
             feObj.detailsviewModule.gridObj.selectRows([2]);
@@ -174,8 +187,20 @@ describe('FileManager control Grid view', () => {
                                 responseText: JSON.stringify(data1)
                             });
                             setTimeout(function () {
-                                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
-                                done();
+                                this.request = jasmine.Ajax.requests.mostRecent();
+                                this.request.respondWith({
+                                    status: 200,
+                                    responseText: JSON.stringify(data1)
+                                });
+                                this.request = jasmine.Ajax.requests.mostRecent();
+                                this.request.respondWith({
+                                    status: 200,
+                                    responseText: JSON.stringify(data1)
+                                });
+                                setTimeout(function () {
+                                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                                    done();
+                                }, 500);
                             }, 500);
                         }, 500);
                     }, 500);

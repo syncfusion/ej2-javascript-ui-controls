@@ -355,7 +355,10 @@ export class LineDistribution {
                 }
             }
             /* tslint:enable */
-            this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
+            //EJ2-70198 - The layout ConnectionPointOrigin DifferentPoint property is not working for bezier connector
+            if(connectorObstacle.wrapper === "Orthogonal"){
+               this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
+           }
         }
     }
 

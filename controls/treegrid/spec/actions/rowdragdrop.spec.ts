@@ -972,3 +972,36 @@ describe('Treegrid Row Drop as Child', () => {
   });
 
 });
+
+describe('EJ2-70341- Row Drop at bottom segment(with last record of TreeGrid) not working properly)', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowRowDragAndDrop: true,
+        childMapping: 'subtasks',
+        height: '400',
+        allowSelection: true,
+        selectionSettings: { type: 'Multiple' },
+        treeColumnIndex: 1,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90 },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      },
+      done
+    );
+  });
+
+  it('Drop the record at bottom using RowDD', (done: Function) => {
+    gridObj.rowDragAndDropModule.reorderRows([20],35,'below');
+    expect(gridObj.grid.dataSource[28].level).toBe(1);
+    done();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

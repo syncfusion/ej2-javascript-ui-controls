@@ -602,7 +602,7 @@ export class Selection extends BaseSelection {
      * @private
      */
     public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
-        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes || element);
+        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? element.childNodes || [element] : element.childNodes || element);
         if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             children = (element.childNodes as any || element);

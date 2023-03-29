@@ -113,7 +113,7 @@ export class PdfGantt extends PdfTreeGrid {
             && this.parent.cloneProjectStartDate.getSeconds() === 0 ) {
                 this.parent.cloneProjectStartDate.setHours(8);
             }
-            const timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.cloneProjectStartDate);
+            const timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.timelineModule.timelineStartDate);
             const count: number = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
                 timelineSettings.customTimelineSettings.topTier.count : timelineSettings.customTimelineSettings.bottomTier.count;
             const scheduleType: TimelineViewMode = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?

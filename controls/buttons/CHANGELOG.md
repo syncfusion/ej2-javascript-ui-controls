@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I436942` - The issue with "Validation rule not display properly when we use Checkbox within form validator" has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Checkbox

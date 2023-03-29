@@ -70,6 +70,7 @@ export class HierarchicalTree {
         nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string, action?: DiagramAction): ILayout {
         const layout: ILayout = {
             type: layoutProp.type,
+            connectionPointOrigin:layoutProp.connectionPointOrigin,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
             firstLevelNodes: [], centerNode: null, levels: [], maxLevel: 0, graphNodes: {},
             orientation: layoutProp.orientation,
@@ -1277,11 +1278,12 @@ export class HierarchicalTree {
                         const segments: ConnSegments = layout.getConnectorSegments(conn);
                     } else {
                         if (info && info.tree.children.indexOf(conn.targetID) !== -1) {
-                            conn.segments = [];
-                            if (conn.type === 'Bezier') {
+                            if (conn.type === 'Bezier' && layout.connectionPointOrigin == "SamePoint") {
+                                conn.segments = [];
                                 (conn.segments).push(new BezierSegment(conn, 'segments', { type: 'Bezier'}, true));
                             }
                             if (layout.type === 'OrganizationalChart' && conn.type === 'Orthogonal') {
+                                conn.segments = [];
                                 this.updateSegments(layout, conn, node, target, i);
                             }
                         }

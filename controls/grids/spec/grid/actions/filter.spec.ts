@@ -103,6 +103,8 @@ describe('Filtering module => ', () => {
         });
 
         it('empty filter value testing', (done: Function) => {
+            const clearIconElem: Element = document.querySelector('.e-clear-icon');
+            expect(clearIconElem.getAttribute('title')).toBe('Clear');
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(71);
                 expect(gridObj.filterSettings.columns.length).toBe(0);

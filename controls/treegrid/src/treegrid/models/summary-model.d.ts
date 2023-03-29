@@ -44,8 +44,8 @@ export interface AggregateColumnModel {
     /**
      * Format is applied to a calculated value before it is displayed.
      * Gets the format from the user, which can be standard or custom
-     * [`number`](../../../common/internationalization/#supported-format-string)
-     * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.
+     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
+     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string-1) formats.
      *
      * @aspType string
      * @default null

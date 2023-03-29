@@ -1754,6 +1754,12 @@ export class Gantt extends Component<HTMLElement>
             (<{ isReact?: boolean }>this.treeGrid).isReact = true;
             (<{ isReact?: boolean }>this.treeGrid.grid).isReact = true;
         }
+        if ((<{ isVue?: boolean }>this).isVue) {
+            (<{ isVue?: boolean }>this.treeGrid).isVue = true;
+            (<{ isVue?: boolean }>this.treeGrid.grid).isVue = true;
+            (<{ vueInstance?: any }>this.treeGrid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
+            (<{ vueInstance?: any }>this.treeGrid.grid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
@@ -3762,12 +3768,17 @@ export class Gantt extends Component<HTMLElement>
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
-            if (isNullOrUndefined(value) || (!isNullOrUndefined(value) && !isNullOrUndefined(ganttData[`${field}`]) && (value instanceof Date ? value.getTime() !==
-                ganttData[`${field}`].getTime() : ganttData[`${field}`] !== value))) {
+            if (isNullOrUndefined(value) || (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) && (value instanceof Date ? value.getTime() !==
+               record[`${field}`].getTime() : record[`${field}`] !== value))) {
                 isValid = true;
             }
             if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {
-                this.editedRecords.push(task);
+                if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
+                    this.editedRecords.splice(0, 0, task);
+                }
+                else {
+                    this.editedRecords.push(task);
+                }
                 if (this.enableImmutableMode) {
                     this.modifiedRecords.push(task);
                 }

@@ -1,5 +1,5 @@
 import { EventHandler, getComponent, merge } from '@syncfusion/ej2-base';
-import { ClickEventArgs, DropDownButton, ItemModel, MenuEventArgs, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE, VERTICAL_DDB } from '../base/constant';
@@ -50,21 +50,21 @@ export class RibbonSplitButton {
             beforeClose: splitButtonSettings.beforeClose,
             beforeItemRender: splitButtonSettings.beforeItemRender,
             beforeOpen: splitButtonSettings.beforeOpen,
-            close: () => { 
+            close: () => {
                 (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
                 if (splitButtonSettings.close) {
                     splitButtonSettings.close.call(this);
                 }
             },
             created: splitButtonSettings.created,
-            open: () => { 
+            open: () => {
                 (splitbutton['wrapper'] as HTMLElement).classList.add(RIBBON_POPUP_OPEN);
                 if (splitButtonSettings.open) {
                     splitButtonSettings.open.call(this);
                 }
             },
             select: splitButtonSettings.select,
-            click: (e: ClickEventArgs) => {  
+            click: (e: ClickEventArgs) => {
                 if (splitButtonSettings.click) { splitButtonSettings.click.call(this, e); }
             }
         }, buttonEle);
@@ -76,7 +76,7 @@ export class RibbonSplitButton {
 
     /**
      * Adds the additional event handlers as the item moved into overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
      * @param {DropDownButton} overflowButton - Gets the overflow button.
@@ -88,11 +88,11 @@ export class RibbonSplitButton {
         const splitbutton: SplitButton = getComponent(splitButtonEle, SplitButton);
         splitbutton.cssClass = splitbutton.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         splitbutton.dataBind();
-        splitbutton.click = (e: ClickEventArgs) => {  
-            if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }              
+        splitbutton.click = (e: ClickEventArgs) => {
+            if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }
             overflowButton.toggle();
-        }
-        splitbutton.close = (e: OpenCloseMenuEventArgs) => {  
+        };
+        splitbutton.close = (e: OpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.close) { item.splitButtonSettings.close.call(this, e); }
             (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
             overflowButton.toggle();
@@ -100,10 +100,9 @@ export class RibbonSplitButton {
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
@@ -111,13 +110,13 @@ export class RibbonSplitButton {
         const splitButtonEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const splitbutton: SplitButton = getComponent(splitButtonEle, SplitButton);
         let cssClass: string[] = splitbutton.cssClass.split(SPACE);
-        cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);        
+        cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         splitbutton.cssClass = cssClass.join(SPACE);
         splitbutton.dataBind();
-        splitbutton.click = (e: ClickEventArgs) => {  
+        splitbutton.click = (e: ClickEventArgs) => {
             if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }
         };
-        splitbutton.close = (e: OpenCloseMenuEventArgs) => {  
+        splitbutton.close = (e: OpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.close) { item.splitButtonSettings.close.call(this, e); }
             (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
         };

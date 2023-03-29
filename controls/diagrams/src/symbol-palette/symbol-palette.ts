@@ -1398,6 +1398,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
+            //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
+            if(symbol.shape.type === 'HTML' ){
+                style += 'transform:scale(.5,.5);';
+            }
             applyStyleAgainstCsp(
                 ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children &&
                     (symbol as NodeModel).children.length > 0)) ? div : canvas),
@@ -1467,7 +1471,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         canvas.getContext('2d').setTransform(2, 0, 0, 2, 0, 0);
         div.appendChild(canvas);
         container.appendChild(div);
-        this.diagramRenderer.renderElement((symbol.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
+        //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
+        if(isPreview){
+            this.diagramRenderer.renderElement((symbol.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
+        }
+        else{
+            this.diagramRenderer.renderElement(symbol.wrapper, canvas, htmlLayer);
+        }
         return div;
 
     }

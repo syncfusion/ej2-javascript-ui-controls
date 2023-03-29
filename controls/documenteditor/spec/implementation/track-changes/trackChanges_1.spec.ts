@@ -5,7 +5,7 @@ import { Editor } from "../../../src/document-editor/implementation/editor/edito
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { EditorHistory } from "../../../src/document-editor/implementation/editor-history/editor-history";
 import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
-import { LineWidget, ParagraphWidget, ShapeElementBox, WordExport } from "../../../src";
+import { LineWidget, ParagraphWidget, ShapeElementBox, WordExport } from "../../../src/index";
 describe('cut copy paste with Track changes', () => {
     let container: DocumentEditor;
     beforeAll(() => {

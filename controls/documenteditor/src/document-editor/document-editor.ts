@@ -2996,7 +2996,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
         if (this.sectionFormat) {
-            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat, true);
+            this.parser.parseSectionFormat(0, this.sectionFormat, section.sectionFormat);
         }
         const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;

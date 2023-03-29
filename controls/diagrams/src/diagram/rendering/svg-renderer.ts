@@ -466,9 +466,10 @@ export class SvgRenderer implements IRenderer {
             let pivotY: number = options.y + options.height * options.pivotY;
             let childNodesHeight: number = 0;
             if (options.doWrap || options.textOverflow !== 'Wrap') {
-                const innerHtmlTextElement: HTMLElement = document.getElementById(options.id + '_text');
-                if (innerHtmlTextElement) {
-                    innerHtmlTextElement.innerHTML = '';
+            //(EJ2-70658)- Node annotation disappear, while giving same id for annotation in two different diagrams
+            //Added the below code for removing the extra span element that added when we double click the text annotation node
+                while (text.firstChild) {
+                    text.removeChild(text.firstChild);
                 }
                 this.setSvgStyle(text, options as StyleAttributes, diagramId);
                 this.setSvgFontStyle(text, options);

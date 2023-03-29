@@ -13,6 +13,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
  * @param {Array} arr - Gets the array to find index.
  * @param {boolean} condition - Defines whether index matches with the value.
  * @returns {number} - Gets the index value.
+ * @hidden
  */
 export function getIndex<T>(arr: Array<T>, condition: (value: T, index: number) => boolean): number {
     for (let i: number = 0; i < arr.length; i++) {
@@ -26,6 +27,7 @@ export function getIndex<T>(arr: Array<T>, condition: (value: T, index: number) 
  *
  * @param {string | HTMLElement} template - Template property value.
  * @returns {Function} - Return template function.
+ * @hidden
  */
 export function getTemplateFunction(template: string | HTMLElement): Function {
     if (typeof template === 'string') {
@@ -54,6 +56,7 @@ export function getTemplateFunction(template: string | HTMLElement): Function {
  * @param {RibbonTabModel} tabs - Gets the ribbon tab model.
  * @param {string} id - Gets the ID of the tab.
  * @returns {itemProps} - Gets the ribbon item.
+ * @hidden
  */
 export function getItem(tabs: RibbonTabModel[], id: string): itemProps {
     for (let i: number = 0; i < tabs.length; i++) {
@@ -83,6 +86,7 @@ export function getItem(tabs: RibbonTabModel[], id: string): itemProps {
  * @param {RibbonTabModel} tabs - Gets the ribbon tab model.
  * @param {string} id - Gets the ID of the tab.
  * @returns {itemProps} - Gets the ribbon collection.
+ * @hidden
  */
 export function getCollection(tabs: RibbonTabModel[], id: string): itemProps {
     for (let i: number = 0; i < tabs.length; i++) {
@@ -109,6 +113,7 @@ export function getCollection(tabs: RibbonTabModel[], id: string): itemProps {
  * @param {RibbonTabModel} tabs - Gets the ribbon tab model.
  * @param {string} id - Gets the ID of the tab.
  * @returns {itemProps} - Gets the ribbon group.
+ * @hidden
  */
 export function getGroup(tabs: RibbonTabModel[], id: string): itemProps {
     for (let i: number = 0; i < tabs.length; i++) {
@@ -129,6 +134,7 @@ export function getGroup(tabs: RibbonTabModel[], id: string): itemProps {
  * @param {HTMLElement} element - Gets the element to be destroyed.
  * @param {string} moduleName - Gets the module name.
  * @returns {void}
+ * @hidden
  */
 export function destroyControl(element: HTMLElement, moduleName: string): void {
     const control: EJ2Control = getComponent(element, moduleName);
@@ -142,6 +148,7 @@ export function destroyControl(element: HTMLElement, moduleName: string): void {
  * @param {string} moduleName - Gets the module name.
  * @param {commonProperties} commonProp - Gets the common properties to be updated.
  * @returns {void}
+ * @hidden
  */
 export function updateCommonProperty(element: HTMLElement, moduleName: string, commonProp: commonProperties): void {
     const control: EJ2Control = getComponent(element, moduleName);
@@ -155,6 +162,7 @@ export function updateCommonProperty(element: HTMLElement, moduleName: string, c
  * @param {string} moduleName - Gets the module name.
  * @param {boolean} disable - Defines whether the control to be disabled or not.
  * @returns {void}
+ * @hidden
  */
 export function updateControlDisabled(element: HTMLElement, moduleName: string, disable: boolean): void {
     const control: EJ2Control = getComponent(element, moduleName);
@@ -165,9 +173,10 @@ export function updateControlDisabled(element: HTMLElement, moduleName: string, 
  * Gets the ribbon item element.
  *
  * @param {Ribbon} parent - Gets the parent element.
- * @param {itemProps} itemProp - Gets the ribbon item.
  * @param {string} id - Gets the ID of the item.
+ * @param {itemProps} itemProp - Gets the ribbon item.
  * @returns {HTMLElement} - Gets the ribbon item element.
+ * @hidden
  */
 export function getItemElement(parent: Ribbon, id: string, itemProp?: itemProps): HTMLElement {
     if (!itemProp) {
@@ -200,6 +209,7 @@ export function getItemElement(parent: Ribbon, id: string, itemProp?: itemProps)
 /**
  * @param {RibbonTooltipModel} tooltip - Gets the property of tooltip.
  * @returns {boolean} - Gets whether the tooltip is present or not.
+ * @hidden
  */
 export function isTooltipPresent(tooltip: RibbonTooltipModel): boolean {
     return (tooltip.content || tooltip.iconCss || tooltip.title || tooltip.id || tooltip.cssClass) ? true : false;
@@ -212,6 +222,7 @@ export function isTooltipPresent(tooltip: RibbonTooltipModel): boolean {
  * @param {Tooltip} tooltip - Gets the tooltip to set the content.
  * @param {ribbonTooltipData} tooltipData - Gets the tooltip data.
  * @returns {void}
+ * @hidden
  */
 export function setToolTipContent(args: TooltipEventArgs, tooltip: Tooltip, tooltipData: ribbonTooltipData[]): void {
     const targetId: string = args.target.getAttribute('id');
@@ -255,6 +266,7 @@ export function setToolTipContent(args: TooltipEventArgs, tooltip: Tooltip, tool
  * @param {HTMLElement} element - Gets the element to add tooltip.
  * @param {Ribbon} ribbon - Gets the ribbon.
  * @returns {void}
+ * @hidden
  */
 export function createTooltip(element: HTMLElement, ribbon: Ribbon): void {
     const ribbonTooltip: Tooltip = new Tooltip({
@@ -266,6 +278,7 @@ export function createTooltip(element: HTMLElement, ribbon: Ribbon): void {
     /**
      * @param {TooltipEventArgs} args - Gets the tooltip argument.
      * @returns {void}
+     * @hidden
      */
     function beforeTooltipRender(args: TooltipEventArgs): void {
         setToolTipContent(args, ribbonTooltip, ribbon.tooltipData);
@@ -277,6 +290,7 @@ export function createTooltip(element: HTMLElement, ribbon: Ribbon): void {
  *
  * @param {HTMLElement} element - Gets the element in which the tooltip needs to be destroyed.
  * @returns {void}
+ * @hidden
  */
 export function destroyTooltip(element: HTMLElement): void {
     const control: Tooltip = getComponent(element, Tooltip);
@@ -289,6 +303,7 @@ export function destroyTooltip(element: HTMLElement): void {
  * @param {HTMLElement} element - Gets the element in which the tooltip needs to be Updated.
  * @param {commonProperties} prop - Gets the property to be updated.
  * @returns {void}
+ * @hidden
  */
 export function updateTooltipProp(element: HTMLElement, prop: commonProperties): void {
     const control: Tooltip = getComponent(element, Tooltip);

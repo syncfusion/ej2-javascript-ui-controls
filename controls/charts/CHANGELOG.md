@@ -6,6 +6,16 @@
 
 ### Chart
 
+#### Bug Fixes
+
+- `#I445049` - The axis title and secondary axis are now rendering properly.
+- `#I447639` - `Usegroupingseparator` is now supported for bubble size.
+- `#I445330` - The legend toggle now works properly when used along with highlight.
+
+## 21.1.35 (2023-03-23)
+
+### Chart
+
 #### New Features
 
 - `#I320485` - Provided support to place a label at the center of the pie and donut charts.

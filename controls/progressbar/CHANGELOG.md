@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#F180771` - The progress bar range color issue has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### ProgressBar

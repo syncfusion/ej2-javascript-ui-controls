@@ -34,6 +34,7 @@ export class NavigationPane {
     private isPathDragged: boolean = false;
     private isRenameParent: boolean = false;
     private isRightClick: boolean = false;
+    private isSameNodeClicked=false;
     private renameParent: string = null;
     // Specifies the previously selected nodes in the treeview control.
     private previousSelected: string[] = null;
@@ -197,7 +198,7 @@ export class NavigationPane {
 
     // Node Selecting event handler
     private onNodeSelecting(args: NodeSelectEventArgs): void {
-        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent || this.restrictSelecting) {
+        if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent || this.restrictSelecting) {
             this.restrictSelecting = false;
             this.isNodeClickCalled = false;
             return;
@@ -206,18 +207,31 @@ export class NavigationPane {
             this.parent.activeModule = 'navigationpane';
             // eslint-disable-next-line
             const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
-            const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
-            this.parent.trigger('fileOpen', eventArgs);
-            const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
-            this.parent.trigger('fileSelect', selecEventArgs);
-            args.cancel = eventArgs.cancel;
-            if (args.cancel) {
-                this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
-                this.previousSelected = this.treeObj.selectedNodes;
-                this.treeObj.selectedNodes = [args.node.getAttribute("data-uid")];
-                if (!isNOU(this.parent) && !isNOU(this.parent.contextmenuModule)) {
-                    this.parent.contextmenuModule.contextMenu.enableItems(['Open'], true);
+            if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked) {
+                this.isNodeClickCalled = false;
+                if(!this.isSameNodeClicked)
+                {
+                    this.isSameNodeClicked=true;
+                    const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
+                    this.parent.trigger('fileSelect', selecEventArgs);
                 }
+                if(!this.isRightClick)
+                {
+                    const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
+                    this.parent.trigger('fileOpen', eventArgs);
+                    args.cancel = eventArgs.cancel;
+                }
+                if (args.cancel) {
+                    this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
+                    this.isNodeClickCalled=true;
+                    this.isSameNodeClicked=false;
+                    this.previousSelected = this.treeObj.selectedNodes;
+                    this.treeObj.selectedNodes = [args.node.getAttribute("data-uid")];
+                }
+            }
+            else if(this.previousSelected[0] !== args.node.getAttribute('data-uid')){
+                const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
+                this.parent.trigger('fileSelect', selecEventArgs);
             }
         }
     }
@@ -230,20 +244,26 @@ export class NavigationPane {
         this.parent.itemData = data;
         this.activeNode = node;
         this.parent.activeModule = 'navigationpane';
-        updatePath(node, this.parent.itemData[0], this.parent);
-        read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
-        this.parent.visitedItem = node;
-        this.isPathDragged = this.isRenameParent = this.isRightClick = false;
-        this.treeObj.selectedNodes = [node.getAttribute('data-uid')];
+        const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data[0], module: 'NavigationPane' };
+        this.parent.trigger('fileOpen',eventArgs);
+        this.isNodeClickCalled = true;
+        if(!eventArgs.cancel){
+            updatePath(node, this.parent.itemData[0], this.parent);
+            read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+            this.parent.visitedItem = node;
+            this.isPathDragged = this.isRenameParent = this.isRightClick = false;
+            this.treeObj.selectedNodes = [node.getAttribute('data-uid')];
+        }
     }
 
     private onNodeSelected(args: NodeSelectEventArgs): void {
         if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj && !this.renameParent) {
             this.parent.breadcrumbbarModule.searchObj.element.value = '';
             this.parent.isFiltered = false;
+            this.isNodeClickCalled = false;
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent) { 
+        if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent) { 
             this.parent.pathId = getPathId(args.node);
             return;
         }
@@ -254,7 +274,8 @@ export class NavigationPane {
         this.parent.selectedItems = [];
         this.parent.itemData = nodeData;
         const previousPath: string = this.parent.path;
-        if (!this.isRightClick) {
+        const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
+        if (!this.isRightClick && this.isSameNodeClicked && sNode.querySelector('.e-list-text').innerHTML !== this.parent.pathNames[this.parent.pathNames.length-1]) {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }
         else { 
@@ -266,12 +287,13 @@ export class NavigationPane {
             if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
                 this.expandNodeTarget = 'add';
             }
-            if (!this.isRightClick) {
+            if (!this.isRightClick && this.isSameNodeClicked) {
                 read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+                this.isNodeClickCalled = true;
             }
             this.parent.visitedItem = args.node;
         }
-        this.isPathDragged = this.isRenameParent = this.isRightClick = false;
+        this.isPathDragged = this.isRenameParent = this.isRightClick = this.isSameNodeClicked = false;
     }
     /* istanbul ignore next */
     // eslint-disable-next-line
@@ -313,6 +335,14 @@ export class NavigationPane {
             this.parent.setProperties({ selectedItems: [] }, true);
             const layout: string = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
             this.parent.notify(events.modelChanged, { module: layout, newProp: { selectedItems: [] } });
+        } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && !this.isNodeClickCalled) {
+            if(args.event.which === 3)
+            {
+                this.isRightClick = true;
+            }
+            this.isSameNodeClicked = true;
+            this.isNodeClickCalled = true;
+            this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
         }
     }
 

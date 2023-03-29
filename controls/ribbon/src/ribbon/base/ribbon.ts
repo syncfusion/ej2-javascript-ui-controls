@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclarati
 import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';
 import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';
 import { RibbonModel } from './ribbon-model';
-import { commonProperties, DisplayMode, EJ2Control, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
+import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
 import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';
 import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton } from '../items/index';
 import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';
@@ -332,7 +332,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.trigger(val ? 'ribbonCollapsing' : 'ribbonExpanding', eventArgs, (args: ExpandCollapseEventArgs) => {
             if (args.cancel) { return; }
             this.setProperties({ isMinimized: val }, true);
-            this.element.classList.toggle(constants.RIBBON_MINIMIZE, this.isMinimized );
+            this.element.classList.toggle(constants.RIBBON_MINIMIZE, this.isMinimized);
             //to overwrite inline styles from hscroll
             (this.tabObj.element.querySelector('.e-content') as HTMLElement).style.display = val ? 'none' : 'block';
             if (!val) { this.refreshLayout(); }
@@ -397,7 +397,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             //Adds Scroll if the tabwidth is less the content width even after adding overflow dropdown.
             if ((tabContent.offsetWidth < activeContent.offsetWidth) && (!this.scrollModule)) {
-                this.scrollModule = new HScroll({}, this.tabObj.element.querySelector('.' + constants.TAB_CONTENT) as HTMLElement);
+                this.scrollModule = new HScroll({
+                    enableRtl: this.enableRtl
+                }, this.tabObj.element.querySelector('.' + constants.TAB_CONTENT) as HTMLElement);
             }
         } else if (!isOverFlow) {
             this.destroyScroll();
@@ -480,8 +482,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             const group: RibbonGroupModel = orderedGroups[parseInt(i.toString(), 10)];
             const groupEle: HTMLElement = tabContent.querySelector('#' + group.id);
             const groupContainer: HTMLElement = groupEle.querySelector('#' + group.id + constants.CONTAINER_ID);
-            for (let j: number = 0; ((j < group.collections.length) && (tabContent.offsetWidth < activeContent.offsetWidth)); j++) {
-                const collection: RibbonCollectionModel = group.collections[parseInt(j.toString(), 10)];
+            for (let j: number = group.collections.length; ((j >= 1) && (tabContent.offsetWidth < activeContent.offsetWidth)); j--) {
+                const collection: RibbonCollectionModel = group.collections[parseInt((j - 1).toString(), 10)];
                 const collectionEle: HTMLElement = groupEle.querySelector('#' + collection.id);
                 for (let k: number = collection.items.length; ((k >= 1) && (tabContent.offsetWidth < activeContent.offsetWidth)); k--) {
                     const item: RibbonItemModel = collection.items[k - 1];
@@ -514,19 +516,19 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         // The position is reversed if RTL is enabled.
         // isRight = ((isGroupOF && isMenu) && !this.enableRtl ) || (!(isGroupOF && isMenu) && this.enableRtl)  ==> (isGroupOF && isMenu) !== this.enableRtl
         const isLeft: boolean = (isGroupOF && isMenu) === this.enableRtl;
-        dropDownPopup.setProperties({ position: { X: isLeft  ? 'left' : 'right', Y: isMenu ? 'top' : 'bottom' } }, true);
+        dropDownPopup.setProperties({ position: { X: isLeft ? 'left' : 'right', Y: isMenu ? 'top' : 'bottom' } }, true);
         if (isMenu) {
             dropdown.beforeOpen = (): void => {
                 if (isLeft) {
                     dropDownPopup.element.style.setProperty('visibility', 'hidden');
                     dropDownPopup.element.style.setProperty('display', 'block');
-                    dropDownPopup.setProperties({ offsetX : -1 * dropDownPopup.element.offsetWidth });
+                    dropDownPopup.setProperties({ offsetX: -1 * dropDownPopup.element.offsetWidth });
                     dropDownPopup.element.style.removeProperty('display');
                     dropDownPopup.element.style.removeProperty('visibility');
                 }
             };
         } else {
-            dropDownPopup.setProperties({offsetX : 0}, true);
+            dropDownPopup.setProperties({ offsetX: 0 }, true);
             dropdown.beforeOpen = null;
         }
     }
@@ -549,12 +551,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 overflowDDB = this.overflowDDB;
                 overflowtarget = this.overflowDDB ? this.overflowDDB.target as HTMLElement : null;
             }
-            for (let j: number = (group.collections.length); ((j >= 1) && flag); j--) {
-                const collection: RibbonCollectionModel = group.collections[parseInt((j - 1).toString(), 10)];
+            for (let j: number = 0; ((j < group.collections.length) && flag); j++) {
+                const collection: RibbonCollectionModel = group.collections[parseInt(j.toString(), 10)];
                 // eslint-disable-next-line max-len
                 for (let k: number = 0; ((k < collection.items.length) && flag && !isClear && (tabContent.offsetWidth > activeContent.offsetWidth)); k++) {
                     const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
-                    let itemContainer : HTMLElement;
+                    let itemContainer: HTMLElement;
                     if (overflowtarget) {
                         itemContainer = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID);
                     }
@@ -580,13 +582,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 groupEle.classList.remove('e-ribbon-emptyCollection');
             }
             if (overflowDDB) {
-                if (group.enableGroupOverflow ) {
+                if (group.enableGroupOverflow) {
                     if (overflowtarget.childElementCount === 0) { this.removeOverflowButton(overflowDDB); }
                 } else {
                     const ofGroupContainer: HTMLElement = overflowtarget.querySelector('#' + group.id + constants.CONTAINER_ID);
                     if (ofGroupContainer && ofGroupContainer.childElementCount === 1) { ofGroupContainer.remove(); }
                     const ofTabContainer: HTMLElement = overflowtarget.querySelector('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.OVERFLOW_ID);
-                    if (ofTabContainer && ofTabContainer.childElementCount === 0) { 
+                    if (ofTabContainer && ofTabContainer.childElementCount === 0) {
                         ofTabContainer.remove();
                         this.overflowDDB.element.classList.add(constants.HIDE_CSS);
                     }
@@ -641,7 +643,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             overflowButton = this.overflowDDB;
         }
-        this.addOverflowEvents(item, itemEle, overflowButton)
+        this.addOverflowEvents(item, itemEle, overflowButton);
     }
 
     private addOverflowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
@@ -701,7 +703,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             return (collection.items.length === 1) && canReduceItem(collection.items[0]);
         };
         const canReduceItem: Function = (item: RibbonItemModel): boolean => {
-            return (item.allowedSizes & RibbonItemSize.Medium ) && (item.activeSize === RibbonItemSize.Large);
+            return (item.allowedSizes & RibbonItemSize.Medium) && (item.activeSize === RibbonItemSize.Large);
         };
         const createShrinkEle: Function = (id: string, firstItem: HTMLElement, start: number, end: number): HTMLElement => {
             const shrinkEle: HTMLElement = this.createElement('div', {
@@ -1077,11 +1079,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                                                                               groupContainer, groupOverFlow);
             (this.tabs[parseInt(tabIndex.toString(), 10)].
                 groups[parseInt(groupIndex.toString(), 10)] as RibbonGroup).setProperties({ isCollapsed: true }, true);
-            for (let j = 0; j < group.collections.length; j++) {
-                const collection = group.collections[parseInt(j.toString(), 10)];
+            for (let j: number = 0; j < group.collections.length; j++) {
+                const collection: RibbonCollectionModel = group.collections[parseInt(j.toString(), 10)];
                 const collectionEle: HTMLElement = groupContainer.querySelector('#' + collection.id);
-                for (let k = 0; k < collection.items.length; k++) {
-                    const item = collection.items[parseInt(k.toString(), 10)];
+                for (let k: number = 0; k < collection.items.length; k++) {
+                    const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
                     const itemEle: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
                     this.addOverflowEvents(item, itemEle, dropdown);
                 }
@@ -1090,7 +1092,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     // eslint-disable-next-line max-len
-    private removeOverflowDropdown(tabContent: HTMLElement, activeContent: HTMLElement, isClear: boolean = false,  tabIndex?: number): boolean {
+    private removeOverflowDropdown(tabContent: HTMLElement, activeContent: HTMLElement, isClear: boolean = false, tabIndex?: number): boolean {
         const expandOrder: RibbonGroupModel[] = this.getGroupResizeOrder(false, tabIndex);
         if (expandOrder.length === 0) { return false; }
         for (let i: number = 0; i < expandOrder.length; i++) {
@@ -1108,11 +1110,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             //Shrinking the items in the group to their previous shrinked state (before moving to dropdown)
             this.checkLargeToMedium(tabIndex, tab, groupIndex, tabContent, activeContent, true);
             this.checkMediumToSmall(tabIndex, tab, groupIndex, tabContent, activeContent, true);
-            for (let j = 0; j < group.collections.length; j++) {
-                const collection = group.collections[parseInt(j.toString(), 10)];
+            for (let j: number = 0; j < group.collections.length; j++) {
+                const collection: RibbonCollectionModel = group.collections[parseInt(j.toString(), 10)];
                 const collectionEle: HTMLElement = groupEle.querySelector('#' + collection.id);
-                for (let k = 0; k < collection.items.length; k++) {
-                    const item = collection.items[parseInt(k.toString(), 10)];
+                for (let k: number = 0; k < collection.items.length; k++) {
+                    const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
                     const itemEle: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
                     this.removeOverflowEvent(item, itemEle);
                 }
@@ -1163,8 +1165,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private ribbonTabSelecting(e: SelectingEventArgs): void {
         const nextTabId: string = e.selectingItem.getAttribute('data-id');
         const previousTabId: string = e.previousItem.getAttribute('data-id');
-        let nextIndex: number =  getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === nextTabId)));
-        const previousIndex: number =  getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === previousTabId)));
+        let nextIndex: number = getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === nextTabId)));
+        const previousIndex: number = getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === previousTabId)));
         nextIndex = nextIndex === -1 ? this.selectedTab : nextIndex;
         const eventArgs: TabSelectingEventArgs = {
             cancel: e.cancel, isInteracted: e.isInteracted, previousIndex: previousIndex, selectedIndex: nextIndex
@@ -1229,8 +1231,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             enableRtl: this.enableRtl,
             enablePersistence: this.enablePersistence,
             beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
-              const ele: Element = args.event ? closest(args.event.target as HTMLElement, '.' + constants.RIBBON_POPUP_CONTROL) : null;
-              if (ele ) { args.cancel = true; }
+                const ele: Element = args.event ? closest(args.event.target as HTMLElement, '.' + constants.RIBBON_POPUP_CONTROL) : null;
+                if (ele) { args.cancel = true; }
             }
         }, overflowButton);
         this.element.classList.add(constants.RIBBON_OVERFLOW);
@@ -1246,7 +1248,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private removeOverflowEvent(item: RibbonItemModel, itemEle: HTMLElement): void {        
+    private removeOverflowEvent(item: RibbonItemModel, itemEle: HTMLElement): void {
         switch (item.type) {
         case 'Button':
             this.ribbonButtonModule.removeOverFlowEvents(item, itemEle);
@@ -1287,11 +1289,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.collapseButton = this.createElement('span', {
             className: constants.RIBBON_COLLAPSE_BUTTON + constants.SPACE + constants.EXPAND_COLLAPSE_ICON,
             id: this.tabObj.element.id + constants.COLLAPSE_BUTTON_ID,
-            attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Layout Switcher' }
+            attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Layout Switcher', 'role': 'button' }
         });
         this.collapseButton.onclick = () => { this.toggleLayout(); };
         this.collapseButton.onkeydown = (e: KeyboardEvent) => {
-            if (e.key === "Enter") { this.toggleLayout(); }
+            if (e.key === 'Enter') { this.toggleLayout(); }
         };
         this.element.classList.add(constants.RIBBON_COLLAPSIBLE);
         if (this.activeLayout === 'Simplified') { this.collapseButton.classList.add(constants.RIBBON_EXPAND_BUTTON); }
@@ -1388,7 +1390,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                 (item as RibbonItem).setProperties({ activeSize: size }, true);
                                 this.setItemSize(ele, item);
                             }
-                        }                        
+                        }
                         if (!(group.enableGroupOverflow || groupEle.querySelector('.' + constants.RIBBON_ITEM))) {
                             groupEle.classList.add('e-ribbon-emptyCollection');
                         }
@@ -1437,7 +1439,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                 }
                                 else if ((item.displayOptions === DisplayMode.Overflow)) {
                                     const itemEle: HTMLElement = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID);
-                                    if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)){
+                                    if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)) {
                                         this.updatePopupItems(item, itemEle, group.enableGroupOverflow, false);
                                     }
                                     groupCollection.append(itemEle);
@@ -1520,18 +1522,18 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 const launcherIcon: HTMLElement = this.createElement('div', {
                     className: constants.RIBBON_LAUNCHER_ICON_ELE + ' ' + (this.launcherIconCss ? this.launcherIconCss : constants.RIBBON_LAUNCHER_ICON),
                     id: group.id + constants.LAUNCHER_ID,
-                    attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Launcher Icon' }
+                    attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Launcher Icon', 'role': 'button' }
                 });
                 groupContainer.appendChild(launcherIcon);
                 groupContainer.classList.add(constants.RIBBON_LAUNCHER);
                 EventHandler.add(launcherIcon, 'click', this.launcherIconClicked.bind(this, group.id), this);
                 EventHandler.add(launcherIcon, 'keydown', (e: KeyboardEvent) => {
-                    if (e.key === "Enter") { this.launcherIconClicked(group.id); }
+                    if (e.key === 'Enter') { this.launcherIconClicked(group.id); }
                 }, this);
             }
             const elements: HTMLElement[] = this.createCollection(group.collections, group.orientation
                 , group.id, group.header, group.enableGroupOverflow, tabIndex, groupContainer);
-            append(elements, groupContent);            
+            append(elements, groupContent);
             if ((this.activeLayout === 'Simplified') && !(group.enableGroupOverflow || groupEle.querySelector('.' + constants.RIBBON_ITEM))) {
                 groupEle.classList.add('e-ribbon-emptyCollection');
             }
@@ -1550,20 +1552,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     for (let j: number = 0; j < items.length; j++) {
                         const ribbonitem: RibbonItemModel = items[parseInt(j.toString(), 10)];
                         if (!ribbonitem.allowedSizes || (ribbonitem.allowedSizes === 0)) {
-                            (ribbonitem as RibbonItem).setProperties({ allowedSizes:
-                                (RibbonItemSize.Small | RibbonItemSize. Medium | RibbonItemSize.Large) }, true);
+                            (ribbonitem as RibbonItem).setProperties({
+                                allowedSizes:
+                                    (RibbonItemSize.Small | RibbonItemSize.Medium | RibbonItemSize.Large)
+                            }, true);
                         }
                         if ((ribbonitem.type === 'ColorPicker') && (ribbonitem.allowedSizes !== RibbonItemSize.Small)) {
                             (ribbonitem as RibbonItem).setProperties({ allowedSizes: RibbonItemSize.Small }, true);
                         } else if ((ribbonitem.type === 'ComboBox' || ribbonitem.type === 'CheckBox') &&
                             (ribbonitem.allowedSizes !== RibbonItemSize.Medium)) {
-                            (ribbonitem as RibbonItem).setProperties({ allowedSizes: RibbonItemSize. Medium }, true);
+                            (ribbonitem as RibbonItem).setProperties({ allowedSizes: RibbonItemSize.Medium }, true);
                         } else if (((alignType === 'Column') && (items.length > 1)) || ((alignType === 'Row') && (collectionList.length > 1))) {
                             if (ribbonitem.allowedSizes & RibbonItemSize.Large) {
                                 // To remove large size, perform 'and' with 011(3).
                                 let sizeVal: RibbonItemSize = ribbonitem.allowedSizes & (RibbonItemSize.Small | RibbonItemSize.Medium);
                                 sizeVal = sizeVal ? sizeVal : RibbonItemSize.Medium;
-                                (ribbonitem as RibbonItem).setProperties({ allowedSizes: sizeVal}, true);
+                                (ribbonitem as RibbonItem).setProperties({ allowedSizes: sizeVal }, true);
                             }
                         }
                         const itemsize: RibbonItemSize = (ribbonitem.allowedSizes & RibbonItemSize.Large) ? RibbonItemSize.Large :
@@ -1621,13 +1625,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             let size: RibbonItemSize = item.activeSize;
             if (this.activeLayout === 'Simplified') {
                 size = ((item.allowedSizes === RibbonItemSize.Large) || (item.allowedSizes & RibbonItemSize.Medium) ||
-                       (item.displayOptions === DisplayMode.Overflow)) ? RibbonItemSize.Medium : RibbonItemSize.Small;
+                    (item.displayOptions === DisplayMode.Overflow)) ? RibbonItemSize.Medium : RibbonItemSize.Small;
                 (item as RibbonItem).setProperties({ activeSize: size }, true);
             }
             if (size & RibbonItemSize.Large) {
                 itemEle.classList.add(constants.RIBBON_LARGE_ITEM, constants.RIBBON_CONTENT_HEIGHT);
             } else {
-                itemEle.classList.add((size & RibbonItemSize.Medium) ? constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM );
+                itemEle.classList.add((size & RibbonItemSize.Medium) ? constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
             }
             switch (item.type) {
             case 'Button':
@@ -1769,7 +1773,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                             if (moduleName !== 'template') {
                                 updateCommonProperty(ele, moduleName, commonProp);
                             } else if (!isNullOrUndefined(commonProp.enableRtl)) {
-                                ele.classList.toggle( constants.RTL_CSS, commonProp.enableRtl);
+                                ele.classList.toggle(constants.RTL_CSS, commonProp.enableRtl);
                             }
                         }
                     }
@@ -1798,7 +1802,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 if (this.activeLayout === RibbonLayout.Classic) {
                     dropdownElement = group.isCollapsed ?
                         contentEle.querySelector('#' + group.id + constants.OVERFLOW_ID + constants.DROPDOWN_ID) : null;
-                    if (group.showLauncherIcon ) {
+                    if (group.showLauncherIcon) {
                         this.removeLauncherIcon(group.id, dropdownElement, contentEle);
                     }
                 } else {
@@ -2226,7 +2230,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         (itemProp.item as RibbonItem).setProperties({ disabled: isDisabled }, true);
         const ele: HTMLElement = getItemElement(this, itemId, itemProp);
         if (ele) {
-            const itemEle: HTMLElement = closest( ele, '.e-ribbon-item') as HTMLElement;
+            const itemEle: HTMLElement = closest(ele, '.e-ribbon-item') as HTMLElement;
             itemEle.classList.toggle(constants.DISABLED_CSS, itemProp.item.disabled);
             const moduleName: string = this.getItemModuleName(itemProp.item);
             if (moduleName !== 'template') {
@@ -2289,6 +2293,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 break;
             case 'isMinimized':
                 this.element.classList.toggle(constants.RIBBON_MINIMIZE, this.isMinimized);
+                (this.tabObj.element.querySelector('.e-content') as HTMLElement).style.display = this.isMinimized ? 'none' : 'block';
                 break;
             case 'locale':
                 this.updateCommonProperty({ locale: this.locale });
@@ -2299,6 +2304,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             case 'enableRtl':
                 this.element.classList.toggle(constants.RTL_CSS, this.enableRtl);
                 this.updateCommonProperty({ enableRtl: newProp.enableRtl });
+                if (this.scrollModule) { this.scrollModule.setProperties({ enableRtl: newProp.enableRtl }); }
                 break;
             case 'launcherIconCss':
                 for (let i: number = 0; i < this.tabs.length; i++) {

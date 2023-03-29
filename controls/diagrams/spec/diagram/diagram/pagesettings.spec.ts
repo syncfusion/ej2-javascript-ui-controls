@@ -5,7 +5,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { BasicShapeModel, BpmnShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, Canvas } from '../../../src/index';
+import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, Canvas, BezierSegment } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { IClickEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
@@ -3527,6 +3527,72 @@ describe('Check whether connector segment overlap node - BottomToTop', () => {
 
 });
 
+describe('Unable to drag bezier connector control thumb while increasing the handleSize', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagrambezierresize' });
+        document.body.appendChild(ele);
+
+        let connector1: ConnectorModel = {
+            id: 'connector1', type: 'Bezier', sourcePoint: { x: 700, y: 200 }, targetPoint: { x: 1000, y: 400 }, annotations: [{ content: 'Connector3', }], segments: [{ type: 'Bezier', point: { x: 750, y: 250 } }, { type: 'Bezier', point: { x: 900, y: 350 } }]
+
+          };
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+            connectors: [connector1], selectedItems : { handleSize : 100}
+
+        });
+        diagram.appendTo('#diagrambezierresize');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Unable to drag bezier connector control thumb while increasing the handleSize', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        //Dragging segement1
+        mouseEvents.mouseDownEvent(diagramCanvas, 710, 222);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 720, 225);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 725, 230);
+        mouseEvents.mouseUpEvent(diagramCanvas, 725, 230);
+        expect((diagram.connectors[0].segments[0] as BezierSegment).bezierPoint1.x == 717).toBe(true);
+        expect((diagram.connectors[0].segments[0] as BezierSegment).bezierPoint1.y == 322).toBe(true);
+        mouseEvents.mouseDownEvent(diagramCanvas, 755, 228);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 760, 230);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 770, 235);
+        mouseEvents.mouseUpEvent(diagramCanvas, 770, 235);
+        expect((diagram.connectors[0].segments[0] as BezierSegment).bezierPoint2.x == 750).toBe(true);
+        expect((diagram.connectors[0].segments[0] as BezierSegment).bezierPoint2.y == 227.5).toBe(true);
+         //Dragging segement2
+        mouseEvents.mouseDownEvent(diagramCanvas, 815, 255);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 820, 260);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 825, 270);
+        mouseEvents.mouseUpEvent(diagramCanvas, 825, 270);
+        expect((diagram.connectors[0].segments[1] as BezierSegment).bezierPoint1.x == 817).toBe(true);
+        expect((diagram.connectors[0].segments[1] as BezierSegment).bezierPoint1.y == 362).toBe(true);
+        mouseEvents.mouseDownEvent(diagramCanvas, 845, 360);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 855, 370);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 860, 380);
+        mouseEvents.mouseUpEvent(diagramCanvas, 860, 380);
+        expect((diagram.connectors[0].segments[1] as BezierSegment).bezierPoint2.x == 840).toBe(true);
+        expect((diagram.connectors[0].segments[1] as BezierSegment).bezierPoint2.y == 350).toBe(true);
+        done();
+    });
+});
 describe('Check whether connector segment restore after save and load', () => {
     let diagram: Diagram;
     let ele: HTMLElement;

@@ -108,7 +108,9 @@ export class CommentReviewPane {
         }
         if (this.owner) {
             this.owner.resize();
-            this.owner.documentHelper.updateFocus();
+            if (this.owner.enableAutoFocus) {
+                this.owner.documentHelper.updateFocus();
+            }
         }
         
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I439673` - The `enableTextWrap` property of the tooltip is now working properly.
+
 ## 21.1.35 (2023-03-23)
 
 ### Svg Base

@@ -666,7 +666,9 @@
       color: $rte-quick-item-active-font-color;
     }
   }
-
+  .e-richtexteditor .e-rte-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-active .e-icons {
+    color: $rte-tlbar-expand-active;
+  }
   @if $skin-name == 'tailwind' {
     .e-richtexteditor .e-rte-toolbar .e-toolbar-extended {
       background: $rte-extended-toolbar-background;

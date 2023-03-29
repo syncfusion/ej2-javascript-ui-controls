@@ -72,7 +72,7 @@
           background: $ribbon-active-file-menu-background;
         }
 
-        &:hover {
+        &:hover:not(.e-active) {
           color: $ribbon-tab-text-hover-color;
         }
 

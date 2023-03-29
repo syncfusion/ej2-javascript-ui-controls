@@ -2032,7 +2032,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             storedCell = this.computeStoreCells(sCell);
             storedCellLength = storedCell.length;
             if (storedCellLength === 0) {
-                return 0;
+                return isAvgIfs === this.trueValue ? this.getErrorStrings()[CommonErrors.divzero] : 0;
             }
         }
         let avgValCount: number = 0;

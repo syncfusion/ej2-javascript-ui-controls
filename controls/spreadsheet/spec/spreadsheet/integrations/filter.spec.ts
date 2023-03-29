@@ -815,10 +815,10 @@ describe('Filter ->', () => {
                 done();
             });
         });
-        it('Apply filter with operator as doesnotcontains', (done: Function) => {
+        it('Apply filter with operator as doesnotcontain', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.getInstance().filterModule.getFilterOperator('NotContains');
-            spreadsheet.applyFilter([{ field: 'F', predicate: 'or', operator: 'doesnotcontains', value: '300' }]);
+            spreadsheet.applyFilter([{ field: 'F', predicate: 'or', operator: 'doesnotcontain', value: '300' }]);
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
@@ -827,7 +827,7 @@ describe('Filter ->', () => {
                 expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).not.toBeNull();
                 helper.click('#' + helper.id + '_sorting');
                 helper.click('.e-sort-filter-ddb ul li:nth-child(6)');
-                spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotcontains', value: 'Shoe' }]);
+                spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotcontain', value: 'Shoe' }]);
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
                     expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
@@ -843,10 +843,10 @@ describe('Filter ->', () => {
                 });
             });
         });
-        it('Apply filter with operator as doesnotstartswith', (done: Function) => {
+        it('Apply filter with operator as doesnotstartwith', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.getInstance().filterModule.getFilterOperator('NotBeginsWith');
-            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotstartswith', value: 's' }]);
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotstartwith', value: 's' }]);
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
@@ -859,10 +859,10 @@ describe('Filter ->', () => {
                 done();
             });
         });
-        it('Apply filter with operator as doesnotendswith', (done: Function) => {
+        it('Apply filter with operator as doesnotendwith', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.getInstance().filterModule.getFilterOperator('NotEndsWith');
-            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotendswith', value: 'shoes' }]);
+            spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'doesnotendwith', value: 'shoes' }]);
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();

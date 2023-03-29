@@ -480,7 +480,7 @@ export class EventBase {
             }
         }
         if (target && this.parent.selectedElements.length > 0) {
-            this.addSelectedAppointments(this.parent.selectedElements);
+            this.addSelectedAppointments(this.parent.selectedElements, false);
         }
         return this.parent.selectedElements;
     }
@@ -512,12 +512,12 @@ export class EventBase {
         }
     }
 
-    public addSelectedAppointments(cells: Element[]): void {
+    public addSelectedAppointments(cells: Element[], preventFocus?: boolean): void {
         if (this.parent.currentView !== 'MonthAgenda') {
             this.parent.removeSelectedClass();
         }
         addClass(cells, cls.APPOINTMENT_BORDER);
-        if (cells.length > 0) {
+        if (cells.length > 0 && !preventFocus) {
             (cells[cells.length - 1] as HTMLElement).focus();
         }
     }
@@ -543,6 +543,10 @@ export class EventBase {
         }
         const selectedAppointments: Element[] = this.getSelectedAppointments();
         if (selectedAppointments.length > 0) {
+            if (this.parent.activeEventData && this.parent.activeEventData.element && selectedAppointments.indexOf(this.parent.activeEventData.element as Element) > -1) {
+                (this.parent.activeEventData.element as HTMLElement).focus();
+                return;
+            }
             (selectedAppointments[selectedAppointments.length - 1] as HTMLElement).focus();
             return;
         }
@@ -843,7 +847,7 @@ export class EventBase {
         const target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS);
         const guid: string = target.getAttribute('data-guid');
         if (isMultiple) {
-            this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+            this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')), true);
             (target as HTMLElement).focus();
         }
         let eventObject: Record<string, any> = this.getEventByGuid(guid);

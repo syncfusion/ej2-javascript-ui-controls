@@ -248,7 +248,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * Configures the TreeGrid aggregate rows.
-     * > Check the [`Aggregates`](../../treegrid/aggregate/) for its configuration.
+     * > Check the [`Aggregates`](../../treegrid/aggregates/aggregates) for its configuration.
      *
      * @default []
      */

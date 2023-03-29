@@ -1,4 +1,4 @@
-import { EventHandler, getComponent, merge } from '@syncfusion/ej2-base';
+import { getComponent, merge } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getItem, getItemElement, itemProps, Ribbon, RibbonItemSize } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_POPUP_CONTROL, SPACE } from '../base/constant';
@@ -41,21 +41,22 @@ export class RibbonButton {
             enablePersistence: this.parent.enablePersistence,
             iconPosition: item.activeSize === RibbonItemSize.Large ? 'Top' : 'Left',
             iconCss: btnSettings.iconCss,
-            disabled:  item.disabled,
+            disabled: item.disabled,
             cssClass: (ITEM_VERTICAL_CENTER + SPACE + RIBBON_CONTROL + SPACE + (btnSettings.cssClass ? btnSettings.cssClass : '')).trim(),
             content: item.activeSize === RibbonItemSize.Small ? '' : btnSettings.content,
             isPrimary: btnSettings.isPrimary,
             isToggle: btnSettings.isToggle,
             created: btnSettings.created
         }, buttonEle);
-        buttonEle.onclick = (e: Event) => {  
-            if (btnSettings.clicked) { btnSettings.clicked.call(this, e); } 
+        buttonEle.onclick = (e: Event) => {
+            if (btnSettings.clicked) { btnSettings.clicked.call(this, e); }
         };
+        buttonEle.setAttribute('aria-label', btnSettings.content);
     }
 
     /**
      * Adds the additional event handlers as the item moved into overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
      * @param {DropDownButton} overflowButton - Gets the overflow button.
@@ -65,28 +66,27 @@ export class RibbonButton {
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const buttonEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const buttonObj: Button = getComponent(buttonEle, Button);
-        buttonObj.setProperties({cssClass: buttonObj.cssClass + SPACE + RIBBON_POPUP_CONTROL});
-        buttonEle.onclick = (e: Event) => {  
+        buttonObj.setProperties({ cssClass: buttonObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
+        buttonEle.onclick = (e: Event) => {
             if (item.buttonSettings.clicked) { item.buttonSettings.clicked.call(this, e); }
             overflowButton.toggle();
         };
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
     public removeOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
         const buttonEle: HTMLElement = itemEle.querySelector('#' + item.id);
-        const buttonObj: Button = getComponent(buttonEle, Button);        
+        const buttonObj: Button = getComponent(buttonEle, Button);
         let cssClass: string[] = buttonObj.cssClass.split(SPACE);
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
-        buttonObj.setProperties({cssClass: cssClass.join(SPACE)});
-        buttonEle.onclick = (e: Event) => {  
+        buttonObj.setProperties({ cssClass: cssClass.join(SPACE) });
+        buttonEle.onclick = (e: Event) => {
             if (item.buttonSettings.clicked) { item.buttonSettings.clicked.call(this, e); }
         };
     }
@@ -117,8 +117,11 @@ export class RibbonButton {
         const buttonEle: HTMLElement = getItemElement(this.parent, id, itemProp);
         if (!buttonEle) { return; }
         const buttonObj: Button = getComponent(buttonEle, Button);
-        if (prop.cssClass) { prop.cssClass = (ITEM_VERTICAL_CENTER + SPACE + RIBBON_CONTROL + SPACE + prop.cssClass ).trim(); }
-        if (prop.content) { prop.content = itemProp.item.activeSize === RibbonItemSize.Small ? '' : prop.content; }
+        if (prop.cssClass) { prop.cssClass = (ITEM_VERTICAL_CENTER + SPACE + RIBBON_CONTROL + SPACE + prop.cssClass).trim(); }
+        if (prop.content) {
+            prop.content = itemProp.item.activeSize === RibbonItemSize.Small ? '' : prop.content;
+            buttonEle.setAttribute('aria-label', prop.content);
+        }
         delete prop.clicked;
         buttonObj.setProperties(prop);
     }

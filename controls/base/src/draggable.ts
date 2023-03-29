@@ -412,9 +412,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const handler: Function = (this.enableTapHold && Browser.isDevice && Browser.isTouch) ? this.mobileInitialize : this.initialize;
         if (isUnWire) {
-            EventHandler.remove(ele || this.element, Browser.touchStartEvent, handler);
+            EventHandler.remove(ele || this.element,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler);
         } else {
-            EventHandler.add(ele || this.element, Browser.touchStartEvent, handler, this);
+            EventHandler.add(ele || this.element,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler, this);
         }
     }
     /* istanbul ignore next */
@@ -427,14 +427,14 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 this.initialize(evt, target);
             },
             this.tapHoldThreshold);
-        EventHandler.add(document, Browser.touchMoveEvent, this.removeTapholdTimer, this);
-        EventHandler.add(document, Browser.touchEndEvent, this.removeTapholdTimer, this);
+        EventHandler.add(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.removeTapholdTimer, this);
+        EventHandler.add(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.removeTapholdTimer, this);
     }
     /* istanbul ignore next */
     private removeTapholdTimer(): void {
         clearTimeout(this.tapHoldTimer);
-        EventHandler.remove(document, Browser.touchMoveEvent, this.removeTapholdTimer);
-        EventHandler.remove(document, Browser.touchEndEvent, this.removeTapholdTimer);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.removeTapholdTimer);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.removeTapholdTimer);
     }
     /* istanbul ignore next */
     private getScrollableParent(element: HTMLElement, axis: string): HTMLElement {
@@ -516,15 +516,15 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (this.externalInitialize) {
             this.intDragStart(evt);
         } else {
-            EventHandler.add(document, Browser.touchMoveEvent, this.intDragStart, this);
-            EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
+            EventHandler.add(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.intDragStart, this);
+            EventHandler.add(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
         if (evt.type !== 'touchstart' && this.isPreventSelect) {
             document.body.classList.add('e-prevent-select');
         }
         this.externalInitialize = false;
-        EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
+        EventHandler.trigger(document.documentElement,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, evt);
     }
     private intDragStart(evt: MouseEvent & TouchEvent): void {
         this.removeTapholdTimer();
@@ -615,8 +615,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
-            EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
-            EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
+            EventHandler.remove(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.intDragStart);
+            EventHandler.remove(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDestroy);
             if (!isBlazor()) {
                 this.bindDragEvents(dragTargetElement);
             }
@@ -625,8 +625,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
 
     private bindDragEvents(dragTargetElement: HTMLElement): void {
         if (isVisible(dragTargetElement)) {
-            EventHandler.add(document, Browser.touchMoveEvent, this.intDrag, this);
-            EventHandler.add(document, Browser.touchEndEvent, this.intDragStop, this);
+            EventHandler.add(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.intDrag, this);
+            EventHandler.add(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDragStop, this);
             this.setGlobalDroppables(false, this.element, dragTargetElement);
         } else {
             this.toggleEvents();
@@ -962,10 +962,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.toggleEvents();
         document.body.classList.remove('e-prevent-select');
         this.element.setAttribute('aria-grabbed', 'false');
-        EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
-        EventHandler.remove(document, Browser.touchEndEvent, this.intDragStop);
-        EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
-        EventHandler.remove(document, Browser.touchMoveEvent, this.intDrag);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.intDragStart);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDragStop);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDestroy);
+        EventHandler.remove(document, Browser.isSafari() ? 'touchmove' : Browser.touchMoveEvent, this.intDrag);
         if (this.isDragStarted()) {
             this.isDragStarted(true);
         }
@@ -1062,7 +1062,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
         }
-        if (this.element && this.element.classList.length > 0 && this.element.classList.value.indexOf("e-dialog") === -1 && document.scrollingElement) {
+        if (!this.element.classList.contains("e-dialog") && !this.element.classList.contains("e-card") && document.scrollingElement) {
             let isVerticalScroll: boolean = document.scrollingElement.scrollHeight > 0 && document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight && document.scrollingElement.scrollTop > 0;
             let isHorrizontalScroll: boolean = document.scrollingElement.scrollWidth > 0 && document.scrollingElement.scrollWidth > document.scrollingElement.clientWidth && document.scrollingElement.scrollLeft > 0;
             pageX = isHorrizontalScroll ? pageX - document.scrollingElement.scrollLeft : pageX;

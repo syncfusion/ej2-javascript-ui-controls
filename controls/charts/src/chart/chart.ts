@@ -2414,13 +2414,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             series.category = seriesCollection[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
-            if (!series.visible) {
-                if (this.isSecondaryAxis(series.xAxis)) {
-                    series.xAxis.internalVisibility = series.xAxis.series.some((value) => (value.visible));
-                }
-                if (this.isSecondaryAxis(series.yAxis)) {
-                    series.yAxis.internalVisibility = series.yAxis.series.some((value) => (value.visible));
-                }
+            if (this.isSecondaryAxis(series.xAxis)) {
+                series.xAxis.internalVisibility = series.xAxis.series.some((value) => (value.visible));
+            }
+            if (this.isSecondaryAxis(series.yAxis)) {
+                series.yAxis.internalVisibility = series.yAxis.series.some((value) => (value.visible));
             }
             switch (series.type) {
             case 'Bar':

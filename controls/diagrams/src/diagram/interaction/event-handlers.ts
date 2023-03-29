@@ -89,6 +89,10 @@ export class DiagramEventHandler {
         if (action !== this.currentAction) {
             if (this.currentAction === 'PortDraw') {
                 this.diagram.tool &= ~DiagramTools.DrawOnce;
+                //EJ2-70550 - Connector disconnected from source and target while dragging mutliple selected element
+                if (this.diagram.currentDrawingObject) {
+                    this.diagram.currentDrawingObject = null;
+                }
                 if (this.tool) {
                     this.tool.mouseUp({ position: this.currentPosition });
                 }

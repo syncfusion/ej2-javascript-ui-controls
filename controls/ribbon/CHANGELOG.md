@@ -8,7 +8,7 @@
 
 The Ribbon provides a structured and easy-to-use user interface for users to access different features and functions through series of tabs, improving user experience and efficiency.
 
-#### Key features
+**Key features**
 
 - **Built-in items** - Several built-in support items, such as buttons, checkboxes, drop-down buttons, split buttons, combo boxes, and color pickers that can be customized and used to execute specific actions.
 

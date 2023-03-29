@@ -427,7 +427,7 @@ export class DragAndDrop {
                 this.dragObj.selectedCards.forEach((element: HTMLElement) => { this.updateDroppedData(element, cardStatus, contentCell); });
             }
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
-                this.changeOrder(this.dragObj.modifiedData);
+                this.changeOrder(this.dragObj.modifiedData, (e as any).helper as Element);
             }
         }
         if (this.dragObj.modifiedData.length === 0) {
@@ -509,10 +509,16 @@ export class DragAndDrop {
         this.dragObj.modifiedData.push(crudData);
     }
 
-    private changeOrder(modifieddata: Record<string, any>[]): void {
+    private changeOrder(modifieddata: Record<string, any>[], draggedCard: Element): void {
         let prevele: boolean = false;
-        let element: Element = this.kanbanObj.sortSettings.direction === 'Ascending' ?
-            this.dragObj.targetClone.previousElementSibling : this.dragObj.targetClone.nextElementSibling;
+        let element: Element;
+        if (this.kanbanObj.sortSettings.direction === 'Ascending') {
+            element = (draggedCard === this.dragObj.targetClone.previousElementSibling) && (this.dragObj.targetClone.previousElementSibling &&
+                this.dragObj.targetClone.previousElementSibling.previousElementSibling) ?
+                this.dragObj.targetClone.previousElementSibling.previousElementSibling : this.dragObj.targetClone.previousElementSibling;
+        } else {
+            element = this.dragObj.targetClone.nextElementSibling;
+        }
         if (element && !element.classList.contains(cls.DRAGGED_CARD_CLASS) && !element.classList.contains(cls.CLONED_CARD_CLASS)
             && !element.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
             prevele = true;

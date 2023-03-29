@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Common
+
+#### Bug Fixes
+
+- `#F41815` - Resolved the dragged `card` element and mouse position mismatch issue in `kanban`.
+
 ## 21.1.35 (2023-03-23)
 
 ### Common

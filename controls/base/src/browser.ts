@@ -138,6 +138,18 @@ export class Browser {
     }
 
     /**
+     * Check whether the browser on the iPad device is Safari or not
+     *
+     * @returns {boolean}
+     */
+
+    public static isSafari(): boolean {
+        return (Browser.isDevice && Browser.isIos && Browser.isTouch && typeof window !== 'undefined'
+         && window.navigator.userAgent.toLowerCase().indexOf('iphone') === -1
+        && window.navigator.userAgent.toLowerCase().indexOf('safari') > -1);
+    }
+
+    /**
      * To get the value based on provided key and regX
      *
      * @param {string} key ?

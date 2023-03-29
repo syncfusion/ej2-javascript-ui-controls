@@ -2020,8 +2020,9 @@ export class ODataV4Adaptor extends ODataAdaptor {
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
         const metaName: string = '@odata.context';
-        if ((request && request.type === 'GET') && !this.rootUrl && data[metaName]) {
-            const dataUrl: string[] = data[metaName].split('/$metadata#');
+        const metaV4Name: string = '@context';
+        if ((request && request.type === 'GET') && !this.rootUrl && (data[metaName] || data[metaV4Name])) {
+            const dataUrl: string[] = data[metaName] ? data[metaName].split('/$metadata#') : data[metaV4Name].split('/$metadata#');
             this.rootUrl = dataUrl[0];
             this.resourceTableName = dataUrl[1];
         }
@@ -2035,8 +2036,10 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
         let count: number = null;
         const dataCount: string = '@odata.count';
+        const dataV4Count: string = '@count';
         if (query && query.isCountRequired) {
             if (dataCount in data) { count = data[dataCount]; }
+            else if (dataV4Count in data) { count = data[dataV4Count]; }
         }
         data = !isNullOrUndefined(data.value) ? data.value : data;
 

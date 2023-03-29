@@ -959,6 +959,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         remove(this.wrapper);
         this.wrapper = null;
         this.keyboardModuleRating.destroy();
+        this.keyboardModuleRating = null;
         ['value', 'aria-label', 'name'].forEach((attr: string) => {
             this.element.removeAttribute(attr);
         });

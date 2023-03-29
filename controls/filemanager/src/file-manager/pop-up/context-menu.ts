@@ -255,9 +255,10 @@ export class ContextMenu {
         this.menuType = 'folder';
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
-        if (isTree) {
+        const selectedTreeNode: Element = select('[data-uid="'+this.parent.navigationpaneModule.treeObj.selectedNodes[0]+'"]', this.parent.navigationpaneModule.treeObj.element);
+        if (this.parent.pathNames[this.parent.pathNames.length-1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
             this.disabledItems.push('Open');
-        } else if (this.parent.selectedItems.length !== 1) {
+        } else if (this.parent.selectedItems.length !== 1 && this.parent.activeModule !=='navigationpane') {
             this.disabledItems.push('Rename', 'Paste');
         }
     }
@@ -394,9 +395,12 @@ export class ContextMenu {
                     refresh(this.parent);
                     break;
                 case 'open':
-                    if (this.parent.visitedItem) {
+                    if (this.parent.visitedItem && this.parent.activeModule !== 'navigationpane') {
                         this.parent.notify(events.openInit, { target: this.parent.visitedItem });
                     } else if (this.parent.activeModule === 'navigationpane') {
+                        if(this.parent.visitedItem){
+                            this.parent.notify(events.openInit, { target: this.parent.visitedItem });
+                        }
                         this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);
                     }
                     break;

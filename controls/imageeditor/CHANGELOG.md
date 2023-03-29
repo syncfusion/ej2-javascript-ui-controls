@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Script error thrown while using Toolbar Template" has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Image Editor

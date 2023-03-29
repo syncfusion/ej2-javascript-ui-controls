@@ -381,6 +381,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private isShapeInserted: boolean = false;
     private isInitialTextEdited: boolean = false;
     private isShapeTextInserted: boolean = false;
+    private isErrorImage: boolean = false;
 
     /**
      * Defines one or more CSS classes that can be used to customize the appearance of an Image Editor component.
@@ -1000,7 +1001,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.zoomSettings.zoomTrigger = newProperties.zoomSettings.zoomTrigger;
                 }
                 if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
-                    this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar | ZoomTrigger.Commands);
+                    this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar |
+                        ZoomTrigger.Commands);
                     this.refreshToolbar('main');
                 } else if ((newProperties.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
                     this.refreshToolbar('main');
@@ -1885,11 +1887,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.updateCurrentUndoRedoColl('ok');
     }
 
-    private performTransformation(text: string): void {
-        const tempZoomFactor: number = this.defaultZoomFactor;
-        const isUndoRedo: boolean = this.isUndoRedo;
-        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+    private resetZoom(): void {
         if (this.defaultZoomFactor !== 0) {
+            const isUndoRedo: boolean = this.isUndoRedo;
             this.transformCurrentObj = this.getCurrentObj();
             this.transformCurrentObj.objColl = extend([], this.objColl, null, true) as SelectionPoint[];
             this.transformCurrentObj.pointColl = extend({}, this.pointColl, null, true) as Point[];
@@ -1902,6 +1902,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             this.isUndoRedo = isUndoRedo;
         }
+    }
+
+    private performTransformation(text: string): void {
+        const tempZoomFactor: number = this.defaultZoomFactor;
+        const isUndoRedo: boolean = this.isUndoRedo;
+        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        this.resetZoom();
         this.updateTransform(text);
         if (tempZoomFactor !== 0) {
             this.isUndoRedo = true;
@@ -2866,7 +2873,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 isDisabledFilter = true;
             }
             this.enableDisableToolbarBtn();
-            let previousObj: CurrentObject; let duplicateObj: SelectionPoint; let objColl: SelectionPoint[];
+            let duplicateObj: SelectionPoint; let objColl: SelectionPoint[];
             if (!this.disabled) {
                 switch (type) {
                 case 'pan':
@@ -2909,11 +2916,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.currentToolbar = 'main';
                     break;
                 case 'crop':
-                    previousObj = this.getCurrentObj();
-                    previousObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-                    previousObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-                    previousObj.afterCropActions = this.afterCropActions;
-                    this.previousCropCurrentObj = previousObj;
                     if (!isNullOrUndefined(this.currSelectionPoint)) {
                         if (this.currObjType.isUndoAction) { this.refreshUndoRedoColl(); }
                         if (!isNullOrUndefined(this.cropObj.activeObj.shape)) {
@@ -4833,41 +4835,56 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const imageData: ImageData = this.getCurrentCanvasData();
         this.inMemoryCanvas.width = imageData.width; this.inMemoryCanvas.height = imageData.height;
         this.inMemoryContext.putImageData(imageData, 0, 0);
+        let ctx: CanvasRenderingContext2D;
         const noFilter: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_defaultCanvas');
-        let ctx: CanvasRenderingContext2D = noFilter.getContext('2d');
-        noFilter.style.width = '100px'; noFilter.style.height = '100px';
-        ctx.filter = this.updateAdjustment('default', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(noFilter)) {
+            ctx = noFilter.getContext('2d');
+            noFilter.style.width = '100px'; noFilter.style.height = '100px';
+            ctx.filter = this.updateAdjustment('default', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const chrome: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_chromeCanvas');
-        ctx = chrome.getContext('2d');
-        chrome.style.width = '100px'; chrome.style.height = '100px';
-        ctx.filter = this.updateAdjustment('chrome', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(chrome)) {
+            ctx = chrome.getContext('2d');
+            chrome.style.width = '100px'; chrome.style.height = '100px';
+            ctx.filter = this.updateAdjustment('chrome', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const cold: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_coldCanvas');
-        ctx = cold.getContext('2d');
-        cold.style.width = '100px'; cold.style.height = '100px';
-        ctx.filter = this.updateAdjustment('cold', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(cold)) {
+            ctx = cold.getContext('2d');
+            cold.style.width = '100px'; cold.style.height = '100px';
+            ctx.filter = this.updateAdjustment('cold', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const warm: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_warmCanvas');
-        ctx = warm.getContext('2d');
-        warm.style.width = '100px'; warm.style.height = '100px';
-        ctx.filter = this.updateAdjustment('warm', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(warm)) {
+            ctx = warm.getContext('2d');
+            warm.style.width = '100px'; warm.style.height = '100px';
+            ctx.filter = this.updateAdjustment('warm', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const grayscale: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_grayscaleCanvas');
-        ctx = grayscale.getContext('2d');
-        grayscale.style.width = '100px'; grayscale.style.height = '100px';
-        ctx.filter = this.updateAdjustment('grayscale', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(grayscale)) {
+            ctx = grayscale.getContext('2d');
+            grayscale.style.width = '100px'; grayscale.style.height = '100px';
+            ctx.filter = this.updateAdjustment('grayscale', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const sepia: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_sepiaCanvas');
-        ctx = sepia.getContext('2d');
-        sepia.style.width = '100px'; sepia.style.height = '100px';
-        ctx.filter = this.updateAdjustment('sepia', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(sepia)) {
+            ctx = sepia.getContext('2d');
+            sepia.style.width = '100px'; sepia.style.height = '100px';
+            ctx.filter = this.updateAdjustment('sepia', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
         const invert: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_invertCanvas');
-        ctx = invert.getContext('2d');
-        invert.style.width = '100px'; invert.style.height = '100px';
-        ctx.filter = this.updateAdjustment('invert', null, true);
-        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        if (!isNullOrUndefined(invert)) {
+            ctx = invert.getContext('2d');
+            invert.style.width = '100px'; invert.style.height = '100px';
+            ctx.filter = this.updateAdjustment('invert', null, true);
+            ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        }
     }
 
     private callUpdateCurrentTransformedState(): void {
@@ -6509,7 +6526,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.currObjType.isUndoZoom = false;
                 this.lowerCanvas.style.display = 'block';
             }
-            this.isUndoRedo = false;
+            this.isUndoRedo = this.isErrorImage = false;
             if (Browser.isDevice) {
                 if (this.isToolbar() && (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar'))) &&
                 (!isNullOrUndefined((getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar)))) {
@@ -6528,6 +6545,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
                 this.initToolbarItem(false, false, null);
             }
+        };
+        this.baseImg.onerror = () => {
+            hideSpinner(this.element);
+            this.isErrorImage = true;
         };
     }
 
@@ -6935,7 +6956,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private getCurrentIndex(): number {
         let index: number;
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (this.activeObj.currIndex === this.objColl[i].currIndex) {
+            if (this.activeObj.currIndex === this.objColl[i as number].currIndex) {
                 index = i;
                 break;
             }
@@ -6969,7 +6990,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (!isShape && !isNullOrUndefined(activeObj.shape)) {
                 this.activeObj = activeObj;
                 const index: number = this.getCurrentIndex();
-                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                if ((!isNullOrUndefined(index) &&
+                    JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index as number].activePoint))) {
                     this.objColl.splice(index, 1);
                 } else if (isNullOrUndefined(this.activeObj.currIndex)) {
                     this.objColl.pop();
@@ -7005,7 +7027,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else if (!isShape && !isNullOrUndefined(activeObj.shape)) {
                 this.activeObj = activeObj;
                 const index: number = this.getCurrentIndex();
-                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index as number].activePoint))) {
                     this.objColl.splice(index, 1);
                 } else if (isNullOrUndefined(this.activeObj.currIndex)) {
                     this.objColl.pop();
@@ -7041,7 +7063,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (!isNullOrUndefined(activeObj.shape)) {
                 this.activeObj = activeObj;
                 const index: number = this.getCurrentIndex();
-                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index].activePoint))) {
+                if ((!isNullOrUndefined(index) && JSON.stringify(this.activeObj.activePoint) === JSON.stringify(this.objColl[index as number].activePoint))) {
                     this.objColl.splice(index, 1);
                 } else if (isNullOrUndefined(this.activeObj.currIndex)) {
                     this.objColl.pop();
@@ -7127,8 +7149,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.textArea.style.display = 'block';
             let strokeColor: string = obj.strokeSettings.strokeColor.split('(')[0] === 'rgb' ?
                 this.rgbToHex(parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[0]),
-                parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[1]),
-                parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[2])) :
+                              parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[1]),
+                              parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[2])) :
                 obj.strokeSettings.strokeColor;
             if (strokeColor === '#ffffff') {
                 strokeColor = '#fff';
@@ -8346,8 +8368,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.activeObj.textSettings.fontFamily = this.textArea.style.fontFamily;
         this.activeObj.strokeSettings.strokeColor = this.textArea.style.color !== '' ?
             this.rgbToHex(parseFloat(this.textArea.style.color.split('(')[1].split(',')[0]),
-            parseFloat(this.textArea.style.color.split('(')[1].split(',')[1]),
-            parseFloat(this.textArea.style.color.split('(')[1].split(',')[2])) :
+                          parseFloat(this.textArea.style.color.split('(')[1].split(',')[1]),
+                          parseFloat(this.textArea.style.color.split('(')[1].split(',')[2])) :
             this.textArea.style.color;
         if (this.textArea.style.fontWeight === 'bold') {
             this.activeObj.textSettings.bold = true;
@@ -12782,7 +12804,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private componentToHex(rgb: number): string {
-        const hex = rgb.toString(16);
+        const hex: string = rgb.toString(16);
         return hex.length === 1 ? '0' + hex : hex;
     }
 
@@ -12873,7 +12895,27 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {ImageData}.
      */
     public getImageData(): ImageData {
+        if (!isNullOrUndefined(this.activeObj.shape)) {
+            this.performCancel();
+        }
+        let currentObj: CurrentObject;
+        if (this.defaultZoomFactor > 0) {
+            currentObj = this.getCurrentObj();
+            currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            currentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+        }
+        this.resetZoom();
         const data: ImageData = this.lowerContext.getImageData(this.destLeft, this.destTop, this.destWidth, this.destHeight);
+        if (!isNullOrUndefined(currentObj)) {
+            this.setCurrentObj(currentObj);
+            this.objColl = extend([], currentObj.objColl, [], true) as SelectionPoint[];
+            this.pointColl = extend([], currentObj.pointColl, [], true) as Point[];
+            this.freehandCounter = this.pointColl.length;
+            this.lowerContext.filter = 'none';
+            this.zoomObjColl(); this.zoomFreehandDrawColl();
+            this.lowerContext.filter = currentObj.filter;
+        }
         return data;
     }
 
@@ -12897,9 +12939,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
             if (this.defToolbarItems.length === 0 &&
                 (isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
-                this.toolbarHeight = 0;
+                if (isNullOrUndefined(this.toolbarTemplate)) {
+                    this.toolbarHeight = 0;
+                } else if (!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_toolbarArea'))) {
+                    this.toolbarHeight = this.element.querySelector('#' + this.element.id + '_toolbarArea').clientHeight;
+                }
             }
-            if (isNullOrUndefined(this.toolbarTemplate)) {this.reset(); this.update(); }
+            this.reset(); this.update();
             this.degree = 0; this.zoomFactor = 0;
             this.isImageLoaded = false;
             this.currSelectionPoint = null;
@@ -12938,7 +12984,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public reset(): void {
-        if (!this.disabled) {
+        if (!this.disabled && !this.isErrorImage) {
             this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
@@ -12994,7 +13040,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.rotateFlipColl = []; this.isCircleCrop = false; this.isCropTab = false;
             this.rotatedDestPoints = {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint;
             this.croppedDegree = 0; this.freehandDrawHoveredIndex = this.freehandDrawSelectedIndex = null;
-            this.isFreehandDrawingPoint = this.isFreehandDrawEditing = false;
+            this.isFreehandDrawingPoint = this.isFreehandDrawEditing = this.isErrorImage = false;
             this.tempFreeHandDrawEditingStyles = {strokeColor: null, fillColor: null, strokeWidth: null};
             this.totalPannedInternalPoint = {x: 0, y: 0}; this.totalPannedClientPoint = {x: 0, y: 0};
             this.lowerCanvas.style.left = this.upperCanvas.style.left = '';
@@ -13124,6 +13170,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public select(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
         if (!this.disabled && this.isImageLoaded) {
+            const previousObj: CurrentObject = this.getCurrentObj();
+            previousObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            previousObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            previousObj.afterCropActions = this.afterCropActions;
+            this.previousCropCurrentObj = previousObj;
             if (this.zoomFactor > 0 && !isNullOrUndefined(this.activeObj.shape) && this.activeObj.shape.split('-')[0] === 'crop' && isNullOrUndefined(this.currentSelectionPoint)) {
                 this.currentSelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
             }

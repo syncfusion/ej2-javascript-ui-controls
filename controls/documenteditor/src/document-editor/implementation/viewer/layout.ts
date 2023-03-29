@@ -4187,16 +4187,8 @@ export class Layout {
                 }
             }
         }
-        if (paragraphWidget instanceof ParagraphWidget &&
-            paragraphWidget.floatingElements.length > 0 && !isPageBreak) {
-            for (let m: number = 0; m < paragraphWidget.floatingElements.length; m++) {
-                let shape: ShapeBase = paragraphWidget.floatingElements[m];
-                let position: Point = this.getFloatingItemPoints(shape);
-                shape.y = position.y;
-                shape.x = position.x;
-                if (shape instanceof ShapeElementBox)
-                    this.updateChildLocationForCellOrShape(shape.y, shape as ShapeElementBox);
-            }
+        if (!isPageBreak) {
+            this.updateShapeBaseLocation(paragraphWidget);
         }
         if (this.isRelayoutOverlap && this.endOverlapWidget) {
             let block: BlockWidget = this.endOverlapWidget.previousRenderedWidget as BlockWidget;
@@ -4217,6 +4209,19 @@ export class Layout {
             this.startOverlapWidget = undefined;
             this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - this.endOverlapWidget.y;
             this.viewer.clientActiveArea.y = this.endOverlapWidget.y;
+        }
+    }
+    private updateShapeBaseLocation(paragraphWidget: ParagraphWidget): void {
+        if (paragraphWidget instanceof ParagraphWidget &&
+            paragraphWidget.floatingElements.length > 0) {
+            for (let m: number = 0; m < paragraphWidget.floatingElements.length; m++) {
+                let shape: ShapeBase = paragraphWidget.floatingElements[m];
+                let position: Point = this.getFloatingItemPoints(shape);
+                shape.y = position.y;
+                shape.x = position.x;
+                if (shape instanceof ShapeElementBox)
+                    this.updateChildLocationForCellOrShape(shape.y, shape as ShapeElementBox);
+            }
         }
     }
     private moveChildsToParagraph(srcParagraph: ParagraphWidget, childStartIndex: number, nextParagraph: ParagraphWidget): ParagraphWidget {
@@ -4320,6 +4325,9 @@ export class Layout {
                 // TODO: Table row splitting case
             }
             previousBlock = this.getPreviousBlock(previousBlock as BlockWidget) as BlockWidget;
+        }
+        if (!isNullOrUndefined(startBlock) && startBlock instanceof ParagraphWidget && startBlock.indexInOwner === 0 && startBlock.paragraphFormat.keepWithNext && startBlock.paragraphFormat.widowControl) {
+            startBlock = block;
         }
         return { node: startBlock, position: { index: startIndex.toString() } };
     }
@@ -4453,6 +4461,8 @@ export class Layout {
             if (line === child) {
                 break;
             }
+            this.updateShapeBaseLocation(paragraphWidget);
+            this.checkInbetweenShapeOverlap(child);
             this.viewer.cutFromTop(this.viewer.clientActiveArea.y + child.height);
         }
     }
@@ -7222,7 +7232,10 @@ export class Layout {
                 if (paragraph.floatingElements.length > 0) {
                     for (let j = 0; j < paragraph.floatingElements.length; j++) {
                         let element: ShapeBase = paragraph.floatingElements[j];
+                        const prevClientActiveAreaX: number = this.viewer.clientActiveArea.x;
+                        this.viewer.clientActiveArea.x = element.x;
                         this.layoutShape(element);
+                        this.viewer.clientActiveArea.x = prevClientActiveAreaX;
                         if (prevBodyWidgetFloatingElements.indexOf(element) > -1) {
                             bodyWidget.floatingElements.push(element);
                             prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1)
@@ -8085,6 +8098,8 @@ export class Layout {
                             bodyWidget.floatingElements.push(tables[z]);
                         }
                     }
+                    let splittedTable : TableWidget = tables[tables.length - 1];
+                    this.viewer.cutFromTop(this.viewer.clientActiveArea.y + splittedTable.height + splittedTable.tableFormat.borders.bottom.lineWidth);
                 }
             }
         }

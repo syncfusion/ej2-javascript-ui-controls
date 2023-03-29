@@ -45,6 +45,7 @@
               font-size: $image-editor-bigger-tbar-btn-fontsize;
               @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
                 padding-top: 4px;
+                padding-bottom: 4px;
               }
             }
           }
@@ -118,6 +119,7 @@
               font-size: $image-editor-tbar-btn-fontsize;
               @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
                 padding-top: 4px;
+                padding-bottom: 4px;
               }
             }
           }
@@ -129,12 +131,6 @@
 
         & .e-file-select-wrap {
           padding: 0;
-
-          & .e-btn-icon {
-            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-              margin-top: -2px !important; /* stylelint-disable-line declaration-no-important */
-            }
-          }
         }
 
         & .e-image-upload {
@@ -148,9 +144,6 @@
           }
 
           & .e-icons.e-upload-icon {
-            @if $skin-name == 'material' {
-              margin-top: 7px;
-            }
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
               padding-top: 6px;
             }

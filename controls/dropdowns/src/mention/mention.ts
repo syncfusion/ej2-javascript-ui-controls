@@ -1500,7 +1500,7 @@ export class Mention extends DropDownBase {
             }
             globalRange = this.range;
             range = document.createRange();
-            if (((this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1 && this.isTyped) || this.getTextRange() && this.getTextRange().trim() === '@')) {
+            if (((this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1) || this.getTextRange() && this.getTextRange().trim() === this.mentionChar)) {
                 range.setStart(globalRange.startContainer, startPos);
                 range.setEnd(globalRange.startContainer, endPos); }
             else {

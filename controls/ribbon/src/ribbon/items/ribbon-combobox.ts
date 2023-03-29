@@ -66,7 +66,7 @@ export class RibbonComboBox {
             width: comboBoxSettings.width,
             beforeOpen: comboBoxSettings.beforeOpen,
             open: comboBoxSettings.open,
-            close: (e: PopupEventArgs) => {  
+            close: (e: PopupEventArgs) => {
                 if (comboBoxSettings.close) { comboBoxSettings.close.call(this, e); }
             },
             filtering: comboBoxSettings.filtering,
@@ -77,7 +77,7 @@ export class RibbonComboBox {
     }
     /**
      * Adds the additional event handlers as the item moved into overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
      * @param {DropDownButton} overflowButton - Gets the overflow button.
@@ -87,18 +87,17 @@ export class RibbonComboBox {
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
-        comboBoxObj.setProperties({cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL});
-        comboBoxObj.close = (e: PopupEventArgs) => {  
+        comboBoxObj.setProperties({ cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
+        comboBoxObj.close = (e: PopupEventArgs) => {
             if (item.comboBoxSettings.close) { item.comboBoxSettings.close.call(this, e); }
             overflowButton.toggle();
         };
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
@@ -107,8 +106,8 @@ export class RibbonComboBox {
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
         let cssClass: string[] = comboBoxObj.cssClass.split(SPACE);
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
-        comboBoxObj.setProperties({cssClass: cssClass.join(SPACE)});
-        comboBoxObj.close = (e: PopupEventArgs) => {  
+        comboBoxObj.setProperties({ cssClass: cssClass.join(SPACE) });
+        comboBoxObj.close = (e: PopupEventArgs) => {
             if (item.comboBoxSettings.close) { item.comboBoxSettings.close.call(this, e); }
         };
     }

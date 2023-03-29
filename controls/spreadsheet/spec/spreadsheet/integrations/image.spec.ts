@@ -199,4 +199,34 @@ describe('Image ->', () => {
             done();
         });
     });
+    describe('CR-Issues ->', () => {
+        describe('EJ2-70875 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{}, {}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Image gets disappears when inserted and positioning it on the merged cell', (done: Function) => {
+                const inst: Spreadsheet = helper.getInstance();
+                helper.invoke('insertImage', [[{src:"https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'C3']);
+                helper.invoke('merge', ['B2:E7']);
+                inst.activeSheetIndex = 1;
+                inst.dataBind();
+                setTimeout(function () {
+                    expect(helper.getInstance().activeSheetIndex).toBe(1);
+                    inst.activeSheetIndex = 0;
+                    inst.dataBind();
+                    setTimeout(function () {
+                        expect(helper.getInstance().activeSheetIndex).toBe(0);
+                        const image: ImageModel[] = helper.getInstance().sheets[0].rows[2].cells[2].image;
+                        expect(image.length).toBe(1);
+                        const imageId: string = image[0].id;
+                        expect(helper.getElementFromSpreadsheet('#' + imageId)).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });

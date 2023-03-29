@@ -1503,7 +1503,7 @@ export class FreeTextAnnotation {
             LineEndingStyle: 'OpenArrow',
             Location: null,
             MarkupText: annotationObject.defaultText ? annotationObject.defaultText : 'Type Here',
-            ModifiedDate: currentDateString,
+            ModifiedDate: '',
             Name: annotationName,
             Opacity: annotationObject.opacity ? annotationObject.opacity : 1,
             Page: null,

@@ -84,19 +84,18 @@ export class RibbonColorPicker {
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const colorPickerEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const colorPickerObj: ColorPicker = getComponent(colorPickerEle, ColorPicker);
-        colorPickerObj.setProperties({cssClass: colorPickerObj.cssClass + SPACE + RIBBON_POPUP_CONTROL});
+        colorPickerObj.setProperties({ cssClass: colorPickerObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.
         const splitBtn: SplitButton = (colorPickerObj['splitBtn'] as SplitButton);
-        splitBtn.close = () => { 
+        splitBtn.close = () => {
             overflowButton.toggle();
         };
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
@@ -105,7 +104,7 @@ export class RibbonColorPicker {
         const colorPickerObj: ColorPicker = getComponent(colorPickerEle, ColorPicker);
         let cssClass: string[] = colorPickerObj.cssClass.split(SPACE);
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
-        colorPickerObj.setProperties({cssClass: cssClass.join(SPACE)});
+        colorPickerObj.setProperties({ cssClass: cssClass.join(SPACE) });
         const splitBtn: SplitButton = (colorPickerObj['splitBtn'] as SplitButton);
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.
         splitBtn.close = null;

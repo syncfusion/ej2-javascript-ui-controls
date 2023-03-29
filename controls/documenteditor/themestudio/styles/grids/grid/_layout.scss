@@ -1954,8 +1954,16 @@
       padding: .3em;
     }
 
-    th.e-detailcell .e-rowcell {
+    th.e-detailcell .e-rowcell,
+    th.e-detailcell .e-gridpager {
       text-align: left;
+    }
+
+    &.e-rtl th.e-detailcell .e-rowcell,
+    &.e-rtl th.e-detailcell .e-gridpager,
+    th.e-detailcell .e-rtl .e-rowcell,
+    th.e-detailcell .e-rtl .e-gridpager {
+      text-align: right;
     }
 
     &.e-verticallines .e-rowcell,
@@ -3922,14 +3930,6 @@
   position: relative;
 }
 
-.e-edit-dialog.e-dlg-modal {
-  .e-dlg-header-content {
-    @if $grid-skin == 'fluent' {
-      padding: 11px 24px 25px;
-    }
-  }
-}
-
 .e-ccdlg.e-cc .e-dlg-header-content {
   @if $grid-skin == 'fluent' {
     padding: 11px 24px 13px;
@@ -4141,6 +4141,9 @@
 
     & .e-btn.e-dlg-closeicon-btn {
       float: left;
+      @if $grid-skin == 'fluent' {
+        padding-top: 6px;
+      }
       padding-left: 0;
       padding-right: 40px;
     }
@@ -4214,7 +4217,7 @@
       padding-left: 0;
 
       @if $grid-skin == 'fluent' {
-        padding-top: 5px;
+        padding-top: 6px;
       }
       @else if $grid-skin == 'tailwind' {
         padding-top: 1.5px;
@@ -4433,6 +4436,9 @@
 .e-bigger.e-responsive-dialog.e-rtl {
   & .e-btn.e-dlg-closeicon-btn {
     float: right;
+    @if $grid-skin == 'fluent' {
+      padding-top: 6px;
+    }
     padding-left: 40px;
     padding-right: 0;
   }

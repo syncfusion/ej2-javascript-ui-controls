@@ -7,7 +7,7 @@ import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { MouseEvents } from './mouseevents.spec';
 import { PortConstraints, ConnectorConstraints  } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
-import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
+import { PortVisibility, DiagramTools, ShapeStyleModel } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -766,6 +766,200 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect(diagram.connectors[0].connectionPadding).toBe(55);
+            done();
+        });
+    });
+
+    describe('Dragging the multiselect objects,connector removes from selection', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+            function getNodeDefaults(obj: NodeModel): NodeModel {
+                obj.width = 100;
+                obj.height = 100;
+                obj.shape = { type: 'Basic', shape: 'Ellipse' };
+                obj.style = { fill: '#37909A', strokeColor: '#024249' };
+                obj.annotations[0].margin = { left: 10, right: 10 };
+                obj.annotations[0].style = {
+                  color: 'white',
+                  fill: 'none',
+                  strokeColor: 'none',
+                };
+                return obj;
+              }
+
+              //Sets the default values of a Connector
+              function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                connector.targetDecorator.style = { fill: '#024249', strokeColor: '#024249' };
+                return { style: { strokeColor: '#024249', strokeWidth: 2 } };
+              }
+              function createNodes(): NodeModel[] {
+                var nodes: NodeModel[] = [],
+                  nodeId: string,
+                  indx: number,
+                  xpos: number = 200,
+                  ypos: number = 200;
+
+                for (indx = 1; indx <= 8; indx++) {
+                  nodeId = 'N' + indx.toString();
+                  let node: NodeModel = {
+                    id: nodeId,
+                    offsetX: xpos,
+                    offsetY: ypos,
+                    width: 100,
+                    height: 100,
+                    annotations: [{ content: nodeId }],
+                    shape: { type: 'Basic' },
+                    ports: createPorts(),
+                  };
+
+                  node.constraints =
+                    NodeConstraints.Default &
+                    ~(
+                      NodeConstraints.Resize |
+                      NodeConstraints.Rotate |
+                      NodeConstraints.InConnect |
+                      NodeConstraints.OutConnect |
+                      NodeConstraints.Tooltip
+                    );
+
+                  xpos += 200;
+                  if (indx === 4) {
+                    xpos = 200;
+                    ypos += 200;
+                  }
+                  nodes.push(node);
+                }
+                return nodes;
+              }
+
+              function createPorts(): PointPortModel[] {
+                let ports: PointPortModel[] = [];
+
+                ports = [
+                  createPort('i1', 0, 0.2, 'green'),
+                  createPort('i2', 0, 0.4, 'green'),
+                  createPort('i3', 0, 0.6, 'green'),
+                  createPort('i4', 0, 0.8, 'green'),
+
+                  createPort('o1', 1, 0.2, 'red'),
+                  createPort('o2', 1, 0.4, 'red'),
+                  createPort('o3', 1, 0.6, 'red'),
+                  createPort('o4', 1, 0.8, 'red'),
+                ];
+
+                return ports;
+              }
+
+              function createPort(
+                id: string,
+                xOffset: number,
+                yOffset: number,
+                fillColor: string
+              ): PointPortModel {
+                let constraints =
+                  (PortConstraints.Draw |
+                    PortConstraints.InConnect |
+                    PortConstraints.OutConnect) &
+                  ~PortConstraints.Drag;
+
+                let shapeStyle: ShapeStyleModel = {};
+                shapeStyle.fill = fillColor;
+                shapeStyle.strokeColor = fillColor;
+                shapeStyle.strokeWidth = 0.4;
+                shapeStyle.opacity = 1;
+
+                let pointPortModel: PointPortModel = {
+                  id: id,
+                  offset: { x: xOffset, y: yOffset },
+                  visibility: PortVisibility.Visible,
+                  width: 10,
+                  height: 10,
+                  shape: 'Square',
+                  style: shapeStyle,
+                  constraints: constraints,
+                  horizontalAlignment: 'Center',
+                  verticalAlignment: 'Center',
+                };
+                return pointPortModel;
+              }
+              function createConnectors(): Array<ConnectorModel> {
+                var connectors: Array<ConnectorModel> = [];
+
+                connectors.push(createConnector('Wire1', 'N1', 'o1', 'N2', 'i2'));
+                connectors.push(createConnector('Wire2', 'N3', 'o2', 'N6', 'i2'));
+                connectors.push(createConnector('Wire3', 'N4', 'o3', 'N7', 'i4'));
+                connectors.push(createConnector('Wire4', 'N2', 'o4', 'N8', 'i3'));
+                connectors.push(createConnector('Wire5', 'N3', 'o1', 'N1', 'i3'));
+                connectors.push(createConnector('Wire6', 'N1', 'o3', 'N5', 'i2'));
+                connectors.push(createConnector('Wire7', 'N4', 'o4', 'N2', 'i4'));
+                return connectors;
+              }
+
+              function createConnector(
+                connectorId: string,
+                sourceNodeId: string,
+                sourcePortId: string,
+                targetNodeId: string,
+                targetPortId: string
+              ): ConnectorModel {
+                var connector: ConnectorModel = {
+                  id: connectorId,
+                  sourceID: sourceNodeId,
+                  sourcePortID: sourcePortId,
+                  targetID: targetNodeId,
+                  targetPortID: targetPortId,
+                  type: 'Bezier',
+                };
+                connector.constraints =
+                  ConnectorConstraints.Default |
+                  ConnectorConstraints.DragSourceEnd |
+                  ConnectorConstraints.DragTargetEnd;
+                return connector;
+            }
+            diagram = new Diagram({
+
+                width: '100%',
+                height: '645px',
+                nodes: createNodes(),
+                connectors: createConnectors(),
+                //Sets the default values of a node
+                getNodeDefaults: getNodeDefaults,
+                //Sets the default values of a Connector
+                getConnectorDefaults: getConnectorDefaults,
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('EJ2-70550 - Hovering port and dragging nodes', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 250.5, 175.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 230, 175.5);
+            diagram.selectAll();
+            mouseEvents.mouseDownEvent(diagramCanvas, 230, 175.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
+            mouseEvents.mouseUpEvent(diagramCanvas, 400,160);
+            expect((diagram.nodes[0] as any).outEdges.length===2).toBe(true);
+            expect((diagram.connectors[0] as any).sourcePortID!="").toBe(true);
+            expect((diagram.connectors[0] as any).targetPortID !="").toBe(true);
             done();
         });
     });

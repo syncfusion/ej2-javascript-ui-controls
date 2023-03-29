@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I442564` - The issue with `fileOpen` event in File Manager component has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### File Manager

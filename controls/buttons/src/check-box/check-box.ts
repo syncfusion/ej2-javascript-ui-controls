@@ -180,10 +180,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'true';
             this.element.checked = true;
-            if (this.element.required && this.validCheck && !isInitialize) {
+            if ((this.element.required || this.element.closest('form') && this.element.closest('form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
                 this.element.checked = false;
                 this.validCheck = false;
-            } else if (this.element.required) {
+            } else if (this.element.required || this.element.closest('form') && this.element.closest('form').classList.contains('e-formvalidator')) {
                 this.validCheck = true;
             }
         } else if (state === 'uncheck') {
@@ -193,10 +193,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'false';
             this.element.checked = false;
-            if (this.element.required && this.validCheck && !isInitialize) {
+            if ((this.element.required || this.element.closest('form') && this.element.closest('form').classList.contains('e-formvalidator')) && this.validCheck && !isInitialize) {
                 this.element.checked = true;
                 this.validCheck = false;
-            } else if (this.element.required) {
+            } else if (this.element.required || this.element.closest('form') && this.element.closest('form').classList.contains('e-formvalidator')) {
                 this.validCheck = true;
             }
         } else {

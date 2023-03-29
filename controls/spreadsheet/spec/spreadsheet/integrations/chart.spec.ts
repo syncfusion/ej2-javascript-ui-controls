@@ -1598,5 +1598,29 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        describe('EJ2-70711->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Inserting chart remains blank when selecting the range from downwards->', (done: Function) => {
+                helper.getInstance().insertChart([{ type: "Column", theme: "Material", range: "H7:H2", }]);
+                setTimeout(() => {
+                    const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    expect(chart).not.toBeNull();
+                    done();
+                });
+            });
+            it('Inserting chart remains blank when selecting the multiple range from downwards->', (done: Function) => {
+                helper.getInstance().insertChart([{ type: "Column", theme: "Material", range: "H7:G2", }]);
+                setTimeout(() => {
+                    const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    expect(chart).not.toBeNull();
+                    done();
+                });
+            });
+        });
     });
 });

@@ -64,6 +64,7 @@ export class CellRenderer implements ICellRenderer {
         args.td.className = 'e-cell';
         attributes(args.td, { 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
         if (this.checkMerged(args)) {
+            this.createImageAndChart(args);
             if (args.refChild) {
                 args.row.insertBefore(args.td, args.refChild);
             } else {
@@ -179,11 +180,7 @@ export class CellRenderer implements ICellRenderer {
             if (formatArgs.color !== undefined) {
                 style.color = formatArgs.color;
             }
-            if (args.cell.chart && args.cell.chart.length > 0) {
-                this.parent.notify(
-                    setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx),
-                        isUndoRedo: false });
-            }
+            this.createImageAndChart(args);
             if (args.cell.hyperlink) {
                 this.parent.notify(
                     createHyperlinkElement, { cell: args.cell, style: style, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
@@ -200,20 +197,6 @@ export class CellRenderer implements ICellRenderer {
                 if (colSpan > 1) {
                     args.td.colSpan = colSpan;
                     this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
-                }
-            }
-            if (args.cell.image) {
-                for (let i: number = 0; i < args.cell.image.length; i++) {
-                    if (args.cell.image[i as number]) {
-                        this.parent.notify(createImageElement, {
-                            options: {
-                                src: args.cell.image[i as number].src, imageId: args.cell.image[i as number].id,
-                                height: args.cell.image[i as number].height, width: args.cell.image[i as number].width,
-                                top: args.cell.image[i as number].top, left: args.cell.image[i as number].left
-                            },
-                            range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
-                        });
-                    }
                 }
             }
         }
@@ -260,6 +243,27 @@ export class CellRenderer implements ICellRenderer {
                 style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
                 first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
                 args.isHeightCheckNeeded, manualUpdate: args.manualUpdate, onActionUpdate: args.onActionUpdate });
+        }
+    }
+    private createImageAndChart(args: CellRenderArgs) {
+        if (args.cell.chart && args.cell.chart.length > 0) {
+            this.parent.notify(
+                setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx),
+                    isUndoRedo: false });
+        }
+        if (args.cell.image && args.cell.image.length > 0) {
+            for (let i: number = 0; i < args.cell.image.length; i++) {
+                if (args.cell.image[i as number]) {
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            src: args.cell.image[i as number].src, imageId: args.cell.image[i as number].id,
+                            height: args.cell.image[i as number].height, width: args.cell.image[i as number].width,
+                            top: args.cell.image[i as number].top, left: args.cell.image[i as number].left
+                        },
+                        range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
+                    });
+                }
+            }
         }
     }
     private calculateFormula(args: CellRenderArgs): void {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Range Slider
+
+#### Bug Fixes
+
+- `#I441327` - The issue with changing event for the first change action in the Slider has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Signature

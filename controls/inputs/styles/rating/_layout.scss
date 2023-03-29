@@ -35,6 +35,8 @@
       padding: $rating-li-padding;
       line-height: $rating-li-line-height;
       display: block;
+      min-width: $rating-li-min-width-height; //font-size + padding
+      min-height: $rating-li-min-width-height; //font-size + padding
       //For Blazor Tooltip
       position: relative;
 
@@ -159,6 +161,8 @@
     .e-rating-item-container {
       font-size: $rating-small-li-font-size;
       line-height: $rating-small-li-line-height;
+      min-height: $rating-small-li-min-width-height; //font-size + padding
+      min-width: $rating-small-li-min-width-height; //font-size + padding
     }
 
     .e-rating-label {
@@ -176,6 +180,8 @@
     .e-rating-item-container {
       font-size: $rating-bigger-li-font-size;
       line-height: $rating-bigger-li-line-height;
+      min-width: $rating-bigger-li-min-width-height; //font-size + padding
+      min-height: $rating-bigger-li-min-width-height; //font-size + padding
     }
 
     .e-rating-label {
@@ -195,6 +201,8 @@
     .e-rating-item-container {
       font-size: $rating-bigger-small-li-font-size;
       line-height: $rating-bigger-small-li-line-height;
+      min-width: $rating-bigger-small-li-min-width-height; //font-size + padding
+      min-height: $rating-bigger-small-li-min-width-height; //font-size + padding
     }
 
     .e-rating-label {

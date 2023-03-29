@@ -216,7 +216,7 @@ describe("Tab character ", () => {
         var tab = [{ "position": 175.6999969482422, "tabLeader": "None", "deletePosition": 0, "tabJustification": "Left" }]
         var content = 'LTF Design Services Agreement | Issued 7/15/2013';
         editor.openBlank();
-        editor.parser.parseParagraphFormat({ tabs: tab }, editor.selection.start.paragraph.paragraphFormat);
+        editor.parser.parseParagraphFormat(0, { tabs: tab }, editor.selection.start.paragraph.paragraphFormat);
         let childWidgets = (editor.selection.start.paragraph.childWidgets[0] as LineWidget).children as ElementBox[];
         editor.editorModule.insertText(content);
         editor.selection.handleTabKey(false, false);

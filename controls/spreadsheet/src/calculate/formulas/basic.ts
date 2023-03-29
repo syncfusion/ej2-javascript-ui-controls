@@ -2101,6 +2101,7 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
         }
         const resultVal: number[] | string = this.parent.computeSumIfAndAvgIf(range);
+        if (resultVal[1] === 0 || resultVal[0].toString() === 'NaN') { return this.parent.formulaErrorStrings[FormulasErrorsStrings.div] }
         if (typeof resultVal === 'string' && (this.parent.formulaErrorStrings.indexOf(resultVal)
             || this.parent.getErrorStrings().indexOf(resultVal))) {
             return resultVal;

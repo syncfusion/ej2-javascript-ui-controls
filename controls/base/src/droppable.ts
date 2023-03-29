@@ -104,7 +104,7 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         this.wireEvents();
     }
     private wireEvents(): void {
-        EventHandler.add(this.element, Browser.touchEndEvent, this.intDrop, this);
+        EventHandler.add(this.element, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDrop, this);
     }
     // triggers when property changed
     // eslint-disable-next-line
@@ -166,7 +166,7 @@ export class Droppable extends Base<HTMLElement> implements INotifyPropertyChang
         return area;
     }
     public destroy(): void {
-        EventHandler.remove(this.element, Browser.touchEndEvent, this.intDrop);
+        EventHandler.remove(this.element, Browser.isSafari() ? 'touchend' : Browser.touchEndEvent, this.intDrop);
         super.destroy();
     }
 }

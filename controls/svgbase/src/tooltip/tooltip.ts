@@ -870,6 +870,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             textCollection = this.formattedText[k as number].replace(/<(b|strong)>/g, '<b>')
                 .replace(/<\/(b|strong)>/g, '</b>')
                 .split(/<br.*?>/g);
+            if (this.isTextWrap && this.header !== this.formattedText[k as number] && this.formattedText[k as number].indexOf('<br') === -1) {
+                subStringLength = Math.round(this.leftSpace > this.rightSpace ? (this.leftSpace / size) : (this.rightSpace / size));
+                textCollection = this.formattedText[k as number].match(new RegExp('.{1,' + subStringLength + '}', 'g'));
+            } 
             if (k === 0 && !withoutHeader && this.isTextWrap &&
                 (this.leftSpace < headerWidth || isLeftSpace) &&
                 (this.rightSpace < headerWidth || isRightSpace)

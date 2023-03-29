@@ -6,7 +6,7 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
@@ -375,9 +375,11 @@ export class Render {
                         cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, cell.targetCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
-                            this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                            ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(SanitizeHtmlHelper.sanitize(element) as any, cell.targetCell) :
+                                this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
                         } else {
-                            this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
+                            ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(element, cell.targetCell) :
+                                this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
                         }
                     }
                 }
@@ -1222,9 +1224,11 @@ export class Render {
                     { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                 if (element && element !== '' && element.length > 0) {
                     if (this.parent.enableHtmlSanitizer) {
-                        this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(SanitizeHtmlHelper.sanitize(element) as any, tCell) :
+                            this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
                     } else {
-                        this.parent.appendHtml(tCell, element[0].outerHTML);
+                        ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(element, tCell) :
+                            this.parent.appendHtml(tCell, element[0].outerHTML);
                     }
                 }
             }

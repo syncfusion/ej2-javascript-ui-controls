@@ -1473,7 +1473,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
-        attributes(this.element, { 'aria-labelledby': this.element.id });
+        attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();

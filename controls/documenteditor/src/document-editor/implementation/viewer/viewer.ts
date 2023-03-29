@@ -933,8 +933,8 @@ export class DocumentHelper {
      * @returns {void}
      */
     public setDefaultDocumentFormat(): void {
-        this.owner.parser.parseCharacterFormat(this.owner.characterFormat, this.characterFormat);
-        this.owner.parser.parseParagraphFormat(this.owner.paragraphFormat, this.paragraphFormat);
+        this.owner.parser.parseCharacterFormat(0, this.owner.characterFormat, this.characterFormat);
+        this.owner.parser.parseParagraphFormat(0, this.owner.paragraphFormat, this.paragraphFormat);
     }
 
     private setDefaultCharacterValue(characterFormat: WCharacterFormat): void {
@@ -5132,7 +5132,7 @@ export class PageLayoutViewer extends LayoutViewer {
             let headerFooter: HeaderFooterWidget = this.documentHelper.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 let currentSecIndex: number = sectionIndex > 0 ? sectionIndex - 1 : sectionIndex;
-                while (!headerFooter && currentSecIndex !== -1 && this.documentHelper.headersFooters[currentSecIndex][index]) {
+                while (!headerFooter && currentSecIndex !== -1) {
                     headerFooter = this.documentHelper.headersFooters[currentSecIndex][index];
                     currentSecIndex--;
                 }

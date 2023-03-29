@@ -50,7 +50,7 @@ export class RibbonCheckBox {
     }
     /**
      * Adds the additional event handlers as the item moved into overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
      * @param {DropDownButton} overflowButton - Gets the overflow button.
@@ -65,27 +65,26 @@ export class RibbonCheckBox {
         checkBoxObj.change = (e: ChangeEventArgs) => {
             if (item.checkBoxSettings.change) { item.checkBoxSettings.change.call(this, e); }
             overflowButton.toggle();
-        }
+        };
     }
     /**
      * Removes the additional event handlers as the item moved from overflow popup.
-     * 
+     *
      * @param {RibbonItemModel} item - Gets the ribbon item model.
      * @param {HTMLElement} itemEle - Gets the ribbon item element.
-     * @param {DropDownButton} overflowButton - Gets the overflow button.
      * @returns {void}
      * @hidden
      */
     public removeOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
-        const checkBoxObj: CheckBox = getComponent(inputEle, CheckBox);        
+        const checkBoxObj: CheckBox = getComponent(inputEle, CheckBox);
         let cssClass: string[] = checkBoxObj.cssClass.split(SPACE);
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         checkBoxObj.cssClass = cssClass.join(SPACE);
         checkBoxObj.dataBind();
         checkBoxObj.change = (e: ChangeEventArgs) => {
             if (item.checkBoxSettings.change) { item.checkBoxSettings.change.call(this, e); }
-        }
+        };
     }
     /**
      * Triggers the click action on the Checkbox.

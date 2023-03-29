@@ -4011,3 +4011,113 @@ describe('Checking diagramAction in CollectionChange and PropertyChange Event', 
         done();
     });
 });
+
+describe('Dynamically change the styles of freehand connector', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramString' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel)[] = [];
+        diagram = new Diagram({
+            width: 550, height: 550, 
+           snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+
+        diagram.appendTo('#diagramString');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Dynamically change the styles of freehand connector', (done: Function) => {
+        diagram.tool = DiagramTools.DrawOnce;
+        let connector: ConnectorModel = {
+            id:'freehand1',type:'Freehand'
+        };
+        diagram.drawingObject = connector;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 50);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 250);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 100);
+        diagram.connectors[0].style.strokeColor = "red";
+        diagram.connectors[0].style.opacity = 3;
+        diagram.connectors[0].style.strokeWidth = 5;
+        expect(diagram.connectors[0].style.strokeWidth == 5).toBe(true);
+        expect(diagram.connectors[0].style.strokeColor == "red").toBe(true);
+        expect(diagram.connectors[0].style.opacity == 3).toBe(true);
+        done();
+    });
+});
+
+describe('Node annotation disappear, while giving same id for annotation in two different diagrams', () => {
+    let diagram: Diagram;
+    let diagram1: Diagram;
+    let ele: HTMLElement;
+    let ele1: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramannotation' });
+        document.body.appendChild(ele);
+        ele1 = createElement('div', { id: 'diagramannotation1' });
+        document.body.appendChild(ele1);
+
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 200,
+            annotations: [
+                {
+                    id: 'node1',
+                    content: 'Node1',
+                }],
+        };
+
+        diagram = new Diagram({
+            width: '500px', height: '500px', nodes: [node]
+
+        });
+        diagram.appendTo('#diagramannotation');
+
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 200,
+            annotations: [
+                {
+                    id: 'node1',
+                    content: 'Node1',
+                }],
+        };
+
+        diagram1 = new Diagram({
+            width: '500px', height: '500px', nodes: [node1]
+
+        });
+        diagram1.appendTo('#diagramannotation1');
+    });
+
+    it('Node annotation disappear', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 300, 200);
+        mouseEvents.dblclickEvent(diagramCanvas, 300, 200);
+        mouseEvents.clickEvent(diagramCanvas, 420, 300);
+        let innerHtmlTextElement = document.getElementById('node1_node1_text');
+        expect(innerHtmlTextElement.innerHTML === '<tspan x="0" y="10.8">Node1</tspan>').toBe(true);
+        done();
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+});

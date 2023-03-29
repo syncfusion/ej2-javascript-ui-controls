@@ -119,6 +119,10 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     input.setAttribute('disabled', 'true');
                     input.classList.add('e-disable');
                 }
+                const clearIconElem: Element = innerDIV.querySelector('.e-clear-icon');
+                if (clearIconElem) {
+                    clearIconElem.setAttribute('title', this.parent.localeObj.getConstant('ClearButton'));
+                }
                 if (!column.visible) {
                     node.classList.add('e-hide');
                 }

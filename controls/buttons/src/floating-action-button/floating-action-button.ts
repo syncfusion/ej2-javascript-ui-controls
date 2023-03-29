@@ -253,7 +253,7 @@ export class Fab extends Button implements INotifyPropertyChanged {
     public destroy(): void {
         super.destroy();
         // To remove 'e-btn' class
-        this.element.classList.remove('e-' + super.getModuleName());
+        this.element.classList.remove('e-' + super.getModuleName(), FIXEDFAB);
         this.clearPosition();
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
     }

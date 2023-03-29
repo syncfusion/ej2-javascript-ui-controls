@@ -743,7 +743,7 @@ export class InkAnnotation {
              IsCommentLock: false,
              IsLock: annotationObject.isLock?annotationObject.isLock:false,
              IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
-             ModifiedDate: currentDateString,
+             ModifiedDate: '',
              Note: '',
              Opacity: annotationObject.opacity?annotationObject.opacity:1,
              PathData: annotationObject.path,

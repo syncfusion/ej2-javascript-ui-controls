@@ -5,8 +5,8 @@
 /**
  * It defines the field list render modes. The available modes are:
  * ```props
- * * Fixed :- To display the field list in a static position within a web page.
- * * Popup :- To display the field list icon in pivot table UI to invoke the built-in dialog. It helps to display over the pivot table UI without affecting any form of UI shrink within a web page.
+ * Fixed :- To display the field list in a static position within a web page.
+ * Popup :- To display the field list icon in pivot table UI to invoke the built-in dialog. It helps to display over the pivot table UI without affecting any form of UI shrink within a web page.
  * ```
  */
 export type Mode =
@@ -21,9 +21,9 @@ export type Mode =
 /** Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table.
  * The available modes are as follows:
  * ```props
- * * Normal :- Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button.
- * * Dialog :- Allows the currently selected row data will be shown in an exclusive dialog. You can change the cell values and save it to the data source by clicking “Save” button in the dialog.
- * * Batch :- Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state. You can perform bulk changes like add, edit and delete data of the cells and finally save to the data source by clicking “Update” toolbar button.
+ * Normal :- Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button.
+ * Dialog :- Allows the currently selected row data will be shown in an exclusive dialog. You can change the cell values and save it to the data source by clicking “Save” button in the dialog.
+ * Batch :- Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state. You can perform bulk changes like add, edit and delete data of the cells and finally save to the data source by clicking “Update” toolbar button.
  * ```
  */
 export type EditMode =
@@ -40,10 +40,10 @@ export type EditMode =
 /**
  * Defines mode of selection. They are
  * ```props
- * * Cell :- Defines SelectionMode to Cell.
- * * Row :- Defines SelectionMode to Row.
- * * Column :- Defines SelectionMode to Column.
- * * Both :- Defines SelectionMode to both Row and Column.
+ * Cell :- Defines SelectionMode to Cell.
+ * Row :- Defines SelectionMode to Row.
+ * Column :- Defines SelectionMode to Column.
+ * Both :- Defines SelectionMode to both Row and Column.
  * ```
  */
 export type SelectionMode =
@@ -59,11 +59,11 @@ export type SelectionMode =
 /**
  * Defines border style to PDF export file. They are
  * ```props
- * * Solid :- Export as PDF with solid type border.
- * * Dash :- Export as PDF with dash type border.
- * * Dot :- Export as PDF with dot type border.
- * * DashDot :- Export as PDF with dashdot type border.
- * * DashDotDot :- Export as PDF with dashdotdot type border.
+ * Solid :- Export as PDF with solid type border.
+ * Dash :- Export as PDF with dash type border.
+ * Dot :- Export as PDF with dot type border.
+ * DashDot :- Export as PDF with dashdot type border.
+ * DashDotDot :- Export as PDF with dashdotdot type border.
  * ```
  */
 export type PdfBorderStyle =
@@ -82,23 +82,22 @@ export type PdfBorderStyle =
  * Allows the built-in toolbar options that used to access features like switching between pivot table and pivot chart, changing chart types, conditional formatting, number formatting, exporting, etc… with ease at runtime.
  * The available toolbar options are:
  * ```props
- * * New :- Allows to create a new report.
- * * Save :- Allows to save the current report.
- * * Save As :- Allows to perform save as the current report.
- * * Rename :- Allows to rename the current report.
- * * Remove :- Allows to delete the current report.
- * * Load :- Allows to load any report from the report list.
- * * Grid :- Allows to show the pivot table.
- * * Chart :- Allows to show the pivot chart with specific type from the built-in list.
- * * Exporting :- Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG.
- * * Sub-total :- Allow set of options to show or hide the sub totals in the pivot table. The subtotals will not be displayed in the pivot chart by default.
- * * Grand Total :- Allow set of options to show or hides the grand totals in the pivot table. By default, the grand totals will not be displayed in the pivot chart.
- * * Conditional Formatting :- Allows to show the conditional formatting pop-up to apply formatting to the values.
- * * Number Formatting :- Allows to show the number formatting pop-up to apply number formatting to the values.
- * * Formatting :- Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component.
- * * Field List :- Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop,
- * add new fields to report, remove any fields from report, filtering and sorting a specific field members, etc., that are used to update the pivot table during runtime.
- * * MDX :- Allows to show the MDX query that was run to retrieve data from the OLAP data source. **Note: It is applicable only for OLAP data source.**
+ * New :- Allows to create a new report.
+ * Save :- Allows to save the current report.
+ * Save As :- Allows to perform save as the current report.
+ * Rename :- Allows to rename the current report.
+ * Remove :- Allows to delete the current report.
+ * Load :- Allows to load any report from the report list.
+ * Grid :- Allows to show the pivot table.
+ * Chart :- Allows to show the pivot chart with specific type from the built-in list.
+ * Exporting :- Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG.
+ * Sub-total :- Allow set of options to show or hide the sub totals in the pivot table. The subtotals will not be displayed in the pivot chart by default.
+ * Grand Total :- Allow set of options to show or hides the grand totals in the pivot table. By default, the grand totals will not be displayed in the pivot chart.
+ * Conditional Formatting :- Allows to show the conditional formatting pop-up to apply formatting to the values.
+ * Number Formatting :- Allows to show the number formatting pop-up to apply number formatting to the values.
+ * Formatting :- Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component.
+ * Field List :- Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop, add new fields to report, remove any fields from report, filtering and sorting a specific field members, etc., that are used to update the pivot table during runtime.
+ * MDX :- Allows to show the MDX query that was run to retrieve data from the OLAP data source. **Note: It is applicable only for OLAP data source.**
  * ```
  */
 export type ToolbarItems =
@@ -148,9 +147,9 @@ export type ToolbarItems =
 /**
  * It defines the view port as either table or chart or both table and chart. The available options are:
  * ```props
- * * Table :- To render the component as tabular form.
- * * Chart :- To render the component as graphical format.
- * * Both :- To render the component as both table and chart.
+ * Table :- To render the component as tabular form.
+ * Chart :- To render the component as graphical format.
+ * Both :- To render the component as both table and chart.
  * ```
  */
 export type View =
@@ -164,8 +163,8 @@ export type View =
 /**
  * Allows you to set the primary view to be either table or chart.The available options are:
  * ```props
- * * Table :- Allows you to display the pivot table as primary view.
- * * Chart :- Allows you to display the pivot chart as primary view.
+ * Table :- Allows you to display the pivot table as primary view.
+ * Chart :- Allows you to display the pivot chart as primary view.
  * ```
  */
 export type Primary =
@@ -178,25 +177,25 @@ export type Primary =
  * Defines the pivot chart types.
  * The available chart types are:
  * ```props
- * * Line :- Allows to display the pivot chart with line series.
- * * Column :- Allows to display the pivot chart with column series.
- * * Area :- Allows to display the pivot chart with area series.
- * * Bar :- Allows to display the pivot chart with bar series.
- * * StackingColumn :- Allows to display the pivot chart with stacked column series.
- * * StackingArea :- Allows to display the pivot chart with stacked area series.
- * * StackingBar :- Allows to display the pivot chart with stacked bar series.
- * * StepLine :- Allows to display the pivot chart with step line series.
- * * StepArea :- Allows to display the pivot chart with step area series.
- * * SplineArea :- Allows to display the pivot chart with spline area series.
- * * Scatter :- Allows to display the pivot chart with scatter series.
- * * Spline :- Allows to display the pivot chart with spline series.
- * * StackingColumn100 :- Allows to display the pivot chart with 100% stacked column series.
- * * StackingBar100 :- Allows to display the pivot chart with 100% stacked bar series.
- * * StackingArea100 :- Allows to display the pivot chart with 100% stacked area series.
- * * Bubble :- Allows to display the pivot chart with bubble series.
- * * Pareto :- Allows to display the pivot chart with pareto series.
- * * Polar :- Allows to display the pivot chart with polar series.
- * * Radar :- Allows to display the pivot chart with radar series.
+ * Line :- Allows to display the pivot chart with line series.
+ * Column :- Allows to display the pivot chart with column series.
+ * Area :- Allows to display the pivot chart with area series.
+ * Bar :- Allows to display the pivot chart with bar series.
+ * StackingColumn :- Allows to display the pivot chart with stacked column series.
+ * StackingArea :- Allows to display the pivot chart with stacked area series.
+ * StackingBar :- Allows to display the pivot chart with stacked bar series.
+ * StepLine :- Allows to display the pivot chart with step line series.
+ * StepArea :- Allows to display the pivot chart with step area series.
+ * SplineArea :- Allows to display the pivot chart with spline area series.
+ * Scatter :- Allows to display the pivot chart with scatter series.
+ * Spline :- Allows to display the pivot chart with spline series.
+ * StackingColumn100 :- Allows to display the pivot chart with 100% stacked column series.
+ * StackingBar100 :- Allows to display the pivot chart with 100% stacked bar series.
+ * StackingArea100 :- Allows to display the pivot chart with 100% stacked area series.
+ * Bubble :- Allows to display the pivot chart with bubble series.
+ * Pareto :- Allows to display the pivot chart with pareto series.
+ * Polar :- Allows to display the pivot chart with polar series.
+ * Radar :- Allows to display the pivot chart with radar series.
  * ```
  */
 export type ChartSeriesType =
@@ -254,13 +253,13 @@ export type ChartSeriesType =
 /**
  * Defines the pivot chart selection mode. They are
  * ```props
- * * None :- Disable the selection.
- * * Series :- To select a series.
- * * Point :- To select a point.
- * * Cluster :- To select a cluster of point.
- * * DragXY :- To select points, by dragging with respect to both horizontal and vertical axis.
- * * DragY :- To select points, by dragging with respect to vertical axis.
- * * DragX :- To select points, by dragging with respect to horizontal axis.
+ * None :- Disable the selection.
+ * Series :- To select a series.
+ * Point :- To select a point.
+ * Cluster :- To select a cluster of point.
+ * DragXY :- To select points, by dragging with respect to both horizontal and vertical axis.
+ * DragY :- To select points, by dragging with respect to vertical axis.
+ * DragX :- To select points, by dragging with respect to horizontal axis.
  * ```
  */
 export type ChartSelectionMode =
@@ -282,16 +281,16 @@ export type ChartSelectionMode =
 /**
  * Defines the pivot table context menu items. They are
  * ```props
- * * Drillthrough :- Enables drill through for the cell.
- * * Expand :- Expands the cell.
- * * Collapse :- Collapse the cell.
- * * CalculatedField :- Enables calculated field for the pivot grid.
- * * Pdf Export :- Export the grid as Pdf format.
- * * Excel Export :- Export the grid as Excel format.
- * * Csv Export :- Export the grid as CSV format.
- * * Sort Ascending :- Sort the current column in ascending order.
- * * Sort Descending :- Sort the current column in descending order.
- * * Aggregate :- Sets aggregate type to sum.
+ * Drillthrough :- Enables drill through for the cell.
+ * Expand :- Expands the cell.
+ * Collapse :- Collapse the cell.
+ * CalculatedField :- Enables calculated field for the pivot grid.
+ * Pdf Export :- Export the grid as Pdf format.
+ * Excel Export :- Export the grid as Excel format.
+ * Csv Export :- Export the grid as CSV format.
+ * Sort Ascending :- Sort the current column in ascending order.
+ * Sort Descending :- Sort the current column in descending order.
+ * Aggregate :- Sets aggregate type to sum.
  * ```
  */
 export type PivotTableContextMenuItem =
@@ -319,11 +318,11 @@ export type PivotTableContextMenuItem =
 /**
  * Defines modes of GridLine, They are
  * ```props
- * * Both :- Show both the vertical and horizontal line in the Grid.
- * * None :- Hide both the vertical and horizontal line in the Grid.
- * * Horizontal :- Shows the horizontal line only in the Grid.
- * * Vertical :- Shows the vertical line only in the Grid.
- * * Default :- Shows the grid lines based on the theme.
+ * Both :- Show both the vertical and horizontal line in the Grid.
+ * None :- Hide both the vertical and horizontal line in the Grid.
+ * Horizontal :- Shows the horizontal line only in the Grid.
+ * Vertical :- Shows the vertical line only in the Grid.
+ * Default :- Shows the grid lines based on the theme.
  * ```
  */
 export type PivotTableGridLine =
@@ -341,9 +340,9 @@ export type PivotTableGridLine =
 /**
  * Defines mode of cell selection. The modes available are:
  * ```props
- * * Flow :- Allows the range of cells to be selected between the start index and the end index, which also includes the other cells of the selected rows in the pivot table.
- * * Box :- Allows you to select a range of cells within the starting and ending column indexes that are included in the range between row cells in the pivot table.
- * * BoxWithBorder :- Allows the range of cells to be selected as the box mode, but along with the borders in the pivot table.
+ * Flow :- Allows the range of cells to be selected between the start index and the end index, which also includes the other cells of the selected rows in the pivot table.
+ * Box :- Allows you to select a range of cells within the starting and ending column indexes that are included in the range between row cells in the pivot table.
+ * BoxWithBorder :- Allows the range of cells to be selected as the box mode, but along with the borders in the pivot table.
  * ```
  */
 export type PivotCellSelectionMode =
@@ -357,8 +356,8 @@ export type PivotCellSelectionMode =
 /**
  * Defines types of Selection. They are:
  * ```props
- * * Single :- Allows the user to select a row or cell on their own in the pivot table.
- * * Multiple :- Allows the user to select multiple rows or columns or cells in the pivot table.
+ * Single :- Allows the user to select a row or cell on their own in the pivot table.
+ * Multiple :- Allows the user to select multiple rows or columns or cells in the pivot table.
  * ```
  */
 export type PivotTableSelectionType =
@@ -370,8 +369,8 @@ export type PivotTableSelectionType =
 /**
  * Defines modes of checkbox Selection. They are:
  * ```props
- * * Default :- Allows multiple rows to be selected by clicking rows one by one.
- * * ResetOnRowClick :- Allows to reset the previously selected row when a row is clicked and multiple rows can be selected by using CTRL or SHIFT key.
+ * Default :- Allows multiple rows to be selected by clicking rows one by one.
+ * ResetOnRowClick :- Allows to reset the previously selected row when a row is clicked and multiple rows can be selected by using CTRL or SHIFT key.
  * ```
  */
 export type PivotTableCheckboxSelectionType =
@@ -383,9 +382,9 @@ export type PivotTableCheckboxSelectionType =
 /**
  * Defines the cell content's overflow mode. The available modes are
  * ```props
- * * Clip :-  Truncates the cell content when it overflows its area.
- * * Ellipsis :-  Displays ellipsis when the cell content overflows its area.
- * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area also it will display tooltip while hover on ellipsis applied cell.
+ * Clip :-  Truncates the cell content when it overflows its area.
+ * Ellipsis :-  Displays ellipsis when the cell content overflows its area.
+ * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area also it will display tooltip while hover on ellipsis applied cell.
  * ```
  */
 export type PivotTableClipMode =
@@ -399,8 +398,8 @@ export type PivotTableClipMode =
 /**
  * Print mode options are
  * ```props
- * * AllPages :- Print all pages records of the Grid.
- * * CurrentPage :- Print current page records of the Grid.
+ * AllPages :- Print all pages records of the Grid.
+ * CurrentPage :- Print current page records of the Grid.
  * ```
  */
 export type PivotTablePrintMode =
@@ -412,16 +411,16 @@ export type PivotTablePrintMode =
 /**
  * Defines the shape of marker. They are
  * ```props
- * * Circle :- Renders the marker shaper as circle.
- * * Rectangle :- Renders the marker shaper as rectangle.
- * * Triangle :- Renders the marker shaper as triangle.
- * * Diamond :- Renders the marker shaper as diamond.
- * * Cross :- Renders the marker shaper as cross.
- * * HorizontalLine :- Renders the marker shaper as horizontalLine.
- * * VerticalLine :- Renders the marker shaper as verticalLine.
- * * Pentagon:- Renders the marker shaper as pentagon.
- * * InvertedTriangle :- Renders the marker shaper as invertedTriangle.
- * * Image :- Renders the marker shaper as image.
+ * Circle :- Renders the marker shaper as circle.
+ * Rectangle :- Renders the marker shaper as rectangle.
+ * Triangle :- Renders the marker shaper as triangle.
+ * Diamond :- Renders the marker shaper as diamond.
+ * Cross :- Renders the marker shaper as cross.
+ * HorizontalLine :- Renders the marker shaper as horizontalLine.
+ * VerticalLine :- Renders the marker shaper as verticalLine.
+ * Pentagon:- Renders the marker shaper as pentagon.
+ * InvertedTriangle :- Renders the marker shaper as invertedTriangle.
+ * Image :- Renders the marker shaper as image.
  * ```
  */
 export type PivotChartShape =
@@ -449,11 +448,11 @@ export type PivotChartShape =
 /**
  * Defines the type of error bar. They are
  * ```props
- * * Fixed :- Renders a fixed type error bar.
- * * Percentage :- Renders a percentage type error bar.
- * * StandardDeviation :- Renders a standard deviation type error bar.
- * * StandardError :- Renders a standard error type error bar.
- * * Custom :- Renders a custom type error bar.
+ * Fixed :- Renders a fixed type error bar.
+ * Percentage :- Renders a percentage type error bar.
+ * StandardDeviation :- Renders a standard deviation type error bar.
+ * StandardError :- Renders a standard error type error bar.
+ * Custom :- Renders a custom type error bar.
  * ```
  */
 export type PivotChartErrorBarType =
@@ -471,9 +470,9 @@ export type PivotChartErrorBarType =
 /**
  * Defines the direction of error bar. They are
  * ```props
- * * Both :-  Renders both direction of error bar.
- * * Minus :- Renders minus direction of error bar.
- * * Plus :- Renders plus direction error bar.
+ * Both :-  Renders both direction of error bar.
+ * Minus :- Renders minus direction of error bar.
+ * Plus :- Renders plus direction error bar.
  * ```
  */
 export type PivotChartErrorBarDirection =
@@ -487,9 +486,9 @@ export type PivotChartErrorBarDirection =
 /**
  * Defines the modes of error bar. They are
  * ```props
- * * Vertical :-  Renders a vertical error bar.
- * * Horizontal :- Renders a horizontal error bar.
- * * Both :- Renders both side error bar.
+ * Vertical :-  Renders a vertical error bar.
+ * Horizontal :- Renders a horizontal error bar.
+ * Both :- Renders both side error bar.
  * ```
  */
 export type PivotChartErrorBarMode =
@@ -503,12 +502,12 @@ export type PivotChartErrorBarMode =
 /**
  * Defines the type of trendlines. They are:
  * ```props
- * * Linear :- Defines the linear trendline.
- * * Exponential :- Defines the exponential trendline.
- * * Polynomial :- Defines the polynomial trendline.
- * * Power :- Defines the power trendline.
- * * Logarithmic :- Defines the logarithmic trendline.
- * * MovingAverage :- Defines the moving average trendline.
+ * Linear :- Defines the linear trendline.
+ * Exponential :- Defines the exponential trendline.
+ * Polynomial :- Defines the polynomial trendline.
+ * Power :- Defines the power trendline.
+ * Logarithmic :- Defines the logarithmic trendline.
+ * MovingAverage :- Defines the moving average trendline.
  * ```
  */
 export type PivotChartTrendlineTypes =
@@ -528,16 +527,16 @@ export type PivotChartTrendlineTypes =
 /**
  * Defines the shape of legend. They are
  * ```props
- * * Circle :- Renders a circle.
- * * Rectangle :- Renders a rectangle.
- * * Triangle :- Renders a triangle.
- * * Diamond :- Renders a diamond.
- * * Cross :- Renders a cross.
- * * HorizontalLine :- Renders a horizontalLine.
- * * VerticalLine :- Renders a verticalLine.
- * * Pentagon :- Renders a pentagon.
- * * InvertedTriangle :- Renders a invertedTriangle.
- * * SeriesType :- Render a legend shape based on series type.
+ * Circle :- Renders a circle.
+ * Rectangle :- Renders a rectangle.
+ * Triangle :- Renders a triangle.
+ * Diamond :- Renders a diamond.
+ * Cross :- Renders a cross.
+ * HorizontalLine :- Renders a horizontalLine.
+ * VerticalLine :- Renders a verticalLine.
+ * Pentagon :- Renders a pentagon.
+ * InvertedTriangle :- Renders a invertedTriangle.
+ * SeriesType :- Render a legend shape based on series type.
  * ```
  */
 export type PivotChartLegendShape =
@@ -565,10 +564,10 @@ export type PivotChartLegendShape =
 /**
  * Defines the empty point mode of the chart.
  * ```props
- * * Gap :- Used to display empty points as space.
- * * Zero :- Used to display empty points as zero.
- * * Drop :- Used to ignore the empty point while rendering.
- * * Average :- Used to display empty points as previous and next point average.
+ * Gap :- Used to display empty points as space.
+ * Zero :- Used to display empty points as zero.
+ * Drop :- Used to ignore the empty point while rendering.
+ * Average :- Used to display empty points as previous and next point average.
  * ```
  */
 export type PivotChartEmptyPointMode =
@@ -584,9 +583,9 @@ export type PivotChartEmptyPointMode =
 /**
  * Defines the Alignment. They are
  * ```props
- * * Near :- Align the element to the left.
- * * Center :- Align the element to the center.
- * * Far :- Align the element to the right.
+ * Near :- Align the element to the left.
+ * Center :- Align the element to the center.
+ * Far :- Align the element to the right.
  * ```
  */
 export type PivotChartAlignment =
@@ -600,9 +599,9 @@ export type PivotChartAlignment =
 /**
  * Defines the Text overflow.
  * ```props
- * * None :- Shown the chart title with overlap if exceed.
- * * Wrap :- Shown the chart title with wrap if exceed.
- * * Trim :- Shown the chart title with trim if exceed.
+ * None :- Shown the chart title with overlap if exceed.
+ * Wrap :- Shown the chart title with wrap if exceed.
+ * Trim :- Shown the chart title with trim if exceed.
  * ```
  */
 export type PivotChartTextOverflow =
@@ -616,14 +615,14 @@ export type PivotChartTextOverflow =
 /**
  * Defines the unit of Strip line Size. They are
  * ```props
- * * Auto :- In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds.
- * * Pixel :- The stripline gets their size in pixel.
- * * Year :- The stipline size is based on year in the DateTime axis.
- * * Month :- The stipline size is based on month in the DateTime axis.
- * * Day :- The stipline size is based on day in the DateTime axis.
- * * Hour :- The stipline size is based on hour in the DateTime axis.
- * * Minutes :- The stipline size is based on minutes in the DateTime axis.
- * * Seconds :- The stipline size is based on seconds in the DateTime axis.
+ * Auto :- In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds.
+ * Pixel :- The stripline gets their size in pixel.
+ * Year :- The stipline size is based on year in the DateTime axis.
+ * Month :- The stipline size is based on month in the DateTime axis.
+ * Day :- The stipline size is based on day in the DateTime axis.
+ * Hour :- The stipline size is based on hour in the DateTime axis.
+ * Minutes :- The stipline size is based on minutes in the DateTime axis.
+ * Seconds :- The stipline size is based on seconds in the DateTime axis.
  * ```
  */
 export type PivotChartSizeType =
@@ -647,9 +646,9 @@ export type PivotChartSizeType =
 /**
  * Defines the strip line text position.
  * ```props
- * * Start :- Places the strip line text at the start.
- * * Middle :- Places the strip line text in the middle.
- * * End :- Places the strip line text at the end.
+ * Start :- Places the strip line text at the start.
+ * Middle :- Places the strip line text in the middle.
+ * End :- Places the strip line text at the end.
  * ```
  */
 export type PivotChartAnchor =
@@ -663,8 +662,8 @@ export type PivotChartAnchor =
 /**
  *  Specifies the order of the strip line. `Over` | `Behind`.
  * ```props
- * * Over :- Places the strip line over the series elements.
- * * Behind :- Places the strip line behind the series elements.
+ * Over :- Places the strip line over the series elements.
+ * Behind :- Places the strip line behind the series elements.
  * ```
  */
 export type PivotChartZIndex =
@@ -676,12 +675,12 @@ export type PivotChartZIndex =
 /**
  * Defines border type for multi level labels.
  * ```props
- * * Rectangle :- Shows chart border as rectangle.
- * * Brace :- Shows chart border as braces.
- * * WithoutBorder :- Shows chart without border.
- * * Without top Border :-  Shows chart with border on its top.
- * * Without top and bottom border :- Shows chart with border on its top and bottom.
- * * Curly brace :- Shows chart with curly braces.
+ * Rectangle :- Shows chart border as rectangle.
+ * Brace :- Shows chart border as braces.
+ * WithoutBorder :- Shows chart without border.
+ * Without top Border :-  Shows chart with border on its top.
+ * Without top and bottom border :- Shows chart with border on its top and bottom.
+ * Curly brace :- Shows chart with curly braces.
  * ```
  */
 export type PivotChartBorderType =
@@ -701,10 +700,10 @@ export type PivotChartBorderType =
 /**
  * Defines the mode of line in crosshair. They are
  * ```props
- * * None :- Hides both vertical and horizontal crosshair line.
- * * Both :- Shows both vertical and horizontal crosshair line.
- * * Vertical :- Shows the vertical line.
- * * Horizontal :- Shows the horizontal line.
+ * None :- Hides both vertical and horizontal crosshair line.
+ * Both :- Shows both vertical and horizontal crosshair line.
+ * Vertical :- Shows the vertical line.
+ * Horizontal :- Shows the horizontal line.
  * ```
  */
 export type PivotChartLineType =
@@ -720,8 +719,8 @@ export type PivotChartLineType =
 /**
  * Defines the SelectionMode for chart types pie, doughnut, Funnel and pyramid.
  * ```props
- * * None :- Disable the selection.
- * * Point :- To select a point.
+ * None :- Disable the selection.
+ * Point :- To select a point.
  * ```
  */
 export type PivotAccumulationChartSelectionMode =
@@ -733,8 +732,8 @@ export type PivotAccumulationChartSelectionMode =
 /**
  * Defines the ConnectorType for chart types pie, doughnut, Funnel and pyramid. They are
  * ```props
- * * Line :- Accumulation series Connector line type as Straight line.
- * * Curve :- Accumulation series Connector line type as Curved line.
+ * Line :- Accumulation series Connector line type as Straight line.
+ * Curve :- Accumulation series Connector line type as Curved line.
  * ```
  */
 export type PivotChartConnectorType =
@@ -746,8 +745,8 @@ export type PivotChartConnectorType =
 /**
  * Defines the LabelPosition for chart types pie, doughnut, Funnel and pyramid. They are
  * ```props
- * * Inside :- Define the data label position for the accumulation series Inside.
- * * Outside :- Define the data label position for the accumulation series Outside.
+ * Inside :- Define the data label position for the accumulation series Inside.
+ * Outside :- Define the data label position for the accumulation series Outside.
  * ```
  */
 export type PivotChartLabelPosition =
@@ -759,8 +758,8 @@ export type PivotChartLabelPosition =
 /**
  * Defines the mode of the group mode for chart types pie, doughnut, Funnel and pyramid
  * ```props
- * * Point :- When choosing points, the selected points get grouped.
- * * Value :- When choosing values, the points which less then values get grouped.
+ * Point :- When choosing points, the selected points get grouped.
+ * Value :- When choosing values, the points which less then values get grouped.
  * ```
  */
 export type PivotChartGroupModes =
@@ -772,8 +771,8 @@ export type PivotChartGroupModes =
 /**
  * Defines the mode of the pyramid
  * ```props
- * * Linear :- Height of the pyramid segments reflects the values
- * * Surface :- Surface/Area of the  pyramid segments reflects the values
+ * Linear :- Height of the pyramid segments reflects the values
+ * Surface :- Surface/Area of the  pyramid segments reflects the values
  * ```
  */
 export type PivotChartPyramidModes =
@@ -785,12 +784,12 @@ export type PivotChartPyramidModes =
 /**
  * Defines the position of the legend. They are
  * ```props
- * * Auto :- Places the legend based on area type.
- * * Top :- Displays the legend on the top of chart.
- * * Left :- Displays the legend on the left of chart.
- * * Bottom :- Displays the legend on the bottom of chart.
- * * Right :- Displays the legend on the right of chart.
- * * Custom :- Displays the legend  based on given x and y value.
+ * Auto :- Places the legend based on area type.
+ * Top :- Displays the legend on the top of chart.
+ * Left :- Displays the legend on the left of chart.
+ * Bottom :- Displays the legend on the bottom of chart.
+ * Right :- Displays the legend on the right of chart.
+ * Custom :- Displays the legend  based on given x and y value.
  * ```
  */
 export type PivotChartLegendPosition =
@@ -808,18 +807,18 @@ export type PivotChartLegendPosition =
     'Custom';
 
 /**
- * * Type of series to be drawn in radar or polar series. They are
+ * Type of series to be drawn in radar or polar series. They are
  * ```props
- * * Line :- Renders the line series.
- * * Column :- Renders the column series.
- * * Area :- Renders the area series.
- * * Scatter :- Renders the scatter series.
- * * Spline :- Renders the spline series.
- * * StackingColumn :- Renders the stacking column series.
- * * StackingArea :- Renders the stacking area series.
- * * RangeColumn :- Renders the range column series.
- * * SplineArea :- Renders the spline area series.
- * * StackingLine :- Renders the stacking line series.
+ * Line :- Renders the line series.
+ * Column :- Renders the column series.
+ * Area :- Renders the area series.
+ * Scatter :- Renders the scatter series.
+ * Spline :- Renders the spline series.
+ * StackingColumn :- Renders the stacking column series.
+ * StackingArea :- Renders the stacking area series.
+ * RangeColumn :- Renders the range column series.
+ * SplineArea :- Renders the spline area series.
+ * StackingLine :- Renders the stacking line series.
  * ```
  */
 export type PivotChartDrawType =
@@ -866,13 +865,13 @@ export type PivotChartSplineType =
 /**
  * Defines the Alignment. They are
  * ```props
- * * None :- Shows all the labels.
- * * Hide :- Hide the label when it intersect.
- * * Trim :- Trim the label when it intersect.
- * * Wrap :- Wrap the label when it intersect.
- * * MultipleRows :- Arrange the label in multiple row when it intersect.
- * * Rotate45 :- Rotate the label to 45 degree when it intersect.
- * * Rotate90 :- Rotate the label to 90 degree when it intersect.
+ * None :- Shows all the labels.
+ * Hide :- Hide the label when it intersect.
+ * Trim :- Trim the label when it intersect.
+ * Wrap :- Wrap the label when it intersect.
+ * MultipleRows :- Arrange the label in multiple row when it intersect.
+ * Rotate45 :- Rotate the label to 45 degree when it intersect.
+ * Rotate90 :- Rotate the label to 90 degree when it intersect.
  * ```
  */
 export type PivotChartLabelIntersectAction =
@@ -894,9 +893,9 @@ export type PivotChartLabelIntersectAction =
 /**
  * Defines the Edge Label Placement for an axis. They are
  * ```props
- * * None :- Render the edge label in axis.
- * * Hide :- Hides the edge label in axis.
- * * Shift :- Shift the edge series in axis.
+ * None :- Render the edge label in axis.
+ * Hide :- Hides the edge label in axis.
+ * Shift :- Shift the edge series in axis.
  * ```
  */
 export type PivotChartEdgeLabelPlacement =
@@ -910,8 +909,8 @@ export type PivotChartEdgeLabelPlacement =
 /**
  * Defines the Label Placement for category axis. They are
  * ```props
- * * BetweenTicks :- Render the label between the ticks.
- * * OnTicks :- Render the label on the ticks.
+ * BetweenTicks :- Render the label between the ticks.
+ * OnTicks :- Render the label on the ticks.
  * ```
  */
 export type PivotChartLabelPlacement =
@@ -923,8 +922,8 @@ export type PivotChartLabelPlacement =
 /**
  * Defines the Position. They are
  * ```props
- * * Inside :- Place the ticks or labels inside to the axis line.
- * * Outside :- Place the ticks or labels outside to the axis line.
+ * Inside :- Place the ticks or labels inside to the axis line.
+ * Outside :- Place the ticks or labels outside to the axis line.
  * ```
  */
 export type PivotChartAxisPosition =
@@ -936,9 +935,9 @@ export type PivotChartAxisPosition =
 /**
  * Defines the zooming mode, They are.
  * ```props
- * * XY :- Chart will be zoomed with respect to both vertical and horizontal axis.
- * * X :- Chart will be zoomed with respect to horizontal axis.
- * * Y :- Chart will be zoomed with respect to vertical axis.
+ * XY :- Chart will be zoomed with respect to both vertical and horizontal axis.
+ * X :- Chart will be zoomed with respect to horizontal axis.
+ * Y :- Chart will be zoomed with respect to vertical axis.
  * ```
  */
 export type PivotChartZoomMode =
@@ -952,11 +951,11 @@ export type PivotChartZoomMode =
 /**
  * Defines the ZoomingToolkit, They are.
  * ```props
- * * Zoom :- Renders the zoom button.
- * * ZoomIn :- Renders the zoomIn button.
- * * ZoomOut :- Renders the zoomOut button.
- * * Pan :- Renders the pan button.
- * * Reset :- Renders the reset button.
+ * Zoom :- Renders the zoom button.
+ * ZoomIn :- Renders the zoomIn button.
+ * ZoomOut :- Renders the zoomOut button.
+ * Pan :- Renders the pan button.
+ * Reset :- Renders the reset button.
  * ```
  */
 export type PivotChartToolbarItems =
@@ -974,15 +973,15 @@ export type PivotChartToolbarItems =
 /**
  * Defines Theme of the chart. They are
  * ```props
- * * Material :- Render a chart with Material theme.
- * * Fabric :- Render a chart with Fabric theme.
- * * Bootstrap :- Render a chart with Bootstrap theme.
- * * HighContrastLight :- Render a chart with HighcontrastLight theme.
- * * MaterialDark :- Render a chart with MaterialDark theme.
- * * FabricDark :- Render a chart with FabricDark theme.
- * * HighContrast :- Render a chart with HighContrast theme.
- * * BootstrapDark :- Render a chart with BootstrapDark theme.
- * * Bootstrap4 :- Render a chart with Bootstrap4 theme.
+ * Material :- Render a chart with Material theme.
+ * Fabric :- Render a chart with Fabric theme.
+ * Bootstrap :- Render a chart with Bootstrap theme.
+ * HighContrastLight :- Render a chart with HighcontrastLight theme.
+ * MaterialDark :- Render a chart with MaterialDark theme.
+ * FabricDark :- Render a chart with FabricDark theme.
+ * HighContrast :- Render a chart with HighContrast theme.
+ * BootstrapDark :- Render a chart with BootstrapDark theme.
+ * Bootstrap4 :- Render a chart with Bootstrap4 theme.
  * ```
  */
 export type PivotChartTheme =
@@ -1008,11 +1007,11 @@ export type PivotChartTheme =
 /**
  * Defines the data label position. They are,
  * ```props
- * * Outer:- Positions the label outside the point.
- * * Top:- Positions the label on top of the point.
- * * Bottom:- Positions the label at the bottom of the point.
- * * Middle:- Positions the label to the middle of the point.
- * * Auto:- Positions the label based on series.
+ * Outer:- Positions the label outside the point.
+ * Top:- Positions the label on top of the point.
+ * Bottom:- Positions the label at the bottom of the point.
+ * Middle:- Positions the label to the middle of the point.
+ * Auto:- Positions the label based on series.
  * ```
  */
 export declare type LabelPosition =
@@ -1030,31 +1029,31 @@ export declare type LabelPosition =
 /**
  * Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… The available types are,
  * ```props
- * * Sum :- Allows to display the pivot table values with sum.
- * * Product :- Allows to display the pivot table values with product.
- * * Count :- Allows to display the pivot table values with count.
- * * DistinctCount :- Allows to display the pivot table values with distinct count.
- * * Min :- Allows to display the pivot table with minimum value.
- * * Max :- Allows to display the pivot table with maximum value.
- * * Avg :- Allows to display the pivot table values with average.
- * * Median :- Allows to display the pivot table values with median.
- * * Index :- Allows to display the pivot table values with index.
- * * PopulationStDev :- Allows to display the pivot table values with population standard deviation.
- * * SampleStDev :- Allows to display the pivot table values with sample standard deviation.
- * * PopulationVar :- Allows to display the pivot table values with population variance.
- * * SampleVar :- Allows to display the pivot table values with sample variance.
- * * RunningTotals :- Allows to display the pivot table values with running totals.
- * * DifferenceFrom :- Allows to display the pivot table values with difference from the value of the base item in the base field.
- * * PercentageOfDifferenceFrom :- Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
- * * PercentageOfGrandTotal :- Allows to display the pivot table values with percentage of grand total of all values.
- * * PercentageOfColumnTotal :- Allows to display the pivot table values in each column with percentage of total values for the column.
- * * PercentageOfRowTotal :- Allows to display the pivot table values in each row with percentage of total values for the row.
- * * PercentageOfParentTotal :- Allows to display the pivot table values with percentage of total of all values based on selected field.
- * * PercentageOfParentColumnTotal :- Allows to display the pivot table values with percentage of its parent total in each column.
- * * PercentageOfParentRowTotal :- Allows to display the pivot table values with percentage of its parent total in each row.
+ * Sum :- Allows to display the pivot table values with sum.
+ * Product :- Allows to display the pivot table values with product.
+ * Count :- Allows to display the pivot table values with count.
+ * DistinctCount :- Allows to display the pivot table values with distinct count.
+ * Min :- Allows to display the pivot table with minimum value.
+ * Max :- Allows to display the pivot table with maximum value.
+ * Avg :- Allows to display the pivot table values with average.
+ * Median :- Allows to display the pivot table values with median.
+ * Index :- Allows to display the pivot table values with index.
+ * PopulationStDev :- Allows to display the pivot table values with population standard deviation.
+ * SampleStDev :- Allows to display the pivot table values with sample standard deviation.
+ * PopulationVar :- Allows to display the pivot table values with population variance.
+ * SampleVar :- Allows to display the pivot table values with sample variance.
+ * RunningTotals :- Allows to display the pivot table values with running totals.
+ * DifferenceFrom :- Allows to display the pivot table values with difference from the value of the base item in the base field.
+ * PercentageOfDifferenceFrom :- Allows to display the pivot table values with percentage difference from the value of the base item in the base field.
+ * PercentageOfGrandTotal :- Allows to display the pivot table values with percentage of grand total of all values.
+ * PercentageOfColumnTotal :- Allows to display the pivot table values in each column with percentage of total values for the column.
+ * PercentageOfRowTotal :- Allows to display the pivot table values in each row with percentage of total values for the row.
+ * PercentageOfParentTotal :- Allows to display the pivot table values with percentage of total of all values based on selected field.
+ * PercentageOfParentColumnTotal :- Allows to display the pivot table values with percentage of its parent total in each column.
+ * PercentageOfParentRowTotal :- Allows to display the pivot table values with percentage of its parent total in each row.
  *
- * > It is applicable only for relational data source.
  * ```
+ * > It is applicable only for relational data source.
  */
 export type AggregateTypes =
     /** Allows to display the pivot table values with sum. */
@@ -1106,14 +1105,14 @@ export type AggregateTypes =
  * Allows the chart series to be displayed, depending on the value fields specified, in either a stacked or single chart area.
  * The options available are:
  * ```props
- * * Stacked:- Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
- * * Single:- Allows the chart series to be displayed in a single chart area for different value fields.
- * * Combined:- Allows to draw chart series with a single Y-axis for all value fields in the pivot chart area.
+ * Stacked:- Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
+ * Single:- Allows the chart series to be displayed in a single chart area for different value fields.
+ * Combined:- Allows to draw chart series with a single Y-axis for all value fields in the pivot chart area.
  * These chart series will be drawn based on the Y-axis range values calculated from all of the bound value fields.
+ * ```
  * > The first value field in the value axis will be used to format the Y-axis range values.
  * For example, if the first value field is in currency format and the remaining value fields are in different number formats or no format,
  * the currency format will be used for the Y-axis range values.
- * ```
  */
 export type MultipleAxisMode =
     /** Allows the chart series to be displayed in a separate chart area depending on the value fields specified. */
@@ -1131,8 +1130,8 @@ export type MultipleAxisMode =
  * Allows the grand totals to be displayed in either the top or bottom position in the pivot table's row and column axes.
  * The options available are:
  * ```props
- * * Top:- Allows the grand totals to be displayed in top position in the pivot table's row and column axes.
- * * Bottom:- Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes.
+ * Top:- Allows the grand totals to be displayed in top position in the pivot table's row and column axes.
+ * Bottom:- Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes.
  * ```
  */
 export type GrandTotalsPosition =
@@ -1145,9 +1144,9 @@ export type GrandTotalsPosition =
  * Specifies different types of positions that will allow the row and column sub-totals to be displayed at the top or bottom of the header group in the pivot table.
  * The available options are:
  * ```props
- * * Auto:- Defines the row and column sub-totals to be displayed in their default positions, i.e., the column sub-totals are displayed at the bottom and row sub-totals are displayed at the top of their header group in the pivot table.
- * * Top:- Defines the row and column sub-totals to be displayed at the top of the header group in the pivot table.
- * * Bottom:- Defines the row and column sub-totals to be displayed at the bottom of the header group in the pivot table.
+ * Auto:- Defines the row and column sub-totals to be displayed in their default positions, i.e., the column sub-totals are displayed at the bottom and row sub-totals are displayed at the top of their header group in the pivot table.
+ * Top:- Defines the row and column sub-totals to be displayed at the top of the header group in the pivot table.
+ * Bottom:- Defines the row and column sub-totals to be displayed at the bottom of the header group in the pivot table.
  * ```
  */
 export type SubTotalsPosition =
@@ -1162,8 +1161,8 @@ export type SubTotalsPosition =
  * Allows to display the pager UI either at top or bottom of the Pivot Table UI.
  * The options available are:
  * ```props
- * * Top:- Allows the pager UI to be displayed in top position of the Pivot Table UI.
- * * Bottom:- Allows the pager UI to be displayed in bottom position of the Pivot Table UI.
+ * Top:- Allows the pager UI to be displayed in top position of the Pivot Table UI.
+ * Bottom:- Allows the pager UI to be displayed in bottom position of the Pivot Table UI.
  * ```
  */
 export type PagerPosition =
@@ -1175,8 +1174,8 @@ export type PagerPosition =
 /**
  * Allows the table or chart to be exported in the PDF export document. The available options are:
  * ```props
- * * Table :- Determines the pivot table to be exported in the PDF export document.
- * * Chart :- Determines the pivot chart to be exported in the PDF export document.
+ * Table :- Determines the pivot table to be exported in the PDF export document.
+ * Chart :- Determines the pivot chart to be exported in the PDF export document.
  * ```
  */
 export type ExportView =

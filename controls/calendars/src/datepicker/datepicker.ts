@@ -65,7 +65,7 @@ export class DatePicker extends Calendar implements IInput {
     protected previousDate: Date;
     private keyboardModules: KeyboardEvents;
     private calendarKeyboardModules: KeyboardEvents;
-    protected previousElementValue: string = '';
+    protected previousElementValue: string;
     protected ngTag: string;
     protected dateTimeFormat: string;
     protected inputElementCopy: HTMLElement;
@@ -2107,7 +2107,12 @@ export class DatePicker extends Calendar implements IInput {
                 newProp.value = this.value;
                 this.previousElementValue = this.inputElement.value;
                 if (isNullOrUndefined(this.value)) {
-                    this.updateInputValue('');
+                    if (this.enableMask) {
+                        this.updateInputValue(this.maskedDateValue);
+                    }
+                    else {
+                        this.updateInputValue('');
+                    }
                     this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
                 }
                 this.updateInput(true);

@@ -475,7 +475,7 @@ export class KeyboardInteraction {
             nextAppEle = isReverse ? appointments[appointments.length - 1] : appointments[0];
         }
         if (nextAppEle) {
-            this.parent.eventBase.addSelectedAppointments([nextAppEle]);
+            this.parent.eventBase.addSelectedAppointments([nextAppEle], true);
             nextAppEle.focus();
             addClass([nextAppEle as Element], cls.AGENDA_SELECTED_CELL);
         }
@@ -501,7 +501,7 @@ export class KeyboardInteraction {
             if (filteredElements.length > 0) {
                 const selectedElement: Element = isReverse ? filteredElements[filteredElements.length - 1] : filteredElements[0];
                 const focusElements: HTMLElement[] = this.getAppointmentElementsByGuid(selectedElement.getAttribute('data-guid'));
-                this.parent.eventBase.addSelectedAppointments(focusElements);
+                this.parent.eventBase.addSelectedAppointments(focusElements, true);
                 (focusElements[focusElements.length - 1]).focus();
             }
         }
@@ -942,7 +942,7 @@ export class KeyboardInteraction {
             if (appElements.length > 0) {
                 this.parent.eventBase.removeSelectedAppointmentClass();
                 const focusAppointment: HTMLElement = isReverse ? appElements.slice(-1)[0] : appElements[0];
-                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                this.parent.eventBase.addSelectedAppointments([focusAppointment], true);
                 focusAppointment.focus();
                 e.preventDefault();
             } else if (index + 1 === this.parent.resourceBase.lastResourceLevel.length) {
@@ -1040,7 +1040,7 @@ export class KeyboardInteraction {
             const nextAppEle: HTMLElement = eventEle[0];
             if (nextAppEle) {
                 this.parent.eventBase.removeSelectedAppointmentClass();
-                this.parent.eventBase.addSelectedAppointments([nextAppEle]);
+                this.parent.eventBase.addSelectedAppointments([nextAppEle], true);
                 nextAppEle.focus();
             }
         } else if (this.parent.activeViewOptions.group.resources.length > 0 &&
@@ -1051,7 +1051,7 @@ export class KeyboardInteraction {
             if (appElements.length > 0) {
                 this.parent.eventBase.removeSelectedAppointmentClass();
                 const focusAppointment: HTMLElement = appElements[0];
-                this.parent.eventBase.addSelectedAppointments([focusAppointment]);
+                this.parent.eventBase.addSelectedAppointments([focusAppointment], true);
                 focusAppointment.focus();
                 e.preventDefault();
             }

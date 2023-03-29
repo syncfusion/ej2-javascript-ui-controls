@@ -768,7 +768,7 @@ export class Toolbar {
                 };
                 fileReader.readAsText(file);
             } else {
-                if (this.isSupportedFormatType(formatType)) {
+                if (this.isSupportedFormatType(formatType.toLowerCase())) {
                     this.convertToSfdt(file);
                 }
                 else {

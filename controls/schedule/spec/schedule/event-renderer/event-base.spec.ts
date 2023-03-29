@@ -5,6 +5,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { resourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
@@ -821,6 +822,75 @@ describe('Event Base Module', () => {
             const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(app.length).toBe(1);
             expect(app[0].querySelector('.e-time').innerHTML).toEqual('2:00 AM - 5:00 AM');
+        });
+    });
+
+    describe('Check Agenda view appointment focus', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 10,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: [1, 2],
+                OwnerId: [1, 2, 3]
+            }, {
+                Id: 11,
+                Subject: 'Testing',
+                StartTime: new Date(2018, 3, 2, 10, 0),
+                EndTime: new Date(2018, 3, 2, 12, 30),
+                IsAllDay: false,
+                RoomId: [1, 2],
+                OwnerId: [1, 2, 3]
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                currentView: 'Agenda',
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: true,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                    }, {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(options, resourceData.concat(eventData), done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('check scrollbar after open/close quick popup', () => {
+            const appEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            appEle[1].click();
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toBeTruthy();
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(3);
+            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(1);
+            (schObj.element.querySelector('.e-quick-popup-wrapper .e-close') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toBeTruthy();
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(3);
+            expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(1);
         });
     });
 

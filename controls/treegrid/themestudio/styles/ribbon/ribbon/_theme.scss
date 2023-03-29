@@ -72,11 +72,11 @@
           background: $ribbon-active-file-menu-background;
         }
 
-        &:hover {
+        &:hover:not(.e-active) {
           color: $ribbon-tab-text-hover-color;
         }
 
-        &:focus {
+        &:focus-visible {
           color: $ribbon-tab-text-focus-color;
         }
       }
@@ -126,6 +126,7 @@
       }
 
       .e-colorpicker-wrapper {
+
         &.e-ribbon-hover,
         &.e-ribbon-open {
           border-color: $ribbon-items-hover-background-color;
@@ -133,6 +134,7 @@
       }
 
       .e-split-btn-wrapper {
+
         &.e-ribbon-hover,
         &.e-ribbon-open {
           border-color: $ribbon-items-hover-background-color;
@@ -144,11 +146,19 @@
       }
     }
 
+    .e-ribbon-item {
+      .e-split-btn-wrapper {
+        &.e-vertical:hover .e-split-btn:disabled {
+          border-color: transparent;
+        }
+      }
+    }
+
     .e-ribbon-item,
     .e-ribbon-group-overflow,
     &.e-ribbon-overflow {
 
-      .e-btn,
+      .e-btn:not(.e-ribbon-file-menu),
       .e-ribbon-group-of-btn {
         color: $ribbon-text-color;
         background: $ribbon-items-background-color;

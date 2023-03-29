@@ -41,7 +41,7 @@ export class RibbonFileMenu {
             return;
         }
         this.ddbElement = this.parent.createElement('button', {
-            id: this.parent.element.id + constants.RIBBON_FILE_MENU_ID,
+            id: this.parent.element.id + constants.RIBBON_FILE_MENU_ID
         });
         const tabEle: HTMLElement = this.parent.tabObj.element;
         const toolbarEle: HTMLElement = tabEle.querySelector('.e-toolbar');
@@ -131,15 +131,17 @@ export class RibbonFileMenu {
             select: this.menuSelect.bind(this)
         }, ulElem);
         EventHandler.add(ulElem, 'keydown', (e: KeyboardEvent) => {
-            if (e.key === "Tab") { this.fileMenuDDB.toggle(); }
+            if (e.key === 'Tab') { this.fileMenuDDB.toggle(); }
         }, this);
     }
     private menuBeforeEvent(isOpen: boolean, args: BeforeMenuArgs): void {
         const event: EmitType<FileMenuBeforeOpenCloseEventArgs> = isOpen ? this.parent.fileMenu.beforeOpen :
             this.parent.fileMenu.beforeClose;
         if (event) {
-            const eventArgs: FileMenuBeforeOpenCloseEventArgs = { cancel: args.cancel, element: args.element, event: args.event,
-                items: args.items, parentItem: args.parentItem };
+            const eventArgs: FileMenuBeforeOpenCloseEventArgs = {
+                cancel: args.cancel, element: args.element, event: args.event,
+                items: args.items, parentItem: args.parentItem
+            };
             event.call(this, eventArgs);
             args.cancel = eventArgs.cancel;
         }
@@ -164,7 +166,7 @@ export class RibbonFileMenu {
             const eventArgs: FileMenuEventArgs = { element: args.element, item: args.item, event: args.event };
             event.call(this, eventArgs);
             if (!args.element.classList.contains('e-menu-caret-icon')) {
-                this.fileMenuDDB.toggle();               
+                this.fileMenuDDB.toggle();
             }
         }
     }

@@ -228,7 +228,6 @@ export interface ListBoxModel extends DropDownBaseModel{
      * Triggers when data source is populated in the list.
      *
      * @event dataBound
-     * @private
      */
     dataBound?: EmitType<Object>;
 

@@ -6149,8 +6149,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let j: number = ports.length - 1; j >= 0; j--) {
             if ((obj as NodeModel).children && (obj as NodeModel).children.length > 0) {
                 for (let k: number = 0; k < obj.wrapper.children.length; k++) {
+                    //EJ2-66928 Bug- added for ungroup Issue to only remove the grouping ports and not to remove ports of the children nodes
+                    let wrapper=obj.wrapper.children[parseInt(k.toString(), 10)];
+                    if ((wrapper.id).match(obj.wrapper.id)){
                     this.removePortsExtenion(obj, ports, j, obj.wrapper.children[parseInt(k.toString(), 10)]);
-                }
+                }}
             } else {
                 this.removePortsExtenion(obj, ports, j, obj.wrapper);
             }
@@ -9816,7 +9819,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
-                this.updateGroupSize(actualObject);
                 if (actualObject.children) { this.updateGroupOffset(actualObject); }
             }
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && (this.diagramActions & DiagramAction.Render)) {
@@ -10112,7 +10114,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
-            this.updateQuad(actualObject); this.updateGroupSize(actualObject);
+            this.updateQuad(actualObject);
         }
         if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction)
             || (this.diagramActions & DiagramAction.UndoRedo))) { this.updateSelector(); }

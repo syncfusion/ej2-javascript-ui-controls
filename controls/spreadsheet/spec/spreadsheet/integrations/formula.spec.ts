@@ -3173,9 +3173,9 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('AVERAGEIF formula with argument having *, >, and number as criteria value->', (done: Function) => {
             helper.edit('J4', '=AVERAGEIF(H2:H5,">*1")');
-            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('NaN');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#DIV/0!');
             expect(helper.getInstance().sheets[0].rows[3].cells[9].formula).toEqual('=AVERAGEIF(H2:H5,">*1")');
-            expect(helper.getInstance().sheets[0].rows[3].cells[9].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[3].cells[9].value).toEqual('#DIV/0!');
             done();
         });
         it('AVERAGEIF formula with argument having * and number as criteria value->', (done: Function) => {
@@ -3187,9 +3187,9 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('AVERAGEIF formula with argument having * only as criteria value->', (done: Function) => {
             helper.edit('J6', '=AVERAGEIF(H2:H5,"*")');
-            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('NaN');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('#DIV/0!');
             expect(helper.getInstance().sheets[0].rows[5].cells[9].formula).toEqual('=AVERAGEIF(H2:H5,"*")');
-            expect(helper.getInstance().sheets[0].rows[5].cells[9].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[5].cells[9].value).toEqual('#DIV/0!');
             done();
         });
         it('AVERAGEIF formula with argument having with criteria value length > 255->', (done: Function) => {
@@ -4126,6 +4126,15 @@ describe('Spreadsheet formula module ->', () => {
                         sheets: [
                             {
                                 ranges: [{ dataSource: defaultData }]
+                            },
+                            {
+                                rows: [
+                                    { cells: [{ value: '11' }]},
+                                    { cells: [{ value: '22' }]},
+                                    { cells: [{ value: '33' }]},
+                                    { cells: [{ value: '44' }]},
+                                    { cells: [{ value: '55' }]}
+                                ]
                             }
                         ]
                     }, done);
@@ -4175,10 +4184,52 @@ describe('Spreadsheet formula module ->', () => {
             it('Spreadsheet supported formulas are not working as expected', (done: Function) => {
                 helper.edit('K1', '=AVERAGEIF(D2:D4, ">10", E2:E4)');
                 helper.edit('K2', '=SUMIF(D2:D4, ">10", E2:E4)');
+                helper.edit('M1', '=AVERAGEIF(L2:L11,">10")');
+                helper.edit('M2', '=AVERAGEIF(A2:A11,"=100")');
+                helper.edit('M3', '=AVERAGEIF(H2:H11, ">200")');
+                helper.edit('M4', '=AVERAGEIF(G2:G11, "=test")');
+                helper.edit('M5', '=AVERAGEIF(G2:G11, "")');
+                helper.edit('M6', '=AVERAGEIF(A2:A11, "=Loafers")');
+                helper.edit('M7', '=AVERAGEIF(Sheet1!A1:A5, "")');
+                helper.edit('M8', '=AVERAGEIF(Sheet1!A1:A5, "=test")');
+                helper.edit('M9', '=AVERAGEIFS(L2:L5,R2:R5,">70",S2:S5,"<90")');
+                helper.edit('M10', '=AVERAGEIFS(A2:A5,P2:P5,">70",Q2:Q5,"<90")');
+                helper.edit('M11', '=AVERAGEIFS(D2:D5,G2:G5,">5",H2:H5,"<25")');
+                helper.edit('M12', '=AVERAGEIFS(D2:D5,G2:G5,"=test",H2:H5,"=test1")');
+                helper.edit('M13', '=AVERAGEIFS(D2:D5,G2:G5,"",H2:H5,"")');
+                helper.edit('M14', '=AVERAGEIFS(D2:D5,A2:A5,">70",B2:B5,"<90")');
                 expect(helper.invoke('getCell', [0, 10]).textContent).toBe('22.5');
                 expect(parseFloat(getCell(0, 10, helper.getInstance().sheets[0]).value)).toEqual(22.5);
                 expect(helper.invoke('getCell', [1, 10]).textContent).toBe('45');
                 expect(parseFloat(getCell(1, 10, helper.getInstance().sheets[0]).value)).toEqual(45);
+                expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(0, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [1, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(1, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(2, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(3, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [4, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(4, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [5, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(5, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(6, 12, helper.getInstance().sheets[0]).value).toEqual('#DIV/0!');
+                expect(helper.invoke('getCell', [7, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(7, 12, helper.getInstance().sheets[0]).value).toEqual('#DIV/0!');
+                expect(helper.invoke('getCell', [8, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(8, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [9, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(9, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [10, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(10, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(11, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(12, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#DIV/0!');
+                expect(getCell(13, 12, helper.getInstance().sheets[0]).value).toBe('#DIV/0!');
                 done();
             });
         });
@@ -5110,11 +5161,11 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('A2', '');
             helper.edit('A6', '=AVERAGEIF(A1:A5,"=0")');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
-            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
             helper.invoke('insertRow', [5]);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIF(A1:A6,"=0")');
-                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(NaN);
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('#DIV/0!');
                 helper.edit('A6', '0');
                 helper.edit('A2', '0');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
@@ -5214,10 +5265,10 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('3');
             helper.edit('A6', '=AVERAGEIF(A1:A5,"=0")');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
-            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
             helper.edit('A6', '=AVERAGEIF(A1:5A,"=0")');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
-            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
             helper.edit('A6', '=AVERAGEIFS(A1:A5,B1:B5,"=0")');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIFS(A1:A5,B1:B5,"=0")');
             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
@@ -5487,11 +5538,11 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('B1', '');
             helper.edit('F1', '=AVERAGEIF(A1:E1,"=0")');
             expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=AVERAGEIF(A1:E1,"=0")');
-            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(NaN);
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('#DIV/0!');
             helper.invoke('insertColumn', [5]);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIF(A1:F1,"=0")');
-                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(NaN);
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('#DIV/0!');
                 helper.edit('F1', '0');
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
                 done();

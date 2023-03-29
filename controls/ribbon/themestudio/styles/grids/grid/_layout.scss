@@ -4141,6 +4141,9 @@
 
     & .e-btn.e-dlg-closeicon-btn {
       float: left;
+      @if $grid-skin == 'fluent' {
+        padding-top: 6px;
+      }
       padding-left: 0;
       padding-right: 40px;
     }
@@ -4214,7 +4217,7 @@
       padding-left: 0;
 
       @if $grid-skin == 'fluent' {
-        padding-top: 5px;
+        padding-top: 6px;
       }
       @else if $grid-skin == 'tailwind' {
         padding-top: 1.5px;
@@ -4433,6 +4436,9 @@
 .e-bigger.e-responsive-dialog.e-rtl {
   & .e-btn.e-dlg-closeicon-btn {
     float: right;
+    @if $grid-skin == 'fluent' {
+      padding-top: 6px;
+    }
     padding-left: 40px;
     padding-right: 0;
   }

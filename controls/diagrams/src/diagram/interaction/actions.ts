@@ -190,8 +190,10 @@ function checkResizeHandles(
  * @private
  */
 function checkForConnectorSegment(conn: Connector, handle: SelectorModel, position: PointModel, diagram: Diagram): Actions {
-    const targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
-    const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
+    //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value 
+    //Added below code for drag the bezier control thumb while increasing handle size (Changing cursor from pointer to drag cursor)
+    const targetPaddingValue: number = (handle.handleSize/2) / diagram.scrollSettings.currentZoom;
+    const sourcePaddingValue: number = (handle.handleSize/2) / diagram.scrollSettings.currentZoom;
     if (conn.type === 'Bezier' && diagram.connectorEditingToolModule) {
         for (let i: number = 0; i < conn.segments.length; i++) {
             const segment: BezierSegment = (conn.segments)[parseInt(i.toString(), 10)] as BezierSegment;

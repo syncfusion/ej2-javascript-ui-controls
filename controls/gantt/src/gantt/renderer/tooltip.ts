@@ -359,7 +359,7 @@ export class Tooltip {
             content = '<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('from') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' + (this.parent.disableHtmlEncode ?  fromNameValue.replace(/</g,"&lt;").replace(/>/g,"&gt;"):fromNameValue) + ' (' +
-                    (this.parent.disableHtmlEncode ?  fromIdValue.replace(/</g,"&lt;").replace(/>/g,"&gt;"):fromIdValue) + ')' + '</td></tr><tr><td class = "e-gantt-tooltip-label">' +
+                    (this.parent.disableHtmlEncode ?  (typeof (fromIdValue) === 'string' ? fromIdValue.replace(/</g,"&lt;").replace(/>/g,"&gt;"): fromIdValue): fromIdValue) + ')' + '</td></tr><tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('to') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
                     (this.parent.disableHtmlEncode ?  toNameValue.replace(/</g,"&lt;").replace(/>/g,"&gt;"):toNameValue) + ' (' + toIdValue + ')' + '</td></tr><tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('taskLink') +
                     '</td><td>:</td><td class = "e-gantt-tooltip-value"> ' + linkTextValue +

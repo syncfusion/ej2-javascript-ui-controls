@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I449274` - Resolved the nodeSelected event not working properly issue on iPad.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tab

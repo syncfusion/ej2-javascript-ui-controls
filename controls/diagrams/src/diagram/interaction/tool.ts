@@ -550,6 +550,11 @@ export class ConnectTool extends ToolBase {
                 const segment: BezierSegment = connectors.segments[parseInt(i.toString(), 10)] as BezierSegment;
                 const segmentpoint1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
                 const segmentpoint2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
+                //(EJ2-70650)-Unable to drag bezier control thumb, when we increase handleSize value 
+                //Added below code for drag the bezier control thumb while increasing handle size(For hitPadding)
+                if((this.currentElement as Selector).handleSize !== connectors.hitPadding){
+                    connectors.hitPadding = (this.currentElement as Selector).handleSize;
+                }
                 if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
                     contains(this.currentPosition, segmentpoint2, connectors.hitPadding)) {
                     this.selectedSegment = segment;
@@ -2584,7 +2589,6 @@ export class FreeHandTool extends ToolBase {
     */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        super.mouseMove(args);
         let tolerance: number = 10;
         let smoothValue: number = 0.5;
         if (this.inAction) {
@@ -2606,9 +2610,11 @@ export class FreeHandTool extends ToolBase {
                 this.drawingObject = this.bezierCurveSmoothness(points, smoothValue, this.drawingObject, obj);
                 this.commandHandler.updateConnectorPoints(this.drawingObject);
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
+    //(EJ2-70838)- Styles property not working for freehand connector dynamically
+    // Added code to resolve style property not added dynamically for freehand connector
+                super.mouseUp(args);
             }
         }
-        this.endAction();
     }
     /**
      * Reduce the collected points based on tolerance value.

@@ -251,7 +251,15 @@ export class Annotation {
     public setAnnotationMode(type: AnnotationType, dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem, standardBusinessStampItem?: StandardBusinessStampItem): void {
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
+        if (this.pdfViewer.tool === "Stamp") {
+            this.pdfViewer.toolbarModule.updateStampItems();
+        }
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            this.pdfViewer.toolbarModule.annotationToolbarModule.resetFreeTextAnnot();
+        }
         type !== 'None' ? this.triggerAnnotationUnselectEvent() : null;
+        this.pdfViewer.tool = "";
+        this.pdfViewer.toolbarModule.deSelectCommentAnnotation();
         if (type === 'None') {
             this.clearAnnotationMode();
         } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline') {
@@ -2750,7 +2758,7 @@ export class Annotation {
      */
     public modifyDynamicTextValue(dynamicText: string, annotName: string): void {
         let currentAnnotation: PdfAnnotationBaseModel = null;
-        currentAnnotation = this.pdfViewer.selectedItems.annotations.filter((s: PdfAnnotationBaseModel) => s.annotName === annotName)[0];
+        currentAnnotation = this.pdfViewer.annotations.filter((s: PdfAnnotationBaseModel) => s.annotName === annotName)[0];
         if (currentAnnotation) {
             const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
             const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
@@ -2759,7 +2767,7 @@ export class Annotation {
             if (clonedObject.dynamicText === '') {
                 clonedObject.dynamicText = this.freeTextAnnotationModule.previousText;
             }
-            this.pdfViewer.nodePropertyChange(this.pdfViewer.selectedItems.annotations[0], { dynamicText: dynamicText });
+            this.pdfViewer.nodePropertyChange(currentAnnotation, { dynamicText: dynamicText });
             // eslint-disable-next-line max-len
             this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
             this.modifyInCollections(currentAnnotation, 'dynamicText');

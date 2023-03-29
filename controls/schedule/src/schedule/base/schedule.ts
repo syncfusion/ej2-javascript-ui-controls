@@ -1586,6 +1586,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                         if (this.headerModule) {
                             this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
+                        if (this.currentView === 'MonthAgenda' && this.monthAgendaModule) {
+                            this.monthAgendaModule.monthAgendaDate = new Date('' + this.selectedDate);
+                        }
                         this.initializeView(this.currentView);
                         this.animateLayout();
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
@@ -2526,6 +2529,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         } else if (state.isDate) {
             this.changeDate(this.selectedDate);
         } else if (state.isLayout) {
+            this.activeCellsData = null;
             this.initializeView(this.currentView);
         } else if (state.isDataManager && this.crudModule) {
             if (this.dragAndDropModule) {
@@ -3579,7 +3583,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             const element: HTMLElement = this.element.querySelector('div[data-guid="' + selectEvent.Guid + '"]');
             if (element) {
                 this.eventBase.removeSelectedAppointmentClass();
-                this.eventBase.addSelectedAppointments([element]);
+                this.eventBase.addSelectedAppointments([element], false);
                 this.activeEventData = { event: selectEvent, element: element } as EventClickArgs;
                 if (this.currentView === 'Agenda' || this.currentView === 'MonthAgenda') {
                     addClass([this.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);

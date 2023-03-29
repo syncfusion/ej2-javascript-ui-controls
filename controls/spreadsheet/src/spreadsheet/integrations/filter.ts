@@ -1499,9 +1499,9 @@ export class Filter {
                 { value: 'contains', text: l10n.getConstant('Contains') },
                 { value: 'equal', text: l10n.getConstant('Equal') },
                 { value: 'isempty', text: l10n.getConstant('IsEmpty') },
-                { value: 'doesnotstartswith', text: l10n.getConstant('NotStartsWith') },
-                { value: 'doesnotendswith', text: l10n.getConstant('NotEndsWith') },
-                { value: 'doesnotcontains', text: l10n.getConstant('NotContains') },
+                { value: 'doesnotstartwith', text: l10n.getConstant('NotStartsWith') },
+                { value: 'doesnotendwith', text: l10n.getConstant('NotEndsWith') },
+                { value: 'doesnotcontain', text: l10n.getConstant('NotContains') },
                 { value: 'notequal', text: l10n.getConstant('NotEqual') },
                 { value: 'isnotempty', text: l10n.getConstant('IsNotEmpty') }
             ],
@@ -1625,13 +1625,13 @@ export class Filter {
             value = 'greaterthanorequal';
             break;
         case 'NotContains':
-            value = 'doesnotcontains';
+            value = 'doesnotcontain';
             break;
         case 'NotBeginsWith':
-            value = 'doesnotstartswith';
+            value = 'doesnotstartwith';
             break;
         case 'NotEndsWith':
-            value = 'doesnotendswith';
+            value = 'doesnotendwith';
             break;
         case 'Empty':
             value = 'isempty';

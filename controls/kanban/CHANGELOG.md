@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I432638` - Now, when using the kanban `sortSettings` and dropping the cards randomly is sorted properly.
+
 ## 20.4.54 (2023-03-14)
 
 ### Kanban

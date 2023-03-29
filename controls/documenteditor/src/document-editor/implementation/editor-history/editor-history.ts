@@ -318,7 +318,15 @@ export class EditorHistory {
     public isHandledComplexHistory(): boolean {
         let isHandledComplexHistory: boolean = false;
         if (!(this.isUndoing || this.isRedoing)) {
-            isHandledComplexHistory = this.owner.editorModule.insertRemoveBookMarkElements();
+            if (this.owner.editorModule.removedBookmarkElements.length > 0 && this.owner.editorModule.insertRemoveBookMarkElements(isHandledComplexHistory)) {
+                isHandledComplexHistory = true;
+            }
+            if (this.owner.editorModule.removedEditRangeEndElements.length > 0 && this.owner.editorModule.insertRemovedEditRangeEndElements(isHandledComplexHistory)) {
+                isHandledComplexHistory = true;
+            }
+            if (this.owner.editorModule.removedEditRangeStartElements.length > 0 && this.owner.editorModule.insertRemovedEditRangeStartElements(isHandledComplexHistory)) {
+                isHandledComplexHistory = true;
+            }
         }
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
             this.updateHistory();

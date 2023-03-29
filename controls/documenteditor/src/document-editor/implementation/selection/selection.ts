@@ -8143,6 +8143,9 @@ export class Selection {
      */
     public retrieveCharacterFormat(start: TextPosition, end: TextPosition): void {
         this.characterFormat.copyFormat(start.paragraph.characterFormat);
+        if(start.paragraph.isEmpty()){
+            this.characterFormat.copyFormat(start.paragraph.characterFormat,this.documentHelper.textHelper.getFontNameToRender(0,start.paragraph.characterFormat));
+        }
         if (start.paragraph === end.paragraph && start.currentWidget.isLastLine()
             && start.offset === this.getLineLength(start.currentWidget) && start.offset + 1 === end.offset) {
             return;

@@ -345,7 +345,6 @@ export class ListBox extends DropDownBase {
      * Triggers when data source is populated in the list.
      *
      * @event dataBound
-     * @private
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -1472,7 +1471,9 @@ export class ListBox extends DropDownBase {
             }
             this.updateSelectedOptions();
             this.triggerChange(this.getSelectedItems(), e as MouseEvent);
-            this.checkMaxSelection();
+            if (this.list) {
+                this.checkMaxSelection();
+            }
         }
     }
 
@@ -2123,7 +2124,7 @@ export class ListBox extends DropDownBase {
         if (index < 0 || index === cul.childElementCount) {
             return -1;
         }
-        cli = cul.querySelectorAll('.e-list-item')[index as number];
+        cli = (cul.childNodes as NodeListOf<Element>)[index as number];
         if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
             index = this.getValidIndex(cli, index, keyCode);
         }

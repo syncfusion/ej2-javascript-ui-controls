@@ -146,6 +146,10 @@
     }
 
     & .e-content .e-toolbar {
+      & .e-toolbar-items {
+        display: inline-block;
+      }
+
       @if $skin-name == 'highcontrast' {
         border-color: transparent;
 

@@ -1542,8 +1542,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         if (isRippleEnabled) {
             this.removeRippleEffect();
         }
+        this.removeRippleEffect = null;
         this.keyboardModule.destroy();
         this.popupKeyboardModule.destroy();
+        this.keyboardModule = null;
+        this.popupKeyboardModule = null;
         EventHandler.remove(this.popupEle, 'click', this.popupClick);
         EventHandler.remove(this.popupEle, 'mouseleave', this.popupMouseLeaveHandle);
     }

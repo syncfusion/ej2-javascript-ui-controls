@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I446985` - Now, while using the NVDA screen reader, the entire dialog elements will not be read twice.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

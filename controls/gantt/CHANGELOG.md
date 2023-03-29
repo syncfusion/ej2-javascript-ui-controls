@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+-`I441276`- Outdent task is not in correct index of modified records in `actionComplete` event issue has been fixed.
+-`I435254`, `I444942`- Taskbar not rendered in Pdf exported file when `timelineUnitSize` is initialized issue has been fixed.
+
 ## 21.1.35 (2023-03-23)
 
 ### Gantt Chart

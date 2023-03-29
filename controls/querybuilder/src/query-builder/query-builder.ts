@@ -1181,8 +1181,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else if ((dropDownObj && dropDownObj.element && isNullOrUndefined(dropDownObj.index)) ||
                 (dropDownTreeObj && dropDownTreeObj.element && (isNullOrUndefined(dropDownTreeObj.value) ||
                 dropDownTreeObj.value.length < 1))) {
-                    if (fieldElem.className.indexOf('e-tooltip') < 0) {
-                        this.renderToolTip(fieldElem as HTMLElement);
+                    if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
+                        this.renderToolTip(fieldElem.parentElement as HTMLElement);
                     }
                     isValid = false;
                 }
@@ -2843,8 +2843,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!this.isImportRules) {
                 this.trigger('change', eventsArgs);
             }
-            if (this.allowValidation && rule.rules[index as number].field && target.className.indexOf('e-tooltip') > -1) {
-                (getComponent(target as HTMLElement, 'tooltip') as Tooltip).destroy();
+            if (this.allowValidation && rule.rules[index as number].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
+                (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'field');
         } else if (closest(target, '.e-rule-operator')) {

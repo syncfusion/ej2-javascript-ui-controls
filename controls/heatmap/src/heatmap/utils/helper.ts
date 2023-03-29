@@ -91,19 +91,18 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 }
 
 /**
- * Internal class size for height and width
- *
- * @private
+ * Specifies the size information of an element.
  */
 export class Size {
     /**
-     * height of the size
+     * Specifies the height of an element.
      */
     public height: number;
     /**
-     * width of the size
+     * Specifies the width of an element.
      */
     public width: number;
+    /** @private */
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;

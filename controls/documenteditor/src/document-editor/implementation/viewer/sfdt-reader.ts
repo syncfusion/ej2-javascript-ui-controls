@@ -95,23 +95,13 @@ export class SfdtReader {
             this.keywordIndex = 1;
         }
         if (isNullOrUndefined(jsonObject[characterFormatProperty[this.keywordIndex]])) {
-            let keyIndex = this.keywordIndex;
-            this.keywordIndex = 0;
-            this.parseCharacterFormat(this.viewer.owner.characterFormat, this.documentHelper.characterFormat);
-            this.keywordIndex = keyIndex;
-        } else {
-            this.parseCharacterFormat(jsonObject[characterFormatProperty[this.keywordIndex]], this.documentHelper.characterFormat);
+            this.parseCharacterFormat(this.keywordIndex, jsonObject[characterFormatProperty[this.keywordIndex]], this.documentHelper.characterFormat);
         }
         if (isNullOrUndefined(jsonObject[paragraphFormatProperty[this.keywordIndex]])) {
-            let keyIndex = this.keywordIndex;
-            this.keywordIndex = 0;
-            this.parseParagraphFormat(this.viewer.owner.paragraphFormat, this.documentHelper.paragraphFormat);
-            this.keywordIndex = keyIndex;
-        } else {
-            this.parseParagraphFormat(jsonObject[paragraphFormatProperty[this.keywordIndex]], this.documentHelper.paragraphFormat);
+            this.parseParagraphFormat(this.keywordIndex, jsonObject[paragraphFormatProperty[this.keywordIndex]], this.documentHelper.paragraphFormat);
         }
         if(!isNullOrUndefined(jsonObject[themeFontLanguagesProperty[this.keywordIndex]])){
-            this.parseCharacterFormat(jsonObject[themeFontLanguagesProperty[this.keywordIndex]], this.documentHelper.themeFontLanguage);
+            this.parseCharacterFormat(this.keywordIndex, jsonObject[themeFontLanguagesProperty[this.keywordIndex]], this.documentHelper.themeFontLanguage);
         }
         this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject[defaultTabWidthProperty[this.keywordIndex]])) {
@@ -291,10 +281,10 @@ export class SfdtReader {
             return undefined;
         }
     }
-    private checkAndApplyRevision(inline: any, item: any): void {
-        if (!isNullOrUndefined(inline[revisionIdsProperty[this.keywordIndex]]) && inline[revisionIdsProperty[this.keywordIndex]].length > 0) {
-            for (let i: number = 0; i < inline[revisionIdsProperty[this.keywordIndex]].length; i++) {
-                const id: string = inline[revisionIdsProperty[this.keywordIndex]][i];
+    private checkAndApplyRevision(keyIndex: number, inline: any, item: any): void {
+        if (!isNullOrUndefined(inline[revisionIdsProperty[keyIndex]]) && inline[revisionIdsProperty[keyIndex]].length > 0) {
+            for (let i: number = 0; i < inline[revisionIdsProperty[keyIndex]].length; i++) {
+                const id: string = inline[revisionIdsProperty[keyIndex]][i];
                 if (this.revisionCollection.containsKey(id)) {
                     this.referedRevisions.push(id);
                     const revision: Revision = this.revisionCollection.get(id);
@@ -414,10 +404,10 @@ export class SfdtReader {
 
             }
             if (!isNullOrUndefined(style[characterFormatProperty[this.keywordIndex]])) {
-                this.parseCharacterFormat(style[characterFormatProperty[this.keywordIndex]], wStyle.characterFormat);
+                this.parseCharacterFormat(this.keywordIndex, style[characterFormatProperty[this.keywordIndex]], wStyle.characterFormat);
             }
             if (!isNullOrUndefined(style[paragraphFormatProperty[this.keywordIndex]])) {
-                this.parseParagraphFormat(style[paragraphFormatProperty[this.keywordIndex]], wStyle.paragraphFormat);
+                this.parseParagraphFormat(this.keywordIndex, style[paragraphFormatProperty[this.keywordIndex]], wStyle.paragraphFormat);
             }
             if (!isNullOrUndefined(style[nextProperty[this.keywordIndex]])) {
                 if (style[nextProperty[this.keywordIndex]] === style[nameProperty[this.keywordIndex]]) {
@@ -487,8 +477,8 @@ export class SfdtReader {
             }
         }
         listLevel.followCharacter = this.getFollowCharacterType(data[followCharacterProperty[this.keywordIndex]]);
-        this.parseCharacterFormat(data[characterFormatProperty[this.keywordIndex]], listLevel.characterFormat);
-        this.parseParagraphFormat(data[paragraphFormatProperty[this.keywordIndex]], listLevel.paragraphFormat);
+        this.parseCharacterFormat(this.keywordIndex, data[characterFormatProperty[this.keywordIndex]], listLevel.characterFormat);
+        this.parseParagraphFormat(this.keywordIndex, data[paragraphFormatProperty[this.keywordIndex]], listLevel.paragraphFormat);
         return listLevel;
     }
     public parseList(data: any, listCollection: WList[]): void {
@@ -530,7 +520,7 @@ export class SfdtReader {
             section.index = i;
             const item: any = data[i];
             if (!isNullOrUndefined(item[sectionFormatProperty[this.keywordIndex]])) {
-                this.parseSectionFormat(item[sectionFormatProperty[this.keywordIndex]], section.sectionFormat);
+                this.parseSectionFormat(this.keywordIndex, item[sectionFormatProperty[this.keywordIndex]], section.sectionFormat);
             }
             if (isNullOrUndefined(item[headersFootersProperty[this.keywordIndex]])) {
                 item[headersFootersProperty[this.keywordIndex]] = {};
@@ -607,8 +597,8 @@ export class SfdtReader {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat);
                     }
                     if (!(isSectionBreak && block === data[data.length - 1] && !hasValidElmts)) {
-                        this.parseCharacterFormat(block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
-                        this.parseParagraphFormat(block[paragraphFormatProperty[this.keywordIndex]], paragraph.paragraphFormat);
+                        this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
+                        this.parseParagraphFormat(this.keywordIndex, block[paragraphFormatProperty[this.keywordIndex]], paragraph.paragraphFormat);
                         let styleObj: Object;
                         let styleName: string = 'Normal';
                         if (!isNullOrUndefined(block[paragraphFormatProperty[this.keywordIndex]]) && !isNullOrUndefined(block[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]])) {
@@ -850,7 +840,7 @@ export class SfdtReader {
             contentControlProperties.isTemporary = HelperMethods.parseBoolValue(wContentControlProperties[isTemporaryProperty[this.keywordIndex]]);
         }
         if (!isNullOrUndefined(wContentControlProperties[characterFormatProperty[this.keywordIndex]])) {
-            this.parseCharacterFormat(wContentControlProperties[characterFormatProperty[this.keywordIndex]], contentControlProperties.characterFormat);
+            this.parseCharacterFormat(this.keywordIndex, wContentControlProperties[characterFormatProperty[this.keywordIndex]], contentControlProperties.characterFormat);
         }
         if (contentControlProperties.type === 'CheckBox') {
             if (!isNullOrUndefined(wContentControlProperties[isCheckedProperty[this.keywordIndex]])) {
@@ -933,7 +923,7 @@ export class SfdtReader {
                     textElement = new TextElementBox();
                 }
                 textElement.characterFormat = new WCharacterFormat(textElement);
-                this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], textElement.characterFormat, writeInlineFormat);
+                this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline[textProperty[this.keywordIndex]];
                 if (this.isHtmlPaste && textElement instanceof TextElementBox) {
@@ -965,7 +955,7 @@ export class SfdtReader {
                                 if (!isNullOrUndefined(revision) && !isNullOrUndefined(lineWidget.children[i - 1].revisions[j]) && ((!trackChange) || (trackChange && (revision.revisionType === 'Deletion')))) {
                                     if (revision.revisionID === inline[revisionIdsProperty[this.keywordIndex]][j]) {
                                         inline[revisionIdsProperty[this.keywordIndex]][j] = lineWidget.children[i - 1].revisions[j].revisionID;
-                                        this.checkAndApplyRevision(inline, textElement);
+                                        this.checkAndApplyRevision(this.keywordIndex, inline, textElement);
                                         continue;
                                     }
                                 }
@@ -978,7 +968,7 @@ export class SfdtReader {
                         }
                     }
                 } else {
-                    this.checkAndApplyRevision(inline, textElement);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, textElement);
                 }
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
@@ -996,10 +986,10 @@ export class SfdtReader {
                 footnoteElement.symbolFontName = inline[symbolFontNameProperty[this.keywordIndex]];
                 footnoteElement.customMarker = inline[customMarkerProperty[this.keywordIndex]];
                 footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
-                this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], footnoteElement.characterFormat, writeInlineFormat);
+                this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
                 this.parseBody(inline[blocksProperty[this.keywordIndex]], footnoteElement.bodyWidget.childWidgets as BlockWidget[], footnoteElement.bodyWidget, false);
-                this.checkAndApplyRevision(inline, footnoteElement);
+                this.checkAndApplyRevision(this.keywordIndex, inline, footnoteElement);
                 lineWidget.children.push(footnoteElement);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(chartTypeProperty[this.keywordIndex])) {
@@ -1039,7 +1029,7 @@ export class SfdtReader {
                 image.metaFileImageString = inline[metaFileImageStringProperty[this.keywordIndex]];
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
-                this.checkAndApplyRevision(inline, image);
+                this.checkAndApplyRevision(this.keywordIndex, inline, image);
                 lineWidget.children.push(image);
                 let imageString: string = HelperMethods.formatClippedString(inline[imageStringProperty[this.keywordIndex]]).formatClippedString;
                 let isValidImage: boolean = this.validateImageUrl(imageString);
@@ -1099,11 +1089,11 @@ export class SfdtReader {
                 if (this.getTextWrappingStyle(image.textWrappingStyle) !== 'Inline') {
                     paragraph.floatingElements.push(image);
                 }
-                this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], image.characterFormat);
+                this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], image.characterFormat);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(hasFieldEndProperty[this.keywordIndex]) || (inline.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && inline[fieldTypeProperty[this.keywordIndex]] === 0)) {
                 let fieldBegin: FieldElementBox = new FieldElementBox(0);
-                this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], fieldBegin.characterFormat, writeInlineFormat);
+                this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], fieldBegin.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, fieldBegin);
                 fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline[hasFieldEndProperty[this.keywordIndex]];
@@ -1134,7 +1124,7 @@ export class SfdtReader {
                     this.documentHelper.formFields.push(fieldBegin);
                 }
                 this.documentHelper.fieldStacks.push(fieldBegin);
-                this.checkAndApplyRevision(inline, fieldBegin);
+                this.checkAndApplyRevision(this.keywordIndex, inline, fieldBegin);
                 fieldBegin.line = lineWidget;
                 this.documentHelper.fields.push(fieldBegin);
                 lineWidget.children.push(fieldBegin);
@@ -1142,8 +1132,8 @@ export class SfdtReader {
                 let field: FieldElementBox = undefined;
                 if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
                     field = new FieldElementBox(2);
-                    this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
-                    this.checkAndApplyRevision(inline, field);
+                    this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, field);
                     this.fieldSeparator = field;
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1162,9 +1152,9 @@ export class SfdtReader {
                     }
                 } else if (inline[fieldTypeProperty[this.keywordIndex]] === 1) {
                     field = new FieldElementBox(1);
-                    this.parseCharacterFormat(inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
+                    this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
                     this.applyCharacterStyle(inline, field);
-                    this.checkAndApplyRevision(inline, field);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, field);
                     //For Field End Updated begin and separator.                                      
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1208,7 +1198,7 @@ export class SfdtReader {
                         bookmark.properties['columnLast'] = inline[propertiesProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]];
                     }
                 }
-                this.checkAndApplyRevision(inline, bookmark);
+                this.checkAndApplyRevision(this.keywordIndex, inline, bookmark);
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
                 if (!this.isParseHeader || this.isPaste) {
@@ -1368,7 +1358,7 @@ export class SfdtReader {
                     textFrame.containerShape = shape;
                 }
                 shape.line = lineWidget;
-                this.checkAndApplyRevision(inline, shape);
+                this.checkAndApplyRevision(this.keywordIndex, inline, shape);
                 lineWidget.children.push(shape);
                 paragraph.floatingElements.push(shape);
             } else if (inline.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
@@ -1586,7 +1576,7 @@ export class SfdtReader {
         }
     }
     private parseTableFormat(sourceFormat: any, tableFormat: WTableFormat): void {
-        this.parseBorders(sourceFormat[bordersProperty[this.keywordIndex]], tableFormat.borders);
+        this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], tableFormat.borders);
         if (!isNullOrUndefined(sourceFormat[allowAutoFitProperty[this.keywordIndex]])) {
             tableFormat.allowAutoFit = HelperMethods.parseBoolValue(sourceFormat[allowAutoFitProperty[this.keywordIndex]]);
         }
@@ -1633,7 +1623,7 @@ export class SfdtReader {
     }
     private parseCellFormat(sourceFormat: any, cellFormat: WCellFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
-            this.parseBorders(sourceFormat[bordersProperty[this.keywordIndex]], cellFormat.borders);
+            this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], cellFormat.borders);
             if (!sourceFormat.isSamePaddingAsTable) {
                 //    cellFormat.ClearMargins();
                 //else
@@ -1704,44 +1694,44 @@ export class SfdtReader {
                 rowFormat.leftIndent = sourceFormat[leftIndentProperty[this.keywordIndex]];
             }
             if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[this.keywordIndex]]) && sourceFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
-                this.checkAndApplyRevision(sourceFormat, rowFormat);
+                this.checkAndApplyRevision(this.keywordIndex, sourceFormat, rowFormat);
             }
-            this.parseBorders(sourceFormat[bordersProperty[this.keywordIndex]], rowFormat.borders);
+            this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], rowFormat.borders);
         }
     }
-    private parseBorders(sourceBorders: any, destBorder: WBorders): void {
+    private parseBorders(keyIndex: number, sourceBorders: any, destBorder: WBorders): void {
         if (!isNullOrUndefined(sourceBorders)) {
             destBorder.isParsing=true;
-            this.parseBorder(sourceBorders[leftProperty[this.keywordIndex]], destBorder.left);
-            this.parseBorder(sourceBorders[rightProperty[this.keywordIndex]], destBorder.right);
-            this.parseBorder(sourceBorders[topProperty[this.keywordIndex]], destBorder.top);
-            this.parseBorder(sourceBorders[bottomProperty[this.keywordIndex]], destBorder.bottom);
-            this.parseBorder(sourceBorders[verticalProperty[this.keywordIndex]], destBorder.vertical);
-            this.parseBorder(sourceBorders[horizontalProperty[this.keywordIndex]], destBorder.horizontal);
-            this.parseBorder(sourceBorders[diagonalDownProperty[this.keywordIndex]], destBorder.diagonalDown);
-            this.parseBorder(sourceBorders[diagonalUpProperty[this.keywordIndex]], destBorder.diagonalUp);
+            this.parseBorder(keyIndex, sourceBorders[leftProperty[keyIndex]], destBorder.left);
+            this.parseBorder(keyIndex, sourceBorders[rightProperty[keyIndex]], destBorder.right);
+            this.parseBorder(keyIndex, sourceBorders[topProperty[keyIndex]], destBorder.top);
+            this.parseBorder(keyIndex, sourceBorders[bottomProperty[keyIndex]], destBorder.bottom);
+            this.parseBorder(keyIndex, sourceBorders[verticalProperty[keyIndex]], destBorder.vertical);
+            this.parseBorder(keyIndex, sourceBorders[horizontalProperty[keyIndex]], destBorder.horizontal);
+            this.parseBorder(keyIndex, sourceBorders[diagonalDownProperty[keyIndex]], destBorder.diagonalDown);
+            this.parseBorder(keyIndex, sourceBorders[diagonalUpProperty[keyIndex]], destBorder.diagonalUp);
             destBorder.isParsing=false;
         }
     }
-    private parseBorder(sourceBorder: any, destBorder: WBorder): void {
+    private parseBorder(keyIndex: number, sourceBorder: any, destBorder: WBorder): void {
         if (!isNullOrUndefined(sourceBorder)) {
-            if (!isNullOrUndefined(sourceBorder[colorProperty[this.keywordIndex]])) {
-                destBorder.color = this.getColor(sourceBorder[colorProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceBorder[colorProperty[keyIndex]])) {
+                destBorder.color = this.getColor(sourceBorder[colorProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceBorder[lineStyleProperty[this.keywordIndex]])) {
-                destBorder.lineStyle = this.getLineStyle(sourceBorder[lineStyleProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceBorder[lineStyleProperty[keyIndex]])) {
+                destBorder.lineStyle = this.getLineStyle(sourceBorder[lineStyleProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceBorder[lineWidthProperty[this.keywordIndex]])) {
-                destBorder.lineWidth = sourceBorder[lineWidthProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceBorder[lineWidthProperty[keyIndex]])) {
+                destBorder.lineWidth = sourceBorder[lineWidthProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceBorder[hasNoneStyleProperty[this.keywordIndex]])) {
-                destBorder.hasNoneStyle = HelperMethods.parseBoolValue(sourceBorder[hasNoneStyleProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceBorder[hasNoneStyleProperty[keyIndex]])) {
+                destBorder.hasNoneStyle = HelperMethods.parseBoolValue(sourceBorder[hasNoneStyleProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceBorder[spaceProperty[this.keywordIndex]])) {
-                destBorder.space = sourceBorder[spaceProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceBorder[spaceProperty[keyIndex]])) {
+                destBorder.space = sourceBorder[spaceProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceBorder[shadowProperty[this.keywordIndex]])) {
-                destBorder.shadow = HelperMethods.parseBoolValue(sourceBorder[shadowProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceBorder[shadowProperty[keyIndex]])) {
+                destBorder.shadow = HelperMethods.parseBoolValue(sourceBorder[shadowProperty[keyIndex]]);
             }
         }
     }
@@ -1761,110 +1751,110 @@ export class SfdtReader {
     /**
      * @private
      */
-    public parseCharacterFormat(sourceFormat: any, characterFormat: WCharacterFormat, writeInlineFormat?: boolean): void {
+    public parseCharacterFormat(keyIndex: number, sourceFormat: any, characterFormat: WCharacterFormat, writeInlineFormat?: boolean): void {
         if (!isNullOrUndefined(sourceFormat)) {
-            if (writeInlineFormat && sourceFormat.hasOwnProperty(inlineFormatProperty[this.keywordIndex])) {
-                this.parseCharacterFormat(sourceFormat.inlineFormat, characterFormat);
+            if (writeInlineFormat && sourceFormat.hasOwnProperty(inlineFormatProperty[keyIndex])) {
+                this.parseCharacterFormat(keyIndex, sourceFormat.inlineFormat, characterFormat);
                 return;
             }
-            if (!isNullOrUndefined(sourceFormat[baselineAlignmentProperty[this.keywordIndex]])) {
-                characterFormat.baselineAlignment = this.getBaseAlignment(sourceFormat[baselineAlignmentProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[baselineAlignmentProperty[keyIndex]])) {
+                characterFormat.baselineAlignment = this.getBaseAlignment(sourceFormat[baselineAlignmentProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[underlineProperty[this.keywordIndex]])) {
-                characterFormat.underline = this.getUnderline(sourceFormat[underlineProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[underlineProperty[keyIndex]])) {
+                characterFormat.underline = this.getUnderline(sourceFormat[underlineProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[strikethroughProperty[this.keywordIndex]])) {
-                characterFormat.strikethrough = this.getStrikethrough(sourceFormat[strikethroughProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[strikethroughProperty[keyIndex]])) {
+                characterFormat.strikethrough = this.getStrikethrough(sourceFormat[strikethroughProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[fontSizeProperty[this.keywordIndex]])) {
-                sourceFormat[fontSizeProperty[this.keywordIndex]] = parseFloat(sourceFormat[fontSizeProperty[this.keywordIndex]]);
-                let number: number = sourceFormat[fontSizeProperty[this.keywordIndex]] * 10;
+            if (!isNullOrUndefined(sourceFormat[fontSizeProperty[keyIndex]])) {
+                sourceFormat[fontSizeProperty[keyIndex]] = parseFloat(sourceFormat[fontSizeProperty[keyIndex]]);
+                let number: number = sourceFormat[fontSizeProperty[keyIndex]] * 10;
                 if (number % 10 !== 0) {
-                    number = sourceFormat[fontSizeProperty[this.keywordIndex]].toFixed(1) * 10;
+                    number = sourceFormat[fontSizeProperty[keyIndex]].toFixed(1) * 10;
                     //to check worst case scenerio like 8.2 or 8.7 like these to round off
                     if (number % 5 === 0) {
-                        sourceFormat[fontSizeProperty[this.keywordIndex]] = sourceFormat[fontSizeProperty[this.keywordIndex]].toFixed(1);
+                        sourceFormat[fontSizeProperty[keyIndex]] = sourceFormat[fontSizeProperty[keyIndex]].toFixed(1);
                     } else {
-                        sourceFormat[fontSizeProperty[this.keywordIndex]] = Math.round(sourceFormat[fontSizeProperty[this.keywordIndex]]);
+                        sourceFormat[fontSizeProperty[keyIndex]] = Math.round(sourceFormat[fontSizeProperty[keyIndex]]);
                     }
                 }
-                let fontSize: number = parseFloat(sourceFormat[fontSizeProperty[this.keywordIndex]]);
+                let fontSize: number = parseFloat(sourceFormat[fontSizeProperty[keyIndex]]);
                 characterFormat.fontSize = fontSize < 0 ? 0 : fontSize;
             }
-            if (!isNullOrUndefined(sourceFormat[fontFamilyProperty[this.keywordIndex]])) {
-                if (sourceFormat[fontFamilyProperty[this.keywordIndex]].indexOf('"') !== -1) {
-                    sourceFormat[fontFamilyProperty[this.keywordIndex]] = sourceFormat[fontFamilyProperty[this.keywordIndex]].replace('"', '');
+            if (!isNullOrUndefined(sourceFormat[fontFamilyProperty[keyIndex]])) {
+                if (sourceFormat[fontFamilyProperty[keyIndex]].indexOf('"') !== -1) {
+                    sourceFormat[fontFamilyProperty[keyIndex]] = sourceFormat[fontFamilyProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamily = sourceFormat[fontFamilyProperty[this.keywordIndex]];
+                characterFormat.fontFamily = sourceFormat[fontFamilyProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[boldProperty[this.keywordIndex]])) {
-                characterFormat.bold = HelperMethods.parseBoolValue(sourceFormat[boldProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[boldProperty[keyIndex]])) {
+                characterFormat.bold = HelperMethods.parseBoolValue(sourceFormat[boldProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[italicProperty[this.keywordIndex]])) {
-                characterFormat.italic = HelperMethods.parseBoolValue(sourceFormat[italicProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[italicProperty[keyIndex]])) {
+                characterFormat.italic = HelperMethods.parseBoolValue(sourceFormat[italicProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[highlightColorProperty[this.keywordIndex]])) {
-                characterFormat.highlightColor = this.getHighlightColor(sourceFormat[highlightColorProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[highlightColorProperty[keyIndex]])) {
+                characterFormat.highlightColor = this.getHighlightColor(sourceFormat[highlightColorProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[fontColorProperty[this.keywordIndex]])) {
-                characterFormat.fontColor = this.getColor(sourceFormat[fontColorProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[fontColorProperty[keyIndex]])) {
+                characterFormat.fontColor = this.getColor(sourceFormat[fontColorProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[bidiProperty[this.keywordIndex]])) {
-                characterFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[bidiProperty[keyIndex]])) {
+                characterFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[bdoProperty[this.keywordIndex]])) {
-                characterFormat.bdo = this.getBiDirectionalOverride(sourceFormat[bdoProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[bdoProperty[keyIndex]])) {
+                characterFormat.bdo = this.getBiDirectionalOverride(sourceFormat[bdoProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[fontSizeBidiProperty[this.keywordIndex]])) {
-                characterFormat.fontSizeBidi = sourceFormat[fontSizeBidiProperty[this.keywordIndex]] < 0 ? 0 : sourceFormat[fontSizeBidiProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[fontSizeBidiProperty[keyIndex]])) {
+                characterFormat.fontSizeBidi = sourceFormat[fontSizeBidiProperty[keyIndex]] < 0 ? 0 : sourceFormat[fontSizeBidiProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[fontFamilyBidiProperty[this.keywordIndex]])) {
-                if (sourceFormat[fontFamilyBidiProperty[this.keywordIndex]].indexOf('"') !== -1) {
-                    sourceFormat[fontFamilyBidiProperty[this.keywordIndex]] = sourceFormat[fontFamilyBidiProperty[this.keywordIndex]].replace('"', '');
+            if (!isNullOrUndefined(sourceFormat[fontFamilyBidiProperty[keyIndex]])) {
+                if (sourceFormat[fontFamilyBidiProperty[keyIndex]].indexOf('"') !== -1) {
+                    sourceFormat[fontFamilyBidiProperty[keyIndex]] = sourceFormat[fontFamilyBidiProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyBidi = sourceFormat[fontFamilyBidiProperty[this.keywordIndex]];
+                characterFormat.fontFamilyBidi = sourceFormat[fontFamilyBidiProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[boldBidiProperty[this.keywordIndex]])) {
-                characterFormat.boldBidi = HelperMethods.parseBoolValue(sourceFormat[boldBidiProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[boldBidiProperty[keyIndex]])) {
+                characterFormat.boldBidi = HelperMethods.parseBoolValue(sourceFormat[boldBidiProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[italicBidiProperty[this.keywordIndex]])) {
-                characterFormat.italicBidi = HelperMethods.parseBoolValue(sourceFormat[italicBidiProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[italicBidiProperty[keyIndex]])) {
+                characterFormat.italicBidi = HelperMethods.parseBoolValue(sourceFormat[italicBidiProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[this.keywordIndex]]) && sourceFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
-                this.checkAndApplyRevision(sourceFormat, characterFormat);
+            if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[keyIndex]]) && sourceFormat[revisionIdsProperty[keyIndex]].length > 0) {
+                this.checkAndApplyRevision(keyIndex, sourceFormat, characterFormat);
             }
-            if (!isNullOrUndefined(sourceFormat[allCapsProperty[this.keywordIndex]])) {
-                characterFormat.allCaps = HelperMethods.parseBoolValue(sourceFormat[allCapsProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[allCapsProperty[keyIndex]])) {
+                characterFormat.allCaps = HelperMethods.parseBoolValue(sourceFormat[allCapsProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[localeIdBidiProperty[this.keywordIndex]])) {
-                characterFormat.localeIdBidi = sourceFormat[localeIdBidiProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[localeIdBidiProperty[keyIndex]])) {
+                characterFormat.localeIdBidi = sourceFormat[localeIdBidiProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[localeIdProperty[this.keywordIndex]])) {
-                characterFormat.localeIdAscii = sourceFormat[localeIdProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[localeIdProperty[keyIndex]])) {
+                characterFormat.localeIdAscii = sourceFormat[localeIdProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[localeIdFarEastProperty[this.keywordIndex]])) {
-                characterFormat.localeIdFarEast = sourceFormat[localeIdFarEastProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[localeIdFarEastProperty[keyIndex]])) {
+                characterFormat.localeIdFarEast = sourceFormat[localeIdFarEastProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[complexScriptProperty[this.keywordIndex]])) {
-                characterFormat.complexScript = HelperMethods.parseBoolValue(sourceFormat[complexScriptProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[complexScriptProperty[keyIndex]])) {
+                characterFormat.complexScript = HelperMethods.parseBoolValue(sourceFormat[complexScriptProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[fontFamilyFarEastProperty[this.keywordIndex]])) {
-                if (sourceFormat[fontFamilyFarEastProperty[this.keywordIndex]].indexOf('"') !== -1) {
-                    sourceFormat[fontFamilyFarEastProperty[this.keywordIndex]] = sourceFormat[fontFamilyFarEastProperty[this.keywordIndex]].replace('"', '');
+            if (!isNullOrUndefined(sourceFormat[fontFamilyFarEastProperty[keyIndex]])) {
+                if (sourceFormat[fontFamilyFarEastProperty[keyIndex]].indexOf('"') !== -1) {
+                    sourceFormat[fontFamilyFarEastProperty[keyIndex]] = sourceFormat[fontFamilyFarEastProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyFarEast = sourceFormat[fontFamilyFarEastProperty[this.keywordIndex]];
+                characterFormat.fontFamilyFarEast = sourceFormat[fontFamilyFarEastProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[this.keywordIndex]])) {
-                if (sourceFormat[fontFamilyAsciiProperty[this.keywordIndex]].indexOf('"') !== -1) {
-                    sourceFormat[fontFamilyAsciiProperty[this.keywordIndex]] = sourceFormat[fontFamilyAsciiProperty[this.keywordIndex]].replace('"', '');
+            if (!isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[keyIndex]])) {
+                if (sourceFormat[fontFamilyAsciiProperty[keyIndex]].indexOf('"') !== -1) {
+                    sourceFormat[fontFamilyAsciiProperty[keyIndex]] = sourceFormat[fontFamilyAsciiProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyAscii = sourceFormat[fontFamilyAsciiProperty[this.keywordIndex]];
+                characterFormat.fontFamilyAscii = sourceFormat[fontFamilyAsciiProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[fontFamilyNonFarEastProperty[this.keywordIndex]])) {
-                if (sourceFormat[fontFamilyNonFarEastProperty[this.keywordIndex]].indexOf('"') !== -1) {
-                    sourceFormat[fontFamilyNonFarEastProperty[this.keywordIndex]] = sourceFormat[fontFamilyNonFarEastProperty[this.keywordIndex]].replace('"', '');
+            if (!isNullOrUndefined(sourceFormat[fontFamilyNonFarEastProperty[keyIndex]])) {
+                if (sourceFormat[fontFamilyNonFarEastProperty[keyIndex]].indexOf('"') !== -1) {
+                    sourceFormat[fontFamilyNonFarEastProperty[keyIndex]] = sourceFormat[fontFamilyNonFarEastProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyNonFarEast = sourceFormat[fontFamilyNonFarEastProperty[this.keywordIndex]];
+                characterFormat.fontFamilyNonFarEast = sourceFormat[fontFamilyNonFarEastProperty[keyIndex]];
             }
         }
     }
@@ -1905,88 +1895,84 @@ export class SfdtReader {
             this.documentHelper.hasThemes = true;
         }
     }
-    public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
+    public parseParagraphFormat(keyIndex: number, sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
-            if (!isNullOrUndefined(sourceFormat[bordersProperty[this.keywordIndex]])) {
-                this.parseBorders(sourceFormat[bordersProperty[this.keywordIndex]], paragraphFormat.borders);
+            if (!isNullOrUndefined(sourceFormat[bordersProperty[keyIndex]])) {
+                this.parseBorders(keyIndex, sourceFormat[bordersProperty[keyIndex]], paragraphFormat.borders);
             }
-            if (!isNullOrUndefined(sourceFormat[bidiProperty[this.keywordIndex]])) {
-                paragraphFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[bidiProperty[keyIndex]])) {
+                paragraphFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[leftIndentProperty[this.keywordIndex]])) {
-                paragraphFormat.leftIndent = sourceFormat[leftIndentProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[leftIndentProperty[keyIndex]])) {
+                paragraphFormat.leftIndent = sourceFormat[leftIndentProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[rightIndentProperty[this.keywordIndex]])) {
-                paragraphFormat.rightIndent = sourceFormat[rightIndentProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[rightIndentProperty[keyIndex]])) {
+                paragraphFormat.rightIndent = sourceFormat[rightIndentProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[firstLineIndentProperty[this.keywordIndex]])) {
-                paragraphFormat.firstLineIndent = sourceFormat[firstLineIndentProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[firstLineIndentProperty[keyIndex]])) {
+                paragraphFormat.firstLineIndent = sourceFormat[firstLineIndentProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[afterSpacingProperty[this.keywordIndex]])) {
-                paragraphFormat.afterSpacing = sourceFormat[afterSpacingProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[afterSpacingProperty[keyIndex]])) {
+                paragraphFormat.afterSpacing = sourceFormat[afterSpacingProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[beforeSpacingProperty[this.keywordIndex]])) {
-                paragraphFormat.beforeSpacing = sourceFormat[beforeSpacingProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[beforeSpacingProperty[keyIndex]])) {
+                paragraphFormat.beforeSpacing = sourceFormat[beforeSpacingProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[spaceBeforeAutoProperty[this.keywordIndex]])) {
-                paragraphFormat.spaceBeforeAuto = HelperMethods.parseBoolValue(sourceFormat[spaceBeforeAutoProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[spaceBeforeAutoProperty[keyIndex]])) {
+                paragraphFormat.spaceBeforeAuto = HelperMethods.parseBoolValue(sourceFormat[spaceBeforeAutoProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[spaceAfterAutoProperty[this.keywordIndex]])) {
-                paragraphFormat.spaceAfterAuto = HelperMethods.parseBoolValue(sourceFormat[spaceAfterAutoProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[spaceAfterAutoProperty[keyIndex]])) {
+                paragraphFormat.spaceAfterAuto = HelperMethods.parseBoolValue(sourceFormat[spaceAfterAutoProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[lineSpacingProperty[this.keywordIndex]])) {
-                paragraphFormat.lineSpacing = sourceFormat[lineSpacingProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[lineSpacingProperty[keyIndex]])) {
+                paragraphFormat.lineSpacing = sourceFormat[lineSpacingProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[lineSpacingTypeProperty[this.keywordIndex]])) {
-                paragraphFormat.lineSpacingType = this.getLineSpacingType(sourceFormat[lineSpacingTypeProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[lineSpacingTypeProperty[keyIndex]])) {
+                paragraphFormat.lineSpacingType = this.getLineSpacingType(sourceFormat[lineSpacingTypeProperty[keyIndex]]);
             } else {
-                if (!isNullOrUndefined(sourceFormat[lineSpacingProperty[this.keywordIndex]])) {
+                if (!isNullOrUndefined(sourceFormat[lineSpacingProperty[keyIndex]])) {
                     paragraphFormat.lineSpacingType = 'Multiple'
                 }
             }
-            if (!isNullOrUndefined(sourceFormat[textAlignmentProperty[this.keywordIndex]])) {
-                paragraphFormat.textAlignment = this.getTextAlignment(sourceFormat[textAlignmentProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[textAlignmentProperty[keyIndex]])) {
+                paragraphFormat.textAlignment = this.getTextAlignment(sourceFormat[textAlignmentProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[outlineLevelProperty[this.keywordIndex]])) {
-                paragraphFormat.outlineLevel = this.getOutlineLevel(sourceFormat[outlineLevelProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[outlineLevelProperty[keyIndex]])) {
+                paragraphFormat.outlineLevel = this.getOutlineLevel(sourceFormat[outlineLevelProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[contextualSpacingProperty[this.keywordIndex]])) {
-                paragraphFormat.contextualSpacing = HelperMethods.parseBoolValue(sourceFormat[contextualSpacingProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[contextualSpacingProperty[keyIndex]])) {
+                paragraphFormat.contextualSpacing = HelperMethods.parseBoolValue(sourceFormat[contextualSpacingProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[keepWithNextProperty[this.keywordIndex]])) {
-                paragraphFormat.keepWithNext = HelperMethods.parseBoolValue(sourceFormat[keepWithNextProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[keepWithNextProperty[keyIndex]])) {
+                paragraphFormat.keepWithNext = HelperMethods.parseBoolValue(sourceFormat[keepWithNextProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[keepLinesTogetherProperty[this.keywordIndex]])) {
-                paragraphFormat.keepLinesTogether = HelperMethods.parseBoolValue(sourceFormat[keepLinesTogetherProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[keepLinesTogetherProperty[keyIndex]])) {
+                paragraphFormat.keepLinesTogether = HelperMethods.parseBoolValue(sourceFormat[keepLinesTogetherProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[widowControlProperty[this.keywordIndex]])) {
-                paragraphFormat.widowControl = HelperMethods.parseBoolValue(sourceFormat[widowControlProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[widowControlProperty[keyIndex]])) {
+                paragraphFormat.widowControl = HelperMethods.parseBoolValue(sourceFormat[widowControlProperty[keyIndex]]);
             }
             paragraphFormat.listFormat = new WListFormat(paragraphFormat);
-            if (sourceFormat.hasOwnProperty(listFormatProperty[this.keywordIndex])) {
-                this.parseListFormat(sourceFormat, paragraphFormat.listFormat);
+            if (sourceFormat.hasOwnProperty(listFormatProperty[keyIndex])) {
+                this.parseListFormat(keyIndex, sourceFormat, paragraphFormat.listFormat);
             }
-            if (sourceFormat.hasOwnProperty(tabsProperty[this.keywordIndex])) {
-                this.parseTabStop(sourceFormat[tabsProperty[this.keywordIndex]], paragraphFormat.tabs);
-            }
-        }
-    }
-    private parseListFormat(block: any, listFormat: WListFormat): void {
-        if (!isNullOrUndefined(block[listFormatProperty[this.keywordIndex]])) {
-            if (!isNullOrUndefined(block[listFormatProperty[this.keywordIndex]][listIdProperty[this.keywordIndex]])) {
-                listFormat.listId = block[listFormatProperty[this.keywordIndex]][listIdProperty[this.keywordIndex]];
-                listFormat.list = this.documentHelper.getListById(block[listFormatProperty[this.keywordIndex]][listIdProperty[this.keywordIndex]]);
-            }
-            if (!isNullOrUndefined(block[listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]])) {
-                listFormat.listLevelNumber = block[listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]];
+            if (sourceFormat.hasOwnProperty(tabsProperty[keyIndex])) {
+                this.parseTabStop(keyIndex, sourceFormat[tabsProperty[keyIndex]], paragraphFormat.tabs);
             }
         }
     }
-    public parseSectionFormat(data: any, sectionFormat: WSectionFormat, isUnOptimized?: boolean): void {
-        let keyIndex: number = this.keywordIndex;
-        if ((!isNullOrUndefined(isUnOptimized)) && isUnOptimized) {
-            keyIndex = 0;
+    private parseListFormat(keyIndex: number, block: any, listFormat: WListFormat): void {
+        if (!isNullOrUndefined(block[listFormatProperty[keyIndex]])) {
+            if (!isNullOrUndefined(block[listFormatProperty[keyIndex]][listIdProperty[keyIndex]])) {
+                listFormat.listId = block[listFormatProperty[keyIndex]][listIdProperty[keyIndex]];
+                listFormat.list = this.documentHelper.getListById(block[listFormatProperty[keyIndex]][listIdProperty[keyIndex]]);
+            }
+            if (!isNullOrUndefined(block[listFormatProperty[keyIndex]][listLevelNumberProperty[keyIndex]])) {
+                listFormat.listLevelNumber = block[listFormatProperty[keyIndex]][listLevelNumberProperty[keyIndex]];
+            }
         }
+    }
+    public parseSectionFormat(keyIndex: number, data: any, sectionFormat: WSectionFormat): void {
         if (!isNullOrUndefined(data[pageWidthProperty[keyIndex]])) {
             sectionFormat.pageWidth = data[pageWidthProperty[keyIndex]];
         }
@@ -2079,14 +2065,14 @@ export class SfdtReader {
         }
     }
 
-    private parseTabStop(wTabs: any, tabs: WTabStop[]): void {
+    private parseTabStop(keyIndex: number, wTabs: any, tabs: WTabStop[]): void {
         if (wTabs) {
             for (let i: number = 0; i < wTabs.length; i++) {
                 let tabStop: WTabStop = new WTabStop();
-                tabStop.position = wTabs[i][positionProperty[this.keywordIndex]];
-                tabStop.tabLeader = this.getTabLeader(wTabs[i][tabLeaderProperty[this.keywordIndex]]);
-                tabStop.deletePosition = wTabs[i][deletePositionProperty[this.keywordIndex]];
-                tabStop.tabJustification = this.getTabJustification(wTabs[i][tabJustificationProperty[this.keywordIndex]]);
+                tabStop.position = wTabs[i][positionProperty[keyIndex]];
+                tabStop.tabLeader = this.getTabLeader(wTabs[i][tabLeaderProperty[keyIndex]]);
+                tabStop.deletePosition = wTabs[i][deletePositionProperty[keyIndex]];
+                tabStop.tabJustification = this.getTabJustification(wTabs[i][tabJustificationProperty[keyIndex]]);
                 tabs.push(tabStop);
             }
         }

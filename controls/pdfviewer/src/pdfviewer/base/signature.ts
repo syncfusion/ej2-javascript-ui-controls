@@ -122,6 +122,9 @@ export class Signature {
     private signatureUploadString : string = '';
     private initialUploadString : string = '';
     private clearUploadString : boolean = false;
+    private textValue : string ='';
+    private signatureDrawString: string = '';
+    private initialDrawString: string = '';
     // eslint-disable-next-line
     private saveSignatureString: string = '';
     // eslint-disable-next-line
@@ -275,10 +278,10 @@ export class Signature {
                 context.drawImage(image, 0, 0);
             };
             if(!this.pdfViewerBase.isInitialField && this.isSaveSignature){
-                image.src = this.signatureImageString;
+                image.src = this.signatureDrawString;
             }
             else if(this.pdfViewerBase.isInitialField && this.isSaveInitial){
-                image.src = this.initialImageString;
+                image.src = this.initialDrawString;
             }
             // eslint-disable-next-line
             let checkbox: any = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
@@ -454,59 +457,41 @@ export class Signature {
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
             // eslint-disable-next-line
-            let checkbox: any;
-            if (isBlazor()) {
-                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
-            } else {
-                checkbox = document.getElementById('checkbox');
-            }
+            let checkbox: any = document.getElementById('checkbox');
+            let typeCheckbox: any = document.getElementById('checkbox1');
+            let imageCheckbox: any = document.getElementById('checkbox2');
             let isSignatureAdded: boolean = false;
-            if (isBlazor() && type) {
-                if (type[0] === 'Image') {
-                    this.imageAddSignature();
-                    isSignatureAdded = true;
-                    this.outputString = '';
-                } else if (type[0] === 'Type') {
-                    this.typeAddSignature();
-                    isSignatureAdded = true;
-                    this.outputString = '';
-                }
-            }
             if (!isSignatureAdded) {
                 // eslint-disable-next-line
                 let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
                 this.saveImageString = canvas.toDataURL();
-                if (checkbox && checkbox.checked) {
-                    if (!this.pdfViewerBase.isInitialField) {
-                        this.isSaveSignature = true;
-                        this.signatureImageString = this.saveImageString;
-                        this.saveSignatureString = this.outputString;
-                        this.saveSignatureTypeString = '';
-                        this.saveSignatureUploadString = '';
-                        this.issaveTypeSignature = false;
-                        this.issaveImageSignature = false;
+                if (checkbox) {
+                    if (checkbox.checked) {
+                        if (!this.pdfViewerBase.isInitialField) {
+                            this.isSaveSignature = true;
+                            this.signatureDrawString = this.saveImageString;
+                            this.saveSignatureString = this.outputString;
+                        }
+                        else {
+                            this.isSaveInitial = true;
+                            this.initialDrawString = this.saveImageString;
+                            this.saveInitialString = this.outputString;
+                        }
+                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, true);
+                    } else {
+                        if (!this.pdfViewerBase.isInitialField) {
+                            this.isSaveSignature = false;
+                            this.saveSignatureString = '';
+                        }
+                        else {
+                            this.isSaveInitial = false;
+                            this.saveInitialString = '';
+                        }
+                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                     }
-                    else {
-                        this.isSaveInitial = true;
-                        this.initialImageString = this.saveImageString;
-                        this.saveInitialString = this.outputString;
-                        this.saveInitialTypeString = '';
-                        this.saveInitialUploadString = '';
-                        this.issaveTypeInitial = false;
-                        this.issaveImageInitial = false;
-                    }
-                    this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, true);
-                } else {
-                    if(!this.pdfViewerBase.isInitialField){
-                        this.isSaveSignature = false;
-                        this.saveSignatureString = '';
-                    }
-                    else{
-                        this.isSaveInitial = false;
-                        this.saveInitialString = '';
-                    }
-                    this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                 }
+                this.saveTypeSignature(typeCheckbox);
+                this.saveUploadSignature(imageCheckbox);
                 if(!this.pdfViewerBase.isInitialField){
                     this.signatureImageString = this.saveImageString;
                 }
@@ -587,34 +572,28 @@ export class Signature {
             this.hideSignaturePanel();
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
-            let checkbox: any = document.getElementById('checkbox1');
+            let checkbox: any = document.getElementById('checkbox');
+            let typeCheckbox: any = document.getElementById('checkbox1');
+            let imageCheckbox: any = document.getElementById('checkbox2');
             let isSignatureAdded: any = false;
-            if (this.outputString === '') {
-                this.updateSignatureTypeValue();
-            }
             if (!isSignatureAdded) {
+                this.saveDrawSignature(checkbox);
+                this.saveUploadSignature(imageCheckbox);
                 let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
                 this.saveTypeString = canvas.toDataURL();
-                if (checkbox && checkbox.checked) {
+                this.updateSignatureTypeValue();
+                if (typeCheckbox && typeCheckbox.checked) {
                     if (!this.pdfViewerBase.isInitialField) {
                         this.isSaveSignature = true;
                         this.signatureImageString = this.saveTypeString;
-                        this.saveSignatureTypeString = this.outputString;
+                        this.saveSignatureTypeString = this.textValue;
                         this.issaveTypeSignature = true;
-                        this.issaveImageSignature = false;
-                        this.saveSignatureString = '';
-                        this.saveSignatureUploadString = '';
-                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                     }
                     else {
                         this.isSaveInitial = true;
                         this.initialImageString = this.saveTypeString;
-                        this.saveInitialTypeString = this.outputString;
+                        this.saveInitialTypeString = this.textValue;
                         this.issaveTypeInitial = true;
-                        this.issaveImageInitial = false;
-                        this.saveInitialString = '';
-                        this.saveInitialUploadString = '';
-                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                     }
                 }
                 else {
@@ -635,8 +614,7 @@ export class Signature {
                 else {
                     this.initialTypeString = this.saveTypeString;
                 }
-                this.pdfViewer.formFieldsModule.drawSignature('Type', '', this.pdfViewerBase.currentTarget);
-
+                this.pdfViewer.formFieldsModule.drawSignature('Type', this.textValue, this.pdfViewerBase.currentTarget);
                 isSignatureAdded = true;
                 this.hideSignaturePanel();
             }
@@ -699,31 +677,27 @@ export class Signature {
             this.hideSignaturePanel();
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
-            let checkbox: any = document.getElementById('checkbox2');
+            let checkbox: any = document.getElementById('checkbox');
+            let typeCheckbox: any = document.getElementById('checkbox1');
+            let imageCheckbox: any = document.getElementById('checkbox2');
             let isSignatureAdded: boolean = false;
             if (!isSignatureAdded) {
+                this.saveDrawSignature(checkbox);
+                this.saveTypeSignature(typeCheckbox);
                 let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
                 this.saveUploadString = canvas.toDataURL();
-                if (checkbox && checkbox.checked) {
+                if (imageCheckbox && imageCheckbox.checked) {
                     if (!this.pdfViewerBase.isInitialField) {
                         this.isSaveSignature = true;
                         this.signatureImageString = this.saveUploadString;
                         this.saveSignatureUploadString = this.outputString;
-                        this.issaveTypeSignature = false;
                         this.issaveImageSignature = true;
-                        this.saveSignatureTypeString = '';
-                        this.saveSignatureString = '';
-                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                     }
                     else {
                         this.isSaveInitial = true;
                         this.initialImageString = this.saveUploadString;
                         this.saveInitialUploadString = this.outputString;
-                        this.issaveTypeInitial = false;
                         this.issaveImageInitial = true;
-                        this.saveInitialTypeString = '';
-                        this.saveInitialString = '';
-                        this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
                     }
                 }
                 else {
@@ -751,17 +725,111 @@ export class Signature {
         }
     }
 
+    private saveDrawSignature(checkbox: any) {
+        if (checkbox) {
+            if (checkbox.checked) {
+                if (this.drawOutputString !== '') {
+                    let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+                    this.saveImageString = canvas.toDataURL();
+                    if (!this.pdfViewerBase.isInitialField) {
+                        this.saveSignatureString = this.drawOutputString;
+                        this.signatureDrawString = this.saveImageString;
+                    }
+                    else {
+                        this.saveInitialString = this.drawOutputString;
+                        this.initialDrawString = this.saveImageString;
+                    }
+                    this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, true);
+                }
+            } else {
+                if (!this.pdfViewerBase.isInitialField) {
+                    this.saveSignatureString = '';
+                }
+                else {
+                    this.saveInitialString = '';
+                }
+                this.checkSaveFiledSign(this.pdfViewerBase.isInitialField, false);
+            }
+        }
+    }
+
+    private saveTypeSignature(typeCheckbox: any) {
+        if (typeCheckbox) {
+            if (typeCheckbox.checked) {
+                this.updateSignatureTypeValue();
+                if (this.textValue !== '') {
+                    if (!this.pdfViewerBase.isInitialField) {
+                        this.issaveTypeSignature = true;
+                        this.saveSignatureTypeString = this.textValue;
+                    }
+                    else {
+                        this.issaveTypeInitial = true;
+                        this.saveInitialTypeString = this.textValue;
+                    }
+                }
+            } else {
+                if (!this.pdfViewerBase.isInitialField) {
+                    this.saveSignatureTypeString = '';
+                    this.issaveTypeSignature = false;
+                }
+                else {
+                    this.saveInitialTypeString = '';
+                    this.issaveTypeInitial = false;
+                }
+            }
+        }
+    }
+
+    private saveUploadSignature(imageCheckbox: any) {
+        if (imageCheckbox) {
+            if (imageCheckbox.checked) {
+                let imageCanvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureuploadCanvas_');
+                let uploadString = imageCanvas.toDataURL();
+                let imageString = document.getElementById(this.pdfViewer.element.id + '_e-pv-upload-button').style.visibility === 'hidden' ? uploadString : '';
+                if (imageString !== '') {
+                    if (!this.pdfViewerBase.isInitialField) {
+                        this.issaveImageSignature = true;
+                        this.saveSignatureUploadString = imageString;
+                    }
+                    else {
+                        this.issaveImageInitial = true;
+                        this.saveInitialUploadString = imageString;
+                    }
+                }
+            } else {
+                if (!this.pdfViewerBase.isInitialField) {
+                    this.saveSignatureUploadString = '';
+                    this.issaveImageSignature = false;
+                }
+                else {
+                    this.saveInitialUploadString = '';
+                    this.issaveImageInitial = false;
+                }
+            }
+        }
+    }
+
     private updateSignatureTypeValue(isType?: boolean): void {
         // eslint-disable-next-line
         let fontElements: any = document.querySelectorAll('.e-pv-font-sign');
         if (fontElements) {
             for (let j: number = 0; j < fontElements.length; j++) {
                 if (fontElements[parseInt(j.toString(), 10)] && fontElements[parseInt(j.toString(), 10)].style.borderColor === 'red') {
-                    if (isType) {
-                        this.signtypevalue = fontElements[parseInt(j.toString(), 10)].textContent;
-                        this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
+                    if (this.pdfViewerBase.isToolbarSignClicked) {
+                        if (isType) {
+                            this.signtypevalue = fontElements[parseInt(j.toString(), 10)].textContent;
+                            this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
+                        }
+                        else {
+                            this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
+                        }
                     } else {
-                        this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
+                        if (isType) {
+                            this.signtypevalue = fontElements[parseInt(j.toString(), 10)].textContent;
+                            this.textValue = fontElements[parseInt(j.toString(), 10)].textContent;
+                        } else {
+                            this.textValue = fontElements[parseInt(j.toString(), 10)].textContent
+                        }
                     }
                     try {
                         this.fontName = JSON.parse(fontElements[parseInt(j.toString(), 10)].style.fontFamily);
@@ -1091,37 +1159,6 @@ export class Signature {
                 }
             }
         }
-        let checkbox: any = document.getElementById('checkbox');
-        if (checkbox && checkbox.checked) {
-            if (e.previousIndex === 0 && this.outputString !== '') {
-                if(!this.pdfViewerBase.isInitialField){
-                    this.isSaveSignature = true;
-                    this.saveSignatureString = this.outputString;
-                }
-                else{
-                    this.isSaveInitial = true;
-                    this.saveInitialString = this.outputString;
-                }
-                // eslint-disable-next-line
-                let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-                this.saveImageString = canvas.toDataURL();
-                if(!this.pdfViewerBase.isInitialField){
-                    this.signatureImageString = this.saveImageString;
-                }
-                else{
-                    this.initialImageString = this.saveImageString;
-                }
-            }
-        } else {
-            if (this.isSaveSignature && !this.pdfViewerBase.isInitialField) {
-                this.isSaveSignature = false;
-                this.saveImageString = '';
-            }
-            else if(this.isSaveInitial && this.pdfViewerBase.isInitialField){
-                this.isSaveInitial = false;
-                this.saveImageString = '';
-            }
-        }
         this.clearSignatureCanvas(e);
         // eslint-disable-next-line
         if (headerText.toLocaleLowerCase() === 'draw') {
@@ -1171,10 +1208,20 @@ export class Signature {
             }
     }
     private enableCreateSignatureButton(): void {
-        if (this.outputString !== "") {
-            this.enableCreateButton(false);
+        if (this.pdfViewerBase.isToolbarSignClicked || this.signaturetype !== 'Type') {
+            if (this.outputString !== "") {
+                this.enableCreateButton(false);
+            }
+            else {
+                this.enableCreateButton(true);
+            }
         } else {
-            this.enableCreateButton(true);
+            if (this.textValue !== "") {
+                this.enableCreateButton(false);
+            }
+            else {
+                this.enableCreateButton(true);
+            }
         }
     }
     private showHideSignatureTab(displayMode: DisplayMode, appearanceDiv: HTMLElement, typeDiv: HTMLElement, uploadDiv: HTMLElement): any {
@@ -1725,11 +1772,30 @@ export class Signature {
             isCanvasClear = false;
             if (this.signaturetype === 'Draw') {
                 isClearDrawTab = true;
+                let checkbox: any = document.getElementById('checkbox');
+                let checkBoxElement: HTMLElement = document.getElementById('checkbox');
+                if (checkbox && checkBoxElement.nextElementSibling) {
+                    checkBoxElement.nextElementSibling.classList.remove('e-check');
+                    checkbox.checked = false;
+                }
             } else if (this.signaturetype === 'Type') {
                 isClearTypeTab = true;
+                let checkbox: any = document.getElementById('checkbox1');
+                let checkBoxElement: HTMLElement = document.getElementById('checkbox1');
+                if (checkbox && checkBoxElement.nextElementSibling) {
+                    checkBoxElement.nextElementSibling.classList.remove('e-check');
+                    checkbox.checked = false;
+                    this.textValue ='';
+                }
             } else {
                 isClearImageTab = true;
                 this.clearUploadString = true;
+                let checkbox: any = document.getElementById('checkbox2');
+                let checkBoxElement: HTMLElement = document.getElementById('checkbox2');
+                if (checkbox && checkBoxElement.nextElementSibling) {
+                    checkBoxElement.nextElementSibling.classList.remove('e-check');
+                    checkbox.checked = false;
+                }
             }
         }
         // eslint-disable-next-line

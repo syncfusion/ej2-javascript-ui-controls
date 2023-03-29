@@ -197,6 +197,7 @@ export class PdfGanttTaskbarCollection {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 } else {
                     taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                    taskbar.width = taskbar.width - renderWidth;
                     if (this.isScheduledTask) {
                         let progressBoundsWidth: number = 0;
                         if (this.progressWidth <= renderWidth) {

@@ -1006,6 +1006,123 @@ describe('Selection module', () => {
     });
   });
   
+  describe('EJ2-70486 - Checkbox selection check on expand/collapse action when checkboxOnly mode enabled ', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [
+            {
+                taskID: 1,
+                taskName: 'Planning',
+                startDate: new Date('02/03/2017'),
+                endDate: new Date('02/07/2017'),
+                progress: 100,
+                duration: 5,
+                priority: 'Normal',
+                approved: false,
+                subtasks: [
+                    {
+                        taskID: 2,
+                        taskName: 'Plan timeline',
+                        startDate: new Date('02/03/2017'),
+                        endDate: new Date('02/07/2017'),
+                        duration: 5,
+                        progress: 100,
+                        priority: 'Normal',
+                        approved: false,
+                        subtasks: [
+                            {
+                                taskID: 2.1,
+                                taskName: 'Accessory',
+                                startDate: new Date('02/03/2017'),
+                                endDate: new Date('02/07/2017'),
+                                duration: 5,
+                                progress: 100,
+                                priority: 'Normal',
+                                approved: false,
+                            },
+                            {
+                                taskID: 2.2,
+                                taskName: 'Accessory',
+                                startDate: new Date('02/03/2017'),
+                                endDate: new Date('02/07/2017'),
+                                duration: 5,
+                                progress: 100,
+                                priority: 'Normal',
+                                approved: false,
+                            },
+                        ],
+                    },
+                    {
+                        taskID: 3,
+                        taskName: 'Planning',
+                        startDate: new Date('02/03/2017'),
+                        endDate: new Date('02/07/2017'),
+                        progress: 100,
+                        duration: 5,
+                        priority: 'Normal',
+                        approved: false,
+                        subtasks: [
+                            {
+                                taskID: 4,
+                                taskName: 'Plan timeline',
+                                startDate: new Date('02/03/2017'),
+                                endDate: new Date('02/07/2017'),
+                                duration: 5,
+                                progress: 100,
+                                priority: 'Normal',
+                                approved: false,
+                            },
+                            {
+                                taskID: 5,
+                                taskName: 'Plan timeline',
+                                startDate: new Date('02/03/2017'),
+                                endDate: new Date('02/07/2017'),
+                                duration: 5,
+                                progress: 100,
+                                priority: 'Normal',
+                                approved: false,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+        childMapping: 'subtasks',
+        height: 315,
+        treeColumnIndex: 2,
+        allowPaging: true,
+        enableCollapseAll: true,
+        selectionSettings: { checkboxOnly: true, persistSelection: true },
+        columns: [
+            { type: 'checkbox', width: 60 },
+            { field: 'taskID', isPrimaryKey: true, headerText: 'Task ID', width: 90, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150 },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+            { field: 'progress', headerText: 'progress', width: 80, textAlign: 'Right' }
+        ]
+        },
+        done
+      );
+    });
+    it('Expand nested level and check rows count', () => {
+      gridObj.expandRow(gridObj.getRows()[0]);
+      gridObj.expandRow(gridObj.getRows()[1]);
+      expect(gridObj.getRows().length === 5).toBe(true);
+    });
+    it('Selecting the nested row checkbox and Selection case checking', () => {
+      (gridObj.getRows()[2].querySelector(".e-checkselect") as HTMLElement).click();
+      gridObj.collapseRow(gridObj.getRows()[1]);
+      expect(gridObj.getRows()[2].getAttribute("aria-selected") === null).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

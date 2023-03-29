@@ -499,6 +499,7 @@ export class Tooltip extends BaseTooltip {
                         val.source === '${point.outliers}' ||
                         val.source === '${point.upperQuartile}' ||
                         val.source === '${point.lowerQuartile}' ||
+                        val.source === '${point.size}' ||
                         val.source === '${point.median}'
                     )
                 )

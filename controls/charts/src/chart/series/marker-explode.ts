@@ -155,7 +155,9 @@ export class MarkerExplode extends ChartData {
             if (!isNullOrUndefined(this.previousPoints[0])) {
                 this.markerExplode = +setTimeout(
                     (): void => {
-                        this.removeHighlightedMarker(this.previousPoints[0].series as Series, this.previousPoints[0].point as Points );
+                        if (this.previousPoints[0]) {
+                            this.removeHighlightedMarker(this.previousPoints[0].series as Series, this.previousPoints[0].point as Points);
+                        }
                     },
                     2000);
             }

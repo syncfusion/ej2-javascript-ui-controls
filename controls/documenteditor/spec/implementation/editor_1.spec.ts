@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, DocumentHelper, WordExport, SfdtExport, Point, LineWidget, ImageElementBox } from '../../src/index';
+import { Editor, DocumentHelper, WordExport, SfdtExport, Point, LineWidget, ImageElementBox, WStyle } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -1045,5 +1045,46 @@ describe('Check Image width and height is resized to fit inside the page width',
             expect(((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ImageElementBox).height).toBe(40);
             done();
         }, 10);
+    });
+});
+describe('Create style and modified style validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it("Create style and modified style validation", () => {
+        console.log('Create style and modified style validation');
+        editor.openBlank();
+        let styleJson1: string = '{"type":"Character","name":"Style1","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Algerian"}}'
+        let styleJson2: string = '{"type":"Character","name":"Style1","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Calibri"}}'
+        let style: WStyle = editor.editorModule.createStyleIn(styleJson1, undefined) as WStyle;
+        editor.editorModule.insertText('Syncfusion');
+        editor.editorModule.applyStyle(style.name);
+        expect(editor.selection.characterFormat.fontFamily).toBe("Algerian");
+        editor.editorModule.createStyleIn(styleJson2, true) as WStyle;
+        editor.editorModule.insertText('Software');
+        editor.editorModule.applyStyle(style.name);
+        expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
     });
 });

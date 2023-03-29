@@ -470,7 +470,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public sortSettings: SortSettingsModel;
     /**
      * Configures the TreeGrid aggregate rows.
-     * > Check the [`Aggregates`](../../treegrid/aggregate/) for its configuration.
+     * > Check the [`Aggregates`](../../treegrid/aggregates/aggregates) for its configuration.
      *
      * @default []
      */
@@ -1990,7 +1990,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private IsExpandCollapseClicked(args: RowDeselectingEventArgs): void {
         if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
             || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))
-            && (!isNullOrUndefined(args.data) && args.data['hasChildRecords'])) {
+            && (!isNullOrUndefined(args.data) && args.data['hasChildRecords']) && !this.selectionSettings.checkboxOnly) {
             args.cancel = true;
             return;
         }

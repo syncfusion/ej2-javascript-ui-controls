@@ -56,7 +56,7 @@ export class PageSettings extends ChildProperty<PageSettings> {
 
     /**
      * Defines the template which renders customized elements in pager of TreeGrid instead of default elements.
-     * It accepts either [template string](../../../common/template-engine/) or HTML element ID.
+     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
      * @default null
      */

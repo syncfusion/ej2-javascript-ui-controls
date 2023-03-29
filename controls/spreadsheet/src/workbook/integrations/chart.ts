@@ -1,4 +1,4 @@
-import { getRangeIndexes, ChartModel, inRange, checkRange } from '../common/index';
+import { getRangeIndexes, ChartModel, inRange, checkRange, getSwapRange, getRangeAddress } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
@@ -65,8 +65,13 @@ export class WorkbookChart {
                 chartModel.type = chartModel.type || 'Line';
                 chartModel.isSeriesInRows = chartModel.isSeriesInRows || false;
                 chartModel.range = chartModel.range || this.parent.getActiveSheet().selectedRange;
-                if (chartModel.range.indexOf('!') < 0) {
-                    chartModel.range = this.parent.getActiveSheet().name + '!' + chartModel.range;
+                const rangeIdx: number[] = getSwapRange(getRangeIndexes(chartModel.range));
+                const rangeAddress: string = getRangeAddress(rangeIdx);
+                if (chartModel.range.indexOf('!') > 0) {
+                    chartModel.range = chartModel.range.split('!')[0] + '!' + rangeAddress;
+                }
+                else {
+                    chartModel.range = this.parent.getActiveSheet().name + '!' + rangeAddress;
                 }
                 if (isNullOrUndefined(chartModel.id)) {
                     chartModel.id = getUniqueID('e_spreadsheet_chart');

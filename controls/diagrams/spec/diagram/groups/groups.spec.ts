@@ -1779,3 +1779,398 @@ describe('Group Node padding', () => {
         done();
     });
 });
+
+describe('Checking performance for dragging the group node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let diagramCanvas: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'groupDragging' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 240, offsetY: 100,
+            },
+            {
+                id: 'node3', width: 100, height: 100, offsetX: 100, offsetY: 300,
+            }, 
+            {
+                id: 'node4', width: 100, height: 100, offsetX: 240, offsetY: 300,
+            },
+            {
+                id: 'node5', width: 100, height: 100, offsetX: 100, offsetY: 500,
+            }, 
+            {
+                id: 'node6', width: 100, height: 100, offsetX: 240, offsetY: 500,
+            },
+            {
+                id: 'node7', width: 100, height: 100, offsetX: 100, offsetY: 700,
+            }, 
+            {
+                id: 'node8', width: 100, height: 100, offsetX: 240, offsetY: 700,
+            },
+            {
+                id: 'node9', width: 100, height: 100, offsetX:400, offsetY: 100,
+            },
+            {
+                id: 'node10', width: 100, height: 100, offsetX: 400, offsetY: 300,
+            },
+            {
+                id: 'node11', width: 100, height: 100, offsetX: 400, offsetY: 500,
+            }, 
+            {
+                id: 'node12', width: 100, height: 100, offsetX: 400, offsetY: 700,
+            },
+            {
+                id: 'node13', width: 100, height: 100, offsetX:600, offsetY: 100,
+            },
+            {
+                id: 'node14', width: 100, height: 100, offsetX: 600, offsetY: 300,
+            },
+            {
+                id: 'node15', width: 100, height: 100, offsetX: 600, offsetY: 500,
+            }, 
+            {
+                id: 'node16', width: 100, height: 100, offsetX: 600, offsetY: 700,
+            },
+        ];
+        let connectors:ConnectorModel[] = [{
+            id: 'connector1',
+            type: 'Straight',
+            sourceID : 'node1',
+            targetID : 'node2',
+        },
+        {
+            id: 'connector2',
+            type: 'Straight',
+            sourceID : 'node3',
+            targetID : 'node4',
+        },
+        {
+            id: 'connector3',
+            type: 'Straight',
+            sourceID : 'node5',
+            targetID : 'node6',
+        },
+        {
+            id: 'connector4',
+            type: 'Straight',
+            sourceID : 'node7',
+            targetID : 'node8',
+        },
+        {
+            id: 'connector5',
+            type: 'Straight',
+            sourceID : 'node2',
+            targetID : 'node9',
+        },
+        {
+            id: 'connector6',
+            type: 'Straight',
+            sourceID : 'node4',
+            targetID : 'node10',
+        },
+        {
+            id: 'connector7',
+            type: 'Straight',
+            sourceID : 'node6',
+            targetID : 'node11',
+        },
+        {
+            id: 'connector8',
+            type: 'Straight',
+            sourceID : 'node8',
+            targetID : 'node12',
+        },
+        {
+            id: 'connector9',
+            type: 'Straight',
+            sourceID : 'node9',
+            targetID : 'node13',
+        },
+        {
+            id: 'connector10',
+            type: 'Straight',
+            sourceID : 'node10',
+            targetID : 'node14',
+        },
+        {
+            id: 'connector11',
+            type: 'Straight',
+            sourceID : 'node11',
+            targetID : 'node15',
+        },
+        {
+            id: 'connector12',
+            type: 'Straight',
+            sourceID : 'node12',
+            targetID : 'node16',
+        }
+    ];
+        diagram = new Diagram({
+            width: 1000, height: 1000, connectors: connectors, nodes: nodes,
+        });
+        diagram.appendTo('#groupDragging');
+        diagram.selectAll();
+        diagram.group();
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking when drag and drop the node in group', (done: Function) => {
+        mouseEvents.mouseDownEvent(diagramCanvas, 200, 200, true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 350, true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 250, 350);
+        expect(diagram.nodes[0].offsetX).toEqual(150);
+        expect(diagram.nodes[0].offsetY).toEqual(250);
+        expect(diagram.nodes[1].offsetX).toEqual(290);
+        expect(diagram.nodes[1].offsetY).toEqual(250);
+        expect(diagram.nodes[2].offsetX).toEqual(150);
+        expect(diagram.nodes[2].offsetY).toEqual(450);
+        done();
+    });
+});
+describe('UnGroup',()=>{
+    describe('checks Ungrouping Performing Correctly and Grouping Ports are Removed ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100,
+                    offsetY: 200,
+                }, {
+                    id: 'node2', width: 200, height: 100, offsetX: 400,
+                    offsetY: 400
+                },
+                {
+                    id: 'node3', width: 100, height: 100, offsetX: 700,
+                    offsetY: 400
+                },
+                {
+                    id: 'node4', width: 100, height: 100, offsetX: 900,
+                    offsetY: 400
+                },
+                {
+                    id: 'node5', width: 100, height: 100, offsetX: 700,
+                    offsetY: 100
+                },
+                {
+                    id: 'node6', width: 100, height: 100, offsetX: 100,
+                    offsetY: 800,
+                }, {
+                    id: 'node7', width: 200, height: 100, offsetX: 400,
+                    offsetY: 800
+                },
+                {
+                    id: 'node8', width: 100, height: 100, offsetX: 400,
+                    offsetY: 950
+                },
+                {
+                    id: 'node9', width: 100, height: 100, offsetX: 900,
+                    offsetY: 1000
+                },
+                {
+                    id: 'node10', width: 100, height: 100, offsetX: 700,
+                    offsetY: 1050
+                },
+                {
+                    id: 'node11', width: 100, height: 100, offsetX: 700,
+                    offsetY: 1200
+                },
+                { id: 'group11', children: ['node1', 'node2', 'connector1'] },
+                { id: 'group22', children: ['node6', 'node7',] },
+                { id: 'group33', children: ['node6', 'node7', 'node8'] },
+                { id: 'group44', children: ['node9', 'node10',] },
+                { id: 'group55', children: ['node9', 'node10', 'node11'] },
+            ];
+            let connector: ConnectorModel = {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2'
+            };
+            diagram = new Diagram({
+                width: '1500px', height: '600px', nodes: nodes,
+                connectors: [connector],
+                snapSettings: { constraints: 0 }, contextMenuSettings: { show: true },
+                getNodeDefaults: getNodeDefaults,
+            });
+            function getPorts(): PointPortModel[] {
+                let ports: PointPortModel[] = [
+                    { id: 'g_port1', shape: 'Circle', offset: { x: 0, y: 0.4 }, visibility: PortVisibility.Visible },
+                    { id: 'g_port2', shape: 'Circle', offset: { x: 0.4, y: 1 }, visibility: PortVisibility.Visible },
+                    { id: 'g_port3', shape: 'Circle', offset: { x: 1, y: .6 }, visibility: PortVisibility.Visible },
+                    { id: 'g_port4', shape: 'Circle', offset: { x: .6, y: 0 }, visibility: PortVisibility.Visible }
+                ];
+                return ports;
+            }
+            function getNodeDefaults(node: NodeModel): NodeModel {
+                let obj: NodeModel = {};
+                obj.ports = getPorts();
+                return obj;
+            }
+            diagram.appendTo('#diagram');
+            //add group Runtime
+            let group_runtime = { id: 'groupingID_3', children: ['node4', 'node5',] };
+            diagram.add(group_runtime);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        
+        // Check if Ungrouping & removing all the grouping Ports
+        // Check if Ungrouping removing all the grouping Ports At Runtime groups
+        it('Ungroup and remove Ports', (done: Function) => {
+            diagram.select([diagram.nodes[11]]);
+            let addedPorts = diagram.nodes[11];
+            diagram.unGroup();          
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_g_port1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_g_port2');
+            let portElementId_3: HTMLElement = document.getElementById(addedPorts.id + '_g_port3');
+            let portElementId_4: HTMLElement = document.getElementById(addedPorts.id + '_g_port4');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            expect(portElementId_3).toBeNull;
+            expect(portElementId_4).toBeNull;
+            diagram.clearSelection();
+            expect((diagram.nodes.length)).toBe(16);
+            done();
+        });
+        
+        // Check if Ungrouping removing all the grouping Ports At Runtime groups
+        it('Ungroup and remove Ports in runtime added groups', (done: Function) => {
+            diagram.select([diagram.nodes[15]]);
+            let addedPorts = diagram.nodes[15];
+            diagram.unGroup();
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_g_port1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_g_port2');
+            let portElementId_3: HTMLElement = document.getElementById(addedPorts.id + '_g_port3');
+            let portElementId_4: HTMLElement = document.getElementById(addedPorts.id + '_g_port4');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            expect(portElementId_3).toBeNull;
+            expect(portElementId_4).toBeNull;
+            diagram.clearSelection();
+            expect((diagram.nodes.length)).toBe(15);
+            done();
+        });
+        
+        //to Check if the Ports are Added in the Single Node
+        it('Add Ports to the selected single node', (done: Function) => {
+            //addPort
+            let addPort_runtime: PointPortModel[] = [
+                { id: 'runtimeport_1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.8, y: 0.8 } },
+                { id: 'runtimeport_2', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.2, y: 0.2 } },
+            ];
+            diagram.addPorts(diagram.nodes[3], addPort_runtime);
+            expect((diagram.nodes[3]).ports.length).toBe(6);
+            let addedPorts = diagram.nodes[3];
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_runtimeport_1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_runtimeport_2');
+            expect(portElementId_1.id).toMatch(addedPorts.id +'_runtimeport_1');
+            expect(portElementId_2.id).toMatch(addedPorts.id +'_runtimeport_2');
+            done();
+        });
+
+        //to Check if the Ports are Removed in the Single Node
+        it('Remove Ports form the single Node', (done: Function) => {
+            // addPort Runtime
+            let addPort_runtime: PointPortModel[] = [
+                { id: 'runtimeport_1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.8, y: 0.8 } },
+                { id: 'runtimeport_2', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.2, y: 0.2 } },
+            ];
+            //removePort
+            diagram.addPorts(diagram.nodes[4], addPort_runtime);
+            let removePort_runtime: PointPortModel[] = [
+                { id: 'runtimeport_1', },
+                { id: 'runtimeport_2', },
+            ];
+            diagram.removePorts(diagram.nodes[4]  as Node, removePort_runtime);
+            let addedPorts = diagram.nodes[4];
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_runtimeport_1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_runtimeport_2');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            done();
+        });
+         
+        //check ig nested groups are working fine 
+        
+        it('Ungroup of nested groups - ungrouping outer group node', (done: Function) => {
+            
+            diagram.select([diagram.nodes[12]]);
+            let addedPorts = diagram.nodes[12];
+            diagram.unGroup();
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_g_port1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_g_port2');
+            let portElementId_3: HTMLElement = document.getElementById(addedPorts.id + '_g_port3');
+            let portElementId_4: HTMLElement = document.getElementById(addedPorts.id + '_g_port4');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            expect(portElementId_3).toBeNull;
+            expect(portElementId_4).toBeNull;
+            diagram.clearSelection();
+            expect(diagram.nodes[11].children.length).toBe(2);
+            expect((diagram.nodes.length)).toBe(14);
+            done();
+        });
+        it('Ungroup of nested groups - ungrouping inner group Node', (done: Function) => {
+            diagram.select([diagram.nodes[12]]);
+             let addedPorts = diagram.nodes[12];
+            diagram.unGroup();
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_g_port1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_g_port2');
+            let portElementId_3: HTMLElement = document.getElementById(addedPorts.id + '_g_port3');
+            let portElementId_4: HTMLElement = document.getElementById(addedPorts.id + '_g_port4');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            expect(portElementId_3).toBeNull;
+            expect(portElementId_4).toBeNull;
+            diagram.clearSelection();
+            expect(diagram.nodes[12].children.length).toBe(3);
+            expect((diagram.nodes.length)).toBe(13);
+            done();
+        });
+        it('Add and remove ports for single group node ',(done: Function)=>{
+            //add port for a group node
+             let addPort_runtime: PointPortModel[] = [
+                { id: 'group_port_1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.8, y: 0.8 } },
+                { id: 'group_port_2', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0.2, y: 0.2 } },
+            ];
+            //removePort for a group node
+            diagram.addPorts(diagram.nodes[11], addPort_runtime);
+            let removePort_runtime: PointPortModel[] = [
+                { id: 'group_port_1', },
+                { id: 'group_port_2', },
+            ];
+            diagram.removePorts(diagram.nodes[11]  as Node, removePort_runtime);
+            let addedPorts = diagram.nodes[11];
+            let portElementId_1: HTMLElement = document.getElementById(addedPorts.id + '_group_port_1');
+            let portElementId_2: HTMLElement = document.getElementById(addedPorts.id + '_group_port_2');
+            expect(portElementId_1).toBeNull;
+            expect(portElementId_2).toBeNull;
+            done();
+        })
+    });
+});

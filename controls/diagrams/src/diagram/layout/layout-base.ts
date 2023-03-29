@@ -422,6 +422,12 @@ export interface ILayout {
      */
     type?: string;
     /**
+     * connect the node's without overlapping in automatic layout
+     *
+     * @default 'SamePoint'
+     */
+    connectionPointOrigin?: ConnectionPointOrigin;
+    /**
      * Provides orientation of the diagram layout
      *
      * @default undefined

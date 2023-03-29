@@ -15,7 +15,7 @@ export class MonthAgenda extends Month {
     public dayNameFormat: string = 'narrow';
     public viewClass: string = 'e-month-agenda-view';
     public agendaBase: AgendaBase;
-    private monthAgendaDate: Date;
+    public monthAgendaDate: Date;
 
     constructor(parent: Schedule) {
         super(parent);

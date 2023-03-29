@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 21.1.37 (2023-03-29)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I449973` - Resolved issue where the Mention character would still display after selecting a name from the suggestion list.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I442262` - Issue with "Script error thrown while using destroy method in change event of list box" has been resolved.
+- `#I445397` - Issue with "Script error thrown when navigate the listbox item in grouping listbox through keyboard navigation" has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### ListBox
