@@ -1108,8 +1108,8 @@ export type AggregateTypes =
  * Stacked:- Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
  * Single:- Allows the chart series to be displayed in a single chart area for different value fields.
  * Combined:- Allows to draw chart series with a single Y-axis for all value fields in the pivot chart area.
- * These chart series will be drawn based on the Y-axis range values calculated from all of the bound value fields.
  * ```
+ * These chart series will be drawn based on the Y-axis range values calculated from all of the bound value fields.
  * > The first value field in the value axis will be used to format the Y-axis range values.
  * For example, if the first value field is in currency format and the remaining value fields are in different number formats or no format,
  * the currency format will be used for the Y-axis range values.

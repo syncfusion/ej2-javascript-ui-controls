@@ -922,7 +922,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
                                 if (observedCloseArgs.isFocused  && liElem || this.keyType === 'left') {
-                                    sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
+                                    sli.classList.add(FOCUSED);
+                                    if ( !e.target || !(e.target as Element).classList.contains('e-edit-template')) {
+                                        (sli as HTMLElement).focus();
+                                    }
                                 }
                             }
                             if (!isOpen && this.hamburgerMode && liElem && liElem.getAttribute('aria-expanded') === 'false' &&

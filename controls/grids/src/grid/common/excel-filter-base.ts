@@ -223,6 +223,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 select: this.selectHandler.bind(this),
                 onClose: this.destroyCMenu.bind(this),
                 enableRtl: this.parent.enableRtl,
+                animationSettings: { effect: 'None' },
                 beforeClose: this.preventClose.bind(this),
                 cssClass: this.options.isResponsiveFilter && this.parent.cssClass ?
                     'e-res-contextmenu-wrapper' + ' ' + this.parent.cssClass : this.options.isResponsiveFilter ?

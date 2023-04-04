@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -649,6 +649,47 @@ describe('Gantt Edit module', () => {
             let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
             ganttObj.keyboardModule.keyAction(args1);
             expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
+        });
+    });
+    describe('parent progress calculation', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: parentProgressData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    splitterSettings: {
+                        columnIndex: 4
+                    }
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('EJ2-70876-parentProgress value', () => {
+        expect(ganttObj.currentViewData[0]['Progress']).toBe(100);
         });
     });
     describe('End date to weekend', () => {

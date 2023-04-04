@@ -78,6 +78,7 @@ export class FocusModule {
                 if (ganttObj.selectedRowIndex === ganttObj.flatData.indexOf(currentSelectingRecord)) {
                     return;
                 }
+                ganttObj.selectionModule.selectRow(ganttObj.flatData.indexOf(currentSelectingRecord), false, true);
             }
             break;
         case 'downArrow':

@@ -115,13 +115,11 @@
     }
 
     .e-list-item.e-active,
-    .e-list-item.e-hover,
-    .e-list-item.e-node-focus {
+    .e-list-item.e-hover {
       background: transparent;
     }
 
-    .e-list-item.e-hover > .e-text-content,
-    .e-list-item.e-node-focus > .e-text-content {
+    .e-list-item.e-hover > .e-text-content {
       color: $treeview-text-hover-color;
 
       .e-list-text {
@@ -170,8 +168,7 @@
       }
     }
 
-    .e-list-item.e-active.e-hover > .e-text-content,
-    .e-list-item.e-active.e-node-focus > .e-text-content {
+    .e-list-item.e-active.e-hover > .e-text-content {
       color: $treeview-text-active-hover-color;
 
       .e-list-text {
@@ -185,8 +182,7 @@
     }
 
     .e-list-item.e-editing.e-active > .e-text-content,
-    .e-list-item.e-editing.e-hover > .e-text-content,
-    .e-list-item.e-editing.e-node-focus > .e-text-content {
+    .e-list-item.e-editing.e-hover > .e-text-content {
       color: $treeview-text-color;
 
       .e-list-text {
@@ -203,8 +199,7 @@
       }
     }
 
-    .e-list-item.e-hover > .e-fullrow,
-    .e-list-item.e-node-focus > .e-fullrow {
+    .e-list-item.e-hover > .e-fullrow {
       background-color: $treeview-item-hover-bg;
       border-color: $treeview-item-hover-border-color;
     }
@@ -229,14 +224,12 @@
       }
     }
 
-    .e-list-item.e-active.e-hover > .e-fullrow,
-    .e-list-item.e-active.e-node-focus > .e-fullrow {
+    .e-list-item.e-active.e-hover > .e-fullrow{
       @include active-hover-theme;
     }
 
     .e-list-item.e-editing.e-active > .e-fullrow,
-    .e-list-item.e-editing.e-hover > .e-fullrow,
-    .e-list-item.e-editing.e-node-focus > .e-fullrow {
+    .e-list-item.e-editing.e-hover > .e-fullrow{
       @include active-editing-theme;
     }
 
@@ -302,8 +295,7 @@
 
     &:not(.e-fullrow-wrap) {
 
-      .e-list-item.e-hover > .e-text-content,
-      .e-list-item.e-node-focus > .e-text-content {
+      .e-list-item.e-hover > .e-text-content{
         background-color: $treeview-item-hover-bg;
         border-color: $treeview-item-hover-border-color;
       }
@@ -313,14 +305,12 @@
         border-color: $treeview-item-active-border-color;
       }
 
-      .e-list-item.e-active.e-hover > .e-text-content,
-      .e-list-item.e-active.e-node-focus > .e-text-content {
+      .e-list-item.e-active.e-hover > .e-text-content {
         @include active-hover-theme;
       }
 
       .e-list-item.e-editing.e-active > .e-text-content,
-      .e-list-item.e-editing.e-hover > .e-text-content,
-      .e-list-item.e-editing.e-node-focus > .e-text-content {
+      .e-list-item.e-editing.e-hover > .e-text-content {
         @include active-editing-theme;
       }
     }

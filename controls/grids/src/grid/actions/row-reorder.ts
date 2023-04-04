@@ -332,6 +332,9 @@ export class RowDD {
                         this.rowOrder(args);
                     }
                 }
+                if (this.parent.getContentTable().scrollHeight < this.parent.getContent().clientHeight) {
+                    this.parent.scrollModule.setLastRowCell();
+                }
             }
             this.isRefresh = true;
         });

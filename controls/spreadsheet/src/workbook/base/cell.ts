@@ -103,7 +103,7 @@ export class Cell extends ChildProperty<RowModel> {
     /**
      * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
      *
-     * @default null
+     * @default true
      */
     @Property(true)
     public isLocked: boolean;

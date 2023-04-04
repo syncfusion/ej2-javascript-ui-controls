@@ -1814,7 +1814,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
-        const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
@@ -1833,7 +1832,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 currentLastElem = currentLastElem.lastChild as Element;
             }
             if (isDetached) {
-                let currentLast: Node = currentLastElem.nodeName === 'BR' && !isNOU(currentLastElem.previousSibling) ?
+                const currentLast: Node = currentLastElem.nodeName === 'BR' && !isNOU(currentLastElem.previousSibling) ?
                     currentLastElem.previousSibling : currentLastElem;
                 this.formatter.editorManager.nodeSelection.setSelectionText(
                     this.contentModule.getDocument(),

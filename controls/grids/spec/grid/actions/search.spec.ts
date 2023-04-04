@@ -375,4 +375,51 @@ describe('Search module=>', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-71070 - Grid Searching is not working as expected when have date type columns => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args?: Object) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 3),
+                    toolbar: ['Search'],
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'Order ID',
+                            width: 140,
+                        },
+                        {
+                            field: 'CustomerID',
+                            headerText: 'Customer ID',
+                            width: 140,
+                        },
+                        {
+                            field: 'OrderDate',
+                            headerText: 'OrderDate',
+                            type: 'date',
+                            format: 'yMd',
+                            width: 140,
+                        },
+                    ],
+                    height: 350,
+                    actionComplete: actionComplete,
+                }, done);
+        });
+
+        it('search invalid data', (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.currentViewData.length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;            
+            gridObj.searchModule.search('ndia');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

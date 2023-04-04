@@ -27,7 +27,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, CommentReviewPane } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
-import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
+import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
 import {
     HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType,
@@ -35,12 +35,13 @@ import {
 } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
-import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs, beforePaneSwitchEvent, keyDownEvent, beforeFormFieldFillEvent, afterFormFieldFillEvent } from '../../base/index';
+import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs, beforePaneSwitchEvent, keyDownEvent, beforeFormFieldFillEvent, afterFormFieldFillEvent, AutoResizeEventArgs } from '../../base/index';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
 import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
+import { beforeAutoResize, internalAutoResize } from '../../base/constants';
 
 /**
  * @private
@@ -408,6 +409,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isTextFormEmpty: boolean = false;
+    /**
+     * @private
+     */
     public isScrollHandler: boolean = false;
     /**
      * @private
@@ -576,6 +581,9 @@ export class DocumentHelper {
      * @private
      */
     public dragEndParaInfo: ParagraphInfo;
+
+    private isAutoResizeCanStart: boolean = false;
+
     /**
      * Gets visible bounds.
      *
@@ -1703,6 +1711,9 @@ export class DocumentHelper {
             }
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
+            if(this.isDocumentProtected && this.protectionType == 'FormFieldsOnly'){
+                this.owner.selection.navigateToNextFormField();
+            }
             if (this.isDocumentProtected) {
                 this.restrictEditingPane.showHideRestrictPane(true);
             }
@@ -2282,7 +2293,9 @@ export class DocumentHelper {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
                     data.isCanceled = false;
-                    this.owner.trigger(beforeFormFieldFillEvent, data);
+                    if(this.selection.previousSelectedFormField !== this.selection.getCurrentFormField()){
+                        this.owner.trigger(beforeFormFieldFillEvent, data);
+                    }
                     if (!data.isCanceled) {
                         if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
                             || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
@@ -2899,9 +2912,56 @@ export class DocumentHelper {
             this.selection.updateCaretPosition();
         }
     }
+
+    /**
+     * @private
+     */
+    public triggerAutoResizeInterval(): void {
+        let timer: number = 0;
+        let element: HTMLElement = this.owner.element;
+        let args: AutoResizeEventArgs = { cancel: false }
+        this.owner.notify(beforeAutoResize, args);
+        if (!isNullOrUndefined(args.element)) {
+            element = args.element;
+        }
+        element.style.visibility = 'hidden';
+        showSpinner(element);
+        let counter: number = 0;
+        let internal: number = this.owner.documentEditorSettings.autoResizeSettings.interval;
+        if (this.isAutoResizeCanStart) {
+            timer = setInterval(() => {
+                counter++;
+                let tempRect: ClientRect = this.owner.element.getBoundingClientRect();
+                if (tempRect.width !== 0 && tempRect.height !== 0) {
+                    this.isAutoResizeCanStart = false;
+                    let args: AutoResizeEventArgs = { cancel : false }
+                    this.owner.notify(internalAutoResize, args);
+                    clearInterval(timer);
+                    if (!args.cancel) {
+                        this.owner.resize();
+                    }
+                    hideSpinner(element);
+                    element.style.visibility = 'visible';
+                } else if (counter > this.owner.documentEditorSettings.autoResizeSettings.iterationCount) {
+                    clearInterval(timer);
+                    hideSpinner(element);
+                    element.style.visibility = 'visible';
+                }
+            }, internal);
+        } else {
+            hideSpinner(element);
+            element.style.visibility = 'visible';
+        }
+    }
+
     private updateViewerSizeInternal(element: HTMLElement): void {
         if (!isNullOrUndefined(element)) {
-            let rect: ClientRect = element.getBoundingClientRect();
+            let rect = element.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) {
+                this.isAutoResizeCanStart = true;
+            } else {
+                this.isAutoResizeCanStart = false;
+            }       
             let width: number = 0;
             let height: number = 0;
             height = rect.height > 0 ? rect.height : 200;

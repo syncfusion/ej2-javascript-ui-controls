@@ -87,10 +87,13 @@ export class RibbonComboBox {
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
-        comboBoxObj.setProperties({ cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
+        comboBoxObj.setProperties({cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL});
         comboBoxObj.close = (e: PopupEventArgs) => {
+            let target: HTMLElement = (e.event as MouseEvent) ? (e.event as MouseEvent).target as HTMLElement : null;
             if (item.comboBoxSettings.close) { item.comboBoxSettings.close.call(this, e); }
-            overflowButton.toggle();
+            if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**

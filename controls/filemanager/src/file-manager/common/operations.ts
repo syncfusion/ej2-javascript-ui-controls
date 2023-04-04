@@ -414,10 +414,15 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         const args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
+        if(getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
+            parent.pathNames[parent.pathNames.length-1]=parent.renameText;
+        }
         if (parent.activeModule === 'navigationpane') {
             parent.pathId.pop();
             parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
-            read(parent, events.renameEndParent, getParentPath(parent.path));
+            read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
+            parent.itemData[0] = parent.renamedItem;
+            read(parent, events.pathChanged, parent.path ==='/' ? parent.path: getValue('filterPath', parent.renamedItem).replace(/\\/g, '/')+parent.renamedItem.name+'/');
         } else {
             parent.itemData = [getPathObject(parent)];
             if (parent.breadcrumbbarModule.searchObj.value !== '') {

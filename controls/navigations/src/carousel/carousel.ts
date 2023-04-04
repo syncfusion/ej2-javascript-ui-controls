@@ -164,11 +164,11 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     public items: CarouselItemModel[];
 
     /**
-     *  Specifies the type of animation effects. The possible values for this property as follows
-    * * `None`: The carousel item transition happens without animation.
-    * * `Slide`: The carousel item transition happens with slide animation.
-    * * `Fade`: The Carousel item transition happens with fade animation.
-    * * `Custom`: The Carousel item transition happens with custom animation.
+     * Specifies the type of animation effects. The possible values for this property as follows
+     * * `None`: The carousel item transition happens without animation.
+     * * `Slide`: The carousel item transition happens with slide animation.
+     * * `Fade`: The Carousel item transition happens with fade animation.
+     * * `Custom`: The Carousel item transition happens with custom animation.
      *
      *  @default 'Slide'
      */
@@ -740,13 +740,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     const template: HTMLElement[] = this.templateParser(this.indicatorsTemplate)({ index: index, selectedIndex: this.selectedIndex }, this, 'indicatorsTemplate', templateId, false);
                     append(template, indicatorBar);
                 } else {
-                    const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR, attrs: { 'type': 'button' } });
+                    const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR, attrs: { 'type': 'button', 'aria-label': this.localeObj.getConstant('slide') + ' ' + (index + 1) + ' ' + this.localeObj.getConstant('of') + ' ' + this.slideItems.length } });
                     indicatorBar.appendChild(indicator);
-                    indicator.appendChild(this.createElement('div', {
-                        attrs: {
-                            'aria-label': this.localeObj.getConstant('slide') + ' ' + (index + 1) + ' ' + this.localeObj.getConstant('of') + ' ' + this.slideItems.length
-                        }
-                    }));
+                    indicator.appendChild(this.createElement('div', {}));
                     const buttonObj: Button = new Button({ cssClass: 'e-flat e-small' });
                     buttonObj.appendTo(indicator);
                 }

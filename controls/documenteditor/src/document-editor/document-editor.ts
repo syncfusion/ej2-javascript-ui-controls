@@ -26,7 +26,7 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
@@ -63,12 +63,17 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public fontFamilies: string[];
     /* eslint-enable */
 
-
     /**
      * Gets or sets the form field settings.
      */
     @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     public formFieldSettings: FormFieldSettingsModel;
+
+   /**
+    * Specified the auto resize settings.
+    */ 
+    @Property({ interval: 2000, itertationCount: 5})
+    public autoResizeSettings: AutoResizeSettingsModel;
 
     /**
      * Gets ot sets the collaborative editing settings.
@@ -154,6 +159,29 @@ export class DocumentSettings extends ChildProperty<DocumentSettings> {
      */
     @Property('Word2013')
     public compatibilityMode: CompatibilityMode;
+}
+
+/**
+ * Represents the settings required for resizing the Document editor automatically when the visibility of parent element changed.
+ */
+export class AutoResizeSettings extends ChildProperty<AutoResizeSettings> {
+    /**
+     * Gets or sets the time interval in milliseconds to validate whether the parent element's height and width is non-zero.
+     *
+     * @default 2000
+     * @returns {number}
+     */
+    @Property(2000)
+    public interval: number;
+
+    /**
+     * Gets or sets the number of times the Document editor has to validate whether the parent element's height and width is non-zero.
+     *
+     * @default 5
+     * @returns {number}
+     */
+    @Property(5)
+    public iterationCount: number;
 }
 
 /**
@@ -748,6 +776,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public showRevisions: boolean;
 
     /**
+     * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
+     * 
+     * > * Resize action triggers automatically for the specified number of iterations, or till the parent element's height and width is non-zero.
+     * 
+     * > * If the parent element's height and width is zero even in the last iteration, then the default height and width (200) is allocated for the Document editor.
+     * 
+     * @default false
+     * @returns {boolean}
+     */
+    @Property(false)
+    public autoResizeOnVisibilityChange: boolean;
+
+    /**
      * Triggers whenever the document changes in the document editor.
      *
      * @event documentChange
@@ -1190,6 +1231,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                  if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges){
                      this.enableTrackChanges = true;
              }
+            break;
+            case 'autoResizeOnVisibilityChange':
+                if (model.autoResizeOnVisibilityChange) {
+                    this.documentHelper.triggerAutoResizeInterval();
+                }
             break;
             case 'zoomFactor':
                 if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {

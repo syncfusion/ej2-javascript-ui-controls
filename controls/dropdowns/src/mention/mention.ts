@@ -1571,9 +1571,7 @@ export class Mention extends DropDownBase {
         const displayCompTemp: any = compiledString(
             this.itemData, this, 'displayTemplate', this.displayTemplateId, this.isStringTemplate, null, this.displayTempElement);
         if (displayCompTemp && displayCompTemp.length > 0) {
-            for (let i: number = 0; i < displayCompTemp.length; i++) {
-                this.displayTempElement.appendChild(displayCompTemp[i as number]);
-            }
+            append(displayCompTemp, this.displayTempElement);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this as any).isReact) {

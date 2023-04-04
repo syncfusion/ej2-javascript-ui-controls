@@ -79,7 +79,7 @@ export class Selection {
                 data = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number].dataSource[dataIndex as number];
                 this.selectionsettings = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number].selectionSettings;
                 this.selectionType = 'Marker';
-            } else {
+            } else if (targetElement.id.indexOf('NavigationIndex') > -1){
                 const index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 shapeData = null;
                 data = {
@@ -89,7 +89,7 @@ export class Selection {
                 this.selectionsettings = this.maps.layers[layerIndex as number].navigationLineSettings[index as number].selectionSettings;
                 this.selectionType = 'navigationline';
             }
-            if (this.selectionsettings.enable) {
+            if (!isNullOrUndefined(this.selectionsettings) && this.selectionsettings.enable) {
                 this.selectElement(targetElement, layerIndex, data, shapeData);
             }
         } else if ((this.maps.legendSettings.visible && !this.maps.legendSettings.toggleLegendSettings.enable && this.maps.legendModule) &&

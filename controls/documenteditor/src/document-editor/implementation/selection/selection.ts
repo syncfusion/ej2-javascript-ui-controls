@@ -170,6 +170,10 @@ export class Selection {
     public isCellPrevSelected: boolean = false;
     /**
      * @private
+     */
+    public currentFormField: FieldElementBox = undefined;
+    /**
+     * @private
      * @returns {boolean} - Retuens true if highlighting editing region
      */
     public get isHighlightEditRegion(): boolean {
@@ -2655,8 +2659,8 @@ export class Selection {
         }
     }
     private triggerFormFillEvent(isKeyBoardNavigation?: boolean): void {
-        const previousField: FieldElementBox = this.previousSelectedFormField;
-        const currentField: FieldElementBox = this.getCurrentFormField();
+        let previousField: FieldElementBox = this.previousSelectedFormField;
+        const currentField: FieldElementBox = this.currentFormField;
         let previousFieldData: FormFieldFillEventArgs;
         let currentFieldData: FormFieldFillEventArgs;
         if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
@@ -2664,6 +2668,7 @@ export class Selection {
             if ((previousField.formFieldData as TextFormField).format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
                 this.owner.editor.applyFormTextFormat(previousField);
+                previousField = this.previousSelectedFormField;
             }
 
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };
@@ -7422,6 +7427,9 @@ export class Selection {
         if (this.isModifyingSelectionInternally) {
             return;
         }
+        if (this.documentHelper.isFormFillProtectedMode && isSelectionChanged && !this.isFormatUpdated && !this.documentHelper.isTextFormEmpty && !this.owner.documentHelper.layout.isRelayout) {
+            this.currentFormField = this.getCurrentFormField();
+        }
         if (!this.skipFormatRetrieval) {
             this.retrieveCurrentFormatProperties();
         }
@@ -7445,9 +7453,9 @@ export class Selection {
         {
             this.documentHelper.updateFocus();
         }
-        if (this.documentHelper.isInlineFormFillProtectedMode && isSelectionChanged) {
+        if (this.documentHelper.isFormFillProtectedMode && isSelectionChanged) {
             this.triggerFormFillEvent(isKeyBoardNavigation);
-            this.previousSelectedFormField = this.getCurrentFormField();
+            this.previousSelectedFormField = this.currentFormField;
         }
     }
     //Formats Retrieval
@@ -9274,7 +9282,7 @@ export class Selection {
      * @private
      */
     public isFormField(): boolean {
-        let inline: FieldElementBox = this.getCurrentFormField();
+        let inline: FieldElementBox = this.currentFormField;
         if (inline instanceof FieldElementBox && inline.formFieldData) {
             return true;
         }
@@ -9303,6 +9311,7 @@ export class Selection {
      */
     public isInlineFormFillMode(field?: FieldElementBox): boolean {
         if (this.documentHelper.isInlineFormFillProtectedMode) {
+            field = isNullOrUndefined(field) ? this.currentFormField : field;
             if (isNullOrUndefined(field)) {
                 field = this.getCurrentFormField();
             }
@@ -9319,7 +9328,7 @@ export class Selection {
      */
     public getFormFieldType(formField?: FieldElementBox): FormFieldType {
         if (isNullOrUndefined(formField)) {
-            formField = this.getCurrentFormField();
+            formField = this.currentFormField;
         }
         if (formField instanceof FieldElementBox) {
             if (formField.formFieldData instanceof TextFormField) {
@@ -10337,6 +10346,7 @@ export class Selection {
             this.formFieldHighlighters.destroy();
         }
         this.isCellPrevSelected = undefined;
+        this.currentFormField = undefined;
     }
     /**
      * Returns the cells in between the bounds.

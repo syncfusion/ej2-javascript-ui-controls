@@ -4233,7 +4233,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-49597, I327667, EJ2-53137, EJ2-51869, EJ2-51868, EJ2-47753, EJ2-49475, EJ2-56722, EJ2-48147, Ej2-54448->', () => {
+        describe('EJ2-49597, I327667, EJ2-53137, EJ2-51869, EJ2-51868, EJ2-47753, EJ2-49475, EJ2-56722, EJ2-48147, Ej2-54448, EJ2-68201->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],  
                 rows: [{ index: 13, cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, {cells: [{ }]}, { cells: [{ formula: '=SUM(A14:A17)' }] },
@@ -4308,6 +4308,14 @@ describe('Spreadsheet formula module ->', () => {
                 helper.invoke('updateCell', [{ value: '13' }, 'D21']);
                 helper.invoke('updateCell', [{ formula: '=IF(D1="","None",IF(D1>10,"Pass","Fail"))' }, 'E21']);
                 expect(helper.getInstance().sheets[0].rows[20].cells[4].value).toBe('Pass');
+                done();
+            });
+            it('EJ2-68201 - IF formula issue with cell referred with lowerCase value', (done: Function) => {
+                helper.edit('D6', 'true');
+                helper.edit('F6', 'ONE');
+                helper.edit('G6', 'TWO');
+                helper.invoke('updateCell', [{ formula: '=IF(D6,F6,G6)' }, 'D10']);
+                expect(helper.getInstance().sheets[0].rows[9].cells[3].value).toBe('ONE');
                 done();
             });
             it('EJ2-56722 - Cascading cell values does not get updated properly for imported file->', (done: Function) => {

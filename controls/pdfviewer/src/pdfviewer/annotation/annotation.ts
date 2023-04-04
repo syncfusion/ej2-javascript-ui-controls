@@ -251,7 +251,7 @@ export class Annotation {
     public setAnnotationMode(type: AnnotationType, dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem, standardBusinessStampItem?: StandardBusinessStampItem): void {
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
-        if (this.pdfViewer.tool === "Stamp") {
+        if (this.pdfViewer.tool === "Stamp" && this.pdfViewer.toolbarModule) {
             this.pdfViewer.toolbarModule.updateStampItems();
         }
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
@@ -259,7 +259,9 @@ export class Annotation {
         }
         type !== 'None' ? this.triggerAnnotationUnselectEvent() : null;
         this.pdfViewer.tool = "";
-        this.pdfViewer.toolbarModule.deSelectCommentAnnotation();
+        if (this.pdfViewer.toolbarModule) {
+            this.pdfViewer.toolbarModule.deSelectCommentAnnotation();
+        }
         if (type === 'None') {
             this.clearAnnotationMode();
         } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline') {

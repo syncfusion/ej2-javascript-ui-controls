@@ -2710,7 +2710,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
-            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && this.isCheckAllCalled) {
+            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled)) {
                 this.isReverseUpdate = true;
                 this.isCheckAllCalled = false;
                 this.changeState(wrap, 'check');

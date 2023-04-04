@@ -10,7 +10,6 @@ const CLOSE: string = 'e-close';
 const OPEN: string = 'e-open';
 const TRASITION: string = 'e-transition';
 const DEFAULTBACKDROP: string = 'e-sidebar-overlay';
-const CONTEXTBACKDROP: string = 'e-backdrop';
 const RTL: string = 'e-rtl';
 const RIGHT: string = 'e-right';
 const LEFT: string = 'e-left';
@@ -28,11 +27,11 @@ const SIDEBARABSOLUTE: string = 'e-sidebar-absolute';
 /**
  * Specifies the Sidebar types.
  */
- export type SidebarType = 
+export type SidebarType =
  /**
  * Specifies the animation sliding while opening the sidebar.
  */
- 'Slide' | 
+ 'Slide' |
  /**
  * Specifies the sidebar appearing over the main content.
  */
@@ -45,11 +44,10 @@ const SIDEBARABSOLUTE: string = 'e-sidebar-absolute';
  * Specifies that the sidebar opens automatically.
  */
  'Auto';
- 
 /**
  * Specifies the Sidebar positions.
  */
- export type SidebarPosition =
+export type SidebarPosition =
  /**
  * Sidebar positions to the Left in relation to the main content.
  */
@@ -245,7 +243,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *
      *
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
     /* eslint-enable */

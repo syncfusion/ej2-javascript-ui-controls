@@ -2069,6 +2069,7 @@ describe('Ribbon', () => {
                     }]
                 }]
             }, ribbonEle);
+            expect(ribbon.element.querySelector('.e-ribbon-template') !==null).toBe(true);
             expect(ribbon.element.querySelector('#item1').innerHTML).toBe(template1);
             expect(ribbon.element.querySelector('#item2').innerHTML).toBe(template2.outerHTML);
             expect(ribbon.element.querySelector('#item3').innerHTML).toBe(element1.outerHTML);

@@ -629,37 +629,32 @@ export class Toolbar {
             }
             this.action = 'Rename';
             let isExist: boolean = false;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
-            const _this: any = this;
-            const reports: FetchReportArgs = { reportName: [] };
-            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
-                _this.renameText = reportInput.value;
-                for (let i: number = 0; i < observedArgs.reportName.length; i++) {
-                    if (reportInput.value === observedArgs.reportName[i as number]) {
-                        isExist = true;
-                        break;
-                    }
+            this.renameText = reportInput.value;
+            for (let i: number = 0; i < (this.reportList.dataSource as string[]).length; i++) {
+                if (reportInput.value === (this.reportList.dataSource as string[])[i as number]) {
+                    isExist = true;
+                    break;
                 }
-                if (isExist) {
-                    _this.createConfirmDialog(
-                        _this.parent.localeObj.getConstant('alert'),
-                        _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
-                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
-                    return;
-                }
-                const renameArgs: RenameReportArgs = {
-                    reportName: _this.currentReport,
-                    rename: reportInput.value
-                };
-                const actionInfo: PivotActionInfo = {
-                    reportName: { oldName: _this.currentReport, newName: reportInput.value }
-                };
-                this.parent.actionObj.actionInfo = actionInfo;
-                _this.parent.trigger(events.renameReport, renameArgs);
-                _this.currentReport = reportInput.value;
-                _this.updateReportList();
-                _this.dialog.hide();
-            });
+            }
+            if (isExist) {
+                this.createConfirmDialog(
+                    this.parent.localeObj.getConstant('alert'),
+                    this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                    this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                return;
+            }
+            const renameArgs: RenameReportArgs = {
+                reportName: this.currentReport,
+                rename: reportInput.value
+            };
+            const actionInfo: PivotActionInfo = {
+                reportName: { oldName: this.currentReport, newName: reportInput.value }
+            };
+            this.parent.actionObj.actionInfo = actionInfo;
+            this.parent.trigger(events.renameReport, renameArgs);
+            this.currentReport = reportInput.value;
+            this.updateReportList(); 
+            this.dialog.hide();
         }
         this.parent.actionObj.actionName = this.parent.getActionCompleteName();
         if (this.parent.actionObj.actionName) {

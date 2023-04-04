@@ -1951,7 +1951,7 @@ export class WordExport {
                 writer.writeAttributeString('w', 'colLast', this.wNamespace, bookmark[propertiesProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]].toString());
             }
         } else if (bookmark[bookmarkTypeProperty[this.keywordIndex]] === 1) {
-            if (!isNullOrUndefined(bookmark[propertiesProperty[this.keywordIndex]])) {
+            if (!isNullOrUndefined(bookmark[propertiesProperty[this.keywordIndex]]) && !this.isBookmarkAtEnd && !this.isBookmarkAtRowEnd) {
                 if (HelperMethods.parseBoolValue(bookmark[propertiesProperty[this.keywordIndex]][isAfterParagraphMarkProperty[this.keywordIndex]])) {
                     writer.writeEndElement();
                     this.isBookmarkAtEnd = true;

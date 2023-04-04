@@ -34,7 +34,8 @@ export class NavigationPane {
     private isPathDragged: boolean = false;
     private isRenameParent: boolean = false;
     private isRightClick: boolean = false;
-    private isSameNodeClicked=false;
+    private isSameNodeClicked: boolean = false;
+    private isNodeExpandCalled: boolean = false;
     private renameParent: string = null;
     // Specifies the previously selected nodes in the treeview control.
     private previousSelected: string[] = null;
@@ -215,7 +216,7 @@ export class NavigationPane {
                     const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
                     this.parent.trigger('fileSelect', selecEventArgs);
                 }
-                if(!this.isRightClick)
+                if(!this.isRightClick && args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1])
                 {
                     const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
                     this.parent.trigger('fileOpen', eventArgs);
@@ -314,6 +315,7 @@ export class NavigationPane {
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
             read(this.parent, events.nodeExpand, path);
+            this.isNodeExpandCalled = true;
         }
     }
 
@@ -321,6 +323,7 @@ export class NavigationPane {
     private onNodeExpanded(args: ReadArgs): void {
         this.addChild(args.files, this.expandNodeTarget, false);
         this.parent.expandedId = null;
+        this.isNodeExpandCalled = false;
     }
 
     private onNodeClicked(args: NodeClickEventArgs): void {
@@ -335,7 +338,7 @@ export class NavigationPane {
             this.parent.setProperties({ selectedItems: [] }, true);
             const layout: string = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
             this.parent.notify(events.modelChanged, { module: layout, newProp: { selectedItems: [] } });
-        } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && !this.isNodeClickCalled) {
+        } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && !this.isNodeClickCalled && !this.isNodeExpandCalled) {
             if(args.event.which === 3)
             {
                 this.isRightClick = true;

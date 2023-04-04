@@ -2083,7 +2083,7 @@ export class DatePicker extends Calendar implements IInput {
             || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'true' });
-        } else {
+        } else if (!isNullOrUndefined(this.inputWrapper)) {
             removeClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'false' });
         }

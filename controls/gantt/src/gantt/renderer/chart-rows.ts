@@ -2012,7 +2012,9 @@ export class ChartRows extends DateProcessor {
             }
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                 this.parent.treeGrid.grid.getDataRows()[index as number].getAttribute('data-uid'));
-            row.data = data;
+            if (!isNullOrUndefined(row)) {
+               row.data = data;
+            }
         }
     }
 

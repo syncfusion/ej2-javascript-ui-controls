@@ -98,7 +98,8 @@ export class MDXQuery {
             cube: dataSourceSettings.cube,
             url: dataSourceSettings.url,
             request: query,
-            LCID: dataSourceSettings.localeIdentifier.toString()
+            LCID: dataSourceSettings.localeIdentifier.toString(),
+            roles: dataSourceSettings.roles
         };
         olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"');   /* eslint-disable-line */
         // console.log(olapEngine.mdxQuery);
@@ -118,7 +119,7 @@ export class MDXQuery {
         const soapMessage: string = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"> <Header></Header> <Body> <Execute xmlns="urn:schemas-microsoft-com:xml-analysis"> <Command> <Statement>' +
             args.request + '</Statement> </Command> <Properties> <PropertyList> <Catalog>' +
             args.catalog + '</Catalog> <LocaleIdentifier>' + connectionString.LCID +
-            '</LocaleIdentifier> </PropertyList> </Properties></Execute> </Body> </Envelope>';
+            '</LocaleIdentifier>' + (args.roles ? '<Roles>' + args.roles + '</Roles>' : '') + '</PropertyList> </Properties></Execute> </Body> </Envelope>';
         this.engine.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
     }
     public static frameMDXQuery(rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string,

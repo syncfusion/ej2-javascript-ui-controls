@@ -3638,5 +3638,63 @@ describe('Check whether connector segment restore after save and load', () => {
         expect(connector2.segments.length === 3).toBe(true);
         done();
     });
+});
+describe('Unable to drag connector end thumb and resize node handler when we increase the size of handleSize property', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
 
+        ele = createElement('div', { id: 'diagramresize' });
+        document.body.appendChild(ele);
+
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 600
+        };
+        let connector1: ConnectorModel = {
+            id: "connector1",
+            sourcePoint : { x : 100, y : 200},
+            targetPoint : { x : 400, y : 200}
+          };
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: [node1],
+            connectors: [connector1], selectedItems : { handleSize : 100}
+        });
+        diagram.appendTo('#diagramresize');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Check whether the connector position is same or not after we dragging it', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 430, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 480, 200);
+        mouseEvents.mouseUpEvent(diagramCanvas, 480, 200);
+        expect(diagram.connectors[0].targetPoint.x == 472).toBe(true);
+        expect(diagram.connectors[0].targetPoint.y == 192).toBe(true);
+        done();
+    });
+    it('Check whether the node position is same or not after we dragging it', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.nodes[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 240, 540);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 520);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 280, 500);
+        mouseEvents.mouseUpEvent(diagramCanvas, 280, 500);
+        expect(diagram.nodes[0].offsetX == 220).toBe(true);
+        expect(diagram.nodes[0].offsetY == 600).toBe(true);
+        done();
+    });
 });

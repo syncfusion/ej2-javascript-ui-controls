@@ -236,7 +236,12 @@ export class Toolbar {
                 } else if (items[itemCount as number].id === this.getPupupId('size')) {
                     items[itemCount as number].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
                 } else if (items[itemCount as number].id === this.getPupupId('date')) {
-                    items[itemCount as number].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                    if (this.parent.sortBy === 'dateModified' || this.parent.sortBy === 'dateCreated') {    
+                        items[itemCount as number].iconCss = this.parent.sortBy === this.parent.sortBy ? CLS.TB_OPTION_DOT : '';
+                    }
+                    else {
+                        items[itemCount as number].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                    }
                 } else if (items[itemCount as number].id === this.getPupupId('ascending')) {
                     items[itemCount as number].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
                 } else if (items[itemCount as number].id === this.getPupupId('descending')) {

@@ -284,7 +284,7 @@ export class DataLabel {
                                         textAnchor, argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
-                                ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
+                                ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ? 'black' : 'white'),
                                     series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect, null, null,
                                     chart.enableCanvas
                                 );

@@ -3449,3 +3449,47 @@ describe('Editing on ForeignKey column is not working in frozen grid when allowE
         actionComplete = null;
     });
 });
+
+describe('EJ2-70349 - Last row gets removed, after adding a new row when page size set to ALL', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 100, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120, format: 'C2' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                pageSettings: { pageSizes: true, },
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('Add start when page size set to ALL', (done: Function) => {
+        gridObj.pageSettings.pageSize = gridObj.pageSettings.totalRecordsCount;     
+        done();
+    });
+
+    it('Add complete', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.currentViewData.length).toBe(72);
+                done();
+            }
+        };       
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10246, CustomerID: 'updated' });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});

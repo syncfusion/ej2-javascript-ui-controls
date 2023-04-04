@@ -845,9 +845,9 @@ describe('Chart', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '360.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '364.125').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '84.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

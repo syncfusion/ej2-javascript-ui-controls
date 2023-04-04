@@ -2,10 +2,11 @@ import { createElement, getComponent, remove } from "@syncfusion/ej2-base";
 import { DisplayMode, FileMenuSettingsModel, ItemOrientation, LauncherClickEventArgs, Ribbon, RibbonItemSize, RibbonItemType, RibbonLayout, RibbonTabModel } from "../../src/index";
 import { RibbonColorPicker,RibbonFileMenu } from "../../src/index";
 import { MenuItemModel } from "@syncfusion/ej2-navigations";
-import { ClickEventArgs, DropDownButton, MenuEventArgs } from "@syncfusion/ej2-splitbuttons";
+import { BeforeOpenCloseMenuEventArgs, ClickEventArgs, DropDownButton, ItemModel, MenuEventArgs } from "@syncfusion/ej2-splitbuttons";
 import { SelectEventArgs } from "@syncfusion/ej2-dropdowns";
 import { ChangeEventArgs as CheckChange } from "@syncfusion/ej2-buttons";
 import { ChangeEventArgs } from "@syncfusion/ej2-inputs";
+import { BeforeCloseEventArgs } from "@syncfusion/ej2-popups";
 
 Ribbon.Inject(RibbonColorPicker,RibbonFileMenu);
 
@@ -26,6 +27,7 @@ describe('Ribbon Items', () => {
         let containerEle: HTMLElement;
         let outputEle: HTMLElement;
         let isCloseCalled: boolean;
+        let isColorPickerBeforeClose: boolean;
         let tabs: RibbonTabModel[] = [{
             header: "Home",
             groups: [{
@@ -233,6 +235,9 @@ describe('Ribbon Items', () => {
                             cssClass: 'test-css',
                             change: (args: ChangeEventArgs)=>{
                                 outputEle.innerText = ("Font " + args.value);
+                            },
+                            beforeClose: (args: BeforeCloseEventArgs) => {
+                                isColorPickerBeforeClose = true;
                             },
                             value: '#123456',
                         }
@@ -448,7 +453,8 @@ describe('Ribbon Items', () => {
             document.body.appendChild(containerEle);
             outputEle = createElement('div', { id: 'output' });
             document.body.appendChild(outputEle);
-            isCloseCalled = false;            
+            isCloseCalled = false;
+            isColorPickerBeforeClose = false;
         })
         afterEach(() => {
             if (ribbon) {
@@ -1041,6 +1047,562 @@ describe('Ribbon Items', () => {
             expect(document.getElementById('commonoverflowfontcolor').parentElement.classList.contains('test-css')).toBe(false);
             ribbon.ribbonColorPickerModule.updateColorPicker( {cssClass:'newClass'}, 'commonoverflowfontcolor');
             expect(document.getElementById('commonoverflowfontcolor').parentElement.classList.contains('newClass')).toBe(true);
+        });
+        it('ColorPicker BeforeCloseEvent For Coverage', () => {
+            ribbon = new Ribbon({
+                tabs: tabs
+            });
+            ribbon.appendTo("#ribbon");
+            expect(isColorPickerBeforeClose).toBe(false);
+            let splitBtn: HTMLElement = document.getElementById('fontcolor').parentElement.querySelector('.e-split-colorpicker');
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(isColorPickerBeforeClose).toBe(true);
+            containerEle.style.width = '600px';
+            ribbon.refreshLayout();
+            isColorPickerBeforeClose = false;
+            expect(isColorPickerBeforeClose).toBe(false);
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(isColorPickerBeforeClose).toBe(true);
+            containerEle.style.width = '1600px';
+            ribbon.refreshLayout();
+            isColorPickerBeforeClose = false;
+            expect(isColorPickerBeforeClose).toBe(false);
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(isColorPickerBeforeClose).toBe(true);
+        });
+    });
+    describe('Overflow items interaction', () => {   
+        
+        let dropDownButtonItems: ItemModel[] = [
+            { text: 'New tab' },
+            { text: 'New window' },
+            { text: 'New incognito window' },
+            { separator: true },
+            { text: 'Print' },
+            { text: 'Cast' },
+            { text: 'Find' }];
+        let sportsData: string[] = ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'];     
+        let ribbon: Ribbon;
+        let ribbonEle: HTMLElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        beforeEach(() => {
+            ribbonEle = createElement('div', { id: 'ribbon' });
+            document.body.appendChild(ribbonEle);
+        })
+        afterEach(() => {
+            if (ribbon) {
+                ribbon.destroy();
+                ribbon = undefined;
+            }
+            remove(ribbonEle);
+        });        
+
+        it('dropdown and splitbutton in overflow mode', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },                           
+                            {                               
+                                id: "item3",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,                               
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            //Opening a dropdown
+            expect(document.body.querySelector('#item2-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.body.querySelector('#item2') as HTMLElement).click();
+            expect(document.body.querySelector('#item2-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on splitbutton
+            let splitbuttonArrow: HTMLElement = document.querySelector('#item3');
+            (splitbuttonArrow.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (splitbuttonArrow.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#item2-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on Dropdownbutton
+            (document.body.querySelector('#item2') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (document.body.querySelector('#item2') as HTMLElement).click();
+            expect(document.body.querySelector('#item2-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            //Clicking on Dropdownbutton item
+            (document.body.querySelector('#item2-popup').querySelector('li') as HTMLElement).click();
+            expect(document.body.querySelector('#item2-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#item3_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+
+        it('splitbutton and dropdown in overflow mode', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,                               
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }                                
+                            },                           
+                            {                               
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            ///Opening a Splitbutton
+            expect(document.body.querySelector('#item2_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            let splitbuttonArrow: HTMLElement = document.querySelector('#item2');
+            (splitbuttonArrow.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#item2_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on Dropdownbutton
+            (document.body.querySelector('#item3') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            expect(document.body.querySelector('.e-popup-open') !== null).toBe(true);
+            (document.body.querySelector('#item3') as HTMLElement).click();
+            expect(document.body.querySelector('#item2_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on Splitbutton
+            (splitbuttonArrow.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (splitbuttonArrow.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#item2_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+            //Clicking on Splitbutton item
+            (document.body.querySelector('#item2_dropdownbtn-popup').querySelector('li') as HTMLElement).click();
+            expect(document.body.querySelector('#item2_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+
+        it('dropdown and combobox in overflow mode - selecting ddb', (done) => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }                                
+                            },                           
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }                                
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on Combobox
+            let arrow: HTMLElement = document.querySelector('#item2').closest('.e-control-wrapper').querySelector('.e-input-group-icon');
+            arrow.dispatchEvent(new Event('mousedown', { bubbles: true }));            
+            setTimeout(() => {                
+                expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+                expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+                expect(document.body.querySelector('#item2_popup').classList.contains('e-popup-open')).toBe(true);
+                //Clicking on Dropdownbutton
+                (document.body.querySelector('#item3') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+                (document.body.querySelector('#item3') as HTMLElement).click();                
+                setTimeout(() => {   
+                    expect(document.body.querySelector('#item2_popup')).toBe(null);
+                    expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-open')).toBe(true);
+                    expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);
+        });
+
+        it('dropdown and combobox in overflow mode - selecting combobox item', (done) => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    allowFiltering: true
+                                }                                
+                            },                           
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }                                
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            //Clicking on Combobox
+            let arrow: HTMLElement = document.querySelector('#item2').closest('.e-control-wrapper').querySelector('.e-input-group-icon');
+            arrow.dispatchEvent(new Event('mousedown', { bubbles: true }));            
+            setTimeout(() => {            
+                // let comboxObj = (document.body.querySelector('#item2') as any).ej2_instances[0];
+                expect(document.querySelector('#item2_popup').querySelectorAll('li').length).toBe(5);
+                expect((document.body.querySelector('#item2') as HTMLInputElement).value === 'Golf').toBe(true);
+                expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+                expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+                expect(document.body.querySelector('#item2_popup').classList.contains('e-popup-open')).toBe(true);
+                //Clicking on combobox item
+                (document.body.querySelector('#item2_popup').querySelector('li') as HTMLElement).click();                
+                setTimeout(() => {
+                    expect((document.body.querySelector('#item2') as HTMLInputElement).value === 'Badminton').toBe(true);
+                    expect(document.body.querySelector('#item2_popup')).toBe(null);
+                    expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+                    expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);
+        });
+
+        it('dropdown and colorpicker in overflow mode', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            },                           
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            //Opening colorpicker            
+            let splitBtn: HTMLElement = document.querySelector('#item2').parentElement.querySelector('.e-split-colorpicker');
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+
+            //Clicking on Dropdownbutton
+            (document.body.querySelector('#item3') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            expect(document.body.querySelector('.e-popup-open') !== null).toBe(true);
+            (document.body.querySelector('#item3') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-open')).toBe(true);
+            
+            //Clicking on colorpicker
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+
+            //Clicking on button
+            (ribbon.element.querySelector('#item1') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+
+        it('dropdown with before close event', () => {
+            let isDropdownBeforeClose: boolean = false;
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems,
+                                    beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
+                                        isDropdownBeforeClose = true;
+                                    }
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(isDropdownBeforeClose).toBe(false);
+            expect(document.body.querySelector('#item1-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.body.querySelector('#item1') as any).ej2_instances[0].openPopUp();
+            expect(document.body.querySelector('#item1-popup').classList.contains('e-popup-open')).toBe(true);
+            (document.body.querySelector('#item1') as any).ej2_instances[0].closePopup();
+            expect(document.body.querySelector('#item1-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(isDropdownBeforeClose).toBe(true);
+        });
+
+        it('colorpicker with before close event', () => {
+            let isColorPickerBeforeClose: boolean = false;
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456',
+                                    beforeClose: (args: BeforeCloseEventArgs) => {
+                                        isColorPickerBeforeClose = true;
+                                    }
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
+            expect(isColorPickerBeforeClose).toBe(false);
+            let splitBtn: HTMLElement = document.querySelector('#item1').parentElement.querySelector('.e-split-colorpicker');
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            expect(isColorPickerBeforeClose).toBe(true);
+            expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+
+        it('splitbutton with before close event', () => {
+            let isSplitbuttonBeforeClose: boolean = false;
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,                               
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems,
+                                    beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
+                                        isSplitbuttonBeforeClose = true;
+                                    }
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(isSplitbuttonBeforeClose).toBe(false);
+            expect(document.body.querySelector('#item1_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.body.querySelector('#item1') as any).ej2_instances[0].openPopUp();
+            expect(document.body.querySelector('#item1_dropdownbtn-popup').classList.contains('e-popup-open')).toBe(true);
+            (document.body.querySelector('#item1') as any).ej2_instances[0].closePopup();
+            expect(document.body.querySelector('#item1_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            expect(isSplitbuttonBeforeClose).toBe(true);
         });
     });
 });

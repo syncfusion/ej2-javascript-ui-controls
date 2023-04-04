@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### Menu
+
+#### Bug Fixes
+
+- `#F181258` - The issue with "Input element is not editable when we placed inside the menu template" has been resolved.
+
 ## 21.1.37 (2023-03-29)
 
 ### TreeView

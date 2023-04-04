@@ -2426,6 +2426,9 @@ export class Drawing {
         if (node.strokeColor !== undefined) {
             actualObject.strokeColor = node.strokeColor;
             actualObject.wrapper.children[0].style.strokeColor = node.strokeColor; update = true;
+            if (actualObject.shapeAnnotationType === 'Radius' && actualObject.wrapper.children[1]) {
+                actualObject.wrapper.children[1].style.strokeColor = node.strokeColor;
+            }
             updateConnector = true;
         }
         if (node.fontColor !== undefined) {
@@ -2580,6 +2583,9 @@ export class Drawing {
                 actualObject.wrapper.children[1].height = 12 * node.thickness;
                 actualObject.wrapper.children[2].width = 12 * node.thickness;
                 actualObject.wrapper.children[2].height = 12 * node.thickness;
+            }
+            if (actualObject.shapeAnnotationType === 'Radius' && actualObject.wrapper.children[1]) {
+                actualObject.wrapper.children[1].style.strokeWidth = node.thickness;
             }
             update = true;
             updateConnector = true;

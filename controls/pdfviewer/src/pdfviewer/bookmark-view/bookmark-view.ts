@@ -68,40 +68,43 @@ export class BookmarkView {
             }
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object') {
-                    try {
-                        data = JSON.parse(data);
-                    } catch (error) {
-                        proxy.pdfViewerBase.onControlError(500, data, 'Bookmarks');
-                        data = null;
+            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+            if (!redirect) {
+                if (data) {
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            proxy.pdfViewerBase.onControlError(500, data, 'Bookmarks');
+                            data = null;
+                        }
                     }
-                }
-                if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                    proxy.pdfViewer.fireAjaxRequestSuccess('Bookmarks', data);
-                    proxy.bookmarks = { bookMark: data.Bookmarks };
-                    proxy.bookmarkStyles = data.Bookmarkstyles;
-                    proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
-                    if (isBlazor()) {
-                        // eslint-disable-next-line
-                        let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
-                        if (proxy.pdfViewer && proxy.pdfViewer._dotnetInstance) {
-                            proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
+                    if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess('Bookmarks', data);
+                        proxy.bookmarks = { bookMark: data.Bookmarks };
+                        proxy.bookmarkStyles = data.Bookmarkstyles;
+                        proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
+                        if (isBlazor()) {
+                            // eslint-disable-next-line
+                            let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
+                            if (proxy.pdfViewer && proxy.pdfViewer._dotnetInstance) {
+                                proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
+                            }
                         }
                     }
                 }
-            }
-            if (proxy.pdfViewerBase.navigationPane) {
-                if (proxy.bookmarks == null) {
-                    proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
-                    if (isBlazor() && proxy.pdfViewer._dotnetInstance) {
-                        proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', null);
-                    }
-                } else {
-                    proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
-                    proxy.isBookmarkViewDiv = false;
-                    if (proxy.pdfViewer.isBookmarkPanelOpen) {
-                        proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                if (proxy.pdfViewerBase.navigationPane) {
+                    if (proxy.bookmarks == null) {
+                        proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
+                        if (isBlazor() && proxy.pdfViewer._dotnetInstance) {
+                            proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', null);
+                        }
+                    } else {
+                        proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
+                        proxy.isBookmarkViewDiv = false;
+                        if (proxy.pdfViewer.isBookmarkPanelOpen) {
+                            proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                        }
                     }
                 }
             }

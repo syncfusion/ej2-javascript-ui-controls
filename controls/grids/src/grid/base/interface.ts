@@ -2557,6 +2557,8 @@ export interface PdfExportProperties {
     hierarchyExportMode?: 'Expanded' | 'All' | 'None';
     /** Defines the overflow of columns for the pdf grid */
     allowHorizontalOverflow?: boolean;
+    /** Defined the query dynamically before exporting */
+    query?: Query;
 }
 
 export interface PdfTheme {

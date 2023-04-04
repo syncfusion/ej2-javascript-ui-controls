@@ -25,6 +25,11 @@ export interface DocumentEditorSettingsModel {
     formFieldSettings?: FormFieldSettingsModel;
 
     /**
+    * Specified the auto resize settings.
+    */ 
+    autoResizeSettings?: AutoResizeSettingsModel;
+
+    /**
      * Gets ot sets the collaborative editing settings.
      */
     collaborativeEditingSettings?: CollaborativeEditingSettingsModel;
@@ -102,6 +107,29 @@ export interface DocumentSettingsModel {
      * @returns {CompatibilityMode}
      */
     compatibilityMode?: CompatibilityMode;
+
+}
+
+/**
+ * Interface for a class AutoResizeSettings
+ */
+export interface AutoResizeSettingsModel {
+
+    /**
+     * Gets or sets the time interval in milliseconds to validate whether the parent element's height and width is non-zero.
+     *
+     * @default 2000
+     * @returns {number}
+     */
+    interval?: number;
+
+    /**
+     * Gets or sets the number of times the Document editor has to validate whether the parent element's height and width is non-zero.
+     *
+     * @default 5
+     * @returns {number}
+     */
+    iterationCount?: number;
 
 }
 
@@ -491,6 +519,18 @@ export interface DocumentEditorModel extends ComponentModel{
      * @default false
      */
     showRevisions?: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
+     * 
+     * > * Resize action triggers automatically for the specified number of iterations, or till the parent element's height and width is non-zero.
+     * 
+     * > * If the parent element's height and width is zero even in the last iteration, then the default height and width (200) is allocated for the Document editor.
+     * 
+     * @default false
+     * @returns {boolean}
+     */
+    autoResizeOnVisibilityChange?: boolean;
 
     /**
      * Triggers whenever the document changes in the document editor.

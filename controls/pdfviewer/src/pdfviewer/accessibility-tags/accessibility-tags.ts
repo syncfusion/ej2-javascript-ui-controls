@@ -20,7 +20,7 @@ export class AccessibilityTags {
 
     private addTaggedLayer(pageIndex: number): HTMLElement {
         let taggedLayer: HTMLElement;
-        if (this.pdfViewer.enableAccessibilityTags) {
+        if (this.pdfViewer.enableAccessibilityTags && this.pdfViewerBase.isTaggedPdf) {
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             taggedLayer = document.getElementById(this.pdfViewer.element.id + '_taggedLayer_' + pageIndex);
             let textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);

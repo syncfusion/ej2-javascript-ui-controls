@@ -1852,12 +1852,13 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
                 (element as PathElement).data = getBasicShape((isBlazor() ? (actualObject.shape as DiagramShape).basicShape :
                     (actualObject.shape as BasicShape).shape));
             }
-            updateShapeContent(content, actualObject, diagram);
             if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle') ||
                 (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Rectangle')) {
                 element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
             }
             content = element;
+            //EJ2-70880 - Node disappeared after changing shape and type dynamically.
+            updateShapeContent(content, actualObject, diagram);
             break;
         case 'Flow':
             /* eslint-disable */

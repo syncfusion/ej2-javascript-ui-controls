@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I440048` - Data not bound when using `ODataV4 Adaptor` with version 4.01 protocol has been fixed.
+
 ## 21.1.35 (2023-03-23)
 
 ### DataManager

@@ -111,30 +111,33 @@ export class ThumbnailView {
         this.thumbnailRequestHandler.onSuccess = function (result: any) {
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object') {
-                    try {
-                        data = JSON.parse(data);
-                    } catch (error) {
-                        proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-                        data = null;
-                    }
-                }
-                if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
-                    proxy.renderThumbnailImage(data);
-                    if (proxy.pdfViewer.isThumbnailViewOpen) {
-                        proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
-                        // eslint-disable-next-line max-len
-                        proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
-                        document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
-                        let bookmarkContent:  HTMLElement = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
-                        if (bookmarkContent) {
-                            bookmarkContent.style.display = 'none';
+            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+            if (!redirect) {
+                if (data) {
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+                            data = null;
                         }
-                        proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
-                        proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
-                        proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;
+                    }
+                    if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
+                        proxy.renderThumbnailImage(data);
+                        if (proxy.pdfViewer.isThumbnailViewOpen) {
+                            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
+                            // eslint-disable-next-line max-len
+                            proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
+                            document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+                            let bookmarkContent: HTMLElement = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
+                            if (bookmarkContent) {
+                                bookmarkContent.style.display = 'none';
+                            }
+                            proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
+                            proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
+                            proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;
+                        }
                     }
                 }
             }

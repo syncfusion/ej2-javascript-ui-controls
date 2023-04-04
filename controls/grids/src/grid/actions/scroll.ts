@@ -61,7 +61,20 @@ export class Scroll implements IAction {
         }
         if ((<Grid>this.parent).toolbarModule && (<Grid>this.parent).toolbarModule.toolbar &&
             (<Grid>this.parent).toolbarModule.toolbar.element) {
-            (<Grid>this.parent).toolbarModule.toolbar.refreshOverflow();
+            const tlbrElement: Element = (<Grid>this.parent).toolbarModule.toolbar.element;
+            const tlbrLeftElement: Element = tlbrElement.querySelector('.e-toolbar-left');
+            const tlbrCenterElement: Element = tlbrElement.querySelector('.e-toolbar-center');
+            const tlbrRightElement: Element = tlbrElement.querySelector('.e-toolbar-right');
+            const tlbrItems: Element = tlbrElement.querySelector('.e-toolbar-items');
+            const tlbrLeftWidth: number = tlbrLeftElement ? tlbrLeftElement.clientWidth : 0;
+            const tlbrCenterWidth: number = tlbrCenterElement ? tlbrCenterElement.clientWidth : 0;
+            const tlbrRightWidth: number = tlbrRightElement ? tlbrRightElement.clientWidth : 0;
+            const tlbrItemsWidth: number = tlbrItems ? tlbrItems.clientWidth : 0;
+            const tlbrWidth: number = tlbrElement ? tlbrElement.clientWidth : 0;
+            if (!this.parent.enableAdaptiveUI || tlbrLeftWidth > tlbrWidth || tlbrCenterWidth > tlbrWidth || tlbrRightWidth > tlbrWidth ||
+                tlbrItemsWidth > tlbrWidth) {
+                (<Grid>this.parent).toolbarModule.toolbar.refreshOverflow();
+            }
         }
     }
 
@@ -439,19 +452,7 @@ export class Scroll implements IAction {
                 this.parent.notify(checkScrollReset, args);
                 if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
                     if (sHeight < clientHeight) {
-                        addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
-                        if (this.parent.isFrozenGrid()) {
-                            addClass(
-                                this.parent.getContent().querySelector('.' + literals.movableContent).querySelectorAll('tr:last-child td'),
-                                'e-lastrowcell'
-                            );
-                            if (this.parent.getFrozenRightColumnsCount()) {
-                                addClass(
-                                    this.parent.getContent().querySelector('.e-frozen-right-content').querySelectorAll('tr:last-child td'),
-                                    'e-lastrowcell'
-                                );
-                            }
-                        }
+                        this.setLastRowCell();
                     }
                     if (!args.cancel) {
                         if ((this.parent.frozenRows > 0 || this.parent.isFrozenGrid()) && this.header.querySelector('.' + literals.movableHeader)) {
@@ -473,6 +474,44 @@ export class Scroll implements IAction {
             }
         );
         this.parent.isPreventScrollEvent = false;
+    }
+
+    /**
+     * @returns {void} returns void
+     * @hidden
+     */
+    public setLastRowCell(): void {
+        const table: Element = this.parent.getContentTable();
+        if (table.querySelector('tr:nth-last-child(2)')) {
+            removeClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
+        }
+        addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
+        if (this.parent.isFrozenGrid()) {
+            const mTable: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
+            if (mTable.querySelector('tr:nth-last-child(2)')) {
+                removeClass(
+                    mTable.querySelector('tr:nth-last-child(2)').querySelectorAll('td'),
+                    'e-lastrowcell'
+                );
+            }
+            addClass(
+                mTable.querySelectorAll('tr:last-child td'),
+                'e-lastrowcell'
+            );
+            if (this.parent.getFrozenRightColumnsCount()) {
+                const frTable: HTMLElement = this.parent.getContent().querySelector('.e-frozen-right-content');
+                if (frTable.querySelector('tr:nth-last-child(2)')) {
+                    removeClass(
+                        frTable.querySelector('tr:nth-last-child(2)').querySelectorAll('td'),
+                        'e-lastrowcell'
+                    );
+                }
+                addClass(
+                    frTable.querySelectorAll('tr:last-child td'),
+                    'e-lastrowcell'
+                );
+            }
+        }
     }
 
     /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I450984` - Resolved issue, when manually select the all items then `SelectAll` state not updated for the Dropdown Tree component.
+
 ## 21.1.37 (2023-03-29)
 
 ### Mention

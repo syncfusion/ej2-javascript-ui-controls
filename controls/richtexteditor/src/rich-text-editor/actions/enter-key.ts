@@ -133,7 +133,8 @@ export class EnterKeyAction {
                             this.range.startOffset === this.range.endOffset && this.range.startContainer === this.parent.inputElement) {
                             if (!(this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE')) {
                                 if (isNOU(this.range.startContainer.childNodes[this.range.startOffset] as Element)) {
-                                    let currentLastElem: Element = this.range.startContainer.childNodes[this.range.startOffset - 1] as Element;
+                                    let currentLastElem: Element =
+                                    this.range.startContainer.childNodes[this.range.startOffset - 1] as Element;
                                     while (currentLastElem.lastChild !== null && currentLastElem.nodeName !== '#text') {
                                         currentLastElem = currentLastElem.lastChild as Element;
                                     }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I448740` - An issue with the current date styles in month agenda view has been fixed.
+- `#I445875` - An issue with the scheduler not rendering the all more indicators while resizing the browser window at specific resolutions has been fixed.
+
 ## 21.1.35 (2023-03-23)
 
 ### Schedule

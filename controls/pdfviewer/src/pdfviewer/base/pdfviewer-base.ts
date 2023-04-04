@@ -682,6 +682,11 @@ export class PdfViewerBase {
      */
     // eslint-disable-next-line
     public zoomInterval: number = 5;
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public isTaggedPdf: boolean = false;
     private accessibilityTagsHandler :AjaxHandler = null;
     private accessibilityTagsCollection :any = [];
     private pageRequestListForAccessibilityTags :number[] = [];
@@ -1081,6 +1086,29 @@ export class PdfViewerBase {
         this.mobilePageNoContainer.style.display = 'none';
     }
 
+    /**
+     * @private
+     * @param {any} data - data.
+     * @returns {boolean}
+     */
+    public checkRedirection(data: any): boolean {
+        let redirect: boolean = false;
+        if (data && typeof (data) === 'object' && (data.redirectUrl || data.redirectUri || data.redirectUrl === "" || data.redirectUri === "")) {
+            if (data.redirectUrl === "" || data.redirectUri === "") {
+                redirect = true;
+            } else {
+                data.redirectUrl ? window.location.href = data.redirectUrl : window.location.href = data.redirectUri;
+            }
+        } else if (data && typeof (data) === 'string' && (data.includes('redirectUrl') || data.includes('redirectUri'))) {
+            if (JSON.parse(data).redirectUrl === "" || JSON.parse(data).redirectUri === "") {
+                redirect = true;
+            } else {
+                data.includes('redirectUrl') ? window.location.href = JSON.parse(data).redirectUrl : window.location.href = JSON.parse(data).redirectUri;
+            }
+        }
+        return redirect;
+    }
+
     // eslint-disable-next-line
     private createAjaxRequest(jsonObject: any, documentData: string, password: string): void {
         let proxy: PdfViewerBase = null;
@@ -1099,38 +1127,44 @@ export class PdfViewerBase {
             this.loadRequestHandler.onSuccess = function (result: any) {
                 // eslint-disable-next-line
                 let data: any = result.data;
-                if (data) {
-                    if (typeof data !== 'object') {
-                        try {
-                            data = JSON.parse(data);
-                        } catch (error) {
-                            proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
-                            data = null;
-                        }
-                    }
-                    if (data) {
-                        while (typeof data !== 'object') {
-                            data = JSON.parse(data);
-                            // eslint-disable-next-line
-                            if (typeof parseInt(data) === 'number' && !isNaN(parseInt(data))) {
-                                // eslint-disable-next-line
-                                data = parseInt(data);
-                                break;
-                            }
-                        }
-                        // eslint-disable-next-line
-                        if (data.uniqueId === proxy.documentId || (typeof parseInt(data) === 'number' && !isNaN(parseInt(data)))) {
-                            proxy.updateFormFieldName(data);
-                            proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
-                            if(isNullOrUndefined(data['isTaggedPdf']) || (!isNullOrUndefined(data['isTaggedPdf']) && !data['isTaggedPdf'])){
-                                proxy.pdfViewer.enableAccessibilityTags = false;
-                            }
-                            proxy.requestSuccess(data, documentData, password);
-                        }
-                    }
-                } else {
+                let redirect: boolean = proxy.checkRedirection(data);
+                if (redirect) {
                     proxy.showLoadingIndicator(false);
-                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Import PDF Failed'));
+                }
+                else {
+                    if (data) {
+                        if (typeof data !== 'object') {
+                            try {
+                                data = JSON.parse(data);
+                            } catch (error) {
+                                proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
+                                data = null;
+                            }
+                        }
+                        if (data) {
+                            while (typeof data !== 'object') {
+                                data = JSON.parse(data);
+                                // eslint-disable-next-line
+                                if (typeof parseInt(data) === 'number' && !isNaN(parseInt(data))) {
+                                    // eslint-disable-next-line
+                                    data = parseInt(data);
+                                    break;
+                                }
+                            }
+                            // eslint-disable-next-line
+                            if (data.uniqueId === proxy.documentId || (typeof parseInt(data) === 'number' && !isNaN(parseInt(data)))) {
+                                proxy.updateFormFieldName(data);
+                                proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
+                                if (!isNullOrUndefined(data['isTaggedPdf']) && data['isTaggedPdf']) {
+                                    proxy.isTaggedPdf = true;
+                                }
+                                proxy.requestSuccess(data, documentData, password);
+                            }
+                        }
+                    } else {
+                        proxy.showLoadingIndicator(false);
+                        proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Import PDF Failed'));
+                    }
                 }
             };
             // eslint-disable-next-line
@@ -1907,7 +1941,7 @@ export class PdfViewerBase {
         proxy.focusField = [];
         proxy.updateDocumentEditedProperty(false);
         pdfViewer.clipboardData.clipObject = {};
-        pdfViewer.enableAccessibilityTags = true;
+        proxy.isTaggedPdf = false;
         if (pdfViewer.formDesignerModule) {
             pdfViewer.formDesignerModule.formFieldIndex = 0;
             if (proxy.activeElements) {
@@ -3687,22 +3721,12 @@ export class PdfViewerBase {
                 default:
                     break;
             }
-        } else {
-            switch (event.keyCode) {
-                case 46:
-                    this.DeleteKeyPressed(event);
-                    break;
-            }
-        }
+        } 
         if (this.pdfViewer.magnificationModule) {
             this.pdfViewer.magnificationModule.magnifyBehaviorKeyDown(event);
         }
     };
     private DeleteKeyPressed(event: KeyboardEvent): void {
-        if((event.srcElement as HTMLElement).parentElement.classList && !(event.srcElement as HTMLElement).parentElement.classList.contains("e-input-focus")) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
         let isSearchboxDialogOpen: boolean;
         let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
         if (searchBoxId) {
@@ -5242,7 +5266,7 @@ export class PdfViewerBase {
         if (this.pdfViewer.formFieldsModule && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
             this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
         }
-        if (this.pdfViewer.accessibilityTagsModule && this.pdfViewer.enableAccessibilityTags) {
+        if (this.pdfViewer.accessibilityTagsModule && this.pdfViewer.enableAccessibilityTags && this.isTaggedPdf) {
             if (this.accessibilityTagsCollection[pageIndex.toString()]) {
                 this.renderAccessibilityTags(pageIndex, this.accessibilityTagsCollection[pageIndex.toString()]);
             }
@@ -6234,20 +6258,23 @@ export class PdfViewerBase {
             proxy.exportFormFieldsRequestHandler.onSuccess = function (result: any) {
                 // eslint-disable-next-line
                 let data: any = result.data;
-                if (data) {
+                let redirect: boolean = proxy.checkRedirection(data);
+                if (!redirect) {
                     if (data) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportFormFields, data);
-                        if (isObject) {
-                            // eslint-disable-next-line
-                            let annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
-                            resolve(annotationJson);
-                            proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
-                        } else if (data.split('base64,')[1]) {
-                            const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
-                            if (Browser.isIE || Browser.info.name === 'edge') {
-                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
-                            } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
-                                proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
+                        if (data) {
+                            proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportFormFields, data);
+                            if (isObject) {
+                                // eslint-disable-next-line
+                                let annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
+                                resolve(annotationJson);
+                                proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
+                            } else if (data.split('base64,')[1]) {
+                                const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
+                                if (Browser.isIE || Browser.info.name === 'edge') {
+                                    window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
+                                } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
+                                    proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
+                                }
                             }
                         }
                     }
@@ -6330,48 +6357,50 @@ export class PdfViewerBase {
         proxy.importFormFieldsRequestHandler.onSuccess = function (result: any) {
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data && data !== 'null') {
-                if (typeof data !== 'object') {
-                    try {
-                        data = JSON.parse(data);
-                        if (typeof data !== 'object') {
+            let redirect: boolean = proxy.checkRedirection(data);
+            if (!redirect) {
+                if (data && data !== 'null') {
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                            if (typeof data !== 'object') {
+                                proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importFormFields);
+                                proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
+                                data = null;
+                            }
+                        } catch (error) {
+                            proxy.pdfViewer.fireFormImportFailed(source, proxy.pdfViewer.localeObj.getConstant('File not found'));
+                            if (isBlazor()) {
+                                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
+                                promise.then((value: string) => {
+                                    proxy.openImportExportNotificationPopup(value);
+                                });
+                            } else {
+                                proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
+                            }
                             proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importFormFields);
-                            proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
                             data = null;
                         }
-                    } catch (error) {
-                        proxy.pdfViewer.fireFormImportFailed(source, proxy.pdfViewer.localeObj.getConstant('File not found'));
-                        if (isBlazor()) {
-                            const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
-                            promise.then((value: string) => {
-                                proxy.openImportExportNotificationPopup(value);
-                            });
-                        } else {
-                            proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
-                        }
-                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importFormFields);
-                        data = null;
                     }
-
-                }
-                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importFormFields, data);
-                proxy.pdfViewer.fireFormImportSuccess(source);
-                window.sessionStorage.removeItem(this.documentId + '_formfields');
-                this.pdfViewer.formFieldsModule.removeExistingFormFields();
-                window.sessionStorage.removeItem(this.documentId + '_formDesigner');
-                proxy.saveFormfieldsData(data);
-                for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
-                    this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[parseInt(i.toString(), 10)], true);
-                }
-            } else {
-                proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
-                if (isBlazor()) {
-                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
-                    promise.then((value: string) => {
-                        proxy.openImportExportNotificationPopup(value);
-                    });
+                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importFormFields, data);
+                    proxy.pdfViewer.fireFormImportSuccess(source);
+                    window.sessionStorage.removeItem(this.documentId + '_formfields');
+                    this.pdfViewer.formFieldsModule.removeExistingFormFields();
+                    window.sessionStorage.removeItem(this.documentId + '_formDesigner');
+                    proxy.saveFormfieldsData(data);
+                    for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
+                        this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[parseInt(i.toString(), 10)], true);
+                    }
                 } else {
-                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
+                    proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
+                    if (isBlazor()) {
+                        const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
+                        promise.then((value: string) => {
+                            proxy.openImportExportNotificationPopup(value);
+                        });
+                    } else {
+                        proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
+                    }
                 }
             }
         };
@@ -6630,30 +6659,33 @@ export class PdfViewerBase {
         this.dowonloadRequestHandler.onSuccess = function (result: any) {
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
-                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
-                    data = null;
-                }
-                if (typeof data === 'object') {
-                    data = JSON.parse(data);
-                }
+            let redirect: boolean = proxy.checkRedirection(data);
+            if (!redirect) {
                 if (data) {
-                    if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
-                        proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                    if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
+                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
+                        data = null;
                     }
-                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
-                    const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
-                    if (Browser.isIE || Browser.info.name === 'edge') {
-                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
-                    } else {
-                        proxy.downloadDocument(blobUrl);
+                    if (typeof data === 'object') {
+                        data = JSON.parse(data);
                     }
-                    proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
+                    if (data) {
+                        if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
+                            proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                        }
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                        const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
+                        if (Browser.isIE || Browser.info.name === 'edge') {
+                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
+                        } else {
+                            proxy.downloadDocument(blobUrl);
+                        }
+                        proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
+                    }
+                    proxy.updateDocumentAnnotationCollections();
+                } else {
+                    proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, 'PDF Document saved in server side successfully');
                 }
-                proxy.updateDocumentAnnotationCollections();
-            } else {
-                proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, 'PDF Document saved in server side successfully');
             }
         };
         // eslint-disable-next-line
@@ -6912,33 +6944,39 @@ export class PdfViewerBase {
                                     }
                                     // eslint-disable-next-line
                                     let data: any = result.data;
-                                    if (data) {
-                                        if (typeof data !== 'object') {
-                                            try {
-                                                data = JSON.parse(data);
-                                            } catch (error) {
-                                                proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderPages);
-                                                data = null;
-                                            }
-                                        }
+                                    let redirect: boolean = proxy.checkRedirection(data);
+                                    if (redirect) {
+                                        proxy.showLoadingIndicator(false);
                                     }
-                                    if (data) {
-                                        while (typeof data !== 'object') {
-                                            data = JSON.parse(data);
-                                        }
-                                        if (data.image && data.uniqueId === proxy.documentId) {
-                                            let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
-                                            proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
-                                            const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                                            if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                                                proxy.storeWinData(data, pageNumber);
-                                            } else {
-                                                proxy.storeWinData(data, pageNumber, data.tileX, data.tileY);
+                                    else {
+                                        if (data) {
+                                            if (typeof data !== 'object') {
+                                                try {
+                                                    data = JSON.parse(data);
+                                                } catch (error) {
+                                                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderPages);
+                                                    data = null;
+                                                }
                                             }
-                                            if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                                                proxy.renderPage(data, pageNumber);
-                                            } else {
-                                                proxy.tileRenderPage(data, pageNumber);
+                                        }
+                                        if (data) {
+                                            while (typeof data !== 'object') {
+                                                data = JSON.parse(data);
+                                            }
+                                            if (data.image && data.uniqueId === proxy.documentId) {
+                                                let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
+                                                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
+                                                const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                                                if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
+                                                    proxy.storeWinData(data, pageNumber);
+                                                } else {
+                                                    proxy.storeWinData(data, pageNumber, data.tileX, data.tileY);
+                                                }
+                                                if ((viewPortWidth >= currentPageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
+                                                    proxy.renderPage(data, pageNumber);
+                                                } else {
+                                                    proxy.tileRenderPage(data, pageNumber);
+                                                }
                                             }
                                         }
                                     }
@@ -6988,34 +7026,37 @@ export class PdfViewerBase {
             }
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object') {
-                    try {
+            let redirect: boolean = proxy.checkRedirection(data);
+            if (!redirect) {
+                if (data) {
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderTexts);
+                            data = null;
+                        }
+                    }
+                }
+                if (data) {
+                    while (typeof data !== 'object') {
                         data = JSON.parse(data);
-                    } catch (error) {
-                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderTexts);
-                        data = null;
                     }
-                }
-            }
-            if (data) {
-                while (typeof data !== 'object') {
-                    data = JSON.parse(data);
-                }
-                if (data.documentTextCollection  && data.uniqueId === proxy.documentId) {
-                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderTexts, data);
-                    const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                    proxy.storeWinData(data, pageNumber);
-                    if (!isNullOrUndefined(annotationObject)) {
-                        let markedBounds: any = annotationObject.bounds[0];
-                        let pageCharText: any = data.documentTextCollection[0][parseInt(pageIndex.toString(), 10)].PageText.split('');
-                        let characterBounds: any = data.characterBounds;
-                        let textMarkupContent: string = proxy.textMarkUpContent(markedBounds, pageCharText, characterBounds);
-                        annotationObject.textMarkupContent = textMarkupContent;
-                        this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annotationObject, '_annotations_textMarkup')
-                    }
-                    else {
-                        proxy.renderPage(data, pageIndex);
+                    if (data.documentTextCollection && data.uniqueId === proxy.documentId) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderTexts, data);
+                        const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                        proxy.storeWinData(data, pageNumber);
+                        if (!isNullOrUndefined(annotationObject)) {
+                            let markedBounds: any = annotationObject.bounds[0];
+                            let pageCharText: any = data.documentTextCollection[0][parseInt(pageIndex.toString(), 10)].PageText.split('');
+                            let characterBounds: any = data.characterBounds;
+                            let textMarkupContent: string = proxy.textMarkUpContent(markedBounds, pageCharText, characterBounds);
+                            annotationObject.textMarkupContent = textMarkupContent;
+                            this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annotationObject, '_annotations_textMarkup')
+                        }
+                        else {
+                            proxy.renderPage(data, pageIndex);
+                        }
                     }
                 }
             }
@@ -9088,120 +9129,123 @@ export class PdfViewerBase {
             proxy.exportAnnotationRequestHandler.onSuccess = function (result: any) {
                 // eslint-disable-next-line
                 let data: any = result.data;
-                if (data) {
-                    if (typeof data === 'object') {
-                        data = JSON.parse(data);
-                    }
+                let redirect: boolean = proxy.checkRedirection(data);
+                if (!redirect) {
                     if (data) {
-                        let isCancel: boolean = proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportAnnotations, data);
-                        if (isObject || (isBase64String && !isBlazor())) {
-                            if (data.split('base64,')[1]) {
-                                let exportObject: any = data;
-                                // eslint-disable-next-line 
-                                let annotationJson: any = atob(data.split(',')[1]);
-                                if (isObject) {
-                                    if (jsonObject.annotationDataFormat === 'Json') {
-                                        exportObject = JSON.parse(annotationJson);
-                                    } else {
-                                        exportObject = annotationJson;
-                                    }
-                                }
-                                if (proxy.pdfViewer.exportAnnotationFileName !== null) {
-                                    proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.exportAnnotationFileName);
-                                } else {
-                                    proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.fileName);
-                                }
-                                proxy.updateDocumentAnnotationCollections();
-                                if (isBase64String) {
-                                    resolve(data);
-                                } else {
-                                    resolve(annotationJson);
-                                }
-                            } else {
-                                // eslint-disable-next-line max-len
-                                proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
-                            }
-                        } else {
-                            if (annotationDataFormat === 'Json') {
+                        if (typeof data === 'object') {
+                            data = JSON.parse(data);
+                        }
+                        if (data) {
+                            let isCancel: boolean = proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportAnnotations, data);
+                            if (isObject || (isBase64String && !isBlazor())) {
                                 if (data.split('base64,')[1]) {
-                                    if (!isCancel) {
-                                        const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
-                                        if (Browser.isIE || Browser.info.name === 'edge') {
-                                            if (proxy.pdfViewer.exportAnnotationFileName !== null) {
-                                                // eslint-disable-next-line max-len
-                                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0] + '.json');
-                                            } else {
-                                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
-                                            }
+                                    let exportObject: any = data;
+                                    // eslint-disable-next-line 
+                                    let annotationJson: any = atob(data.split(',')[1]);
+                                    if (isObject) {
+                                        if (jsonObject.annotationDataFormat === 'Json') {
+                                            exportObject = JSON.parse(annotationJson);
                                         } else {
-                                            proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                            exportObject = annotationJson;
                                         }
-                                        proxy.updateDocumentAnnotationCollections();
+                                    }
+                                    if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+                                        proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.exportAnnotationFileName);
                                     } else {
-                                        return data;
+                                        proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.fileName);
+                                    }
+                                    proxy.updateDocumentAnnotationCollections();
+                                    if (isBase64String) {
+                                        resolve(data);
+                                    } else {
+                                        resolve(annotationJson);
                                     }
                                 } else {
-                                    if (isBlazor()) {
-                                        const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
-                                        promise.then((value: string) => {
-                                            proxy.openImportExportNotificationPopup(value);
-                                        });
-                                    } else {
-                                        proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
-                                    }
                                     // eslint-disable-next-line max-len
                                     proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                 }
                             } else {
-                                if (data.split('base64,')[1]) {
-                                    if (!isCancel) {
-                                        const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/vnd.adobe.xfdf');
-                                        if (Browser.isIE || Browser.info.name === 'edge') {
-                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.xfdf');
+                                if (annotationDataFormat === 'Json') {
+                                    if (data.split('base64,')[1]) {
+                                        if (!isCancel) {
+                                            const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
+                                            if (Browser.isIE || Browser.info.name === 'edge') {
+                                                if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+                                                    // eslint-disable-next-line max-len
+                                                    window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0] + '.json');
+                                                } else {
+                                                    window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
+                                                }
+                                            } else {
+                                                proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                            }
+                                            proxy.updateDocumentAnnotationCollections();
                                         } else {
-                                            proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                            return data;
                                         }
-                                        proxy.updateDocumentAnnotationCollections();
                                     } else {
-                                        return data;
+                                        if (isBlazor()) {
+                                            const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
+                                            promise.then((value: string) => {
+                                                proxy.openImportExportNotificationPopup(value);
+                                            });
+                                        } else {
+                                            proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                        }
+                                        // eslint-disable-next-line max-len
+                                        proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                     }
                                 } else {
-                                    if (isBlazor()) {
-                                        const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
-                                        promise.then((value: string) => {
-                                            proxy.openImportExportNotificationPopup(value);
-                                        });
+                                    if (data.split('base64,')[1]) {
+                                        if (!isCancel) {
+                                            const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/vnd.adobe.xfdf');
+                                            if (Browser.isIE || Browser.info.name === 'edge') {
+                                                window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.xfdf');
+                                            } else {
+                                                proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                            }
+                                            proxy.updateDocumentAnnotationCollections();
+                                        } else {
+                                            return data;
+                                        }
                                     } else {
-                                        proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                        if (isBlazor()) {
+                                            const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
+                                            promise.then((value: string) => {
+                                                proxy.openImportExportNotificationPopup(value);
+                                            });
+                                        } else {
+                                            proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                        }
+                                        // eslint-disable-next-line max-len
+                                        proxy.pdfViewer.fireExportFailed(jsonObject, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                     }
-                                    // eslint-disable-next-line max-len
-                                    proxy.pdfViewer.fireExportFailed(jsonObject, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                 }
                             }
                         }
-                    }
 
-                    if (typeof data !== 'string') {
-                        try {
-                            if (typeof data === 'string') {
+                        if (typeof data !== 'string') {
+                            try {
+                                if (typeof data === 'string') {
+                                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.exportAnnotations);
+                                    data = null;
+                                }
+                            } catch (error) {
+                                // eslint-disable-next-line max-len
+                                proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
                                 proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.exportAnnotations);
                                 data = null;
                             }
-                        } catch (error) {
-                            // eslint-disable-next-line max-len
-                            proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
-                            proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.exportAnnotations);
-                            data = null;
                         }
-                    }
-                } else {
-                    let fileName: string;
-                    if (proxy.pdfViewer.exportAnnotationFileName !== null) {
-                        fileName = proxy.pdfViewer.exportAnnotationFileName;
                     } else {
-                        fileName = proxy.pdfViewer.fileName;
+                        let fileName: string;
+                        if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+                            fileName = proxy.pdfViewer.exportAnnotationFileName;
+                        } else {
+                            fileName = proxy.pdfViewer.fileName;
+                        }
+                        proxy.pdfViewer.fireExportSuccess('Exported data saved in server side successfully', fileName);
                     }
-                    proxy.pdfViewer.fireExportSuccess('Exported data saved in server side successfully', fileName);
                 }
             };
             // eslint-disable-next-line
@@ -9323,46 +9367,49 @@ export class PdfViewerBase {
             proxy.importAnnotationRequestHandler.onSuccess = function (result: any) {
                 // eslint-disable-next-line
                 let data: any = result.data;
-                if (data) {
-                    if (typeof data !== 'object') {
-                        try {
-                            data = JSON.parse(data);
-                            if (typeof data !== 'object') {
+                let redirect: boolean = proxy.checkRedirection(data);
+                if (!redirect) {
+                    if (data) {
+                        if (typeof data !== 'object') {
+                            try {
+                                data = JSON.parse(data);
+                                if (typeof data !== 'object') {
+                                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importAnnotations);
+                                    data = null;
+                                }
+                            } catch (error) {
+                                proxy.pdfViewer.fireImportFailed(importData, proxy.pdfViewer.localeObj.getConstant('File not found'));
+                                if (isBlazor()) {
+                                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
+                                    promise.then((value: string) => {
+                                        proxy.openImportExportNotificationPopup(value);
+                                    });
+                                } else {
+                                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
+                                }
                                 proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importAnnotations);
                                 data = null;
                             }
-                        } catch (error) {
-                            proxy.pdfViewer.fireImportFailed(importData, proxy.pdfViewer.localeObj.getConstant('File not found'));
-                            if (isBlazor()) {
-                                const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_FileNotFound');
-                                promise.then((value: string) => {
-                                    proxy.openImportExportNotificationPopup(value);
-                                });
-                            } else {
-                                proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('File not found'));
-                            }
-                            proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.importAnnotations);
-                            data = null;
                         }
-                    }
-                    if (data) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importAnnotations, data);
-                        if (data.pdfAnnotation) {
-                            for (var i = 0; i < Object.keys(data.pdfAnnotation).length; i++) {
-                                var newData = data.pdfAnnotation[parseInt(i.toString(), 10)];
-                                proxy.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "stampAnnotations");
-                                proxy.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
-                                proxy.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+                        if (data) {
+                            proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importAnnotations, data);
+                            if (data.pdfAnnotation) {
+                                for (var i = 0; i < Object.keys(data.pdfAnnotation).length; i++) {
+                                    var newData = data.pdfAnnotation[parseInt(i.toString(), 10)];
+                                    proxy.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "stampAnnotations");
+                                    proxy.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
+                                    proxy.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+                                }
+                                proxy.reRenderAnnotations(data.pdfAnnotation);
+                                proxy.isImportedAnnotation = true;
+                                proxy.updateDocumentEditedProperty(true);
+                                proxy.pdfViewer.fireImportSuccess(data.pdfAnnotation);
                             }
-                            proxy.reRenderAnnotations(data.pdfAnnotation);
-                            proxy.isImportedAnnotation = true;
-                            proxy.updateDocumentEditedProperty(true);
-                            proxy.pdfViewer.fireImportSuccess(data.pdfAnnotation);
                         }
                     }
                 }

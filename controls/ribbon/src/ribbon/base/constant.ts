@@ -96,6 +96,8 @@ export const DROPDOWNBUTTON: string = 'e-dropdown-btn';
 /** @hidden */
 export const DROPDOWNBUTTON_HIDE: string = 'e-caret-hide';
 /** @hidden */
+export const RIBBON_TEMPLATE: string = 'e-ribbon-template';
+/** @hidden */
 export const RIBBON_HELP_TEMPLATE: string = 'e-ribbon-help-template';
 /** @hidden */
 export const RIBBON_TOOLTIP: string = 'e-ribbon-tooltip';

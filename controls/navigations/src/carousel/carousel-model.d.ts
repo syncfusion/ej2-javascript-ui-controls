@@ -50,11 +50,11 @@ export interface CarouselModel extends ComponentModel{
     items?: CarouselItemModel[];
 
     /**
-     *  Specifies the type of animation effects. The possible values for this property as follows
-    * * `None`: The carousel item transition happens without animation.
-    * * `Slide`: The carousel item transition happens with slide animation.
-    * * `Fade`: The Carousel item transition happens with fade animation.
-    * * `Custom`: The Carousel item transition happens with custom animation.
+     * Specifies the type of animation effects. The possible values for this property as follows
+     * * `None`: The carousel item transition happens without animation.
+     * * `Slide`: The carousel item transition happens with slide animation.
+     * * `Fade`: The Carousel item transition happens with fade animation.
+     * * `Custom`: The Carousel item transition happens with custom animation.
      *
      *  @default 'Slide'
      */

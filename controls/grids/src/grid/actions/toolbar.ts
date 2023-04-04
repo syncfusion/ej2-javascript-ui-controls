@@ -433,10 +433,13 @@ export class Toolbar {
                     }
                     else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
                         this.searchElement.value = '';
-                        this.sIcon.classList.remove('e-clear-icon');
-                        this.sIcon.removeAttribute('title');
-                        this.sIcon.style.cursor = 'default';
-                        if (this.isSearched) {
+                        if (this.searchElement) {
+                            this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
+                            this.sIcon.classList.remove('e-clear-icon');
+                            this.sIcon.removeAttribute('title');
+                            this.sIcon.style.cursor = 'default';
+                        }
+                        if (this.isSearched || this.parent.searchSettings.key.length) {
                             this.parent.search(this.searchElement.value);
                             this.isSearched = false;
                         }

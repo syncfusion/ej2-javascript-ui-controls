@@ -167,8 +167,11 @@ export class Timeline {
      * @private
      */
     private changeTimelineSettings(newTimeline: ZoomTimelineSettings): void {
-        if (!this.isZoomIn) {
-            this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
+        if (this.isZoomToFit) {
+            this.isSingleTier = this.customTimelineSettings.topTier.unit === 'None' || this.customTimelineSettings.bottomTier.unit === 'None' ? true : false;
+        }
+        else if (!this.isZoomIn) {
+             this.isSingleTier = newTimeline.topTier.unit === 'None' || newTimeline.bottomTier.unit === 'None' ? true : false;
         }
         const skipProperty: string = this.isSingleTier ?
             this.customTimelineSettings.topTier.unit === 'None' ?

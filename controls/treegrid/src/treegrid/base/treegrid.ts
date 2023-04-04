@@ -2215,6 +2215,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             return callBackPromise;
         };
         this.grid.cellSelecting = (args: CellSelectingEventArgs): Deferred | void => {
+            const actualTarget: string = 'actualTarget';
+            const target: HTMLElement = this.grid.selectionModule[`${actualTarget}`];
+            if (!isNullOrUndefined(target) && (target.classList.contains('e-treegridexpand') || target.classList.contains('e-treegridcollapse'))) {
+                args.cancel = true;
+            }
             const callBackPromise: Deferred = new Deferred();
             this.trigger(getObject('name', args), args, (cellselectingArgs: CellSelectingEventArgs) => {
                 callBackPromise.resolve(cellselectingArgs);

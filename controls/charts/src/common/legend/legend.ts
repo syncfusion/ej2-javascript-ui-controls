@@ -621,11 +621,13 @@ export class BaseLegend {
                 (isVertical && bulletChart.categoryField !== '')  ? maxLabelSize.height + padding * 2 : 0;
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         } else if (position === 'Top') {
+            let axisTextSize: Size;
+            if (this.isChartControl) { axisTextSize = measureText('100', (this.chart as Chart).verticalAxes[0].labelStyle); }
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
             legendBounds.y = rect.y + padding + this.legend.margin.top;
             legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
             !isVertical) ? bulletChart.majorTickLines.height + this.chart.margin.top : 0;
-            legendHeight -= (isBulletChart || this.isChartControl) ? -padding * 2 : 0;
+            legendHeight -= (isBulletChart) ? -padding * 2 : (this.isChartControl ? -padding * 2 - axisTextSize.height / 2 : 0);
             subtractThickness(rect, new Thickness(0, 0, legendHeight, 0));
         } else if (position === 'Right') {
             legendBounds.x = rect.x + (rect.width - legendBounds.width) - this.legend.margin.right;

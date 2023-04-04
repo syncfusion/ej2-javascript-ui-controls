@@ -678,7 +678,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private changeHandler(args: Event): void {
         this.setProperties({value: this.respectiveElement.value}, true);
-        this.raiseChangeEvent(args, true);
+        if(this.previousValue != this.value)
+        {
+            this.raiseChangeEvent(args, true);
+        }
         args.stopPropagation();
     }
 

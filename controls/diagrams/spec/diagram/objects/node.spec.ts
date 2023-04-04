@@ -2284,3 +2284,53 @@ describe('Node Rotate constraints does not work properly', () => {
         done();        
     });
 });
+
+describe('Node shape change at runtime not makes node disappear', () => {
+    let diagram: Diagram; let elements: HTMLElement
+    beforeAll((): void => {
+        elements = createElement('div', { styles: 'width:100%;height:600px;' });
+        elements.appendChild(createElement('div', { id: 'diagramNodeDisappear' }));
+        document.body.appendChild(elements);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100,
+                offsetY: 100, annotations: [{
+                    content: 'rectangle1'
+                }],shape:{shape:'Terminator',type:'Flow'}
+
+            },
+            {
+                id: 'node2', width: 100, height: 100, offsetX: 100,
+                offsetY: 200, annotations: [{
+                    content: 'rectangle2'
+                }],shape:{shape:'Process',type:'Flow'}
+
+            }, {
+                id: 'node3', width: 100, height: 100, offsetX: 200,
+                offsetY: 200,shape:{shape:'Rectangle',type:'Basic'}
+            },
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes,
+        });
+        diagram.appendTo('#diagramNodeDisappear');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        elements.remove();  
+    });
+    it('Changing two flow shapes to basic shape at runtime', (done: Function) => {
+        let node1 = diagram.nodes[0];
+        node1.shape = {shape:'Diamond',type:'Basic'};
+        diagram.dataBind();
+        let node2 = diagram.nodes[1];
+        node2.shape = {shape:'Rectangle',type:'Basic'};
+        diagram.dataBind();
+        expect(((diagram.nodes[0].shape as BasicShapeModel).shape === 'Diamond') && 
+        ((diagram.nodes[1].shape as BasicShapeModel).shape === 'Rectangle')
+         && diagram.nodes[0].wrapper.children[0].id !==undefined
+         && diagram.nodes[1].wrapper.children[0].id !==undefined).toBe(true)
+        done();        
+    });
+});

@@ -746,9 +746,9 @@ export class BasicFormulas {
             if (this.parent.getErrorStrings().indexOf(condition) > -1) {
                 return condition;
             }
-            if (condition === this.parent.trueValue || this.parent.parseFloat(condition) > 0 || this.parent.parseFloat(condition) < 0) {
+            if (condition.toUpperCase() === this.parent.trueValue || this.parent.parseFloat(condition) > 0 || this.parent.parseFloat(condition) < 0) {
                 result = this.parent.getValueFromArg(argArr[1]);
-            } else if (condition === this.parent.falseValue || this.parent.parseFloat(condition) === 0) {
+            } else if (condition.toUpperCase() === this.parent.falseValue || this.parent.parseFloat(condition) === 0) {
                 if (isNullOrUndefined(argArr[2])) {
                     return this.parent.falseValue;
                 }

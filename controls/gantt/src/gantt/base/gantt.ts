@@ -826,8 +826,11 @@ export class Gantt extends Component<HTMLElement>
     public timelineSettings: TimelineSettingsModel;
     /**
      * Configure zooming levels of Gantt Timeline
+     * @default []
      */
+    @Property([])
     public zoomingLevels: ZoomTimelineSettings[];
+        
     /**
      * Configures current zooming level of Gantt.
      */
@@ -1641,7 +1644,9 @@ export class Gantt extends Component<HTMLElement>
             contextMenu: 'shift+F10' //F Key
         };
         this.focusModule = new FocusModule(this);
-        this.zoomingLevels = this.getZoomingLevels();
+        if (this.zoomingLevels.length === 0) {
+            this.zoomingLevels = this.getZoomingLevels();
+        }
         this.resourceFieldsMapping();
         if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
             this.resourceFields.unit = 'unit';
@@ -2817,6 +2822,14 @@ export class Gantt extends Component<HTMLElement>
                 this.chartRowsModule.refreshGanttRows();
                 this.isLoad=false;
                 break;
+            case 'dayWorkingTime':
+                this.isLoad=true;
+                this.dataOperation.reUpdateGanttData();
+                this.treeGrid.refreshColumns();
+                this.chartRowsModule.initiateTemplates();
+                this.chartRowsModule.refreshGanttRows();
+                this.isLoad=false;
+                break;                      
             case 'addDialogFields':
             case 'editDialogFields':
                 if (this.editModule && this.editModule.dialogModule) {
@@ -2895,7 +2908,6 @@ export class Gantt extends Component<HTMLElement>
             case 'readOnly':
             case 'viewType':
             case 'taskFields':
-            case 'dayWorkingTime':
             case 'allowTaskbarDragAndDrop':
             case 'allowTaskbarOverlap':
             case 'allowParentDependency':

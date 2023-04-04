@@ -116,8 +116,8 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                } else if (range.startContainer.parentElement !== endNode || 
-                    (range.commonAncestorContainer !== endNode && range.startContainer.parentElement ===endNode)
+                } else if (range.startContainer.parentElement !== endNode ||
+                    (range.commonAncestorContainer !== endNode && range.startContainer.parentElement === endNode)
                     || (range.commonAncestorContainer === endNode || nodes.length === 1)) {
                     nodes[index as number] = this.insertFormat(
                         docElement,

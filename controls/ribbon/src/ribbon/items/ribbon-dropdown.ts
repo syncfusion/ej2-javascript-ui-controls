@@ -49,7 +49,9 @@ export class RibbonDropDown {
             iconCss: dropDownSettings.iconCss,
             items: dropDownSettings.items,
             target: dropDownSettings.target,
-            beforeClose: dropDownSettings.beforeClose,
+            beforeClose: (e: BeforeOpenCloseMenuEventArgs) => {
+                if (dropDownSettings.beforeClose) { dropDownSettings.beforeClose.call(this, e); }
+            },
             beforeItemRender: dropDownSettings.beforeItemRender,
             beforeOpen: dropDownSettings.beforeOpen,
             close: (e: OpenCloseMenuEventArgs) => {
@@ -74,9 +76,16 @@ export class RibbonDropDown {
         const dropdown: DropDownButton = getComponent(dropdownElement, DropDownButton);
         dropdown.cssClass = dropdown.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         dropdown.dataBind();
+        let target: HTMLElement;
+        dropdown.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.dropDownSettings.beforeClose) { item.dropDownSettings.beforeClose.call(this, e); }
+            target = e.event ? e.event.target as HTMLElement : null;
+        };
         dropdown.close = (e: OpenCloseMenuEventArgs) => {
             if (item.dropDownSettings.close) { item.dropDownSettings.close.call(this, e); }
-            overflowButton.toggle();
+            if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**
@@ -96,6 +105,9 @@ export class RibbonDropDown {
         dropdown.dataBind();
         dropdown.close = (e: OpenCloseMenuEventArgs) => {
             if (item.dropDownSettings.close) { item.dropDownSettings.close.call(this, e); }
+        };
+        dropdown.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.dropDownSettings.beforeClose) { item.dropDownSettings.beforeClose.call(this, e); }
         };
     }
     /**
@@ -232,6 +244,7 @@ export class RibbonDropDown {
             control.cssClass = prop.cssClass;
         }
         delete prop.close;
+        delete prop.beforeClose;
         if (prop.content) { prop.content = itemProp.item.activeSize === RibbonItemSize.Small ? '' : prop.content; }
         control.setProperties(prop);
     }

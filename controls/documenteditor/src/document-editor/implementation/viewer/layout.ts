@@ -96,6 +96,7 @@ export class Layout {
     private nextElementToLayout: ElementBox = undefined;
     private endNoteHeight: number = 0;
     private isMultiColumnSplit = false;
+    private skipUpdateContainerWidget = false;
     /**
      * @private
      */
@@ -2009,7 +2010,7 @@ export class Layout {
             this.moveToNextLine(element.line);
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 this.layoutEmptyLineWidget(paragraph, true, line, true);
-            } else if ((text === '\f' || text === String.fromCharCode(14)) && this.viewer instanceof PageLayoutViewer) {
+            } else if ((text === '\f' || text === String.fromCharCode(14)) && this.viewer instanceof PageLayoutViewer && !(element.line.paragraph.containerWidget instanceof TableCellWidget)) {
                 let isRTLLayout: boolean = this.isRTLLayout;
                 this.isRTLLayout = false;
                 if (isNullOrUndefined(element.nextNode) || element.nextNode instanceof ContentControl) {
@@ -8891,6 +8892,7 @@ export class Layout {
                 }
             }
         }
+        this.skipUpdateContainerWidget = false;
     }
     /**
      * @private
@@ -9216,7 +9218,7 @@ export class Layout {
                 splittedWidget.y = paragraphWidget.y;
                 paragraphView.push(splittedWidget);
             }
-            if (previousBodyWidget !== paragraphWidget.containerWidget) {
+            if (previousBodyWidget !== paragraphWidget.containerWidget && !this.skipUpdateContainerWidget) {
                 this.updateContainerWidget(paragraphWidget, previousBodyWidget, index, true);
             }
             for (let i: number = paragraphWidget.childWidgets.length - 1; i > 0; i--) {
@@ -9224,6 +9226,7 @@ export class Layout {
                 if (this.isFitInClientArea(paragraphWidget, viewer, undefined)) {
                     if (splittedWidget.childWidgets.length === 1) {
                         this.updateParagraphWidgetInternal(line, splittedWidget, 0);
+                        this.skipUpdateContainerWidget = true;
                     }
                     break;
                 } else {

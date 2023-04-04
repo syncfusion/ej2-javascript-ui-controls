@@ -356,7 +356,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         selectedIndex = selectedIndex === -1 ? this.selectedTab : selectedIndex;
         const eventArgs: TabSelectedEventArgs = { previousIndex: this.selectedTab, selectedIndex: selectedIndex };
         this.setProperties({ selectedTab: selectedIndex }, true);
-        this.checkOverflow(selectedIndex, e.selectedContent);
+        this.checkOverflow(selectedIndex, e.selectedContent.firstChild as HTMLElement);
         if (this.activeLayout === 'Simplified' && this.overflowDDB) {
             const overflowTarget: HTMLElement = this.overflowDDB.target as HTMLElement;
             const ofTabContainer: HTMLElement = overflowTarget.querySelector('.' + constants.RIBBON_TAB_ACTIVE);
@@ -372,9 +372,6 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private checkOverflow(tabIndex: number, activeContent: HTMLElement): void {
-        if (!activeContent) {
-            activeContent = this.tabObj.element.querySelector('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.CONTENT_ID);
-        }
         const tabContent: HTMLElement = activeContent.closest('.' + constants.TAB_CONTENT) as HTMLElement;
         const isOverFlow: boolean = tabContent.offsetWidth < activeContent.offsetWidth;
         if (isOverFlow && !this.scrollModule) {
@@ -1690,10 +1687,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private createTemplateContent(item: RibbonItemModel, itemElement: HTMLElement): void {
         const itemEle: HTMLElement = this.createElement('div', {
-            className: item.disabled ? constants.DISABLED_CSS + constants.SPACE + item.cssClass : item.cssClass,
+            className: item.cssClass ? (constants.RIBBON_TEMPLATE + constants.SPACE + item.cssClass) : constants.RIBBON_TEMPLATE,
             id: item.id
         });
-        if (item.disabled) { itemEle.setAttribute('disabled', ''); }
+        if (item.disabled) { 
+            itemEle.classList.add(constants.DISABLED_CSS);
+            itemEle.setAttribute('disabled', ''); 
+        }
         itemElement.appendChild(itemEle);
         this.renderItemTemplate(item, itemEle);
     }
@@ -2340,6 +2340,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 break;
             case 'width':
                 this.element.style.width = formatUnit(newProp.width);
+                this.refreshLayout();
                 break;
             case 'fileMenu':
                 if (this.ribbonFileMenuModule) { this.ribbonFileMenuModule.updateFileMenu(this.fileMenu); }

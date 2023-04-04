@@ -8104,7 +8104,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
-                this.viewerBase.importAnnotations(importData);
+                importData = JSON.stringify(importData);
+                this.viewerBase.isPDFViewerJson = false;
+                this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
             }
         }
     }

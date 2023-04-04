@@ -170,8 +170,14 @@ export function prepend(fromElements: Element[] | NodeList, toElement: Element, 
  */
 export function append(fromElements: Element[] | NodeList, toElement: Element, isEval?: boolean): Element[] | NodeList {
     const docFrag: DocumentFragment = document.createDocumentFragment();
-    for (const ele of <Element[]>fromElements) {
-        docFrag.appendChild(ele);
+    if (fromElements instanceof NodeList) {
+        while (fromElements.length > 0) {
+            docFrag.appendChild(fromElements[0]);
+        }
+    } else {
+        for (const ele of <Element[]>fromElements) {
+            docFrag.appendChild(ele);
+        }
     }
     toElement.appendChild(docFrag);
     if (isEval) {

@@ -13,6 +13,20 @@ export interface ServiceFailureArgs {
     /** Service failed URL. */
     url: string
 }
+/**
+ * @private
+ */
+export interface AutoResizeEventArgs {
+    /**
+     * Element to resize
+     */
+    element?: HTMLElement
+    /**
+     * Specifies whether event is canceled or not.
+     */
+    cancel?: boolean
+
+}
 
 /**
  * This event arguments provides the necessary information about form field fill event.

@@ -831,7 +831,7 @@ describe('Waterfall Series', () => {
                 let point: Element = document.getElementById('containerSeriesGroup1');
                 expect(point != null).toBe(true);
                 expect(point.getAttribute('transform') == 'translate(82.5,79.25)' ||
-                      point.getAttribute('transform') == 'translate(78.5,77.25)').toBe(true); 
+                      point.getAttribute('transform') == 'translate(78.5,84.75)').toBe(true); 
                 done();
             };
             chartObj.loaded = loaded;
@@ -889,9 +889,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
                 expect(svg.getAttribute('transform') == 'translate(77.5,79.25)' ||
-                        svg.getAttribute('transform') == 'translate(73.5,77.25)' ).toBe(true);
+                        svg.getAttribute('transform') == 'translate(73.5,84.75)' ).toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '84.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -929,7 +929,7 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
                 expect(svg.getAttribute('transform').indexOf('translate(477.5,296.69200897216797') > -1 ||
-                       svg.getAttribute('transform') === 'translate(473.5,258.625)').toBe(true);     
+                       svg.getAttribute('transform') === 'translate(473.5,262.375)').toBe(true);     
                 svg = document.getElementById('container_AxisBottom_Column0');
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');

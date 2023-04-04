@@ -1,7 +1,7 @@
 /**
  * Gantt base spec
  */
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, extend } from '@syncfusion/ej2-base';
 import { Gantt, Toolbar, Edit } from '../../src/index';
 import { defaultGanttData, zoomData, zoomData1 } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
@@ -905,6 +905,7 @@ describe('Gantt-Timeline', () => {
             expect(ganttObj.currentZoomingLevel.level).toBe(1);
             expect(ganttObj.currentZoomingLevel.bottomTier.unit).toBe('Minutes');
             done();
+            ganttObj.zoomingLevels = ganttObj.getZoomingLevels();
             ganttObj.refresh();
         }, 3000);
 
@@ -933,6 +934,7 @@ describe('Gantt-Timeline', () => {
         }, 3000);
 
         it('check the current zooming level when the bottom tire count in between the zooming levels', (done: Function) => {
+            ganttObj.zoomingLevels = ganttObj.getZoomingLevels();
             ganttObj.timelineSettings.topTier.unit = "Year";
             ganttObj.timelineSettings.topTier.count = 1;
             ganttObj.timelineSettings.bottomTier.count = 4;
@@ -1041,6 +1043,312 @@ describe('Gantt-Timeline', () => {
         });
         beforeEach((done: Function) => {
             setTimeout(done, 2000);
+        });
+    });
+describe('Render top Tier alone in Zoom to fit', () => {
+        let ganttObj: Gantt;
+        let customZoomingLevels: any[] = [
+            {
+              level: 0,
+              timelineUnitSize: 99,
+              timelineViewMode: 'Year',
+              bottomTier: {
+                unit: 'Month',
+                count: 3,
+                formatter: (date: Date) => {
+                  const month = date.getMonth();
+                  if (month >= 0 && month <= 2) {
+                    return 'CQ1';
+                  } else if (month >= 3 && month <= 5) {
+                    return 'CQ2';
+                  } else if (month >= 6 && month <= 3) {
+                    return 'CQ3';
+                  } else {
+                    return 'CQ4';
+                  }
+                },
+              },
+              topTier: {
+                unit: 'Year',
+                count: 1,
+                formatter: (date: Date) => {
+                  return date.getFullYear().toString();
+                },
+              },
+            },
+            {
+              level: 1,
+              timelineUnitSize: 99,
+              timelineViewMode: 'Year',
+              bottomTier: {
+                unit: 'Month',
+                count: 1,
+                formatter: (date: Date) => {
+                  // return date.toDateString().match(this.datePattern)[2];
+                },
+              },
+              topTier: {
+                unit: 'Month',
+                count: 3,
+                formatter: (date: Date) => {
+                  const month = date.getMonth();
+                  const year = date.getFullYear();
+                  if (month >= 0 && month <= 2) {
+                    return 'CQ1 ' + year;
+                  } else if (month >= 3 && month <= 5) {
+                    return 'CQ2 ' + year;
+                  } else if (month >= 6 && month <= 3) {
+                    return 'CQ3 ' + year;
+                  } else {
+                    return 'CQ4 ' + year;
+                  }
+                },
+              },
+            },
+            {
+              level: 2,
+              timelineUnitSize: 99,
+              timelineViewMode: 'Month',
+              bottomTier: {
+                unit: 'Week',
+                count: 1,
+                formatter: (date: Date) => {
+                  //const match = date.toDateString().match(this.datePattern);
+                  // return `${match[2]} ${match[3]}`;
+                },
+              },
+              topTier: {
+                unit: 'Month',
+                count: 1,
+                formatter: (date: Date) => {
+                  // const match = date.toDateString().match(this.datePattern);
+                  //return `${match[2]}, ${match[4]}`;
+                },
+              },
+            },
+            {
+              level: 3,
+              topTier: {
+                unit: 'Week',
+                count: 1,
+                formatter: (date: Date) => {
+                  // const match = date.toDateString().match(this.datePattern);
+                  // return `${match[2]} ${match[3]}, ${match[4]}`;
+                },
+              },
+              bottomTier: {
+                unit: 'Day',
+                count: 1,
+                formatter: (date: Date) => {
+                  // const match = date.toDateString().match(this.datePattern);
+                  //  return `${match[1]}`;
+                },
+              },
+              timelineUnitSize: 99,
+              timelineViewMode: 'Week',
+              weekStartDay: 0,
+              updateTimescaleView: true,
+            },
+          ];
+          let zoomingData: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Product concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                    {
+                        TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                        Predecessor: '2', Progress: 30
+                    },
+                ]
+            },
+            {
+                TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+                Indicators: [
+                    {
+                        'date': new Date('04/10/2019'),
+                        'name': '#briefing',
+                        'title': 'Product concept breifing',
+                    }
+                ]
+            },
+            {
+                TaskID: 6,
+                TaskName: 'Market research',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 7,
+                        TaskName: 'Demand analysis',
+                        StartDate: new Date('04/04/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            {
+                                TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                                Predecessor: '5', Progress: 30
+                            },
+                            { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                        ]
+                    },
+                    {
+                        TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '7, 8', Progress: 30
+                    },
+                    { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+                    {
+                        TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
+                        Indicators: [
+                            {
+                                'date': new Date('04/20/2019'),
+                                'name': '#meeting',
+                                'title': '1st board of directors meeting',
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: zoomingData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                    'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    dataBound(): void {
+                        ganttObj.zoomingLevels = customZoomingLevels;
+                    },
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('07/06/2019')
+                }, done);
+        });
+        it('perform zoomToFit', () => {
+            ganttObj.actionBegin= (args) => {
+                let a = extend([], [], customZoomingLevels, true);
+                if ((args.requestType == 'beforeZoomToProject')) {
+                    ganttObj.timelineModule.customTimelineSettings = a[0];
+                    ganttObj.timelineModule.customTimelineSettings.bottomTier.unit = 'None';
+                  }
+            }
+            ganttObj.actionComplete= (args) => {
+                if (args.requestType == 'AfterZoomToProject') {
+                   expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe('None');
+                }
+            }
+            ganttObj.dataBind();
+            ganttObj.fitToProject();
+        });  
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
+    describe('Check Zooming levels API', () => {
+        let ganttObj: Gantt;
+        let customZoomingLevels: any[] = [
+            {
+              level: 0,
+              timelineUnitSize: 99,
+              timelineViewMode: 'Year',
+              bottomTier: {
+                unit: 'Month',
+                count: 3,
+                formatter: (date: Date) => {
+                  const month = date.getMonth();
+                  if (month >= 0 && month <= 2) {
+                    return 'CQ1';
+                  } else if (month >= 3 && month <= 5) {
+                    return 'CQ2';
+                  } else if (month >= 6 && month <= 3) {
+                    return 'CQ3';
+                  } else {
+                    return 'CQ4';
+                  }
+                },
+              },
+              topTier: {
+                unit: 'Year',
+                count: 1,
+                formatter: (date: Date) => {
+                  return date.getFullYear().toString();
+                },
+              },
+            },
+            {
+              level: 1,
+              timelineUnitSize: 99,
+              timelineViewMode: 'Year',
+              bottomTier: {
+                unit: 'Month',
+                count: 1,
+                formatter: (date: Date) => {
+                  // return date.toDateString().match(this.datePattern)[2];
+                },
+              },
+              topTier: {
+                unit: 'Month',
+                count: 3,
+                formatter: (date: Date) => {
+                  const month = date.getMonth();
+                  const year = date.getFullYear();
+                  if (month >= 0 && month <= 2) {
+                    return 'CQ1 ' + year;
+                  } else if (month >= 3 && month <= 5) {
+                    return 'CQ2 ' + year;
+                  } else if (month >= 6 && month <= 3) {
+                    return 'CQ3 ' + year;
+                  } else {
+                    return 'CQ4 ' + year;
+                  }
+                },
+              },
+            }
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: defaultGanttData,
+                    zoomingLevels: customZoomingLevels,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                },
+                splitterSettings: {
+                    position: '30%'
+                },
+                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+                projectStartDate: new Date('01/28/2018'),
+                projectEndDate: new Date('02/07/2018')
+                }, done);
+        });
+        it('Zooming levels API', () => {
+            expect(ganttObj.zoomingLevels.length).toBe(2);
+        });  
+        afterAll(() => {
+            destroyGantt(ganttObj);
         });
     });
 });

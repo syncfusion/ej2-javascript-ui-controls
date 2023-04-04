@@ -5,6 +5,8 @@ import { TaskFieldsModel } from '../models/task-fields-model';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 
+/** @hidden */
+
 export class CriticalPath {
 
     private parent: Gantt;

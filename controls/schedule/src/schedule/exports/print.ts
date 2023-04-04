@@ -98,7 +98,8 @@ export class Print {
             'resources', 'rowAutoHeight', 'selectedDate', 'showHeaderBar', 'showTimeIndicator', 'showWeekNumber',
             'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours',
             'dateHeaderTemplate', 'dateRangeTemplate', 'cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate',
-            'cellTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate'
+            'cellTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate', 'actionBegin', 'actionComplete', 'actionFailure',
+            'created', 'dataBinding', 'dataBound', 'destroyed', 'eventRendered', 'moreEventsClick', 'navigating', 'popupOpen', 'popupClose', 'renderCell'
         ];
         const scheduleTemplates: string[] = ['cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate', 'cellTemplate',
             'dateHeaderTemplate', 'dateRangeTemplate', 'eventTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate'];

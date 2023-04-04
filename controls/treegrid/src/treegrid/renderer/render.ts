@@ -48,6 +48,8 @@ export class Render {
                             !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
+                const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
+                rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
             }
         }
         if (isRemoteData(this.parent) && !isOffline(this.parent)) {
@@ -73,6 +75,15 @@ export class Render {
         if (this.parent.enableCollapseAll && this.parent.initialRender) {
             if (!isNullOrUndefined(data.parentItem)) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
+            }
+        }
+        const draggedRecord: string = 'draggedRecord';
+        if (!isNullOrUndefined(this.parent.rowDragAndDropModule) && !isNullOrUndefined(this.parent.rowDragAndDropModule[`${draggedRecord}`])
+        && this.parent.getContentTable().scrollHeight <= this.parent.getContent().clientHeight) {
+            const lastRowBorder: string = 'lastRowBorder';
+            const lastVisualData: ITreeData = this.parent.getVisibleRecords()[this.parent.getVisibleRecords().length - 1];
+            if (lastVisualData.uniqueID === (args.data as ITreeData).uniqueID && !isNullOrUndefined(args.row as HTMLTableRowElement) && !(args.row as HTMLTableRowElement).cells[0].classList.contains('e-lastrowcell')) {
+                this.parent[`${lastRowBorder}`](args.row as HTMLTableRowElement, true);
             }
         }
         this.parent.trigger(events.rowDataBound, args);
@@ -227,7 +238,7 @@ export class Render {
             args.cell.classList.add('e-templatecell');
         }
         const textContent: string = args.cell.querySelector('.e-treecell') != null ?
-        args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
+            args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
         if ( typeof(args.column.template) === 'object' && this.templateResult ) {
             appendChildren(cellElement , this.templateResult);
             this.templateResult = null;

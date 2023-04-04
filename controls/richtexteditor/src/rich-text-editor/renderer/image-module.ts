@@ -393,7 +393,7 @@ export class Image {
         if (isNullOrUndefined(img.width)) {
             return;
         }
-        // eslint-disable-next-line security/detect-unsafe-regex
+        // eslint-disable-next-line
         const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
             parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
@@ -426,7 +426,7 @@ export class Image {
                     img.setAttribute('width', (img.width + this.mouseX).toString());
                 }
                 else {
-                    const currentWidth: number = img.offsetWidth === 0 ? img.width + this.mouseX + parseInt(img.style.outlineWidth.split('p')[0]) : img.offsetWidth + this.mouseX;
+                    const currentWidth: number = img.offsetWidth === 0 ? img.width + this.mouseX + parseInt(img.style.outlineWidth.split('p')[0], 10) : img.offsetWidth + this.mouseX;
                     img.setAttribute('width', (currentWidth).toString());
                 }
             }

@@ -2,12 +2,25 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I451243` - Unable to set zooming levels through `zoomingLevels` property issue has been fixed.
+- `#I447704` - Timeline tier is not changing dynamically issue has been fixed.
+- `I447465` - Incorrect progress value on parent task when child tasks have fractional duration issue has been fixed.
+-`I447475`- End key is not working properly issue has been fixed.
+-`#I447772` - Application freezing while changing holidays/weekend issue has been fixed.
+
 ## 21.1.37 (2023-03-29)
 
 ### Gantt Chart
 
 #### Bug Fixes
 
+- `#I432146` - Script error occurs while changing data source and resource simultaneously issue has been fixed.
 -`I441276`- Outdent task is not in correct index of modified records in `actionComplete` event issue has been fixed.
 -`I435254`, `I444942`- Taskbar not rendered in Pdf exported file when `timelineUnitSize` is initialized issue has been fixed.
 

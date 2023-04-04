@@ -167,7 +167,6 @@ export interface SidebarModel extends ComponentModel{
      *
      *
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**

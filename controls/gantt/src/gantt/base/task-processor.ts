@@ -1418,18 +1418,15 @@ export class TaskProcessor extends DateProcessor {
         } else {
             hierarchicalData = this.parent.dataSource;
         }
-        this.parent.flatData.map((data) => {
-            hierarchicalData.map((record: any) => {
-                if (data.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
-                      if(!isNullOrUndefined( this.parent.taskFields.startDate)){
-                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
-                      }
-                      if(!isNullOrUndefined(this.parent.taskFields.endDate)){
-                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
-                      }
-
-                }
-            })
+        hierarchicalData.map((record: any) => {
+            if (task.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
+                  if(!isNullOrUndefined( this.parent.taskFields.startDate)){
+                    task[this.parent.taskFields.startDate as string] = record[this.parent.taskFields.startDate as string];
+                  }
+                  if(!isNullOrUndefined(this.parent.taskFields.endDate)){
+                    task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
+                  }                    
+            }
         })
     }
     private getWorkInHour(work: number, workUnit: string): number {
@@ -2172,11 +2169,7 @@ export class TaskProcessor extends DateProcessor {
             durationInDay = (childGanttRecord.ganttProperties.duration / (this.parent.secondsPerDay / 60));
             break;
         default:
-            if (childGanttRecord.ganttProperties.duration < 1) {
-                durationInDay = (childGanttRecord.ganttProperties.duration / (this.parent.secondsPerDay / 3600));
-            } else {
-                durationInDay = childGanttRecord.ganttProperties.duration;
-            }
+            durationInDay = childGanttRecord.ganttProperties.duration;
         }
 
         if (childGanttRecord.hasChildRecords) {
@@ -2273,7 +2266,7 @@ export class TaskProcessor extends DateProcessor {
                     } else {
                         taskCount = childLength - milestoneCount;
                     }
-                    const parentProgress: number = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
+                    const parentProgress: number = (taskCount > 0 && totalDuration > 0) ? Number((totalProgress / totalDuration).toFixed(2)) : 0;
                     const parentProp: ITaskData = parentData.ganttProperties;
                     const milestone: boolean = (taskCount === 0) && minStartDate && maxEndDate &&
                         minStartDate.getTime() === maxEndDate.getTime() ? true : false;

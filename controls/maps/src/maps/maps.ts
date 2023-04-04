@@ -1873,7 +1873,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
                         (latLongValue as any).latitude = - (latLongValue as any).latitude;
                     }
-                } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule) {
+                } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule && !this.markerDragArgument) {
                     const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
                     const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
                     if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
@@ -1882,6 +1882,23 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
                     } else {
                         latLongValue = { latitude: null, longitude: null };
+                    }
+                } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule && this.markerDragArgument) {
+                    const element: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + this.markerDragArgument.layerIndex);
+                    const elementRect: ClientRect = element.getBoundingClientRect();
+                    const location: MapLocation = new MapLocation(pageX > elementRect.left ? Math.abs(elementRect.left - pageX) : 0,
+                        pageY > elementRect.top ? Math.abs(elementRect.top - pageY) : 0);
+                    const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
+                    const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
+                    latLongValue = {
+                        latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / (this.mapLayerPanel.currentFactor * this.scale))),
+                        longitude: Math.abs((location.x / (this.mapLayerPanel.currentFactor * this.scale)) + this.baseMapBounds.longitude.min)
+                    };
+                    if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
+                        (latLongValue as any).longitude = -(latLongValue as any).longitude;
+                    }
+                    if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
+                        (latLongValue as any).latitude = - (latLongValue as any).latitude;
                     }
                 } else { latLongValue = { latitude: null, longitude: null }; }
             } else {

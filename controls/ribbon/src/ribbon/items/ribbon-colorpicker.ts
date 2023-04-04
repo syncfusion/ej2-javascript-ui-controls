@@ -3,7 +3,7 @@ import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { itemProps, Ribbon, getItem, getItemElement } from '../base/index';
 import { RibbonItemModel, RibbonColorPickerSettingsModel } from '../models/index';
 import { RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE } from '../base/constant';
-import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * Defines the items of Ribbon.
@@ -87,8 +87,18 @@ export class RibbonColorPicker {
         colorPickerObj.setProperties({ cssClass: colorPickerObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.
         const splitBtn: SplitButton = (colorPickerObj['splitBtn'] as SplitButton);
+        let target: HTMLElement;
+        colorPickerObj.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            target = e.event ? e.event.target as HTMLElement : null;
+            colorPickerObj.element.parentElement.classList.remove(RIBBON_POPUP_OPEN);
+            if (item.colorPickerSettings.beforeClose) {
+                item.colorPickerSettings.beforeClose.call(this);
+            }
+        };
         splitBtn.close = () => {
-            overflowButton.toggle();
+            if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**
@@ -108,6 +118,12 @@ export class RibbonColorPicker {
         const splitBtn: SplitButton = (colorPickerObj['splitBtn'] as SplitButton);
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.
         splitBtn.close = null;
+        colorPickerObj.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            colorPickerObj.element.parentElement.classList.remove(RIBBON_POPUP_OPEN);
+            if (item.colorPickerSettings.beforeClose) {
+                item.colorPickerSettings.beforeClose.call(this);
+            }
+        };
     }
 
     private getColorPickerObj(controlId: string): ColorPicker {

@@ -2209,7 +2209,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                             this.clearTemplate(['content'], templateToClear);
                         }
                     }
-                    else if (portal) {
+                   /*  else if (portal) {
                         for (var i = 0; i < portal.length; i++) {
                             var portalItem = portal[i];
                             var closestItem = closest(portalItem.containerInfo, '.' + CLS_ITEM);
@@ -2218,7 +2218,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                                 break;
                             }
                         }
-                    }
+                    } */
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);

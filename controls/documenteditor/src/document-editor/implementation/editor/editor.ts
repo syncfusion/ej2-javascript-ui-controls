@@ -2087,7 +2087,7 @@ export class Editor {
             return;
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
-            let inline: FieldElementBox = this.selection.getCurrentFormField();
+            let inline: FieldElementBox = this.selection.currentFormField;
             if (!inline.formFieldData.enabled) {
                 return;
             }
@@ -2095,10 +2095,12 @@ export class Editor {
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
                 resultText = '';
+                this.documentHelper.isTextFormEmpty = true;
                 this.selection.selectFieldInternal(inline);
             }
             let maxLength: number = (inline.formFieldData as TextFormField).maxLength;
             if (maxLength !== 0 && resultText.length >= maxLength) {
+                this.documentHelper.isTextFormEmpty = false;
                 return;
             }
         }
@@ -2323,6 +2325,7 @@ export class Editor {
                 this.reLayout(selection);
             }
             this.documentHelper.isTextInput = false;
+            this.documentHelper.isTextFormEmpty = false;
         }
         this.updateXmlMappedContentControl();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {

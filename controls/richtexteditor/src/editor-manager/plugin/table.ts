@@ -340,7 +340,7 @@ export class TableCommand {
         const colIndex: number = Array.prototype.indexOf.call(selectedCell.parentNode.childNodes, selectedCell);
         this.curTable = closest(selectedCell, 'table') as HTMLTableElement;
         let currentRow: HTMLTableRowElement;
-        const allCells: HTMLElement[][] = this.getCorrespondingColumns();
+        let allCells: HTMLElement[][] = this.getCorrespondingColumns();
         const minMaxIndex: MinMax = this.getSelectedCellMinMaxIndex(allCells);
         let maxI: number;
         let j: number;
@@ -354,8 +354,18 @@ export class TableCommand {
                     if (j === 0 || allCells[maxI as number][j as number] !== allCells[maxI as number][j - 1]) {
                         if (1 < parseInt(allCells[maxI as number][j as number].getAttribute('rowspan'), 10)) {
                             const rowSpanVal: number = parseInt(allCells[maxI as number][j as number].getAttribute('rowspan'), 10) - 1;
-                            //eslint-disable-next-line
-                            1 === rowSpanVal ? allCells[maxI][j].removeAttribute('rowspan') : allCells[maxI][j].setAttribute('rowspan', rowSpanVal.toString());
+                            /* eslint-disable */
+                            if (1 === rowSpanVal) {
+                                allCells[maxI][j].removeAttribute('rowspan');
+                                const cell: Node = allCells[maxI][j].cloneNode(true);
+                                allCells = this.getCorrespondingColumns();
+                                if (allCells[rowSpanVal][j] && allCells[rowSpanVal][j].parentElement) {
+                                    allCells[rowSpanVal][j].parentElement.insertBefore(cell, allCells[rowSpanVal][j]);
+                                }
+                            } else {
+                                allCells[maxI][j].setAttribute('rowspan', rowSpanVal.toString());
+                            }
+                            /* eslint-enable */
                         }
                     }
                     // eslint-disable-next-line max-len

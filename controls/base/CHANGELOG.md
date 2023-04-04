@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.38 (2023-04-04)
+
+### Common
+
+#### Bug Fixes
+
+- `#I440657` - The issue with "Unwanted element is added in `Vue 3` template element" has been resolved.
+
 ## 21.1.37 (2023-03-29)
 
 ### Common

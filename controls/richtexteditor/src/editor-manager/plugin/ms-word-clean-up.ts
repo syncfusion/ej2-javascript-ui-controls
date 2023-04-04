@@ -130,6 +130,7 @@ export class MsWordPaste {
             if (!isNOU(imgElem[i as number].getAttribute('v:shapes')) &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Picture') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('圖片') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('Grafik') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Image') < 0) {
                 detach(imgElem[i as number]);
             }
@@ -227,7 +228,7 @@ export class MsWordPaste {
     private hexConversion(rtfData: string): { [key: string]: string }[] {
         // eslint-disable-next-line
         const picHead: RegExp = /\{\\pict[\s\S]+?\\bliptag\-?\d+(\\blipupi\-?\d+)?(\{\\\*\\blipuid\s?[\da-fA-F]+)?[\s\}]*?/;
-        // eslint-disable-next-line security/detect-non-literal-regexp
+        // eslint-disable-next-line
         const pic: RegExp = new RegExp( '(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g' );
         const fullImg: RegExpMatchArray = rtfData.match(pic);
         let imgType: string;
@@ -291,9 +292,9 @@ export class MsWordPaste {
     private removeUnwantedElements(elm: HTMLElement): void {
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
+            // eslint-disable-next-line
             const regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i as number] + '>', 'g');
-            // eslint-disable-next-line security/detect-non-literal-regexp
+            // eslint-disable-next-line
             const regExpEndElem: RegExp = new RegExp('</' + this.removableElements[i as number] + '>', 'g');
             innerElement = innerElement.replace(regExpStartElem, '');
             innerElement = innerElement.replace(regExpEndElem, '');
@@ -381,21 +382,21 @@ export class MsWordPaste {
                 }
                 fromClass = false;
             }
-            let listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
+            const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
             for (let i: number = 0; i < listClass.length; i++) {
                 if (keys.indexOf('li.' + listClass[i as number]) > -1) {
-                    let olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
+                    const olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
                     for (let j: number = 0; j < olULElems.length; j++) {
                         const styleProperty: string = olULElems[j as number].getAttribute('style');
                         if (!isNOU(styleProperty) && styleProperty.trim() !== '' && (olULElems[j as number] as HTMLElement).style.marginLeft !== '') {
-                            const valueSplit = values[keys.indexOf('li.' + listClass[i as number])].split(';');
+                            const valueSplit : string[] = values[keys.indexOf('li.' + listClass[i as number])].split(';');
                             for (let k: number = 0; k < valueSplit.length; k++) {
                                 if ('margin-left'.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
                                     if (!isNOU(valueSplit[k as number].split(':')[1]) &&
                                         valueSplit[k as number].split(':')[1].indexOf('in') >= 0 &&
                                         (olULElems[j as number] as HTMLElement).style.marginLeft.indexOf('in') >= 0) {
-                                        let classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
-                                        let inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
+                                        const classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
+                                        const inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
                                         (olULElems[j as number] as HTMLElement).style.marginLeft = (inlineStyle - classStyle) + 'in';
                                     }
                                 }
@@ -594,45 +595,45 @@ export class MsWordPaste {
     }
     private getlistStyleType(listContent: string, type: string): string {
         let currentListClass: string;
-        let upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
+        const upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
             'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
-        let lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
+        const lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
             'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
-        let lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
+        const lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
             'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
         if (type === 'ol') {
-            let charCode: number = listContent.split('.')[0].charCodeAt(0);
+            const charCode: number = listContent.split('.')[0].charCodeAt(0);
             switch (true) {
-                case upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
-                    currentListClass = 'upper-roman';
-                    break;
-                case lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
-                    currentListClass = 'lower-roman';
-                    break;
-                case lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
-                    currentListClass = 'lower-greek';
-                    break;
-                case (charCode > 64 && charCode < 91):
-                    currentListClass = 'upper-alpha';
-                    break;
-                case (charCode > 96 && charCode < 123):
-                    currentListClass = 'lower-alpha';
-                    break;
-                default:
-                    currentListClass = 'decimal';
-                    break;
+            case upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+                currentListClass = 'upper-roman';
+                break;
+            case lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+                currentListClass = 'lower-roman';
+                break;
+            case lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
+                currentListClass = 'lower-greek';
+                break;
+            case (charCode > 64 && charCode < 91):
+                currentListClass = 'upper-alpha';
+                break;
+            case (charCode > 96 && charCode < 123):
+                currentListClass = 'lower-alpha';
+                break;
+            default:
+                currentListClass = 'decimal';
+                break;
             }
         } else {
             switch (listContent.split('.')[0]) {
-                case 'o':
-                    currentListClass = 'circle';
-                    break;
-                case '§':
-                    currentListClass = 'square';
-                    break;
-                default:
-                    currentListClass = 'disc';
-                    break;
+            case 'o':
+                currentListClass = 'circle';
+                break;
+            case '§':
+                currentListClass = 'square';
+                break;
+            default:
+                currentListClass = 'disc';
+                break;
             }
         }
         return currentListClass;
@@ -651,7 +652,8 @@ export class MsWordPaste {
             const pElement: Element = createElement('p');
             pElement.innerHTML = collection[index as number].content.join(' ');
             if ((collection[index as number].nestedLevel === 1) && listCount === 0 && collection[index as number].content) {
-                root.appendChild(temp = createElement(collection[index as number].listType, { className: collection[index as number].class }));
+                root.appendChild(temp = createElement(collection[index as number].listType,
+                                                      { className: collection[index as number].class }));
                 prevList = createElement('li');
                 prevList.appendChild(pElement);
                 temp.appendChild(prevList);

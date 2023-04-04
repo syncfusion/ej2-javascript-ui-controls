@@ -113,8 +113,8 @@ export class Column {
     /**
      * It is used to change display value with the given format and does not affect the original data.
      * Gets the format from the user which can be standard or custom
-     * [`number`](../../../common/internationalization/#number-formatting)
-     * and [`date`](../../../common/internationalization/#formatting) formats.
+     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#number-formatting)
+     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#date-formatting) formats.
      *
      * @default null
      * @aspType string
@@ -338,8 +338,8 @@ export interface ColumnModel {
     /**
      * It is used to change display value with the given format and does not affect the original data.
      * Gets the format from the user which can be standard or custom
-     * [`number`](../../../common/internationalization/#number-formatting)
-     * and [`date`](../../../common/internationalization/#formatting) formats.
+     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#number-formatting)
+     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#date-formatting) formats.
      *
      * @default null
      * @aspType string

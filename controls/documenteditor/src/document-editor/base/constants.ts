@@ -62,3 +62,7 @@ export const internalDocumentEditorSettingsChange: string = 'internalDocumentEdi
 export const internalStyleCollectionChange: string = 'internalStyleCollectionChange';
 /** @hidden */
 export const defaultFont: string = 'Times New Roman';
+/** @hidden */
+export const internalAutoResize: string = 'internalAutoResize';
+/** @hidden */
+export const beforeAutoResize: string = 'beforeAutoResize';

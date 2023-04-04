@@ -501,6 +501,12 @@ export interface GanttModel extends ComponentModel{
     timelineSettings?: TimelineSettingsModel;
 
     /**
+     * Configure zooming levels of Gantt Timeline
+     * @default []
+     */
+    zoomingLevels?: ZoomTimelineSettings[];
+
+    /**
      * Configures the sort settings of the Gantt.
      * {% codeBlock src='gantt/sortSettings/index.md' %}{% endcodeBlock %}
      *

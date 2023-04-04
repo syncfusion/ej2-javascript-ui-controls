@@ -7,6 +7,19 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
+export let parentProgressData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Parent',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Child1', StartDate: new Date('04/02/2019'), Duration: 0.1, Progress: 100 },
+            { TaskID: 3, TaskName: 'Child2', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100},
+            { TaskID: 4, TaskName: 'Child3', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100 },
+        ]
+    },
+];
 export let customZoomingdata: Object[] = [
     {
         TaskID: 1,

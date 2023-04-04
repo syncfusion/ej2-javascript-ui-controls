@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- Issue with "Shape changing event not triggered while inserting crop selection" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
 - Issue with "Script error thrown while using Toolbar Template" has been resolved.
 
 ## 21.1.35 (2023-03-23)

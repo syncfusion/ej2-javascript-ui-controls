@@ -3,6 +3,7 @@ import { TreeGrid, ColumnMenu as TreeGridColumnMenu } from '@syncfusion/ej2-tree
 
 /**
  * Configures columnMenu collection in Gantt.
+ * @hidden
  */
 export class ColumnMenu {
     private parent: Gantt;

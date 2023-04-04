@@ -14,9 +14,9 @@ import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
-import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
+import { CustomToolbarItemModel, TrackChangeEventArgs, FormFieldFillEventArgs, AutoResizeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
@@ -149,6 +149,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property(false)
     public enableLockAndEdit: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
+     * 
+     * > * Resize action triggers automatically for the specified number of iterations, or till the parent element's height and width is non-zero.
+     * 
+     * > * If the parent element's height and width is zero even in the last iteration, then the default height and width (200) is allocated for the Document editor.
+     * 
+     * @default false
+     * @returns {boolean}
+     */
+    @Property(false)
+    public autoResizeOnVisibilityChange: boolean;
+
     /**
      * Triggers when the component is created
      *
@@ -731,6 +745,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.enableAutoFocus = newModel.enableAutoFocus;
                     }
                     break;
+                case 'autoResizeOnVisibilityChange':
+                    if(this.documentEditor)
+                    {
+                        this.documentEditor.autoResizeOnVisibilityChange = newModel.autoResizeOnVisibilityChange;
+                    }
+                    break;
             }
         }
     }
@@ -866,6 +886,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.optimizeSfdt)) {
             this.documentEditor.documentEditorSettings.optimizeSfdt = this.documentEditorSettings.optimizeSfdt;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.autoResizeSettings)) {
+            this.documentEditor.documentEditorSettings.autoResizeSettings = this.documentEditorSettings.autoResizeSettings;
+        }
     }
     /**
      * @private
@@ -969,13 +992,27 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     }
-    private wireEvents(): void{
+    private wireEvents(): void {
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
-        this.documentEditor.on(protectionTypeChangeEvent,this.showPropertiesPaneOnSelection,this);
+        this.documentEditor.on(protectionTypeChangeEvent, this.showPropertiesPaneOnSelection, this);
         this.documentEditor.on(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks, this);
         this.documentEditor.on(internalStyleCollectionChange, this.updateStyleCollection, this);
+        // Internal event to trigger auto resize.
+        this.documentEditor.on(internalAutoResize, this.triggerAutoResize, this)
+        this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
     }
+
+    private triggerAutoResize(args: AutoResizeEventArgs): void {
+        // Cancels the auto resize of the document editor.
+        args.cancel = true;
+        this.resize();
+    }
+
+    private onBeforeAutoResize(args: AutoResizeEventArgs): void {
+        args.element = this.element;
+    }
+
     private unWireEvents(): void {
         if (isNullOrUndefined(this.documentEditor)) {
             return;

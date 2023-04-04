@@ -128,86 +128,92 @@ export class Print {
             proxy.pdfViewerBase.isPrint = true;
             // eslint-disable-next-line
             let printImage: any = result.data;
-            if (printImage) {
-                if (typeof printImage !== 'object') {
-                    try {
-                        printImage = JSON.parse(printImage);
-                        if (typeof printImage !== 'object') {
+            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(printImage);
+            if (redirect) {
+                proxy.pdfViewerBase.showPrintLoadingIndicator(false);
+            }
+            else {
+                if (printImage) {
+                    if (typeof printImage !== 'object') {
+                        try {
+                            printImage = JSON.parse(printImage);
+                            if (typeof printImage !== 'object') {
+                                proxy.pdfViewerBase.onControlError(500, printImage, proxy.pdfViewer.serverActionSettings.print);
+                                printImage = null;
+                            }
+                        } catch (error) {
                             proxy.pdfViewerBase.onControlError(500, printImage, proxy.pdfViewer.serverActionSettings.print);
                             printImage = null;
                         }
-                    } catch (error) {
-                        proxy.pdfViewerBase.onControlError(500, printImage, proxy.pdfViewer.serverActionSettings.print);
-                        printImage = null;
                     }
                 }
-            }
-            if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
-                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.print, printImage);
-                let annotationSource: string = '';
-                if (!proxy.pdfViewer.annotationSettings.skipPrint) {
-                    // eslint-disable-next-line
-                    let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
-                    if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
+                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.print, printImage);
+                    let annotationSource: string = '';
+                    if (!proxy.pdfViewer.annotationSettings.skipPrint) {
                         // eslint-disable-next-line
-                        let printCollection: any = annotationCollections[printImage.pageNumber];
-                        if (proxy.pdfViewerBase.isImportAction) {
-                            const textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
-                            const shapeAnnotation: number[] = printCollection.shapeAnnotation;
-                            const measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
-                            const stampAnnotation: number[] = printCollection.stampAnnotations;
+                        let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
+                        if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                             // eslint-disable-next-line
-                            let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
+                            let printCollection: any = annotationCollections[printImage.pageNumber];
+                            if (proxy.pdfViewerBase.isImportAction) {
+                                const textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
+                                const shapeAnnotation: number[] = printCollection.shapeAnnotation;
+                                const measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
+                                const stampAnnotation: number[] = printCollection.stampAnnotations;
+                                // eslint-disable-next-line
+                                let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
+                                // eslint-disable-next-line max-len
+                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                            } else {
+                                // eslint-disable-next-line max-len
+                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
+                            }
+                        }
+                        if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
                             // eslint-disable-next-line max-len
-                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null);
+                        }
+                    }
+                    const currentPageNumber: number = printImage.pageNumber;
+                    // eslint-disable-next-line max-len
+                    proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
+                    proxy.printCanvas.style.width = pageWidth + 'px';
+                    proxy.printCanvas.style.height = pageHeight + 'px';
+                    const printScaleValue: number = 2;
+                    proxy.printCanvas.height = proxy.printHeight * printScaleValue * window.devicePixelRatio;
+                    proxy.printCanvas.width = proxy.printWidth * printScaleValue * window.devicePixelRatio;
+                    const context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
+                    const pageImage: HTMLImageElement = new Image();
+                    const annotationImage: HTMLImageElement = new Image();
+                    pageImage.onload = (): void => {
+                        if ((pageHeight > pageWidth) || !proxy.pdfViewer.enablePrintRotation) {
+                            context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
+                            if (annotationSource) {
+                                context.drawImage(annotationImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
+                            }
                         } else {
-                            // eslint-disable-next-line max-len
-                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
+                            // translate to center canvas
+                            context.translate(proxy.printCanvas.width * 0.5, proxy.printCanvas.height * 0.5);
+                            // rotate the canvas to - 90 degree
+                            context.rotate(-0.5 * Math.PI);
+                            // un translate the canvas back to origin
+                            context.translate(-proxy.printCanvas.height * 0.5, -proxy.printCanvas.width * 0.5);
+                            // draw the image
+                            context.drawImage(pageImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
+                            if (annotationSource) {
+                                context.drawImage(annotationImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
+                            }
                         }
-                    }
-                    if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
-                        // eslint-disable-next-line max-len
-                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null);
-                    }
+                        if (currentPageNumber === (proxy.pdfViewerBase.pageCount - 1)) {
+                            proxy.printWindowOpen();
+                        }
+                        proxy.pdfViewer.renderDrawing(null, pageIndex);
+                    };
+                    pageImage.src = printImage.image;
+                    annotationImage.src = annotationSource;
+                    proxy.printViewerContainer.appendChild(proxy.printCanvas);
                 }
-                const currentPageNumber: number = printImage.pageNumber;
-                // eslint-disable-next-line max-len
-                proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
-                proxy.printCanvas.style.width = pageWidth + 'px';
-                proxy.printCanvas.style.height = pageHeight + 'px';
-                const printScaleValue: number = 2;
-                proxy.printCanvas.height = proxy.printHeight * printScaleValue * window.devicePixelRatio;
-                proxy.printCanvas.width = proxy.printWidth * printScaleValue * window.devicePixelRatio;
-                const context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
-                const pageImage: HTMLImageElement = new Image();
-                const annotationImage: HTMLImageElement = new Image();
-                pageImage.onload = (): void => {
-                    if ((pageHeight > pageWidth) || !proxy.pdfViewer.enablePrintRotation) {
-                        context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
-                        if (annotationSource) {
-                            context.drawImage(annotationImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
-                        }
-                    } else {
-                        // translate to center canvas
-                        context.translate(proxy.printCanvas.width * 0.5, proxy.printCanvas.height * 0.5);
-                        // rotate the canvas to - 90 degree
-                        context.rotate(-0.5 * Math.PI);
-                        // un translate the canvas back to origin
-                        context.translate(-proxy.printCanvas.height * 0.5, -proxy.printCanvas.width * 0.5);
-                        // draw the image
-                        context.drawImage(pageImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
-                        if (annotationSource) {
-                            context.drawImage(annotationImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
-                        }
-                    }
-                    if (currentPageNumber === (proxy.pdfViewerBase.pageCount - 1)) {
-                        proxy.printWindowOpen();
-                    }
-                    proxy.pdfViewer.renderDrawing(null, pageIndex);
-                };
-                pageImage.src = printImage.image;
-                annotationImage.src = annotationSource;
-                proxy.printViewerContainer.appendChild(proxy.printCanvas);
             }
             proxy.pdfViewerBase.isPrint = false;
         };

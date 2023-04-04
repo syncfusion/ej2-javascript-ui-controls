@@ -9,9 +9,8 @@ import {
 import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult } from '@syncfusion/ej2-pdf-export';
 
-/**
- *
- */
+/**@hidden*/
+
 export class PdfTreeGridCell {
     /**
      * Gets or sets the parent `row`.

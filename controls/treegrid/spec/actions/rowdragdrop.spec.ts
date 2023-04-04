@@ -1005,3 +1005,46 @@ describe('EJ2-70341- Row Drop at bottom segment(with last record of TreeGrid) no
     destroy(gridObj);
   });
 });
+
+describe('EJ2-71626- Last row border is not added while drag and drop a row to the last index)', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowRowDragAndDrop: true,
+        childMapping: 'subtasks',
+        height: '400',
+        allowSelection: true,
+        selectionSettings: { type: 'Multiple' },
+        treeColumnIndex: 1,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', width: 250 },
+          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+          { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+        ],
+      },
+      done
+    );
+  });
+
+  it('Drop the record at bottom using RowDD and checking the last row border', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      expect((gridObj.getVisibleRecords()[gridObj.getVisibleRecords().length - 1] as any).taskID).toBe(1);
+      expect(gridObj.getRows()[31].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+      expect(gridObj.getRows()[31].cells[7].classList.contains('e-lastrowcell')).toBe(true);  
+      done();
+    };
+    gridObj.actionComplete = actionComplete;
+    gridObj.collapseAll();
+    gridObj.rowDragAndDropModule.reorderRows([0],11, 'below');
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

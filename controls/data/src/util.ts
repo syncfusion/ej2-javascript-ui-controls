@@ -1770,7 +1770,7 @@ export class DataUtil {
         /**
          * Returns true when the actual input pattern(wildcard) matches with the given string.
          *
-         * @param  {string} actual
+         * @param  {string|Date} actual
          * @param  {string} expected
          * @param  {boolean} ignoreCase?
          */
@@ -1780,7 +1780,8 @@ export class DataUtil {
                 expected = <string>DataUtil.ignoreDiacritics(expected);
             }
             if (ignoreCase) {
-                return actual && expected && DataUtil.wildCard(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
+                return actual && expected && typeof actual !== 'object' &&
+                    DataUtil.wildCard(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
             }
             return actual && expected && DataUtil.wildCard(actual, expected);
         },

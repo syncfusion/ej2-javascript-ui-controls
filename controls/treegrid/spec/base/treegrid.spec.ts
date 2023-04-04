@@ -2412,6 +2412,44 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     });
   });
 
+  describe('EJ2-71118 - Tab navigation throws script error while navigating to the next row of the collapsed items.', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          height: '400',
+          enableCollapseAll: true,
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+              { field: 'taskName', headerText: 'Task Name', width: 250 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          ],
+        },
+        done
+      );
+    });
+    it('Record and navigate over the cells through Tab', (done: Function) => {
+      gridObj.collapseRow(gridObj.getRows()[0]);
+      let event: MouseEvent = new MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 3).dispatchEvent(event);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-rowcell.e-focus') });
+      expect(gridObj.getRows()[5].cells[0].classList.contains("e-focus")).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   afterAll(() => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       gridObj.destroy();

@@ -163,7 +163,7 @@ export class VideoCommand {
             videoElm.addEventListener(videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load', () => {
                 if (e.value !== 'VideoReplace' || !isReplaced) {
                     if (e.item.isEmbedUrl && videoElm)
-                    videoElm.classList.add('e-rte-embed-url');
+                    {videoElm.classList.add('e-rte-embed-url'); }
                     e.callBack({
                         requestType: 'Videos',
                         editorMode: 'HTML',

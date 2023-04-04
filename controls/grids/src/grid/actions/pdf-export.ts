@@ -124,7 +124,7 @@ export class PdfExport {
         this.data = new Data(this.parent);
         this.isBlob = isBlob;
         this.gridPool = {};
-        let query: Query = new Query();
+        let query: Query = pdfExportProperties && pdfExportProperties.query ? pdfExportProperties.query : new Query();
         if (parent.childGrid && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
@@ -599,6 +599,9 @@ export class PdfExport {
             if (!isNullOrUndefined(pdfExportProperties.dataSource)) {
                 if (!(pdfExportProperties.dataSource instanceof DataManager)) {
                     dataSource = pdfExportProperties.dataSource as Object[];
+                    if (pdfExportProperties.query) {
+                        dataSource = this.parent.getDataModule().dataManager.executeLocal(pdfExportProperties.query);
+                    }
                 }
                 this.customDataSource = true;
                 this.currentViewData = false;

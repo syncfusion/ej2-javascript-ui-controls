@@ -15,6 +15,7 @@
 - `#I443748` - Now, changing the styles dynamically, its working properly.
 - `#I445506` - Now, you can resize the bezier control thumb when we increase the handleSize also.
 - `#I444124` - Now, set the same id for the node and annotation in two different diagrams, the first diagram node annotation is visible properly.
+- `#I447256` - Node renders properly on changing the shape dynamically.
 
 ## 21.1.35 (2023-03-23)
 
@@ -25,6 +26,7 @@
 - `#F180478` - Now, the performance of diagram while enabling virtualization is improved.
 - `#F180478` - Now, Overview is updated properly while enabling virtualization.
 - `#I422299` - Now, swimlane child nodes is selectable after save and load.
+- `#I437322` - Now, drag the connector end thumb is working, while we increase handleSize value.
 - `#I436649` - Now, connector segment does not get split into multiple segment for top to bottom approach.
 - `#I440967` - Now, Free hand connector segment collection restored after save and load the diagram.
 - `#I441075` - Now, position change event does not get triggered while click on the swimlane header.

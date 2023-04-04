@@ -3949,7 +3949,7 @@ export class OlapEngine {
         } else {    // eslint-disable-next-line no-useless-escape
             xmlMsg = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Header></Header> <Body> <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"> <Command> <Statement> ' +
                 query + ' </Statement> </Command> <Properties> <PropertyList> <Catalog>' + dataSourceSettings.catalog +
-                '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList> </Properties> </Execute> </Body> </Envelope>';
+                '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (dataSourceSettings.roles ? '<Roles>' + dataSourceSettings.roles + '</Roles>' : '') + '</PropertyList> </Properties> </Execute> </Body> </Envelope>';
         }
         return xmlMsg;
     }

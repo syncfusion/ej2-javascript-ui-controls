@@ -307,13 +307,13 @@ export class BaseQuickToolbar {
         }
         if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))) {
             if (!isNullOrUndefined(document.querySelector('#' + this.element.id + ' [data-tooltip-id]'))){
-                let tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
-                let dataContent:string = tooltipTargetEle.getAttribute('data-content')
+                const tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
+                const dataContent: string = tooltipTargetEle.getAttribute('data-content');
                 tooltipTargetEle.removeAttribute('data-content');
                 tooltipTargetEle.setAttribute('title', dataContent);
-                tooltipTargetEle.removeAttribute('data-tooltip-id'); 
+                tooltipTargetEle.removeAttribute('data-tooltip-id');
             }
-        this.tooltip.destroy();
+            this.tooltip.destroy();
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {
             if (isNullOrUndefined(viewSourcePanel) || viewSourcePanel.style.display === 'none') {

@@ -1,5 +1,5 @@
 import { EventHandler, getComponent, merge } from '@syncfusion/ej2-base';
-import { ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { BeforeOpenCloseMenuEventArgs, ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE, VERTICAL_DDB } from '../base/constant';
@@ -47,7 +47,9 @@ export class RibbonSplitButton {
             iconCss: splitButtonSettings.iconCss,
             items: splitButtonSettings.items,
             target: splitButtonSettings.target,
-            beforeClose: splitButtonSettings.beforeClose,
+            beforeClose: (e: BeforeOpenCloseMenuEventArgs) => {
+                if (splitButtonSettings.beforeClose) { splitButtonSettings.beforeClose.call(this, e); }
+            },
             beforeItemRender: splitButtonSettings.beforeItemRender,
             beforeOpen: splitButtonSettings.beforeOpen,
             close: () => {
@@ -88,6 +90,11 @@ export class RibbonSplitButton {
         const splitbutton: SplitButton = getComponent(splitButtonEle, SplitButton);
         splitbutton.cssClass = splitbutton.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         splitbutton.dataBind();
+        let target: HTMLElement;
+        splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }
+            target = e.event ? e.event.target as HTMLElement : null;
+        };
         splitbutton.click = (e: ClickEventArgs) => {
             if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }
             overflowButton.toggle();
@@ -95,7 +102,9 @@ export class RibbonSplitButton {
         splitbutton.close = (e: OpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.close) { item.splitButtonSettings.close.call(this, e); }
             (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
-            overflowButton.toggle();
+            if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**
@@ -113,6 +122,9 @@ export class RibbonSplitButton {
         cssClass = cssClass.filter((value: string) => value !== RIBBON_POPUP_CONTROL);
         splitbutton.cssClass = cssClass.join(SPACE);
         splitbutton.dataBind();
+        splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+            if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }
+        };
         splitbutton.click = (e: ClickEventArgs) => {
             if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }
         };
@@ -186,6 +198,7 @@ export class RibbonSplitButton {
         delete prop.open;
         delete prop.click;
         delete prop.close;
+        delete prop.beforeClose;
         control.setProperties(prop);
         if (prop.content) { this.setContent(itemProp.item, control); }
     }

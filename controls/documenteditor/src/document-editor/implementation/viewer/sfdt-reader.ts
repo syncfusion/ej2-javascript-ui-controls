@@ -95,9 +95,13 @@ export class SfdtReader {
             this.keywordIndex = 1;
         }
         if (isNullOrUndefined(jsonObject[characterFormatProperty[this.keywordIndex]])) {
+            this.parseCharacterFormat(0, this.viewer.owner.characterFormat, this.documentHelper.characterFormat);
+        } else {
             this.parseCharacterFormat(this.keywordIndex, jsonObject[characterFormatProperty[this.keywordIndex]], this.documentHelper.characterFormat);
         }
         if (isNullOrUndefined(jsonObject[paragraphFormatProperty[this.keywordIndex]])) {
+            this.parseParagraphFormat(0, this.viewer.owner.paragraphFormat, this.documentHelper.paragraphFormat);
+        } else {
             this.parseParagraphFormat(this.keywordIndex, jsonObject[paragraphFormatProperty[this.keywordIndex]], this.documentHelper.paragraphFormat);
         }
         if(!isNullOrUndefined(jsonObject[themeFontLanguagesProperty[this.keywordIndex]])){

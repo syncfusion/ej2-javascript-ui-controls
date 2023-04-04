@@ -88,11 +88,20 @@ export function findObjectUnderMouse(
         // eslint-disable-next-line
     }
     else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.parentElement && (event.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
-        // eslint-disable-next-line
-        const targetParentRect = (event.target as any).offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
-        offsetX = event.clientX - targetParentRect.left;
-        offsetY = event.clientY - targetParentRect.top;
-        // eslint-disable-next-line
+        let targetParentRect: ClientRect;
+        if (event.target.offsetParent && event.target.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent.offsetParent){
+            // eslint-disable-next-line
+            targetParentRect = event.target.offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+            offsetX = event.clientX - targetParentRect.left;
+            offsetY = event.clientY - targetParentRect.top;
+        }
+        else if (event.target.parentElement.offsetParent && event.target.parentElement.offsetParent.offsetParent){
+            // eslint-disable-next-line
+            targetParentRect = event.target.parentElement.offsetParent.offsetParent.getBoundingClientRect();
+            offsetX = event.clientX - targetParentRect.left;
+            offsetY = event.clientY - targetParentRect.top;
+            // eslint-disable-next-line
+        }
     }
     else {
         offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);

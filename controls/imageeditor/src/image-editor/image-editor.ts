@@ -5501,6 +5501,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
             this.updateActiveObject(this.activeObj.activePoint, this.activeObj);
         }
+        this.updateSelectionInsert();
         this.drawObject('duplicate', this.activeObj, null, null, true);
     }
 
@@ -12500,6 +12501,13 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     width: width, height: width};
             }
             this.activeObj.shape = cropShape.toLowerCase();
+            this.updateSelectionInsert();
+            if (this.activeObj.activePoint.startX !== 0 || this.activeObj.activePoint.startY !== 0 ||
+                this.activeObj.activePoint.width !== 0 || this.activeObj.activePoint.height !== 0) {
+                    points = {startX : this.activeObj.activePoint.startX, startY : this.activeObj.activePoint.startY,
+                        endX : this.activeObj.activePoint.endX, endY : this.activeObj.activePoint.endY,
+                        width: this.activeObj.activePoint.width, height: this.activeObj.activePoint.height}
+                }
             this.drawObject('duplicate', null, true, points);
         }
     }
@@ -13222,6 +13230,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.drawNewSelection(type, startX, startY, width, height);
             }
         }
+    }
+
+    private updateSelectionInsert(): void {
+        const shapeSettings: ShapeSettings = this.updatePreviousShapeSettings();
+        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'insert', previousShapeSettings: shapeSettings,
+            currentShapeSettings: shapeSettings};
+        this.trigger('shapeChanging', shapeChangingArgs);
+        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
     }
 
     /**

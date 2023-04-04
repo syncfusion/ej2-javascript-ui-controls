@@ -1121,6 +1121,49 @@ describe('Selection module', () => {
     });
   });
   
+      describe('EJ2-71468 - getSelectedRowCellIndexes method returned the cellIndex while on row collapse', () => {
+    let gridObj: TreeGrid;
+    let collapsed: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: 400,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Dialog',
+            newRowPosition: 'Below',
+          },
+          selectionSettings: { mode: 'Cell', enableToggle: true, type: 'Single' },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            {
+              field: 'taskID',  headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',  validationRules: { required: true, number: true }, width: 120,
+            },
+            {
+              field: 'taskName', headerText: 'TaskName', editType: 'stringedit', width: 225, validationRules: { required: true },
+            }
+          ],
+        },
+        done
+      );
+    });
+    it('Selected cell index checking', (done: Function) => {
+      collapsed = (): void => {
+        expect(gridObj.getSelectedRowCellIndexes().length == 0).toBe(true);
+        done();
+      }
+      gridObj.collapsed = collapsed;
+      gridObj.collapseRow(gridObj.getRows()[0]);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   
   
   it('memory leak', () => {

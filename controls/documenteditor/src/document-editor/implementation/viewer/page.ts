@@ -4106,6 +4106,11 @@ export class TableCellWidget extends BlockWidget {
                 i--;
             }
             this.childWidgets = undefined;
+            if(!isNullOrUndefined(viewer.documentHelper.selection)) {
+                if(viewer.documentHelper.selection.selectedWidgets.containsKey(this)) {
+                    viewer.documentHelper.selection.selectedWidgets.remove(this)
+                }
+            }
         }
         this.destroy();
     }

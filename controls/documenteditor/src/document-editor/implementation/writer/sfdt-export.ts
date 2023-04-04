@@ -1322,7 +1322,7 @@ export class SfdtExport {
     }
     private writeInlinesFootNote(paragraph: any, element: any, line: any, inlines: any): any {
         let inline: any = {};
-        inline[footnoteTypeProperty[this.keywordIndex]] = this.getFootnoteTypeEnumValue(element.footnoteType);
+        inline[footnoteTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootnoteTypeEnumValue(element.footnoteType) : element.footnoteType;
         inline[characterFormatProperty[this.keywordIndex]] = {};
         inline[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(element.characterFormat);
         inline[blocksProperty[this.keywordIndex]] = [];

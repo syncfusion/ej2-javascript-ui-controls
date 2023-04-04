@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 21.1.37 (2023-03-29)
+## 21.1.38 (2023-04-04)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I425592` - The marker rendered in the custom map can now be dragged and dropped in the desired location based on the requirement.
+
+## 21.1.35 (2023-03-23)
 
 ### Maps
 

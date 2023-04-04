@@ -386,66 +386,69 @@ export class StickyNotesAnnotation {
         proxy.commentsRequestHandler.onSuccess = function (result: any) {
             // eslint-disable-next-line
             let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object') {
-                    try {
-                        data = JSON.parse(data);
-                        if (typeof data !== 'object') {
+            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+            if (!redirect) {
+                if (data) {
+                    if (typeof data !== 'object') {
+                        try {
                             data = JSON.parse(data);
-                        }
-                        if (typeof data !== 'object') {
+                            if (typeof data !== 'object') {
+                                data = JSON.parse(data);
+                            }
+                            if (typeof data !== 'object') {
+                                proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderComments);
+                                data = null;
+                            }
+                        } catch (error) {
                             proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderComments);
                             data = null;
                         }
-                    } catch (error) {
-                        proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderComments);
-                        data = null;
                     }
-                }
-                if (data) {
-                    let isInitialRender: boolean = false;
-                    if (proxy.pdfViewerBase.annotationComments) {
-                        // eslint-disable-next-line
-                        proxy.pdfViewerBase.annotationComments = data.annotationDetails;
-                    } else {
-                        proxy.pdfViewerBase.annotationComments = data.annotationDetails;
-                        isInitialRender = true;
-                    }
-                    if (data.annotationDetails && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderComments, data);
-                        proxy.isAnnotationRendered = true;
-                        // eslint-disable-next-line
-                        let annotationCollections: any;
-                        if (proxy.pdfViewerBase.documentAnnotationCollections) {
-                            // eslint-disable-next-line max-len
-                            annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, proxy.pdfViewerBase.documentAnnotationCollections);
-                        } else {
+                    if (data) {
+                        let isInitialRender: boolean = false;
+                        if (proxy.pdfViewerBase.annotationComments) {
                             // eslint-disable-next-line
-                            let newCollection: any = proxy.pdfViewerBase.createAnnotationsCollection();
-                            // eslint-disable-next-line max-len
-                            annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, newCollection);
+                            proxy.pdfViewerBase.annotationComments = data.annotationDetails;
+                        } else {
+                            proxy.pdfViewerBase.annotationComments = data.annotationDetails;
+                            isInitialRender = true;
                         }
-                        proxy.pdfViewerBase.annotationComments = annotationCollections;
-                        proxy.pdfViewerBase.documentAnnotationCollections = annotationCollections;
-                        for (let i: number = data.startPageIndex; i < data.endPageIndex; i++) {
-                            var newData = data.annotationDetails[i];
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stampAnnotations");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
-                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
-                        }
-                        for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
-                            if (data.annotationDetails[j]) {
-                                proxy.renderAnnotationCollections(data.annotationDetails[j], j, isInitialRender);
+                        if (data.annotationDetails && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                            proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderComments, data);
+                            proxy.isAnnotationRendered = true;
+                            // eslint-disable-next-line
+                            let annotationCollections: any;
+                            if (proxy.pdfViewerBase.documentAnnotationCollections) {
+                                // eslint-disable-next-line max-len
+                                annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, proxy.pdfViewerBase.documentAnnotationCollections);
+                            } else {
+                                // eslint-disable-next-line
+                                let newCollection: any = proxy.pdfViewerBase.createAnnotationsCollection();
+                                // eslint-disable-next-line max-len
+                                annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, newCollection);
                             }
-                        }
-                        if (!proxy.isPageCommentsRendered) {
-                            proxy.isPageCommentsRendered = true;
-                            proxy.createRequestForComments();
+                            proxy.pdfViewerBase.annotationComments = annotationCollections;
+                            proxy.pdfViewerBase.documentAnnotationCollections = annotationCollections;
+                            for (let i: number = data.startPageIndex; i < data.endPageIndex; i++) {
+                                var newData = data.annotationDetails[i];
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stampAnnotations");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+                            }
+                            for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
+                                if (data.annotationDetails[j]) {
+                                    proxy.renderAnnotationCollections(data.annotationDetails[j], j, isInitialRender);
+                                }
+                            }
+                            if (!proxy.isPageCommentsRendered) {
+                                proxy.isPageCommentsRendered = true;
+                                proxy.createRequestForComments();
+                            }
                         }
                     }
                 }
@@ -2201,6 +2204,15 @@ export class StickyNotesAnnotation {
                 }
                 const commentsDiv: HTMLElement = document.getElementById(element.id);
                 if (commentsDiv) {
+                    // eslint-disable-next-line
+                    document.querySelectorAll('.e-pv-more-options-button[style*="visibility: visible"]').forEach((moreButton: any) => moreButton.style.visibility = 'hidden');
+                    if (event.target.className === 'e-editable-value-wrapper') {
+                        event.target.parentElement.parentElement.firstChild.lastChild.style.visibility = 'visible';
+                    } else if (event.target.className === 'e-pv-reply-title' || event.target.className === 'e-pv-comment-title') {
+                        event.target.parentElement.lastChild.style.visibility = 'visible';
+                    } else if (event.target.className === 'e-editable-value') {
+                        event.target.parentElement.parentElement.parentElement.firstChild.lastChild.style.visibility = 'visible';
+                    }
                     commentsDiv.classList.add('e-pv-comments-border');
                 }
                 // eslint-disable-next-line
@@ -3408,7 +3420,7 @@ export class StickyNotesAnnotation {
         else{
             newTime = (timeValue.split(':').splice(0,2).join(':'))
         }
-        let newDate: string = dateTime.toLocaleDateString('default',{month:'short' , day:'numeric'});
+        let newDate: string = dateTime.toString().split(' ').splice(1, 2).join(' ');
         let dateTimeValue: string = newDate +','+' '+ newTime ;
         return dateTimeValue;         
     }

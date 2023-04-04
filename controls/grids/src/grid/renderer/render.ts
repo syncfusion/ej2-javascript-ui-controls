@@ -114,6 +114,10 @@ export class Render {
                 gObj.notify(events.cancelBegin, args);
                 return;
             }
+            if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage &&
+                args.action === 'add' && args.requestType === 'save' as Action) {
+                gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + 1 }}, true);
+            }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
                 const dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
                 const count: number = gObj.pageSettings.totalRecordsCount - dataLength;
@@ -278,6 +282,13 @@ export class Render {
 
     private sendBulkRequest(args?: NotifyArgs): void {
         args.requestType = 'batchsave';
+        const gObj: IGrid = this.parent;
+        if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage) {
+            const dataLength: number = args['changes'].addedRecords.length;
+            if (dataLength) {
+                gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + dataLength }}, true);
+            }
+        }
         const promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
             (<{ original?: Object }>args).original);

@@ -3383,6 +3383,43 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+    
+    describe("Table remove rows with cell merge", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-', 'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;" rowspan="2">Merged</td><td style="width: 25%;" class="">r1c1</td><td style="width: 25%;" class="">r1c2</td><td style="width: 25%;" class="">r1c3</td></tr><tr><td style="width: 25%;">r1c1</td><td style="width: 25%;" class="">r2c2</td><td style="width: 25%;" class="">r3c3</td></tr><tr><td style="width: 25%;" class="">r3</td><td style="width: 25%;">r3</td><td style="width: 25%;">r3</td><td style="width: 25%;">r3</td></tr></tbody></table><p><br/></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Remove the row when the cells are merged', (done: Function) => {
+            let target = rteEle.querySelectorAll('.e-rte-table td')[1];
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[1].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table tr').childElementCount === 4).toBe(true);
+                done();
+            }, 400);
+        });
+    });
 
     describe("Table cell merge", () => {
         let rteObj: RichTextEditor;

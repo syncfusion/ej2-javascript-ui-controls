@@ -238,7 +238,7 @@ export class TimelineEvent extends MonthEvent {
     private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number, appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number): void {
         appLeft = (this.parent.enableRtl) ? appRight = position : position;
         appPos = (this.parent.enableRtl) ? appRight : appLeft;
-        appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
+        appPos = (Math.round(appPos / this.cellWidth) * this.cellWidth);
         if ((cellTd && isNullOrUndefined(moreIndicator)) ||
             (!this.isAlreadyAvail(appPos, cellTd))) {
             const startDateTime: Date = (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') ? new Date(+startTime) : startDate;
@@ -266,8 +266,8 @@ export class TimelineEvent extends MonthEvent {
             }
             moreIndicatorElement.style.top = top + appArea + 'px';
             moreIndicatorElement.style.width = this.cellWidth + 'px';
-            moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
-            moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.left = ((appLeft / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.right = ((appRight / this.cellWidth) * this.cellWidth) + 'px';
             this.renderElement(cellTd, moreIndicatorElement);
             EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
         }
