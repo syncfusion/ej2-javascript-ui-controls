@@ -2707,7 +2707,15 @@ export class Drawing {
                 actualObject.wrapper.children[1].isDirt = true;
             }
         }
-        actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+        if (this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
+            actualObject.wrapper.width = undefined;
+            actualObject.wrapper.height = undefined;
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel = false;
+        }
+        else {
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+        }
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (actualObject && actualObject.formFieldAnnotationType) {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {

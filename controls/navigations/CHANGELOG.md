@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Menu
+
+#### Bug Fixes
+
+- `#I445794` - The issue with "Context Menu keyboard navigation is not working in scrollable page" has been resolved.
+- `#I446612` - The issue with "Attributes are not updated properly while directly appending the menu item" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I434078` - An issue with the "icon for the Tab popup mode in mobile mode" has been fixed.
+- `#I451561` - An issue with the "When the same selected tab is re-selected, the tab selecting event is triggered again" has been fixed.
+
 ## 21.1.38 (2023-04-04)
 
 ### Menu

@@ -23,6 +23,7 @@ import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
 import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
+import { defaultCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -310,7 +311,7 @@ export class ExcelExport {
                         separator = exportProperties.separator;
                     }
                     const book: Workbook = new Workbook(
-                        this.book, 'csv', gObj.locale, (<{ currencyCode?: string }>gObj).currencyCode, separator
+                        this.book, 'csv', gObj.locale, defaultCurrencyCode, separator
                     );
                     if (!this.isBlob) {
                         if (isExportPropertiesPresent && exportProperties.fileName) {
@@ -322,7 +323,7 @@ export class ExcelExport {
                         this.blobPromise = book.saveAsBlob('text/csv');
                     }
                 } else {
-                    const book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
+                    const book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, defaultCurrencyCode);
                     if (!this.isBlob) {
                         if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);

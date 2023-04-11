@@ -1416,3 +1416,56 @@ describe('Segment change event', () => {
         done();
     });
 });
+
+describe('Position change completed state is not triggered while Changing node width in progress state', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramPosChange' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 };
+
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            nodes: [node]
+        });
+
+        diagram.appendTo('#diagramPosChange');
+        selArray.push(diagram.nodes[0]);
+        diagram.select(selArray);
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking node width in progress state', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 300, 300);
+        let node: NodeModel;
+        diagram.positionChange = (args: IDraggingEventArgs) => {
+            if(args.state === 'Progress'){
+                args.source.nodes[0].width = 50;
+            }
+            if (args.state === 'Completed') {
+                node = args.source.nodes[0];
+            }
+        };
+        mouseEvents.mouseDownEvent(diagramCanvas, 300, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 320, 320);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 340,340);
+        mouseEvents.mouseUpEvent(diagramCanvas, 360, 360);
+        expect(node !== undefined && node.width === 50).toBe(true);
+        done();
+    });
+});

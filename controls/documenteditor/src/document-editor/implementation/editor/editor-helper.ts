@@ -60,6 +60,52 @@ export class HelperMethods {
         return text;
     }
     /**
+     * Method to append/remove special characters
+     *
+     * @private
+     */
+    /* eslint-disable */
+    public static manageSpecialCharacters(exactText: string, replaceText: string, isRemove?: boolean): string {
+        if (!isNullOrUndefined(exactText)) {
+            if (isNullOrUndefined(replaceText)) {
+                replaceText = exactText;
+            }
+
+            const pattern: RegExp = new RegExp('^[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s\\’]+', 'g');
+            let matches: RegExpExecArray[] = [];
+            let matchInfo: RegExpExecArray;
+            // eslint-disable  no-cond-assign
+            while (!isNullOrUndefined(matchInfo = pattern.exec(exactText))) {
+                matches.push(matchInfo);
+            }
+
+            if (matches.length > 0) {
+                for (let i: number = 0; i < matches.length; i++) {
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
+                    const match: any[] = matches[i];
+                    replaceText = (!isRemove) ? match[0] + replaceText : replaceText.replace(match[0], '');
+                }
+            }
+
+            const endPattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`\\’]+$', 'g');
+            matches = [];
+            // eslint-disable  no-cond-assign
+            while (!isNullOrUndefined(matchInfo = endPattern.exec(replaceText))) {
+                matches.push(matchInfo);
+            }
+
+            if (matches.length > 0) {
+                for (let i: number = 0; i < matches.length; i++) {
+                    const match: any = matches[i];
+                    replaceText = (!isRemove) ? replaceText + match[0] : replaceText.slice(0, match.index);
+                }
+            }
+        }
+
+        return replaceText;
+    }
+    /* eslint-enable */
+    /**
      * @private
      * @param text 
      * @returns 
@@ -76,7 +122,7 @@ export class HelperMethods {
         let spellColl: any = [];
         for (const str of stringarr) {
             let spellInfo: any = {};
-            spellInfo.Text = this.replaceSpecialChars(str);
+            spellInfo.Text = this.manageSpecialCharacters(str, undefined, true);
             spellInfo.HasSpellError = false;
             spellColl.push(spellInfo);
         }

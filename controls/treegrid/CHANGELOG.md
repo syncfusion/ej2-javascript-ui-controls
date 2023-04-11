@@ -18,10 +18,10 @@
 
 ### Tree Grid
 
-#### Features
+#### Breaking Changes
 
-- Provided support for inline editing with virtualization enabled. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/virtual-scrolling.html).
-- `#I323425`, `#I332700`, `#I344742`, `#I375307` - Provided support for frozen column with virtualization enabled.
+- Unnecessary role attributes for Tree Grid row cell and header elements have been removed to enhance accessibility standards.
+- The `td` element for `e-detailcell` in [detail element](https://ej2.syncfusion.com/documentation/treegrid/row/detail-template/) has been only changed from a `td` element to the `th` element to enhance accessibility standards.
 
 ## 20.2.36 (2022-06-30)
 

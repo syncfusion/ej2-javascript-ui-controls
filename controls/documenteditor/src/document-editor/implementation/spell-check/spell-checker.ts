@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo } from '../index';
+import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, HelperMethods } from '../index';
 import { XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
@@ -198,7 +198,7 @@ export class SpellChecker {
             this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start;
             this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end;
             if (content !== 'Ignore Once') {
-                content = this.manageSpecialCharacters(exactText, content);
+                content = HelperMethods.manageSpecialCharacters(exactText, content);
                 this.documentHelper.owner.editor.insertTextInternal(content, true);
                 this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
                 this.documentHelper.clearSelectionHighlight();
@@ -313,7 +313,7 @@ export class SpellChecker {
         } else {
             exactText = textElement.text;
         }
-        exactText = this.manageSpecialCharacters(exactText, undefined, true);
+        exactText = HelperMethods.manageSpecialCharacters(exactText, undefined, true);
         if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
             textElement.ignoreOnceItems.push(exactText);
         }
@@ -327,7 +327,7 @@ export class SpellChecker {
      */
     public handleIgnoreAllItems(contextElement?: ContextElementInfo): void {
         const contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
-        const retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
+        const retrievedText: string = HelperMethods.manageSpecialCharacters(contextItem.text, undefined, true);
         if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
@@ -345,7 +345,7 @@ export class SpellChecker {
      */
     public handleAddToDictionary(contextElement?: ContextElementInfo): void {
         const contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
-        const retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
+        const retrievedText: string = HelperMethods.manageSpecialCharacters(contextItem.text, undefined, true);
 
         /* eslint-disable @typescript-eslint/no-explicit-any */
         this.callSpellChecker(this.languageID, retrievedText, false, false, true).then((data: any) => {
@@ -356,52 +356,7 @@ export class SpellChecker {
             this.documentHelper.triggerSpellCheck = false;
         });
     }
-    /**
-     * Method to append/remove special characters
-     *
-     * @private
-     */
 
-    public manageSpecialCharacters(exactText: string, replaceText: string, isRemove?: boolean): string {
-        if (!isNullOrUndefined(exactText)) {
-            if (isNullOrUndefined(replaceText)) {
-                replaceText = exactText;
-            }
-
-            const pattern: RegExp = new RegExp('^[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s\\’]+', 'g');
-            let matches: RegExpExecArray[] = [];
-            let matchInfo: RegExpExecArray;
-            // eslint-disable  no-cond-assign
-            while (!isNullOrUndefined(matchInfo = pattern.exec(exactText))) {
-                matches.push(matchInfo);
-            }
-
-            if (matches.length > 0) {
-                for (let i: number = 0; i < matches.length; i++) {
-                    /* eslint-disable @typescript-eslint/no-explicit-any */
-                    const match: any[] = matches[i];
-                    replaceText = (!isRemove) ? match[0] + replaceText : replaceText.replace(match[0], '');
-                }
-            }
-
-            const endPattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`\\’]+$', 'g');
-            matches = [];
-            // eslint-disable  no-cond-assign
-            while (!isNullOrUndefined(matchInfo = endPattern.exec(replaceText))) {
-                matches.push(matchInfo);
-            }
-
-            if (matches.length > 0) {
-                for (let i: number = 0; i < matches.length; i++) {
-                    /* eslint-disable @typescript-eslint/no-explicit-any */
-                    const match: any = matches[i];
-                    replaceText = (!isRemove) ? replaceText + match[0] : replaceText.slice(0, match.index);
-                }
-            }
-        }
-
-        return replaceText;
-    }
     /**
      * Method to remove errors
      *
@@ -510,7 +465,7 @@ export class SpellChecker {
     private updateStatusForGlobalErrors(erroElements: ErrorTextElementBox[], parentElement: ElementBox): void {
         if (erroElements.length > 0) {
             for (let i: number = 0; i < erroElements.length; i++) {
-                const exactText: string = this.manageSpecialCharacters(erroElements[i].text, undefined, true);
+                const exactText: string = HelperMethods.manageSpecialCharacters(erroElements[i].text, undefined, true);
                 if (this.errorWordCollection.containsKey(exactText)) {
                     const elements: ElementBox[] = this.errorWordCollection.get(exactText);
                     for (let j: number = 0; j < elements.length; j++) {
@@ -535,7 +490,7 @@ export class SpellChecker {
      */
     public handleErrorCollection(errorInElement: TextElementBox): boolean {
         const errors: Dictionary<string, ElementBox[]> = this.errorWordCollection;
-        const exactText: string = this.manageSpecialCharacters(errorInElement.text, undefined, true);
+        const exactText: string = HelperMethods.manageSpecialCharacters(errorInElement.text, undefined, true);
         if (errors.containsKey(exactText) && errorInElement.length > 1) {
             const ignoreAllIndex: number = this.ignoreAllItems.indexOf(exactText);
             if (ignoreAllIndex > -1) {
@@ -596,7 +551,7 @@ export class SpellChecker {
         return { 'text': text, 'element': element };
     }
     private addErrorCollection(text: string, elementToCompare: ElementBox, suggestions: string[]): void {
-        text = this.manageSpecialCharacters(text, undefined, true);
+        text = HelperMethods.manageSpecialCharacters(text, undefined, true);
         if (this.errorWordCollection.containsKey(text)) {
             const errorElements: ElementBox[] = this.errorWordCollection.get(text);
             if (elementToCompare instanceof ErrorTextElementBox) {
@@ -619,7 +574,7 @@ export class SpellChecker {
         }
     }
     private addCorrectWordCollection(text: string): void {
-        text = this.manageSpecialCharacters(text, undefined, true);
+        text = HelperMethods.manageSpecialCharacters(text, undefined, true);
         if (!this.uniqueWordsCollection.containsKey(text)) {
             this.uniqueWordsCollection.add(text, false);
         }
@@ -629,7 +584,22 @@ export class SpellChecker {
      */
     public isInUniqueWords(text: string): boolean {
         text = text.replace(/[\s]+/g, '');
-        return this.uniqueWordsCollection.containsKey(text);
+        text = text.replace('\r\n', ' ');
+        text = text.replace('\n', ' ');
+        text = text.replace('\r', ' ');
+        text = text.replace('\v', ' ');
+        text = text.replace('\t', ' ');
+        text = text.replace('/', ' ');
+
+        let stringarr: string[] = text.split(' ');
+        let test: boolean = true;
+        for (let i: number = 0; i < stringarr.length; i++) {
+            if(!this.uniqueWordsCollection.containsKey(stringarr[i])){
+                test = false;
+                break;
+            }
+        }
+        return test;
     }
     /**
      * @private
@@ -656,7 +626,7 @@ export class SpellChecker {
         for (let i: number = 0; i < length; i++) {
             if (copyElement[i] instanceof ErrorTextElementBox) {
                 if (copyElement[i].ischangeDetected) {
-                    const exactText: string = this.manageSpecialCharacters((copyElement[i] as TextElementBox).text, undefined, true);
+                    const exactText: string = HelperMethods.manageSpecialCharacters((copyElement[i] as TextElementBox).text, undefined, true);
                     isChanged = true;
 
                     this.removeErrorsFromCollection({ 'element': copyElement[i], 'text': exactText });
@@ -672,7 +642,7 @@ export class SpellChecker {
 
         if (isChanged) {
 
-            this.errorWordCollection.add(this.manageSpecialCharacters(errorElement.text, undefined, true), [errorElement]);
+            this.errorWordCollection.add(HelperMethods.manageSpecialCharacters(errorElement.text, undefined, true), [errorElement]);
         }
 
         return false;
@@ -857,12 +827,12 @@ export class SpellChecker {
             if (splittedText.length > 1) {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
-                    currentText = this.manageSpecialCharacters(currentText, undefined, true);
+                    currentText = HelperMethods.manageSpecialCharacters(currentText, undefined, true);
 
                     this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
                 }
             } else {
-                currentText = this.manageSpecialCharacters(currentText, undefined, true);
+                currentText = HelperMethods.manageSpecialCharacters(currentText, undefined, true);
                 this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
             }
         }
@@ -1157,7 +1127,7 @@ export class SpellChecker {
     }
 
     private checkCombinedElementsBeIgnored(elements: TextElementBox[], exactText: string): boolean {
-        exactText = this.manageSpecialCharacters(exactText, undefined, true);
+        exactText = HelperMethods.manageSpecialCharacters(exactText, undefined, true);
         for (let i: number = 0; i < elements.length; i++) {
             if (elements[i].ignoreOnceItems.indexOf(exactText) !== -1) {
                 return true;
@@ -1234,6 +1204,9 @@ export class SpellChecker {
         this.uniqueSpelledWords = {};
     }
     private checkForUniqueWords(spellData: any): void {
+        if (!this.uniqueWordsCollection.containsKey(spellData.Text)){
+            this.uniqueWordsCollection.add(spellData.Text, spellData.HasSpellError);
+        }
         const identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];
         if (!identityMatched) {
             this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
@@ -1267,16 +1240,29 @@ export class SpellChecker {
      * @returns {WordSpellInfo} - Retruns WordSpellInfo
      */
     public checkSpellingInPageInfo(wordToCheck: string): WordSpellInfo {
-        const hasError: boolean = false;
-        const elementPresent: boolean = false;
+        // const hasError: boolean = false;
+        // const elementPresent: boolean = false;
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const uniqueWords: any = JSON.parse(localStorage.getItem(this.uniqueKey));
+        let wordInfo: any = { hasSpellError: false, isElementPresent: true };
         if (!isNullOrUndefined(uniqueWords)) {
-            if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
-                return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
+            wordToCheck = wordToCheck.replace(/[\s]+/g, '');
+            wordToCheck = wordToCheck.replace('\r\n', ' ');
+            wordToCheck = wordToCheck.replace('\n', ' ');
+            wordToCheck = wordToCheck.replace('\r', ' ');
+            wordToCheck = wordToCheck.replace('\v', ' ');
+            wordToCheck = wordToCheck.replace('\t', ' ');
+            wordToCheck = wordToCheck.replace('/', ' ');
+    
+            let stringarr: string[] = wordToCheck.split(' ');
+            for (let i: number = 0; i < stringarr.length; i++) {
+                if(!this.uniqueWordsCollection.containsKey(stringarr[i])){
+                    wordInfo.hasSpellError = true;
+                    break;
+                }
             }
         }
-        return { hasSpellError: hasError, isElementPresent: elementPresent };
+        return wordInfo;
     }
     /**
      * @private

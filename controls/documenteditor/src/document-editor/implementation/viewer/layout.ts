@@ -3078,6 +3078,7 @@ export class Layout {
         }
     }
     private layoutEmptyLineWidget(paragraph: ParagraphWidget, isEmptyLine: boolean, line?: LineWidget, isShiftEnter?: boolean): void {
+        this.clearLineMeasures();
         const paraFormat: WParagraphFormat = paragraph.paragraphFormat;
         let subWidth: number = 0;
         let whiteSpaceCount: number = 0;
@@ -6209,6 +6210,8 @@ export class Layout {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, lineIndexInCell, cellIndex, isMultiColumnSplit);
                             if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
                                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
+                            } else if (isNullOrUndefined(splittedWidget) && heightType === 'AtLeast') {
+                                splittedWidget = tableRowWidget;
                             }
                         }
                         // if (heightType === 'AtLeast' && row.ownerTable.spannedRowCollection.keys.length > 0) {
@@ -9661,6 +9664,7 @@ export class Layout {
                 if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length !== 0 && body.sectionFormat.pageHeight === nextPage.bodyWidgets[0].sectionFormat.pageHeight && body.sectionFormat.pageWidth === nextPage.bodyWidgets[0].sectionFormat.pageWidth && body.sectionFormat.breakCode === 'NoBreak') {
                     if (nextPage.bodyWidgets[0].index === body.index) {
                         nextBody = nextPage.bodyWidgets[0];
+                        this.viewer.updateClientArea(nextBody, nextBody.page);
                     } else {
                         nextBody = this.createSplitBody(body);
                         nextPage.bodyWidgets.splice(0, 0, nextBody);

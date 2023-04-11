@@ -600,7 +600,7 @@ export class SfdtReader {
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat);
                     }
-                    if (!(isSectionBreak && block === data[data.length - 1] && !hasValidElmts)) {
+                    if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
                         this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
                         this.parseParagraphFormat(this.keywordIndex, block[paragraphFormatProperty[this.keywordIndex]], paragraph.paragraphFormat);
                         let styleObj: Object;
@@ -1042,8 +1042,9 @@ export class SfdtReader {
                 } else {
                     image.imageString = inline[imageStringProperty[this.keywordIndex]];
                 }
-                 // Before 21.1 duplicate images are preserved as inline images with direct base64 string in the image string property. TO provide backward compatibility we are checking both the index based retrieval from images collections and inline image string.
-                 if (inline[imageStringProperty[this.keywordIndex]].startsWith("data")) {
+                // Before 21.1 duplicate images are preserved as inline images with direct base64 string in the image string property. TO provide backward compatibility we are checking both the index based retrieval from images collections and inline image string.
+                let imgStrValue: number = parseInt(inline[imageStringProperty[this.keywordIndex]]);
+                if (imgStrValue.toString() === "NaN" ? true : false) {
                     this.documentHelper.addBase64StringInCollection(image);
                 }
                 image.element.src = this.documentHelper.getImageString(image);

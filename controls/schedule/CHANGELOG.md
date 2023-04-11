@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Schedule
+
+#### Bug fixes
+
+- `#I425939` - Schedule virtual scrolling appointment rendering performance improved.
+- `#F181250` - Schedule layout rendering performance improved with `timezone` property.
+
 ## 21.1.38 (2023-04-04)
 
 ### Schedule

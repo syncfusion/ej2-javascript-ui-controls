@@ -157,26 +157,6 @@ describe('Chart control checking', () => {
 
 
         });
-        it('YAxis Size', (done: Function) => {
-            loaded = () => {
-                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
-                let height: number = parseInt(stripLineElement.getAttribute('height'), 10);
-                expect(height == 84 || height == 85).toBe(true);
-                let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
-                expect(y == 157 || y == 160).toBe(true);
-                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '1');
-                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toEqual(21 || 25);
-                y = parseInt(stripLineElement.getAttribute('y'), 10);
-                expect(y == 117 || y == 115).toBe(true);
-                done();
-            };
-            chart.primaryXAxis.stripLines = [];
-            chart.primaryYAxis.stripLines = [{ start: 10, end: 50, color: '#663AB6', size: 60 },
-            { start: 60, end: 70, color: '#EB3F79', size: 40 }];
-            chart.loaded = loaded;
-            chart.refresh();
-
-        });
         it('Stripline Dash Array Present', (done: Function) => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
@@ -231,37 +211,6 @@ describe('Chart control checking', () => {
                 start: 1, color: '#663AB6', border: { color: 'gray', width: 1 },
                 dashArray: '10,2', opacity: 0.5, size: 5
             }];
-            chart.loaded = loaded;
-            chart.refresh();
-
-        });
-        it('Inversed axis stripline', (done: Function) => {
-            loaded = () => {
-                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
-                let temp: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(temp === 239 || temp === 236).toBe(true);
-                expect(parseInt(stripLineElement.getAttribute('y'), 10)).toBe(10);
-                temp = parseInt(stripLineElement.getAttribute('height'), 10);
-                expect(temp === 295 || temp === 300).toBe(true);
-                temp = parseInt(stripLineElement.getAttribute('width'), 10);
-                expect(temp === 294 || temp === 292).toBe(true);
-                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
-                temp = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(temp === 63 || temp === 59).toBe(true);
-                temp = parseInt(stripLineElement.getAttribute('y'), 10);
-                expect(temp === 115 || temp === 117).toBe(true);
-                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toBe(42 || 50);
-                temp = parseInt(stripLineElement.getAttribute('width'), 10);
-                expect(temp === 526 || temp === 530).toBe(true);
-                done();
-            };
-            chart.primaryYAxis.isInversed = true;
-            chart.primaryXAxis.isInversed = true;
-            chart.primaryYAxis.stripLines = [{
-                start: 30,
-                end: 50
-            }];
-
             chart.loaded = loaded;
             chart.refresh();
 

@@ -466,6 +466,10 @@ export const defaultLocale: object = {
     EnterTheUrl: 'Enter the URL',
     Image: 'Image',
     ConditionalFormatting: 'Conditional Formatting',
+    Directional: 'Directional',
+    Shapes: 'Shapes',
+    Indicators: 'Indicators',
+    Ratings: 'Ratings',
     BlueDataBar: 'Blue Data Bar',
     GreenDataBar: 'Green Data Bar',
     RedDataBar: 'Red Data Bar',
@@ -593,5 +597,8 @@ export const defaultLocale: object = {
     SheetPassword: 'Password to unprotect sheet:',
     Fluent: 'Fluent',
     FluentDark: 'Fluent Dark',
+    AddCurrentSelection : 'Add current selection to filter',
+    Close: 'Close',
+    MoreOptions: 'More Options',
     CellReferenceTypoError: 'We found a typo in your cell reference. Do you want to correct this reference as follows?'
 };

@@ -170,7 +170,7 @@ export class Month extends ViewBase implements IRenderer {
         for (let col: number = 0; col < count; col++) {
             const classList: string[] = [cls.HEADER_CELLS_CLASS];
             const currentDateIndex: number[] = renderDates.slice(0, count).map((date: Date) => date.getDay());
-            if (isCurrentMonth && currentDateIndex.indexOf(this.parent.getCurrentTime().getDay()) === col) {
+            if (isCurrentMonth && currentDateIndex.indexOf(this.parent.currentTimezoneDate.getDay()) === col) {
                 classList.push(cls.CURRENT_DAY_CLASS);
             }
             dateSlots.push({ date: renderDates[parseInt(col.toString(), 10)], type: 'monthDay', className: classList, colSpan: 1, workDays: workDays });
@@ -553,7 +553,7 @@ export class Month extends ViewBase implements IRenderer {
             const skeleton: string = 'full';
             const announcementText: string =
                 this.parent.globalize.formatDate(data.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
-            dateHeader.setAttribute('aria-label', announcementText);
+            ntd.setAttribute('aria-label', announcementText);
         }
     }
 

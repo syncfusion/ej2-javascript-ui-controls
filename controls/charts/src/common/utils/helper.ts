@@ -74,7 +74,7 @@ export function getVisiblePoints(series: Series): Points[] {
     let pointIndex: number = 0;
     for (let i: number = 0; i < points.length; i++) {
         tempPoint = points[i as number];
-        if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+        if (isNullOrUndefined(tempPoint.x)) {
             continue;
         } else {
             tempPoint.index = pointIndex++;

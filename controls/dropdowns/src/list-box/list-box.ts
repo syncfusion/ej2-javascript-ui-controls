@@ -726,11 +726,17 @@ export class ListBox extends DropDownBase {
 
     private triggerDrag(args: DragEventArgs): void {
         let scrollParent: HTMLElement; let boundRect: DOMRect; const scrollMoved: number = 36;
+        let scrollHeight: number = 10;
+        if (this.itemTemplate && args.target) {
+            scrollHeight = args.target.scrollHeight;
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const event: any = (args as any).event; let wrapper: HTMLElement;
         if (args.target && (args.target.classList.contains('e-listbox-wrapper') || args.target.classList.contains('e-list-item')
+        || (args.target.parentElement && args.target.parentElement.classList.contains('e-list-item'))
         || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group'))) {
             if (args.target.classList.contains('e-list-item') || args.target.classList.contains('e-filter-parent')
+            || (args.target.parentElement && args.target.parentElement.classList.contains('e-list-item'))
             || args.target.classList.contains('e-input-group')) {
                 wrapper = args.target.closest('.e-listbox-wrapper') as HTMLElement;
             } else {
@@ -743,23 +749,16 @@ export class ListBox extends DropDownBase {
             }
             boundRect = scrollParent.getBoundingClientRect() as DOMRect;
             if ((boundRect.y + scrollParent.offsetHeight) - (event.pageY + scrollMoved) < 1) {
-                scrollParent.scrollTop = scrollParent.scrollTop + 10;
+                scrollParent.scrollTop = scrollParent.scrollTop + scrollHeight;
             }
             else if ((event.pageY - scrollMoved) - boundRect.y < 1) {
-                scrollParent.scrollTop = scrollParent.scrollTop - 10;
+                scrollParent.scrollTop = scrollParent.scrollTop - scrollHeight;
             }
         }
         if (args.target === null) {
             return;
         }
         this.trigger('drag', this.getDragArgs(args as DragEventArgs));
-        const listObj: ListBox = this.getComponent(args.target);
-        if (listObj && listObj.listData.length === 0) {
-            const noRecElem: Element = listObj.ulElement.childNodes[0] as Element;
-            if (noRecElem) {
-                listObj.ulElement.removeChild(noRecElem);
-            }
-        }
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
@@ -787,6 +786,13 @@ export class ListBox extends DropDownBase {
         }
         if (Browser.isIos) {
             this.list.style.overflow = '';
+        }
+        const targetListObj: ListBox = this.getComponent(args.target);
+        if (targetListObj && targetListObj.listData.length === 0) {
+            const noRecElem: Element = targetListObj.ulElement.childNodes[0] as Element;
+            if (noRecElem) {
+                targetListObj.ulElement.removeChild(noRecElem);
+            }
         }
         if (listObj === this) {
             const ul: Element = this.ulElement;

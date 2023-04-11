@@ -2534,6 +2534,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (const listItem of fileData) {
             listItem.input = inputElement;
         }
+        inputElement.setAttribute('id', getUniqueID('hiddenUploader'));
         inputElement.setAttribute('name', this.uploaderName);
         this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
         if (this.browserName !== 'msie' && this.browserName !== 'edge') {

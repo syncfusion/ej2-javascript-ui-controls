@@ -209,8 +209,11 @@ export class TimelineYear extends Year {
                 } else {
                     isDateAvail = column >= monthStart.getDay() && date.getTime() < monthEnd.getTime();
                 }
+                const announcementText: string = this.parent.globalize.formatDate(date, {
+                    skeleton: 'full', calendar: this.parent.getCalendarMode()
+                });
                 const td: HTMLElement = createElement('td', {
-                    className: cls.WORK_CELLS_CLASS, attrs: { 'aria-selected': 'false' }
+                    className: cls.WORK_CELLS_CLASS, attrs: { 'aria-selected': 'false', 'aria-label': announcementText }
                 });
                 contentTr.appendChild(td);
                 const dateHeader: HTMLElement = createElement('div', {
@@ -218,11 +221,6 @@ export class TimelineYear extends Year {
                     innerHTML: (isDateAvail) ?
                         this.parent.globalize.formatDate(date, { skeleton: 'd', calendar: this.parent.getCalendarMode() }) : ''
                 });
-                const skeleton: string = 'full';
-                const announcementText: string = this.parent.globalize.formatDate(date, {
-                    skeleton: skeleton, calendar: this.parent.getCalendarMode()
-                });
-                dateHeader.setAttribute('aria-label', announcementText);
                 if (isDateAvail) {
                     const tds: HTMLElement[] = [td];
                     const classList: string[] = [];

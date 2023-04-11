@@ -12,6 +12,7 @@ import { Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { PdfAnnotationType } from '../drawing';
 import { DisplayMode } from './types';
+import { AnnotationSettings } from '../index';
 
 /**
  * @hidden
@@ -1872,6 +1873,14 @@ export class Signature {
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
+                         if (this.pdfViewer.isSignatureEditable){
+                            // eslint-disable-next-line max-len
+                            const signatureSettings = this.pdfViewer.handWrittenSignatureSettings as AnnotationSettings;
+                            const annotationSettings = this.pdfViewer.annotationSettings;
+                            const annotationAuthor : string = (signatureSettings.author !== 'Guest') ? signatureSettings.author : annotationSettings.author ? annotationSettings.author : 'Guest';
+                            // eslint-disable-next-line max-len
+                            pageAnnotationObject.annotations[parseInt(z.toString(), 10)].author = annotationAuthor;
+                        } 
                         // eslint-disable-next-line max-len
                         const strokeColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor ? pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor: "black";
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));

@@ -4310,8 +4310,12 @@ export abstract class LayoutViewer {
             let isEmptyWidget: boolean = false;
             if (!isNullOrUndefined(page.headerWidget)) {
                 isEmptyWidget = page.headerWidget.isEmpty;
-                if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                if(top >= 0) {
+                    if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                        top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                    }
+                } else {
+                    top = Math.abs(top);
                 }
             }
             let bottom: number = 0.667 + bottomMargin;

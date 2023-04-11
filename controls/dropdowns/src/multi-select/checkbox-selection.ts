@@ -515,7 +515,10 @@ export class CheckBoxSelection {
                 className: 'e-list-parent e-ul e-reorder'
             });
             if (activeLiCount > 0) {
-                append(this.parent.ulElement.querySelectorAll('li.e-active'), ulEle);
+                const activeListItems = this.parent.ulElement.querySelectorAll('li.e-active');
+                    activeListItems.forEach(item => {
+                        ulEle.appendChild(item);
+                    });
                 remLi = this.parent.ulElement.querySelectorAll('li.e-active');
                 addClass(remLi, 'e-reorder-hide');
                 prepend([ulEle], this.parent.list);

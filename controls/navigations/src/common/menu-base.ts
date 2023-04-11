@@ -586,9 +586,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.targetElement = target;
             if (!this.isMenu) {
-                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
+                EventHandler.add(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+                    EventHandler.add(parent, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
                 }
             }
         }
@@ -628,6 +628,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (closest(e.target as Element, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
             && (!closest(e.target as Element, '.e-' + this.getModuleName() + '-popup'))) {
             this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
+        }
+    }
+
+    private keyHandler(e: KeyboardEvent): void {
+        if (e.keyCode === 38 || e.keyCode === 40)
+        { 
+            if (e.target && ((e.target as Element).classList.contains('e-contextmenu') || (e.target as Element).classList.contains('e-menu-item'))) {
+                e.preventDefault();
+            }
         }
     }
 
@@ -869,6 +878,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
                         this.trigger('onClose', closeArgs); this.navIdx.pop();
+                        if (!this.isMenu) {
+                            EventHandler.remove(ul, 'keydown', this.keyHandler);
+                            this.keyType = '';
+                        }
                     }
                     this.updateReactTemplate(); let trgtliId: string; let closedLi: Element; let trgtLi: Element;
                     const trgtpopUp: HTMLElement = this.getWrapper() && this.getUlByNavIdx();
@@ -1372,10 +1385,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (!args.curData[(<obj>args.fields)[fields.id] as string]) {
                     args.curData[(<obj>args.fields)[fields.id] as string] = getUniqueID('menuitem');
                 }
-                args.curData.htmlAttributes = {
-                    role: 'menuitem',
-                    tabindex: '-1'
-                };
+                if (isNullOrUndefined(args.curData.htmlAttributes)) {
+                    args.curData.htmlAttributes = {};
+                }
+                Object.assign(args.curData.htmlAttributes, {role: 'menuitem', tabindex: '-1'});
                 if (this.isMenu && !(<obj>args.curData)[this.getField('separator', level)]) {
                     (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string] ?
                         (<obj>args.curData)[args.fields.text as string] : (<obj>args.curData)[args.fields.id as string];
@@ -1959,9 +1972,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (!this.isMenu) {
-                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
+                EventHandler.remove(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
+                    EventHandler.remove(parent, 'mousewheel DOMMouseScroll', this.scrollHandler);
                 }
             }
         }
@@ -2030,6 +2043,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             element: ul, parentItem: item, items: item ? item.items : this.items as objColl
         };
         this.trigger('onOpen', eventArgs);
+        if (!this.isMenu) {
+            EventHandler.add(ul, 'keydown', this.keyHandler, this);
+        }
     }
 
     private end(ul: HTMLElement, isMenuOpen: boolean): void {

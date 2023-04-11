@@ -20,18 +20,6 @@
         content: '\e745';
         position: relative;
       }
-
-      .e-popup-up-icon::before {
-        @media screen and (max-width: 480px) {
-          content: '\e781';
-        }
-      }
-
-      .e-popup-down-icon::before {
-        @media screen and (max-width: 480px) {
-          content: '\e781';
-        }
-      }
     }
 
     &.e-vertical-icon .e-tab-header {

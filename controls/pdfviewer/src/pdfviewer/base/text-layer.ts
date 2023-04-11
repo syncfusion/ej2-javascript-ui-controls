@@ -246,15 +246,16 @@ export class TextLayer {
                 textDiv.style.transform = scaleString;
             } else if ((textRotation == 90) || (textRotation == 270)) {
                 if ((textRotation == 270)) {
-                    textDiv.style.left = bounds.X + "px";
-                    textDiv.style.top = bounds.Y + bounds.Width + "px";
-                    textDiv.style.height = bounds.Height + "px";
-                    textDiv.style.fontSize = bounds.Height + "px";
-                } else {
-                    textDiv.style.left = bounds.X + bounds.Width + "px";
-                    textDiv.style.top = bounds.Y + "px";
-                    textDiv.style.height = bounds.Width + "px";
-                    textDiv.style.fontSize = bounds.Width + "px";
+                    textDiv.style.left = (bounds.X * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.top = ((bounds.Y + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.height = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.fontSize = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
+                }
+                else {
+                    textDiv.style.left = ((bounds.X + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.top = (bounds.Y * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.height = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
+                    textDiv.style.fontSize = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
                     textDiv.style.transformOrigin = '0% 0%';
                 }
                 textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;

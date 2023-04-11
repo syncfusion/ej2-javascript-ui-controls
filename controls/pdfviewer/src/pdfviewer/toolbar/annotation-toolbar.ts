@@ -4829,13 +4829,14 @@ export class AnnotationToolbar {
      * @private
      */
     public resetToolbar(): void {
-        this.adjustViewer(false);
         this.updateToolbarItems();
         // eslint-disable-next-line max-len
         if ((this.pdfViewer.isAnnotationToolbarOpen || this.pdfViewer.isAnnotationToolbarVisible) && this.pdfViewer.enableAnnotationToolbar) {
+            this.adjustViewer(false);
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
             this.adjustViewer(true);
+            this.primaryToolbar.selectItem(this.primaryToolbar.annotationItem);
             this.enableAnnotationAddTools(false);
             this.pdfViewer.isAnnotationToolbarVisible = true;
         } else {

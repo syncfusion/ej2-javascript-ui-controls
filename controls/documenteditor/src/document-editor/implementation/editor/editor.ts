@@ -2664,7 +2664,7 @@ export class Editor {
         prevPara = null;
         let lastLine: LineWidget = elementBox.paragraph.lastChild as LineWidget;
         let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
-        elementBox = lastElement;
+        elementBox  = lastElement == undefined ? elementBox : lastElement;
         let nextPara: ParagraphWidget = elementBox.paragraph.nextRenderedWidget as ParagraphWidget;
         if (nextPara instanceof TableWidget) {
             return;
@@ -16335,6 +16335,10 @@ export class Editor {
      */
     public updateRenderedListItems(block: BlockWidget): void {
         if (block instanceof ParagraphWidget) {
+            // if the block is a column break pick the next rendered widget.
+            if(block.isEndsWithColumnBreak){
+                block = block.nextRenderedWidget as ParagraphWidget;
+            }
             this.updateRenderedListItemsForPara(block as ParagraphWidget);
         } else {
             this.updateRenderedListItemsForTable(block as TableWidget);
@@ -18169,7 +18173,7 @@ export class Editor {
                 const lineWidget: LineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
                 for (let elementIndex: number = 0; elementIndex < lineWidget.children.length; elementIndex++) {
                     const element: ElementBox = lineWidget.children[elementIndex];
-                    if (element.isPageBreak) {
+                    if (element.isPageBreak || element.isColumnBreak) {
                         continue;
                     }
                     if ((element instanceof FieldElementBox) || (element instanceof BookmarkElementBox) || isFieldCode) {

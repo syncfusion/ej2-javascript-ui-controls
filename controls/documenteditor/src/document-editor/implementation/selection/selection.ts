@@ -2668,7 +2668,9 @@ export class Selection {
             if ((previousField.formFieldData as TextFormField).format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
                 this.owner.editor.applyFormTextFormat(previousField);
-                previousField = this.previousSelectedFormField;
+                if(!isNullOrUndefined(this.previousSelectedFormField)){
+                    previousField = this.previousSelectedFormField;
+                }
             }
 
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };

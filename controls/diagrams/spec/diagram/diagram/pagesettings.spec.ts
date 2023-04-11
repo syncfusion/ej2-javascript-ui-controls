@@ -3698,3 +3698,76 @@ describe('Unable to drag connector end thumb and resize node handler when we inc
         done();
     });
 });
+
+describe('Check whether connector segment does not get split', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 50, width: 100, offsetX: 600, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+            {
+                id: 'node2', height: 50, width: 100, offsetX: 250, offsetY: 400, annotations: [{ content: 'Node2' }],
+                
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            }
+        ];
+        
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'bottom', targetPortID: 'top'
+            }
+        ];
+        diagram = new Diagram({
+            width: '1000px', height: '1000px', nodes: nodes, connectors: connectors,
+            getConnectorDefaults: function (connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                connector.maxSegmentThumb = 1;
+                connector.allowNodeOverlap = true;
+            }
+        });
+        diagram.appendTo('#diagram');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Move Middle segment towards target node and drag the segment which does not have thumb', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 100);
+        let element2: HTMLElement = document.getElementById('connectorSourceThumb');
+        let bounds2: any = element2.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds2.x, bounds2.y + 30);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds2.x + 50, bounds2.y + 30);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds2.x + 50, bounds2.y + 30);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 3).toBe(true);
+        done();
+    });
+    
+});

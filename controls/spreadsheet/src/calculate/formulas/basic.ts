@@ -778,7 +778,7 @@ export class BasicFormulas {
         if (argArr.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        condition = this.parent.getValueFromArg(argArr[0]);
+        condition = this.parent.getValueFromArg(argArr[0], null, true);
         if (condition === this.parent.trueValue || condition === this.parent.falseValue) {
             return condition;
         }
@@ -786,7 +786,7 @@ export class BasicFormulas {
             condition = condition.replace(this.parent.arithMarker, ' ');
         }
         condition = this.parent.getValueFromArg(condition).toUpperCase().split(this.parent.tic).join('');
-        if (condition[0] === '#' || condition.indexOf('Infinity') > -1 || this.parent.getErrorStrings().indexOf(condition) > -1) {
+        if (condition === '' || condition[0] === '#' || condition.indexOf('Infinity') > -1 || this.parent.getErrorStrings().indexOf(condition) > -1) {
             return this.parent.getValueFromArg(argArr[1]).split(this.parent.tic).join('');
         } else {
             return condition;
@@ -1899,10 +1899,11 @@ export class BasicFormulas {
             numArray.push(parseFloat(this.parent.getValueFromArg(cellCollection[j as number]).split(this.parent.tic).join('')));
         }
         numArray = numArray.sort((n1: number, n2: number) => n1 - n2);
-        const len: number = numArray.length;
+        let len: number = numArray.length;
         for (let k: number = 0; k < len; k++) {
             if ((isNaN(numArray[k as number]))) {
                 numArray.splice(k, 1);
+                len = numArray.length;
                 k--;
                 if (numArray.length === 0) {
                     break;

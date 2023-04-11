@@ -960,7 +960,9 @@ export class MoveTool extends ToolBase {
             }
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {
-                if ((((object instanceof Selector && Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
+                //EJ2-71257 - Position change event completed state is not fired on selecting the node first and then dragging the node while changing node width at progress state.
+                // If object is instanceof selector then checked the length of selected objects is 1 or not. 
+                if ((((object instanceof Selector && ((Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || (object.selectedObjects && object.selectedObjects.length === 1))) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
                     (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
                     // eslint-disable-next-line max-len
                     || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) || this.isSelectionHasConnector(object)) {

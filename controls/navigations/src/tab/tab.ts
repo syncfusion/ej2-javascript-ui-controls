@@ -1609,7 +1609,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.showPopup(this.show);
         } else {
             this.isPopup = false;
-            if (!isNOU(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
+            if (!isNOU(trgParent) && (trgIndex !== this.selectedItem)) {
                 this.selectTab(trgIndex, args.originalEvent, true);
             }
         }

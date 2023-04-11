@@ -599,12 +599,6 @@ export class VerticalEvent extends EventBase {
             record.data = eventData;
             this.appendEvent(record, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
-            if (appHeight < this.cellHeight) {
-                const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
-                resizeHandlers.forEach((resizeHandler: HTMLElement) => {
-                    resizeHandler.style.height = Math.ceil(appHeight / resizeHandler.offsetHeight) + 'px';
-                });
-            }
         }
     }
 

@@ -1339,6 +1339,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         this.touchModule.destroy();
+        this.touchModule = null;
     }
 
     private removeFocus(): void {
@@ -1832,6 +1833,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.element.removeAttribute('tabindex');
         this.curUL = this.ulElement = this.liCollection = this.headerEle = undefined;
         this.element.innerHTML = '';
+        this.contentContainer = null;
+        this.selectedItems = null;
+        this.selectedLI = null;
+        this.liElement = null;
+        this.targetElement = null;
+        this.currentLiElements = null;
+        this.virtualCheckBox = null;
         super.destroy();
     }
 

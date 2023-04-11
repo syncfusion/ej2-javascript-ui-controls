@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { isEditable, createEditElement } from '../base/util';
@@ -35,5 +35,23 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
             },
             col.edit.params));
         this.obj.appendTo(args.element as HTMLElement);
+        if (this.parent.editSettings.mode === 'Batch') {
+            this.obj.element.addEventListener('keydown', this.keyEventHandler);
+        }
+    }
+
+    private keyEventHandler(args: KeyboardEventArgs): void {
+        if (args.key === 'Enter' || args.key === 'Tab') {
+            const evt: Event = new Event('change', {bubbles : false, cancelable: true});
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any).dispatchEvent(evt);
+        }
+    }
+
+    public destroy(): void {
+        if (this.obj && !this.obj.isDestroyed) {
+            this.obj.element.removeEventListener('keydown', this.keyEventHandler);
+            this.obj.destroy();
+        }
     }
 }

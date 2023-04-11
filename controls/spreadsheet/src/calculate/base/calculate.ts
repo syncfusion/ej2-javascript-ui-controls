@@ -951,6 +951,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         } else {
                             args = sFormula.substring(sFormula.indexOf(
                                 this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).split(this.getParseArgumentSeparator());
+                            if (libFormula === 'IFERROR' && (args[0] === "" || args[1] === "")) {
+                                args[1] = '0';
+                            }
                         }
                         if (sFormula.includes(this.getParseArgumentSeparator() + this.tic)) {
                             let joinIdx: number = null;
@@ -1449,7 +1452,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return cellRange;
     }
 
-    private computeValue(pFormula: string, refresh: boolean): string {
+    private computeValue(pFormula: string, refresh: boolean, isIfError?: boolean): string {
         try {
             const stack: string[] = [];
             let i: number = 0;
@@ -1632,25 +1635,25 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             break;
                         case this.parser.tokenAdd:
                             {
-                                this.getValArithmetic(stack, 'add');
+                                this.getValArithmetic(stack, 'add', isIfError);
                                 i = i + 1;
                             }
                             break;
                         case this.parser.tokenSubtract:
                             {
-                                this.getValArithmetic(stack, 'sub');
+                                this.getValArithmetic(stack, 'sub', isIfError);
                                 i = i + 1;
                             }
                             break;
                         case this.parser.tokenMultiply:
                             {
-                                this.getValArithmetic(stack, 'mul');
+                                this.getValArithmetic(stack, 'mul', isIfError);
                                 i = i + 1;
                             }
                             break;
                         case this.parser.tokenDivide:
                             {
-                                this.getValArithmetic(stack, 'div');
+                                this.getValArithmetic(stack, 'div', isIfError);
                                 i = i + 1;
                             }
                             break;
@@ -1731,11 +1734,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private getValArithmetic(stack: string[], operator: string): void {
+    private getValArithmetic(stack: string[], operator: string, isIfError?: boolean): void {
         let num1: string = stack.pop();
         num1 = num1 === this.emptyString ? '0' : num1;
         let num: number = Number(num1);
-        if (isNaN(num)) {
+        if (isNaN(num) && !isIfError) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
                 throw this.getErrorStrings()[CommonErrors.divzero];
             } else {
@@ -1745,7 +1748,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let num2: string = stack.pop();
         num2 = num2 === this.emptyString ? '0' : num2;
         num = Number(num2);
-        if (isNaN(num)) {
+        if (isNaN(num) && !isIfError) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
                 throw this.getErrorStrings()[CommonErrors.divzero];
             } else {
@@ -2285,7 +2288,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {boolean} isUnique - It specifies unique formula or not.
      * @returns {string} - To get the exact value from argument.
      */
-    public getValueFromArg(arg: string, isUnique?: boolean): string {
+    public getValueFromArg(arg: string, isUnique?: boolean, isIfError?: boolean): string {
         arg = arg.trim();
         let s: string | number = arg;
         let dateTime: Date = this.dateTime1900;
@@ -2338,7 +2341,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (this.getErrorStrings().indexOf(arg) > -1) {
             return arg;
         }
-        return this.computeValue(pObjCVal.toString(), false);
+        return this.computeValue(pObjCVal.toString(), false, isIfError);
     }
 
     /* eslint-disable-next-line */

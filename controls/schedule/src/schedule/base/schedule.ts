@@ -96,6 +96,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public workCellAction: WorkCellInteraction;
     public tzModule: Timezone;
     public resourceBase: ResourceBase;
+    public currentTimezoneDate: Date;
     private cellHeaderTemplateFn: CallbackFunction;
     private cellTemplateFn: CallbackFunction;
     private dateHeaderTemplateFn: CallbackFunction;
@@ -1696,7 +1697,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true, isPreventTimezone: false
             };
         }
-        this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
+        this.currentTimezoneDate = this.getCurrentTime();
+        this.activeCellsData = { startTime: new Date(this.currentTimezoneDate), endTime: new Date(this.currentTimezoneDate), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
@@ -2177,7 +2179,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getStartEndTime(startEndTime: string): Date {
         if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
-            const startEndDate: Date = util.resetTime(this.getCurrentTime());
+            const startEndDate: Date = util.resetTime(new Date(this.currentTimezoneDate) || this.getCurrentTime());
             const timeString: string[] = startEndTime.split(':');
             if (timeString.length === 2) {
                 startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);

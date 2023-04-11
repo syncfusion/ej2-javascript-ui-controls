@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### PDF Viewer
+
+#### New Features
+
+- `#I448261` – Exposed the API to load the number of pages on initial loading.
+
+#### Bug Fixes
+
+- `#F181069` - Now, the fill color of the free text annotation is  preserved properly on XFDF import.
+- `#F181073` - Now, we can able to delete and set status of annotations last comment.
+- `#I446702` - Now, the zooming operations for documents with mixed page orientations function correctly.
+- `#F181068` - Now, the free text annotation is resized properly if a large content is added to the comment panel.
+
 ## 21.1.38 (2023-04-04)
 
 ### PDF Viewer

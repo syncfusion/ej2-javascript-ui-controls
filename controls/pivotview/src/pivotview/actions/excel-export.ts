@@ -148,7 +148,7 @@ export class ExcelExport {
                             const styles: ExcelStyle = (pivotCell.axis === 'row') ? { hAlign: 'Left', bold: true, wrapText: true } : { numberFormat: formatList[field as string], bold: false, wrapText: true };
                             const headerStyle: ExcelStyle = { bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0 };
                             if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
-                                const aggMatrix: IMatrix2D = this.parent.engineModule.aggregatedValueMatrix;
+                                const aggMatrix: IMatrix2D = this.engine.aggregatedValueMatrix;
                                 let cellValue: string | number = pivotCell.axis === 'value' ? ((aggMatrix[rCnt as number] && aggMatrix[rCnt as number][cCnt as number]) ? aggMatrix[rCnt as number][cCnt as number] : (pivotCell.formattedText === '#DIV/0!' ? pivotCell.formattedText : pivotCell.value)) : pivotCell.formattedText;
                                 const isgetValuesHeader: boolean = ((this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row')
                                     || (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column'));

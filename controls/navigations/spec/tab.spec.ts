@@ -11061,6 +11061,77 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('EJ2-36811 - tab navigation is not working ', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('after removed the first tab issue fixed', () => {
+            tab = new Tab({
+                showCloseButton: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            const ele2: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
+            ele2.click();
+            expect(tab.selectedItem).toEqual(1);
+            let target: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item .e-close-icon')[0];
+            target.click();
+            expect(tab.selectedItem).toEqual(0);
+            const ele3: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
+            ele3.click();
+            expect(tab.selectedItem).toEqual(1);
+        });
+    });
+
+    describe('EJ2-71625 - when the same selected tab is re-selected, ', () => {
+        let tab: Tab;
+        let i: number = 0;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('the tab selecting event is triggered issue fixed', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ],
+                selecting: () => {
+                    i++;
+                },
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            const ele2: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
+            ele2.click();
+            expect(i).toEqual(1);
+            ele2.click();
+            expect(i).toEqual(1);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

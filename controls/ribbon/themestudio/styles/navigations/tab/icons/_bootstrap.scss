@@ -12,18 +12,10 @@
 
       .e-popup-up-icon::before {
         content: '\e988';
-
-        @media screen and (max-width: 480px) {
-          content: '\e936';
-        }
       }
 
       .e-popup-down-icon::before {
         content: '\e968';
-
-        @media screen and (max-width: 480px) {
-          content: '\e936';
-        }
       }
     }
 

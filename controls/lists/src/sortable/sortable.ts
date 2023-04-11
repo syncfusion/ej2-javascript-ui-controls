@@ -1,6 +1,6 @@
 import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
-import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
 /**
@@ -122,7 +122,33 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             queryPositionInfo: this.queryPositionInfo,
             distance: 5
         });
+        this.wireEvents();
     }
+    private wireEvents(): void {
+        const wrapper: Element = this.element;
+        EventHandler.add(wrapper, 'keydown', this.keyDownHandler, this);
+    }
+    private unwireEvents(): void {
+        const wrapper: Element = this.element;
+        EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
+    }
+    private keyDownHandler(e: KeyboardEvent): void {
+        if (e.keyCode === 27) {
+            let dragStop: Draggable = getComponent(this.element, 'draggable');
+            if (dragStop) {
+                dragStop.intDestroy(null);
+            }
+            const dragWrapper: Element = document.getElementsByClassName('e-sortableclone')[0];
+            if (dragWrapper) {
+                dragWrapper.remove();
+            }
+            const dragPlaceholder: Element = document.getElementsByClassName('e-sortable-placeholder')[0];
+            if (dragPlaceholder) {
+                dragPlaceholder.remove();
+            }
+        }
+    }
+
     private getPlaceHolder(target: HTMLElement, instance: Sortable): HTMLElement {
         if (instance.placeHolder) {
             const placeHolderElement: HTMLElement = instance.placeHolder(
@@ -381,6 +407,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
      */
 
     public destroy(): void {
+        this.unwireEvents();
         if (this.itemClass === 'e-sort-item') { this.itemClass = null; this.dataBind(); }
         (getComponent(this.element, Draggable) as Draggable).destroy();
         super.destroy();

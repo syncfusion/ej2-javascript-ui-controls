@@ -56,7 +56,7 @@ export class LineBase {
         let tempPoint: Points;
         for (let i: number = 0; i < tempPoints.length; i++) {
             tempPoint = tempPoints[i as number];
-            if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '' || (series.category === 'Indicator' && (isNaN(tempPoint.xValue) || isNaN(tempPoint.yValue)))) {
+            if (isNullOrUndefined(tempPoint.x) || (series.category === 'Indicator' && (isNaN(tempPoint.xValue) || isNaN(tempPoint.yValue)))) {
                 continue;
             } else {
                 tempPoints2.push(tempPoint);

@@ -898,8 +898,6 @@ export class ChangesSingleView {
         return span;
     }
     private acceptButtonClick(): void {
-        this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
-        this.removeFromParentCollec();
         this.revision.accept();
         if (this.owner.enableHeaderAndFooter) {
             this.owner.editor.updateHeaderFooterWidget();
@@ -907,8 +905,6 @@ export class ChangesSingleView {
     }
 
     private rejectButtonClick(): void {
-        this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
-        this.removeFromParentCollec();
         this.revision.reject();
         if (this.owner.enableHeaderAndFooter) {
             this.owner.editor.updateHeaderFooterWidget();
@@ -928,6 +924,7 @@ export class ChangesSingleView {
      * @private
      */
     public clear(): void {
+        this.removeFromParentCollec();
         if (this.acceptButton) {
             this.acceptButton.destroy();
             this.acceptButton = undefined;

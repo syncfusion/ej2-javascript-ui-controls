@@ -145,8 +145,7 @@ describe('Chart Crosshair', () => {
             let crosshair: Element = <Element>document.getElementById('container_svg').lastChild;
             let element1: HTMLElement;
             element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-            expect(element1.textContent == 'France1').toBe(true);
-
+            expect(element1.textContent == 'Germany1').toBe(true);
             loaded = (args: Object): void => {
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;

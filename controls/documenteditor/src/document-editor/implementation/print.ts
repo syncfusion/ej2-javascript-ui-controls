@@ -48,10 +48,15 @@ export class Print {
         if (width > height) {
             pageSize = 'landscape';
         }
-        if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Firefox')) !== -1) {
-            // Chrome and Firefox
+        if (browserUserAgent.indexOf('Chrome') !== -1) {
+            // Chrome
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100 %; } img { height: 100 %; width: 100 %; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
+            printWindow.document.write('<html><head><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
+        }
+        else if (browserUserAgent.indexOf('Firefox') !== -1) {
+            // Firefox
+            printWindow.document.write('<!DOCTYPE html>');
+            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; } img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
         } else {
             // Internet Explorer and Edge
             printWindow.document.write('<html><head><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
@@ -118,7 +123,8 @@ export class Print {
             documentHelper.render.renderWidgets(page, 0, 0, pageWidth, 0);
             const canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
             documentHelper.render.isPrinting = false;
-            htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div><br/>';
+            let breakstring: string = (i==documentHelper.pages.length -1) ? '':'<br/>';
+            htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div>' + breakstring;
         }
         element.innerHTML = htmlString;
     }

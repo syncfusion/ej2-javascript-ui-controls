@@ -539,6 +539,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public pageRenderCount: number = 2;
+    /**
+     * @private
+     */
     public isToolbarInkClicked: boolean;
     /**
      * @private
@@ -1392,8 +1396,9 @@ export class PdfViewerBase {
         if (this.renderedPagesList.indexOf(pageIndex) === -1 && !isZoomMode) {
             this.createRequestForRender(pageIndex);
             let pageNumber: number = pageIndex + 1;
-            if (pageNumber < this.pageCount) {
-                this.createRequestForRender(pageNumber);
+            let renderLimit = this.pdfViewer.initialRenderPages <= this.pageCount ? (this.pdfViewer.initialRenderPages > this.pageRenderCount) ? this.pdfViewer.initialRenderPages : 2 : this.pageCount;
+            for (let i = 1; i < renderLimit; i++) {
+                this.createRequestForRender(i);
                 pageNumber = pageNumber + 1;
             }
             if (this.pageSize[parseInt(pageNumber.toString(), 10)]) {
@@ -4809,7 +4814,16 @@ export class PdfViewerBase {
             if ((isPortrait && isLandscape) || differentPageSize) {
                 this.isMixedSizeDocument = true;
             }
-            const limit: number = this.pageCount < 10 ? this.pageCount : 10;
+            let limit: number;
+            if (this.pdfViewer.initialRenderPages > 10) {
+                if (this.pdfViewer.initialRenderPages > 100) {
+                    limit = pageLimit;
+                } else {
+                    limit = this.pdfViewer.initialRenderPages <= this.pageCount ? this.pdfViewer.initialRenderPages : this.pageCount;
+                }
+            } else {
+                limit = this.pageCount < 10 ? this.pageCount : 10;
+            }
             for (let i: number = 0; i < limit; i++) {
                 this.renderPageContainer(i, this.getPageWidth(i), this.getPageHeight(i), this.getPageTop(i));
             }
@@ -4858,7 +4872,8 @@ export class PdfViewerBase {
                 const pageDiv: HTMLElement = this.getElement('_pageDiv_' + j);
                 const pageCanvas: HTMLElement = this.getElement('_pageCanvas_' + j);
                 const textLayer: HTMLElement = this.getElement('_textLayer_' + j);
-                if (pageCanvas) {
+                let initialLoadedPages: number = this.pdfViewer.initialRenderPages > this.pageRenderCount ? (this.pdfViewer.initialRenderPages <= this.pageCount) ? (this.pdfViewer.initialRenderPages - 1) : this.pageCount : -1;
+                if (pageCanvas && j > initialLoadedPages) {
                     pageCanvas.parentNode.removeChild(pageCanvas);
                     if (textLayer) {
                         if (this.pdfViewer.textSelectionModule && textLayer.childNodes.length !== 0 && !this.isTextSelectionDisabled) {
@@ -4871,7 +4886,7 @@ export class PdfViewerBase {
                         this.renderedPagesList.splice(indexInArray, 1);
                     }
                 }
-                if (pageDiv) {
+                if (pageDiv && j > initialLoadedPages) {
                     pageDiv.parentNode.removeChild(pageDiv);
                     const indexInArray: number = this.renderedPagesList.indexOf(j);
                     if (indexInArray !== -1) {
@@ -4960,6 +4975,13 @@ export class PdfViewerBase {
                         // eslint-disable-next-line
                         let pageData: any = window.sessionStorage.getItem(proxy.documentId + '_pagedata');
                         if (proxy.pageCount > 100) {
+                            if (this.pdfViewer.initialRenderPages > 100) {
+                                let limit = this.pdfViewer.initialRenderPages <= proxy.pageCount ? this.pdfViewer.initialRenderPages : proxy.pageCount;
+                                for (var i = 100; i < limit; i++) {
+                                    proxy.renderPageContainer(i, proxy.getPageWidth(i), proxy.getPageHeight(i), proxy.getPageTop(i));
+                                    proxy.createRequestForRender(i);
+                                }
+                            }
                             proxy.pdfViewer.fireDocumentLoad(pageData);
                             let linkAnnotationModule = proxy.pdfViewer.linkAnnotationModule;
                             if (linkAnnotationModule && linkAnnotationModule.linkAnnotation && linkAnnotationModule.linkAnnotation.length > 0 && linkAnnotationModule.linkPage.length > 0) {
@@ -5566,7 +5588,7 @@ export class PdfViewerBase {
         }
         pageDiv.style.top = topValue + 'px';
         this.pageContainer.appendChild(pageDiv);
-        this.pageContainer.style.width = this.viewerContainer.clientWidth + 'px';
+        this.pageContainer.style.width = (this.isMixedSizeDocument && (this.highestWidth * this.getZoomFactor()) > this.viewerContainer.clientWidth)  ? (this.highestWidth * this.getZoomFactor()) + 'px' : this.viewerContainer.clientWidth + 'px';
         this.createWaitingPopup(pageNumber);
         this.orderPageDivElements(pageDiv, pageNumber);
         this.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
@@ -5706,6 +5728,7 @@ export class PdfViewerBase {
             } else {
                 leftPosition = pageDiff;
             }
+            this.pageContainer.style.width = ((this.highestWidth * this.getZoomFactor()) > this.viewerContainer.clientWidth)  ? (this.highestWidth * this.getZoomFactor()) + 'px' : this.viewerContainer.clientWidth + 'px';
         } else {
             if (this.viewerContainer.clientWidth > 0) {
                 leftPosition = (this.viewerContainer.clientWidth - this.getPageWidth(pageIndex)) / 2;
@@ -6085,17 +6108,25 @@ export class PdfViewerBase {
                 pageHeight = this.getPageHeight(next);
                 let allowPageRendering = this.isMinimumZoom ? this.isMinimumZoom : this.renderedPagesList.indexOf(next) === -1;
                 if (allowPageRendering && !this.getMagnified() && pageHeight) {
-                    this.createRequestForRender(next);
-                    this.renderCountIncrement();
-                    while (this.viewerContainer.clientHeight > pageHeight) {
-                        next = next + 1;
-                        if (next < this.pageCount) {
-                            this.renderPageElement(next);
-                            this.createRequestForRender(next);
-                            pageHeight += this.getPageHeight(next);
-                            this.renderCountIncrement();
-                        } else {
-                            break;
+                    if (this.isDocumentLoaded && this.pdfViewer.initialRenderPages > this.pageRenderCount && (this.getPageHeight(this.pdfViewer.initialRenderPages - 1) + this.getPageTop(this.pdfViewer.initialRenderPages - 1)) > this.viewerContainer.clientHeight) {
+                        let renderLimit = this.pdfViewer.initialRenderPages <= this.pageCount ? this.pdfViewer.initialRenderPages : this.pageCount;
+                        for (var i = 1; i < renderLimit; i++) {
+                            this.createRequestForRender(i);
+                        }
+                    } else {
+                        this.createRequestForRender(next);
+                        this.renderCountIncrement();
+                        while (this.viewerContainer.clientHeight > pageHeight) {
+                            next = next + 1;
+                            if (next < this.pageCount) {
+                                this.renderPageElement(next);
+                                this.createRequestForRender(next);
+                                pageHeight += this.getPageHeight(next);
+                                this.renderCountIncrement();
+                            }
+                            else {
+                                break;
+                            }
                         }
                     }
                 }

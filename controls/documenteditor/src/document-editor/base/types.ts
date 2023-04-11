@@ -1565,6 +1565,18 @@ export type CompatibilityMode =
  * Specifies the Word 2013 compatibility mode.
  */
 'Word2013';
+/**
+ * Specifies the revision type.
+ */
+export type RevisionActionType =
+/**
+ * Specifies the accept action.
+ */
+'Accept' |
+/**
+ * Specifies the reject action.
+ */
+'Reject';
 
 
 /**

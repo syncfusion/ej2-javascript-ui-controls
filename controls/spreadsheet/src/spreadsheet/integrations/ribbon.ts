@@ -995,16 +995,16 @@ export class Ribbon {
 
         const iconSets: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
         const is1: HTMLElement = this.parent.createElement('div', { id: 'is1', className: 'e-is1' });
-        is1.innerText = 'Directional';
+        is1.innerText = l10n.getConstant('Directional');
         const is2: HTMLElement = this.parent.createElement('div', { id: 'is2', className: 'e-is2' });
         const is3: HTMLElement = this.parent.createElement('div', { id: 'is3', className: 'e-is3' });
-        is3.innerText = 'Shapes';
+        is3.innerText = l10n.getConstant('Shapes');
         const is4: HTMLElement = this.parent.createElement('div', { id: 'is4', className: 'e-is4' });
         const is5: HTMLElement = this.parent.createElement('div', { id: 'is5', className: 'e-is5' });
-        is5.innerText = 'Indicators';
+        is5.innerText = l10n.getConstant('Indicators');
         const is6: HTMLElement = this.parent.createElement('div', { id: 'is6', className: 'e-is6' });
         const is7: HTMLElement = this.parent.createElement('div', { id: 'is7', className: 'e-is7' });
-        is7.innerText = 'Ratings';
+        is7.innerText = l10n.getConstant('Ratings');
         const is8: HTMLElement = this.parent.createElement('div', { id: 'is8', className: 'e-is8' });
         is1.title = l10n.getConstant('GYColorScale'); is2.title = l10n.getConstant('YGColorScale');
         is3.title = l10n.getConstant('GYColorScale'); is4.title = l10n.getConstant('YGColorScale');
@@ -1736,13 +1736,13 @@ export class Ribbon {
             const toolItemModel: TlbItemModel[] = [
                 { type: 'Input', template: findTextElement },
                 {
-                    prefixIcon: 'e-icons e-prev-icon', tooltipText: 'Find Previous', type: 'Button', cssClass: 'e-findRib-prev',
+                    prefixIcon: 'e-icons e-prev-icon', tooltipText: l10n.getConstant('FindPreviousBtn'), type: 'Button', cssClass: 'e-findRib-prev',
                     disabled: true
                 },
-                { prefixIcon: 'e-icons e-next-icon', tooltipText: 'Find Next', type: 'Button', cssClass: 'e-findRib-next', disabled: true },
+                { prefixIcon: 'e-icons e-next-icon', tooltipText: l10n.getConstant('FindNextBtn'), type: 'Button', cssClass: 'e-findRib-next', disabled: true },
                 { type: 'Separator' },
-                { prefixIcon: 'e-icons e-option-icon', tooltipText: 'More Options', type: 'Button', cssClass: 'e-findRib-more' },
-                { prefixIcon: 'e-icons e-close', tooltipText: 'Close', type: 'Button', cssClass: 'e-findRib-close' }
+                { prefixIcon: 'e-icons e-option-icon', tooltipText: l10n.getConstant('MoreOptions'), type: 'Button', cssClass: 'e-findRib-more' },
+                { prefixIcon: 'e-icons e-close', tooltipText: l10n.getConstant('Close'), type: 'Button', cssClass: 'e-findRib-close' }
             ];
             toolbarObj = new Toolbar({
                 clicked: (args: ClickEventArgs): void => {

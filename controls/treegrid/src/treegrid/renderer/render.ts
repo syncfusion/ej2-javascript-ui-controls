@@ -77,9 +77,10 @@ export class Render {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
             }
         }
+        const dragStartData: string = 'dragStartData';
         const draggedRecord: string = 'draggedRecord';
-        if (!isNullOrUndefined(this.parent.rowDragAndDropModule) && !isNullOrUndefined(this.parent.rowDragAndDropModule[`${draggedRecord}`])
-        && this.parent.getContentTable().scrollHeight <= this.parent.getContent().clientHeight) {
+        if (this.parent.rowDragAndDropModule && this.parent.grid.rowDragAndDropModule && (this.parent.grid.rowDragAndDropModule[`${dragStartData}`] ||
+        this.parent.rowDragAndDropModule[`${draggedRecord}`]) && this.parent.getContentTable().scrollHeight <= this.parent.getContent().clientHeight) {
             const lastRowBorder: string = 'lastRowBorder';
             const lastVisualData: ITreeData = this.parent.getVisibleRecords()[this.parent.getVisibleRecords().length - 1];
             if (lastVisualData.uniqueID === (args.data as ITreeData).uniqueID && !isNullOrUndefined(args.row as HTMLTableRowElement) && !(args.row as HTMLTableRowElement).cells[0].classList.contains('e-lastrowcell')) {

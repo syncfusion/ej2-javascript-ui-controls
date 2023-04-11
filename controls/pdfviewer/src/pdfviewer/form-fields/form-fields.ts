@@ -1283,7 +1283,9 @@ export class FormFields {
                     currentField.className = 'e-pdfviewer-signatureformfields-signature';
                 }
                 if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+                    let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
                     let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
+                    annot.bounds = {x: bounds.x * zoomvalue, y:bounds.y * zoomvalue,width: bounds.width * zoomvalue, height : bounds.height * zoomvalue };
                     this.updateSignatureDataInSession(annot, key);
                 } else {
                     this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);

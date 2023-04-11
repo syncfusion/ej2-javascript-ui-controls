@@ -419,7 +419,7 @@ export class Axis extends ChildProperty<Axis> {
                 label = textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle);
             } else { label = labels[i as number]; }
             const size: Size = (axis.angle % 180 === 0) ?
-                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, labels[i as number], axis.angle);
+                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, label, axis.angle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
             if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && i > 0 && axis.labelRotation === 0) {
                 if (multipleRow[i as number].end >= heatmap.initialClipRect.width && i < labels.length - 1) {

@@ -756,8 +756,8 @@ describe('Month-agenda view rendering', () => {
             expect(schObj.viewCollections.length).toEqual(3);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month-agenda');
             expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap')).offsetHeight).toEqual(426);
-            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap').firstElementChild).offsetHeight).toEqual(202);
-            expect((<HTMLElement>schObj.element.querySelector('.e-appointment-wrap')).offsetHeight).toEqual(224);
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap').firstElementChild).offsetHeight).toEqual(242);
+            expect((<HTMLElement>schObj.element.querySelector('.e-appointment-wrap')).offsetHeight).toEqual(184);
             schObj.changeCurrentView('MonthAgenda', 1);
             schObj.dataBind();
             expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap')).offsetHeight).toEqual(426);

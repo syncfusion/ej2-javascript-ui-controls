@@ -3261,6 +3261,15 @@ export interface PdfViewerModel extends ComponentModel{
     retryStatusCodes?: number[];
 
     /**
+     * Initially renders the first N pages of the PDF document when the document is loaded.
+     * 
+     * {% codeBlock src='pdfviewer/initialRenderPages/index.md' %}{% endcodeBlock %}
+     *
+     * @default 2
+     */
+    initialRenderPages?: number;
+
+    /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
      * 
      * {% codeBlock src='pdfviewer/showNotificationDialog/index.md' %}{% endcodeBlock %}

@@ -1,5 +1,5 @@
 /* eslint-disable  */
-import { RevisionType } from '../../base';
+import { RevisionType, RevisionActionType } from '../../base/types';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox } from '../viewer/page';
@@ -8,6 +8,7 @@ import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
 import { ParagraphInfo } from '../editor/editor-helper';
 import { BaseHistoryInfo, EditorHistory } from '../editor-history';
+import { RevisionActionEventArgs, revisionActionEvent } from '../../base/index';
 /**
  * The revision class which holds the information related to changes made in the document
  */
@@ -152,6 +153,11 @@ export class Revision {
      * @returns {void}
      */
     public accept(): void {
+        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Accept' };
+        this.owner.trigger(revisionActionEvent, eventArgs);
+        if (eventArgs.cancel) {
+            return;
+        }
         if (!this.owner.documentHelper.isTrackedOnlyMode) {
             if (!this.owner.revisions.skipGroupAcceptReject && this.range[0] instanceof WRowFormat
                 && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
@@ -165,6 +171,11 @@ export class Revision {
      * Method which rejects the selected revision, revision marks will be removed leaving the original content.
      */
     public reject(): void {
+        const eventArgs: RevisionActionEventArgs = { author: this.author, cancel: false, revisionType: this.revisionType, actionType: 'Reject' };
+        this.owner.trigger(revisionActionEvent, eventArgs);
+        if (eventArgs.cancel) {
+            return;
+        }
         if (!this.owner.documentHelper.isTrackedOnlyMode) {
             if (!this.owner.revisions.skipGroupAcceptReject && this.range[0] instanceof WRowFormat
                 && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
@@ -524,10 +535,16 @@ export class RevisionCollection {
                 this.owner.editor.updateHeaderFooterWidget();
             }
         }
-        let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
-        this.owner.selection.selectContent(textPosition, true);
+        if(!isNullOrUndefined(selection.editPosition)) {
+            let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+            this.owner.selection.selectContent(textPosition, true);
+        }
         if (this.owner.editorHistory) {
             this.owner.editorHistory.updateComplexHistory();
+            if(isNullOrUndefined(selection.editPosition)) {
+                this.owner.editorHistory.undoStack.pop();
+            } 
+            
         }
         this.owner.editor.reLayout(this.owner.selection, false);
         this.skipGroupAcceptReject = false;

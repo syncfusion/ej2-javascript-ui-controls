@@ -159,8 +159,9 @@ export class Browser {
 
     private static getValue(key: string, regX: RegExp): Object {
         const browserDetails: {} = typeof window !== 'undefined' ? window.browserDetails : {};
-        if (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
-            browserDetails['isIos'] = true;
+        const isSurfaceDevice: boolean = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Windows') > -1 && screen && screen.width < 1360;
+        if (typeof navigator !== 'undefined' && (navigator.platform === 'MacIntel' || isSurfaceDevice) && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
+            browserDetails['isIos'] = navigator.platform === 'MacIntel';
             browserDetails['isDevice'] = true;
             browserDetails['isTouch'] = true;
             browserDetails['isPointer'] = true;

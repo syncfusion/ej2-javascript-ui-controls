@@ -1531,7 +1531,7 @@ export class Renderer {
                     let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                     for (let i: number = 0; i < errorDetails.elements.length; i++) {
                         let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                        if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                        if (elementBox.ignoreOnceItems.indexOf(HelperMethods.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
                             this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                         }
                     }
@@ -1659,7 +1659,7 @@ export class Renderer {
             if (splittedText.length > 1) {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
-                    let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
+                    let retrievedText: string = HelperMethods.manageSpecialCharacters(currentText, undefined, true);
 
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
                         this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
@@ -1667,7 +1667,7 @@ export class Renderer {
                     }
                 }
             } else {
-                let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
+                let retrievedText: string = HelperMethods.manageSpecialCharacters(checkText, undefined, true);
                 if (checkText.length > 0) {
 
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
@@ -2077,7 +2077,8 @@ export class Renderer {
                 }
                 if (cell && cell.columnIndex + cell.cellFormat.columnSpan - 1 === tableCell.columnIndex - 1) {
                     let border: WBorder = !isBidiTable ? TableCellWidget.getCellRightBorder(cell) : TableCellWidget.getCellLeftBorder(cell);
-                    let lineWidthInt: number = border.lineWidth;
+                    let lineWidthInt: number = HelperMethods.convertPointToPixel(border.getLineWidth());
+                    cellLeftMargin = cell.margin.left - lineWidthInt;
                     if (cell.y + cell.height < tableCell.y) {
                         continue;
                     } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {

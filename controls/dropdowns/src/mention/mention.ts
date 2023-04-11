@@ -1023,6 +1023,12 @@ export class Mention extends DropDownBase {
                     }
                 }
                 append([this.list], popupEle);
+                if (this.inputElement.parentElement && this.inputElement.parentElement.parentElement &&
+                    this.inputElement.parentElement.parentElement.classList.contains('e-richtexteditor')) {
+                    if (popupEle.firstElementChild && popupEle.firstElementChild.childElementCount > 0) {
+                        popupEle.firstElementChild.setAttribute('aria-owns', this.inputElement.parentElement.parentElement.id);
+                    }
+                }
                 if ((!this.popupObj || !document.body.contains(this.popupObj.element)) ||
                  !document.contains(popupEle) && isNullOrUndefined(this.target)) {
                     document.body.appendChild(popupEle);

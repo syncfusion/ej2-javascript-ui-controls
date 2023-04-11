@@ -3487,6 +3487,22 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
         (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10246, CustomerID: 'updated' });
     });
 
+    it('Check current view data length', function () {
+        gridObj.editSettings.mode = 'Batch'
+    });
+
+    it('Add complete', function () {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 1024;
+        gridObj.editModule.saveCell();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        document.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+    });
+
+    it('Check current view data length', function () {
+        expect(gridObj.currentViewData.length).toBe(73);
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

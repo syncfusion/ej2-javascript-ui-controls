@@ -1,7 +1,7 @@
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
-    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel, SelectEventArgs, PopupOpenEventArgs
+    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel, SelectEventArgs, PopupOpenEventArgs, NavigatingEventArgs
 } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
@@ -3689,6 +3689,76 @@ describe('Schedule timeline day view', () => {
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(8);
             expect((schObj.element.querySelector('.e-more-indicator') as HTMLElement).innerText).toEqual('+7 more');
+        });
+    });
+
+    describe('EJ2CORE-1085 - schedule layout performance checking', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2023, 1, 4),
+                currentView: 'TimelineDay',
+                timezone: 'UTC',
+                timeScale: { interval: 60, slotCount: 6 },
+                timeFormat: 'HH:mm',
+                views: [
+                    { option: 'TimelineDay' }
+                ],
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Performance checking with timezone property on date change', (done: DoneFn) => {
+            let startTime: number = 0;
+            schObj.dataBinding = () => {
+                const endTime: number = window.performance.now();
+                expect((endTime - startTime) / 1000).toBeLessThanOrEqual(0.5);
+                done();
+            };
+            schObj.navigating = (args: NavigatingEventArgs) => {
+                if (args.action === 'date') {
+                    startTime = window.performance.now();
+                }
+                done();
+            };
+            schObj.selectedDate = new Date(2023, 1, 20);
+            schObj.dataBind();
         });
     });
 

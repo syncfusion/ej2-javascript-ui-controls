@@ -6,10 +6,9 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { withIn } from '../../common/utils/helper';
 import { Chart } from '../chart';
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
 import { NiceInterval } from '../axis/axis-helper';
-
 
 /**
  * `Category` module is used to render category axis.
@@ -68,7 +67,11 @@ export class Category extends NiceInterval {
      * @private
      */
     public applyRangePadding(axis: Axis, size: Size): void {
-        const ticks: number = (axis.labelPlacement === 'BetweenTicks' && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;
+        let isColumn: boolean;
+        axis.series.forEach((element) => {
+            if (!isColumn) { isColumn = element.type.indexOf('Column') > -1 && isNullOrUndefined(axis.minimum) && isNullOrUndefined(axis.maximum); }
+        });
+        const ticks: number = ((axis.labelPlacement === 'BetweenTicks' || isColumn) && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;
         if (ticks > 0) {
             axis.actualRange.min -= ticks;
             axis.actualRange.max += ticks;

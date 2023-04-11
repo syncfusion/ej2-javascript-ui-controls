@@ -273,11 +273,10 @@ describe('Chart Control', () => {
         it('Checking with category axis OnTicks', (done: Function) => {
             loaded = (args: Object): void => {
                 let point = document.getElementById('container_Series_0_Point_0');
-                expect(point != null).toBe(true);
                 let axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent === 'Jan').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
-                expect(parseInt(axisLabel.getAttribute('x')) < parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
+                expect(parseInt(axisLabel.getAttribute('x')) > parseInt(axisStart.getAttribute('d').split(' ')[1])).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

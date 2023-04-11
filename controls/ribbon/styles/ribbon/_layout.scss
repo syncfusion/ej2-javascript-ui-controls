@@ -236,6 +236,10 @@
         overflow-y: hidden;
       }
 
+      .e-input-group {
+        margin-bottom: 0;
+      }
+
       .e-ribbon-group {
         padding-top: $ribbon-simplified-group-padding;
         height: auto;
@@ -525,6 +529,7 @@
 
       .e-colorpicker-wrapper {
         border: 1px solid transparent;
+        border-radius: $ribbon-items-border-radius;
 
         .e-split-btn-wrapper.e-rtl .e-split-colorpicker {
           &.e-split-btn {
@@ -912,6 +917,10 @@
 
       .e-ribbon-group {
         height: auto;
+      }
+
+      .e-input-group {
+        margin-bottom: 0;
       }
 
       .e-ribbon-group-content {

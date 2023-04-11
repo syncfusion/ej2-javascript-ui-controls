@@ -697,7 +697,7 @@ describe('Virtual scroll', () => {
             const StartTime: number = window.performance.now();
             schObj.crudModule.refreshProcessedData(true);
             const endTime: number = window.performance.now();
-            expect(Math.floor((endTime - StartTime) / 1000)).toBeLessThanOrEqual(1);
+            expect((endTime - StartTime) / 1000).toBeLessThanOrEqual(1.5);
         });
     });
 

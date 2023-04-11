@@ -9,14 +9,14 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, RevisionActionEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs, FormFieldFillEventArgs, AutoResizeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
@@ -235,6 +235,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
+    /**
+     * Triggers before accepting or rejecting changes.
+     *
+     * @event beforeAcceptRejectChanges
+     */
+    @Event()
+    public beforeAcceptRejectChanges: EmitType<RevisionActionEventArgs>;
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
      *
@@ -964,6 +971,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             commentBegin: this.onCommentBegin.bind(this),
             commentEnd: this.onCommentEnd.bind(this),
             commentDelete: this.onCommentDelete.bind(this),
+            beforeAcceptRejectChanges: this.onBeforeAcceptRejectChanges.bind(this),
             beforeCommentAction: this.onCommentAction.bind(this),
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
@@ -1043,6 +1051,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onCommentDelete(args: CommentDeleteEventArgs): void {
         this.trigger(commentDeleteEvent, args);
+    }
+    private onBeforeAcceptRejectChanges(args: RevisionActionEventArgs): void {
+        this.trigger(revisionActionEvent, args);
     }
     private onCommentAction(args: CommentActionEventArgs): void {
         this.trigger(beforeCommentActionEvent, args);

@@ -1176,6 +1176,8 @@ export class Virtualization {
 
     public destroy(): void {
         this.wireScrollEvent(true);
+        this.topElement = null;
+        this.bottomElement = null;
     }
 }
 

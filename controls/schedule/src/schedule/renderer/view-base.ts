@@ -253,7 +253,7 @@ export class ViewBase {
     }
 
     public isCurrentDate(date: Date): boolean {
-        return date.setHours(0, 0, 0, 0) === this.parent.getCurrentTime().setHours(0, 0, 0, 0);
+        return date.setHours(0, 0, 0, 0) === new Date(this.parent.currentTimezoneDate).setHours(0, 0, 0, 0);
     }
 
     public isCurrentMonth(date: Date): boolean {

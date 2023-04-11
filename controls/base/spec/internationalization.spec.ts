@@ -120,6 +120,30 @@ describe('Internationalization', () => {
         });
     });
 
+    describe('Check number fromatting and trailing zeros for decimal type', () => {
+        let numIntl: Internationalization = new Internationalization();
+        it('numberfromatting using the formatNumber #1', () => {
+            let result: string = numIntl.formatNumber(63219.139999, { format: '#,##0.00##' });
+            expect(result).toBe('63,219.14');
+        });
+        it('numberfromatting using the formatNumber #2', () => {
+            let result: string = numIntl.formatNumber(63219.1339999, { format: '#,##0.00##' });
+            expect(result).toBe('63,219.134');
+        });
+        it('numberfromatting using the formatNumber #3', () => {
+            let result: string = numIntl.formatNumber(0.002341123, { format: '#,##0.00##' });
+            expect(result).toBe('0.0023');
+        });
+        it('numberfromatting using the formatNumber #4', () => {
+            let result: string = numIntl.formatNumber(63219.00000, { format: '#,##0.00##' });
+            expect(result).toBe('63,219.00');
+        });
+        afterAll(() => {
+            setCulture('en-US');
+            setCurrencyCode('USD');
+        });
+    });
+
     describe('Number Fromatting with local culture set', () => {
         let numIntl: Internationalization = new Internationalization('ja');
         it('numberformatter using the getNumberFormatter and currency code set in option', () => {

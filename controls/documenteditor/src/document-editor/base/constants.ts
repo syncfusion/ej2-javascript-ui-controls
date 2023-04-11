@@ -35,6 +35,8 @@ export const beforeCommentActionEvent: string = 'beforeCommentAction';
 /** @hidden */
 export const commentDeleteEvent: string = 'commentDelete';
 /** @hidden */
+export const revisionActionEvent: string = 'beforeAcceptRejectChanges';
+/** @hidden */
 export const beforePaneSwitchEvent: string = 'beforePaneSwitch';
 /** @hidden */
 export const requestNavigateEvent: string = 'requestNavigate';

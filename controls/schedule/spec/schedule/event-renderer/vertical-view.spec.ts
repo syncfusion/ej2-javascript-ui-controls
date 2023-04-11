@@ -834,7 +834,7 @@ describe('Vertical View Event Render Module', () => {
             };
         });
 
-        it ('EJ2-60623 - ScrollTo method checking when date alone is passed with enable rtl in WeekView', (done: DoneFn) => {
+        it('EJ2-60623 - ScrollTo method checking when date alone is passed with enable rtl in WeekView', (done: DoneFn) => {
             schObj.currentView = 'Week';
             schObj.dataBind();
             schObj.dataBound = () => {
@@ -1127,8 +1127,8 @@ describe('Vertical View Event Render Module', () => {
 
         it('Checking appointment resize handler height', () => {
             const appElement: HTMLElement = schObj.element.querySelector('.e-appointment');
-            expect((appElement.querySelector('.e-event-resize.e-top-handler') as HTMLElement).offsetHeight).toEqual(2);
-            expect((appElement.querySelector('.e-event-resize.e-bottom-handler') as HTMLElement).offsetHeight).toEqual(2);
+            expect((appElement.querySelector('.e-event-resize.e-top-handler') as HTMLElement).offsetHeight).toEqual(3);
+            expect((appElement.querySelector('.e-event-resize.e-bottom-handler') as HTMLElement).offsetHeight).toEqual(3);
         });
     });
 
@@ -1830,6 +1830,103 @@ describe('Vertical View Event Render Module', () => {
 
         it('checking generateEventOccurrences method with parent event and wrong startDate as arguments', () => {
             expect(schObj.generateEventOccurrences(data[1], new Date(2023, 2, 3)).length).toEqual(0);
+        });
+    });
+
+    describe('EJ2-71317 - schedule virtual scrolling performance', () => {
+        let schObj: Schedule;
+        let performanceStart: number;
+        function generateResources(count: number, parentCount: number = 0): Record<string, any>[] {
+            const data: Record<string, any>[] = [];
+            const colors: string[] = [
+                '#ff8787', '#9775fa', '#748ffc', '#3bc9db', '#69db7c', '#fdd835', '#748ffc',
+                '#9775fa', '#df5286', '#7fa900', '#fec200', '#5978ee', '#00bdae', '#ea80fc'
+            ];
+            if (parentCount === 0) {
+                for (let a: number = 1; a <= count; a++) {
+                    const n: number = Math.floor(Math.random() * colors.length);
+                    data.push({ Id: a, Text: 'Resource ' + a, Color: colors[n] });
+                }
+            } else {
+                for (let a: number = 1; a <= count; a++) {
+                    const n: number = Math.floor(Math.random() * colors.length);
+                    data.push({ Id: a, ParentId: Math.ceil((a / count) * parentCount), Text: 'Resource ' + a, Color: colors[n] });
+                }
+            }
+            return data;
+        }
+
+        function generateEvents(resCount: number, parentCount: number, daysCount: number, start: Date): Record<string, any>[] {
+            const data: Record<string, any>[] = [];
+            let id = 1;
+            for (let i = 0; i < resCount; i++) {
+                const childId: number = i + 1;
+                const parentId: number = Math.ceil((childId / resCount) * parentCount);
+                let startDate: Date = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                let endDate: Date = new Date(startDate.getTime() + 50000000);
+
+                for (let j = 0; j < daysCount; j++) {
+                    data.push({
+                        Id: id,
+                        Subject: 'Event_' + parentId + '_' + childId,
+                        StartTime: startDate,
+                        EndTime: endDate,
+                        ParentId: parentId,
+                        ChildId: childId
+                    });
+                    id++;
+                    startDate = new Date(startDate.getTime() + 86400000);
+                    endDate = new Date(startDate.getTime() + 50000000);
+                }
+            }
+            return data;
+        }
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 0, 1),
+                allowMultiDrag: true,
+                rowAutoHeight: true,
+                showHeaderBar: false,
+                timeScale: { enable: true, interval: 1440, slotCount: 1 },
+                views: [
+                    { option: 'TimelineDay', interval: 30, allowVirtualScrolling: true }
+                ],
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'ParentId', title: 'Room', name: 'Rooms',
+                        dataSource: generateResources(50),
+                        textField: 'Text', idField: 'Id', colorField: 'Color'
+                    }, {
+                        field: 'ChildId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: generateResources(200, 50),
+                        textField: 'Text', idField: 'Id', colorField: 'Color', groupIDField: 'ParentId'
+                    }
+                ],
+                eventSettings: {
+                    ignoreWhitespace: true
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Performance checking with events rendering', (done: DoneFn) => {
+            let data: Record<string, any>[] = generateEvents(200, 50, 30, new Date(2023, 0, 1));
+            schObj.dataBound = () => {
+                expect((performance.now() - performanceStart) / 1000).toBeLessThanOrEqual(1);
+                done();
+            };
+            performanceStart = performance.now();
+            schObj.eventSettings.dataSource = data;
+            schObj.dataBind();
         });
     });
 

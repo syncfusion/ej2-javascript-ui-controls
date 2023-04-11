@@ -1,4 +1,4 @@
-import { CommentAction, HyperlinkType, ServerActionType } from './types';
+import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 
@@ -212,6 +212,27 @@ export interface CommentDeleteEventArgs {
      * Specifies whether the event is canceled or not.
      */
     cancel: boolean
+}
+/**
+ * This event args provides the necessary information about the revision action.
+ */
+export interface RevisionActionEventArgs  {
+    /**
+     * Specifies the author of the revision.
+     */
+    author: string
+    /**
+     * Specifies whether the action is canceled or not.
+     */
+    cancel: boolean
+    /**
+     * Specifies the revision type.
+     */
+    revisionType: RevisionType
+    /**
+     * Specifies the current action type.
+     */
+    actionType: RevisionActionType
 }
 /**
  * This event args provides the necessary information about comment actions.

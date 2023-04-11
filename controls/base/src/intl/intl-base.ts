@@ -944,6 +944,7 @@ export namespace IntlBase {
             }
         }
         if (!isNullOrUndefined(dOptions)) {
+            dOptions.isCustomFormat = true;
             extend(cOptions, isCurrencyPercent([cOptions.nlead, cOptions.nend], '$', dOptions.currencySymbol));
             if (!cOptions.isCurrency) {
                 extend(cOptions, isCurrencyPercent(

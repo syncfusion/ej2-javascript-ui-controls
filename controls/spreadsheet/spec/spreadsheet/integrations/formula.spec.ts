@@ -4392,8 +4392,23 @@ describe('Spreadsheet formula module ->', () => {
                     });
                 });
             });
+            it('Spreadsheet getting hanged while inserting SMALL formula that refers empty valued cells', (done: Function) => {
+                helper.edit('D1', '=SMALL(A1:A10,5)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].formula).toBe('=SMALL(A1:A10,5)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe(5);
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('5');
+                helper.edit('A7', 'text1');
+                helper.edit('A8', 'text2');
+                helper.edit('A11', '0');
+                helper.edit('A12', '');
+                helper.edit('D2', '=SMALL(A6:A12,1)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].formula).toBe('=SMALL(A6:A12,1)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe(15);
+                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('15');
+                done();
+            });
         });
-        describe('EJ2-52160, EJ2-56672', () => {
+        describe('EJ2-52160, EJ2-56672, EJ2-71484', () => {
             let rows: RowModel[];
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
@@ -4460,6 +4475,47 @@ describe('Spreadsheet formula module ->', () => {
                 helper.getInstance().refresh();
                 setTimeout(() => {
                     expect(rows[11].cells[1].value).toBe('cat');
+                    done();
+                });
+            });
+            it('EJ2-71484 - The IFERROR formula returns a #Value result while performing operations on string values ->', (done: Function) => {
+                helper.edit('L1', '=IFERROR(A12/A13,"ERROR")');
+                helper.edit('L2', '=IFERROR(A2/B2,"ERROR")');
+                helper.edit('L3', '=IFERROR(B2/A2,"ERROR")');
+                helper.edit('L4', '=IFERROR(H3/H4,"ERROR")');
+                helper.edit('L5', '=IFERROR(B1/B2,"ERROR")');
+                helper.edit('L6', '=IFERROR(B2/B1,"ERROR")');
+                helper.edit('L7', '=IFERROR(A1/B1,"ERROR")');
+                helper.edit('L8', '=IFERROR(A2/B2,)');
+                helper.edit('L9', '=IFERROR(A2/B2,TRUE)');
+                helper.edit('L10', '=IFERROR(,"ERROR")');
+                helper.edit('L11', '=IFERROR(,)');
+                helper.edit('L12', '=IFERROR(10/5,)');
+                helper.edit('L13', '=IFERROR(B2+C2,"ERROR")');
+                helper.edit('L14', '=IFERROR(C2-B2,"ERROR")');
+                helper.edit('L15', '=IFERROR(B8*C8,"ERROR")');
+                helper.edit('L16', '=IFERROR(A2+B2,"ERROR")');
+                helper.edit('L17', '=IFERROR(A4-B4,"ERROR")');
+                helper.edit('L18', '=IFERROR(A8*B8,"ERROR")');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[4].cells[11].value).toBe('0');
+                    expect(helper.getInstance().sheets[0].rows[5].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[6].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[7].cells[11].value).toBe('0');
+                    expect(helper.getInstance().sheets[0].rows[8].cells[11].value).toEqual('TRUE');
+                    expect(helper.getInstance().sheets[0].rows[9].cells[11].value).toBe('0');
+                    expect(helper.getInstance().sheets[0].rows[10].cells[11].value).toBe('0');
+                    expect(helper.getInstance().sheets[0].rows[11].cells[11].value).toBe('2');
+                    expect(helper.getInstance().sheets[0].rows[12].cells[11].value).toBe('300');
+                    expect(helper.getInstance().sheets[0].rows[13].cells[11].value).toBe('100');
+                    expect(helper.getInstance().sheets[0].rows[14].cells[11].value).toBe('8');
+                    expect(helper.getInstance().sheets[0].rows[15].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[16].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[17].cells[11].value).toBe('ERROR');
                     done();
                 });
             });

@@ -237,7 +237,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
         }
-        if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
+        const currentDate: Date = this.parent.getCurrentTime();
+        if (this.parent.showTimeIndicator && this.isWorkHourRange(currentDate)) {
             const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {
                 const workCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
@@ -245,7 +246,6 @@ export class VerticalView extends ViewBase implements IRenderer {
                     this.changeCurrentTimePosition();
                 }
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
-                    const currentDate: Date = this.parent.getCurrentTime();
                     const interval: number = util.MS_PER_MINUTE - ((currentDate.getSeconds() * 1000) + currentDate.getMilliseconds());
                     if (interval <= (util.MS_PER_MINUTE - 1000)) {
                         window.setTimeout(() => {
@@ -271,17 +271,18 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (!isNullOrUndefined(this.parent.resourceBase) && (this.parent.activeViewOptions.group.resources.length > 0) &&
             !this.parent.uiStateValues.isGroupAdaptive) {
             let count: number = 0;
+            const currentDate: Date = util.resetTime(this.parent.getCurrentTime());
             if (this.parent.virtualScrollModule && this.parent.activeViewOptions.allowVirtualScrolling &&
                 this.parent.activeViewOptions.group.byDate) {
                 for (const resource of this.parent.resourceBase.expandedResources) {
-                    if (util.resetTime(resource.date).getTime() === util.resetTime(this.parent.getCurrentTime()).getTime()) {
+                    if (util.resetTime(resource.date).getTime() === currentDate.getTime()) {
                         currentDateIndex.push(count);
                     }
                     count += 1;
                 }
             } else {
                 for (const resource of this.parent.resourceBase.renderedResources) {
-                    const index: number = this.parent.getIndexOfDate(resource.renderDates, util.resetTime(this.parent.getCurrentTime()));
+                    const index: number = this.parent.getIndexOfDate(resource.renderDates, currentDate);
                     if (index >= 0) {
                         const resIndex: number = this.parent.activeViewOptions.group.byDate ?
                             (this.parent.resourceBase.lastResourceLevel.length * index) + count : count + index;

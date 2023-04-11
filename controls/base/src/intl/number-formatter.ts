@@ -23,6 +23,7 @@ export interface CommonOptions {
     currencySymbol?: string;
     percentSymbol?: string;
     minusSymbol?: string;
+    isCustomFormat?: boolean;
 }
 /**
  * Interface for currency processing
@@ -248,6 +249,20 @@ export class NumberFormat {
                 fValue = this.processFraction(value, curData.minimumFractionDigits, curData.maximumFractionDigits);
                 if (curData.minimumIntegerDigits) {
                     fValue = this.processMinimumIntegers(fValue, curData.minimumIntegerDigits);
+                }
+                if (dOptions.isCustomFormat && curData.minimumFractionDigits < curData.maximumFractionDigits
+                    && /\d+\.\d+/.test(fValue)) {
+                    const temp: string[] = fValue.split('.');
+                    let decimalPart: string = temp[1];
+                    const len: number = decimalPart.length;
+                    for (let i: number = len - 1; i >= 0; i--) {
+                        if (decimalPart[`${i}`] === '0' && i >= curData.minimumFractionDigits) {
+                            decimalPart = decimalPart.slice(0, i);
+                        } else {
+                            break;
+                        }
+                    }
+                    fValue = temp[0] + '.' + decimalPart;
                 }
             }
             if (curData.type === 'scientific') {

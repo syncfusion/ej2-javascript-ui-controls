@@ -766,13 +766,13 @@ export class FreeTextAnnotation {
             stringArray = colorString.split(',');
         }
         // eslint-disable-next-line radix
-        const r: number = parseInt(stringArray[0].split('(')[1]);
+        const r: number = parseFloat(stringArray[0].split('(')[1]);
         // eslint-disable-next-line radix
-        const g: number = parseInt(stringArray[1]);
+        const g: number = parseFloat(stringArray[1]);
         // eslint-disable-next-line radix
-        const b: number = parseInt(stringArray[2]);
+        const b: number = parseFloat(stringArray[2]);
         // eslint-disable-next-line radix
-        const a: number = parseInt(stringArray[3]);
+        const a: number = parseFloat(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
     }
     /**

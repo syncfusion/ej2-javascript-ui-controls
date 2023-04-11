@@ -12,10 +12,6 @@
         display: none;
       }
 
-      .e-item {
-        width: fit-content;
-      }
-
       .e-ribbon-file-menu {
         position: absolute;
         line-height: $ribbon-file-menu-height;
@@ -238,6 +234,10 @@
 
       .e-ribbon-tab .e-hscroll-bar {
         overflow-y: hidden;
+      }
+
+      .e-input-group {
+        margin-bottom: 0;
       }
 
       .e-ribbon-group {
@@ -529,6 +529,7 @@
 
       .e-colorpicker-wrapper {
         border: 1px solid transparent;
+        border-radius: $ribbon-items-border-radius;
 
         .e-split-btn-wrapper.e-rtl .e-split-colorpicker {
           &.e-split-btn {
@@ -916,6 +917,10 @@
 
       .e-ribbon-group {
         height: auto;
+      }
+
+      .e-input-group {
+        margin-bottom: 0;
       }
 
       .e-ribbon-group-content {

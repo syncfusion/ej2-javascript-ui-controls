@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Pivot Table
+
+#### Bug fixes
+
+- `#I450857` - When virtualization is enabled, the Pivot Table with OLAP data now exports to an Excel document properly.
+
 ## 21.1.37 (2023-03-29)
 
 ### Pivot Table

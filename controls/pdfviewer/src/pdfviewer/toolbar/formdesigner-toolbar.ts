@@ -84,11 +84,12 @@ export class FormDesignerToolbar {
      * @private
      */
     public resetFormDesignerToolbar(): void {
-        this.adjustViewer(false);
         if (this.pdfViewer.isFormDesignerToolbarVisible) {
+            this.adjustViewer(false);
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
             this.adjustViewer(true);
+            this.primaryToolbar.selectItem(this.primaryToolbar.formDesignerItem);
             this.pdfViewer.isFormDesignerToolbarVisible = true;
         }
         else {

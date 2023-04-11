@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 21.1.38 (2023-04-04)
-
 ### Svg Base
 
 #### Bug Fixes

@@ -110,6 +110,7 @@ export class Render {
             }
         }
         this.updateHeader();
+        this.parent.currentTimezoneDate = this.parent.getCurrentTime();
         this.parent.activeView.renderLayout(cls.CURRENT_PANEL_CLASS);
         this.parent.renderTemplates();
         if (this.parent.eventTooltip) {

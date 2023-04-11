@@ -602,11 +602,16 @@ export class DiagramRenderer {
                         start = 1;
                         end = selector.segments.length;
                     }
-                    for (i = start; i < end; i++) {
+                    for (i = 0; i < selector.segments.length; i++) {
                         const seg: OrthogonalSegment = (selector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
-                        this.renderOrthogonalThumbs(
-                            'orthoThumb_' + (i + 1), wrapper, seg, canvas,
-                            canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
+                        // EJ2-71073 - Added below code to set the allowDrag property of the segment thumb as false if we does not render that segment thumb
+                        if (i >= start && i < end) {
+                            this.renderOrthogonalThumbs(
+                                'orthoThumb_' + (i + 1), wrapper, seg, canvas,
+                                canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
+                        } else {
+                            seg.allowDrag = false;
+                        }
                     }
                 }
             }

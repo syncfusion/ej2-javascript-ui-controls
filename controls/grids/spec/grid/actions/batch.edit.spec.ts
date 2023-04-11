@@ -23,6 +23,7 @@ import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
 import { BatchEdit } from '../../../src';
+import { DefaultEditCell } from '../../../src/grid/renderer/default-edit-cell';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, Freeze, DetailRow);
 
@@ -4455,6 +4456,80 @@ describe('EJ2-66038 - Improper behavior in single batch edit cell column => ', (
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
         const seccondRowCell: HTMLElement = gridObj.getContentTable().querySelectorAll('tr')[1].querySelector('td');
         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(seccondRowCell);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-71160 - Code coverage for default edit cell file => ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let inputElement: HTMLInputElement;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowFiltering: false,
+                allowGrouping: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: false,
+                columns: [
+                    {
+                        field: 'OrderID',
+                        isPrimaryKey: true,
+                        headerText: 'Order ID',
+                        textAlign: 'Right',
+                        validationRules: { required: true, number: true },
+                        width: 120,
+                      },
+                      {
+                        field: 'CustomerID',
+                        headerText: 'Customer ID',
+                        validationRules: { required: true },
+                        width: 140,
+                      },
+                      {
+                        field: 'Freight',
+                        headerText: 'Freight',
+                        textAlign: 'Right',
+                        editType: 'numericedit',
+                        width: 120,
+                        format: 'C2',
+                        validationRules: { required: true },
+                      },
+                      {
+                        field: 'OrderDate',
+                        headerText: 'Order Date',
+                        editType: 'datepickeredit',
+                        format: 'yMd',
+                        width: 170,
+                      },
+                      {
+                        field: 'ShipCountry',
+                        headerText: 'Ship Country',
+                        editType: 'dropdownedit',
+                        width: 150,
+                      },
+                  ],
+            }, done);
+    });
+
+    it('tab key action for text box cell batch editing and default edit cell file code coverage', () => {
+        gridObj.editModule.editCell(1, 'CustomerID');
+        inputElement = gridObj.element.querySelector('.e-editedbatchcell').querySelector('input');
+        inputElement.value = 'updated';
+        const defaultEditCell = new DefaultEditCell();
+        defaultEditCell['keyEventHandler'].call({
+            dispatchEvent: () => {} // Override the dispatchEvent method to do nothing
+          }, {
+            key: 'Tab' 
+          });
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        expect((gridObj.getContentTable() as HTMLTableElement).rows[1].cells[1].innerHTML).toBe('updated');
     });
 
     afterAll(() => {

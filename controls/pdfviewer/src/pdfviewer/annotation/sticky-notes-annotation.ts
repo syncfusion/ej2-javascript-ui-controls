@@ -120,6 +120,10 @@ export class StickyNotesAnnotation {
      */
     public isAnnotationRendered: boolean = false;
     private globalize: Internationalization;
+    /**
+     * @private
+     */
+    public textFromCommentPanel: boolean = false;
 
     /**
      * @param pdfViewer
@@ -1813,9 +1817,6 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     private moreOptionsClick(event: any, isMoreOptionClick?: boolean) {
         if (document.getElementById(this.pdfViewer.element.id + '_comment_context_menu').style.display !== 'block') {
-            if (event.currentTarget.className === 'e-pv-more-options-button e-btn') {
-                event.currentTarget.parentElement.nextSibling.lastChild.firstChild.click();
-            }
             this.pdfViewer.annotationModule.checkContextMenuDeleteItem(this.commentMenuObj);
             this.commentMenuObj.open(event.clientY, event.clientX, event.currentTarget);
         }
@@ -2480,10 +2481,12 @@ export class StickyNotesAnnotation {
                     if (!isTextAdded) {
                         if (currentAnnotation.shapeAnnotationType === 'FreeText') {
                             if (currentAnnotation.dynamicText !== text) {
+                                this.textFromCommentPanel = true;
                                 this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
                             }
                             currentAnnotation.dynamicText = text;
                         } else {
+                            this.textFromCommentPanel = true;
                             this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
                             currentAnnotation.labelContent = text;
                             currentAnnotation.notes = text;

@@ -193,13 +193,6 @@ export class TimelineEvent extends MonthEvent {
                     const firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
-                if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
-                    && appWidth < this.cellWidth) {
-                    const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
-                    resizeHandlers.forEach((resizeHandler: HTMLElement) => {
-                        resizeHandler.style.width = Math.ceil(appWidth / resizeHandler.getBoundingClientRect().width) + 'px';
-                    });
-                }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
                     const moreIndicator: HTMLElement = cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;

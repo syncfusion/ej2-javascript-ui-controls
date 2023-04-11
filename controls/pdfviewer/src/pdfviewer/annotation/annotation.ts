@@ -1618,6 +1618,9 @@ export class Annotation {
                         } else if (shapeType === 'Ink') {
                             this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
                         }
+                        else if (shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {
+                            this.pdfViewerBase.signatureModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                        }
                         if (!actionObject.annotation.annotationId) {
                             const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
                             if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
@@ -2770,6 +2773,7 @@ export class Annotation {
                 clonedObject.dynamicText = this.freeTextAnnotationModule.previousText;
             }
             this.pdfViewer.nodePropertyChange(currentAnnotation, { dynamicText: dynamicText });
+            this.pdfViewer.renderSelector(currentAnnotation.pageIndex, currentAnnotation.annotationSelectorSettings);
             // eslint-disable-next-line max-len
             this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
             this.modifyInCollections(currentAnnotation, 'dynamicText');

@@ -328,7 +328,7 @@ export class Clipboard implements IAction {
      * @param {boolean} withHeader - Specifies whether the column header data need to be copied or not.
      */
     public copy(withHeader?: boolean): void {
-        if (document.queryCommandSupported('copy')) {
+        if (document.queryCommandSupported('copy') && this.clipBoardTextArea) {
             this.setCopyData(withHeader);
             document.execCommand('copy');
             this.clipBoardTextArea.blur();

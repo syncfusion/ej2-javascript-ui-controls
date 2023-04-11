@@ -97,6 +97,7 @@ export class InterSectionObserver {
                 return;
             }
 
+            this.containerRect = this.options.container.getBoundingClientRect();
             const check: boolean = this.check(direction);
             if (current.entered) {
                 if (this.movableEle && (direction === 'right' || direction === 'left')) {

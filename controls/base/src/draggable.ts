@@ -774,9 +774,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
         } else {
             if (this.dragArea) {
+                let isDialogEle: boolean = this.helperElement.classList.contains('e-dialog');
                 this.dragLimit.top = this.clone ? this.dragLimit.top : 0;
                 draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
-                draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
+                draEleLeft = (left - iLeft) < 0 ? isDialogEle ? (left - (iLeft- this.borderWidth.left)) :
+                    this.dragElePosition.left : (left - iLeft);
             } else {
                 draEleTop = top - iTop;
                 draEleLeft = left - iLeft;

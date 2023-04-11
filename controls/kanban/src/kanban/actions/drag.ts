@@ -209,7 +209,7 @@ export class DragAndDrop {
             }
             borderElem = contentCell.querySelector('.' + cls.BORDER_CLASS) as HTMLElement;
         }
-        if (target && target.tagName === 'TABLE') {
+        if (target && target.tagName === 'TABLE' && !isNullOrUndefined(target.querySelector('.' + cls.CONTENT_ROW_CLASS))) {
             cellDimension = target.querySelector('.' + cls.CONTENT_ROW_CLASS).getBoundingClientRect();
             this.updateDimension(cellDimension, target);
         }

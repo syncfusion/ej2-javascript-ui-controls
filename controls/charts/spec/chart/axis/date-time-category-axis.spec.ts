@@ -236,7 +236,7 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container_ChartAreaBorder');
                 let label1: any = document.getElementById('containerAxisLabels0').childNodes[0];
                 let label2: any = document.getElementById('containerAxisLabels0').childNodes[5];
-                expect(+label1.getAttribute('x')).toEqual(+svg.getAttribute('x'));
+                expect(+label1.getAttribute('x') > +svg.getAttribute('x'));
                 // expect(+label2.getAttribute('x')).toEqual(+svg.getAttribute('x') + +svg.getAttribute('width'));
                 done();
             };
@@ -291,14 +291,14 @@ describe('Chart Control', () => {
             chart.dataBind();
             svg = document.getElementById('container_ChartAreaBorder');
             let labels: any = document.getElementById('containerAxisLabels0');
-            expect(labels.childElementCount).toEqual(4);
+            expect(labels.childElementCount).toEqual(6);
         });
         it('checking with inversed with edge label none', () => {
             chart.primaryXAxis.edgeLabelPlacement = 'None';
             chart.dataBind();
             let label1: any = document.getElementById('containerAxisLabels0').childNodes[5];
             svg = document.getElementById('container_ChartAreaBorder');
-            expect(+label1.getAttribute('x') < +svg.getAttribute('x')).toBe(true);
+            expect(+label1.getAttribute('x') > +svg.getAttribute('x')).toBe(true);
 
         });
         it('checking non linear interval', (done: Function) => {

@@ -500,7 +500,12 @@ export class Magnification {
         for (let i: number = 1; i < this.pdfViewerBase.pageSize.length; i++) {
             this.topValue += (this.pdfViewerBase.pageSize[i].height + this.pdfViewerBase.pageGap) * this.zoomFactor;
         }
-        let limit: number = this.pdfViewerBase.pageCount < 10 ? this.pdfViewerBase.pageCount : 10;
+        let limit: number;
+        if (this.pdfViewer.initialRenderPages > 10) {
+            limit = this.pdfViewer.initialRenderPages <= this.pdfViewerBase.pageCount ? this.pdfViewer.initialRenderPages : this.pdfViewerBase.pageCount;
+        } else {
+            limit = this.pdfViewerBase.pageCount < 10 ? this.pdfViewerBase.pageCount : 10;
+        }
         for (let i: number = 0; i < limit; i++) {    
             this.updatePageContainer(i, this.pdfViewerBase.getPageWidth(i), this.pdfViewerBase.getPageHeight(i), this.pdfViewerBase.getPageTop(i), true);
         }
@@ -675,7 +680,11 @@ export class Magnification {
             const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
             const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
             const scrollX: number = this.touchCenterX - currentPageBoundsLeft;
-            this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+            if (this.pdfViewerBase.isMixedSizeDocument && (this.pdfViewerBase.highestWidth * this.pdfViewerBase.getZoomFactor()) > this.pdfViewerBase.viewerContainer.clientWidth) {
+                this.pdfViewerBase.viewerContainer.scrollLeft = (this.pdfViewerBase.pageContainer.offsetWidth - this.pdfViewerBase.viewerContainer.clientWidth) / 2;
+            } else {
+                this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+            }
         }
     }
 
@@ -710,7 +719,11 @@ export class Magnification {
             const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
             const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
             const scrollX: number = this.mouseCenterX - currentPageBoundsLeft;
-            this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+            if (this.pdfViewerBase.isMixedSizeDocument && (this.pdfViewerBase.highestWidth * this.pdfViewerBase.getZoomFactor()) > this.pdfViewerBase.viewerContainer.clientWidth) {
+                this.pdfViewerBase.viewerContainer.scrollLeft = (this.pdfViewerBase.pageContainer.offsetWidth - this.pdfViewerBase.viewerContainer.clientWidth) / 2;
+            } else {
+                this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+            }
         }
     }
 
@@ -936,8 +949,13 @@ export class Magnification {
             lowerPageValue = pageNumber - 4;
             higherPageValue = pageNumber + 4;
         }
-        lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
-        higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
+        if (this.pdfViewer.initialRenderPages > this.pdfViewerBase.pageRenderCount) {
+            lowerPageValue = 0;
+            higherPageValue = (higherPageValue < this.pdfViewer.initialRenderPages) ? (this.pdfViewer.initialRenderPages <= this.pdfViewerBase.pageCount) ? this.pdfViewer.initialRenderPages : this.pdfViewerBase.pageCount : (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
+        } else {
+            lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
+            higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
+        }
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + i);
