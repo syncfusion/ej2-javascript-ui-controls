@@ -1035,6 +1035,10 @@
 
     .e-value-field-settings {
       max-height: 510px !important;
+
+      .e-dlg-content {
+        padding: 0;
+      }
     }
     /* stylelint-enable */
 

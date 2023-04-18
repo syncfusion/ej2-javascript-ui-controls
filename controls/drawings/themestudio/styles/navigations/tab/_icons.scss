@@ -12,18 +12,10 @@
 
       .e-popup-up-icon::before {
         content: $tab-pop-up-icon;
-
-        @media screen and (max-width: 480px) {
-          content: $tab-mob-pop-up-icon;
-        }
       }
 
       .e-popup-down-icon::before {
         content: $tab-pop-down-icon;
-
-        @media screen and (max-width: 480px) {
-          content: $tab-mob-pop-down-icon;
-        }
       }
     }
 

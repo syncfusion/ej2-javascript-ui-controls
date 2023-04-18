@@ -1776,7 +1776,12 @@ export class DateTimePicker extends DatePicker {
                 this.checkInvalidValue(newProp.value);
                 newProp.value = this.value;
                 newProp.value = this.validateValue(newProp.value);
-                Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
+                if (this.enableMask){
+                    Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                }
+                else {
+                    Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
+                }
                 this.valueWithMinutes = newProp.value;
                 this.setProperties({ value: newProp.value }, true);
                 if (this.popupObj) {

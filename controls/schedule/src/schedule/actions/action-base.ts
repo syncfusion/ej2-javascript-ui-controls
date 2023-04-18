@@ -354,6 +354,9 @@ export class ActionBase {
     }
 
     public dynamicYearlyEventsRendering(event: Record<string, any>, isResize: boolean = false): void {
+        if (!isNullOrUndefined(this.parent.eventDragArea)) {
+            return;
+        }
         let appWidth: number = this.actionObj.cellWidth - 7;
         if (isResize && (this.resizeEdges.left || this.resizeEdges.right)) {
             appWidth = this.actionObj.cellWidth * (event.count as number);
@@ -427,6 +430,9 @@ export class ActionBase {
     }
 
     public dynamicEventsRendering(event: Record<string, any>): void {
+        if (!isNullOrUndefined(this.parent.eventDragArea)) {
+            return;
+        }
         let dateRender: Date[] = this.parent.activeView.renderDates;
         let workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
         let workDays: number[] = this.parent.activeViewOptions.workDays;
@@ -461,7 +467,7 @@ export class ActionBase {
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
             const cellTd: Element = workCells[parseInt(day.toString(), 10)];
-            if (cellTd && isNullOrUndefined(this.parent.eventDragArea)) {
+            if (cellTd) {
                 this.monthEvent.renderElement(cellTd, appointmentElement, true);
                 this.actionObj.cloneElement.push(appointmentElement);
             }

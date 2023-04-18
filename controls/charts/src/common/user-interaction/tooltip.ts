@@ -194,7 +194,7 @@ export class BaseTooltip extends ChartData {
                     availableSize: chart.availableSize,
                     duration: this.chart.tooltip.duration,
                     isCanvas: this.chart.enableCanvas,
-                    isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
+                    isTextWrap: chart.tooltip.enableTextWrap && (chart.getModuleName() === 'chart' || chart.getModuleName() === 'accumulationchart'),
                     blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                     controlInstance: this.chart,
                     enableRTL: chart.enableRtl,

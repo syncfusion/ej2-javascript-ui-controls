@@ -30,7 +30,7 @@ export class ClearFormat {
      * @hidden
      * @deprecated
      */
-    public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string): void {
+    public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string, command?: string): void {
         this.domNode = new DOMNode((endNode as HTMLElement), docElement);
         this.defaultTag = enterAction === 'P' ? this.defaultTag : 'div';
         const nodeSelection: NodeSelection = new NodeSelection();
@@ -40,7 +40,7 @@ export class ClearFormat {
             nodeSelection.getSelectionNodeCollectionBr(range);
         const save: NodeSelection =  nodeSelection.save(range, docElement);
         let cursorRange: boolean = false;
-        if (range.collapsed) {
+        if (range.collapsed && command !== 'ClearFormat') {
             cursorRange = true;
             range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
         }

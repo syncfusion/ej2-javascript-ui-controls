@@ -1594,9 +1594,8 @@ export class Zoom {
             }
             break;
         }
-        const extraPosition: Point = map.getExtraPosition();
-        element.style.left = x + extraPosition.x + 'px';
-        element.style.top = y + extraPosition.y + 'px';
+        element.style.left = x + 'px';
+        element.style.top = y + 'px';
         const color: string = this.maps.toolbarProperties.highlightColor || this.maps.themeStyle.zoomSelectionColor;
         const css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
             '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +

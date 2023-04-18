@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I452434` - Issue with "hyphen symbol converts into `NaN` when typing hyphen alone and saving the cell" has been resolved.
+
 ## 21.1.38 (2023-04-04)
 
 ### Spreadsheet

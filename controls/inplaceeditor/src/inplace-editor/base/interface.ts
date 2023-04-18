@@ -7,6 +7,7 @@ import { RenderMode } from './inplace-editor';
 
 /**
  * Defines component types that can be used in the In-place Editor.
+ *
  * @hidden
  */
 
@@ -40,7 +41,6 @@ export interface IComponent {
 export interface IButton {
     type: string
     constant: string
-    // eslint-disable-next-line
     title: object
     className: string
     model: ButtonModel
@@ -64,7 +64,6 @@ export interface ActionEventArgs {
     /** Prevents the current value render in the editor. */
     cancel?: boolean
     /** Defines the data manager action result. */
-    // eslint-disable-next-line
     data: object
     /** Defines the current editor value */
     value: string

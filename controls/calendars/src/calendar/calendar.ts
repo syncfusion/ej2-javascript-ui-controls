@@ -1121,7 +1121,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 addClass([tdEle], SELECTED);
             }
             this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
-            if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+            if (!isNullOrUndefined(date) && date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
                 && date.getDate() === todayDate.getDate()) {
                 addClass([tdEle], TODAY);
             }
@@ -1249,7 +1249,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         const dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: type };
         const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
-        const value: number = date.valueOf();
+        let value: number ;
+        if(!isNullOrUndefined(date)){
+            value = date.valueOf();
+        }
         const attrs: Object = {
             className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false'}
         };

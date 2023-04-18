@@ -224,12 +224,12 @@
       }
     }
 
-    .e-list-item.e-active.e-hover > .e-fullrow {
+    .e-list-item.e-active.e-hover > .e-fullrow{
       @include active-hover-theme;
     }
 
     .e-list-item.e-editing.e-active > .e-fullrow,
-    .e-list-item.e-editing.e-hover > .e-fullrow {
+    .e-list-item.e-editing.e-hover > .e-fullrow{
       @include active-editing-theme;
     }
 
@@ -295,7 +295,7 @@
 
     &:not(.e-fullrow-wrap) {
 
-      .e-list-item.e-hover > .e-text-content {
+      .e-list-item.e-hover > .e-text-content{
         background-color: $treeview-item-hover-bg;
         border-color: $treeview-item-hover-border-color;
       }
@@ -325,6 +325,9 @@
     &.e-drag-item {
       background-color: $treeview-drag-item-bg;
       font-family: $treeview-font-family;
+      @if ($skin-name == 'Material3') {
+        background: $treeview-drag-item-bg;
+      }
 
       .e-icon-collapsible::before,
       .e-icon-expandable::before {

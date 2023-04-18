@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I445638` - Issue in DropDownButton Popup Alignment issue while setting `enableRtl` property as true has been resolved.
+
 ## 20.4.50 (2023-02-14)
 
 ### SplitButton

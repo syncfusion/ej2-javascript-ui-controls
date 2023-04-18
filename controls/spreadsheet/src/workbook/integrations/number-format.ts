@@ -682,13 +682,8 @@ export class WorkbookNumberFormat {
             if (options.args.format === 'General') {
                 const cellValArr: string[] = cellVal.split('.');
                 if (cellValArr[0].length > 11) {
-                    let idx: number = cellValArr[0].length - 1;
-                    cellVal = cellValArr[0];
-                    while (cellVal[idx as number] === '0') {
-                        cellVal = cellVal.slice(0, -1);
-                        idx--;
-                    }
-                    const digitLen: number = cellVal.length - 1;
+                    cellVal = (Math.abs(Number(cellValArr[0])).toString()).substring(0,6).replace(/0+$/,'');
+                    let digitLen: number = cellVal.length - 1;
                     if (digitLen > -1) {
                         options.fResult = this.scientificFormat(options.args, digitLen > 5 ? 5 : digitLen);
                     }

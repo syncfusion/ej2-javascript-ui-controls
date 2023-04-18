@@ -454,6 +454,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isClicked: boolean = false;
     // Specifies if the checkAll method has been called
     private isCheckAllCalled: boolean = false;
+    private isFromFilterChange = false;
 
     /**
      * Specifies the template that renders to the popup list content of the
@@ -1150,6 +1151,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private filterHandler(value: string, event: Event): void {
+        this.isFromFilterChange = true;
         if (!this.isFilteredData) { this.treeData = this.treeObj.getTreeData(); }
         const filterFields: FieldsModel = this.cloneFields(this.fields);
         const args: DdtFilteringEventArgs = {
@@ -2403,7 +2405,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                  || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
             e.preventDefault();
-        } else if (this.inputWrapper != null && !this.inputWrapper.contains(target) && this.inputFocus && !isFilter) {
+        } else if (!isNOU(this.inputWrapper) && !this.inputWrapper.contains(target) && this.inputFocus && !isFilter) {
             this.focusOut(e);
         }
     }
@@ -2817,7 +2819,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setMultiSelectValue(newValues: string[]): void {
         if (!this.isFilteredData) {
-            this.setProperties({ value: newValues }, true);
+            this.setProperties({ value: this.isFromFilterChange && newValues && newValues.length == 0 ? this.value : newValues }, true);
+            this.isFromFilterChange = false;
             if (newValues && newValues.length !== 0 && !this.showCheckBox) {
                 this.treeObj.selectedNodes = this.value.slice();
                 this.treeObj.dataBind();

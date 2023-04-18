@@ -4537,3 +4537,37 @@ describe('EJ2-71160 - Code coverage for default edit cell file => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-72030 - Batch Edited cell value not saved during tab out from last column of last row =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,5),
+                editSettings: { allowEditing: true, allowAdding: false, allowDeleting: true, mode: 'Batch' },
+                allowPaging: true,
+                pageSettings: {pageCount: 5},
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2', validationRules: { required: true }},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } } }
+                ],
+            }, done);
+    });
+
+    it('tab out from last column of last row', () => {
+        gridObj.editModule.editCell(4, 'ShipCountry');
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(0);
+        expect(gridObj.isEdit).toBeFalsy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

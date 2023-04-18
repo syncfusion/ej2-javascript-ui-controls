@@ -42,7 +42,7 @@ export function findElementUnderMouse(obj: IElement, position: PointModel, paddi
 /** @private */
 export function findTargetElement(container: Container, position: PointModel, padding?: number): DrawingElement {
     for (let i: number = container.children.length - 1; i >= 0; i--) {
-        let element: DrawingElement = container.children[i];
+        let element: DrawingElement = container.children[parseInt(i.toString(), 10)];
         if (element && element.bounds.containsPoint(position, 0)) {
             if (element instanceof Container) {
                 let target: DrawingElement = this.findTargetElement(element, position);

@@ -328,3 +328,163 @@ describe('Manual Task', () => {
        expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
     });
 });
+describe('Render taskbar duration in minutes ', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                  taskID: 5,
+                  taskName: 'Project estimation',
+                  startDate: new Date('04/02/2019'),
+                  endDate: new Date('04/21/2019'),
+                  BaselinestartDate: new Date('04/02/2019 10:45:00 AM'),
+                  BaselineendDate: new Date('04/15/2019 11:15:00 AM'),
+                },
+                {
+                  taskID: 6,
+                  taskName: 'Develop floor plan for estimation',
+                  startDate: new Date('04/04/2019'),
+                  duration: 3,
+                  predecessor: '3FS,4FS,7SS',
+                  Progress: 30,
+                  resources: 4,
+                  info: 'Develop floor plans and obtain a materials list for estimations',
+                  parentID: 5,
+                  BaselinestartDate: new Date('04/02/2019 11:15:00 AM'),
+                  BaselineendDate: new Date('04/12/2019 11:25:00 AM'),
+                },
+                {
+                  taskID: 7,
+                  taskName: 'List materials',
+                  startDate: new Date('04/04/2019'),
+                  duration: 3,
+                  resources: [4, 8],
+                  info: '',
+                  parentID: 5,
+                  BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
+                  BaselineendDate: new Date('04/18/2019 11:20:00 AM'),
+                },
+                {
+                  taskID: 8,
+                  taskName: 'Estimation approval',
+                  startDate: new Date('04/04/2019 08:00:00 AM'),
+                  duration: '40 minutes',
+                  predecessor: '',
+                  resources: [12, 5],
+                  info: '',
+                  parentID: 5,
+                  BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
+                  BaselineendDate: new Date('04/02/2019 11:30:00 AM'),
+                },
+
+                {
+                  taskID: 9,
+                  taskName: 'Sign contract',
+                  startDate: new Date('04/04/2019 08:00:00 AM'),
+                  duration: '100 minutes',
+                  predecessor: '8FS',
+                  Progress: 30,
+                  resources: [12],
+                  info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
+                  BaselinestartDate: new Date('04/02/2019 11:20:00 AM'),
+                  BaselineendDate: new Date('04/02/2019 11:40:00 AM'),
+                },
+                {
+                  taskID: 10,
+                  taskName: 'Project approval and kick off',
+                  startDate: new Date('04/04/2019 08:00:00 AM'),
+                  endDate: new Date('05/21/2019 08:40:00 AM'),
+                  duration: '40 minutes',
+                  predecessor: '',
+                  BaselinestartDate: new Date('04/02/2019 11:40:00 AM'),
+                  BaselineendDate: new Date('05/02/2019 12:00:00 PM'),
+                },
+              ],
+              dateFormat: 'dd/MM/yyyy hh:mm a',
+              taskFields: {
+                id: 'taskID',
+                name: 'taskName',
+                startDate: 'startDate',
+                endDate: 'endDate',
+                duration: 'duration',
+                progress: 'Progress',
+                dependency: 'predecessor',
+                resourceInfo: 'resources',
+              },
+              timelineSettings: {
+                topTier: {
+                  unit: 'Week',
+                  format: 'MMM dd, y',
+                },
+                bottomTier: {
+                  unit: 'Day',
+                },
+              },
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+              },
+              toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+                'Indent',
+                'Outdent',
+              ],
+              allowSelection: true,
+              gridLines: 'Both',
+              height: '450px',
+              treeColumnIndex: 1,
+              resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+              },
+              highlightWeekends: true,
+              columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+              ],
+              eventMarkers: [
+                { day: '4/17/2019', label: 'Project approval and kick-off' },
+                { day: '5/3/2019', label: 'Foundation inspection' },
+                { day: '6/7/2019', label: 'Site manager inspection' },
+                { day: '7/16/2019', label: 'Property handover and sign-off' },
+              ],
+              labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources',
+              },
+              splitterSettings: {
+                columnIndex: 2,
+              },
+              editDialogFields: [
+                { type: 'General', headerText: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' },
+              ]
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Taskbar renders in minutes', () => {
+       expect(ganttObj.currentViewData[3].ganttProperties.width.toFixed()).toBe('3');
+    });
+});

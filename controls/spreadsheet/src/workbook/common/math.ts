@@ -182,7 +182,7 @@ export function toDate(
  * @returns { string | number} - ReturnsparseIntValue.
  */
 export function parseIntValue(value: string): string | number {
-    if (value && value !== '.') {
+    if (value && value !== '.' && value !== '-') {
         let val: string = value.toString();
         if (val.startsWith('-')) {
             val = val.slice(1);

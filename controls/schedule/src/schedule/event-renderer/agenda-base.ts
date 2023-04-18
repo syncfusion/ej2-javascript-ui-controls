@@ -109,11 +109,11 @@ export class AgendaBase extends ViewBase {
             eventSubject += ',';
         }
         const appSubjectText: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
-        appSubjectText.innerText = this.parent.sanitize(eventSubject);
+        this.parent.sanitize(eventSubject, appSubjectText);
         appSubjectWrap.appendChild(appSubjectText);
         if (!isNullOrUndefined(eventLocation) && eventLocation !== '') {
             const appLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS });
-            appLocation.innerText = this.parent.sanitize(eventLocation);
+            this.parent.sanitize(eventLocation, appLocation);
             appSubjectWrap.appendChild(appLocation);
         }
         if (!isNullOrUndefined(event[fieldMapping.recurrenceRule])) {

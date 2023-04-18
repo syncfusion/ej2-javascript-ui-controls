@@ -369,7 +369,8 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                 target: e.target, droppedElement: this.target, helper: e.helper, cancel: false
             };
             this.trigger('beforeDrop', beforeDropArgs, (observedArgs: DropEventArgs) => {
-                if (dropInst.element === e.target && !observedArgs.cancel) {
+                if ((dropInst.element === e.target || e.target.className.indexOf('e-list-nrt') > -1 || e.target.className.indexOf('e-list-nr-template') > -1
+                    || e.target.closest('.e-list-nr-template')) && !observedArgs.cancel) {
                     this.updateItemClass(dropInst);
                     dropInst.element.appendChild(this.target);
                     this.trigger('drop', {

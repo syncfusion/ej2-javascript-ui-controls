@@ -1,6 +1,6 @@
 @include export-module('querybuilder-theme') {
   .e-query-builder {
-    background-color: $qrybldr-bg-color;
+    background: $qrybldr-bg-color;
     border-color: $qrybldr-brdr-color;
 
     & .e-group-header .e-btn-group {
@@ -10,12 +10,12 @@
     & .e-group-header .e-dropdown-btn.e-add-btn,
     .e-deletegroup {
       @if $skin-name == 'bootstrap5' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
         box-shadow: none;
         color: $qrybldr-icon-color;
       }
       @else if $skin-name == 'FluentUI' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
         border: 0 solid $qrybldr-btngroup-bgcolor;
       }
     }
@@ -59,7 +59,7 @@
     }
 
     & .e-rule-container {
-      background-color: $groupfill-bgcolor;
+      background: $groupfill-bgcolor;
       border-color: $groupborder-color;
     }
 
@@ -68,7 +68,7 @@
     }
 
     & .e-rule-list .e-group-container {
-      background-color: $qrybldr-bg-color;
+      background: $qrybldr-bg-color;
     }
 
     & .e-rule-list > ::after,
@@ -115,7 +115,7 @@
         border-left: 1px solid;
       }
       @else if $skin-name == 'FluentUI' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
         border: 0 solid $qrybldr-btngroup-bgcolor;
       }
     }
@@ -127,16 +127,16 @@
     }
 
     & .e-removerule.e-btn.e-round {
-      background-color: $groupfill-color;
+      background: $groupfill-color;
       @if $skin-name == 'bootstrap4' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
       }
       @else if $skin-name == 'bootstrap5' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
         color: $qrybldr-icon-color;
       }
       @else if $skin-name == 'FluentUI' {
-        background-color: $qrybldr-btngroup-bgcolor;
+        background: $qrybldr-btngroup-bgcolor;
         border: 0 solid $qrybldr-btngroup-bgcolor;
       }
 
@@ -146,19 +146,19 @@
     }
 
     & .e-summary-content textarea {
-      background-color: $qrybldr-bg-color;
+      background: $qrybldr-bg-color;
       color: $qrybldr-color;
     }
 
     & .e-collapse-rule {
-      background-color: $qrybldr-bg-color;
+      background: $qrybldr-bg-color;
       border-color: $qrybldr-collapse-brdr-color;
       color: $qrybldr-color;
 
       &:focus,
       &:active,
       &:hover {
-        background-color: $qrybldr-brdr-color;
+        background: $qrybldr-brdr-color;
       }
     }
   }
@@ -166,7 +166,7 @@
 
 .e-tooltip-wrap.e-querybuilder-error,
 .e-control.e-tooltip-wrap.e-popup.e-querybuilder-error {
-  background-color: $qrybldr-val-error-bg-color;
+  background: $qrybldr-val-error-bg-color;
   border-color: $qrybldr-val-error-bg-color;
 }
 

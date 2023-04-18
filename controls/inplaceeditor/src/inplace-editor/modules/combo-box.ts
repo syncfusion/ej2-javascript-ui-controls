@@ -37,6 +37,7 @@ export class ComboBox implements IComponent {
 
     /**
      * Destroys the module.
+     *
      * @function destroy
      * @returns {void}
      * @hidden
@@ -53,6 +54,7 @@ export class ComboBox implements IComponent {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @returns {string} - returns the string
      */
     private getModuleName(): string {

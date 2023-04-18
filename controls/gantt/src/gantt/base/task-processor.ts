@@ -199,6 +199,7 @@ export class TaskProcessor extends DateProcessor {
      */
     private prepareDataSource(data: Object[]): void {
         this.prepareRecordCollection(data, 0);
+        this.parent.initialLoadData = extend({}, {}, this.parent.flatData, true);
         // Method to maintain the shared task uniqueIds
         if (this.parent.viewType === 'ResourceView') {
             this.calculateSharedTaskUniqueIds();
@@ -1023,7 +1024,7 @@ export class TaskProcessor extends DateProcessor {
             //let taskBarHeight: number = this.getTaskbarHeight();
             return 0;
         } else {
-            return this.getTaskWidth(sDate, eDate);
+            return this.getTaskWidth(sDate, eDate, ganttProp);
         }
     }
 
@@ -1134,12 +1135,28 @@ export class TaskProcessor extends DateProcessor {
      * @returns {number} .
      * @private
      */
-    public getTaskWidth(startDate: Date, endDate: Date): number {
+    public getTaskWidth(startDate: Date, endDate: Date, ganttData?: ITaskData): number {
         const sDate: Date = new Date(startDate.getTime()); const eDate: Date = new Date(endDate.getTime());
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
+        let isValid: boolean = false;
+        let modifiedsDate: Date = new Date(startDate.getTime());
+        let hour: number = 0;
+        if (ganttData && ganttData.durationUnit == 'hour') {
+            modifiedsDate = new Date(modifiedsDate.getTime() + ganttData.duration * 60 * 60 * 1000);
+        }
+        if (ganttData && ganttData.durationUnit == 'minute') {
+            modifiedsDate = new Date(modifiedsDate.getTime() + ganttData.duration * 60 * 60 * 60 * 1000);
+        }
+        for (let i: number = 0; i < this.parent.dayWorkingTime.length; i++) {
+            hour = hour + this.parent.dayWorkingTime[i as number].to - this.parent.dayWorkingTime[i as number].from;
+        }
+        let dateDiff: number = modifiedsDate.getTime() - sDate.getTime();
         if (tierMode === 'Day') {
-            if (this.getSecondsInDecimal(sDate) === this.parent.defaultStartTime) {
+            if ((Math.floor((dateDiff / (1000 * 60 * 60)) % 24) >= hour || dateDiff === 0)) {
+                isValid = true;
+            }
+            if (this.getSecondsInDecimal(sDate) === this.parent.defaultStartTime && isValid) {
                 sDate.setHours(0, 0, 0, 0);
             }
             if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime) {
@@ -1149,10 +1166,18 @@ export class TaskProcessor extends DateProcessor {
                 eDate.setHours(0, 0, 0, 0);
             }
         }
+        else {
+          isValid = true;
+        }
         if ((sDate).getTime() === (eDate).getTime()) {
             return (this.parent.perDayWidth);
         } else {
-            return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+            if (isValid) {
+                return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+           }
+            else {
+                return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * hour)) * this.parent.perDayWidth);
+            }
         }
     }
     /**

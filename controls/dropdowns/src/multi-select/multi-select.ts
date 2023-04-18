@@ -819,7 +819,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
             if (!eventArgs.cancel) {
                 this.focusAtFirstListItem();
-                document.body.appendChild(this.popupObj.element);
+                if(this.popupObj){
+                    document.body.appendChild(this.popupObj.element);
+                }
                 if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
                     this.updateListItems(this.list.querySelectorAll('li.e-list-item'), this.mainList.querySelectorAll('li.e-list-item'));
                 }
@@ -828,7 +830,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 this.refreshPopup();
                 this.renderReactTemplates();
-                this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
+                if(this.popupObj){
+                    this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
+                }
                 attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options'});
                 this.updateAriaActiveDescendant();
                 if (this.isFirstClick) {
@@ -2007,6 +2011,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.value && this.value.length) {
                 this.refreshSelection();
             }
+        }
+        else if(!isNullOrUndefined(this.fields.groupBy) && this.value && this.value.length){
+            this.refreshSelection();
         }
     }
     private removeSelectedChip(e: KeyboardEventArgs): void {
@@ -3602,7 +3609,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-                    if ((wrapperleng + downIconWidth + this.clearIconWidth) >= overAllContainer) {
+                    if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
                         if (tempData !== undefined && tempData !== '') {
                             temp = tempData;
                             index = tempIndex + 1;
@@ -3611,7 +3618,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth +
                             parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
-                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) >= overAllContainer) && wrapperleng !== 0
+                        while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             const textArr: string[] = [];
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
@@ -3620,7 +3627,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
                         break;
-                    } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) < overAllContainer) {
+                    } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
                         tempData = data;
                         tempIndex = index;
                     } else if (index === 0) {

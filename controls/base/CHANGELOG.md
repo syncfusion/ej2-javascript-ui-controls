@@ -2,12 +2,13 @@
 
 ## [Unreleased]
 
+## 21.1.39 (2023-04-11)
+
 ### Common
 
 #### Bug Fixes
 
 - `#I445928` - The issue with the "`formatNumber` method on internationalization" has been resolved.
-- `#I439133` - The issue with the "Detection of Microsoft Surface Pro device" has been resolved.
 
 ## 21.1.38 (2023-04-04)
 

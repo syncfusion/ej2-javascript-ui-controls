@@ -65,7 +65,7 @@ export class ScatterSeries {
 
     private isLineShapeMarker(shape: ChartShape): boolean
     {
-        return shape === 'HorizontalLine' || shape === 'VerticalLine';
+        return shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross';
     }
 
     /**

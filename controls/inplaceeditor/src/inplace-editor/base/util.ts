@@ -10,7 +10,6 @@ import { AutoCompleteModel, ComboBoxModel, DropDownListModel, MultiSelectModel }
  */
 
 const intl: Internationalization = new Internationalization();
-/* eslint-disable */
 type valueType = string | number | Date | string[] | Date[] | number[];
 type modelType = AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel |
 /* eslint-enable */

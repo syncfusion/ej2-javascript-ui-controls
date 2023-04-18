@@ -98,6 +98,8 @@ const IFRAMEHEADER: string = `
                 span.e-table-box.e-rbox-select { background-color: #BDBDBD; border: 1px solid #BDBDBD; }
                 .e-table-rhelper { background-color: #4a90e2;}
                 .e-rtl { direction: rtl; }
+                .e-rte-placeholder::before { content: attr(placeholder); opacity: 0.54; overflow: hidden;
+                     padding-top: 16px; position: absolute; text-align: start; top: 0; z-index: 1; }
             </style>
         </head>`;
 

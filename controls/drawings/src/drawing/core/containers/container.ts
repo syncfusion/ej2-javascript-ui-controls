@@ -49,7 +49,7 @@ export class Container extends DrawingElement {
         if (this.hasChildren()) {
             //Measuring the children
             for (let i: number = 0; i < this.children.length; i++) {
-                child = this.children[i];
+                child = this.children[parseInt(i.toString(), 10)];
                 if (child.horizontalAlignment === 'Stretch' && !availableSize.width) {
                     availableSize.width = child.bounds.width;
                 }
@@ -114,7 +114,7 @@ export class Container extends DrawingElement {
             if (this.hasChildren()) {
                 //Measuring the children
                 for (let i: number = 0; i < this.children.length; i++) {
-                    child = this.children[i];
+                    child = this.children[parseInt(i.toString(), 10)];
                     let arrange: boolean = false;
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;

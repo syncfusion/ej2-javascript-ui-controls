@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
 ### Office Chart
 
 #### Bug Fixes

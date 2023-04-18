@@ -357,7 +357,7 @@ export class QuickPopups {
                     append(templateElement, appointmentElement);
                 } else {
                     appointmentElement.appendChild(createElement('div', { className: cls.SUBJECT_CLASS }));
-                    (appointmentElement.firstElementChild as HTMLElement).innerText = this.parent.sanitize(eventText);
+                    this.parent.sanitize(eventText, appointmentElement.firstElementChild as HTMLElement);
                 }
                 if (!isNullOrUndefined(groupIndex)) {
                     appointmentElement.setAttribute('data-group-index', groupIndex);
@@ -611,7 +611,7 @@ export class QuickPopups {
             const templateWrapper: HTMLElement = createElement('div', { innerHTML: header });
             if (headerType === 'Event') {
                 const subjectText: HTMLElement = templateWrapper.querySelector('.' + cls.SUBJECT_CLASS);
-                subjectText.innerText = this.parent.sanitize(args.eventSubject);
+                this.parent.sanitize(args.eventSubject, subjectText);
             }
             append([].slice.call(templateWrapper.childNodes), headerTemplate);
         }
@@ -677,19 +677,19 @@ export class QuickPopups {
             if (data[this.parent.eventFields.location]) {
                 const locationDetails: HTMLElement = templateWrapper.querySelector('.' + cls.LOCATION_DETAILS_CLASS);
                 if (!isNullOrUndefined(locationDetails)) {
-                    locationDetails.innerText = this.parent.sanitize(data[this.parent.eventFields.location]);
+                    this.parent.sanitize(data[this.parent.eventFields.location], locationDetails);
                 }
             }
             if (data[this.parent.eventFields.description]) {
                 const descriptionDetails: HTMLElement = templateWrapper.querySelector('.' + cls.DESCRIPTION_DETAILS_CLASS);
                 if (!isNullOrUndefined(descriptionDetails)) {
-                    descriptionDetails.innerText = this.parent.sanitize(data[this.parent.eventFields.description]);
+                    this.parent.sanitize(data[this.parent.eventFields.description], descriptionDetails);
                 }
             }
             if (resourceText) {
                 const resourceDetails: HTMLElement = templateWrapper.querySelector('.' + cls.RESOURCE_DETAILS_CLASS);
                 if (!isNullOrUndefined(resourceDetails)) {
-                    resourceDetails.innerText = this.parent.sanitize(resourceText);
+                    this.parent.sanitize(resourceText, resourceDetails);
                 }
             }
             append([].slice.call(templateWrapper.childNodes), contentTemplate);

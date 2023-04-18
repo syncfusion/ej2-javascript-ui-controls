@@ -194,6 +194,7 @@ export const textProperty: string[] = ['text','tlp'];
 export const shapeIdProperty: string[] = ['shapeId','sid'];
 export const alternativeTextProperty: string[] = ['alternativeText','at'];
 export const visibleProperty: string[] = ['visible','v'];
+export const belowTextProperty: string[] = ['belowText','b'];
 export const widthProperty: string[] = ['width','w'];
 export const heightProperty: string[] = ['height','h'];
 export const widthScaleProperty: string[] = ['widthScale','ws'];

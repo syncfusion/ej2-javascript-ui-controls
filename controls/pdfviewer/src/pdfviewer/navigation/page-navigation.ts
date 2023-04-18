@@ -58,7 +58,10 @@ export class Navigation {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
         }
-        this.pdfViewer.magnificationModule.resizeCanvas(pageNumber);
+        if(this.pdfViewer.magnificationModule)
+        {
+            this.pdfViewer.magnificationModule.resizeCanvas(pageNumber);
+        }
         let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (pageNumber - 1));
         if (textLayer) {
             textLayer.style.display = 'block';

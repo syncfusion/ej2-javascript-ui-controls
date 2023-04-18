@@ -2692,17 +2692,42 @@ describe('Quick Popups', () => {
         });
     });
 
-    describe('quickinfo Popup for appointment subject', () => {
+    describe('EJ2-60854, EJ2-72151 - appointment subject, description as HTML elements with enableHtmlSanitizer set to true', () => {
         let schObj: Schedule;
         const data: Record<string, any>[] = [{
             Id: 1,
-            Subject: '<A href="https://www.milletsoftware.com" title="Millet Software" target="_blank">MS</A>User Group',
-            StartTime: new Date(2022, 5, 6, 10),
-            EndTime: new Date(2022, 5, 6, 12)
+            Subject: '<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">&#x1F50E MS User Group</a>',
+            StartTime: new Date(2023, 3, 12, 10, 0),
+            EndTime: new Date(2023, 3, 12, 12, 0),
+            Location: '<b>Syncfusion</b>',
+            Description: '<p>FARE SOPRALLUOGO PER UNIPOLSAI</p><p>RG) NAPIONE 6 P.<p><p>AC) GAREFFA 5 P. LO AVVERTE NAPIONE' +
+                ' - no decorazioni</p>',
+            RoomId: 1
+        }, {
+            Id: 2,
+            Subject: '<b>Lunch</b>',
+            StartTime: new Date(2023, 3, 12, 13, 0),
+            EndTime: new Date(2023, 3, 12, 14, 0),
+            IsBlock: true,
+            RoomId: 1
         }];
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
-                height: '500px', selectedDate: new Date(2022, 5, 6)
+                height: '500px', selectedDate: new Date(2023, 3, 12),
+                group: {
+                    resources: ['Rooms']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: '<b>ROOM 1</b>', Id: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                    }
+                ]
             };
             schObj = util.createSchedule(model, data, done);
         });
@@ -2711,13 +2736,126 @@ describe('Quick Popups', () => {
         });
 
         it('CRIssue EJ2-60854 - subject passed as link', () => {
-            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
-            target.click();
+            const resourceHeader: HTMLElement =
+                (schObj.element.querySelector('.e-header-row .e-resource-cells').firstElementChild as HTMLElement);
+            expect(resourceHeader.innerHTML).toEqual('&lt;b&gt;ROOM 1&lt;/b&gt;');
+            expect(resourceHeader.innerText).toEqual('<b>ROOM 1</b>');
+            const apps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment, .e-block-appointment'));
+            let subjectEle: HTMLElement = apps[0].querySelector('.e-subject');
+            expect(subjectEle.innerHTML).toEqual('&lt;b&gt;Lunch&lt;/b&gt;');
+            expect(subjectEle.innerText).toEqual('<b>Lunch</b>');
+            subjectEle = apps[1].querySelector('.e-subject');
+            expect(subjectEle.innerHTML).toEqual(
+                '&lt;a href="https://www.milletsoftware.com" title="Millet Software" target="_blank"&gt;🔎 MS User Group&lt;/a&gt;');
+            expect(subjectEle.innerText)
+                .toEqual('<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">🔎 MS User Group</a>');
+            let locationEle: HTMLElement = apps[1].querySelector('.e-location');
+            expect(locationEle.innerHTML).toEqual('&lt;b&gt;Syncfusion&lt;/b&gt;');
+            expect(locationEle.innerText).toEqual('<b>Syncfusion</b>');
+            apps[1].click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
-            expect((eventPopup.querySelector('.e-subject') as HTMLElement).innerText).toEqual('<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">MS</a>User Group');
-            expect((eventPopup.querySelector('.e-subject') as HTMLElement).getAttribute('title'))
-                .toBe("<A href='https://www.milletsoftware.com' title='Millet Software' target='_blank'>MS</A>User Group");
+            subjectEle = eventPopup.querySelector('.e-subject');
+            expect(subjectEle.innerHTML).toEqual(
+                '&lt;a href="https://www.milletsoftware.com" title="Millet Software" target="_blank"&gt;🔎 MS User Group&lt;/a&gt;');
+            expect(subjectEle.innerText).toEqual(
+                '<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">🔎 MS User Group</a>');
+            expect((subjectEle).getAttribute('title'))
+                .toBe('<a href=\'https://www.milletsoftware.com\' title=\'Millet Software\' target=\'_blank\'>🔎 MS User Group</a>');
+            locationEle = eventPopup.querySelector('.e-location-details');
+            expect(locationEle.innerHTML).toEqual('&lt;b&gt;Syncfusion&lt;/b&gt;');
+            expect(locationEle.innerText).toEqual('<b>Syncfusion</b>');
+            const descriptionEle: HTMLElement = eventPopup.querySelector('.e-description-details');
+            expect(descriptionEle.innerHTML).toEqual('&lt;p&gt;FARE SOPRALLUOGO PER UNIPOLSAI&lt;/p&gt;&lt;p&gt;RG) NAPIONE 6 P.' +
+                '&lt;/p&gt;&lt;p&gt;&lt;/p&gt;&lt;p&gt;AC) GAREFFA 5 P. LO AVVERTE NAPIONE - no decorazioni&lt;/p&gt;');
+            expect(descriptionEle.innerText).toEqual('<p>FARE SOPRALLUOGO PER UNIPOLSAI</p><p>RG) NAPIONE 6 P.' +
+                '</p><p></p><p>AC) GAREFFA 5 P. LO AVVERTE NAPIONE - no decorazioni</p>');
+            const resourceEle: HTMLElement = eventPopup.querySelector('.e-resource-details');
+            expect(resourceEle.innerHTML).toEqual('&lt;b&gt;ROOM 1&lt;/b&gt;');
+            expect(resourceEle.innerText).toEqual('<b>ROOM 1</b>');
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
+        });
+    });
+
+    describe('EJ2-72151 - appointment subject, description as HTML elements with enableHtmlSanitizer set to false', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: '<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">&#x1F50E MS User Group</a>',
+            StartTime: new Date(2023, 3, 12, 10, 0),
+            EndTime: new Date(2023, 3, 12, 12, 0),
+            Location: '<b>Syncfusion</b>',
+            Description: '<p>FARE SOPRALLUOGO PER UNIPOLSAI</p><p>RG) NAPIONE 6 P.<p><p>AC) GAREFFA 5 P. LO AVVERTE NAPIONE' +
+                ' - no decorazioni</p>',
+            RoomId: 1
+        }, {
+            Id: 2,
+            Subject: '<b>Lunch</b>',
+            StartTime: new Date(2023, 3, 12, 13, 0),
+            EndTime: new Date(2023, 3, 12, 14, 0),
+            IsBlock: true,
+            RoomId: 1
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2023, 3, 12), enableHtmlSanitizer: false,
+                group: {
+                    resources: ['Rooms']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: '<b>ROOM 1</b>', Id: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('subject and description as HTML elements', () => {
+            const resourceHeader: HTMLElement =
+                (schObj.element.querySelector('.e-header-row .e-resource-cells').firstElementChild as HTMLElement);
+            expect(resourceHeader.innerHTML).toEqual('<b>ROOM 1</b>');
+            expect(resourceHeader.innerText).toEqual('ROOM 1');
+            const apps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment, .e-block-appointment'));
+            let subjectEle: HTMLElement = apps[0].querySelector('.e-subject');
+            expect(subjectEle.innerHTML).toEqual('<b>Lunch</b>');
+            expect(subjectEle.innerText).toEqual('Lunch');
+            subjectEle = apps[1].querySelector('.e-subject');
+            expect(subjectEle.innerHTML).
+                toEqual('<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">🔎 MS User Group</a>');
+            expect(subjectEle.innerText).toEqual('🔎 MS User Group');
+            let locationEle: HTMLElement = apps[1].querySelector('.e-location');
+            expect(locationEle.innerHTML).toEqual('<b>Syncfusion</b>');
+            expect(locationEle.innerText).toEqual('Syncfusion');
+            apps[1].click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            subjectEle = eventPopup.querySelector('.e-subject');
+            expect(subjectEle.innerHTML)
+                .toEqual('<a href="https://www.milletsoftware.com" title="Millet Software" target="_blank">🔎 MS User Group</a>');
+            expect(subjectEle.innerText).toEqual('🔎 MS User Group');
+            expect((subjectEle).getAttribute('title'))
+                .toBe('<a href=\'https://www.milletsoftware.com\' title=\'Millet Software\' target=\'_blank\'>🔎 MS User Group</a>');
+            locationEle = eventPopup.querySelector('.e-location-details');
+            expect(locationEle.innerHTML).toEqual('<b>Syncfusion</b>');
+            expect(locationEle.innerText).toEqual('Syncfusion');
+            const descriptionEle: HTMLElement = eventPopup.querySelector('.e-description-details');
+            expect(descriptionEle.innerHTML).toEqual('<p>FARE SOPRALLUOGO PER UNIPOLSAI</p><p>RG) NAPIONE 6 P.' +
+                '</p><p></p><p>AC) GAREFFA 5 P. LO AVVERTE NAPIONE - no decorazioni</p>');
+            expect(descriptionEle.innerText).toEqual('FARE SOPRALLUOGO PER UNIPOLSAI\n\nRG) NAPIONE 6 P.\n\nAC) GAREFFA 5 P.' +
+                ' LO AVVERTE NAPIONE - no decorazioni');
+            const resourceEle: HTMLElement = eventPopup.querySelector('.e-resource-details');
+            expect(resourceEle.innerHTML).toEqual('<b>ROOM 1</b>');
+            expect(resourceEle.innerText).toEqual('ROOM 1');
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
         });
     });

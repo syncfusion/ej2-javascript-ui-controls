@@ -559,8 +559,8 @@ describe('Spinner Control', () => {
             });
             let container1 = document.getElementById('spinner-02');
             showSpinner(container1);
-            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(false);
-            expect((container.querySelector('.e-spin-material') as HTMLElement)).not.toBeNull();
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
+            expect((container.querySelector('.e-spin-material') as HTMLElement)).toBeNull();
             expect((container.querySelector('.e-spin-fabric') as HTMLElement)).toBeNull();
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.custom-spinner')).not.toBeNull();
@@ -588,11 +588,11 @@ describe('Spinner Control', () => {
             let container1 = document.getElementById('spinner-02');
             showSpinner(container1);
             setSpinner({ type: 'Fabric'});
-            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(false);
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
-            expect((container.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.custom-spinner')).toBeNull();
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.custom-spinner')).not.toBeNull();
             expect(((container.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.e-spin-material') as HTMLElement)).toBeNull();
-            expect(((container.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.e-spin-fabric') as HTMLElement)).not.toBeNull();
+            expect(((container.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.e-spin-fabric') as HTMLElement)).toBeNull();
             expect((container1.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.custom-spinner')).not.toBeNull();
             expect(((container1.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.e-spin-material') as HTMLElement)).toBeNull();
             expect(((container1.querySelector('.e-spinner-pane') as HTMLElement).querySelector('.e-spin-fabric') as HTMLElement)).toBeNull();
@@ -1077,5 +1077,91 @@ describe('Spinner Control', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
+
+    describe('Change the Spinner template dynamically', () => {
+        let target: HTMLElement;
+        let button1: HTMLElement;
+        let button2: HTMLElement;
+        beforeEach((): void => {
+            target = createElement('div', { id: 'container'});
+            document.body.appendChild(target);
+            button1 = createElement('button', {id: 'button1'});
+            document.body.appendChild(button1);
+            button2 = createElement('button', {id: 'button2'});
+            document.body.appendChild(button2);
+        });
+        afterEach((): void => {
+            target.remove();
+            button1.remove();
+            button2.remove();
+        });
+        it('Change the Spinner template dynamically', () => {
+            createSpinner({ 
+                target: document.getElementById('container'),
+                template:'<div style="width:100%;height:100%" class="custom-rolling1"><div></div></div>',
+            });
+            let button1 : HTMLElement= document.getElementById('button1');
+            button1.click();
+            showSpinner(document.getElementById('container'));
+            setInterval(function () {
+                hideSpinner(document.getElementById('container'));
+            }, 1000);
+            let innserObject1 =  (<HTMLElement>(document.querySelector('.e-spinner-inner')as HTMLElement).childNodes[0]);
+            expect(innserObject1.classList.contains('custom-rolling1')).toEqual(true);
+            let button2 : HTMLElement= document.getElementById('button2');
+            button2.click();
+            showSpinner(document.getElementById('container'));
+            setSpinner({
+                template:
+                    '<div style="width:100%;height:100%" class="custom-rolling"><div></div></div>',
+            });
+            let innserObject2 =  (<HTMLElement>(document.querySelector('.e-spinner-inner')as HTMLElement).childNodes[0]);
+            expect(innserObject2.classList.contains('custom-rolling')).toEqual(true);
+        });
+    });
+
+    describe('EJ2-72096 - Spinner actions on parent element affecting the child element spinner', () => {
+        let target: HTMLElement;
+        let button1: HTMLElement;
+        let button2: HTMLElement;
+        beforeEach((): void => {
+            target = createElement('div', { id: 'container1', styles:  'height: 500px; width: 800px;' });
+            document.body.appendChild(target);
+
+            target_01 = createElement('div', { id: 'Box1', styles: 'border: 2px solid bisque; height: 300px; width: 500px; position: relative' });
+            target.appendChild(target_01);
+
+            target_02 = createElement('div', { id: 'Box2', styles: 'border: 2px solid bisque; height: 300px; width: 500px; position: relative' });
+            target_01.appendChild(target_02);
+
+            button1 = createElement('button', {id: 'button1'});
+            target.appendChild(button1);
+            button2 = createElement('button', {id: 'button2'});
+            target.appendChild(button2);
+
+        });
+        afterEach((): void => {
+            target.remove();
+        });
+        it('Spinner actions on parent element affecting the child element spinner', () => {
+            let container = target;
+            createSpinner({
+                target: document.getElementById('Box1')
+            });
+            createSpinner({
+                target: document.getElementById('Box2')
+            });
+            let button1 : HTMLElement= document.getElementById('button1');
+            button1.click();
+            showSpinner(document.getElementById('Box1'));
+            let spinWrap: HTMLElement = (container.querySelector('.e-spin-show')as HTMLElement);
+            expect(spinWrap.parentElement.id == "Box1").toEqual(true);
+            let button2 : HTMLElement= document.getElementById('button2');
+            button2.click();
+            showSpinner(document.getElementById('Box2'));
+            let spinWrap1: HTMLElement = (container.querySelector('.e-spin-show')as HTMLElement);
+            expect(spinWrap1.parentElement.id == "Box2").toEqual(true);
+        });
+    });
 });

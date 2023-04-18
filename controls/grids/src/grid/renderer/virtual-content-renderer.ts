@@ -1217,6 +1217,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
         const prev: number[] = this.prevInfo.blockIndexes;
         let startIdx: number = (prev[0] - 1) * this.getBlockSize();
+        if (this.parent.pageSettings.pageSize % 2 !== 0) {
+            startIdx += Math.floor((startIdx / this.getBlockSize()) / 2);
+        }
         let rowCollection: Element[] = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;

@@ -499,7 +499,6 @@ export class Tooltip extends BaseTooltip {
                         val.source === '${point.outliers}' ||
                         val.source === '${point.upperQuartile}' ||
                         val.source === '${point.lowerQuartile}' ||
-                        val.source === '${point.size}' ||
                         val.source === '${point.median}'
                     )
                 )
@@ -528,7 +527,11 @@ export class Tooltip extends BaseTooltip {
                 axis.format(point[dataValue as string]);
             textValue = customLabelFormat ? axis.labelFormat.replace('{value}', value) : value;
 
-        } else {
+        } else if (dataValue === 'size') {
+            const format: Function = this.chart.intl.getNumberFormat({ format: '', useGrouping: this.chart.useGroupingSeparator });
+            textValue = typeof point[dataValue as string] === 'number' ? format(point[dataValue as string]) : point[dataValue as string];
+        }
+        else {
             textValue = point[dataValue as string];
         }
         return textValue;

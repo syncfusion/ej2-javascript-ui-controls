@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I445512` - The issue with the `fileSelection` and `fileSelect` events argument in the File Manager component large icon view has been resolved.
+
 ## 21.1.37 (2023-03-29)
 
 ### File Manager

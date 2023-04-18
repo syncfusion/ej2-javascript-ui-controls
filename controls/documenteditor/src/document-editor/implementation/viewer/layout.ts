@@ -1899,6 +1899,10 @@ export class Layout {
             if (paragraph.floatingElements.indexOf(element) === -1) {
                 paragraph.floatingElements.push(element);
             }
+            if (element.width > this.viewer.clientActiveArea.width) {
+                this.splitElementForClientArea(paragraph, element);
+                this.checkLineWidgetWithClientArea(line, element);
+            }
             this.layoutShape(element);
         }
         // tslint:disable-next-line:max-line-length
@@ -4006,7 +4010,7 @@ export class Layout {
             if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
                 continue;
             }
-            if (element instanceof TextElementBox && element.text.replace(/\s+/g, '').length === 0) {
+            if (element instanceof TextElementBox && element.text.replace(/\s+/g, '').length === 0 && element.text !== String.fromCharCode(160)) {
                 if (spaceHeight < element.height) {
                     spaceHeight = element.height;
                     spaceBaseline = element.baselineOffset;
@@ -6206,7 +6210,7 @@ export class Layout {
                 let tableWidget: TableWidget = tableWidgets[tableWidgets.length - 1] as TableWidget;
                 if (isMultiColumnSplit || rowHeight + tableRowWidget.y + this.footHeight > viewer.clientArea.bottom) {
                     if (!isAllowBreakAcrossPages || (isHeader && row.ownerTable.continueHeader) || (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientArea.bottom)) {
-                        if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && (isAllowBreakAcrossPages || row.indexInOwner === 0)) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
+                        if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && isAllowBreakAcrossPages) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, lineIndexInCell, cellIndex, isMultiColumnSplit);
                             if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
                                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);

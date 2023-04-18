@@ -728,16 +728,24 @@ export class ListBox extends DropDownBase {
         let scrollParent: HTMLElement; let boundRect: DOMRect; const scrollMoved: number = 36;
         let scrollHeight: number = 10;
         if (this.itemTemplate && args.target) {
-            scrollHeight = args.target.scrollHeight;
+            if(args.target && args.target.closest('.e-list-item')) {  
+                scrollHeight = args.target.closest('.e-list-item').scrollHeight;
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const listItem: HTMLElement = (args as any).element.querySelector('.e-list-item');
+                if (listItem) {
+                    scrollHeight = listItem.scrollHeight;
+                }
+            }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const event: any = (args as any).event; let wrapper: HTMLElement;
         if (args.target && (args.target.classList.contains('e-listbox-wrapper') || args.target.classList.contains('e-list-item')
-        || (args.target.parentElement && args.target.parentElement.classList.contains('e-list-item'))
-        || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group'))) {
+        || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group')
+        || args.target.closest('.e-list-item'))) {
             if (args.target.classList.contains('e-list-item') || args.target.classList.contains('e-filter-parent')
-            || (args.target.parentElement && args.target.parentElement.classList.contains('e-list-item'))
-            || args.target.classList.contains('e-input-group')) {
+            || args.target.classList.contains('e-input-group') 
+            || args.target.closest('.e-list-item')) {
                 wrapper = args.target.closest('.e-listbox-wrapper') as HTMLElement;
             } else {
                 wrapper = args.target as HTMLElement;

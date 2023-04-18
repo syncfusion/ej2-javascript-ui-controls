@@ -1954,6 +1954,18 @@
       padding: .3em;
     }
 
+    th.e-detailcell .e-rowcell,
+    th.e-detailcell .e-gridpager {
+      text-align: left;
+    }
+
+    &.e-rtl th.e-detailcell .e-rowcell,
+    &.e-rtl th.e-detailcell .e-gridpager,
+    th.e-detailcell .e-rtl .e-rowcell,
+    th.e-detailcell .e-rtl .e-gridpager {
+      text-align: right;
+    }
+
     &.e-verticallines .e-rowcell,
     &.e-verticallines .e-filterbarcell {
       border-width: 0 0 0 $grid-border-size;
@@ -3590,11 +3602,6 @@
     }
 
     &.sf-grid {
-
-      .e-table {
-        border-spacing: .25px;
-      }
-
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;
       }
@@ -3779,7 +3786,9 @@
 }
 
 #{&}.e-grid-min-height {
-  .e-rowcell {
+  .e-rowcell,
+  .e-icon-grightarrow,
+  .e-icon-gdownarrow {
     line-height: 0;
     padding-bottom: 0;
     padding-top: 0;
@@ -3916,6 +3925,41 @@
 
 .e-edit-dialog .e-dlg-content {
   position: relative;
+}
+
+.e-ccdlg.e-cc .e-dlg-header-content {
+  @if $grid-skin == 'fluent' {
+    padding: 11px 24px 13px;
+  }
+}
+
+.e-filter-popup.e-excelfilter .e-dlg-content {
+  @if $grid-skin == 'fluent' {
+    padding-bottom: 12px;
+  }
+}
+
+.e-bigger {
+  .e-edit-dialog.e-dlg-modal {
+    .e-dlg-header-content{
+      @if $grid-skin == 'fluent' {
+        padding: 13px 20px 27px 28px;
+        .e-btn.e-dlg-closeicon-btn{
+          bottom: 4px;
+        }
+      }
+    }
+  }
+  .e-ccdlg.e-cc .e-dlg-header-content {
+    @if $grid-skin == 'fluent' {
+      padding: 14px 28px 17px;
+    }
+  }
+  .e-filter-popup.e-excelfilter .e-dlg-content {
+    @if $grid-skin == 'fluent' {
+      padding-bottom: 0;
+    }
+  }
 }
 
 .e-bigger .e-grid.e-row-responsive,
@@ -4094,6 +4138,9 @@
 
     & .e-btn.e-dlg-closeicon-btn {
       float: left;
+      @if $grid-skin == 'fluent' {
+        padding-top: 6px;
+      }
       padding-left: 0;
       padding-right: 40px;
     }
@@ -4167,7 +4214,7 @@
       padding-left: 0;
 
       @if $grid-skin == 'fluent' {
-        padding-top: 5px;
+        padding-top: 6px;
       }
       @else if $grid-skin == 'tailwind' {
         padding-top: 1.5px;
@@ -4386,6 +4433,9 @@
 .e-bigger.e-responsive-dialog.e-rtl {
   & .e-btn.e-dlg-closeicon-btn {
     float: right;
+    @if $grid-skin == 'fluent' {
+      padding-top: 6px;
+    }
     padding-left: 40px;
     padding-right: 0;
   }

@@ -587,6 +587,9 @@ export class FreeTextAnnotation {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
                     } else if (property === 'dynamicText') {
+                        if (pageAnnotations[i].dynamicText !== annotationBase.dynamicText) {
+                            this.pdfViewer.fireCommentEdit(pageAnnotations[i].annotName, annotationBase.dynamicText, pageAnnotations[i]);
+                        }
                         pageAnnotations[i].dynamicText = annotationBase.dynamicText;
                     } else if (property === 'fontColor') {
                         pageAnnotations[i].fontColor = annotationBase.fontColor;
@@ -865,6 +868,7 @@ export class FreeTextAnnotation {
                 };
                 this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
+                this.pdfViewer.fireCommentAdd(annot.annotName, annot.dynamicText, annot);
                 // eslint-disable-next-line
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);

@@ -156,7 +156,8 @@ export class XhtmlValidation {
                                 const childEle: Node = ele.childNodes[j as number];
                                 if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
                                     childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
-                                    childEle.nodeName !== 'TD' && (childEle as HTMLElement).hasAttribute(attrName)) {
+                                    childEle.nodeName !== 'TD' && (childEle as HTMLElement).hasAttribute(attrName) &&
+                                   !(childEle as HTMLElement).classList.contains('e-mention-chip')) {
                                     (childEle as HTMLElement).removeAttribute(attrName);
                                 }
                                 if (childEle.hasChildNodes()) {

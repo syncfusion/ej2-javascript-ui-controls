@@ -308,8 +308,8 @@ describe('Selection commands', () => {
     });
     it('Apply backgroundcolor tag for text node', () => {
         SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
-        expect((ptag.childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
-        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply uppercase tag for text node', () => {
         SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
@@ -324,13 +324,13 @@ describe('Selection commands', () => {
     });
     it('Re - Apply backgroundcolor tag for text node', () => {
         SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 2)');
-        expect((ptag.childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 2)');
-        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 2)');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontsize tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '40px');
-        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
-        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
+        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontname tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'monospace');
@@ -352,27 +352,22 @@ describe('Selection commands', () => {
     });
     it('Apply fontname tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
-        expect((ptag.childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.fontFamily).toEqual('Arial');
-        expect((ptag.childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.fontFamily).toEqual('Arial');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
-        expect((ptag.childNodes[0].childNodes[1] as HTMLElement).style.fontSize).toEqual('20px');
-        expect((ptag.childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).style.fontSize).toEqual('20px');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
-        expect(
-        (ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor)
-        .toEqual('rgb(246, 198, 206)');
-        expect(
-            (ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase())
-            .toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply uppercase tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
-        expect(ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes[0].textContent)
-        .toEqual(' RICH T');
+        expect(ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes[0].textContent).toEqual(' RICH T');
     });
 
     // spec coverage 
@@ -1379,9 +1374,61 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
         fontSizePicker.click();
         var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
         fontSizeChooser.click();
-        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><a href="https://ej2.syncfusion.com/home/" target="_blank"><span style="font-size: 24pt;">HTML markup</span></a><span style="font-size: 24pt;"> or </span><a href="https://ej2.syncfusion.com/home/" target="_blank"><span style="font-size: 24pt;">markdown</span></a><span style="font-size: 24pt;"> of the content</span></p>');
+        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
+        expect(fontSizePicker.childNodes[0].textContent).toEqual('24 pt');
     });
     afterEach(() => {
         destroy(rteObj);
+    });
+});
+describe('EJ2-70405 - Background Color not applied properly when nested styles are applied', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<p>Testing for the selection commands</p>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for background color application of selected text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('p').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('p').childNodes[0], 7);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'underline', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'strikethrough', rteObj.element.querySelector('.e-content'), 'P');
+        // Apply font family
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Arial');
+        // Apply font color
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        // Apply background color
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(0, 255, 0)');
+        // Apply font size
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '24pt');
+        const allSpanNodes = rteObj.element.querySelector('.e-content').querySelectorAll('span');
+        expect(allSpanNodes.length).toEqual(6);
+        // Test font size
+        expect(allSpanNodes[0].style.fontSize).toEqual('24pt');
+        // Test font color
+        expect(allSpanNodes[1].style.color).toEqual('rgb(255, 0, 0)');
+        // Test background color
+        expect(allSpanNodes[2].style.backgroundColor).toEqual('rgb(0, 255, 0)');
+        // Test font family
+        expect(allSpanNodes[3].style.fontFamily).toEqual('Arial');
+        // Test bold
+        expect(rteObj.element.querySelector('.e-content').querySelectorAll('strong').length).toEqual(1);
+        // Test italic
+        expect(rteObj.element.querySelector('.e-content').querySelectorAll('em').length).toEqual(1);
+        // Test underline
+        expect(allSpanNodes[4].style.textDecoration).toEqual('underline');
+        // Test strikethrough
+        expect(allSpanNodes[5].style.textDecoration).toEqual('line-through');
     });
 });

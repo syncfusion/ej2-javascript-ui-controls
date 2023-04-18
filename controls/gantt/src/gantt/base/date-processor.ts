@@ -396,9 +396,9 @@ export class DateProcessor {
      */
     private getDurationAsSeconds(duration: number, durationUnit: string): number {
         let value: number = 0;
-        if (!durationUnit || durationUnit === 'day') {
+        if (!durationUnit || durationUnit.toLocaleLowerCase() === 'day') {
             value = this.parent.secondsPerDay * duration;
-        } else if (durationUnit === 'hour') {
+        } else if (durationUnit.toLocaleLowerCase() === 'hour') {
             value = duration * 3600;
         } else {
             value = duration * 60;

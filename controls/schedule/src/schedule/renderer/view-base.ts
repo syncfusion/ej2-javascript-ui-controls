@@ -462,7 +462,7 @@ export class ViewBase {
             append(quickTemplate, tdElement);
         } else {
             const resourceText: HTMLElement = createElement('div', { className: className });
-            resourceText.innerText = this.parent.sanitize(tdData.resourceData[tdData.resource.textField] as string);
+            this.parent.sanitize(tdData.resourceData[tdData.resource.textField] as string, resourceText);
             tdElement.appendChild(resourceText);
         }
     }

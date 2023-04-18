@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType, detach } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
@@ -295,6 +295,7 @@ export class EventWindow {
                 for (const element of formElements) {
                     remove(element);
                 }
+                this.parent.resetTemplates(['editorTemplate']);
             }
             const templateId: string = this.parent.element.id + '_editorTemplate';
             const tempEle: HTMLElement[] =
@@ -883,9 +884,12 @@ export class EventWindow {
     }
 
     private applyFormValidation(): void {
+        const form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
+        if (!form) {
+            return;
+        }
         const getValidationRule: CallbackFunction = (rules: Record<string, any>) =>
             (rules && Object.keys(rules).length > 0) ? rules : undefined;
-        const form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
         const rules: Record<string, any> = {};
         const subjectRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.subject.validation);
         if (!isNullOrUndefined(subjectRule)) {
@@ -1692,7 +1696,8 @@ export class EventWindow {
             if ((element as HTMLInputElement).type === 'checkbox') {
                 value = (element as HTMLInputElement).checked as boolean;
             } else {
-                value = this.parent.sanitize((element as HTMLInputElement).value as string);
+                value = this.parent.enableHtmlSanitizer ?
+                    SanitizeHtmlHelper.sanitize((element as HTMLInputElement).value as string) : (element as HTMLInputElement).value;
             }
         }
         return value;
@@ -1822,6 +1827,8 @@ export class EventWindow {
             } else if (element.classList.contains('e-dropdownlist')) {
                 instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-multiselect')) {
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
+            } else if (element.classList.contains('e-numerictextbox')) {
                 instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             }
             if (instance && instance[0]) {

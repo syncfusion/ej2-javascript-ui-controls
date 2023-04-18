@@ -3786,7 +3786,9 @@
 }
 
 #{&}.e-grid-min-height {
-  .e-rowcell {
+  .e-rowcell,
+  .e-icon-grightarrow,
+  .e-icon-gdownarrow {
     line-height: 0;
     padding-bottom: 0;
     padding-top: 0;

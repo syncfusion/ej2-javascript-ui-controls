@@ -2,7 +2,7 @@
 
   /*! schedule component theme */
   .e-schedule {
-    background-color: $schedule-header-bg-color;
+    background: $schedule-header-bg-color;
     border: $border-size $border-type $schedule-content-border-color;
 
     .e-date-header-wrap {
@@ -25,7 +25,7 @@
 
       .e-date-header-wrap {
         .e-all-day-cells {
-          background-color: $schedule-header-bg-color;
+          background: $schedule-header-bg-color;
 
           &:hover {
             background: $schedule-hover-bg-color;
@@ -34,7 +34,7 @@
       }
 
       .e-left-indent-wrap table tbody td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: 0 1px 1px 0;
@@ -58,7 +58,7 @@
       }
 
       .e-date-header-wrap table tbody td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: $schedule-vertical-work-cells-border;
@@ -71,7 +71,7 @@
       }
 
       .e-time-cells-wrap table td {
-        background-color: $schedule-time-cells-bg-color;
+        background: $schedule-time-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: 0 1px 1px 0;
@@ -87,7 +87,7 @@
       }
 
       .e-header-cells {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
 
         &.e-current-day {
           color: $schedule-active-font-color;
@@ -96,7 +96,7 @@
       }
 
       .e-work-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: $schedule-vertical-work-cells-border;
@@ -113,33 +113,33 @@
       }
 
       .e-work-hours {
-        background-color: $schedule-workhour-bg-color;
+        background: $schedule-workhour-bg-color;
       }
 
       .e-all-day-cells {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
 
         &.e-current-day {
           color: $schedule-active-font-color;
         }
 
         &.e-selected-cell {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
           color: $schedule-hover-font-color;
 
           &:hover {
-            background-color: $schedule-select-bg-color;
+            background: $schedule-select-bg-color;
             color: $schedule-selected-cell-hover-font-color;
           }
         }
       }
 
       .e-selected-cell {
-        background-color: $schedule-select-bg-color;
+        background: $schedule-select-bg-color;
         color: $schedule-hover-font-color;
 
         &:hover {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
           color: $schedule-selected-cell-hover-font-color;
         }
       }
@@ -176,7 +176,7 @@
     .e-month-view,
     .e-month-agenda-view {
       .e-date-header-wrap table td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
@@ -192,7 +192,7 @@
       }
 
       .e-work-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
@@ -206,7 +206,7 @@
       }
 
       .e-work-days {
-        background-color: $schedule-workhour-bg-color;
+        background: $schedule-workhour-bg-color;
       }
 
       .e-other-month {
@@ -214,14 +214,16 @@
       }
 
       .e-current-date .e-date-header {
-        background-color: $schedule-current-date-bg-color;
+        background: $schedule-current-date-bg-color;
         border-radius: 50%;
         color: $schedule-current-date-header-font-color;
-        width: 20px;
+        min-width: 20px;
+        padding: 0 4px;
+        width: fit-content;
       }
 
       .e-selected-cell {
-        background-color: $schedule-select-bg-color;
+        background: $schedule-select-bg-color;
         color: $schedule-select-font-color;
 
         .e-date-header {
@@ -233,13 +235,12 @@
         }
 
         &:hover {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
         }
       }
     }
 
     .e-month-agenda-view {
-
       .e-content-wrap .e-table-container {
         overflow: auto;
       }
@@ -254,7 +255,7 @@
       }
 
       .e-current-date .e-date-header {
-        width: 24px;
+        min-width: 24px;
       }
     }
 
@@ -270,7 +271,7 @@
       }
 
       .e-date-header-wrap table td {
-        background-color: $schedule-header-bg-color;
+        background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
         border-width: $schedule-timeline-work-cells-border;
@@ -283,7 +284,7 @@
       }
 
       .e-work-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: $schedule-timeline-work-cells-border;
@@ -297,42 +298,42 @@
       }
 
       &.e-virtual-mask .e-work-cells:hover {
-        background-color: $schedule-disable-dates-color;
+        background: $schedule-disable-dates-color;
       }
 
       .e-work-days {
-        background-color: $schedule-workhour-bg-color;
+        background: $schedule-workhour-bg-color;
       }
 
       .e-resource-group-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
       }
 
       .e-selected-cell {
-        background-color: $schedule-select-bg-color;
+        background: $schedule-select-bg-color;
         color: $schedule-select-font-color;
 
         &:hover:not(.e-resource-group-cells)  {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
         }
       }
     }
 
     .e-timeline-view {
       .e-work-hours {
-        background-color: $schedule-workhour-bg-color;
+        background: $schedule-workhour-bg-color;
       }
 
       .e-resource-group-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
       }
 
       .e-selected-cell {
-        background-color: $schedule-select-bg-color;
+        background: $schedule-select-bg-color;
         color: $schedule-hover-font-color;
 
         &:hover {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
         }
       }
 
@@ -357,7 +358,7 @@
 
     .e-timeline-year-view {
       .e-work-cells {
-        background-color: $schedule-work-cells-bg-color;
+        background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: 0 $border-size $border-size 0;
@@ -370,7 +371,7 @@
         }
     
         &.e-work-days {
-          background-color: $schedule-workhour-bg-color;
+          background: $schedule-workhour-bg-color;
         }
     
         &.e-other-month {
@@ -378,7 +379,7 @@
         }
     
         &.e-current-day .e-date-header {
-          background-color: $schedule-current-date-bg-color;
+          background: $schedule-current-date-bg-color;
           border-radius: 50%;
           color: $schedule-current-day-active-color;
           margin: 2px;
@@ -386,7 +387,7 @@
         }
     
         &.e-selected-cell {
-          background-color: $schedule-select-bg-color;
+          background: $schedule-select-bg-color;
           color: $schedule-select-font-color;
     
           .e-date-header {
@@ -398,12 +399,12 @@
           }
     
           &:hover {
-            background-color: $schedule-select-bg-color;
+            background: $schedule-select-bg-color;
           }
         }
     
         &.e-disable-dates {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
     
           .e-date-header {
             cursor: default;
@@ -415,17 +416,17 @@
           }
     
           &:hover {
-            background-color: $schedule-disable-dates-color;
+            background: $schedule-disable-dates-color;
           }
         }
       }
     
       &.e-virtual-mask .e-work-cells {
-        background-color: $schedule-disable-dates-color;
+        background: $schedule-disable-dates-color;
         box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
     
         &:hover {
-          background-color: $schedule-disable-dates-color;
+          background: $schedule-disable-dates-color;
         }
       }
     }
@@ -513,7 +514,7 @@
   }
 
   .e-tooltip-wrap.e-schedule-error {
-    background-color: $schedule-val-error-bg-color;
+    background: $schedule-val-error-bg-color;
     border-color: $schedule-val-error-bg-color;
     z-index: 1000;
 

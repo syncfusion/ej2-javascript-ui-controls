@@ -612,6 +612,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const noDataCompTemp: any = compiledString({}, this, templateName, templateId, this.isStringTemplate, null, ele);
             if (noDataCompTemp && noDataCompTemp.length > 0) {
                 for (let i: number = 0; i < noDataCompTemp.length; i++) {
+                    if (this.getModuleName() === 'listbox' && templateName === 'noRecordsTemplate') {
+                        noDataCompTemp[i as number].classList.add('e-list-nr-template');
+                    }
                     ele.appendChild(noDataCompTemp[i as number]);
                 }
             }
@@ -651,7 +654,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected getFormattedValue(value: string): string | number | boolean {
         if (this.listData && this.listData.length) {
-            const item: { [key: string]: Object } = this.typeOfData(this.listData);
+            let item: { [key: string]: Object };
+            if(this.properties.allowCustomValue && this.properties.value && this.properties.value instanceof Array && this.properties.value.length > 0) {
+                item = this.typeOfData(this.properties.value);
+            }else{
+                item = this.typeOfData(this.listData);
+            }
             if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number'
                 || item.typeof === 'number') {
                 return parseFloat(value);

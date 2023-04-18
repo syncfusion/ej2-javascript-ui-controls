@@ -6,7 +6,7 @@ import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { whiteSpaceToString, wordBreakToString, textAlignToString, bBoxText } from './base-util';
 import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '../primitives/matrix';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
 
 /**
@@ -18,7 +18,7 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
     let collection: SVGElement[] | HTMLCollection = [];
     if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
         for (let i: number = 0; i < node.childNodes.length; i++) {
-            child = node.childNodes[i] as SVGElement;
+            child = node.childNodes[parseInt(i.toString(), 10)] as SVGElement;
             if (child.nodeType === 1) {
                 collection.push(child);
             }
@@ -54,26 +54,35 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
 /** @private */
 export function measurePath(data: string): Rect {
     let path: string = 'pathTable';
+    // eslint-disable-next-line
     if (!window[path]) {
+        // eslint-disable-next-line
         window[path] = {};
     }
     if (data) {
         let measureElement: string = 'measureElement';
+        // eslint-disable-next-line
         window[measureElement].style.visibility = 'visible';
+        // eslint-disable-next-line
         let svg: SVGSVGElement = window[measureElement].children[2];
         let element: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
         element.setAttribute('d', data);
         //let bounds: SVGRect = element.getBBox();
         let bounds: SVGRect;
+        // eslint-disable-next-line
         if (window[path][data]) {
+            // eslint-disable-next-line
             bounds = window[path][data];
         } else {
+            // eslint-disable-next-line
             window[path][data] = bounds = element.getBBox();
             if ((bounds.x === 0 || bounds.y === 0) && (bounds.width === 0 || bounds.height === 0)) {
+                // eslint-disable-next-line
                 window[path][data] = bounds = getBBox(data);
             }
         }
         let svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        // eslint-disable-next-line
         window[measureElement].style.visibility = 'hidden';
         return svgBounds;
     }
@@ -91,13 +100,13 @@ function getBBox(path: string): any {
     let currentpath: any = path;
     currentpath = currentpath.replace(/[a-z].*/g, ' ').replace(/[\sA-Z]+/gi, ' ').trim().split(' ');
     for (let i: number = 0; i < currentpath.length; i++) {
-        if (currentpath[i].length > 1) {
-            currentValue = currentpath[i].split(',');
+        if (currentpath[parseInt(i.toString(), 10)].length > 1) {
+            currentValue = currentpath[parseInt(i.toString(), 10)].split(',');
             xmin = xmax = currentValue[0]; ymin = ymax = currentValue[1];
         }
     }
     for (let i: number = 0; i < currentpath.length; i++) {
-        currentValue = currentpath[i].split(',');
+        currentValue = currentpath[parseInt(i.toString(), 10)].split(',');
         if (!currentValue[1]) {
             currentValue[0] = xmin;
             currentValue[1] = ymin;
@@ -188,23 +197,24 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
     let existingText: string;
     for (j = 0; j < eachLine.length; j++) {
         txt = '';
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
-            bounds1 = bBoxText(words[i] as string, text);
-            if (bounds1 > text.width && (words[i] as string).length > 0 && text.textWrapping !== 'NoWrap') {
+            bounds1 = bBoxText(words[parseInt(i.toString(), 10)] as string, text);
+            if (bounds1 > text.width && (words[parseInt(i.toString(), 10)] as string).length > 0 && text.textWrapping !== 'NoWrap') {
                 if (eachLine.length > 1) {
-                    words[i] = words[i] + '\n';
+                    words[parseInt(i.toString(), 10)] = words[parseInt(i.toString(), 10)] + '\n';
                 }
-                text.content = words[i] as string;
+                text.content = words[parseInt(i.toString(), 10)] as string;
                 childNodes = wrapText(text, txtValue, childNodes);
             } else {
-                txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
+                txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
                 newText = txtValue + (words[i + 1] || '');
                 let width: number = bBoxText(newText, text);
                 if (eachLine.length > 1 && i === words.length - 1) {
                     txtValue = txtValue + '\n';
                 }
                 if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+                    textValue = isNullOrUndefined(textValue) ? txtValue : textValue;
                     childNodes[childNodes.length] = {
                         text: (txtValue.indexOf('\n') === -1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
                         width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
@@ -257,7 +267,7 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
     let k: number = 0; let txtWidth: number;
     let width: number;
     for (k = 0; k < childNodes.length; k++) {
-        txtWidth = childNodes[k].width;
+        txtWidth = childNodes[parseInt(k.toString(), 10)].width;
         width = txtWidth;
         if (text.textAlign === 'left') {
             txtWidth = 0;
@@ -272,8 +282,8 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         } else {
             txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
         }
-        childNodes[k].dy = text.fontSize * 1.2;
-        childNodes[k].x = txtWidth;
+        childNodes[parseInt(k.toString(), 10)].dy = text.fontSize * 1.2;
+        childNodes[parseInt(k.toString(), 10)].x = txtWidth;
         if (!wrapBounds) {
             wrapBounds = {
                 x: txtWidth,
@@ -324,7 +334,7 @@ export function createHtmlElement(elementType: string, attribute: Object): HTMLE
 export function setAttributeHtml(element: HTMLElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[i], attributes[keys[i]]);
+        element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
     }
 }
 
@@ -355,6 +365,7 @@ export function getSelectorElement(diagramId: string, index?: number): SVGElemen
 /** @private */
 export function createMeasureElements(): void {
     let measureElement: string = 'measureElement';
+    // eslint-disable-next-line
     if (!window[measureElement]) {
         let divElement: HTMLElement = createHtmlElement('div', {
             id: 'measureElement',
@@ -377,10 +388,13 @@ export function createMeasureElements(): void {
         let tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
+        // eslint-disable-next-line
         window[measureElement] = divElement;
+        // eslint-disable-next-line
         window[measureElement].usageCount = 1;
         document.body.appendChild(divElement);
     } else {
+        // eslint-disable-next-line
         window[measureElement].usageCount += 1;
     }
 }
@@ -388,13 +402,16 @@ export function createMeasureElements(): void {
 /** @private */
 export function measureImage(source: string, contentSize: Size): Size {
     let measureElement: string = 'measureElement';
+    // eslint-disable-next-line
     window[measureElement].style.visibility = 'visible';
+    // eslint-disable-next-line
     let imageElement: HTMLImageElement = window[measureElement].children[1];
     imageElement.setAttribute('src', source);
     let bounds: ClientRect = imageElement.getBoundingClientRect();
     let width: number = bounds.width;
     let height: number = bounds.height;
     contentSize = new Size(width, height);
+    // eslint-disable-next-line
     window[measureElement].style.visibility = 'hidden';
     return contentSize;
 }

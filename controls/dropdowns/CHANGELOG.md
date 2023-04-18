@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F181311` - Issue with "Scrolling is not working while drag and drop the list box with item Template in angular platform" has been resolved.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I451965` - While performing filtering multiple times, the checked node state is cleared in the Dropdown Tree component has been resolved.
+
+## 21.1.39 (2023-04-11)
+
 ### ListBox
 
 #### Bug Fixes

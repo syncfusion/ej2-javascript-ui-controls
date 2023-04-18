@@ -7,7 +7,7 @@ import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateT
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
-import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
+import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
 import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries, AxisModel, ScatterSeries } from '@syncfusion/ej2-charts';
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
@@ -146,7 +146,7 @@ export class SpreadsheetChart {
                 const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
                     rowIndex: rIdx, colIndex: cIdx };
                 this.parent.notify(getFormattedCellObject, formatObj);
-                if (typeof (formatObj.value) === 'number') {
+                if (isNumber(cell.value)) {
                     // eslint-disable-next-line no-useless-escape
                     const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
                     formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
@@ -308,9 +308,9 @@ export class SpreadsheetChart {
                     const forArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, rowIndex: minr,
                         colIndex: minc, cell: cell };
                     this.parent.notify(getFormattedCellObject, forArgs);
-                    value = forArgs.formattedText ? forArgs.formattedText.toString() : '';
+                    value = forArgs.formattedText ? forArgs.formattedText.toString() : null;
                 } else {
-                    value = cell.value || (<unknown>cell.value === 0 ? 0 : '');
+                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
                 }
                 arr.push({ value });
                 minc++;
@@ -399,7 +399,7 @@ export class SpreadsheetChart {
                     if (isNumber(val)) {
                         val = Number(val);
                     } else {
-                        dtVal = dateToInt(val);
+                        dtVal = dateToInt(isNullOrUndefined(val) ? '' : val);
                         val = isNaN(dtVal) ? 0 : dtVal;
                     }
                     pArr.push({ x: xValue[j as number], y: val });
@@ -411,6 +411,9 @@ export class SpreadsheetChart {
                 seriesName = lValue[i as number] as string;
             } else {
                 seriesName = 'series' + i;
+            }
+            if (isNullOrUndefined(seriesName)) {
+                seriesName = '';
             }
             if (options.type) {
                 const type: ChartType = options.type;
@@ -465,22 +468,14 @@ export class SpreadsheetChart {
     }
 
     private primaryYAxisFormat(yRange: number[]): string {
-        if (isNullOrUndefined(yRange)) {
-            return '{value}';
-        }
-        let type: string;
-        const cell: CellModel = getCell(yRange[0], yRange[1], this.parent.getActiveSheet());
-        if (cell && cell.format) {
-            type = getTypeFromFormat(cell.format);
-            if (type === 'Accounting') {
-                return '${value}';
-            } else if (type === 'Currency') {
-                return '${value}';
-            } else if (type === 'Percentage') {
-                return '{value}%';
+        let format: string = '';
+        if (!isNullOrUndefined(yRange)) {
+            const cell: CellModel = getCell(yRange[0], yRange[1], this.parent.getActiveSheet());
+            if (cell && cell.format) {
+                format = cell.format;
             }
         }
-        return '{value}';
+        return format;
     }
 
     private focusChartRange(xRange: number[], yRange: number[], lRange: number[]): void {
@@ -623,7 +618,6 @@ export class SpreadsheetChart {
                 { width: chart.primaryYAxis.minorGridLines.width } : { width: 0 },
             minorTicksPerInterval: chart.primaryYAxis && chart.primaryYAxis.minorGridLines && chart.primaryYAxis.minorGridLines.width > 0 ?
                 5 : 0,
-            labelFormat: this.primaryYAxisFormat(yRange),
             visible: chart.primaryYAxis ? chart.primaryYAxis.visible : true,
             title: chart.primaryYAxis ? chart.primaryYAxis.title : ''
         };
@@ -672,6 +666,7 @@ export class SpreadsheetChart {
                 id: chart.id, className: chart.id
             });
         const theme: ChartTheme = chart.theme || 'Material';
+        const format: string = this.primaryYAxisFormat(yRange)
         if (chart.type !== 'Pie' && chart.type !== 'Doughnut') {
             this.chart = new Chart({
                 primaryXAxis: primaryXAxis,
@@ -696,6 +691,11 @@ export class SpreadsheetChart {
                 },
                 beforeResize: (args: IBeforeResizeEventArgs) => {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.
+                },
+                axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
+                    if(args.axis.name == "primaryYAxis" && format && !isNullOrUndefined(args.value) && this.parent){
+                        args.text = this.parent.getDisplayText({ format: format, value: args.value.toString()});
+                    }
                 }
             });
             this.chart.appendTo(chartContent);

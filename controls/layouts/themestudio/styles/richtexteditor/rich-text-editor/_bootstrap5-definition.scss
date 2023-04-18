@@ -1,5 +1,3 @@
-$skin-name: 'bootstrap5' !default;
-
 //Layout Variables Start
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
@@ -29,8 +27,8 @@ $rte-big-quick-drop-btn-icon-size: 16px !default;
 $rte-quick-drop-btn-icon-size: 14px !default;
 $rte-big-quick-drop-btn-caret-icon-size: 10px !default;
 $rte-quick-drop-btn-caret-icon-size: 12px !default;
-$rte-big-quick-drop-btn-caret-font-size: 12px !default;
-$rte-quick-drop-btn-caret-font-size: 10px !default;
+$rte-big-quick-drop-btn-caret-font-size: $text-xs !default;
+$rte-quick-drop-btn-caret-font-size: $text-xxs !default;
 $rte-big-tb-items-margin-left: 3px !default;
 $rte-tb-items-margin-left: 7px !default;
 $rte-big-tb-items-padding-left: 3px !default;
@@ -82,6 +80,22 @@ $rte-big-inline-tmp-color-min-width: 50px;
 $rte-inline-tmp-color-min-width: 55px;
 $rte-big-color-list-span-common-padding-left-right: 0;
 $rte-default-character-count-opacity: 1;
+$rte-droparea-line-height: 10;
+$rte-droparea-browsebtn-height: 36px;
+$rte-droparea-browsebtn-padding: 0 18px;
+$rte-droparea-browsebtn-top: -50px;
+$rte-insert-dialog-font-size: 15px;
+$rte-big-insert-dialog-font-size: 15px;
+$rte-table-popup-tablecell-height: 14px;
+$rte-table-popup-tablecell-width: 14px;
+$rte-table-popup-tablecell-margin: 1px;
+$rte-table-popup-row-height : 16px;
+$rte-big-table-row-height : 18px;
+$rte-big-tablecell-height : 16px;
+$rte-big-tablecell-width : 16px;
+$rte-toolbar-item-frist-last-child-margin: 0 6px;
+$rte-big-toolbar-item-frist-last-child-margin: 0 6px;
+$rte-tlbar-expand-active:$msg-color-alt2;
 
 //Layout Variables End
 
@@ -93,6 +107,7 @@ $rte-full-screen-bg: $content-bg-color !default;
 $rte-content-font-color: $content-text-color !default;
 $rte-item-color: $content-text-color !default;
 $rte-icons-color: $icon-color !default;
+$rte-hover-icons-color: $white !default;
 $rte-img-popup-border: 1px solid $border-light !default;
 $rte-img-popup-box-shadow: $shadow !default;
 $rte-img-popup-color: $border-light !default;
@@ -141,7 +156,7 @@ $rte-drop-text-clr: $content-text-color-alt2 !default;
 $rte-default-character-count-color: $placeholder-text-color !default;
 $rte-warning-character-count-color: $warning !default;
 $rte-error-character-count-color: $danger !default;
-$rte-img-border: dashed 2px $primary !default;
+$rte-img-border: solid 2px $primary !default;
 $rte-font-family: $font-family !default;
 $rte-content-color: $content-text-color !default;
 $rte-content-blockquote-border-left-color: solid 2px $content-text-color !default;
@@ -160,12 +175,18 @@ $rte-table-span-active-bg-color: $primary-lighter !default;
 $rte-table-span-active-border-color: $primary !default;
 $rte-table-select-border-color: $primary !default;
 $rte-table-popup-bg: $flyout-bg-color !default;
+$rte-table-resize-back-color: $flyout-bg-color !default;
 $rte-table-popup-color: $border-light !default;
 $rte-table-popup-box: $shadow !default;
 $rte-table-border-color: $border-light !default;
 $rte-table-alternate-color: $content-bg-color-alt1 !default;
 $rte-table-header-bg: $content-bg-color-alt1 !default;
 $rte-toolbar-hor-nav-border-width: 0 0 0 1px !default;
+$rte-border-top-left-radius: 0;
+$rte-border-top-right-radius: 0;
+$rte-border-bottom-right-radius: 0;
+$rte-border-bottom-left-radius: 0;
+$rte-big-border-radius: 0;
 
 //Theme Variables End
 
@@ -193,4 +214,6 @@ $rte-big-edit-table-dlg-max-height: 373px !default;
 $toolbar-expand-icon-min-height: 40px !default;
 $rte-align-caret-icon-min-width: 24px !default;
 $rte-drop-text-width: 300px !default;
+$rte-drop-text-height: 185px !default;
 $rte-drop-text-mobile-width: 250px !default;
+$rte-tbar-default-bg: $content-bg-color-alt1;

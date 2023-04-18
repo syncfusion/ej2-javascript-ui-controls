@@ -2855,7 +2855,7 @@ describe('Schedule event window initial load', () => {
             schObj.width = '400px';
             schObj.dataBind();
         });
-        it ('EJ2-66573 - Editor window does not open when schedule is rendered with minimum width', () => {
+        it('EJ2-66573 - Editor window does not open when schedule is rendered with minimum width', () => {
             expect(schObj.element.style.width).toEqual('400px');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].firstElementChild as HTMLElement, 'click', 300, 350);
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].firstElementChild as HTMLElement, 'dblclick', 300, 350);
@@ -3342,7 +3342,7 @@ describe('Schedule event window initial load', () => {
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             const saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
             const resourceElement: MultiSelect =
-            (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+                (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
             resourceElement.value = [1, 2, 4];
             resourceElement.dataBind();
             const subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
@@ -3378,6 +3378,98 @@ describe('Schedule event window initial load', () => {
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
+        });
+    });
+
+    describe('EJ2-70484 - Numeric text box not destroyed', () => {
+        let schObj: Schedule;
+        let destroyedCount: number = 0;
+        let popupOpenedCount: number = 0;
+        beforeAll((done: DoneFn) => {
+            const template: string = `<table class="custom-event-editor" width="100%" cellpadding="5">
+            <tbody>
+                <tr>
+                    <td class="e-textlabel">From</td>
+                    <td colspan="4">
+                        <input id="StartTime" class="e-field" type="text" name="StartTime" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="e-textlabel">To</td>
+                    <td colspan="4">
+                        <input id="EndTime" class="e-field" type="text" name="EndTime" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="e-textlabel">Price</td>
+                    <td colspan="4">
+                        <input type="text" id="Price" name="Price" class="e-field" style="width: 100%" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>`;
+            const scriptEle: HTMLScriptElement = document.createElement('script');
+            scriptEle.type = 'text/x-template';
+            scriptEle.id = 'EventEditorTemplate';
+            scriptEle.appendChild(document.createTextNode(template));
+            document.getElementsByTagName('head')[0].appendChild(scriptEle);
+            const onPopupOpen: EmitType<PopupOpenEventArgs> = (args: PopupOpenEventArgs) => {
+                if (args.type === 'Editor') {
+                    const startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                    if (!startElement.classList.contains('e-datepicker')) {
+                        new DatePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                    }
+                    const endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                    if (!endElement.classList.contains('e-datepicker')) {
+                        new DatePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                    const priceElement: HTMLInputElement = args.element.querySelector('#Price') as HTMLInputElement;
+                    if (!priceElement.classList.contains('e-numerictextbox')) {
+                        var priceInput = new NumericTextBox({
+                            placeholder: 'Select a price',
+                            format: 'C2',
+                            floatLabelType: 'Always',
+                            value: args.data.Price,
+                            destroyed: () => {
+                                destroyedCount += 1
+                            }
+                        });
+                        priceInput.appendTo(priceElement);
+                        priceElement.setAttribute('name', 'Price');
+                    }
+                    popupOpenedCount += 1;
+                }
+            };
+            const model: ScheduleModel = {
+                editorTemplate: '#EventEditorTemplate', popupOpen: onPopupOpen, height: '500px',
+                currentView: 'Month', views: ['Month'], selectedDate: new Date(2017, 10, 1)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('EventEditorTemplate'));
+        });
+
+        it('Make sure the numeric text box destroyed', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(destroyedCount).toEqual((popupOpenedCount === 0 ? 0 : popupOpenedCount - 1));
+                if (destroyedCount === 2) {
+                    done();
+                }
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const addButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            addButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            addButton.click();
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            addButton.click();
         });
     });
 

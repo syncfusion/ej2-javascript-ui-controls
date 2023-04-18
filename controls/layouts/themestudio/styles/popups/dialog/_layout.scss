@@ -163,9 +163,6 @@
     & .e-dlg-content {
       font-size: $dialog-bigger-content-font-size;
       padding: $dialog-bigger-content-padding;
-      @if $skin-name == 'FluentUI' {
-        margin-bottom: $dialog-bigger-content-margin-bottom;
-      }
     }
 
     & .e-footer-content {
@@ -212,9 +209,6 @@
 
     & .e-dlg-content {
       padding: $dialog-content-padding;
-      @if $skin-name == 'FluentUI' {
-        margin-bottom: $dialog-content-margin-bottom;
-      }
     }
 
     & .e-footer-content {

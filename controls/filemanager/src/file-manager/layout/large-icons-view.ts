@@ -46,6 +46,7 @@ export class LargeIconsView {
     private count: number = 0;
     private isRendered: boolean = true;
     private tapCount: number = 0;
+    private isSelectAllCalled: boolean = false;
     private tapEvent: TapEventArgs;
     private isPasteOperation: boolean = false;
     private dragObj: Draggable;
@@ -816,6 +817,9 @@ export class LargeIconsView {
                 && (e.ctrlKey || target.classList.contains(CLS.CHECK))) {
                 action = 'unselect';
             }
+            if(e.ctrlKey && e.shiftKey) {   
+                this.isSelectAllCalled = true;
+            }
             const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
             if (fileSelectionArgs.cancel !== true) {
                 if ((!this.parent.allowMultiSelection || (!this.multiSelect && (e && !e.ctrlKey)))
@@ -856,9 +860,13 @@ export class LargeIconsView {
                 this.triggerSelect(action, item);
             }
         } else {
+            if(this.parent.selectedItems.length === this.itemList.length) {   
+                this.isSelectAllCalled = true;
+            }
             this.clearSelection();
         }
         if (!isNOU(item)) {
+            this.isSelectAllCalled = false;
             this.updateType(item);
         }
     }
@@ -1421,9 +1429,16 @@ export class LargeIconsView {
     }
     private triggerSelection(action: string, item: Element): FileSelectionEventArgs {
         // eslint-disable-next-line
-        const data: Object = this.getItemObject(item);
+        const data: object[] = [];
+        if(this.isSelectAllCalled){
+            for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
+                data[i as number] = this.getItemObject(this.itemList[i as number]);
+            }
+        }else{
+            data[0]=this.getItemObject(item);
+        }
         const eventArgs: FileSelectionEventArgs = {
-            action: action, fileDetails: data, isInteracted: this.isInteraction, cancel: false, target: item
+            action: action, fileDetails: data.length >1 ? data : data[0], isInteracted: this.isInteraction, cancel: false, target: this.isSelectAllCalled? null : item
         };
         this.parent.trigger('fileSelection', eventArgs);
         this.isInteraction = true;
@@ -1432,9 +1447,17 @@ export class LargeIconsView {
 
     private triggerSelect(action: string, item: Element): void {
         // eslint-disable-next-line
-        const data: Object = this.getItemObject(item);
-        this.parent.visitedData = data;
-        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: data, isInteracted: this.isInteracted };
+        const data: object[] = [];
+        if(this.isSelectAllCalled){
+            for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
+                data[i as number] = this.getItemObject(this.itemList[i as number]);
+            }
+            this.isSelectAllCalled = false;
+        }else{
+            data[0]=this.getItemObject(item);
+        }
+        this.parent.visitedData = data.length >1 ? data[data.length-1] : data[0];
+        const eventArgs: FileSelectEventArgs = { action: action, fileDetails: data.length >1 ? data : data[0], isInteracted: this.isInteracted };
         this.parent.trigger('fileSelect', eventArgs);
         this.isInteracted = true;
     }

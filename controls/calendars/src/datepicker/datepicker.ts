@@ -515,9 +515,12 @@ export class DatePicker extends Calendar implements IInput {
         this.createInput();
         this.updateHtmlAttributeToWrapper();
         this.setAllowEdit();
-        this.updateInput(true);
         if (this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType === 'Always' || !this.floatLabelType || !this.placeholder)){
+            this.updateInput(true);
             this.updateInputValue(this.maskedDateValue);
+        }
+        else if (!this.enableMask) {
+            this.updateInput(true);
         }
         this.previousElementValue = this.inputElement.value;
         this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;

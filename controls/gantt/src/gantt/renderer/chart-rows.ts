@@ -1476,7 +1476,6 @@ export class ChartRows extends DateProcessor {
         }
         if (this.templateData.hasChildRecords) {
             const parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
-            const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
             if (!this.templateData.ganttProperties.isAutoSchedule) {
                 const manualTaskbar: NodeList = this.getManualTaskbar();
                 if (!isNullOrUndefined(manualTaskbar[0])) {
@@ -1490,9 +1489,6 @@ export class ChartRows extends DateProcessor {
             }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
-            }
-            else if(milestoneTemplateNode && milestoneTemplateNode.length > 0){
-                taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {

@@ -7,7 +7,7 @@
 
   .e-date-wrapper:not(.e-filled) {
     #{if(&, '&', '*')} .e-date-icon.e-icons {
-      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' {
         box-sizing: $datepicker-box-sizing;
       }
     }
@@ -37,7 +37,12 @@
     }
 
     #{if(&, '&', '*')}.e-date-modal {
-      background-color: $datepicker-overlay;
+      @if $skin-name != 'Material3' {
+        background-color: $datepicker-overlay;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datepicker-overlay;
+      }
       height: 100%;
       left: 0;
       opacity: .5;
@@ -49,7 +54,12 @@
     }
 
     #{if(&, '&', '*')} .e-model-header {
-      background-color: $datepicker-modal-header-bg;
+      @if $skin-name != 'Material3' {
+        background-color: $datepicker-modal-header-bg;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datepicker-modal-header-bg;
+      }
       color: $datepicker-modal-header-color;
       cursor: default;
       display: $datepicker-modal-header-display;
@@ -98,7 +108,7 @@
   }
 
   .e-datepicker.e-popup-wrapper.e-popup-expand.e-lib.e-popup.e-control.e-popup-open {
-    @if $skin-name == 'material' {
+    @if $skin-name == 'material' or $skin-name == 'Material3' {
     min-width: 100%;
     min-height:100%;
     }
@@ -120,7 +130,7 @@
 
 .e-datepick-mob-popup-wrap {
 
-  @if $skin-name == 'material' {
+  @if $skin-name == 'material' or $skin-name == 'Material3' {
   
   #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
 
@@ -189,7 +199,7 @@
 
 @media screen and (orientation: landscape) {
   .e-datepick-mob-popup-wrap {
-    @if $skin-name == 'material' {
+    @if $skin-name == 'material' or $skin-name == 'Material3'{
     #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
       #{if(&, '&', '*')} .e-model-header {
 

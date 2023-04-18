@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 20.4.54 (2023-03-14)
+
 ### In-place Editor
 
 #### Bug Fixes

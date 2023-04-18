@@ -600,7 +600,7 @@ export class WorkbookAutoFill {
     }
 
     private round(value: string | number, round: string | number): number {
-        return Number(Math.round(parseFloat(value + 'e' + round)) + 'e-' + round);
+        return Number(Math.round(parseFloat(value + 'e' + round)) + 'e-' + round) || Number(value);
     }
 
     private getRangeData(options: { range: number[], sheetIdx: number }): CellModel[] {

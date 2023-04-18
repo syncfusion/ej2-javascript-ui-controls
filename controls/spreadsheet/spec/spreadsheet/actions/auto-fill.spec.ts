@@ -1612,7 +1612,7 @@ describe('Auto fill ->', () => {
     }); 
 
     describe('CR Issues ->', () => {
-        describe('EJ2-56558, EJ2-60197 ->', () => {
+        describe('EJ2-56558, EJ2-60197, EJ2-71594 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E1' }] }, done);
             });
@@ -1667,6 +1667,54 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 expect(getCell(1, 8, instance.sheets[0]).formula).toBe('=IF($I3="Other", $J3, CONCAT($I3: $J3))');
                 expect(getCell(0, 9, instance.sheets[0]).formula).toBe('=IF($I2="Other", $J2, CONCAT($I2: $J2))');
+                done();
+            });
+            it('Spreadsheet displays NaN when drag the cells that contain larger number value', (done: Function) => {
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['K1']);
+                helper.edit('K1', '1000000000000');
+                let autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [2, 10]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                instance.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                instance.selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                helper.invoke('selectRange', ['L1']);
+                helper.edit('L1', '1000000000000000000');
+                td = helper.invoke('getCell', [2, 11]);
+                coords = td.getBoundingClientRect();
+                autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                instance.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                instance.selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                expect(JSON.stringify(getCell(0, 10, instance.sheets[0]).value)).toBe('1000000000000');
+                expect(JSON.stringify(getCell(1, 10, instance.sheets[0]).value)).toBe('1000000000001');
+                expect(JSON.stringify(getCell(2, 10, instance.sheets[0]).value)).toBe('1000000000002');
+                expect(JSON.stringify(getCell(0, 11, instance.sheets[0]).value)).toBe('1000000000000000000');
+                expect(JSON.stringify(getCell(1, 11, instance.sheets[0]).value)).toBe('1000000000000000000');
+                expect(JSON.stringify(getCell(2, 11, instance.sheets[0]).value)).toBe('1000000000000000000');
+                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('1E+12');
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1E+12');
+                expect(helper.invoke('getCell', [0, 11]).textContent).toBe('1E+18');
+                expect(helper.invoke('getCell', [1, 11]).textContent).toBe('1E+18');
+                helper.edit('M1', '110000000000');
+                helper.edit('M2', '101000000000');
+                helper.edit('M3', '100001000000');
+                helper.edit('N1', '100000100000');
+                helper.edit('N2', '100000001000');
+                expect(JSON.stringify(getCell(0, 12, instance.sheets[0]).value)).toBe('110000000000');
+                expect(helper.invoke('getCell', [0, 12]).textContent).toBe('1.1E+11');
+                expect(JSON.stringify(getCell(1, 12, instance.sheets[0]).value)).toBe('101000000000');
+                expect(helper.invoke('getCell', [1, 12]).textContent).toBe('1.01E+11');
+                expect(JSON.stringify(getCell(2, 12, instance.sheets[0]).value)).toBe('100001000000');
+                expect(helper.invoke('getCell', [2, 12]).textContent).toBe('1.00001E+11');
+                expect(JSON.stringify(getCell(0, 13, instance.sheets[0]).value)).toBe('100000100000');
+                expect(helper.invoke('getCell', [0, 13]).textContent).toBe('1E+11');
+                expect(JSON.stringify(getCell(1, 13, instance.sheets[0]).value)).toBe('100000001000');
+                expect(helper.invoke('getCell', [1, 13]).textContent).toBe('1E+11');
                 done();
             });
         });

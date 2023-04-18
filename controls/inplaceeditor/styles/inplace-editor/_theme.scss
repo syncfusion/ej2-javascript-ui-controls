@@ -105,22 +105,22 @@
       .e-btn-save.e-icon-btn,
       .e-btn-cancel.e-icon-btn {
 
-        @if $inplace-skin == 'fabric-dark' or $inplace-skin == 'bootstrap-dark' or $inplace-skin == 'highcontrast' or $inplace-skin == 'highcontrast-light' {
+        @if $skin-name == 'fabric-dark' or $skin-name == 'bootstrap-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
           box-shadow: none;
         }
-        @else if $inplace-skin == 'fabric' {
+        @else if $skin-name == 'fabric' {
           box-shadow: 0 1px 4px 0 $black-color;
         }
-        @else if $inplace-skin == 'bootstrap' {
+        @else if $skin-name == 'bootstrap' {
           box-shadow: 0 1px 4px 0 $black-color;
         }
-        @else if $inplace-skin == 'bootstrap4' {
+        @else if $skin-name == 'bootstrap4' {
           background-color: $content-bg;
           border: 1px solid $gray-400;
           box-shadow: 0 1px 4px 0 $black-color;
         }
 
-        @else if $inplace-skin == 'bootstrap5' {
+        @else if $skin-name == 'bootstrap5' {
           background-color: $content-bg-color;
           border: 1px solid $border-light;
           border-radius: 4px;
@@ -130,22 +130,34 @@
           color: $editor-btn-icon-color;
         }
 
-        @if $inplace-skin == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
 
           &:hover {
             background-color: darken($gray-600, 7.5%);
             border: 1px solid darken($gray-600, 10%);
           }
+
+          &:disabled {
+            background-color: $content-bg;
+            border: 1px solid $gray-400;
+            box-shadow: 0 1px 4px 0 $black-color;
+          }
         }
-        @else if $inplace-skin == 'bootstrap5' {
+        @else if $skin-name == 'bootstrap5' {
 
           &:hover {
             background-color: darken($gray-600, 7.5%);
             border: 1px solid darken($gray-600, 10%);
           }
+
+          &:disabled{
+            background-color: $content-bg-color;
+            border: 1px solid $border-light;
+            border-radius: 4px;
+          }
         }
 
-        @if $inplace-skin == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
 
           &:focus {
             background-color: $gray-600;
@@ -153,7 +165,7 @@
           }
         }
 
-        @if $inplace-skin == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
 
           &:active {
             background-color: darken($gray-600, 10%);
@@ -167,7 +179,7 @@
 
           .e-btn-icon.e-icons {
 
-            @if $inplace-skin == 'bootstrap4' or $inplace-skin =='bootstrap5' {
+            @if $skin-name == 'bootstrap4' or $skin-name =='bootstrap5' {
               color: $white;
             }
           }
@@ -176,7 +188,7 @@
     }
   }
 
-  @if $inplace-skin == 'tailwind' or $inplace-skin == 'bootstrap5' {
+  @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
     .e-inplaceeditor .e-editable-value-wrapper {
       background-color: $editor-background-color;
       border-radius: 4px;
@@ -192,7 +204,7 @@
     &.e-tooltip-wrap.e-popup {
       background: $editor-tip-bg;
       box-shadow: $editor-tip-box-shadow;
-      @if $inplace-skin == 'FluentUI' {
+      @if $skin-name == 'FluentUI' {
         border-radius: $editor-popup-tip-wrapper-bdr-radius;
       }
 

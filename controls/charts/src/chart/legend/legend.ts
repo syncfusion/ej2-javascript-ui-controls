@@ -110,7 +110,8 @@ export class Legend extends BaseLegend {
                     this.legendCollections.push(new LegendOptions(
                         series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
-                        seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible, null, null, dashArray
+                        seriesType, series.legendImageUrl ? series.legendImageUrl : (series.type === 'Scatter' && series.marker.shape === 'Image' ? series.marker.imageUrl : ''),
+                        series.marker.shape, series.marker.visible, null, null, dashArray
                     ));
                 }
             } else if (this.legend.mode === 'Point') {
@@ -122,7 +123,7 @@ export class Legend extends BaseLegend {
                         this.legendCollections.push(new LegendOptions(
                             points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
                                 (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
-                            seriesType, '', series.marker.shape, series.marker.visible
+                            seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '', series.marker.shape, series.marker.visible
                         ));
                     }
                 }
@@ -143,7 +144,7 @@ export class Legend extends BaseLegend {
                             this.legendCollections.push(new LegendOptions(
                                 legendLabel, fill, series.legendShape, (series.category === 'TrendLine' ?
                                     (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
-                                seriesType, '', series.marker.shape, series.marker.visible
+                                seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '', series.marker.shape, series.marker.visible
                             ));
                         }
                     }

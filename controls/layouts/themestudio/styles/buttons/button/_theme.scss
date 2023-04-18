@@ -6,7 +6,7 @@
   .e-btn,
   .e-css.e-btn {
     -webkit-tap-highlight-color: transparent;
-    background-color: $btn-bgcolor;
+    background: $btn-bgcolor;
     border-color: $btn-border-color;
     @if $skin-name != 'bootstrap5' {
       box-shadow: $btn-box-shadow;
@@ -15,7 +15,7 @@
     transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1);
     @at-root {
       &:hover {
-        background-color: $btn-hover-bgcolor;
+        background: $btn-hover-bgcolor;
         border-color: $btn-hover-border-color;
         box-shadow: $btn-hover-focus-box-shadow;
         color: $btn-hover-color;
@@ -33,7 +33,10 @@
 
       &:focus-visible { // only for keybord
         @if $skin-name == 'FluentUI' {
-          background-color: $btn-bgcolor;
+          background: $btn-bgcolor;
+        }
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-keyboard-focus-box-shadow;
         }
       }
 
@@ -42,7 +45,7 @@
       }
 
       &.e-active {
-        background-color: $btn-active-bgcolor;
+        background: $btn-active-bgcolor;
         border-color: $btn-active-border-color;
         @if $skin-name != 'bootstrap5' {
           box-shadow: $btn-active-box-shadow;
@@ -51,7 +54,7 @@
       }
 
       &:disabled {
-        background-color: $btn-disabled-bgcolor;
+        background: $btn-disabled-bgcolor;
         border-color: $btn-disabled-border-color;
         box-shadow: $btn-flat-box-shadow;
         color: $btn-disabled-color;
@@ -61,24 +64,25 @@
       }
 
       & .e-ripple-element {
-        background-color: $btn-ripple-bgcolor;
+        background: $btn-ripple-bgcolor;
       }
 
-      &.e-round {
-        background-color: $btn-round-bgcolor;
+      &.e-round,
+      &.e-round-edge {
+        background: $btn-round-bgcolor;
         border-color: $btn-round-border-color;
         color: $btn-round-color;
 
         &:hover {
-          background-color: $btn-round-hover-bgcolor;
+          background: $btn-round-hover-bgcolor;
           border-color: $btn-round-hover-border-color;
           color: $btn-round-hover-color;
         }
 
         &:focus {
-          background-color: $btn-focus-bgcolor;
+          background: $btn-focus-bgcolor;
           border-color: $btn-focus-border-color;
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
+          @if ($skin-name == 'tailwind') {
             box-shadow: $btn-focus-box-shadow;
           }
           @else {
@@ -97,14 +101,17 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-bgcolor;
+            background: $btn-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
         &:active {
-          background-color: $btn-active-bgcolor;
+          background: $btn-active-bgcolor;
           border-color: $btn-active-border-color;
-          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          @if ($skin-name == 'tailwind') {
             box-shadow: $btn-focus-box-shadow;
           }
           @else {
@@ -116,7 +123,7 @@
         }
 
         &:disabled {
-          background-color: $btn-disabled-bgcolor;
+          background: $btn-disabled-bgcolor;
           border-color: $btn-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
           color: $btn-disabled-color;
@@ -135,7 +142,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-primary-bgcolor;
+              background: $btn-primary-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
@@ -153,7 +163,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-success-bgcolor;
+              background: $btn-success-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
@@ -171,7 +184,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-info-bgcolor;
+              background: $btn-info-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
@@ -189,7 +205,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-warning-bgcolor;
+              background: $btn-warning-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
@@ -207,21 +226,32 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-danger-bgcolor;
+              background: $btn-danger-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
       }
 
       &.e-primary {
-        background-color: $btn-primary-bgcolor;
+        background: $btn-primary-bgcolor;
         border-color: $btn-primary-border-color;
         color: $btn-primary-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
 
         &:hover {
-          background-color: $btn-primary-hover-bgcolor;
+          background: $btn-primary-hover-bgcolor;
           border-color: $btn-primary-hover-border-color;
-          box-shadow: $btn-hover-focus-box-shadow;
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
           color: $btn-primary-hover-color;
         }
 
@@ -237,7 +267,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-primary-bgcolor;
+            background: $btn-primary-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -246,7 +279,7 @@
         }
 
         &.e-active {
-          background-color: $btn-primary-active-bgcolor;
+          background: $btn-primary-active-bgcolor;
           border-color: $btn-primary-active-border-color;
           @if $skin-name == 'bootstrap4' {
             $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
@@ -263,19 +296,27 @@
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-primary-bgcolor;
+          background: $btn-ripple-primary-bgcolor;
         }
       }
 
       &.e-success {
-        background-color: $btn-success-bgcolor;
+        background: $btn-success-bgcolor;
         border-color: $btn-success-border-color;
         color: $btn-success-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
 
         &:hover {
-          background-color: $btn-success-hover-bgcolor;
+          background: $btn-success-hover-bgcolor;
           border-color: $btn-success-hover-border-color;
-          box-shadow: $btn-hover-focus-box-shadow;
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
           color: $btn-success-hover-color;
         }
 
@@ -291,7 +332,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-success-bgcolor;
+            background: $btn-success-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -305,19 +349,27 @@
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-success-bgcolor;
+          background: $btn-ripple-success-bgcolor;
         }
       }
 
       &.e-info {
-        background-color: $btn-info-bgcolor;
+        background: $btn-info-bgcolor;
         border-color: $btn-info-border-color;
         color: $btn-info-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
 
         &:hover {
-          background-color: $btn-info-hover-bgcolor;
+          background: $btn-info-hover-bgcolor;
           border-color: $btn-info-hover-border-color;
-          box-shadow: $btn-hover-focus-box-shadow;
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
           color: $btn-info-hover-color;
         }
 
@@ -333,7 +385,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-info-bgcolor;
+            background: $btn-info-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -347,19 +402,27 @@
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-info-bgcolor;
+          background: $btn-ripple-info-bgcolor;
         }
       }
 
       &.e-warning {
-        background-color: $btn-warning-bgcolor;
+        background: $btn-warning-bgcolor;
         border-color: $btn-warning-border-color;
         color: $btn-warning-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
 
         &:hover {
-          background-color: $btn-warning-hover-bgcolor;
+          background: $btn-warning-hover-bgcolor;
           border-color: $btn-warning-hover-border-color;
-          box-shadow: $btn-hover-focus-box-shadow;
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
           color: $btn-warning-hover-color;
         }
 
@@ -375,7 +438,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-warning-bgcolor;
+            background: $btn-warning-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -389,19 +455,27 @@
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-warning-bgcolor;
+          background: $btn-ripple-warning-bgcolor;
         }
       }
 
       &.e-danger {
-        background-color: $btn-danger-bgcolor;
+        background: $btn-danger-bgcolor;
         border-color: $btn-danger-border-color;
         color: $btn-danger-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
 
         &:hover {
-          background-color: $btn-danger-hover-bgcolor;
+          background: $btn-danger-hover-bgcolor;
           border-color: $btn-danger-hover-border-color;
-          box-shadow: $btn-hover-focus-box-shadow;
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
           color: $btn-danger-hover-color;
         }
 
@@ -417,7 +491,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-danger-bgcolor;
+            background: $btn-danger-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -426,7 +503,7 @@
         }
 
         &.e-active {
-          background-color: $btn-danger-active-bgcolor;
+          background: $btn-danger-active-bgcolor;
           border-color: $btn-danger-active-border-color;
           @if $skin-name == 'bootstrap4' {
             $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
@@ -443,32 +520,32 @@
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-danger-bgcolor;
+          background: $btn-ripple-danger-bgcolor;
         }
       }
 
       &.e-flat {
-        background-color: $btn-flat-bgcolor;
+        background: $btn-flat-bgcolor;
         border-color: $btn-flat-border-color;
         box-shadow: $btn-flat-box-shadow;
         color: $btn-flat-color;
 
         &:hover {
-          background-color: $btn-flat-hover-bgcolor;
+          background: $btn-flat-hover-bgcolor;
           border-color: $btn-flat-hover-border-color;
           box-shadow: $btn-flat-box-shadow;
           color: $btn-flat-hover-color;
         }
 
         &:focus {
-          background-color: $btn-flat-focus-bgcolor;
+          background: $btn-flat-focus-bgcolor;
           border-color: $btn-flat-focus-border-color;
           color: $btn-flat-focus-color;
           @if $skin-name == 'bootstrap4' {
             $color-rgba: rgba(mix(lighten($btn-flat-focus-bgcolor, 50%), $btn-flat-focus-border-color, 15%), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
-          @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
+          @else if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             box-shadow: $btn-focus-box-shadow;
           }
           @else {
@@ -482,9 +559,15 @@
           }
         }
 
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
         &:active,
         &.e-active {
-          background-color: $btn-flat-active-bgcolor;
+          background: $btn-flat-active-bgcolor;
           border-color: $btn-flat-active-border-color;
           color: $btn-flat-active-color;
           @if $skin-name == 'bootstrap4' {
@@ -497,36 +580,36 @@
         }
 
         &:disabled {
-          background-color: $btn-flat-disabled-bgcolor;
+          background: $btn-flat-disabled-bgcolor;
           border-color: $btn-flat-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
           color: $btn-flat-disabled-color;
         }
 
         & .e-ripple-element {
-          background-color: $btn-ripple-flat-bgcolor;
+          background: $btn-ripple-flat-bgcolor;
         }
 
         &.e-primary {
-          background-color: $btn-flat-primary-bgcolor;
+          background: $btn-flat-primary-bgcolor;
           border-color: $btn-flat-primary-border-color;
           color: $btn-flat-primary-color;
 
           &:hover {
-            background-color: $btn-flat-primary-hover-bgcolor;
+            background: $btn-flat-primary-hover-bgcolor;
             border-color: $btn-flat-primary-hover-border-color;
             color: $btn-flat-primary-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-primary-focus-bgcolor;
+            background: $btn-flat-primary-focus-bgcolor;
             border-color: $btn-flat-primary-focus-border-color;
             color: $btn-flat-primary-focus-color;
             @if $skin-name == 'bootstrap4' {
               $color-rgba: rgba(mix(lighten($btn-flat-primary-focus-bgcolor, 50%), $btn-flat-primary-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @else if ($skin-name == 'tailwind') {
               box-shadow: $btn-focus-box-shadow;
             }
             @else if ($skin-name == 'bootstrap5') {
@@ -540,9 +623,15 @@
             }
           }
 
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+
           &:active,
           &.e-active {
-            background-color: $btn-flat-primary-active-bgcolor;
+            background: $btn-flat-primary-active-bgcolor;
             border-color: $btn-flat-primary-active-border-color;
             color: $btn-flat-primary-active-color;
             @if $skin-name == 'bootstrap4' {
@@ -552,38 +641,38 @@
           }
 
           &:disabled {
-            background-color: $btn-flat-primary-disabled-bgcolor;
+            background: $btn-flat-primary-disabled-bgcolor;
             border-color: $btn-flat-primary-disabled-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-primary-disabled-color;
           }
 
           & .e-ripple-element {
-            background-color: $btn-ripple-flat-primary-bgcolor;
+            background: $btn-ripple-flat-primary-bgcolor;
           }
         }
 
         &.e-success {
-          background-color: $btn-flat-success-bgcolor;
+          background: $btn-flat-success-bgcolor;
           border-color: $btn-flat-success-border-color;
           color: $btn-flat-success-color;
 
           &:hover {
-            background-color: $btn-flat-success-hover-bgcolor;
+            background: $btn-flat-success-hover-bgcolor;
             border-color: $btn-flat-success-hover-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-success-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-success-focus-bgcolor;
+            background: $btn-flat-success-focus-bgcolor;
             border-color: $btn-flat-success-focus-border-color;
             color: $btn-flat-success-focus-color;
             @if $skin-name == 'bootstrap4' {
               $color-rgba: rgba(mix(lighten($btn-flat-success-focus-bgcolor, 50%), $btn-flat-success-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @else if ($skin-name == 'tailwind') {
               box-shadow: $btn-focus-box-shadow;
             }
             @else if ($skin-name == 'bootstrap5') {
@@ -600,9 +689,15 @@
             }
           }
 
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+
           &:active,
           &.e-active {
-            background-color: $btn-flat-success-active-bgcolor;
+            background: $btn-flat-success-active-bgcolor;
             border-color: $btn-flat-success-active-border-color;
             color: $btn-flat-success-active-color;
             @if $skin-name == 'bootstrap4' {
@@ -615,37 +710,37 @@
           }
 
           &:disabled {
-            background-color: $btn-flat-success-disabled-bgcolor;
+            background: $btn-flat-success-disabled-bgcolor;
             border-color: $btn-flat-success-disabled-border-color;
             color: $btn-flat-success-disabled-color;
           }
 
           & .e-ripple-element {
-            background-color: $btn-ripple-flat-success-bgcolor;
+            background: $btn-ripple-flat-success-bgcolor;
           }
         }
 
         &.e-info {
-          background-color: $btn-flat-info-bgcolor;
+          background: $btn-flat-info-bgcolor;
           border-color: $btn-flat-info-border-color;
           color: $btn-flat-info-color;
 
           &:hover {
-            background-color: $btn-flat-info-hover-bgcolor;
+            background: $btn-flat-info-hover-bgcolor;
             border-color: $btn-flat-info-hover-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-info-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-info-focus-bgcolor;
+            background: $btn-flat-info-focus-bgcolor;
             border-color: $btn-flat-info-focus-border-color;
             color: $btn-flat-info-focus-color;
             @if $skin-name == 'bootstrap4' {
               $color-rgba: rgba(mix(lighten($btn-flat-info-focus-bgcolor, 50%), $btn-flat-info-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @else if ($skin-name == 'tailwind') {
               box-shadow: $btn-focus-box-shadow;
             }
             @else if ($skin-name == 'bootstrap5') {
@@ -662,9 +757,15 @@
             }
           }
 
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+
           &:active,
           &.e-active {
-            background-color: $btn-flat-info-active-bgcolor;
+            background: $btn-flat-info-active-bgcolor;
             border-color: $btn-flat-info-active-border-color;
             color: $btn-flat-info-active-color;
             @if $skin-name == 'bootstrap4' {
@@ -677,37 +778,37 @@
           }
 
           &:disabled {
-            background-color: $btn-flat-info-disabled-bgcolor;
+            background: $btn-flat-info-disabled-bgcolor;
             border-color: $btn-flat-info-disabled-border-color;
             color: $btn-flat-info-disabled-color;
           }
 
           & .e-ripple-element {
-            background-color: $btn-ripple-flat-info-bgcolor;
+            background: $btn-ripple-flat-info-bgcolor;
           }
         }
 
         &.e-warning {
-          background-color: $btn-flat-warning-bgcolor;
+          background: $btn-flat-warning-bgcolor;
           border-color: $btn-flat-warning-border-color;
           color: $btn-flat-warning-color;
 
           &:hover {
-            background-color: $btn-flat-warning-hover-bgcolor;
+            background: $btn-flat-warning-hover-bgcolor;
             border-color: $btn-flat-warning-hover-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-warning-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-warning-focus-bgcolor;
+            background: $btn-flat-warning-focus-bgcolor;
             border-color: $btn-flat-warning-focus-border-color;
             color: $btn-flat-warning-focus-color;
             @if $skin-name == 'bootstrap4' {
               $color-rgba: rgba(mix(lighten($btn-flat-warning-focus-bgcolor, 50%), $btn-flat-warning-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @else if ($skin-name == 'tailwind') {
               box-shadow: $btn-focus-box-shadow;
             }
             @else if ($skin-name == 'bootstrap5') {
@@ -724,9 +825,15 @@
             }
           }
 
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+
           &:active,
           &.e-active {
-            background-color: $btn-flat-warning-active-bgcolor;
+            background: $btn-flat-warning-active-bgcolor;
             border-color: $btn-flat-warning-active-border-color;
             color: $btn-flat-warning-active-color;
             @if $skin-name == 'bootstrap4' {
@@ -739,37 +846,37 @@
           }
 
           &:disabled {
-            background-color: $btn-flat-warning-disabled-bgcolor;
+            background: $btn-flat-warning-disabled-bgcolor;
             border-color: $btn-flat-warning-disabled-border-color;
             color: $btn-flat-warning-disabled-color;
           }
 
           & .e-ripple-element {
-            background-color: $btn-ripple-flat-warning-bgcolor;
+            background: $btn-ripple-flat-warning-bgcolor;
           }
         }
 
         &.e-danger {
-          background-color: $btn-flat-danger-bgcolor;
+          background: $btn-flat-danger-bgcolor;
           border-color: $btn-flat-danger-border-color;
           color: $btn-flat-danger-color;
 
           &:hover {
-            background-color: $btn-flat-danger-hover-bgcolor;
+            background: $btn-flat-danger-hover-bgcolor;
             border-color: $btn-flat-danger-hover-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-danger-hover-color;
           }
 
           &:focus {
-            background-color: $btn-flat-danger-focus-bgcolor;
+            background: $btn-flat-danger-focus-bgcolor;
             border-color: $btn-flat-danger-focus-border-color;
             color: $btn-flat-danger-focus-color;
             @if $skin-name == 'bootstrap4' {
               $color-rgba: rgba(mix(lighten($btn-flat-danger-focus-bgcolor, 50%), $btn-flat-danger-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
-            @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            @else if ($skin-name == 'tailwind') {
               box-shadow: $btn-focus-box-shadow;
             }
             @else if ($skin-name == 'bootstrap5') {
@@ -786,9 +893,15 @@
             }
           }
 
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+
           &:active,
           &.e-active {
-            background-color: $btn-flat-danger-active-bgcolor;
+            background: $btn-flat-danger-active-bgcolor;
             border-color: $btn-flat-danger-active-border-color;
             color: $btn-flat-danger-active-color;
             @if $skin-name == 'bootstrap4' {
@@ -801,29 +914,32 @@
           }
 
           &:disabled {
-            background-color: $btn-flat-danger-disabled-bgcolor;
+            background: $btn-flat-danger-disabled-bgcolor;
             border-color: $btn-flat-danger-disabled-border-color;
             color: $btn-flat-danger-disabled-color;
           }
 
           & .e-ripple-element {
-            background-color: $btn-ripple-flat-danger-bgcolor;
+            background: $btn-ripple-flat-danger-bgcolor;
           }
         }
       }
 
       &.e-outline {
-        background-color: $btn-outline-bgcolor;
+        background: $btn-outline-bgcolor;
         border-color: $btn-outline-border-color;
         box-shadow: $btn-flat-box-shadow;
         color: $btn-outline-color;
+        @if $skin-name == 'Material3' {
+          border: 1px solid;
+        }
 
         &:hover {
           @if $skin-name == 'bootstrap4' {
-            background-color: $btn-bgcolor;
+            background: $btn-bgcolor;
           }
           @else {
-            background-color: $btn-outline-hover-bgcolor;
+            background: $btn-outline-hover-bgcolor;
           }
           border-color: $btn-outline-hover-border-color;
           box-shadow: $btn-flat-box-shadow;
@@ -842,7 +958,10 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background-color: $btn-outline-bgcolor;
+            background: $btn-outline-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
@@ -856,19 +975,30 @@
         }
 
         &.e-primary {
-          background-color: $btn-outline-bgcolor;
-          border-color: $btn-outline-primary-color;
-          color: $btn-outline-primary-color;
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: $btn-outline-primary-color;
+          }
+          @else {
+            border-color: $btn-outline-primary-color;
+            color: $btn-outline-primary-color;
+          }
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
-              background-color: $btn-primary-bgcolor;
+              background: $btn-primary-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-primary-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: $btn-outline-primary-color;
             }
             @else {
-              background-color: $btn-primary-hover-bgcolor;
+              background: $btn-primary-hover-bgcolor;
+              border-color: $btn-outline-primary-hover-border-color;
+              color: $btn-primary-hover-color;
             }
-            border-color: $btn-outline-primary-hover-border-color;
-            color: $btn-primary-hover-color;
           }
 
           &:focus {
@@ -883,7 +1013,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-outline-bgcolor;
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
 
@@ -898,10 +1031,14 @@
         }
 
         &.e-success {
-          background-color: $btn-outline-bgcolor;
+          background: $btn-outline-bgcolor;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
             border-color: $success-outline;
             color: $success-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: $btn-outline-success-color;
           }
           @else {
             border-color: $btn-success-bgcolor;
@@ -910,13 +1047,18 @@
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
-              background-color: $btn-success-bgcolor;
+              background: $btn-success-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-success-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: $btn-outline-success-color;
             }
             @else {
-              background-color: $btn-success-hover-bgcolor;
+              background: $btn-success-hover-bgcolor;
+              border-color: $btn-success-hover-border-color;
+              color: $btn-success-color;
             }
-            border-color: $btn-success-hover-border-color;
-            color: $btn-success-color;
           }
 
           &:focus {
@@ -931,7 +1073,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-outline-bgcolor;
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
 
@@ -946,10 +1091,14 @@
         }
 
         &.e-info {
-          background-color: $btn-outline-bgcolor;
+          background: $btn-outline-bgcolor;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
             border-color: $info-outline;
             color: $info-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: $btn-outline-info-color;
           }
           @else {
             border-color: $btn-info-bgcolor;
@@ -958,13 +1107,18 @@
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
-              background-color: $btn-info-bgcolor;
+              background: $btn-info-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-info-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: $btn-outline-info-color;
             }
             @else {
-              background-color: $btn-info-hover-bgcolor;
+              background: $btn-info-hover-bgcolor;
+              border-color: $btn-info-hover-border-color;
+              color: $btn-info-color;
             }
-            border-color: $btn-info-hover-border-color;
-            color: $btn-info-color;
           }
 
           &:focus {
@@ -979,7 +1133,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-outline-bgcolor;
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
 
@@ -994,10 +1151,14 @@
         }
 
         &.e-warning {
-          background-color: $btn-outline-bgcolor;
+          background: $btn-outline-bgcolor;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
             border-color: $warning-outline;
             color: $warning-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: $btn-outline-warning-color;
           }
           @else {
             border-color: $btn-warning-bgcolor;
@@ -1006,13 +1167,18 @@
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
-              background-color: $btn-warning-bgcolor;
+              background: $btn-warning-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-warning-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: $btn-outline-warning-color;
             }
             @else {
-              background-color: $btn-warning-hover-bgcolor;
+              background: $btn-warning-hover-bgcolor;
+              border-color: $btn-warning-hover-border-color;
+              color: $btn-warning-color;
             }
-            border-color: $btn-warning-hover-border-color;
-            color: $btn-warning-color;
           }
 
           &:focus {
@@ -1027,7 +1193,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-outline-bgcolor;
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
 
@@ -1042,10 +1211,14 @@
         }
 
         &.e-danger {
-          background-color: $btn-outline-bgcolor;
+          background: $btn-outline-bgcolor;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
             border-color: $danger-outline;
             color: $danger-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: $btn-outline-danger-color;
           }
           @else {
             border-color: $btn-danger-bgcolor;
@@ -1054,13 +1227,18 @@
 
           &:hover {
             @if $skin-name == 'bootstrap4' {
-              background-color: $btn-danger-bgcolor;
+              background: $btn-danger-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-danger-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: $btn-outline-danger-color;
             }
             @else {
-              background-color: $btn-danger-hover-bgcolor;
+              background: $btn-danger-hover-bgcolor;
+              border-color: $btn-danger-hover-border-color;
+              color: $btn-danger-color;
             }
-            border-color: $btn-danger-hover-border-color;
-            color: $btn-danger-color;
           }
 
           &:focus {
@@ -1075,7 +1253,10 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background-color: $btn-outline-bgcolor;
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
 
@@ -1091,7 +1272,7 @@
       }
 
       &.e-link {
-        background-color: $btn-link-bgcolor;
+        background: $btn-link-bgcolor;
         border-color: $btn-link-border-color;
         border-radius: 0;
         box-shadow: none;

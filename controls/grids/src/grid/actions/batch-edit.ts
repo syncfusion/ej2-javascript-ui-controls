@@ -648,6 +648,7 @@ export class BatchEdit {
     private bulkAddRow(data?: Object): void {
         const gObj: IGrid = this.parent;
         if (!gObj.editSettings.allowAdding) {
+            if (gObj.isEdit) { this.saveCell(); }
             return;
         }
         if (gObj.isEdit) {

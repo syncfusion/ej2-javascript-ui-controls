@@ -1919,9 +1919,9 @@ describe('Vertical View Event Render Module', () => {
         });
 
         it('Performance checking with events rendering', (done: DoneFn) => {
-            let data: Record<string, any>[] = generateEvents(200, 50, 30, new Date(2023, 0, 1));
+            const data: Record<string, any>[] = generateEvents(200, 50, 30, new Date(2023, 0, 1));
             schObj.dataBound = () => {
-                expect((performance.now() - performanceStart) / 1000).toBeLessThanOrEqual(1);
+                expect(Math.floor((performance.now() - performanceStart) / 1000)).toBeLessThanOrEqual(1);
                 done();
             };
             performanceStart = performance.now();

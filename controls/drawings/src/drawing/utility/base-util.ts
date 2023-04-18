@@ -146,13 +146,16 @@ export function wordBreakToString(value: TextWrap | TextDecoration): string {
 
 export function bBoxText(textContent: string, options: TextAttributes): number {
     let measureElement: string = 'measureElement';
+    // eslint-disable-next-line
     window[measureElement].style.visibility = 'visible';
+    // eslint-disable-next-line
     let svg: SVGElement = window[measureElement].children[2];
     let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
     text.setAttribute('style', 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     let bBox: number = text.getBBox().width;
+    // eslint-disable-next-line
     window[measureElement].style.visibility = 'hidden';
     return bBox;
 }

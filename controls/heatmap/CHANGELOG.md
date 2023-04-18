@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### Heatmap
+
+#### Bug Fixes
+
+- `#I452356` - When the x-axis labels are trimmed and rotated, the HeatMap cell area now renders properly.
+
 ## 21.1.35 (2023-03-23)
 
 ### Heatmap

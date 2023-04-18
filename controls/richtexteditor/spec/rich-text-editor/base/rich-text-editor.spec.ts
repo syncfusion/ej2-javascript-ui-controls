@@ -2723,6 +2723,24 @@ describe('RTE base module', () => {
         });
     });
     
+    describe('RTE - xhtml enabled and attribute - ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                enableXhtml: true,
+                value: `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila  Hendriksma</a></span>  en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley  Andela</a></span>  kwam ook nog even langs. <br/></p><p><br/></p>`
+            });
+            done();
+        });
+        it('checking when being added in the editor', () => {
+            let expectedValue: string = `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila  Hendriksma</a></span>  en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley  Andela</a></span>  kwam ook nog even langs. <br/></p><p><br/></p>`;
+            expect(rteObj.value === expectedValue).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
     describe('RTE - getHtml Public Methods', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -6311,6 +6329,56 @@ describe('EJ2-69171 - RichTextEditor text area value has missing close tag when 
             expect(rteObj.value === `<div><p><br/></p></div>`).toBe(true);
             done();
         }, 100); 
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-71449 - The placeholder and enter text values have merged', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['SourceCode']
+            },
+            placeholder: 'Type something',
+        });
+        done();
+    });
+    it("The placeholder needs to be removed when entering the value", function (done) {
+        expect((rteObj as any).value).toBe(null);
+        expect((rteObj as any).placeholder).toBe("Type something");
+        let rteEle = rteObj.element;
+        let SourceCodePicker : HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        SourceCodePicker.click();
+        rteObj.focusOut();
+        rteObj.focusIn();
+        setTimeout(() => {
+            expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
+            done();
+        }, 100);     
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-71306 - PlaceHolder is not working with Iframe mode in RichTextEditor', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            iframeSettings: {
+                enable: true
+            },
+            placeholder: 'Type something',
+        });
+        done();
+    });
+    it("PlaceHolder should show properly with Iframe mode in RichTextEditor.", function (done) {
+        expect((rteObj as any).value).toBe(null);
+        setTimeout(() => {
+            expect((rteObj as any).placeholder).toBe('Type something');
+            done();
+        }, 100);          
     });
     afterAll(() => {
         destroy(rteObj);

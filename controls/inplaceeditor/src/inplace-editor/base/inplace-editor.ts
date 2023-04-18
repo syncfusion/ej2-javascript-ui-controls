@@ -9,7 +9,7 @@ import { DatePicker, DatePickerModel, DateTimePicker, DateRange, RangeEventArgs 
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { createSpinner, hideSpinner, SpinnerArgs, showSpinner} from '@syncfusion/ej2-popups';
 import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';
-import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs,ValidArgs  } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs, ValidArgs } from '@syncfusion/ej2-inputs';
 import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';
 import { ChangeEventArgs as InputChangeEventArgs, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';
@@ -58,7 +58,6 @@ export interface BeforeSanitizeHtmlArgs {
      * @param {string} value - Returns the value.
      * @returns {string} - returns the string value
      */
-    // eslint-disable-next-line
     helper?: Function
     /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
      *  Also possible to modify the block list in this event.
@@ -91,7 +90,6 @@ export type EditableType = 'Click' | 'DblClick' | 'EditIconClick';
 /**
  * Specifies the value to be set when initial rendering.
  */
-// eslint-disable-next-line
 export type textOptionType = 'Never' | 'Always';
 /**
  * Specifies the adaptor type that are used DataManager to communicate with DataSource.
@@ -435,7 +433,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      *
      * @default null
      */
-    /* eslint-disable */
     @Property(null)
     public validationRules: { [name: string]: { [rule: string]: Object } };
     /* eslint-disable */
@@ -587,7 +584,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        // eslint-disable-next-line
         this.textOption === 'Never' ?
             this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
             : this.renderInitialValue();
@@ -613,7 +609,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             const allClassName: string[] = val.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
                 if (allClassName[i].trim() !== '') {
-                    // eslint-disable-next-line
                     action === 'add' ? addClass([this.element], [allClassName[i]]) : removeClass([this.element], [allClassName[i]]);
                 }
             }
@@ -653,12 +648,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         const query: Query = isNOU(model.query) ? new Query() : model.query;
         if (model.dataSource instanceof DataManager) {
             (model.dataSource as DataManager).executeQuery(this.getInitQuery(model, query)).then((e: ReturnOption) => {
-                // eslint-disable-next-line
                 this.updateInitValue(mText, mVal, e.result as { [key: string]: object }[]);
             });
         } else {
             this.updateInitValue(mText, mVal, new DataManager(model.dataSource).executeLocal(
-                // eslint-disable-next-line
                 this.getInitQuery(model, query)) as { [key: string]: object }[]);
         }
     }
@@ -677,7 +670,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         return query.where(predicate);
     }
-    // eslint-disable-next-line
     private updateInitValue(mText: string, mVal: string, result: { [key: string]: object }[]): void {
         if (result.length <= 0) {
             return;
@@ -695,7 +687,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.valueWrap.classList.remove(classes.LOAD);
     }
     private renderValue(val: string): void {
-        // eslint-disable-next-line
         this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
             (this.valueEle.innerHTML = this.enableHtmlParse ? val : encode(val));
         if (this.type === 'Color') {
@@ -722,7 +713,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.beginEditArgs.cancel) {
             return;
         }
-        // eslint-disable-next-line
         let tipOptions: object = undefined;
         const target: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
         if (this.editableOn !== 'EditIconClick') {
@@ -765,7 +755,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         addClass([this.valueWrap], [classes.OPEN]);
         this.setProperties({ enableEditMode: true }, true);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
@@ -919,7 +908,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 break;
             case 'Numeric':
                 if (this.model.value) {
-                    // eslint-disable-next-line no-useless-escape
                     const expRegex = new RegExp('[eE][\-+]?([0-9]+)');
                     if (expRegex.test(this.model.value as string)) {
                         this.model.value =  this.model.value;
@@ -987,7 +975,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private getEditElement(): Element {
         return select('.' + classes.ELEMENTS, this.formEle);
     }
-     // eslint-disable-next-line
      private getLocale(prop: object, val: string): string {
         return new L10n('inplace-editor', prop, this.locale).getConstant(val);
     }
@@ -995,7 +982,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
     public extendModelValue(val: string | number | boolean | Date | DateRange | string[] | Date[] | number[] | boolean[]): void {
-         // eslint-disable-next-line
          const model: object = this.model;
         extend(model, { value: val });
         this.setProperties({ model: model }, true);
@@ -1066,18 +1052,15 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private setRtl(value: boolean): void {
-        // eslint-disable-next-line
         value ? addClass([this.element], [classes.RTL]) : removeClass([this.element], [classes.RTL]);
     }
     private setFocus(): void {
         if (this.isTemplate) {
             return;
         }
-        // eslint-disable-next-line
         this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
     }
     private removeEditor(isBlazorDestroy?: boolean): void {
-        // eslint-disable-next-line
         const blazorContain: string[] = Object.keys(window) as string[];
         if (isBlazor() && !this.isStringTemplate) {
             resetBlazorTemplate(this.element.id + 'template', 'Template');
@@ -1113,7 +1096,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate();
         }
@@ -1182,7 +1164,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                             this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this)
                         );
                     } else {
-                        // eslint-disable-next-line
                         const crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
                         crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
                     }
@@ -1202,12 +1183,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private templateCompile(trgEle: HTMLElement, tempStr: string): void {
         let tempEle: HTMLElement[];
-        // eslint-disable-next-line
         const blazorContain: string[] = Object.keys(window) as string[];
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
-        // eslint-disable-next-line
         const compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
             const isString: boolean = (isBlazor() &&
@@ -1237,7 +1216,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 helper: null
             };
             extend(item, item, beforeEvent);
-            // eslint-disable-next-line
             this.trigger('beforeSanitizeHtml', item, (args: BeforeSanitizeHtmlArgs) => {
                 if (item.cancel && !isNOU(item.helper)) {
                     value = item.helper(value);
@@ -1270,12 +1248,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
 
     private disable(value: boolean): void {
-        // eslint-disable-next-line
         value ? addClass([this.element], [classes.DISABLE]) : removeClass([this.element], [classes.DISABLE]);
     }
     private enableEditor(val: boolean, isInit?: boolean): void {
         if (isInit && !val) { return; }
-        // eslint-disable-next-line
         (val) ? this.renderEditor() : this.cancelHandler('cancel');
     }
     private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
@@ -1354,11 +1330,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             return;
         }
         const inputEle: HTMLElement = <HTMLElement>select('.e-input-group', this.formEle);
-        // eslint-disable-next-line
         const errorClass: Function = (element: HTMLElement[], val: string, action: string) => {
             [].slice.call(element).forEach((ele: HTMLElement) => {
                 if (ele) {
-                    // eslint-disable-next-line
                     action === 'add' ? addClass([ele], [val]) : removeClass([ele], [val]);
                 }
             });
@@ -1550,16 +1524,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.tipObj.refresh(tipTarget);
         }
     }
-    // eslint-disable-next-line
     private successHandler(e: Object): void {
         this.initRender = false;
         const eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
         this.triggerSuccess(eventArgs);
     }
-    // eslint-disable-next-line
     private failureHandler(e: Object): void {
         const eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
-        // eslint-disable-next-line
         this.trigger('actionFailure', eventArgs, (args: ActionEventArgs) => {
             this.removeSpinner('submit');
             if (this.mode === 'Popup') {
@@ -1656,7 +1627,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.element.focus();
         this.editEle = <HTMLElement>select('.' + classes.INPUT, this.formEle);
         let errEle: HTMLElement = null;
-        // eslint-disable-next-line
         errEle = <HTMLElement>select('.' + classes.ERROR, this.editEle);
         if (!this.isTemplate) {
             this.setValue();
@@ -1687,7 +1657,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!(isBlazor() && this.isServerRendered)) {
             super.destroy();
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate();
         }
@@ -1742,17 +1711,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
                 case 'showButtons':
-                    // eslint-disable-next-line
                     (newProp.showButtons) ? this.appendButtons(this.formEle) : this.destroyButtons();
                     break;
                 case 'value':
                     this.updateValue();
-                    // eslint-disable-next-line
                     this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
                     : this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    // eslint-disable-next-line
                     this.textOption === 'Never' ? this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)))
                     : this.renderInitialValue();
                     break;

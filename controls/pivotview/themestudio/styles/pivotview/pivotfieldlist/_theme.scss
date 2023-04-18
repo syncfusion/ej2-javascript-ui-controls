@@ -1090,9 +1090,6 @@
         background-color: $field-list-mobile-header-color;
         color: $field-list-mobile-header-font-color;
         font-size: 14px;
-        height: 48px;
-        padding-bottom: 9px;
-        padding-top: 9px;
         @if ($skin-name == 'tailwind') {
           padding-left: 16px;
           padding-right: 16px;
@@ -1114,19 +1111,15 @@
 
       .e-title-mobile-header {
         display: flex;
-      }
-
-      .e-title-mobile-content {
-        margin-top: $field-list-back-margin;
+        align-items: center;
       }
 
       .e-field-list-back-icon {
         color: $field-list-back-font-color;
         font-size: 16px;
-        height: 24px;
+        height: auto;
         margin-left: 0;
         margin-right: 12px;
-        padding-top: 7px;
         text-align: center;
         width: 24px;
       }

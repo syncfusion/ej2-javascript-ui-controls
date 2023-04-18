@@ -195,8 +195,8 @@ export class SpellChecker {
         let elementInfo: ElementInfo;
         if (!isNullOrUndefined(dialogElement) && dialogElement instanceof ErrorTextElementBox) {
             const exactText: string = (dialogElement as ErrorTextElementBox).text;
-            this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start;
-            this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start.clone();
+            this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end.clone();
             if (content !== 'Ignore Once') {
                 content = HelperMethods.manageSpecialCharacters(exactText, content);
                 this.documentHelper.owner.editor.insertTextInternal(content, true);
@@ -211,8 +211,8 @@ export class SpellChecker {
             const elementBox: ElementBox = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
 
-            this.documentHelper.selection.start = (elementBox as ErrorTextElementBox).start;
-            this.documentHelper.selection.end = (elementBox as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (elementBox as ErrorTextElementBox).start.clone();
+            this.documentHelper.selection.end = (elementBox as ErrorTextElementBox).end.clone();
         } else {
             this.handleReplace(content);
         }
@@ -385,8 +385,8 @@ export class SpellChecker {
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
             currentElement = this.currentContextInfo.element;
             exactText = (this.currentContextInfo.element as TextElementBox).text;
-            this.documentHelper.selection.start = (currentElement as ErrorTextElementBox).start;
-            this.documentHelper.selection.end = (currentElement as ErrorTextElementBox).end;
+            this.documentHelper.selection.start = (currentElement as ErrorTextElementBox).start.clone();
+            this.documentHelper.selection.end = (currentElement as ErrorTextElementBox).end.clone();
         } else {
             const startPosition: TextPosition = this.documentHelper.selection.start;
             const offset: number = startPosition.offset;
@@ -1043,8 +1043,8 @@ export class SpellChecker {
     public updateErrorElementTextBox(error: string, errorElement: ErrorTextElementBox): void {
         const element: ErrorTextElementBox = errorElement;
         this.documentHelper.clearSelectionHighlight();
-        this.documentHelper.selection.start = element.start;
-        this.documentHelper.selection.end = element.end;
+        this.documentHelper.selection.start = element.start.clone();
+        this.documentHelper.selection.end = element.end.clone();
         this.documentHelper.selection.highlight(errorElement.start.paragraph, errorElement.start, errorElement.end);
         this.documentHelper.owner.spellCheckDialog.updateSuggestionDialog(error, element);
     }

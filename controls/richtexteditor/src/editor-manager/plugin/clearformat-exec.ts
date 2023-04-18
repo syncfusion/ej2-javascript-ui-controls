@@ -39,7 +39,7 @@ export class ClearFormatExec {
     }
     private applyClear(e: IHtmlSubCommands): void {
         if (e.subCommand === 'ClearFormat') {
-            ClearFormat.clear(this.parent.currentDocument, this.parent.editableElement, e.enterAction, e.selector);
+            ClearFormat.clear(this.parent.currentDocument, this.parent.editableElement, e.enterAction, e.selector, e.subCommand);
             if (e.callBack) {
                 e.callBack({
                     requestType: e.subCommand,

@@ -9,7 +9,7 @@ import {
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
     CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox
 } from './page';
-import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
+import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle, Dictionary } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo, BorderRenderInfo } from '../editor/editor-helper';
@@ -397,6 +397,7 @@ export class Renderer {
 
     private renderFloatingItems(page: Page, floatingElements: (ShapeBase | TableWidget)[], wrappingType: TextWrappingStyle): void {
         if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
+            let overLappedShapeWidgets : Dictionary<number, ShapeBase> = new Dictionary<number, ShapeBase>();
             /* eslint-disable */
             floatingElements.sort(function (a, b) {
                 if (a instanceof TableWidget || b instanceof TableWidget) {
@@ -414,17 +415,48 @@ export class Renderer {
                     (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
                     continue;
                 }
-                if (shape instanceof ImageElementBox) {
-                    this.renderImageElementBox(shape, shape.x, shape.y, 0);
-                } else if (shape instanceof ShapeElementBox) {
-                    let shapeLeft: number = this.getScaledValue(shape.x, 1);
-                    let shapeTop: number = this.getScaledValue(shape.y, 2);
-                    this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+                if (!this.isOverLappedShapeWidget(shape)) {
+                    if (shape instanceof ImageElementBox) {
+                        this.renderImageElementBox(shape, shape.x, shape.y, 0);
+                    } else if (shape instanceof ShapeElementBox) {
+                        let shapeLeft: number = this.getScaledValue(shape.x, 1);
+                        let shapeTop: number = this.getScaledValue(shape.y, 2);
+                        this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+                    }
+                } else if (!overLappedShapeWidgets.containsKey(shape.zOrderPosition)) {
+                    overLappedShapeWidgets.add(shape.zOrderPosition, shape);
+                }
+            }
+            if (overLappedShapeWidgets.length > 0) {
+                let sortedOverLappedShapeWidgets: number[] = overLappedShapeWidgets.keys.sort();
+                for (let j: number = 0; j < sortedOverLappedShapeWidgets.length; j++) {
+                    let shape: ShapeBase = overLappedShapeWidgets.get(sortedOverLappedShapeWidgets[j]) as ShapeBase;
+                    if (shape instanceof ImageElementBox) {
+                        this.renderImageElementBox(shape, shape.x, shape.y, 0);
+                    } else if (shape instanceof ShapeElementBox) {
+                        let shapeLeft: number = this.getScaledValue(shape.x, 1);
+                        let shapeTop: number = this.getScaledValue(shape.y, 2);
+                        this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+                    }
                 }
             }
         }
     }
 
+    private isOverLappedShapeWidget(floatingElement: ShapeBase): boolean {
+        return ((floatingElement instanceof ImageElementBox
+            && floatingElement.textWrappingStyle !== 'Inline'
+            && floatingElement.textWrappingStyle !== 'Behind'
+            && !(this.documentHelper.compatibilityMode !== 'Word2013'
+            && (floatingElement.isBelowText
+            && floatingElement.textWrappingStyle !== 'InFrontOfText')))
+            || (floatingElement instanceof ShapeElementBox
+            && floatingElement.textWrappingStyle !== 'Inline'
+            && floatingElement.textWrappingStyle !== 'Behind'
+            && !(this.documentHelper.compatibilityMode !== 'Word2013'
+            && (floatingElement.isBelowText
+            && floatingElement.textWrappingStyle !== 'InFrontOfText'))));
+    }
     private renderShapeElementBox(shape: ShapeElementBox, shapeLeft: number, shapeTop: number, page: Page): void {
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;

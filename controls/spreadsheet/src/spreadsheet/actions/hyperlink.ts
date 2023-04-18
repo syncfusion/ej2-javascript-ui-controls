@@ -451,15 +451,20 @@ export class SpreadsheetHyperlink {
                         cellRef.classList.add('e-disabled');
                         cellRef.setAttribute('disabled', 'true');
                     }
+                    if (insertBut.hasAttribute('disabled')) {
+                        insertBut.removeAttribute('disabled');
+                    }
                 } else if (closest(trgt, '.e-list-item').getAttribute('data-uid') === 'sheet') {
                     if (cellRef.classList.contains('e-disabled') && cellRef.hasAttribute('readonly')) {
                         cellRef.removeAttribute('readonly');
                         cellRef.classList.remove('e-disabled');
                         cellRef.removeAttribute('disabled');
                     }
-                }
-                if (insertBut.hasAttribute('disabled')) {
-                    insertBut.removeAttribute('disabled');
+                    if (isCellReference((cellRef as HTMLInputElement).value.toUpperCase())) {
+                        if (insertBut.hasAttribute('disabled')) {
+                            insertBut.removeAttribute('disabled');
+                        }
+                    }
                 }
             } else if (closest(trgt, '.e-list-item').classList.contains('e-level-1')) {
                 insertBut.setAttribute('disabled', 'true');

@@ -57,6 +57,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function calculateSize(maps: Maps): Size {
     maps.element.style.height = !isNullOrUndefined(maps.height) ? maps.height : 'auto';
     maps.element.style.width = !isNullOrUndefined(maps.width) ? maps.width : 'auto';
+    maps.element.style.setProperty("display", "block");
     const containerWidth: number = maps.element.clientWidth;
     const containerHeight: number = maps.element.clientHeight;
     const containerElementWidth: number = stringToNumber(maps.element.style.width, containerWidth);
@@ -1941,8 +1942,9 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
         ySum = ySum + Math.abs(((startY + startY1) * (((startX * startY1) - (startX1 * startY)))));
     }
     sum = 0.5 * sum;
-    xSum = (1 / (4 * sum)) * xSum;
-    ySum = (1 / (4 * sum)) * ySum;
+    const pointValue: number = points.some(point => point.x < 5 && point.y < 5) && geometryType === 'Normal' ? 6 : 4; 
+    xSum = (1 / (pointValue * sum)) * xSum;
+    ySum = (1 / (pointValue * sum)) * ySum;
 
     /* Code for finding nearest points in polygon related to midPoint*/
     let rightMinPoint: MapLocation = { x: 0, y: 0 };

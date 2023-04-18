@@ -6403,6 +6403,10 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public lockAnchor: boolean;
+    /**
+     * @private
+     */
+    public isBelowText: boolean;
 }
 /** 
  * @private

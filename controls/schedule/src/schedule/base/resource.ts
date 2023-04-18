@@ -453,7 +453,7 @@ export class ResourceBase {
                 (resourceLevel.dataSource as Record<string, any>[]).filter((resData: Record<string, any>) =>
                     resData[resourceLevel.idField] === resource.groupOrder[parseInt(i.toString(), 10)]);
             const resourceName: HTMLElement = createElement('div', { className: cls.RESOURCE_NAME });
-            resourceName.innerText = this.parent.sanitize((<Record<string, any>>resourceText[0])[resourceLevel.textField] as string);
+            this.parent.sanitize((<Record<string, any>>resourceText[0])[resourceLevel.textField] as string, resourceName);
             headerCollection.push(resourceName);
             const levelIcon: HTMLElement = createElement('div', { className: 'e-icons e-icon-next' });
             headerCollection.push(levelIcon);

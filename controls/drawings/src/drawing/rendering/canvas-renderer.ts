@@ -126,7 +126,7 @@ export class CanvasRenderer {
             let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
             let x: number; let y: number; let length: number; let i: number; let newSeg: Object; let segs: Object[] = collection;
             for (x = 0, y = 0, i = 0, length = segs.length; i < length; ++i) {
-                let obj: Object = segs[i]; let seg: PathSegment = obj; let char: string = seg.command;
+                let obj: Object = segs[parseInt(i.toString(), 10)]; let seg: PathSegment = obj; let char: string = seg.command;
                 if ('x1' in seg) { x1 = seg.x1; }
                 if ('x2' in seg) { x2 = seg.x2; }
                 if ('y1' in seg) { y1 = seg.y1; }
@@ -243,7 +243,7 @@ export class CanvasRenderer {
             if (wrapBounds) {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
-                    let child: SubTextElement = childNodes[i];
+                    let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
                     let offsetX: number = position.x + child.x - wrapBounds.x;
                     let offsetY: number = position.y + child.dy * i + ((options.fontSize) * 0.8);
                     // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
@@ -470,6 +470,6 @@ export class CanvasRenderer {
 export function refreshDiagramElements(
     canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, ): void {
     for (let i: number = 0; i < drawingObjects.length; i++) {
-        renderer.renderElement(drawingObjects[i], canvas, undefined);
+        renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined);
     }
 }

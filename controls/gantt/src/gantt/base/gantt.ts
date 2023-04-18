@@ -98,6 +98,7 @@ export class Gantt extends Component<HTMLElement>
     public scrollLeftValue: any;
     public isToolBarClick: any;
     public isLocaleChanged: boolean = false;
+    public initialLoadData: Object;
     public previousGanttColumns: ColumnModel[];
     /** @hidden */
     public topBottomHeader: any;
@@ -2136,6 +2137,9 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public renderGantt(isChange?: boolean): void {
+        if (isChange) {
+            this.isFromOnPropertyChange = isChange;
+        }
         // predecessor calculation
         if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule['parentIds'] = [];
@@ -2150,7 +2154,6 @@ export class Gantt extends Component<HTMLElement>
             this.timelineModule.validateTimelineProp();
         }
         if (isChange) {
-            this.isFromOnPropertyChange = isChange;
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }

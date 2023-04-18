@@ -1446,6 +1446,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.characterFormat = characterFormat;
+        this.documentHelper.setDefaultDocumentFormat();
+        if(!isNullOrUndefined(this.selection)) {
+            this.selection.retrieveCurrentFormatProperties();
+        }
     }
 
     /**
@@ -1456,6 +1460,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = paragraphFormat;
+        this.documentHelper.setDefaultDocumentFormat();
+        if(!isNullOrUndefined(this.selection)) {
+            this.selection.retrieveCurrentFormatProperties();
+        }
     }
 
     /**
@@ -1466,6 +1474,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
+        this.documentHelper.setDefaultDocumentFormat();
+        if(!isNullOrUndefined(this.selection)) {
+            this.selection.retrieveCurrentFormatProperties();
+        }
     }
 
     /**

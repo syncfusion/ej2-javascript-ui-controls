@@ -368,7 +368,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
                 done()
-            },2500);
+            },1500);
         });
     });
 

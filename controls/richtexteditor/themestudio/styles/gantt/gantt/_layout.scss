@@ -1320,14 +1320,6 @@
         outline-offset: 2px;
       }
     }
-    .e-dialog.e-filter-popup {
-      .e-footer-content {
-        
-        @if ($skin-name =='FluentUI') {
-          padding-top: 0;
-        }
-      }
-    }
   }
   
   .e-gantt-dialog .e-tab .e-tab-header {

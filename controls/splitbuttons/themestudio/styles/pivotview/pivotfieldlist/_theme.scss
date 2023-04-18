@@ -104,8 +104,14 @@
 
       li {
         .e-drag {
-            display: revert;
+            padding: revert;
+            margin: revert;
+            width: auto;
+            height: auto;
           }
+        .e-draggable {
+          display: contents;
+          }  
         .e-text-content {
             display: flex;
             align-items: center;
@@ -118,6 +124,17 @@
         }        
     }  
 }
+    .e-field-list-container .e-field-table .e-field-list.e-treeview:not(.e-rtl) {
+     .e-list-text {
+       padding-right: revert;
+     }
+   }
+
+   .e-field-list-container .e-field-table .e-field-list.e-treeview.e-rtl {
+     .e-list-text {
+      padding-left: revert;
+    }
+   }
     .e-adaptive-field-list-dialog .e-member-editor-container
     {
       li {
@@ -160,6 +177,7 @@
 
       .e-checkbox-layout {
         max-width: 45%;
+        overflow: visible;
       }
 
     }
@@ -1073,9 +1091,6 @@
         background-color: $field-list-mobile-header-color;
         color: $field-list-mobile-header-font-color;
         font-size: 14px;
-        height: 48px;
-        padding-bottom: 9px;
-        padding-top: 9px;
         @if ($skin-name == 'tailwind') {
           padding-left: 16px;
           padding-right: 16px;
@@ -1097,19 +1112,15 @@
 
       .e-title-mobile-header {
         display: flex;
-      }
-
-      .e-title-mobile-content {
-        margin-top: $field-list-back-margin;
+        align-items: center;
       }
 
       .e-field-list-back-icon {
         color: $field-list-back-font-color;
         font-size: 16px;
-        height: 24px;
+        height: auto;
         margin-left: 0;
         margin-right: 12px;
-        padding-top: 7px;
         text-align: center;
         width: 24px;
       }
@@ -1330,16 +1341,18 @@
               margin-top: 20px;
               overflow: auto;
 
+              .e-acrdn-header {
+                align-items: center;
+                display: flex;
+              }
+
               .e-acrdn-header-icon {
                 display: table;
                 font-size: 12px;
-                height: 36px;
-                min-height: 36px;
                 min-width: 28px;
                 padding: 0;
                 position: absolute;
                 right: 16px;
-                top: 0;
 
                 .e-list-icon {
                   cursor: pointer;

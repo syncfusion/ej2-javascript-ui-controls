@@ -836,8 +836,14 @@ export function showSpinner(container: HTMLElement): void {
 function showHideSpinner(container: HTMLElement, isHide: boolean): void {
     let spinnerWrap: HTMLElement;
     if (container) {
-        spinnerWrap = container.classList.contains(CLS_SPINWRAP) ? container :
-            container.querySelector('.' + CLS_SPINWRAP) as HTMLElement;
+        if(container.classList.contains(CLS_SPINWRAP)){
+            spinnerWrap = container;
+        }
+        else {
+            let spinWrapCollection : NodeListOf<HTMLElement>;
+            spinWrapCollection = container.querySelectorAll('.' + CLS_SPINWRAP) as NodeListOf<HTMLElement>;
+            spinnerWrap = Array.from(spinWrapCollection).find((wrap) => wrap.parentElement === container) || null;
+        }
     }
     if (container && spinnerWrap) {
         const inner: HTMLElement = spinnerWrap.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
@@ -928,6 +934,9 @@ function ensureTemplate ( template: string, container: HTMLElement, theme: strin
         if (!isNullOrUndefined(cssClass)) {
             spinCSSClass = cssClass;
         }
+        if (!isNullOrUndefined(spinTemplate)) {
+            replaceContent(container, spinTemplate, spinCSSClass);
+        }
     }
 }
 /**
@@ -943,14 +952,16 @@ function replaceTheme( container: HTMLElement, theme: string, cssClass: string, 
         container.classList.add(cssClass);
     }
     const svgElement: SVGSVGElement = container.querySelector('svg');
-    const radius : number = theme === 'Bootstrap' ? parseFloat(svgElement.style.height) : parseFloat(svgElement.style.height) / 2;
-    const classNames: string  = svgElement.getAttribute('class');
-    const svgClassList: string[] = classNames.split(/\s/);
-    if (svgClassList.indexOf('e-spin-material') >= 0) {
-        const id: string =  svgElement.getAttribute('id');
-        clearTimeout(globalTimeOut[`${id}`].timeOut);
+    if(!isNullOrUndefined(svgElement)){
+        const radius : number = theme === 'Bootstrap' ? parseFloat(svgElement.style.height) : parseFloat(svgElement.style.height) / 2;
+        const classNames: string  = svgElement.getAttribute('class');
+        const svgClassList: string[] = classNames.split(/\s/);
+        if (svgClassList.indexOf('e-spin-material') >= 0) {
+            const id: string =  svgElement.getAttribute('id');
+            clearTimeout(globalTimeOut[`${id}`].timeOut);
+        }
+        setTheme(theme, container, radius, makeEle);
     }
-    setTheme(theme, container, radius, makeEle);
 }
 
 interface GlobalVariables {

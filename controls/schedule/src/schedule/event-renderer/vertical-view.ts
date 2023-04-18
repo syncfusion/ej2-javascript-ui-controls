@@ -339,7 +339,7 @@ export class VerticalEvent extends EventBase {
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
-            appointmentSubject.innerText = this.parent.sanitize(recordSubject);
+            this.parent.sanitize(recordSubject, appointmentSubject);
             if (isAllDay) {
                 if (record[fieldMapping.isAllDay]) {
                     templateElement = [appointmentSubject];
@@ -370,7 +370,8 @@ export class VerticalEvent extends EventBase {
                     innerHTML: timeStr
                 });
                 const appointmentLocation: HTMLElement = createElement('div', { className: cls.LOCATION_CLASS });
-                appointmentLocation.innerText = this.parent.sanitize((record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '') as string);
+                this.parent.sanitize((record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '') as string,
+                                     appointmentLocation);
                 templateElement = [appointmentSubject, appointmentTime, appointmentLocation];
             }
         }

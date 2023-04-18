@@ -174,12 +174,14 @@ export class NonWorkingDay {
 
     private updateHolidayLabelHeight(): void {
         const height: number = this.parent.getContentHeight();
+        let gantttable = document.getElementById("ganttContainer");
         // eslint-disable-next-line
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
            toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
         }
-        const viewportHeight: number =  this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
+        const viewportHeight = (this.parent.height === 'auto') ? gantttable.offsetHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight :
+            this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         const top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         const labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
         for (let i: number = 0; i < labels.length; i++) {

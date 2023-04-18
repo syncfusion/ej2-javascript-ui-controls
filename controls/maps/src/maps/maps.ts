@@ -1060,15 +1060,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!isNullOrUndefined(this.svgObject)) {
             this.element.appendChild(this.svgObject);
         }
-        const position: Point = this.getExtraPosition();
+        this.setSecondaryElementPosition();
         for (let i: number = 0; i < this.layers.length; i++) {
-            if (position.x !== 0 || position.y !== 0) {
-                const markerTemplate: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + i + '_Markers_Template_Group');
-                if (!isNullOrUndefined(markerTemplate)) {
-                    markerTemplate.style.top = this.mapAreaRect.y + position.y + 'px';
-                    markerTemplate.style.left = this.mapAreaRect.x + position.x + 'px';
-                }
-            }
             if (this.layers[i as number].selectionSettings && this.layers[i as number].selectionSettings.enable &&
                 this.layers[i as number].initialShapeSelection.length > 0 && this.checkInitialRender) {
                 const checkSelection: boolean = this.layers[i as number].selectionSettings.enableMultiSelect;
@@ -1272,15 +1265,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.element.tabIndex = this.tabIndex;
     }
 
-    // private setSecondaryElementPosition(): void {
-    //     if (!this.isTileMap) {
-    //         let element: HTMLDivElement = getElementByID(this.element.id + '_Secondary_Element') as HTMLDivElement;
-    //         let rect: ClientRect = this.element.getBoundingClientRect();
-    //         let svgRect: ClientRect = getElementByID(this.element.id + '_svg').getBoundingClientRect();
-    //         element.style.marginLeft = Math.max(svgRect.left - rect.left, 0) + 'px';
-    //         element.style.marginTop = Math.max(svgRect.top - rect.top, 0) + 'px';
-    //     }
-    // }
+    private setSecondaryElementPosition(): void {
+        let element: HTMLDivElement = getElementByID(this.element.id + '_Secondary_Element') as HTMLDivElement;
+        let rect: ClientRect = this.element.getBoundingClientRect();
+        let svgRect: ClientRect = getElementByID(this.element.id + '_svg').getBoundingClientRect();
+        element.style.marginLeft = Math.max(svgRect.left - rect.left, 0) + 'px';
+        element.style.marginTop = Math.max(svgRect.top - rect.top, 0) + 'px';
+    }
 
     private zoomingChange(): void {
         let left: number; let top: number;
@@ -2934,29 +2925,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
         return isVisible;
-    }
-
-    /**
-     * To find space between the secondary element and svg element.
-     *
-     * @returns {Point} - Returns the left and top value of the secondary element of Maps.
-     * @private
-     */
-    public getExtraPosition(): Point {
-        let top: number = 0;
-        let left: number = 0;
-        const svgElement: Element = getElement(this.element.id + '_svg');
-        if (!isNullOrUndefined(svgElement)) {
-            const svgClientRects: DOMRectList = svgElement.getClientRects() as DOMRectList;
-            const mapsClientRects: DOMRectList = (getElement(this.element.id + '_Secondary_Element')).getClientRects() as DOMRectList;
-            if (svgClientRects.length !== 0 && mapsClientRects.length !== 0) {
-                const svgClientRect: ClientRect = svgClientRects[0];
-                const mapsClientRect: ClientRect = mapsClientRects[0];
-                top = svgClientRect.top - mapsClientRect.top;
-                left = svgClientRect.left - mapsClientRect.left;
-            }
-        }
-        return new Point(left, top);
     }
 
     /**

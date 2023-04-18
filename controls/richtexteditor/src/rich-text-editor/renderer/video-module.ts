@@ -1163,7 +1163,7 @@ export class Video {
         videoUrl.appendChild(urlContent);
         this.embedInputUrl = this.parent.createElement('textarea', {
             className: 'e-input e-embed-video-url',
-            attrs: { placeholder: 'Paste Embed URL here', type: 'text', tabindex: '-1', 'aria-label': this.i10n.getConstant('embedVideoLinkHeader') }
+            attrs: { placeholder: 'Paste Embedded Code here', type: 'text', tabindex: '-1', 'aria-label': this.i10n.getConstant('embedVideoLinkHeader') }
         });
         this.embedInputUrl.addEventListener('keyup', () => {
             if (!isNOU(this.embedInputUrl)) {
@@ -1188,7 +1188,7 @@ export class Video {
             }
         });
         const embedUrlBtn: RadioButton = new RadioButton({
-            label: 'Embed URL',
+            label: 'Embedded Code',
             checked: true,
             name: 'URL',
             created: () => {

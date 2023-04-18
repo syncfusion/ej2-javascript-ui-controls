@@ -1157,17 +1157,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Method to sanitize any suspected untrusted strings and scripts before rendering them.
+     * This method renders untrusted strings and scripts securely by sanitizing them first.
      *
      * @param {string} value - A string value representing the HTML string value to be sanitized.
-     * @returns {string} A sanitized Html string.
+     * @param {HTMLElement} element - An HTML element to which the sanitized or unsanitized HTML string will be assigned.
+     * @returns {void}
      * @private
      */
-    public sanitize(value: string): string {
+    public sanitize(value: string, element: HTMLElement): void {
         if (this.enableHtmlSanitizer) {
-            return SanitizeHtmlHelper.sanitize(value);
+            element.innerText = SanitizeHtmlHelper.sanitize(value);
+        } else {
+            element.innerHTML = value;
         }
-        return value;
     }
 
     private initializeResources(isSetModel: boolean = false): void {

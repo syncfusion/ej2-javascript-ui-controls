@@ -1753,13 +1753,13 @@ describe('RTE CR issues', () => {
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
-            const correctElementString : string = `<p><span style="font-size: 36pt;"><span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="font-family: Arial, Helvetica, sans-serif;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through; background-color: rgb(255, 255, 0);">Testing</span></span></em></strong></span></span></span></span></p>`;
+            const correctElementString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);"><span style="font-family: Arial, Helvetica, sans-serif;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></span></span></span></p>`;
             expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
             ( toolbarButtons[3] as HTMLElement ).click(); // Bold
             ( toolbarButtons[2] as HTMLElement ).click(); // Italic
             ( toolbarButtons[1] as HTMLElement ).click(); // Underline
             ( toolbarButtons[0] as HTMLElement ).click(); // StrikeThrough
-            const correctString : string = `<p><span style="font-size: 36pt;"><span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="font-family: Arial, Helvetica, sans-serif;">Testing</span></span></span></span></p>`;
+            const correctString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(255, 255, 0);"><span style="font-family: Arial, Helvetica, sans-serif;">Testing</span></span></span></span></p>`;
             expect( rteObject.inputElement.innerHTML === correctString ).toBe( true );
             done();
         });

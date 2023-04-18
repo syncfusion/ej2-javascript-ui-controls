@@ -9572,10 +9572,20 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('Browser hangs when difference between start and end date value is high', function () {
+            let startWeekDay: Date;
+            let endWeekDay: Date;
             daterangepicker = new DateRangePicker({
                 renderDayCell: function (args: any): void {
                     if (args.date.getDay() === 0 || args.date.getDay() === 6) {
                         args.isDisabled = true;        
+                    }
+                    else
+                    {
+                       if(!startWeekDay && args.date.getMonth()== new Date().getMonth())
+                       {
+                           startWeekDay = args.date;
+                       }
+                       endWeekDay = args.date;
                     }
                 }
             });
@@ -9588,8 +9598,8 @@ describe('DateRangePicker', () => {
             tdElement[tdElement.length-1].dispatchEvent(clickEvent);
            (<HTMLElement>document.getElementsByClassName('e-apply')[0]).click();
            let today = new Date();
-           expect(+daterangepicker.startDate).toBe(+new Date(today.getFullYear(), today.getMonth(), 1));
-           expect(+daterangepicker.endDate).toBe(+new Date(today.getFullYear(), today.getMonth() + 1, 0));
+           expect(+daterangepicker.startDate).toBe(+startWeekDay);
+           expect(+daterangepicker.endDate).toBe(+endWeekDay);
         });
     });
 });

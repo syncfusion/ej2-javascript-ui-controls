@@ -95,8 +95,6 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
-                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') && range.startContainer.parentElement === endNode) {
-                    formatNode = null;
                 }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
@@ -116,9 +114,7 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                } else if (range.startContainer.parentElement !== endNode ||
-                    (range.commonAncestorContainer !== endNode && range.startContainer.parentElement === endNode)
-                    || (range.commonAncestorContainer === endNode || nodes.length === 1)) {
+                } else {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,
@@ -295,6 +291,26 @@ export class SelectionCommands {
                 (lastNode as HTMLElement).innerHTML = '&#8203;';
                 nodes[index as number] = lastNode.firstChild;
             }
+        } else if (isFontStyle && !nodes[index as number].contains(formatNode) && nodes[index as number].nodeType === 3 &&
+                    nodes[index as number].textContent !== formatNode.textContent) {
+            // If the selection is within the format node .
+            const isFullNodeSelected: boolean = nodes[index as number].textContent === (nodes[index as number] as Text).wholeText;
+            let nodeTraverse: Node = nodes[index as number];
+            const styleElement: HTMLElement = this.GetFormatNode(format, value);
+            // while loop and traverse back until text content does not match with parent text content
+            while (nodeTraverse && nodeTraverse.textContent === nodeTraverse.parentElement.textContent) {
+                nodeTraverse = nodeTraverse.parentElement;
+            }
+            if (isFullNodeSelected && formatNode.textContent !== nodeTraverse.textContent) {
+                const nodeArray : Node[] = [];
+                const priorityNode: Node = this.getPriorityFormatNode(nodeTraverse, endNode);
+                if (priorityNode && priorityNode.textContent === nodeTraverse.textContent) {
+                    nodeTraverse = priorityNode;
+                }
+                nodeArray.push(nodeTraverse);
+                this.applyStyles(nodeArray, 0, styleElement);
+                return nodes[index as number];
+            }
         }
         let fontStyle: string;
         if (format === 'backgroundcolor') {
@@ -456,23 +472,9 @@ export class SelectionCommands {
         painterValues: FormatPainterValue,
         domNode: DOMNode,
         endNode: Node): Node {
-        let rootElementNode: Node;
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (nodes[index as number].nodeName !== 'BR') {
-                    if (format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') {
-                        let rangeNode: Node = nodes[index as number];
-                        while (rangeNode && !domNode.isBlockNode(rangeNode as Element) && rangeNode !== endNode) {
-                            if (domNode.isBlockNode(rangeNode.parentElement)) {
-                                rootElementNode = rangeNode;
-                            }
-                            rangeNode = rangeNode.parentElement;
-                        }
-                        if (rootElementNode && rootElementNode.nodeType !== 3) {
-                            nodeCutter.SplitNode(range, rootElementNode as HTMLElement, true).cloneNode(true);
-                            nodeCutter.SplitNode(range, rootElementNode as HTMLElement, false).cloneNode(false);
-                        }
-                    }
                     nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
                     nodes[index as number].textContent = nodeCutter.TrimLineBreak((nodes[index as number] as Text).textContent);
                 }
@@ -481,54 +483,60 @@ export class SelectionCommands {
                         : nodes[index as number].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     const element: HTMLElement = this.GetFormatNode(format, value);
-                    if (value === 'formatPainter' || format === 'fontsize' || format === 'fontcolor' || format === 'fontname' || format === 'backgroundcolor') {
-                        if (format !== 'fontname' && format !== 'backgroundcolor') {
-                            let liElement: HTMLElement = nodes[index as number].parentElement;
-                            let parentElement: HTMLElement = nodes[index as number].parentElement;
-                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
-                                parentElement = parentElement.parentElement;
-                                liElement = parentElement;
-                            }
-                            if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                                liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
-                                if (format === 'fontsize') {
-                                    liElement.style.fontSize = value;
-                                } else {
-                                    liElement.style.color = value;
-                                    liElement.style.textDecoration = 'inherit';
-                                }
+                    if (value === 'formatPainter' || isFontStyle) {
+                        let liElement: HTMLElement = nodes[index as number].parentElement;
+                        let parentElement: HTMLElement = nodes[index as number].parentElement;
+                        while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                            parentElement = parentElement.parentElement;
+                            liElement = parentElement;
+                        }
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                            liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                            if (format === 'fontsize') {
+                                liElement.style.fontSize = value;
+                            } else if (format === 'fontcolor'){
+                                liElement.style.color = value;
+                                liElement.style.textDecoration = 'inherit';
                             }
                         }
-                        if (rootElementNode && rootElementNode.nodeType !== 3 && rootElementNode.nodeName !== 'A') {
-                            const save: NodeSelection = new NodeSelection();
-                            save.save(range, docElement);
-                            domNode.setMarker(save);
-                            const cloneNode : Node = rootElementNode.cloneNode(true);
-                            element.appendChild(cloneNode);
-                            domNode.replaceWith(rootElementNode as Element, element.outerHTML);
-                            const currentStartNode: Node = (endNode as Element).querySelector('.e-editor-select-start');
-                            const currrentEndNode: Node = (endNode as Element).querySelector('.e-editor-select-end');
-                            if (index === 0) {
-                                nodes[index as number] = currentStartNode ? currentStartNode.lastChild : nodes[index as number];
-                            }
-                            if (range.startContainer.parentElement === endNode) {
-                                if (nodes.length > 1) {
-                                    nodes[nodes.length - 1] =  currrentEndNode ? currrentEndNode.lastChild : nodes[index as number];
+                        if (value === 'formatPainter') {
+                            return this.insertFormatPainterElem(nodes, index, range, nodeCutter, painterValues, domNode);
+                        }
+                        const currentNode: Node = nodes[index as number];
+                        const priorityNode: Node = this.getPriorityFormatNode(currentNode, endNode);
+                        // 1. Checking is there any priority node present in the selection range. (Use case for nested styles);
+                        // 2  Or font style is applied. (Use case not a nested style)
+                        if (!isNOU(priorityNode) || isFontStyle) {
+                            let currentFormatNode: Node = isNOU(priorityNode) ? currentNode : priorityNode;
+                            currentFormatNode = !isNOU(priorityNode) && (priorityNode as HTMLElement).style.fontSize !== '' ?
+                                currentFormatNode.firstChild as Node : currentFormatNode;
+                            if (isNOU(priorityNode) || format === 'fontsize') {
+                                while (currentFormatNode) {
+                                    const isSameTextContent: boolean = currentFormatNode.parentElement.textContent.trim()
+                                        === nodes[index as number].textContent.trim();
+                                    if (!domNode.isBlockNode(currentFormatNode.parentElement) && isSameTextContent) {
+                                        currentFormatNode = currentFormatNode.parentElement;
+                                    } else {
+                                        break;
+                                    }
                                 }
                             }
-                            domNode.saveMarker(save, null);
+                            const nodeList: Node[] = [];
+                            // Since color is different for different themnes, we need to wrap the fontColor over the text node.
+                            if (format === 'fontcolor') {
+                                const closestAnchor: Node = closest(nodes[index as number].parentElement, 'A');
+                                if (!isNOU(closestAnchor) && closestAnchor.firstChild.textContent.trim()
+                                     === nodes[index as number].textContent.trim() ) {
+                                    currentFormatNode = nodes[index as number];
+                                }
+                            }
+                            if (nodes[index as number].textContent.trim() !== currentFormatNode.textContent.trim()) {
+                                currentFormatNode = nodes[index as number];
+                            }
+                            nodeList[0] = currentFormatNode;
+                            this.applyStyles(nodeList, 0, element);
                         } else {
-                            if (value === 'formatPainter') {
-                                return this.insertFormatPainterElem(nodes, index, range, nodeCutter, painterValues, domNode);
-                            } else{
-                                nodes[index as number] = this.applyStyles(nodes, index, element);
-                            }
-                        }
-                        if (format === 'fontsize') {
-                            const bg: Element = closest(nodes[index as number].parentElement, 'span[style*=' + 'background-color' + ']');
-                            if (!isNOU(bg)) {
-                                nodes[index as number].parentElement.style.backgroundColor = (bg as HTMLElement).style.backgroundColor;
-                            }
+                            nodes[index as number] = this.applyStyles(nodes, index, element);
                         }
                     } else {
                         nodes[index as number] = this.applyStyles(nodes, index, element);
@@ -556,6 +564,34 @@ export class SelectionCommands {
             nodes[index as number] = this.getChildNode(nodes[index as number], element);
         }
         return nodes[index as number];
+    }
+
+    private static getPriorityFormatNode(node: Node, endNode: Node): Node | null {
+        const isFormatted: IsFormatted = new IsFormatted();
+        const fontSizeNode: Node = isFormatted.getFormattedNode(node, 'fontsize', endNode);
+        let fontColorNode: Node;
+        let backgroundColorNode: Node;
+        let fontNameNode: Node;
+        if (isNOU(fontSizeNode)) {
+            backgroundColorNode = isFormatted.getFormattedNode(node, 'backgroundcolor', endNode);
+            if (isNOU(backgroundColorNode)) {
+                fontNameNode = isFormatted.getFormattedNode(node, 'fontname', endNode);
+                if (isNOU(fontNameNode)) {
+                    fontColorNode = isFormatted.getFormattedNode(node, 'fontcolor', endNode);
+                    if (isNOU(fontColorNode)) {
+                        return null;
+                    } else {
+                        return fontColorNode;
+                    }
+                } else {
+                    return fontNameNode;
+                }
+            } else {
+                return backgroundColorNode;
+            }
+        } else {
+            return fontSizeNode;
+        }
     }
 
     private static getInsertNode(docElement: Document, range: Range, format: string, value: string): HTMLElement {

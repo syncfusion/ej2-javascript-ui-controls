@@ -1657,5 +1657,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.unwireMouseEvents(this.element);
         this.tooltipEle = null;
         this.popupObj = null;
+        let currentTarget = selectAll('[data-tooltip-id= "' + this.ctrlId + '_content"]', this.element);
+        for (const target of currentTarget) {
+            this.restoreElement(target);
+        }
     }
 }

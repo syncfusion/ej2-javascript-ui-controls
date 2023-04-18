@@ -1089,7 +1089,7 @@ export class EventBase {
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
-            appointmentSubject.innerText = this.parent.sanitize(eventSubject);
+            this.parent.sanitize(eventSubject, appointmentSubject);
             templateElement = [appointmentSubject];
         }
         append(templateElement, appointmentWrapper);

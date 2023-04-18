@@ -45,6 +45,7 @@ export class SvgRenderer implements IRenderer {
         }
         let poiterEvents: string = 'pointer-events';
         if (!ariaLabel) {
+            // eslint-disable-next-line
             attr[poiterEvents] = 'none';
         }
         setAttributeSvg(rect, attr);
@@ -92,6 +93,7 @@ export class SvgRenderer implements IRenderer {
         };
         let pointerEvents: string = 'pointer-events';
         if (attr['aria-label'] === '') {
+            // eslint-disable-next-line
             attr[pointerEvents] = 'none';
         }
         circle.style.display = options.visible ? 'block' : 'none';
@@ -222,7 +224,7 @@ export class SvgRenderer implements IRenderer {
         let segments: Object[] = collection;
         let d: string = '';
         for (x = 0, y = 0, i = 0, length = segments.length; i < length; ++i) {
-            let obj: Object = segments[i]; let segment: PathSegment = obj; let char: string = segment.command;
+            let obj: Object = segments[parseInt(i.toString(), 10)]; let segment: PathSegment = obj; let char: string = segment.command;
             if ('x1' in segment) { x1 = segment.x1; }
             if ('x2' in segment) { x2 = segment.x2; }
             if ('y1' in segment) { y1 = segment.y1; }
@@ -262,7 +264,7 @@ export class SvgRenderer implements IRenderer {
 export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        svg.setAttribute(keys[i], attributes[keys[i]]);
+        svg.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
     }
 }
 /** @private */

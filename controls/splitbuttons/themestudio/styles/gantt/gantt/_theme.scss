@@ -390,6 +390,10 @@
         font-size: $gantt-task-label-font-size;
       }
 
+      .e-icon {
+        color: $gantt-edit-icon-color;
+      }
+
       .e-milestone-top {
         border-bottom-color: $gantt-milestone-border-color;
       }
@@ -637,6 +641,10 @@
 
           .e-tab-wrap {
             border-color: $gantt-dialog-tab-header-border-no-color;
+
+            .e-tab-text {
+              color: $gantt-tab-header-font-color;
+            }
           }
         }
 

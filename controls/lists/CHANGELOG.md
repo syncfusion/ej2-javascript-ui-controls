@@ -2,11 +2,32 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F181131` - Issue with "No Record Found text disappears while hovering the drag item on list box without drop" has been resolved.
+
 ### ListView
 
 #### Bug Fixes
 
 - `#I447633` - An issue with the primary button styles of the e-icons in the ListView component has been resolved.
+
+## 21.1.39 (2023-04-11)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with Dragging the ListBox item when the end-user pressed the Escape key and the drag operation should be cancelled has been fixed.
+
+### ListView
+
+#### Bug Fixes
+
 - `#I452079` - Resolved detached elements memory leak issue in the ListView component.
 
 ## 21.1.35 (2023-03-23)

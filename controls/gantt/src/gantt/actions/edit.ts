@@ -1171,7 +1171,13 @@ export class Edit {
                     }
                 } else if (isNullOrUndefined(previousData)) {
                     calcEndDate = previousStartDate;
-                    this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
+                    const initialData: IGanttData = this.parent.initialLoadData[childRecords[i as number].index] as IGanttData;
+                    if (this.parent.isLoad) {
+                        this.calculateDateByRoundOffDuration(initialData, calcEndDate);
+                    }
+                    else {
+                        this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
+                    }
                     if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
                         this.validatedChildItems.push(childRecords[i as number]);
                     }

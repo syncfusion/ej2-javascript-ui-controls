@@ -72,7 +72,7 @@
           & .e-caret {
             font-size: $menu-caret-font-size;
             height: auto;
-            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+            @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
               line-height: $menu-icon-li-height;
             }
             @else {

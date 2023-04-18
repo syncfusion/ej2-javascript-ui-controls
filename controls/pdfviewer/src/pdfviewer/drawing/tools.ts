@@ -1794,15 +1794,17 @@ export class NodeDrawingTool extends ToolBase {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
             let drawnAnnotation = this.commandHandler.selectedItems.annotations[0];
-            this.commandHandler.nodePropertyChange(drawnAnnotation, { bounds: { x: drawnAnnotation.wrapper.offsetX, y: drawnAnnotation.wrapper.offsetY } });
-            this.commandHandler.annotation.updateCalibrateValues(this.drawingObject, true);
-            if (this.commandHandler && !this.isFormDesign) {
-                // eslint-disable-next-line
-                this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
+            if(!isNullOrUndefined(drawnAnnotation) && !isNullOrUndefined(drawnAnnotation.wrapper)) {
+                this.commandHandler.nodePropertyChange(drawnAnnotation, { bounds: { x: drawnAnnotation.wrapper.offsetX, y: drawnAnnotation.wrapper.offsetY } });
+                this.commandHandler.annotation.updateCalibrateValues(this.drawingObject, true);
+                if (this.commandHandler && !this.isFormDesign) {
+                    // eslint-disable-next-line
+                    this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
+                }
+                this.dragging = false;
+                super.mouseUp(args);
+                this.inAction = false;
             }
-            this.dragging = false;
-            super.mouseUp(args);
-            this.inAction = false;
         } else {
             super.mouseUp(args);
         }

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 21.1.41 (2023-04-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I450341` - Now, when `enableXhtml` is enabled in Rich Text Editor the `contentEditable` attribute is not removed from the `Mention` element.
+
+## 21.1.39 (2023-04-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I449820` - Fixed the issue where the Placeholder was not working in Iframe mode in Rich Text Editor.
+
+- `#I450797` - Resolved issue where typed content and placeholder in the Rich Text Editor would merge when the `TAB` key was used to focus on the component.
+
+- `#I453953` - Resolved the issue where script error is thrown when clicking clear format toolbar while no content in Rich Text Editor.
+
 ## 21.1.35 (2023-03-23)
 
 ### RichTextEditor

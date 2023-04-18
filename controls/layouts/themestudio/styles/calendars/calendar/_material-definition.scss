@@ -127,6 +127,8 @@ $calendar-bigger-month-view-padding: 2px !default;
 $calendar-bigger-week-header-font-size: 14px !default;
 $calendar-today-border-color: 1px solid $accent !default;
 $calendar-today-box-shadow: none !default;
+$calendar-disabled-today-box-shadow: inset 1px 0 $accent, inset 0 1px $accent, inset -1px 0 $accent, inset 0 -1px $accent !default;
+$calendar-disabled-today-font-color: #ccc !default;
 $calendar-focus-border-color: none !default;
 $calendar-focus-box-shadow: none !default;
 $calendar-hover-border-color: none !default;

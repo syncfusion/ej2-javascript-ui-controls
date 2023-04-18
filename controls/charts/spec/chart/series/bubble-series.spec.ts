@@ -1012,7 +1012,7 @@ describe('Chart Control', () => {
                 expect(tooltip != null).toBe(true);
                 expect(targetElement.getAttribute('opacity')).toEqual('1');
                 targetElement = document.getElementById('container_tooltip_text');
-                expect(targetElement.textContent.replace(/\u200E/g, '')).toEqual('ChartSeriesNameGold3000.0 : 3.0  Size : -30000.0');
+                expect(targetElement.textContent.replace(/\u200E/g, '')).toEqual('ChartSeriesNameGold3000.0 : 3.0  Size : -30000');
                 trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
                 done();
             };

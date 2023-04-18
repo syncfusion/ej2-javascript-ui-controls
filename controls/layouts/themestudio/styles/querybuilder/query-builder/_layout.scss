@@ -311,8 +311,13 @@
         &.e-joined-rule {
           border-top-left-radius: 0;
           border-top-right-radius: 0;
-          border-top-style: $qrybldr-rule-list-border-style;
-          border-top-width: 2px;
+          @if $skin-name == 'Material3' {
+            border-top-style: $qrybldr-joined-rule-border-style;
+          }
+          @else {
+            border-top-style: $qrybldr-rule-list-border-style;
+          }
+          border-top-width: 1px;
           margin-top: 0;
         }
 
@@ -457,7 +462,12 @@
     }
 
     & .e-collapse-rule {
-      border: $qrybldr-brdr;
+      @if $skin-name == 'Material3' {
+        border: $qrybldr-collapse-brdr;
+      }
+      @else {
+        border: $qrybldr-brdr;
+      }
       border-right: 0;
       border-top: 0;
       box-shadow: $qrybldr-collapse-box-shadow;

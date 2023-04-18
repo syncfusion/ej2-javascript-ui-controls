@@ -49,7 +49,7 @@
       }
 
       .e-text-content {
-        @if ($skin-name == 'tailwind') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'Material3') {
           font-size: $listview-touch-header-font-size;
           line-height: $listview-touch-groupheader-line-height;
         }
@@ -355,7 +355,7 @@
         @else {
           margin-top: $listview-icon-back-margin;
         }
-        @if ($skin-name == 'FluentUI') {
+        @if ($skin-name == 'FluentUI' or $skin-name == 'Material3') {
           margin-right: $listview-icon-back-margin-right;
         }
       }
@@ -377,7 +377,7 @@
           }
         }
         @else {
-          @if ($skin-name != 'FluentUI') {
+          @if ($skin-name != 'FluentUI' and $skin-name != 'Material3') {
             border-bottom: 1px solid;
           }
           padding: 0 $listview-header-text-padding;
@@ -423,6 +423,11 @@
         @else {
           font-weight: 600;
           padding: $listview-item-padding;
+        }
+
+        @if ($skin-name == 'Material3') {
+          border-top: $listview-group-border-bottom solid $listview-border-bottom-color;
+          border-bottom: $listview-group-border-top solid;
         }
 
         .e-list-text {

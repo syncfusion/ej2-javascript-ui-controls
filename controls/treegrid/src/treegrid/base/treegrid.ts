@@ -2349,6 +2349,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (requestType === 'reorder') {
                 this.notify('getColumnIndex', {});
             }
+            if (requestType === 'filterbeforeopen' && args.columnName && this.filterSettings.hierarchyMode !== 'None') {
+                for (let j: number = 0; j < this.columns.length; j++) {
+                    const fields: string = 'field';
+                    if (this.columns[parseInt(j.toString(), 10)][`${fields}`] === args.columnName) {
+                        const taskFields: string[] = [];
+                        for (let i: number = 0; i < this.grid.currentViewData.length; i++) {
+                            const fieldValue: string = this.grid.currentViewData[parseInt(i.toString(), 10)][args.columnName];
+                            if (taskFields.indexOf(fieldValue) === -1) {
+                                taskFields.push(fieldValue);
+                            }
+                        }
+                        args['filterModel'].options.dataSource = taskFields.map((name: string) => ({ [args.columnName]: name }));
+                        args['filterModel'].options.filteredColumns = args['filterModel'].options.filteredColumns.filter((col: { field: string; }) => col.field === args.columnName);
+                    }
+                }
+            }            
             if (isRemoteData(this) && this.enableVirtualization) {
                 if (args.requestType === 'virtualscroll') {
                     this.query.expand('VirtualScrollingAction');

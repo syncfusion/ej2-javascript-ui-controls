@@ -1497,8 +1497,8 @@ export class CartesianAxisLayoutPanel {
                 const textRect: Rect = new Rect(options.x, options.y - (elementSize.height / 2 + padding / 2), label.size.width, height);
                 const textRectCoordinates: ChartLocation[] = this.getRectanglePoints(textRect);
                 const rectPoints = [];
-                rectPoints.push(new ChartLocation(rotateAngle ?  this.chart.availableSize.width - padding : 0, axis.rect.y));
-                rectPoints.push(new ChartLocation(rotateAngle ?  this.chart.availableSize.width - padding: 0, axis.rect.y + axis.maxLabelSize.height));
+                rectPoints.push(new ChartLocation(rotateAngle ? this.chart.availableSize.width - padding : this.padding, axis.rect.y));
+                rectPoints.push(new ChartLocation(rotateAngle ? this.chart.availableSize.width - padding : this.padding, axis.rect.y + axis.maxLabelSize.height));
                 textPoints.push(getRotatedRectangleCoordinates(textRectCoordinates, rectCenterX, rectCenterY, angle));
                 const newRect: Rect = new Rect(0, axis.rect.y, this.chart.availableSize.width - padding, axis.maxLabelSize.height * 2);
                 for (let k: number = 0; k < textPoints[i as number].length; k++) {

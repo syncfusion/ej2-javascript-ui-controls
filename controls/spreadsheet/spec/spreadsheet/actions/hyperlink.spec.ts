@@ -872,5 +872,49 @@ describe('Hyperlink ->', () => {
                 });
             });
         });
+        describe('EJ2-72081 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Insert button is not disabled on insert hyperlink dialog when switching from defined names to sheet name', (done: Function) => {
+                helper.invoke('selectRange', ['A10:A12']);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                const btn: HTMLButtonElement = helper.getElement('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                setTimeout(() => {
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[0].value = '';
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                    expect(helper.invoke('getCell', [9, 0]).querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].value).toBe('');
+                    expect(helper.invoke('getCell', [10, 0]).querySelector('.e-hyperlink').textContent).toBe('T-Shirts');
+                    expect(helper.getInstance().sheets[0].rows[10].cells[0].value).toBe('T-Shirts');
+                    expect(helper.invoke('getCell', [11, 0]).querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+                    expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBeUndefined();
+                    helper.edit('G1', '');
+                    helper.invoke('selectRange', ['G1:I1']);
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                    setTimeout(() => {
+                        helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                        helper.getElements('.e-hyperlink-dlg .e-webpage input')[0].value = '';
+                        helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                        helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                        helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                        expect(helper.invoke('getCell', [0, 6]).querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+                        expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toBe('');
+                        expect(helper.invoke('getCell', [0, 7]).querySelector('.e-hyperlink').textContent).toBe('Profit');
+                        expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toBe('Profit');
+                        expect(helper.invoke('getCell', [0, 8]).querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+                        expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

@@ -132,6 +132,10 @@
       font-size: $format-label-font-size;
       font-weight: $format-label-font-weight;
       opacity: $format-label-font-opacity;
+
+      @if ($field-list-skin == 'bootstrap5') or ($field-list-skin == 'FluentUI') or ($field-list-skin == 'tailwind') {
+        opacity: 1;
+      }
     }
 
     .e-format-value-preview {
@@ -200,6 +204,11 @@
       }
       /* stylelint-enable */
 
+      .e-format-condition-button {
+        .e-add-icon {
+          margin-left: 0;
+        }
+      }
       .e-format-value1,
       .e-format-value2,
       .e-format-value-span {
@@ -587,6 +596,7 @@
 
           .e-text-content {
             padding: 0 24px 0 0;
+            display: flex;
           }
         }
       }
@@ -894,6 +904,16 @@
             padding-top: 12px;
           }
         }
+
+        .e-remove-report,
+        .e-edit,
+        .e-edited {
+          /* stylelint-disable */
+          @if ($skin-name =='FluentUI') or ($skin-name =='bootstrap5') {
+            font-size: $field-list-bigger-header-icon-size !important;
+          }
+          /* stylelint-enable */
+        }
       }
 
       ul {
@@ -1065,6 +1085,7 @@
           li:not(.e-pivot-parent):not(.e-pivot-child) {
             .e-text-content {
               padding-left: $field-list-treeview-mobile-li-padding;
+              margin-left: $field-list-adaptive-footer-padding-size;
             }
           }
         }
@@ -1153,6 +1174,12 @@
     }
 
     .e-member-editor-dialog {
+      .e-member-editor-container-outer-div {
+        @if ($skin-name == 'FluentUI') {
+          height: $field-list-excel-member-filter-height !important;
+        }
+      }
+
       .e-toolbar .e-toolbar-items {
         margin-left: $field-list-filter-toolbar-items-margin;
       }
@@ -1293,9 +1320,9 @@
         @if ($skin-name == 'tailwind') {
           padding-top: 12px;
         }
-
+        /* stylelint-disable */
         .e-member-editor-container-outer-div {
-          height: $field-list-excel-member-filter-height;
+          height: $field-list-excel-member-filter-height !important;
         }
       }
 
@@ -1306,7 +1333,6 @@
         padding: 20px;
         padding-bottom: 0;
 
-        /* stylelint-disable */
         .e-filter-text-div {
           color: $field-list-button-icon-color !important;
           font-size: 13px;

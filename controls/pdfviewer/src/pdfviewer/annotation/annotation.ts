@@ -6092,6 +6092,8 @@ export class Annotation {
         } else {
             return date;
         }
+        const modifiedDateToUTC = new Date(modifiedDateTime);
+        modifiedDateTime = modifiedDateToUTC.toISOString();
         return modifiedDateTime;
     }
 

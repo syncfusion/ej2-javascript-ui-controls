@@ -17,7 +17,7 @@
     overflow: hidden;
     position: relative;
     width: $avatar-base-width;
-    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
       line-height: $avatar-base-line-height;
     }
 
@@ -28,11 +28,15 @@
 
     &.e-avatar-circle {
       border-radius: $avatar-circle-border-radius;
+      &.e-avatar-large,
+      &.e-avatar-xlarge  {
+        border-radius: $avatar-circle-border-radius;
+      }
     }
 
     &.e-avatar-xsmall {
       font-size: $avatar-xsmall-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         height: 24px;
         line-height: $avatar-base-xsmall-line-height;
         width: 24px;
@@ -41,7 +45,7 @@
 
     &.e-avatar-small {
       font-size: $avatar-small-font-size;
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         height: 32px;
         line-height: $avatar-base-small-line-height;
         width: 32px;
@@ -53,7 +57,7 @@
       @if ($skin-name == 'bootstrap5') {
         border-radius: $avatar-large-border-radius;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         height: 48px;
         line-height: $avatar-base-large-line-height;
         width: 48px;
@@ -65,7 +69,7 @@
       @if ($skin-name == 'bootstrap5') {
         border-radius: $avatar-large-border-radius;
       }
-      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark'or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark'or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         height: 56px;
         line-height: $avatar-base-xlarge-line-height;
         width: 56px;

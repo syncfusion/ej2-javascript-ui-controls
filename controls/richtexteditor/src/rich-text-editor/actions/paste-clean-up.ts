@@ -8,6 +8,7 @@ import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, ad
 import { getUniqueID, Browser } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
+import { CLS_RTE_IMAGE, CLS_IMGINLINE, CLS_IMGBREAK } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
@@ -147,14 +148,20 @@ export class PasteCleanup {
             this.parent.trigger(events.afterPasteCleanup, { value : value}, (updatedArgs: PasteCleanupArgs) => {
                 value = updatedArgs.value;
             });
+            const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+            tempDivElem.innerHTML = value;
+            const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
+                !isNOU(tempDivElem.querySelector('table'));
             if (this.parent.pasteCleanupSettings.prompt) {
-                (e.args as ClipboardEvent).preventDefault();
-                const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
-                tempDivElem.innerHTML = value;
-                if (tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
-            !isNOU(tempDivElem.querySelector('table'))) {
+                if (isValueNotEmpty) {
+                    (e.args as ClipboardEvent).preventDefault();
                     this.pasteDialog(value, args);
+                } else if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                    this.fireFoxImageUpload();
                 }
+            } else if (!isValueNotEmpty && !this.parent.pasteCleanupSettings.plainText &&
+                Browser.userAgent.indexOf('Firefox') !== -1) {
+                this.fireFoxImageUpload();
             } else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.plainFormatting(value, args);
@@ -164,8 +171,31 @@ export class PasteCleanup {
             } else {
                 (e.args as ClipboardEvent).preventDefault();
                 this.formatting(value, true, args);
-            }
+            } 
         }
+    }
+    private fireFoxImageUpload(): void {
+        // Timeout 500 is added to capture after default paste image from file manager is completed.
+        setTimeout(() => {
+            if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                let currentFocusNode = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startContainer;
+                if (currentFocusNode.nodeName !== '#text') {
+                    currentFocusNode = currentFocusNode.childNodes[this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startOffset];
+                }
+                if (currentFocusNode.previousSibling.nodeName === 'IMG') {
+                    (currentFocusNode.previousSibling as HTMLElement).classList.add('pasteContent_Img');
+                    (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_RTE_IMAGE);
+                    if (this.parent.insertImageSettings.display === 'inline') {
+                        (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_IMGINLINE);
+                    } else {
+                        (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_IMGBREAK);
+                    }
+                    (currentFocusNode.previousSibling as HTMLElement).classList.add();
+                    this.setImageProperties(currentFocusNode.previousSibling as HTMLImageElement)
+                }
+            }
+            this.imgUploading(this.parent.inputElement);
+        }, 500);
     }
     private splitBreakLine(value: string): string {
         const enterSplitText: string[] = value.split('\n');
@@ -644,24 +674,7 @@ export class PasteCleanup {
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {
             allImg[i as number].classList.add('pasteContent_Img');
-            if (this.parent.insertImageSettings.width !== 'auto') {
-                allImg[i as number].setAttribute('width', this.parent.insertImageSettings.width);
-            }
-            if (this.parent.insertImageSettings.minWidth !== '0' && this.parent.insertImageSettings.minWidth !== 0) {
-                allImg[i as number].style.minWidth = this.parent.insertImageSettings.minWidth.toString();
-            }
-            if (this.parent.insertImageSettings.maxWidth !== null) {
-                allImg[i as number].style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
-            }
-            if (this.parent.insertImageSettings.height !== 'auto') {
-                allImg[i as number].setAttribute('height', this.parent.insertImageSettings.height);
-            }
-            if (this.parent.insertImageSettings.minHeight !== '0' && this.parent.insertImageSettings.minHeight !== 0) {
-                allImg[i as number].style.minHeight = this.parent.insertImageSettings.minHeight.toString();
-            }
-            if (this.parent.insertImageSettings.maxHeight !== null) {
-                allImg[i as number].style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
-            }
+            this.setImageProperties(allImg[i as number]);
         }
         this.addTempClass(clipBoardElem);
         if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
@@ -682,6 +695,27 @@ export class PasteCleanup {
             if (this.parent.iframeSettings.enable) {
                 this.parent.updateValue();
             }
+        }
+    }
+
+    private setImageProperties(allImg: HTMLImageElement): void {
+        if (this.parent.insertImageSettings.width !== 'auto') {
+            allImg.setAttribute('width', this.parent.insertImageSettings.width);
+        }
+        if (this.parent.insertImageSettings.minWidth !== '0' && this.parent.insertImageSettings.minWidth !== 0) {
+            allImg.style.minWidth = this.parent.insertImageSettings.minWidth.toString();
+        }
+        if (this.parent.insertImageSettings.maxWidth !== null) {
+            allImg.style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
+        }
+        if (this.parent.insertImageSettings.height !== 'auto') {
+            allImg.setAttribute('height', this.parent.insertImageSettings.height);
+        }
+        if (this.parent.insertImageSettings.minHeight !== '0' && this.parent.insertImageSettings.minHeight !== 0) {
+            allImg.style.minHeight = this.parent.insertImageSettings.minHeight.toString();
+        }
+        if (this.parent.insertImageSettings.maxHeight !== null) {
+            allImg.style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
         }
     }
 

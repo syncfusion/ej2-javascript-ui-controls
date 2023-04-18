@@ -1979,7 +1979,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         const liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
         for (let i: number = 0; i < liCollection.length; i++) {
             const tempData: DataSource = this.getItemData(liCollection[i] as HTMLElement);
-            if (tempData[this.listBaseOption.fields.id]) {
+            if (!isNullOrUndefined(tempData) && tempData[this.listBaseOption.fields.id]) {
                 this.selectedId.push(tempData[this.listBaseOption.fields.id] as any)
             }
         }

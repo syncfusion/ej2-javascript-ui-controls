@@ -7,12 +7,14 @@ import { TooltipModel } from '@syncfusion/ej2-popups';
 export class PopupSettings extends ChildProperty<PopupSettings> {
     /**
      * Specifies title for the editor popup.
+     *
      * @default ''
      */
     @Property('')
     public title: string;
     /**
      * Specifies model for editor popup customization like position, animation,etc.
+     *
      * @default null
      */
     @Property(null)
@@ -22,7 +24,6 @@ export class PopupSettings extends ChildProperty<PopupSettings> {
  * @hidden
  */
 export const modulesList: { [key: string]: string } = {
-    /* eslint-disable */
     'AutoComplete': 'auto-complete',
     'Color': 'color-picker',
     'ComboBox': 'combo-box',
@@ -39,7 +40,6 @@ export const modulesList: { [key: string]: string } = {
  */
 // eslint-disable-next-line
 export let localeConstant: { [key: string]: object } = {
-    /* eslint-disable */
     'Click': { 'editAreaClick': 'Click to edit' },
     'DblClick': { 'editAreaDoubleClick': 'Double click to edit' },
     'EditIconClick': { 'editAreaClick': 'Click to edit' }

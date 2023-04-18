@@ -109,7 +109,7 @@ export class TriangularBase extends AccumulationBase {
                 path += ' L';
             }
         }
-        return path;
+        return path + ' Z';
     }
 
     /**

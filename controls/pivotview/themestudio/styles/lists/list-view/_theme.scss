@@ -11,7 +11,7 @@
         font-size: $listview-header-font-size;
       }
 
-      & .e-icons:not(.e-primary .e-icon-btn) {
+      & .e-icons:not(.e-primary .e-btn-icon) {
         color: $listview-icon-color;
 
         @if ($skin-name == 'tailwind') {

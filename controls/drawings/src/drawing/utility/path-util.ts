@@ -11,13 +11,13 @@ export function processPathData(data: string): Object[] {
     let arrayCollection: Object[] = parsePathData(data);
     if (arrayCollection.length > 0) {
         for (let i: number = 0; i < arrayCollection.length; i++) {
-            let ob: Object = arrayCollection[i];
+            let ob: Object = arrayCollection[parseInt(i.toString(), 10)];
             let char: string = '';
             char = ob[0];
             switch (char.toLowerCase()) {
                 case 'm':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, x: ob[j], y: ob[j + 1] });
+                        collection.push({ command: char, x: ob[parseInt(j.toString(), 10)], y: ob[j + 1] });
                         j = j + 1;
                         if (char === 'm') {
                             char = 'l';
@@ -29,18 +29,18 @@ export function processPathData(data: string): Object[] {
                 case 'l':
                 case 't':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, x: ob[j], y: ob[j + 1] });
+                        collection.push({ command: char, x: ob[parseInt(j.toString(), 10)], y: ob[j + 1] });
                         j = j + 1;
                     }
                     break;
                 case 'h':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, x: ob[j] });
+                        collection.push({ command: char, x: ob[parseInt(j.toString(), 10)] });
                     }
                     break;
                 case 'v':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, y: ob[j] });
+                        collection.push({ command: char, y: ob[parseInt(j.toString(), 10)] });
                     }
                     break;
                 case 'z':
@@ -49,27 +49,27 @@ export function processPathData(data: string): Object[] {
                 case 'c':
                     for (j = 1; j < (ob as Object[]).length; j++) {
                         collection.push({
-                            command: char, x1: ob[j], y1: ob[j + 1], x2: ob[j + 2], y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
+                            command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x2: ob[j + 2], y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
                         });
                         j = j + 5;
                     }
                     break;
                 case 's':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, x2: ob[j], y2: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
+                        collection.push({ command: char, x2: ob[parseInt(j.toString(), 10)], y2: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
                         j = j + 3;
                     }
                     break;
                 case 'q':
                     for (j = 1; j < (ob as Object[]).length; j++) {
-                        collection.push({ command: char, x1: ob[j], y1: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
+                        collection.push({ command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
                         j = j + 3;
                     }
                     break;
                 case 'a':
                     for (j = 1; j < (ob as Object[]).length; j++) {
                         collection.push({
-                            command: char, r1: ob[j], r2: ob[j + 1], angle: ob[j + 2], largeArc: ob[j + 3],
+                            command: char, r1: ob[parseInt(j.toString(), 10)], r2: ob[j + 1], angle: ob[j + 2], largeArc: ob[j + 3],
                             sweep: ob[j + 4], x: ob[j + 5], y: ob[j + 6]
                         });
                         j = j + 6;
@@ -155,6 +155,7 @@ export function getRectanglePath(cornerRadius: number, height: number, width: nu
         point2 = points[i + 1];
         path += 'L' + point2.x + ' ' + point2.y;
         next = points[i + 2] || points[0];
+        // eslint-disable-next-line
         path += 'Q' + corners[corner].x + ' ' + corners[corner].y + ' ' + next.x + ' ' + next.y;
         corner++;
     }
@@ -168,7 +169,7 @@ export function pathSegmentCollection(collection: Object[]): Object[] {
     let initx: number; let inity: number;
     let segments: PathSegment[] = [];
     for (x = 0, y = 0, i = 0, length = collection.length; i < length; ++i) {
-        let obj: Object = collection[i];
+        let obj: Object = collection[parseInt(i.toString(), 10)];
         let seg: PathSegment = obj;
         let char: string = ''; char = seg.command;
         if ('y1' in seg) { y1 = seg.y1; }
@@ -247,7 +248,7 @@ export function transformPath(arr: Object[], sX: number, sY: number, s: boolean,
     let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
     let x: number; let y: number; let length: number; let i: number; let newSeg: PathSegment;
     for (x = 0, y = 0, i = 0, length = arr.length; i < length; ++i) {
-        let obj: Object = arr[i]; let seg: PathSegment = obj;
+        let obj: Object = arr[parseInt(i.toString(), 10)]; let seg: PathSegment = obj;
         let char: string = seg.command;
         if ('x' in seg) { x = seg.x; }
         if ('y' in seg) { y = seg.y; }
@@ -297,7 +298,7 @@ export function transformPath(arr: Object[], sX: number, sY: number, s: boolean,
         let scaledPath: PathSegment = { x: x, y: y, x1: x1, y1: y1, x2: x2, y2: y2, r1: seg.r1, r2: seg.r2 };
         newSeg = updatedSegment(seg, char, scaledPath, s, sX, sY);
         if (newSeg) {
-            arr[i] = newSeg;
+            arr[parseInt(i.toString(), 10)] = newSeg;
         }
         // Record the start of a subpath
         if (char === 'M' || char === 'm') {
@@ -381,7 +382,7 @@ export function splitArrayCollection(arrayCollection: Object[]): Object[] {
     let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
     let x: number; let y: number; let length: number; let i: number;
     for (x = 0, y = 0, i = 0, length = arrayCollection.length; i < length; ++i) {
-        let path: Object = arrayCollection[i];
+        let path: Object = arrayCollection[parseInt(i.toString(), 10)];
         let seg: PathSegment = path;
         let char: string = seg.command;
         if (/[MLHVCSQTA]/.test(char)) {
@@ -438,11 +439,11 @@ export function splitArrayCollection(arrayCollection: Object[]): Object[] {
                 case 'Z':
                     newSeg = { command: 'Z' };
                     x = x0; y = y0;
-                    newSeg = arrayCollection[i];
+                    newSeg = arrayCollection[parseInt(i.toString(), 10)];
                     break;
             }
             if (newSeg) {
-                arrayCollection[i] = newSeg;
+                arrayCollection[parseInt(i.toString(), 10)] = newSeg;
             }
         }
         if (char === 'M' || char === 'm') {
@@ -458,9 +459,9 @@ export function getPathString(arrayCollection: Object[]): string {
     let i: number;
     for (i = 0; i < arrayCollection.length; i++) {
         if (i === 0) {
-            getNewString += getString(arrayCollection[i]);
+            getNewString += getString(arrayCollection[parseInt(i.toString(), 10)]);
         } else {
-            getNewString += ' ' + getString(arrayCollection[i]);
+            getNewString += ' ' + getString(arrayCollection[parseInt(i.toString(), 10)]);
         }
     }
     return getNewString;

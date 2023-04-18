@@ -68,7 +68,7 @@ export class WorkbookHyperlink {
         for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
             for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
                 cellModel = { hyperlink: hyperlink };
-                if (args.displayText) {
+                if (!isNullOrUndefined(args.displayText) && rIdx === activeCell[0] && cIdx === activeCell[1]) {
                     if (args.triggerEvt) {
                         if (rIdx === activeCell[0] && cIdx === activeCell[1]) {
                             cellModel.value = args.displayText;

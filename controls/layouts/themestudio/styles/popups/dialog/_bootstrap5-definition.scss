@@ -1,8 +1,8 @@
 //Layout Variables Start
 $dialog-close-button-left: -5px !default;
 $dialog-header-border: 1px solid $border-light !default;
-$dialog-close-icon-font-size: 16px !default;
-$dialog-bigger-close-icon-font-size: 20px !default;
+$dialog-close-icon-font-size: $text-base !default;
+$dialog-bigger-close-icon-font-size: $text-xl !default;
 $footer-content-border-radius: 0 !default;
 $header-content-border-radius: 0 !default;
 $dialog-border-radius: 6px !default;
@@ -19,7 +19,7 @@ $dialog-header-content-padding: 12px 14px 12px 12px !default;
 $dialog-content-padding: 12px !default;
 $dialog-footer-content-padding: 12px !default;
 $dialog-footer-content-border-top: 1px solid $border-light !default;
-$dialog-alert-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: 1px solid $border-light !default;
 $dialog-bigger-header-content-padding: 16px !default;
 $dialog-bigger-content-padding: 16px !default;
 $dialog-bigger-footer-content-padding: 16px !default;

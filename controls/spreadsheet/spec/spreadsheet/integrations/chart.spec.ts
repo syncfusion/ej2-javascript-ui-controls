@@ -1125,7 +1125,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, Price');
                 done();
             });
         });
@@ -1193,7 +1193,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
                 done();
             });
         });
@@ -1210,7 +1210,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:15, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:15, Price');
                 done();
             });
         });
@@ -1265,7 +1265,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
                 done();
             });
         });
@@ -1282,7 +1282,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
                 done();
             });
         });
@@ -1299,7 +1299,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_9').getAttribute('aria-label')).toBe(':0, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_8').getAttribute('aria-label')).toBe('41:30, Price');
                 done();
             });
         });
@@ -1316,7 +1316,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                //expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
                 done();
             });
         });
@@ -1367,7 +1367,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe(':20, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).toBeNull();
                 done();
             });
         });
@@ -1621,6 +1621,56 @@ describe('Chart ->', () => {
                     done();
                 });
             });
+        });
+        describe('EJ2-71624', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'K2:K2' }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet displays wrong value for percentage data while inserting chart', (done: Function) => {
+                helper.edit('I2', 'A');
+                helper.edit('I3', 'B');
+                helper.edit('I4', 'C');
+                helper.edit('J2', '1');
+                helper.edit('J3', '2');
+                helper.edit('J4', '3');
+                helper.invoke('numberFormat', ['0.00%', 'J2:J4']);
+                helper.getInstance().insertChart([{ type: "Line", range: "I2:J4" }]);
+                helper.invoke('deleteChart');
+                done()
+            });
+            it('custom formating applied while inserting chart', (done: Function) => {
+                helper.edit('J2', '20');
+                helper.edit('J3', '43');
+                helper.edit('J4', '23');
+                helper.invoke('numberFormat', ['mm-dd-yyyy', 'J2:J4']);
+                helper.getInstance().insertChart([{ type: "Line", range: "I2:J4" }]);
+                helper.invoke('deleteChart');
+                done()
+            })
+            it('empty cell applied while inserting chart', (done: Function) => {
+                helper.edit('I3', '');
+                helper.edit('J2', '20');
+                helper.edit('J3', '43');
+                helper.edit('J4', '23');
+                helper.getInstance().insertChart([{ type: "Line", range: "I2:J4" }]);
+                helper.invoke('deleteChart');
+                done()
+            });
+            it('merge cell applied while inserting chart', (done: Function) => {
+                helper.edit('I2', 'A');
+                helper.edit('I3', 'B');
+                helper.edit('I4', 'C');
+                helper.edit('J2', '20');
+                helper.edit('J3', '43');
+                helper.edit('J4', '23');
+                helper.invoke('merge', ['I2:I3']);
+                helper.getInstance().insertChart([{ type: "Column", range: "I2:J4" }]);
+                helper.invoke('deleteChart');
+                done()
+            })
         });
     });
 });

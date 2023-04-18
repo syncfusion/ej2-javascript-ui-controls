@@ -1858,6 +1858,7 @@ export class DialogEdit {
     private renderNotesTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
         const inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName as string];
+        inputModel.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
         const ganttProp: ITaskData = this.editedRecord.ganttProperties;
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);

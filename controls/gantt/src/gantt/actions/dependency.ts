@@ -483,7 +483,7 @@ export class Dependency {
             }
             this.parent.dataOperation.updateWidthLeft(childGanttRecord);
 
-            if (!this.parent.isLoad && childGanttRecord.parentItem && this.parent.isInPredecessorValidation &&
+            if (!this.parent.isLoad && !this.parent.isFromOnPropertyChange && childGanttRecord.parentItem && this.parent.isInPredecessorValidation &&
                 this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule) {
                     if (this.parentIds.indexOf(childGanttRecord.parentItem.uniqueID) === -1) {
                         this.parentIds.push(childGanttRecord.parentItem.uniqueID);

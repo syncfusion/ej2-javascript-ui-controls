@@ -7291,14 +7291,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                     break;
                 case 'isFormDesignerToolbarVisible':
-                    if(this.formDesignerModule && !oldProp.isFormDesignerToolbarVisible && newProp.isFormDesignerToolbarVisible){
-                        if(this.isAnnotationToolbarVisible){
-                            this.isAnnotationToolbarVisible = false;
-                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                    if (!Browser.isDevice || this.enableDesktopMode) {
+                        if (this.toolbarModule && this.formDesignerModule && !oldProp.isFormDesignerToolbarVisible && newProp.isFormDesignerToolbarVisible) {
+                            if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
+                                this.isAnnotationToolbarVisible = false;
+                                this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                            }
+                            this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                         }
-                        this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                     }
-                    break;  
+                    break;
+                case 'isAnnotationToolbarVisible':
+                    if (!Browser.isDevice || this.enableDesktopMode) {
+                        if (this.toolbarModule && this.annotationModule && !oldProp.isAnnotationToolbarVisible && newProp.isAnnotationToolbarVisible) {
+                            if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                                this.isFormDesignerToolbarVisible = false;
+                                this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
+                            }
+                            this.toolbarModule.annotationToolbarModule.resetToolbar();
+                        }
+                    }
+                    break;
             }
         }
     }

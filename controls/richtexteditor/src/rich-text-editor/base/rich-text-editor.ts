@@ -1814,6 +1814,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
+        const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
@@ -1930,6 +1931,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.placeholder)) {
             if ((!isNOU(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
                 this.placeHolderWrapper.style.display = 'none';
+            } else if (this.iframeSettings.enable && this.inputElement.classList.contains("e-rte-placeholder")) {
+                removeClass([this.inputElement], "e-rte-placeholder");
             } else {
                 this.setPlaceHolder();
             }
@@ -2620,6 +2623,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             } else {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
             }
+        }
+        if(this.placeholder && this.iframeSettings.enable)
+        {
+            if ( this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
+                ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
+                this.inputElement.firstChild.firstChild.nodeName === 'BR'))){
+                addClass([this.inputElement],"e-rte-placeholder");
+                this.inputElement.setAttribute('placeholder', this.placeholder);
+            } else {
+                removeClass([this.inputElement], "e-rte-placeholder");
+            }      
         }
     }
 
@@ -3349,6 +3363,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (!isNOU(this.timeInterval)) {
                 clearInterval(this.timeInterval);
                 this.timeInterval = null;
+            }
+            if (!isNOU(this.placeHolderWrapper) && this.element.querySelector('[title = Preview]'))
+            {
+                this.placeHolderWrapper.style.display = "none";
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {

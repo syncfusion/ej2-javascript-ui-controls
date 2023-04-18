@@ -1080,7 +1080,7 @@ export class FormFields {
         }
         var formFieldsData = JSON.parse(data);
         if (this.pdfViewer.formDesignerModule) {
-            var targetName = this.currentTarget ? this.currentTarget.offsetParent.name : target.name ? target.name : target.offsetParent.name;
+            var targetName = this.currentTarget && this.currentTarget.offsetParent? this.currentTarget.offsetParent.name : this.currentTarget ? this.currentTarget.name: target.name ? target.name : target.offsetParent.name;
         }
         else {
             var targetName = this.currentTarget ? this.currentTarget.name : target.name ? target.name : target.offsetParent.name;
@@ -2773,9 +2773,12 @@ export class FormFields {
                     this.currentTarget.value = currentData.TextList[0];
                 } else if (currentData.Name === 'CheckBox') {
                     this.currentTarget.checked = false;
-                } else if (currentData.Name === 'SignatureField') {
+                } else if (currentData.Name === 'SignatureField' || currentData.Name === 'InitialField') {
                     // eslint-disable-next-line
                     let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.uniqueID];
+                    if((annotation as any).propName!=='annotations'){
+                        annotation = (this.pdfViewer.nameTable as any)[currentData.uniqueID + '_content'];
+                    }
                     if (annotation) {
                         if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformfields-signature') {
                             this.currentTarget.className = 'e-pdfviewer-signatureformfields';
@@ -2788,8 +2791,7 @@ export class FormFields {
                                 formField.signatureType[0] = '';
                             }
                         }
-                        this.pdfViewer.remove(annotation);
-                        this.pdfViewer.renderDrawing();
+                        this.pdfViewer.annotation.deleteAnnotationById(annotation.id);
                     }
                 }
                 if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {

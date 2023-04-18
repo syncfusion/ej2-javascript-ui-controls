@@ -1087,5 +1087,31 @@ describe('Editing ->', () => {
                 done();
             });
         });
+        describe('EJ2-71834', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('The hyphen (-) symbol it converted to NaN after saving the cell', (done: Function) => {
+                helper.invoke('goTo', ['I2']);
+                helper.edit('I2', '-');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('-');
+                helper.invoke('goTo', ['I3']);
+                helper.edit('I3', '-hello');
+                expect(helper.invoke('getCell', [2, 8]).textContent).toBe('-hello');
+                helper.invoke('goTo', ['I4']);
+                helper.edit('I4', '-$*');
+                expect(helper.invoke('getCell', [3, 8]).textContent).toBe('-$*');
+                helper.invoke('goTo', ['I5']);
+                helper.edit('I5', '--');
+                expect(helper.invoke('getCell', [4, 8]).textContent).toBe('--');
+                helper.invoke('goTo', ['I6']);
+                helper.edit('I6', '$-');
+                expect(helper.invoke('getCell', [5, 8]).textContent).toBe('$-');
+                done();
+            })
+        })
     });
 });

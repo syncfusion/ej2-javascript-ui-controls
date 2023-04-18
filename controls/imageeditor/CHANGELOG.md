@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 21.1.39 (2023-04-11)
+
 ### Image Editor
 
 #### Bug Fixes

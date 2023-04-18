@@ -29,7 +29,7 @@ import { FieldElementBox } from '../viewer/page';
 import {
     HighlightColor, BaselineAlignment, Strikethrough, Underline,
     LineSpacingType, TextAlignment, ListLevelPattern, RowPlacement, ColumnPlacement,
-    FollowCharacterType, HeaderFooterType, TrackChangeEventArgs, protectionTypeChangeEvent
+    FollowCharacterType, HeaderFooterType, TrackChangeEventArgs, protectionTypeChangeEvent, imagesProperty
 } from '../../base/index';
 import { SelectionCharacterFormat } from '../index';
 import { Action } from '../../index';
@@ -5102,6 +5102,9 @@ export class Editor {
                     content = content.substring(0, selectedTextLength);
                 }
             }
+        }
+        if (!isNullOrUndefined(content[imagesProperty[this.keywordIndex]])) {
+            this.documentHelper.owner.parser.parseImages(content[imagesProperty[this.keywordIndex]]);
         }
         this.pasteContentsInternal(this.getBlocks(content, true), true, currentFormat);
         if (content[commentsProperty[this.keywordIndex]] && content[commentsProperty[this.keywordIndex]].length > 0) {
@@ -18285,7 +18288,9 @@ export class Editor {
                     const paragraph: ParagraphWidget = span.paragraph;
                     const lineIndex: number = paragraph.childWidgets.indexOf(span.line);
                     const elementIndex: number = span.line.children.indexOf(span);
-                    this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                    if(!isNullOrUndefined(paragraph.containerWidget)) {
+                        this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                    }
                 }
             }
         }

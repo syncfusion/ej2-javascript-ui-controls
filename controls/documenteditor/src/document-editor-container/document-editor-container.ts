@@ -815,13 +815,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     private setFormat(): void {
-        if (this.characterFormat) {
+        if (this.characterFormat && this.documentEditor) {
             this.documentEditor.setDefaultCharacterFormat(this.characterFormat);
         }
-        if (this.paragraphFormat) {
+        if (this.paragraphFormat && this.documentEditor) {
             this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
         }
-        if (this.sectionFormat) {
+        if (this.sectionFormat && this.documentEditor) {
             this.documentEditor.setDefaultSectionFormat(this.sectionFormat);
         }
     }
@@ -1293,6 +1293,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.characterFormat = characterFormat;
+        this.setFormat();
     }
 
     /**
@@ -1301,6 +1302,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = paragraphFormat;
+        this.setFormat();
     }
 
     /**
@@ -1309,6 +1311,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
+        this.setFormat();
     }
 
     /**

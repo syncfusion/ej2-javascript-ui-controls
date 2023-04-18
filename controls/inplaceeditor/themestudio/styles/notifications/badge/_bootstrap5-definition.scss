@@ -1,4 +1,6 @@
 // layout variable
+$badge-theme : $skin-name !default;
+
 // Base Badge
 $badge-base-border-radius: 2px !default;
 $badge-base-font-size: $text-xs !default;
@@ -67,7 +69,7 @@ $badge-touch-base-border-radius: 4px !default;
 $badge-touch-base-font-size: $text-sm !default;
 $badge-touch-base-line-height: $leading-none !default;
 $badge-touch-base-height: 22px !default;
-$badge-touch-base-font-weight: 500 !default;
+$badge-touch-base-font-weight: $font-weight-medium !default;
 $badge-touch-padding: 4px 3px !default;
 
 // Pill Badge
