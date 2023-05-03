@@ -1096,28 +1096,31 @@ export class Toolbar {
     }
 
     private createZoomDropdown(): void {
+        let proxy: any = this;
         // eslint-disable-next-line max-len
         const items: { [key: string]: Object }[] = [{ percent: '10%', id: '0' }, { percent: '25%', id: '1' }, { percent: '50%', id: '2' }, { percent: '75%', id: '3' }, { percent: '100%', id: '4' }, { percent: '125%', id: '5' },
         // eslint-disable-next-line max-len
-            { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
+            { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: proxy.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: proxy.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: proxy.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
         ];
         // eslint-disable-next-line max-len
-        if(!this.pdfViewer.enableRtl){
-            this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
-                if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
+        if(!proxy.pdfViewer.enableRtl){
+            proxy.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function(args){
+                if (args.e.type == 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
+                    proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
                     args.cancel = true;
                   }
                 } 
             });
         }else{
-            this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', enableRtl:true, fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down-rtl', popupHeight: '450px', showClearButton: false, open: this.openZoomDropdown.bind(this), select: function(args){
-                if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
+            proxy.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', enableRtl:true, fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down-rtl', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function(args){
+                if (args.e.type == 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
+                    proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
                     args.cancel = true;
                   }
                 } 
             });
         }
-        this.zoomDropDown.appendTo(this.pdfViewerBase.getElement('_zoomDropDown'));
+        proxy.zoomDropDown.appendTo(proxy.pdfViewerBase.getElement('_zoomDropDown'));
     }
 
     private createCurrentPageInputTemplate(): string {

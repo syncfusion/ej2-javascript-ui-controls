@@ -152,26 +152,26 @@ export class CommonKeyboardInteraction {
             if (memberEditorTree && memberEditorTree.querySelector('li')) {
                 const firstLi: HTMLElement = memberEditorTree.querySelector('li');
                 if (memberEditorTree.querySelector('li#_active')) {
-                    removeClass([memberEditorTree.querySelector('li#_active')], ['e-hover', 'e-node-focus']);
+                    removeClass([memberEditorTree.querySelector('li#_active')], ['e-node-focus']);
                     memberEditorTree.querySelector('li#_active').removeAttribute('id');
                 }
                 firstLi.setAttribute('id', '_active');
-                addClass([firstLi], ['e-hover', 'e-node-focus']);
+                addClass([firstLi], ['e-node-focus']);
                 firstLi.focus();
                 e.preventDefault();
                 return;
             }
         } else if (target && closest(target, '.' + cls.EDITOR_TREE_CONTAINER_CLASS) && e.keyCode === 38) {
             const memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
-            if (memberEditorTree.querySelector('li#_active.e-hover.e-node-focus') && memberEditorTree.querySelector('li') &&
+            if (memberEditorTree.querySelector('li#_active.e-node-focus') && memberEditorTree.querySelector('li') &&
                 memberEditorTree.querySelector('li').classList.contains('e-prev-active-node') &&
-                memberEditorTree.querySelector('li') === memberEditorTree.querySelector('li#_active.e-hover.e-node-focus')) {
+                memberEditorTree.querySelector('li') === memberEditorTree.querySelector('li#_active.e-node-focus')) {
                 removeClass(memberEditorTree.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
                 const allMemberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.SELECT_ALL_CLASS) as HTMLElement;
                 if (allMemberEditorTree && allMemberEditorTree.querySelector('li')) {
                     const firstLi: HTMLElement = allMemberEditorTree.querySelector('li');
                     firstLi.setAttribute('id', '_active');
-                    addClass([firstLi], ['e-hover', 'e-node-focus']);
+                    addClass([firstLi], ['e-node-focus']);
                     firstLi.focus();
                     e.preventDefault();
                     return;

@@ -282,6 +282,9 @@ export interface CellRenderArgs {
     checkCF?: boolean;
     skipFormatCheck?: boolean;
     isDependentRefresh?: boolean;
+    isMerged?: boolean;
+    colSpan?: number;
+    rowSpan?: number;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

@@ -3,7 +3,7 @@ import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { PivotButtonArgs } from '../../common/base/interface';
 import { PivotButton } from '../../common/actions/pivot-button';
-import { IFieldOptions } from '../../base/engine';
+import { IDataSet, IFieldOptions } from '../../base/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -53,14 +53,17 @@ export class AxisFieldRenderer {
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
-        const axis: string[] = ['rows', 'columns', 'values', 'filters'];
-        for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
-            if (fields[len as number]) {
-                const args: PivotButtonArgs = {
-                    field: fields[len as number],
-                    axis: axis[len as number].toString()
-                };
-                this.parent.notify(events.pivotButtonUpdate, args);
+        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)
+        || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '')) {
+            const axis: string[] = ['rows', 'columns', 'values', 'filters'];
+            for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
+                if (fields[len as number]) {
+                    const args: PivotButtonArgs = {
+                        field: fields[len as number],
+                        axis: axis[len as number].toString()
+                    };
+                    this.parent.notify(events.pivotButtonUpdate, args);
+                }
             }
         }
     }

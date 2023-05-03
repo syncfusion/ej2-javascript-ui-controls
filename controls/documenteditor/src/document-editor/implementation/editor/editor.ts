@@ -5526,7 +5526,7 @@ export class Editor {
                             if (rowSpannedCell.cellIndex > row.childWidgets.length) {
                                 row.childWidgets.push(newCell);
                             } else {
-                                row.childWidgets.splice(rowSpannedCell.cellIndex, 0, newCell);
+                                row.childWidgets.splice(rowSpannedCell.cellIndex + 1, 0, newCell);
                             }
                             isCellInserted = true;
                         } else if (cellIndex > rowSpannedCell.columnIndex &&
@@ -14686,7 +14686,7 @@ export class Editor {
                 offset = inline.line.getOffset(inline, 0);
                 if (inline.nextNode instanceof BookmarkElementBox) {
                     let start: BookmarkElementBox = inline.nextNode.reference;
-                    selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                    selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 1));
                 }
                 selection.end.setPositionParagraph(inline.line, offset); //Selects the entire field.
                 selection.fireSelectionChanged(true);
@@ -15452,6 +15452,10 @@ export class Editor {
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 1);
                 selection.end.setPositionParagraph(inline.line, offset);
+                if(inline.nextNode instanceof BookmarkElementBox) {
+                    let end = inline.nextNode;
+                    selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 1));
+                }
                 selection.fireSelectionChanged(true);
                 return;
             } else if (inline !== nextRenderedInline) {  //Updates the offset to delete next content.               
@@ -18758,19 +18762,40 @@ export class Editor {
         bookmarkEnd.reference = bookmark;
         bookmark.reference = bookmarkEnd;
         element.push(bookmarkEnd);
+        this.documentHelper.layout.isInsertFormField = true;
         this.insertElement(element);
+        this.documentHelper.layout.isInsertFormField = false;
         const paragraph: ParagraphWidget = this.selection.start.paragraph;
         fieldEnd.linkFieldCharacter(this.documentHelper);
         if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
             this.documentHelper.fields.push(fieldBegin);
         }
-        if (this.documentHelper.formFields.indexOf(fieldBegin) === -1) {
-            this.documentHelper.formFields.push(fieldBegin);
-        }
+        this.addFormFieldWidget(fieldBegin);
         const offset: number = bookmarkEnd.line.getOffset(bookmarkEnd, 1);
         this.selection.selects(bookmarkEnd.line, offset, true);
         this.updateEndPosition();
         this.reLayout(this.selection, true);
+    }
+
+    public addFormFieldWidget(fieldBegin: FieldElementBox): void {
+        if (this.documentHelper.formFields.indexOf(fieldBegin) === -1) {
+            let isInserted: boolean = false;
+            if (this.documentHelper.formFields.length > 0) {
+                const currentStart: TextPosition = this.selection.getElementPosition(fieldBegin).startPosition;
+                for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
+                    /* eslint-disable-next-line max-len */
+                    const paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+                    if (currentStart.isExistBefore(paraIndex)) {
+                        isInserted = true;
+                        this.documentHelper.formFields.splice(i, 0, fieldBegin);
+                        break; 
+                    }
+                }
+            }
+            if (!isInserted) {
+                this.documentHelper.formFields.push(fieldBegin); 
+            }
+        }
     }
 
     private getFormFieldData(type: FormFieldType): FormField {
@@ -18899,12 +18924,15 @@ export class Editor {
             lastElement = bookmarkEnd;
             element.push(bookmarkEnd);
         }
+        this.documentHelper.layout.isInsertFormField = true;
         this.insertElement(element);
+        this.documentHelper.layout.isInsertFormField = false;
         const paragraph: ParagraphWidget = this.selection.start.paragraph;
         fieldEnd.linkFieldCharacter(this.documentHelper);
         if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
             this.documentHelper.fields.push(fieldBegin);
         }
+        this.addFormFieldWidget(fieldBegin);
         const offset: number = lastElement.line.getOffset(lastElement, 1);
         this.selection.selects(lastElement.line, offset, true);
         this.updateEndPosition();

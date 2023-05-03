@@ -341,7 +341,7 @@ describe('Chart Control', () => {
                 expect(text === null).toBe(true);
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
                 text = document.getElementById('container1_AxisLabel_0');
-                expect(parseFloat(text.getAttribute('y')) === parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height'))).toBe(true);
+                expect(parseFloat(text.getAttribute('y')) < parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

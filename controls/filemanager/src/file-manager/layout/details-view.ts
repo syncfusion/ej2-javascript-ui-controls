@@ -303,7 +303,7 @@ export class DetailsView {
                 const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
                 for (let i: number = 0; i < columns.length; i++) {
                     if (columns[i as number].field === 'size') {
-                            sizeFormat = columns[i as number].format.toString();
+                        sizeFormat = !isNullOrUndefined(columns[i as number].format) ? columns[i as number].format.toString() : 'n';
                         break;
                     }
                 }
@@ -545,6 +545,7 @@ export class DetailsView {
                     this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                 } else if (!isNOU(this.gridObj)) {
                     this.gridObj.clearSelection();
+                    this.interaction = true;
                 }
                 break;
             case 'showFileExtension':

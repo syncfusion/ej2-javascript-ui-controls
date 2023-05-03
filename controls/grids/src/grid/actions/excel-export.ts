@@ -57,7 +57,11 @@ export class ExcelExport {
     private locator: ServiceLocator;
     private l10n: L10n;
     private sheet: Worksheet = {} as Worksheet;
-
+    private capTemplate: string;
+    private grpFooterTemplates: string[] = [];
+    private footerTemplates: string[] = [];
+    private aggIndex: number = 0;
+    private totalAggregates: number = 0;
     /**
      * Constructor for the Grid Excel Export module.
      *
@@ -129,7 +133,8 @@ export class ExcelExport {
         }
         const args: Object = {
             requestType: 'beforeExcelExport', gridObject: gObj, cancel: false,
-            isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob, isChild: this.isChild
+            isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob, isChild: this.isChild,
+            grpFooterTemplates: this.grpFooterTemplates
         };
         gObj.trigger(events.beforeExcelExport, args);
         if (args[`${cancel}`]) {
@@ -142,6 +147,7 @@ export class ExcelExport {
         this.isExporting = true;
         this.isBlob = args[`${isBlb}`];
         this.isChild = args[`${Child}`];
+        this.grpFooterTemplates = args['grpFooterTemplates'];
         if (args[`${csv}`]) {
             this.isCsvExport = args[`${csv}`];
         } else {
@@ -434,6 +440,11 @@ export class ExcelExport {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, undefined, excelRows, helper);
         }
         gObj.notify(events.exportDataBound, { excelRows: excelRows, type: 'excel' });
+        this.capTemplate = undefined;
+        this.footerTemplates = [];
+        this.grpFooterTemplates = [];
+        this.aggIndex = 0;
+        this.totalAggregates = 0;
         return excelRows;
     }
 
@@ -757,11 +768,14 @@ export class ExcelExport {
                         const groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
                         eCell.index = index + indent + (<{childGridLevel?: number}>gObj).childGridLevel;
                         if (footerTemplate) {
-                            eCell.value = this.getAggreateValue(CellType.Summary, cell.column.footerTemplate, cell, row);
+                            eCell.value = this.getAggreateValue(
+                                gObj, CellType.Summary, cell.column.footerTemplate, cell, row);
                         } else if (groupFooterTemplate) {
-                            eCell.value = this.getAggreateValue(CellType.GroupSummary, cell.column.groupFooterTemplate, cell, row);
+                            eCell.value = this.getAggreateValue(
+                                gObj, CellType.GroupSummary, cell.column.groupFooterTemplate, cell, row);
                         } else if (groupCaptionTemplate) {
-                            eCell.value = this.getAggreateValue(CellType.CaptionSummary, cell.column.groupCaptionTemplate, cell, row);
+                            eCell.value = this.getAggreateValue(
+                                gObj, CellType.CaptionSummary, cell.column.groupCaptionTemplate, cell, row);
                         } else {
                             for (const key of Object.keys(row.data[cell.column.field])) {
                                 if (key === cell.column.type) {
@@ -844,22 +858,69 @@ export class ExcelExport {
         }
     }
 
-    private getAggreateValue(cellType: CellType, template: string,
-                             cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): string {
+    private getAggreateValue(gObj: IGrid, cellType: CellType, template: string,
+                             cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): NodeList | string {
         const templateFn: { [x: string]: Function } = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
-        let txt: NodeList;
+        let txt: NodeList | string;
         const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
-        if (this.parent.isReact || this.parent.isVue) {
-            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
-            if (this.parent.isReact) {
-                this.parent.renderTemplates();
+        if (this.parent.isReact || this.parent.isVue || this.parent.isAngular) {
+            if (isNullOrUndefined(cell.column.customAggregate)) {
+                if (!isNullOrUndefined(cell.column.footerTemplate)) {
+                    txt = this.getAggregateTemplate(this.footerTemplates, gObj.getFooterContentTable(), data, cell);
+                }
+                else {
+                    if (cell.column.groupFooterTemplate) {
+                        txt = this.getAggregateTemplate(this.grpFooterTemplates, gObj.getContentTable(), data, cell);
+                    }
+                    else {
+                        this.capTemplate = isNullOrUndefined(this.capTemplate) ?
+                            (gObj.getContentTable().querySelector('.e-groupcaptionrow')
+                                .querySelector('.e-summarycell.e-templatecell')as HTMLTableCellElement).innerText.split(data[(cell.column.type) as string])[0]
+                            : this.capTemplate;
+                        txt = this.capTemplate + data[(cell.column.type) as string];
+                    }
+                }
             }
-        } else {
+            return !isNullOrUndefined(txt) ? (txt) : '';
+        }
+        else {
             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
         }
         return !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
     }
+
+    private getAggregateTemplate(template: string[], contentRows: Element, data: object,
+                                 cell: Cell<AggregateColumnModel>): string {
+        const aggClassName: string = cell.column.groupFooterTemplate ? 'e-groupfooterrow' : 'e-summaryrow';
+        if (!template.length) {
+            this.totalAggregates = 0;
+            this.aggIndex = 0;
+            for (let i: number = 0; i < contentRows.querySelectorAll('tr').length; i++) {
+                if (contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10)].classList.contains(aggClassName)) {
+                    this.totalAggregates++;
+                    if (contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10) + 1] &&
+                     contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10) + 1].classList.contains('e-groupcaptionrow')) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (template.length < this.totalAggregates) {
+            template.push((contentRows.querySelectorAll('.' + aggClassName)[template.length]
+                .querySelector('.e-summarycell.e-templatecell')as HTMLTableCellElement).innerText.split(data[(cell.column.type) as string])[0]);
+        }
+        if (this.parent.groupSettings.enableLazyLoading && cell.column.groupFooterTemplate && this.totalAggregates === 0) {
+            this.totalAggregates = template.length;
+        }
+        this.aggIndex++;
+        const aggTemplate: string = template[this.aggIndex - 1] + data[(cell.column.type) as string];
+        if (this.aggIndex === this.totalAggregates) {
+            this.aggIndex = 0;
+        }
+        return aggTemplate;
+    }
+
 
     private mergeOptions(JSON1: Object, JSON2: Object): Object {
         const result: Object = {};

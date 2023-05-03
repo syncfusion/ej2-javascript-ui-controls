@@ -328,6 +328,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             this.unwireEvents();
         }
         this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
+        this.content = null; this.relateTo = null;
         super.destroy();
     }
     /**

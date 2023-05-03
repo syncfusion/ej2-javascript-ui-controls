@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I453746` - Issue with "selectItems doesn't remove the existing selections in the listbox" has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### ListBox

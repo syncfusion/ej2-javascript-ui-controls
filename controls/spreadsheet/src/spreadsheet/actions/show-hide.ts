@@ -348,13 +348,14 @@ export class ShowHide {
                 }
                 for (let j: number = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
                     cell = getCell(i, j, sheet) || {};
-                    if (cell.rowSpan !== undefined) {
+                    if (cell.rowSpan !== undefined || cell.colSpan !== undefined) {
                         const mergeArgs: MergeArgs = {
                             range: [i, j, i, j], isAction: false, merge: true,
                             type: 'All', skipChecking: true
                         };
                         this.parent.notify(activeCellMergedRange, mergeArgs);
-                        if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1]) {
+                        if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1] ||
+                            mergeArgs.range[0] !== mergeCollection[mergeCollection.length - 1].range[0]) {
                             mergeCollection.push(mergeArgs);
                         }
                     }
@@ -634,7 +635,9 @@ export class ShowHide {
                 detach(row.cells[cellIdx as number]);
                 if (index === 0) {
                     cell = getCell(startIdx, idx, sheet, false, true);
-                    if (cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) {
+                    if ((cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) || (cell.rowSpan < 0 &&
+                        startIdx - 1 > -1 && isHiddenRow(sheet, startIdx - 1) && Math.abs(cell.rowSpan) ===
+                        this.parent.hiddenCount(startIdx + cell.rowSpan, startIdx, 'rows', sheet))) {
                         this.parent.notify(
                             hiddenMerge, { rowIdx: startIdx, colIdx: idx, model: 'col', start: indexes[0], end: indexes[len as number] });
                     }
@@ -649,7 +652,9 @@ export class ShowHide {
                         });
                     }
                     cell = getCell(startIdx, idx, sheet) || {};
-                    if (cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) {
+                    if ((cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) || (cell.rowSpan < 0 &&
+                        startIdx - 1 > -1 && isHiddenRow(sheet, startIdx - 1) && Math.abs(cell.rowSpan) ===
+                        this.parent.hiddenCount(startIdx + cell.rowSpan, startIdx, 'rows', sheet))) {
                         this.parent.notify(hiddenMerge, {
                             rowIdx: startIdx, colIdx: idx, model: 'col',
                             start: indexes[0], end: indexes[len as number], isEnd: true
@@ -747,14 +752,17 @@ export class ShowHide {
                         }
                     }
                 }
-                cellModel = getCell(rowIdx, idx, sheet) || {};
-                if (cellModel.colSpan !== undefined && (cellModel.rowSpan === undefined || cellModel.colSpan > 1)) {
+                cellModel = getCell(startIdx, idx, sheet) || {};
+                if ((cellModel.colSpan !== undefined && (cellModel.rowSpan === undefined || cellModel.colSpan > 1)) || (cellModel.rowSpan < 0
+                    && startIdx - 1 > -1 && isHiddenRow(sheet, startIdx - 1) && Math.abs(cellModel.rowSpan) ===
+                    this.parent.hiddenCount(startIdx + cellModel.rowSpan, startIdx, 'rows', sheet))) {
                     const mergeArgs: MergeArgs = {
-                        range: [rowIdx, idx, rowIdx, idx], isAction: false, merge: true,
+                        range: [startIdx, idx, startIdx, idx], isAction: false, merge: true,
                         type: 'All', skipChecking: true
                     };
                     this.parent.notify(activeCellMergedRange, mergeArgs);
-                    if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1]) {
+                    if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1] ||
+                        mergeArgs.range[0] !== mergeCollection[mergeCollection.length - 1].range[0]) {
                         mergeCollection.push(mergeArgs);
                     }
                 }

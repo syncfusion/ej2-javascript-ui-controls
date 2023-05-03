@@ -186,14 +186,15 @@ export class CellRenderer implements ICellRenderer {
                     createHyperlinkElement, { cell: args.cell, style: style, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
             if (args.cell.rowSpan > 1) {
-                const rowSpan: number = args.cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1));
+                const rowSpan: number = args.rowSpan || (args.cell.rowSpan -
+                    this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1)));
                 if (rowSpan > 1) {
                     args.td.rowSpan = rowSpan; this.mergeFreezeRow(sheet, args.rowIdx, args.colIdx, rowSpan, args.row);
                 }
             }
             if (args.cell.colSpan > 1) {
-                const colSpan: number = args.cell.colSpan -
-                    this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns');
+                const colSpan: number = args.colSpan || (args.cell.colSpan -
+                    this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns'));
                 if (colSpan > 1) {
                     args.td.colSpan = colSpan;
                     this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
@@ -293,7 +294,7 @@ export class CellRenderer implements ICellRenderer {
                 const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
                 const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
-                let setDisplay: boolean;
+                let setDisplay: boolean; mergeArgs.range = mergeArgs.range as number[];
                 if (sheet.frozenRows && sheet.frozenColumns) {
                     if (mergeArgs.range[0] < frozenRow && mergeArgs.range[1] < frozenCol) {
                         setDisplay = args.rowIdx < frozenRow && args.colIdx < frozenCol;
@@ -312,15 +313,18 @@ export class CellRenderer implements ICellRenderer {
             } else {
                 args.td.style.display = 'none';
             }
-            if (args.cell.colSpan < 0) {
+            args.isMerged = true;
+            const rowSpan: number = args.cell.rowSpan; const colSpan: number = args.cell.colSpan;
+            if (colSpan < 0 || rowSpan < 0) {
                 this.parent.notify(checkPrevMerge, args);
-                if (args.cell.style && args.cell.style.borderTop) { this.applyStyle(args, { borderTop: args.cell.style.borderTop }); }
+                if (colSpan < 0 && args.cell.style && args.cell.style.borderTop) {
+                    this.applyStyle(args, { borderTop: args.cell.style.borderTop });
+                }
+                if (rowSpan < 0 && args.cell.style && args.cell.style.borderLeft) {
+                    this.applyStyle(args, { borderLeft: args.cell.style.borderLeft });
+                }
             }
-            if (args.cell.rowSpan < 0) {
-                args.isRow = true; this.parent.notify(checkPrevMerge, args);
-                if (args.cell.style && args.cell.style.borderLeft) { this.applyStyle(args, { borderLeft: args.cell.style.borderLeft }); }
-            }
-            return true;
+            return args.isMerged;
         }
         return false;
     }

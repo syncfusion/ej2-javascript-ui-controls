@@ -27,7 +27,7 @@ import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
-import { checkCellValid } from '../common/interface';
+import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../common/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 
 /**
@@ -1411,15 +1411,23 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             range = getRangeIndexes(address);
             sheetIdx = this.activeSheetIndex;
         }
-        updateCell(this, this.sheets[sheetIdx as number], { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
+        const sheet: SheetModel = getSheet(this, sheetIdx);
+        updateCell(this, sheet, { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
         const val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
         if (val !== null) {
             this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: val, sheetIndex: sheetIdx });
         }
         if (sheetIdx === this.activeSheetIndex) {
-            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true, null, val !== null);
+            let cellEle: HTMLElement;
+            const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
+            const mergeArgs: VisibleMergeIndexArgs = { sheet: sheet, cell: cellModel, rowIdx: range[0], colIdx: range[1] };
+            if (cellModel.rowSpan > 1 || cellModel.colSpan > 1) {
+                setVisibleMergeIndex(mergeArgs);
+                cellEle = this.getCell(mergeArgs.rowIdx, mergeArgs.colIdx);
+            }
+            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true, cellEle, val !== null);
             this.notify(activeCellChanged, null);
-            if (inRange(getRangeIndexes(this.sheets[sheetIdx as number].activeCell), range[0], range[1])) {
+            if (inRange(getRangeIndexes(sheet.activeCell), mergeArgs.rowIdx, mergeArgs.colIdx)) {
                 this.notify(formulaBarOperation, { action: 'refreshFormulabar', value: this.getDisplayText(cell) || cell.formula });
             }
         }

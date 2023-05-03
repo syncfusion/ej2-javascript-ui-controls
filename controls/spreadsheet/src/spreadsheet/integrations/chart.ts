@@ -13,7 +13,7 @@ import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries,
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
 import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { getTypeFromFormat } from '../../workbook/integrations/index';
+import { isCustomDateTime } from '../../workbook/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart, insertDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
@@ -146,7 +146,7 @@ export class SpreadsheetChart {
                 const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
                     rowIndex: rIdx, colIndex: cIdx };
                 this.parent.notify(getFormattedCellObject, formatObj);
-                if (isNumber(cell.value)) {
+                if (isNumber(cell.value) && !isCustomDateTime(cell.format, true, null, true)) {
                     // eslint-disable-next-line no-useless-escape
                     const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
                     formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');

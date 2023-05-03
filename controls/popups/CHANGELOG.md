@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I446416` - The performance issue in ListView while integrating Tooltip has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### Tooltip

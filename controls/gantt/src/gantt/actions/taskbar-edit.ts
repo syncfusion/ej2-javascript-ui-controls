@@ -1401,7 +1401,7 @@ export class TaskbarEdit extends DateProcessor {
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let remainingContribution: number =
-            (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left), 1, 'Day') / (1000 * 60 * 60 * 24)));
+            (1 / (this.parent.timelineModule.getIncrement(this.getDateByLeft(left, isNullOrUndefined(ganttRecord as ITaskData) ? (ganttRecord as ITaskData).isMilestone : null, (ganttRecord as ITaskData)), 1, 'Day') / (1000 * 60 * 60 * 24)));
         let remainDays: number = this.parent.perDayWidth - (this.parent.perDayWidth / remainingContribution);
         const remainDaysInDecimal: number = remainDays / this.parent.perDayWidth;
         if (isRoundOff === undefined) {
@@ -1441,12 +1441,12 @@ export class TaskbarEdit extends DateProcessor {
      * @returns {Date} .
      * @private
      */
-    public getDateByLeft(left: number,isMilestone?:boolean,property?:any): Date {
+    public getDateByLeft(left: number,isMilestone?:boolean,property?:ITaskData): Date {
         let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
         /* To render the milestone in proper date while editing */
-        if (isMilestone) {
+        if (isMilestone && !isNullOrUndefined(property.predecessor) && property.predecessor.length > 0) {
             pStartDate.setDate(pStartDate.getDate()-1);
             this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
             pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)

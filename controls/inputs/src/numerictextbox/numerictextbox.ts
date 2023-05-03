@@ -77,6 +77,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private elementPrevValue: string;
     private isAngular: boolean = false;
     private isDynamicChange: boolean = false;
+    private inputValue: number;
 
     /*NumericTextBox Options */
 
@@ -553,7 +554,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             'validateHidden': 'true', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
-        attributes(this.hiddenInput, { 'name': this.inputName });
+        if(this.isAngular && this.angularTagName === 'EJS-NUMERICTEXTBOX' && this.cloneElement.id.length > 0) {
+            attributes(this.hiddenInput, { 'name': this.cloneElement.id });
+        } else {
+            attributes(this.hiddenInput, { 'name': this.inputName });
+        }
         this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
         this.updateDataAttribute(false);
         if (this.inputStyle !== null) {
@@ -805,7 +810,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private raiseChangeEvent(event?: Event): void {
-        if (this.prevValue !== this.value) {
+        if (this.prevValue !== this.value || this.prevValue !== this.inputValue) {
             const eventArgs: Object = {};
             this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract,
                 isInteraction: this.isInteract, event: event };
@@ -1022,6 +1027,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 value = this.roundNumber(value, this.decimals);
             }
         }
+        this.inputValue = value;
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
         /* istanbul ignore next */
         if (!this.isDynamicChange) {

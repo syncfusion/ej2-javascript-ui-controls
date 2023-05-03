@@ -8,7 +8,7 @@ import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, C
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
-import { getCell, setChart, ApplyCFArgs, getCellIndexes } from '../../workbook/index';
+import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
@@ -2061,7 +2061,11 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                     if (cell.hyperlink) {
                         newCell.hyperlink = '';
                     }
-                    td = context.getCell(sRIdx, sCIdx);
+                    const mergeArgs: VisibleMergeIndexArgs = { sheet: sheet, cell: cell, rowIdx: sRIdx, colIdx: sCIdx };
+                    if (cell.colSpan > 1 || cell.rowSpan > 1) {
+                        setVisibleMergeIndex(mergeArgs);
+                    }
+                    td = context.getCell(mergeArgs.rowIdx, mergeArgs.colIdx);
                     prop = { cell: newCell, rowIdx: sRIdx, colIdx: sCIdx, valChange: true, uiRefresh: uiRefresh, td: td,
                         cellDelete: true };
                     if (!Object.keys(newCell).length || updateCell(context, sheet, prop)) {

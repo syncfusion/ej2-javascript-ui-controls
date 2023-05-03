@@ -1,6 +1,7 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes } from './../index';
 import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, isNumber } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
+import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs } from './../index';
 import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject } from '@syncfusion/ej2-base';
 
 /**
@@ -736,4 +737,34 @@ export function getViewportIndexes(
         }
     }
     return indexes;
+}
+
+/**
+ * If the primary cell in the merged range row/column is hidden, then this method will update
+ * the next visible row/column index within the merged range.
+ * 
+ * @param {SheetModel} args.sheet - Specifies the active sheet model.
+ * @param {CellModel} args.cell - Specifies the primary merged cell model.
+ * @param {number} args.rowIdx - Specifies the row index of the primary merged cell. If the row is hidden,
+ * then this method will update the next visible row index.
+ * @param {number} args.colIdx - Specifies the column index of the primary merged cell. If the column is hidden,
+ * then this method will update the next visible column index.
+ * @param {boolean} args.isMergedHiddenCell - If either row or column index is changed, we set this property as true.
+ * @hidden
+ */
+export function setVisibleMergeIndex(args: VisibleMergeIndexArgs): void {
+    if (isHiddenRow(args.sheet, args.rowIdx)) {
+        const idx: number = skipHiddenIdx(args.sheet, args.rowIdx, true);
+        if (idx < args.rowIdx + args.cell.rowSpan) {
+            args.rowIdx = idx;
+            args.isMergedHiddenCell = true;
+        }
+    }
+    if (isHiddenCol(args.sheet, args.colIdx)) {
+        const idx: number = skipHiddenIdx(args.sheet, args.colIdx, true, 'columns');
+        if (idx < args.colIdx + args.cell.colSpan) {
+            args.colIdx = idx;
+            args.isMergedHiddenCell = true;
+        }
+    }
 }

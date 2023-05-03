@@ -286,3 +286,37 @@ describe('Check API to modify CheckBox form field name in popup mode', () => {
         container.editor.stopProtection('123');
     });
 });
+describe('816438-CR-Bug', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, CheckBoxFormFieldDialog);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    beforeEach(() => {
+        editor.openBlank();
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Insert a checkbox and delete the checkbox', () => {
+        editor.editor.insertFormField('CheckBox');
+        editor.selection.selectAll();
+        expect(() => {
+            editor.editor.onBackSpace();
+        }).not.toThrowError();
+    });
+});

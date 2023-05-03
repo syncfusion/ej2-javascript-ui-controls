@@ -29,6 +29,8 @@ export interface LoadEventArgs {
     pivotview?: PivotView;
     /** Defines the type of specifiec fields */
     fieldsType?: IStringIndex;
+    /** Defines the default field list order */
+    defaultFieldListOrder?: Sorting;
 }
 
 /**
@@ -230,6 +232,32 @@ export interface BeforeExportEventArgs {
      * > This option is applicable only when exporting the pivot table to PDF document.
      */
     columnSize?: number;
+    /**
+     * Specifies the margins of a PDF document when exporting a pivot table or pivot chart.
+     */
+    pdfMargins?: PdfMargins;
+}
+
+/**
+ * Interface for defining the margins of the PDF document when exporting a pivot table or pivot chart.
+ */
+export interface PdfMargins {
+    /**
+     * Specifies the top margin of the PDF document.
+     */
+    top?: number;
+    /**
+     * Specifies the right margin of the PDF document.
+     */
+    right?: number;
+    /**
+     * Specifies the bottom margin of the PDF document.
+     */
+    bottom?: number;
+    /**
+     * Specifies the left margin of the PDF document.
+     */
+    left?: number;
 }
 
 /**

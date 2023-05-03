@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I432845` - Fixed the issue where `Lazylaod` grouping with aggregates was not exported properly in Angular and React platforms.
+- `#F181415` - Fixed the issue where the typing for `filterbeforeopen` event of `FilterMenu` was not set properly.
+- `#I450047` - Performance degradation on infinite scrolling with column templates has been fixed.
+- `#I455291` - The issue of being unable to edit a newly added row when the dataSource is empty and infinite scrolling is enabled has been resolved.
+
+## 21.1.41 (2023-04-18)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I442797` - The issue of an error occurring when hovering over the search option on a filter dropdown has been resolved and fixed.
+- `#I452425` - The row selection is not working properly when virtualisation is enabled and an odd number is set as the page size has been resolved.
+- `#I455150` - The issue with the script error while opening the custom filter template in the grid filter menu feature has been resolved.
+- `#I451761` - Script error being thrown when copying an empty Grid has been resolved.
+- `#I453134` - The last edited cell is now correctly saved when the tab key is pressed from the last row cell, even when `allowAdding` is set to `false` in batch edit mode.
+
 ## 21.1.39 (2023-04-11)
 
 ### Grid

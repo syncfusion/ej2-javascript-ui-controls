@@ -108,7 +108,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg = document.getElementById('container0_AxisLabel_0');
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                expect(parseFloat(svg.getAttribute('x')) === parseFloat(chartArea.getAttribute('x'))).toBe(true);
+                expect(parseFloat(svg.getAttribute('x')) < parseFloat(chartArea.getAttribute('x'))).toBe(true);
                 svg = document.getElementById('container0_AxisLabel_9');
                 expect(parseFloat(svg.getAttribute('x')) < parseFloat(chartArea.getAttribute('width')) + parseFloat(chartArea.getAttribute('x')))
                 done();
@@ -297,7 +297,7 @@ describe('Chart Control', () => {
                 let label: HTMLElement = document.getElementById('container1_AxisLabel_0');
                 expect(parseFloat(label.getAttribute('y')) > parseFloat(chartArea.getAttribute('y'))).toBe(true);
                 label = document.getElementById('container1_AxisLabel_8');
-                expect(parseFloat(label.getAttribute('y')) == parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height'))).toBe(true);
+                expect(parseFloat(label.getAttribute('y')) < parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height'))).toBe(true);
                 done();
             };
             chart.loaded = loaded;

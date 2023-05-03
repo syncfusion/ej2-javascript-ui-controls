@@ -1958,3 +1958,48 @@ describe('EJ2-69299- Cant add row in Grid when enableInfiniteScrolling and enabl
         gridObj = null;
     });
 });
+
+describe('EJ2-72231- Cannot edit newly added row when infiniteScrolling enabled => ', () => {
+    let gridObj: Grid;    
+    beforeAll((done: Function) => {    
+      gridObj = createGrid(    
+       {    
+         dataSource: [],    
+         enableInfiniteScrolling: true,    
+         infiniteScrollSettings: { initialBlocks: 1, enableCache: true },    
+         pageSettings: { pageSize: 50 },    
+         editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },    
+         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],    
+         height: 300,    
+         columns: [    
+          {field: 'EmployeeID', headerText:'EmployeeID', width:120},    
+          {field:'City', headerText:'City', width:130}    
+         ],    
+       }, done );    
+    });    
+   
+    it('Add row in empty grid', (done: Function) => {
+       let actionComplete = (args?: any): void => {
+           if (args.requestType === 'save') {
+               done();
+           }
+       };      
+       gridObj.actionComplete = actionComplete;
+       gridObj.editModule.editModule.addRecord({ EmployeeID: 10246, City: 'updated' });
+   });
+   
+   it('Edit the row in grid', function () {
+       (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+   });
+   
+   it('Update the row in grid', function () {
+       (select('#' + gridObj.element.id + 'City', gridObj.element) as any).value =  'New updated';
+       (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+       expect((gridObj.currentViewData[0])['City']).toBe('New updated');
+   });
+   
+   afterAll(() => {
+       destroy(gridObj);
+       gridObj = null;
+   });
+});   

@@ -1,4 +1,4 @@
-import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldListOptions } from '../../base/engine';
+import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldListOptions, IDataSet } from '../../base/engine';
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -82,9 +82,10 @@ export class PivotChart {
         this.dataSourceSettings = this.parent.dataSourceSettings as IDataOptions;
         this.chartSettings = chartSettings;
         const isDataAvail: boolean = parent.dataType === 'olap' ?
-            (parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
+            (parent.dataSourceSettings.url !== '' && !parent.olapEngineModule.isEmptyData && parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
-            : parent.dataSourceSettings.values.length > 0;
+            : (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
+                (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 &&  !parent.engineModule.isEmptyData);
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));

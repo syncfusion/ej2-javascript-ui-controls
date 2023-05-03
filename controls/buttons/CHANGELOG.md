@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.1.41 (2023-04-18)
+## 21.2.3 (2023-05-03)
+
+### Switch
+
+#### Bug Fixes
+
+- `#I456259` - provided the `role` attribute support to `htmlAttributes` property of switch component.
+
+## 21.1.37 (2023-03-29)
 
 ### Checkbox
 

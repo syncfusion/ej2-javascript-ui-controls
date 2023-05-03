@@ -9080,9 +9080,13 @@ export class PdfViewerBase {
         } 
         else if((formFieldsSize + sessionSize) > 4500) {
             this.isStorageExceed = true;
-            this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+            if (this.pdfViewer.formFieldsModule) {
+                this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+            }
             this.isFormStorageExceed = true;
-            this.pdfViewer.annotationModule.clearAnnotationStorage();
+            if (this.pdfViewer.annotationModule){
+                this.pdfViewer.annotationModule.clearAnnotationStorage();
+            }
             this.formFieldStorage[this.documentId + type] = JSON.stringify(formFieldsData);
         } else {
             window.sessionStorage.setItem(this.documentId + type, JSON.stringify(formFieldsData));

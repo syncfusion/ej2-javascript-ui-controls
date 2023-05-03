@@ -231,7 +231,7 @@ export class NavigationPane {
                 }
             }
             else if(this.previousSelected[0] !== args.node.getAttribute('data-uid')){
-                const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
+                const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: this.isNodeClickCalled };
                 this.parent.trigger('fileSelect', selecEventArgs);
             }
         }
@@ -283,11 +283,11 @@ export class NavigationPane {
             this.parent.pathId = getPathId(args.node);
             this.parent.visitedItem = args.node;
         }
+        this.expandNodeTarget = null;
+        if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
+            this.expandNodeTarget = 'add';
+        }
         if (previousPath !== this.parent.path) {
-            this.expandNodeTarget = null;
-            if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
-                this.expandNodeTarget = 'add';
-            }
             if (!this.isRightClick && this.isSameNodeClicked) {
                 read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
                 this.isNodeClickCalled = true;

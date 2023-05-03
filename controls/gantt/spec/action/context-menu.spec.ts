@@ -589,8 +589,8 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
             expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
         });
     });
      describe('Modifying segments using custom context menu', () => {

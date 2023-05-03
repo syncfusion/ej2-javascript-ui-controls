@@ -2129,7 +2129,7 @@ export class RectOption extends PathOption {
         this.rx = rx ? rx : 0;
         this.ry = ry ? ry : 0;
         this.transform = transform ? transform : '';
-        this.stroke = (border.width !== 0 && this.stroke !== '') ? border.color : 'transparent';
+        this.stroke = (border.width !== 0 && this.stroke !== '') ? border.color === null ? '' : border.color : 'transparent';
     }
 }
 /** @private */

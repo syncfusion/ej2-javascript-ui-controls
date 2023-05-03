@@ -599,6 +599,8 @@ export class BpmnDiagrams {
         innerRect.margin = { left: 3, right: 0, top: 3, bottom: 0 };
         innerRect.id = node.id + '_0_Subprocess_innnerRect';
         innerRect.cornerRadius = 10; innerRect.width = shapeWidth - 6;
+        //EJ2-824711 - Fill color is not applied properly for BPMN transaction subProcess. 
+        innerRect.style.fill = 'transparent';
         innerRect.height = shapeHeight - 6; container.children.push(innerRect);
 
         const transactionEvents: Canvas = new Canvas();

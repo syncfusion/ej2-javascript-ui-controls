@@ -808,6 +808,15 @@ export class UndoRedo {
             }
         }
         if (isRefresh) {
+            if (range[0] === range[2] && range[1] === range[3]) {
+                const cell: CellModel = getCell(range[0], range[1], sheet);
+                if (cell.rowSpan > 1) {
+                    range[2] = range[0] + cell.rowSpan - 1;
+                }
+                if (cell.colSpan > 1) {
+                    range[3] = range[1] + cell.colSpan - 1;
+                }
+            }
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 range, false, false, true, false, isImported(this.parent));
             if (cfRule.length || cfRefreshAll) {

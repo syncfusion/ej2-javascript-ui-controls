@@ -1,10 +1,10 @@
 import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
-import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n, IntlBase } from '@syncfusion/ej2-base';
+import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
-import { getTextSpace, NumberFormatArgs, isCustomDateTime } from './../index';
+import { getTextSpace, NumberFormatArgs, isCustomDateTime, VisibleMergeIndexArgs, setVisibleMergeIndex } from './../index';
 import { checkIsNumberAndGetNumber, parseThousandSeparator } from '../common/internalization';
 /**
  * Specifies number format.
@@ -49,18 +49,21 @@ export class WorkbookNumberFormat {
                 prevFormat = getCell(rowIdx, colIdx, sheet, false, true).format;
                 if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: rowIdx, colIdx: colIdx })) {
                     cell = getCell(rowIdx, colIdx, sheet);
-                    fArgs = { value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx, cell: cell,
-                        refresh: activeSheet };
-                    this.getFormattedCell(fArgs);
-                    if (activeSheet) {
-                        this.parent.notify(
-                            refreshCellElement, { isRightAlign: fArgs.isRightAlign, result: fArgs.formattedText, rowIndex: rowIdx,
-                                colIndex: colIdx, sheetIndex: fArgs.sheetIndex, type: fArgs.type, curSymbol: fArgs.curSymbol,
-                                value: fArgs.value || fArgs.value === 0 ? fArgs.value : '', isRowFill: fArgs.isRowFill,
-                                cellEle: fArgs.td });
-                        if (prevFormat && prevFormat !== args.format && prevFormat.includes('[') &&
-                            getCustomColors().indexOf(getColorCode(args.format)) === -1) {
-                            this.removeFormatColor(fArgs, { format: prevFormat, style: cell.style });
+                    if (!(cell.rowSpan < 0 || cell.colSpan < 0)) {
+                        fArgs = { value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx,
+                            cell: cell, refresh: activeSheet };
+                        this.getFormattedCell(fArgs);
+                        if (activeSheet) {
+                            this.setCell(fArgs);
+                            this.parent.notify(
+                                refreshCellElement, { isRightAlign: fArgs.isRightAlign, result: fArgs.formattedText, rowIndex: rowIdx,
+                                    colIndex: colIdx, sheetIndex: fArgs.sheetIndex, type: fArgs.type, curSymbol: fArgs.curSymbol,
+                                    value: fArgs.value || fArgs.value === 0 ? fArgs.value : '', isRowFill: fArgs.isRowFill,
+                                    cellEle: fArgs.td });
+                            if (prevFormat && prevFormat !== args.format && prevFormat.includes('[') &&
+                                getCustomColors().indexOf(getColorCode(args.format)) === -1) {
+                                this.removeFormatColor(fArgs, { format: prevFormat, style: cell.style });
+                            }
                         }
                     }
                     this.parent.setUsedRange(rowIdx, colIdx);
@@ -203,6 +206,7 @@ export class WorkbookNumberFormat {
                 formatText = formatText || this.processCustomNumberFormat({ format: codes[0], value: cell.value }, args);
             }
             args.isRowFill = true;
+            this.setCell(args);
             this.parent.notify(
                 rowFillHandler, { cell: cell, cellEle: args.td, rowIdx: args.rowIndex, colIdx: args.colIndex, beforeFillText: formatText,
                     repeatChar: repeatChar, afterFillText: secText });
@@ -844,12 +848,22 @@ export class WorkbookNumberFormat {
 
     private applyColor(args: NumberFormatArgs): void {
         if (args.refresh) {
-            args.td = args.td || this.parent.getCell(args.rowIndex, args.colIndex);
+            this.setCell(args);
             if (args.td && args.td.style.color !== args.color) {
                 this.parent.notify(
                     applyCellFormat, <CellFormatArgs>{ style: { color: args.color }, rowIdx: args.rowIndex, colIdx: args.colIndex,
                     cell: args.td });
             }
+        }
+    }
+    private setCell(args: NumberFormatArgs): void {
+        if (!args.td) {
+            const mergeArgs: VisibleMergeIndexArgs = { sheet: getSheet(this.parent, args.sheetIndex), cell: args.cell, rowIdx: args.rowIndex,
+                colIdx: args.colIndex };
+            if (args.cell.rowSpan > 1 || args.cell.colSpan > 1) {
+                setVisibleMergeIndex(mergeArgs);
+            }
+            args.td = this.parent.getCell(mergeArgs.rowIdx, mergeArgs.colIdx);
         }
     }
 
@@ -912,6 +926,7 @@ export class WorkbookNumberFormat {
                 return true;
             }
             args.isRowFill = true;
+            this.setCell(args);
             const eventArgs: { cell: CellModel, cellEle: HTMLElement, rowIdx: number, colIdx: number, repeatChar: string,
                 formattedText?: string } = { cell: args.cell, cellEle: args.td, rowIdx: args.rowIndex, colIdx: args.colIndex,
                 repeatChar: '#' };

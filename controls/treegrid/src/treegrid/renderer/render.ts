@@ -46,10 +46,12 @@ export class Render {
             const collapsed: boolean = (this.parent.initialRender && (!(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                              parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll)) ||
                             !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
-            if (collapsed) {
+            if (collapsed && !isNullOrUndefined(args.row)) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
                 const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
-                rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
+                if (!isNullOrUndefined(args.row.getAttribute('data-uid'))) {
+                    rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
+                }
             }
         }
         if (isRemoteData(this.parent) && !isOffline(this.parent)) {
@@ -57,7 +59,7 @@ export class Render {
             const parentrec: ITreeData[] = this.parent.getCurrentViewRecords().filter((rec: ITreeData) => {
                 return getValue(proxy.idMapping, rec) === getValue(proxy.parentIdMapping, data);
             });
-            if (parentrec.length > 0 && !parentrec[0].isSummaryRow) {
+            if (parentrec.length > 0 && !parentrec[0].isSummaryRow && !isNullOrUndefined(args.row)) {
                 const display: string = parentrec[0].expanded ? 'table-row' : 'none';
                 args.row.setAttribute('style', 'display: ' + display  + ';');
             }
@@ -67,14 +69,16 @@ export class Render {
         if (summaryRow) {
             addClass([args.row], 'e-summaryrow');
         }
-        if (args.row.querySelector('.e-treegridexpand')) {
-            args.row.setAttribute('aria-expanded', 'true');
-        } else if (args.row.querySelector('.e-treegridcollapse')) {
-            args.row.setAttribute('aria-expanded', 'false');
-        }
-        if (this.parent.enableCollapseAll && this.parent.initialRender) {
-            if (!isNullOrUndefined(data.parentItem)) {
-                (<HTMLTableRowElement>args.row).style.display = 'none';
+        if (!isNullOrUndefined(args.row)) {
+            if (args.row.querySelector('.e-treegridexpand')) {
+                args.row.setAttribute('aria-expanded', 'true');
+            } else if (args.row.querySelector('.e-treegridcollapse')) {
+                args.row.setAttribute('aria-expanded', 'false');
+            }
+            if (this.parent.enableCollapseAll && this.parent.initialRender) {
+                if (!isNullOrUndefined(data.parentItem)) {
+                    (<HTMLTableRowElement>args.row).style.display = 'none';
+                }
             }
         }
         const dragStartData: string = 'dragStartData';

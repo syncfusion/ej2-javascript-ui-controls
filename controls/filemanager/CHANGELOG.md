@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I439193` - The data disappears in the DetailsView when dynamically setting columns in the File Manager component has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### File Manager

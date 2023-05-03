@@ -384,5 +384,67 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
+        describe('EJ2-71836 - Hide/show with merged cells->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Hide/show columns on the merged cells ->', (done: Function) => {
+                helper.invoke('merge', ['A1:F1']);
+                helper.invoke('merge', ['A3:B3']);
+                helper.invoke('merge', ['H2:J6']);
+                helper.invoke('hideColumn', [0]);
+                setTimeout(() => {
+                    const sheet: SheetModel = helper.getInstance().sheets[0];
+                    expect(sheet.columns[0].hidden).toBeTruthy();
+                    expect(helper.invoke('getCell', [0, 1]).colSpan).toBe(5);
+                    expect(helper.invoke('getCell', [1, 1]).colSpan).toBe(1);
+                    helper.invoke('hideColumn', [0, 0, false]);
+                    setTimeout(() => {
+                        done();
+                    });
+                });
+            });
+            it('Hide/show both rows and column on the merged cells ->', (done: Function) => {
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                helper.invoke('hideColumn', [7]);
+                expect(sheet.columns[7].hidden).toBeTruthy();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 8]).colSpan).toBe(2);
+                    expect(helper.invoke('getCell', [1, 8]).rowSpan).toBe(5);
+                    helper.invoke('hideRow', [1]);
+                    expect(sheet.rows[1].hidden).toBeTruthy();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [2, 8]).colSpan).toBe(2);
+                        expect(helper.invoke('getCell', [2, 8]).rowSpan).toBe(4);
+                        done();
+                    });
+                });
+            });
+            it('Hide/show only rows on the merged cells ->', (done: Function) => {
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                helper.invoke('hideColumn', [7, 7, false]);
+                expect(sheet.columns[7].hidden).toBeFalsy();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 7]).colSpan).toBe(3);
+                    expect(helper.invoke('getCell', [2, 8]).colSpan).toBe(1);
+                    helper.invoke('hideRow', [3]);
+                    expect(sheet.rows[3].hidden).toBeTruthy();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [2, 7]).rowSpan).toBe(3);
+                        helper.invoke('hideRow', [5]);
+                        setTimeout(() => {
+                            expect(sheet.rows[5].hidden).toBeTruthy();
+                            expect(helper.invoke('getCell', [2, 7]).rowSpan).toBe(2);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

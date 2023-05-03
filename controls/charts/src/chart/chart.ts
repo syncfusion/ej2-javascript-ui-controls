@@ -2269,7 +2269,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public print(id?: string[] | string | Element): void {
         const exportChart: ExportUtils = new ExportUtils(this);
+        let width: string = this.width;
+        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+            this.width = '80%';
+            this.dataBind();
+        }
         exportChart.print(id);
+        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+            this.width = width;
+            this.dataBind();
+        } 
     }
 
     /**

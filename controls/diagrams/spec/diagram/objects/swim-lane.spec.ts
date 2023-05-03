@@ -16,7 +16,7 @@ import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index';
-import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints, IDraggingEventArgs } from '../../../src/diagram/index';
+import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints, IDraggingEventArgs, IHistoryChangeArgs } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
@@ -11500,7 +11500,7 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
         expect(nodeAnn1 === 'ORDER changed' && nodeAnn2 === 'ORDER changed changed again').toBe(true);
         done();
     });
-    describe('EJ2-69852 Swmilane - Header', () => {
+    describe('EJ2-69852 and EJ2-824712 Swmilane - Header click triggers position change and history change event', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let btn: HTMLButtonElement;
@@ -11613,7 +11613,18 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
             expect(positionChangeCheck).toBe(false);
             done();
         });
-        it('Singel Node Position change trigger', (done: Function) => {
+        it('Checking history change event while selectin swimlane header second time', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+            let historyEntry: boolean = false;
+            diagram.historyChange = (args: IHistoryChangeArgs) => {
+                historyEntry = true
+            }
+            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+            expect(historyEntry).toBe(false);
+        });
+        it('Single Node Position change trigger', (done: Function) => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
             debugger

@@ -159,14 +159,14 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             var li = ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[19].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[19].classList.contains('e-node-focus')).toBe(false);
             keyboardEventArgs.action = 'end';
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
             expect(li[0].classList.contains('e-hover')).toBe(false);
-            expect(li[19].classList.contains('e-hover')).toBe(true);
+            expect(li[19].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(false);
             expect(li[19].classList.contains('e-node-focus')).toBe(true);
             ddtreeObj.onFocusOut();
@@ -180,12 +180,12 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'end';
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
             expect(li[0].classList.contains('e-hover')).toBe(false);
-            expect(li[19].classList.contains('e-hover')).toBe(true);
+            expect(li[19].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(false);
             expect(li[19].classList.contains('e-node-focus')).toBe(true);
             keyboardEventArgs.action = 'home';
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[19].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[19].classList.contains('e-node-focus')).toBe(false);
@@ -197,14 +197,14 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[0].classList.contains('e-active')).toBe(false);
             keyboardEventArgs.action = 'enter';
             ddtreeObj.treeAction(keyboardEventArgs);
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
             ddtreeObj.showPopup();
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[0].classList.contains('e-active')).toBe(true);
             ddtreeObj.onFocusOut();
@@ -215,7 +215,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[0].classList.contains('e-active')).toBe(false);
             keyboardEventArgs.action = 'space';
@@ -262,7 +262,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             var li = ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[1].classList.contains('e-node-focus')).toBe(false);
             keyboardEventArgs.action = 'moveDown';
@@ -275,7 +275,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'moveRight';
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
             setTimeout(function () {
-                expect(li[5].classList.contains('e-hover')).toBe(true);
+                expect(li[5].classList.contains('e-hover')).toBe(false);
                 expect(li[5].classList.contains('e-node-focus')).toBe(true);
                 expect(li[5].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(false);
                 expect(li[5].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
@@ -284,7 +284,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
                 ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
                 setTimeout(function () {
                     expect(newli[5].classList.contains('e-hover')).toBe(false);
-                    expect(newli[6].classList.contains('e-hover')).toBe(true);
+                    expect(newli[6].classList.contains('e-hover')).toBe(false);
                     expect(newli[5].classList.contains('e-node-focus')).toBe(false);
                     expect(newli[6].classList.contains('e-node-focus')).toBe(true);
                     keyboardEventArgs.action = 'moveRight';
@@ -292,7 +292,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
                     ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
                     setTimeout(function () {
                         expect(newli[5].classList.contains('e-hover')).toBe(false);
-                        expect(newli[6].classList.contains('e-hover')).toBe(true);
+                        expect(newli[6].classList.contains('e-hover')).toBe(false);
                         expect(newli[7].classList.contains('e-hover')).toBe(false);
                         expect(newli[5].classList.contains('e-node-focus')).toBe(false);
                         expect(newli[6].classList.contains('e-node-focus')).toBe(true);
@@ -312,7 +312,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             setTimeout(function () {
-                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-hover')).toBe(false);
                 expect(li[1].classList.contains('e-hover')).toBe(false);
                 expect(li[0].classList.contains('e-node-focus')).toBe(true);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
@@ -322,7 +322,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
                 ddtreeObj.treeAction(keyboardEventArgs);
                 ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
                 setTimeout(function () {
-                    expect(li[0].classList.contains('e-hover')).toBe(true);
+                    expect(li[0].classList.contains('e-hover')).toBe(false);
                     expect(li[1].classList.contains('e-hover')).toBe(false);
                     expect(li[0].classList.contains('e-node-focus')).toBe(true);
                     expect(li[1].classList.contains('e-node-focus')).toBe(false);
@@ -331,7 +331,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
                     keyboardEventArgs.action = 'moveLeft';
                     ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
                     setTimeout(function () {
-                        expect(li[0].classList.contains('e-hover')).toBe(true);
+                        expect(li[0].classList.contains('e-hover')).toBe(false);
                         expect(li[1].classList.contains('e-hover')).toBe(false);
                         expect(li[0].classList.contains('e-node-focus')).toBe(true);
                         expect(li[1].classList.contains('e-node-focus')).toBe(false);

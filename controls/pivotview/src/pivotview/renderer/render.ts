@@ -1,4 +1,4 @@
-import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
+import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings, IDataSet } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
 import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
@@ -107,8 +107,9 @@ export class Render {
                 this.engine.isEngineUpdated = false;
             }
             this.parent.grid.setProperties({
-                columns: this.frameStackedHeaders(), dataSource: (this.parent.dataType === 'olap' ? true :
-                    this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData ? this.engine.valueContent :
+                columns: this.frameStackedHeaders(), dataSource: ((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true :
+                    (this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0 &&
+                    this.parent.dataSourceSettings.values.length > 0)) && !this.engine.isEmptyData ? this.engine.valueContent :
                     this.frameDataSource('value')
             }, true);
             if (this.parent.grid.height === 'auto') {
@@ -1425,7 +1426,7 @@ export class Render {
                     }
                     let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') : 
                         cell.formattedText) : cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
-                    localizedText = isColumnFieldsAvail ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
+                    localizedText = isColumnFieldsAvail && this.parent.engineModule.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
                         (tCell.querySelector('.e-headertext') as HTMLElement).innerText = localizedText;
@@ -1581,7 +1582,8 @@ export class Render {
 
     private frameDataSource(type: string): IGridValues {
         let dataContent: IGridValues = [];
-        if (this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
+        if (((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0) || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== ''))
+        && this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             if ((this.parent.enableValueSorting) || !this.engine.isEngineUpdated) {
                 let rowCnt: number = 0;
                 const pivotValues: IAxisSet[][] = this.parent.pivotValues;
@@ -1677,7 +1679,7 @@ export class Render {
         } else {
             parWidth = this.gridSettings.width;
         }
-        return (!this.gridSettings.allowAutoResizing && parWidth > this.parent.totColWidth) ? this.parent.totColWidth : parWidth;
+        return (!this.gridSettings.allowAutoResizing && parWidth as number > this.parent.totColWidth) ? this.parent.totColWidth : parWidth;
     }
 
     /** @hidden */
@@ -1726,7 +1728,7 @@ export class Render {
                 gridHeight = this.gridSettings.height;
             }
         }
-        return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
+        return gridHeight as number < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
 
     /** @hidden */
@@ -1743,7 +1745,7 @@ export class Render {
             !this.parent.dataSourceSettings.alwaysShowValueHeader ?
             this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         this.pivotColumns = [];
-        if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
+        if (((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];

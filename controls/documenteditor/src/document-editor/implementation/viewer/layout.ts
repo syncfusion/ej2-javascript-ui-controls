@@ -81,6 +81,10 @@ export class Layout {
       */
     public isOverlapFloatTable: boolean = false;
     public isInitialLoad: boolean = true;
+    /**
+      * @private
+      */
+    public isInsertFormField: boolean = false;
     private fieldBegin: FieldElementBox = undefined;
     private maxTextHeight: number = 0;
     private maxBaseline: number = 0;
@@ -947,6 +951,7 @@ export class Layout {
                     element.linkFieldCharacter(this.documentHelper);
                 }
                 if (element instanceof FieldTextElementBox &&
+                    !isNullOrUndefined(element.previousElement) &&
                     element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
                     element.fieldBegin = (element.previousElement as FieldElementBox).fieldBegin;
                 }
@@ -1693,7 +1698,7 @@ export class Layout {
                     this.documentHelper.fields.push(element);
                 }
                 if (!isNullOrUndefined(element.formFieldData) &&
-                    this.documentHelper.formFields.indexOf(element) === -1) {
+                    this.documentHelper.formFields.indexOf(element) === -1 && !this.isInsertFormField) {
                     this.documentHelper.formFields.push(element);
                 }
             }
@@ -8790,7 +8795,7 @@ export class Layout {
                 prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
-                    if (isPageBreak || isColumnBreak) {
+                    if (isPageBreak) {
                         viewer.updateClientAreaByWidget(widget);
                     }
                 }

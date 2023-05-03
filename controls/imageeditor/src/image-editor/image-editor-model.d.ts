@@ -110,6 +110,7 @@ export interface ZoomSettingsModel {
      *
      * By default, this property is set to `null`, which enables all types of zooming.
      *
+     * @aspNumberEnum
      * @default null
      */
     zoomTrigger?: ZoomTrigger;

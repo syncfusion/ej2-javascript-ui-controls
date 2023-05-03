@@ -1,8 +1,7 @@
 import { Spreadsheet } from '../index';
 import { refreshCellElement, rowFillHandler, getTextSpace } from '../../workbook/common/event';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getTextWidth, getExcludedColumnWidth } from '../common/index';
-import { CellModel } from '../../workbook/index';
+import { CellModel, MergeArgs, activeCellMergedRange } from '../../workbook/index';
 /**
  * Specifies number format.
  */
@@ -15,9 +14,8 @@ export class NumberFormat {
     }
 
     private refreshCellElement(args: RefreshValueArgs): void {
-        const cell: HTMLElement = args.cellEle || this.parent.getCell(args.rowIndex, args.colIndex);
-        if (!isNullOrUndefined(cell)) {
-            this.parent.refreshNode(cell as Element, args);
+        if (args.cellEle) {
+            this.parent.refreshNode(args.cellEle, args);
         }
     }
 
@@ -27,10 +25,16 @@ export class NumberFormat {
 
     private rowFillHandler(args: { cell: CellModel, cellEle: HTMLElement, rowIdx: number, colIdx: number, beforeFillText: string,
         repeatChar: string, afterFillText: string, formattedText?: string }): void {
-        const cellElem: HTMLElement = args.cellEle || this.parent.getCell(args.rowIdx, args.colIdx);
+        const cellElem: HTMLElement = args.cellEle;
         if (cellElem) {
             const repeatCharWidth: number = getTextWidth(args.repeatChar, args.cell.style, this.parent.cellStyle);
-            let cellWidth: number = getExcludedColumnWidth(this.parent.getActiveSheet(), args.rowIdx, args.colIdx);
+            let endCol: number = args.colIdx;
+            if (args.cell.colSpan > 1) {
+                const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                endCol = mergeArgs.range[3] as number;
+            }
+            let cellWidth: number = getExcludedColumnWidth(this.parent.getActiveSheet(), args.rowIdx, args.colIdx, endCol);
             cellElem.innerText = '';
             if (args.beforeFillText) {
                 cellElem.innerText = args.beforeFillText;

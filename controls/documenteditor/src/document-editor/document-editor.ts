@@ -1357,6 +1357,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
                     this.viewer.updateScrollBars();
                 }
+                if (!isNullOrUndefined(model.documentEditorSettings.showBookmarks) && (model.documentEditorSettings.showBookmarks !== oldProp.documentEditorSettings.showBookmarks)) {
+                    this.viewer.updateScrollBars();
+                }
                 break;
             case 'height':
                 this.element.style.height = formatUnit(this.height);
@@ -2412,7 +2415,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Paste Content Dialog' : 'Due to browser’s security policy, paste from system clipboard is restricted. Alternatively use the keyboard shortcut',
         'Paste Content CheckBox' : 'Don’t show again',
         'BookMarkList':'List of bookmarks in the document',
-        'Discard':'Discard'
+        'Discard':'Discard',
+        "The top/bottom margins are too large for the page height in some sections.":"The top/bottom margins are too large for the page height in some sections.",
+        "Column width cannot be less than 36 pt.": "Column width cannot be less than 36 pt.",
+        "Left and right margins.": "Settings you chose for the left and right margins, column spacing, or pargraph indents are too large for the page width in same secitions."
     };
     /* eslint-enable */
     // Public Implementation Starts

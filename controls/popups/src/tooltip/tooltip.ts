@@ -1314,6 +1314,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.style.top = elePos.top + 'px';
     }
     private keyDown(event: KeyboardEvent): void {
+        if (!isNullOrUndefined(this.targetsList) && !isNullOrUndefined(this.target)) {
+            const target: Element[] = [].slice.call(selectAll(this.target, this.element));
+            if (target.length !== this.targetsList.length) {
+                this.unwireEvents(this.opensOn);
+                this.wireEvents(this.opensOn);
+            }
+        }
         if (this.tooltipEle && event.keyCode === 27) {
             this.close();
         }
@@ -1365,7 +1372,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.wireFocusEvents();
-                EventHandler.add(this.element, 'DOMNodeInserted', this.updateTarget, this);
             }
             if (opensOn === 'Click') {
                 EventHandler.add(this.element, Browser.touchStartEvent, this.targetClick, this);
@@ -1387,15 +1393,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
         EventHandler.add(document, 'keydown', this.keyDown, this);
     }
-    private updateTarget(e: Event): void {
-        if (!isNullOrUndefined(this.targetsList) && !isNullOrUndefined(this.target)) {
-            const target: Element[] = [].slice.call(selectAll(this.target, this.element));
-            if (target.length !== this.targetsList.length) {
-                this.unwireEvents(this.opensOn);
-                this.wireEvents(this.opensOn);
-            }
-        }
-    }
     private getTriggerList(trigger: string): string[] {
         if (trigger === 'Auto') {
             trigger = (Browser.isDevice) ? 'Hover' : 'Hover Focus';
@@ -1404,10 +1401,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
-            this.targetsList = targetList;
-            for (const target of targetList) {
-                EventHandler.add(target, 'focus', this.targetHover, this);
+            if (this.element.nodeName !== "BODY") {
+                EventHandler.add(this.element, 'focusin', this.targetHover, this);
+            }
+            else {
+                const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
+                this.targetsList = targetList;
+                for (const target of targetList) {
+                    EventHandler.add(target, 'focus', this.targetHover, this);
+                }
             }
         } else {
             EventHandler.add(this.element, 'focus', this.targetHover, this);
@@ -1418,6 +1420,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (!this.isSticky) {
                 if (e.type === 'focus') {
                     EventHandler.add(target, 'blur', this.onMouseOut, this);
+                }
+                if(e.type === 'focusin'){
+                    EventHandler.add(target, 'focusout', this.onMouseOut, this);
                 }
                 if (e.type === 'mouseover') {
                     EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
@@ -1447,7 +1452,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.unwireFocusEvents();
-                EventHandler.remove(this.element, 'DOMNodeInserted', this.updateTarget);
             }
             if (opensOn === 'Click') {
                 EventHandler.remove(this.element, Browser.touchStartEvent, this.targetClick);
@@ -1468,9 +1472,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private unwireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
-            for (const target of targetList) {
-                EventHandler.remove(target, 'focus', this.targetHover);
+            if (this.element.nodeName === 'BODY') {
+                EventHandler.remove(this.element, 'focusin', this.targetHover);
+            }
+            else {
+                const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
+                for (const target of targetList) {
+                    EventHandler.remove(target, 'focus', this.targetHover);
+                }
             }
         } else {
             EventHandler.remove(this.element, 'focus', this.targetHover);
@@ -1482,6 +1491,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             for (const opensOn of triggerList) {
                 if (opensOn === 'Focus') {
                     EventHandler.remove(target, 'blur', this.onMouseOut);
+                    EventHandler.remove(target, 'focusout', this.onMouseOut);
                 }
                 if (opensOn === 'Hover' && !Browser.isDevice) {
                     EventHandler.remove(target, 'mouseleave', this.onMouseOut);

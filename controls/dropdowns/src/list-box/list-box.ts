@@ -728,7 +728,7 @@ export class ListBox extends DropDownBase {
         let scrollParent: HTMLElement; let boundRect: DOMRect; const scrollMoved: number = 36;
         let scrollHeight: number = 10;
         if (this.itemTemplate && args.target) {
-            if(args.target && args.target.closest('.e-list-item')) {  
+            if (args.target && args.target.closest('.e-list-item')) {
                 scrollHeight = args.target.closest('.e-list-item').scrollHeight;
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1010,6 +1010,13 @@ export class ListBox extends DropDownBase {
      * @returns {void}
      */
     public selectItems(items: string[], state: boolean = true, isValue?: boolean): void {
+        if (state && !this.selectionSettings.showCheckbox && this.selectionSettings.mode === 'Single') {
+            this.getSelectedItems().forEach((li: Element) => {
+                li.classList.remove('e-active');
+                li.removeAttribute('aria-selected');
+                removeClass([li], cssClass.selected);
+            });
+        }
         this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
     }

@@ -1587,12 +1587,19 @@ export class Signature {
            padding = padding + parseInt(style.paddingLeft, 10) + parseInt(style.paddingRight, 10);
         }
         if (canvas && this.signatureDialog && this.signatureDialog.visible) {
+            let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+            let canvasContent: string = canvas.toDataURL();
             if (this.pdfViewer.element.offsetWidth > maximumWidth) {
                 canvas.width = canvasWidth;
                 canvas.style.width =  canvasWidth + 'px';
             } else {
                 canvas.width = this.pdfViewer.element.offsetWidth - padding;
                 canvas.style.width = canvas.width + 'px';
+            }
+            let image: HTMLImageElement = new Image();
+            image.src = canvasContent;
+            image.onload = (): void => {
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
             }
         }
         let fontInnerDiv: any = document.getElementsByClassName('e-pv-font-sign');

@@ -8,6 +8,7 @@ describe('Sanitize Html Helper', () => {
     let SanitizeInstance: SanitizeHtmlHelper = new SanitizeHtmlHelper();
     let innerHTML: string = `<div>
     <div id="inline-event" onmouseover='javascript:alert(1)'></div>
+    <div id="onpropertychange" onpropertychange='javascript:alert(1)'></div>
     <script>alert('hi')</script>
     <style> </style>
     <img src="javascript:alert('XSS Image');"/>
@@ -56,6 +57,10 @@ describe('Sanitize Html Helper', () => {
 
         it('check the div element attribute while inline event bind', () => {
             expect(htmlObject.querySelector('#inline-event').hasAttribute('onmouseover')).toBe(false);
+        });
+        
+        it('should remove onpropertychange attribute', () => {
+            expect(htmlObject.querySelector('#onpropertychange').hasAttribute('onpropertychange')).toBe(false);
         });
         afterAll(() => {
             detach(htmlObject);

@@ -222,7 +222,7 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container_ChartAreaBorder');
                 let label1: any = document.getElementById('containerAxisLabels0').childNodes[0];
                 let label2: any = document.getElementById('containerAxisLabels0').childNodes[5];
-                expect(+label1.getAttribute('y')).toEqual(+svg.getAttribute('y') + +svg.getAttribute('height'));
+                expect(parseInt(label1.getAttribute('y'))).toEqual((parseInt(svg.getAttribute('y')) + parseInt(svg.getAttribute('height'))));
                 // expect(+label2.getAttribute('y')).toEqual(+svg.getAttribute('y'));
                 done();
             };

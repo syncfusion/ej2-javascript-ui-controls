@@ -3013,6 +3013,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public showMaskRow(axisDirection?: string, dialogElement?: Element): void {
+        if (isNullOrUndefined(this.headerModule) || isNullOrUndefined(this.contentModule)) {
+            return;
+        }
         const gridHeader: Element = this.getHeaderContent().firstChild as Element;
         const gridContent: Element = this.getContent().firstChild as Element;
         const gridFooter: Element = this.getFooterContent() as Element;
@@ -4727,7 +4730,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private refreshReactTemplateTD(rows?:Element[] | NodeListOf<Element>, isChildGrid?: boolean, isFrozen?: boolean): void {
+    /**
+     * @param {Element[] | NodeListOf<Element>} rows - Defines the rows
+     * @param {boolean} isChildGrid - Defines whether it is a Hierarchy Grid.
+     * @param {boolean} isFrozen - Defines whether it is a Frozen Grid
+     * @returns {void}
+     * @hidden
+     */
+    public refreshReactTemplateTD (rows?:Element[] | NodeListOf<Element>, isChildGrid?: boolean, isFrozen?: boolean): void {
         const cells: string = 'cells';
         const rowIdx: string = 'index';
         const indent: number = this.getIndentCount();
@@ -4749,7 +4759,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
                         const td: Element = isChildGrid ? rows[parseInt(j.toString(), 10)]
                             .children[cell.index + (isChildRow ? childIndent : indent)] : this.getCellFromIndex(
-                                j, isFrozen ? cell.index : i - indent);
+                            j, isFrozen ? cell.index : i - indent);
                         cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[`${rowIdx}`] });
                     }
                 }

@@ -1621,6 +1621,37 @@ describe('Chart ->', () => {
                     done();
                 });
             });
+            it('Insert chart with time formatted values->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertChart([{ type: 'Column', theme: 'Material', range: 'C1:D5', }]);
+                setTimeout(() => {
+                    const chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[2].chart[0].id}`;
+                    const chart: HTMLElement = spreadsheet.element.querySelector(chartId);
+                    expect(chart).not.toBeNull();
+                    const chartObj: any = getComponent(chart, 'chart');
+                    expect(chartObj.series.length).toBe(1);
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json.length).toBe(4);
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].x).toBe('11:34:32 AM');
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].y).toBe(10);
+                    done();
+                });
+            });
+            it('Insert chart with date formatted values->', (done: Function) => {
+                helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'E1:E4']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertChart([{ type: 'Column', theme: 'Material', range: 'E1:F4', }]);
+                setTimeout(() => {
+                    const chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[4].chart[0].id}`;
+                    const chart: HTMLElement = spreadsheet.element.querySelector(chartId);
+                    expect(chart).not.toBeNull();
+                    const chartObj: any = getComponent(chart, 'chart');
+                    expect(chartObj.series.length).toBe(1);
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json.length).toBe(3);
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].x).toBe('Saturday, January 20, 1900');
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].y).toBe(200);
+                    done();
+                });
+            });
         });
         describe('EJ2-71624', () => {
             beforeAll((done: Function) => {

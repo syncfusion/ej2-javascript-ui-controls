@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Common
+
+#### Bug Fixes
+
+- `#F180652` - The issue with the "drag element top value changes after scrolling to browser end" has been resolved.
+
 ## 21.1.39 (2023-04-11)
 
 ### Common

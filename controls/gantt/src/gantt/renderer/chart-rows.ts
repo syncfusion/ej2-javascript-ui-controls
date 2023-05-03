@@ -880,7 +880,7 @@ export class ChartRows extends DateProcessor {
             '<div class="' + cls.manualParentMilestoneBottom + '" style="top:' +
             (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
             this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
-        return this.createDivElement(data.ganttProperties.width === 0 ? milestoneTemplate : !data.ganttProperties.isMilestone ? template : null);
+        return this.createDivElement(data.ganttProperties.duration !== 0 ? template : milestoneTemplate);
     }
     /**
      * To get parent taskbar node.
@@ -1082,7 +1082,7 @@ export class ChartRows extends DateProcessor {
         const template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
-            ' tabindex="-1" role="term" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+            ' tabindex="-1" role="term" style="' + ((data.ganttProperties.isMilestone && !manualParent && !(data.hasChildRecords && !data.ganttProperties.isAutoSchedule)) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                     this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;' + (this.parent.enableRtl? 'right:' : 'left:') + (data.ganttProperties.left -
                         (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
@@ -1407,6 +1407,10 @@ export class ChartRows extends DateProcessor {
                 this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('aria-rowindex', index.toString());
             }
         }  else {
+            let dupChartBody: Element;           
+            dupChartBody = createElement('tbody', {
+                id: this.parent.element.id + 'GanttTaskTableBody'
+            });
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 const tempTemplateData: IGanttData = this.parent.currentViewData[i as number];
                 if (this.parent.viewType === 'ResourceView') {
@@ -1419,9 +1423,9 @@ export class ChartRows extends DateProcessor {
                     }
                 }
                 const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
-                this.ganttChartTableBody.appendChild(tRow);
+                dupChartBody.appendChild(tRow);
                 if (this.parent.enableImmutableMode) {
-                    this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[i as number]);
+                    this.refreshedTr.push(dupChartBody.querySelectorAll('tr')[i as number]);
                     this.refreshedData.push(this.parent.currentViewData[i as number]);
                 }
                 // To maintain selection when virtualization is enabled
@@ -1429,6 +1433,7 @@ export class ChartRows extends DateProcessor {
                     this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
                 }
             }
+            (this.ganttChartTableBody as any).replaceChildren(...dupChartBody.childNodes as any);
         }
         this.parent.renderTemplates();
         this.triggerQueryTaskbarInfo();
@@ -1487,8 +1492,14 @@ export class ChartRows extends DateProcessor {
                     taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
                 }
             }
-            if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
+            if ((this.templateData.ganttProperties.autoDuration !== 0) && !this.templateData.ganttProperties.isMilestone && parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
+            }
+            else if((this.templateData.ganttProperties.duration === 0 && this.templateData.ganttProperties.isMilestone && this.templateData.ganttProperties.isAutoSchedule)){
+                const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
+                if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
+                    taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
+                }
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {

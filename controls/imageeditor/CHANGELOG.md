@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Zoom factor value set to null in ASPCORE" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Flaggable Enum not working properly in ASPCORE" has been resolved.
+
+## 21.1.41 (2023-04-18)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "GetImageData method returns low resolution data" has been resolved.
+
 ## 21.1.39 (2023-04-11)
 
 ### Image Editor

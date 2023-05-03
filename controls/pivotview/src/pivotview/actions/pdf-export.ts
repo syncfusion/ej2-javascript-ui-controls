@@ -2,7 +2,7 @@ import {
     PdfGrid, PdfPen, PointF, PdfGridRow, PdfDocument, PdfPage, PdfFont,
     PdfStandardFont, PdfFontFamily, PdfSolidBrush, PdfColor, PdfStringFormat,
     PdfVerticalAlignment, PdfTextAlignment, PdfFontStyle, PdfPageTemplateElement,
-    RectangleF, PdfTrueTypeFont, PdfBorders, PdfGridCell, SizeF, PdfSection, PdfPageOrientation
+    RectangleF, PdfTrueTypeFont, PdfBorders, PdfGridCell, SizeF, PdfSection, PdfPageOrientation, PdfMargins
 } from '@syncfusion/ej2-pdf-export';
 import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
@@ -67,6 +67,13 @@ export class PDFExport {
             if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.pageSize)) {
                 eventParams.document.pageSettings.size = PivotUtil.getPageSize(pdfExportProperties.pageSize);
             }
+        }
+        if (!isNullOrUndefined(this.exportProperties.pdfMargins)) {
+            let margins: PdfMargins = eventParams.document.pageSettings.margins;
+            margins.top = !isNullOrUndefined(this.exportProperties.pdfMargins.top) ? this.exportProperties.pdfMargins.top : margins.top;
+            margins.bottom = !isNullOrUndefined(this.exportProperties.pdfMargins.bottom) ? this.exportProperties.pdfMargins.bottom : margins.bottom;
+            margins.left = !isNullOrUndefined(this.exportProperties.pdfMargins.left) ? this.exportProperties.pdfMargins.left : margins.left;
+            margins.right = !isNullOrUndefined(this.exportProperties.pdfMargins.right) ? this.exportProperties.pdfMargins.right : margins.right;
         }
         documentSection.setPageSettings(eventParams.document.pageSettings);
         const page: PdfPage = documentSection.pages.add();

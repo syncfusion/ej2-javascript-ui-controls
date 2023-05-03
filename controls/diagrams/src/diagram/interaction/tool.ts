@@ -983,12 +983,18 @@ export class MoveTool extends ToolBase {
                     if (isBlazor()) {
                         arg = this.getBlazorPositionChangeEventArgs(arg, this.currentTarget);
                     }
+                    // EJ2-824712 [Bug] - When selecting swimlane second time history change event is triggered with change type as positionChanged.
+                    let canAddHistory:boolean = true;
                     //EJ2-69852): Position Change event trigger for clicking second time in swimlane header issue
                     if (!isBlazor()) {
                         if ((object as Node).id === 'helper') {
                             if (this.canTrigger) {
                                 this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
                                 this.connectorEndPointChangeEvent(arg);
+                                canAddHistory = true;
+                            }
+                            else{
+                                canAddHistory = false;
                             }
                         } else {
 
@@ -996,7 +1002,7 @@ export class MoveTool extends ToolBase {
                             this.connectorEndPointChangeEvent(arg);
                         }
                     }
-                    if (!isPreventHistory) {
+                    if (!isPreventHistory && canAddHistory) {
                         this.commandHandler.startGroupAction(); historyAdded = true;
                         const entry: HistoryEntry = {
                             type: 'PositionChanged',

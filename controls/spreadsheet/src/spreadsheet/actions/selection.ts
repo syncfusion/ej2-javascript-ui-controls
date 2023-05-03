@@ -6,7 +6,7 @@ import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormul
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, getMoveEvent, getEndEvent, isTouchStart, isMouseUp, isDiscontinuousRange } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
-import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef } from '../common/index';
+import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef, getScrollBarWidth } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, removeDesignChart, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
@@ -372,13 +372,13 @@ export class Selection {
         const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
         const left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
-        const top: number = clientRect.top; const right: number = clientRect.right; const bottom: number = clientRect.bottom;
+        const top: number = clientRect.top; const right: number = clientRect.right - getScrollBarWidth(); const bottom: number = clientRect.bottom;
         const clientX: number = getClientX(e); const clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
-            this.getColIdxFromClientX({ clientX: Math.min(clientX, right), target: e.target as Element });
+            this.getColIdxFromClientX({ clientX:clientX, target: e.target as Element });
         let rowIdx: number = this.isColSelected ? sheet.rowCount - 1 :
-            this.getRowIdxFromClientY({ clientY: Math.min(clientY, bottom), target: e.target as Element });
+            this.getRowIdxFromClientY({ clientY: clientY, target: e.target as Element });
         let prevIndex: number[];
         if (e.ctrlKey) {
             const selRanges: string[] = sheet.selectedRange.split(' ');
@@ -388,7 +388,7 @@ export class Selection {
         }
         const mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
-        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
+        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3] && !(clientY > bottom ? (frozenCol ? clientX < left : true) : false) && !(clientX > right)) { return; }
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         let isScrollDown: boolean = (clientY > bottom ? (frozenCol ? clientX < left : true) : false) && rowIdx < sheet.rowCount;
         let isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
@@ -670,7 +670,10 @@ export class Selection {
         const mergeArgs: MergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
         let isMergeRange: boolean;
         const overlayEle: HTMLElement = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
-        if (!this.isColSelected && !this.isRowSelected) { this.parent.notify(mergedRange, mergeArgs); }
+        let rowColSelectArgs: { isRowSelected: boolean, isColSelected: boolean } = this.isRowColSelected(range);
+        if (!rowColSelectArgs.isColSelected && !rowColSelectArgs.isRowSelected) {
+            this.parent.notify(mergedRange, mergeArgs);
+        }
         if (range !== mergeArgs.range) {
             isMergeRange = true;
         }
@@ -805,7 +808,8 @@ export class Selection {
         } else if (!isInit && !this.isautoFillClicked) {
             updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
         }
-        this.UpdateRowColSelected(range);
+        rowColSelectArgs = this.isRowColSelected(range);
+        this.isRowSelected = rowColSelectArgs.isRowSelected; this.isColSelected = rowColSelectArgs.isColSelected;
         this.highlightHdr(range, e && e.ctrlKey);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
             if (!isFormulaEdit) {
@@ -838,10 +842,10 @@ export class Selection {
         this.parent.notify(clearChartBorder, {});
     }
 
-    private UpdateRowColSelected(indexes: number[]): void {
+    private isRowColSelected(indexes: number[]): { isRowSelected: boolean, isColSelected: boolean } {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        this.isRowSelected = (indexes[1] === 0 && indexes[3] === sheet.colCount - 1);
-        this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
+        return { isRowSelected: indexes[1] === 0 && indexes[3] === sheet.colCount - 1,
+            isColSelected: indexes[0] === 0 && indexes[2] === sheet.rowCount - 1 };
     }
 
     private updateActiveCell(range: number[], isInit?: boolean, preventAnimation?: boolean): void {
@@ -976,7 +980,12 @@ export class Selection {
             const updateIndex: Function = (freezePane: number, layout: string, offset: string): void => {
                 let idx: number; let hiddenCount: number;
                 if (freezePane && swapRange[i as number] < freezePane) {
-                    hiddenCount = this.parent.hiddenCount(topLeftIndex[i as number], swapRange[i as number], layout, sheet);
+                    topLeftIndex[i as number] = skipHiddenIdx(sheet, topLeftIndex[i as number], true, layout);
+                    const startIdx: number = skipHiddenIdx(sheet, swapRange[i as number], true, layout);
+                    if (startIdx === topLeftIndex[i as number]) {
+                        swapRange[i as number] = startIdx;
+                    }
+                    hiddenCount = this.parent.hiddenCount(topLeftIndex[i as number], swapRange[i as number] - 1, layout, sheet);
                     frozenIdx[i as number] = swapRange[i as number] - hiddenCount - topLeftIndex[i as number];
                     idx = swapRange[j as number] < freezePane ? swapRange[j as number] : freezePane - 1;
                     frozenIdx[j as number] = idx - this.parent.hiddenCount(swapRange[i as number], idx, layout, sheet) - hiddenCount -
@@ -989,8 +998,12 @@ export class Selection {
                             idx, swapRange[j as number], layout, sheet) - idx + 1;
                     }
                 } else {
-                    idx = this.parent.viewport[`${offset}`] + freezePane;
-                    hiddenCount = this.parent.hiddenCount(idx, swapRange[i as number], layout, sheet);
+                    idx = skipHiddenIdx(sheet, this.parent.viewport[`${offset}`] + freezePane, true, layout);
+                    const startIdx: number = skipHiddenIdx(sheet, swapRange[i as number], true, layout);
+                    if (idx === startIdx) {
+                        swapRange[i as number] = idx;
+                    }
+                    hiddenCount = this.parent.hiddenCount(idx, swapRange[i as number] - 1, layout, sheet);
                     indexes[i as number] = swapRange[i as number] - hiddenCount - idx;
                     indexes[j as number] = swapRange[j as number] - this.parent.hiddenCount(
                         swapRange[i as number], swapRange[j as number], layout, sheet) - hiddenCount - idx + 1;
@@ -1045,10 +1058,10 @@ export class Selection {
                 }
             }
             if (selectAllEle) {
-                if (swapRange[0] === 0) {
+                if (skipHiddenIdx(sheet, swapRange[0], true) === skipHiddenIdx(sheet, 0, true)) {
                     selectAllEle.classList.add('e-prev-highlight-bottom');
                 }
-                if (swapRange[1] === 0) {
+                if (skipHiddenIdx(sheet, swapRange[1], true, 'columns') === skipHiddenIdx(sheet, 0, true, 'columns')) {
                     selectAllEle.classList.add('e-prev-highlight-right');
                 }
             }

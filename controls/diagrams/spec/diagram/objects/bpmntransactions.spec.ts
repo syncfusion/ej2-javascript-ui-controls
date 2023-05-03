@@ -139,4 +139,59 @@ describe('Diagram Control', () => {
         })
 
     });
+    describe('Fill color of BPMN Transaction Subprocess is not applied', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramSubProcess' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                style: { fill: 'green' } as ShapeStyleModel,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { type: 'Transaction',collapsed:true }
+                    }
+                }
+            };
+
+            diagram = new Diagram({
+                width: 1000, height: 500, nodes: [node]
+            });
+            diagram.appendTo('#diagramSubProcess');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+       it('Checking the fill color of the transaction subprocess', (done: Function) => {
+            let node: NodeModel = diagram.nodes[0];
+            expect((node.wrapper.children[0] as Canvas).children[0].style.fill === 'green' && (node.wrapper.children[0] as Canvas).children[1].style.fill === 'transparent').toBe(true);
+            done();
+        });
+        it('Changing the fill color of the transaction subprocess', (done: Function) => {
+            diagram.nodes[0].style.fill = 'red';
+            diagram.dataBind();
+            let node: NodeModel = diagram.nodes[0];
+            expect(((node.wrapper.children[0] as Canvas).children[0] as Canvas).children[0].style.fill === 'red' && ((node.wrapper.children[0] as Canvas).children[0] as Canvas).children[1].style.fill === 'transparent').toBe(true);
+            done();
+        });
+        it('Checking the opacity of the transaction subprocess', (done: Function) => {
+            diagram.nodes[0].style.opacity = 0.5;
+            diagram.dataBind();
+            let node: NodeModel = diagram.nodes[0];
+            expect(node.style.opacity === 0.5 && ((node.wrapper.children[0] as Canvas).children[0] as Canvas).children[0].style.opacity === 0.5).toBe(true);
+            done();
+        });
+    });
 });

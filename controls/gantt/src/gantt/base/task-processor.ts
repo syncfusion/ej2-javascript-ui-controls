@@ -2299,7 +2299,7 @@ export class TaskProcessor extends DateProcessor {
                         this.parent.setRecordValue(
                             ganttProp.isAutoSchedule ? 'startDate' : 'autoStartDate',
                             minStartDate, parentData.ganttProperties, true);
-                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone) {
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !=="TaskbarEditing")) {
                             this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
                         }
                     }
@@ -2307,7 +2307,7 @@ export class TaskProcessor extends DateProcessor {
                         this.parent.setRecordValue(
                             ganttProp.isAutoSchedule ? 'endDate' : 'autoEndDate',
                             maxEndDate, parentData.ganttProperties, true);
-                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone) {
+                        if ((((!isNullOrUndefined(ganttProp.autoDuration)) ? ganttProp.autoDuration === 0 : ganttProp.duration === 0)) && parentData['isManual'] && milestone && (parentData.hasChildRecords && parentData.ganttProperties.isAutoSchedule && this.parent.editModule.taskbarEditModule.taskbarEditedArgs.action !=="TaskbarEditing")) {
                             this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
                         }
                     }

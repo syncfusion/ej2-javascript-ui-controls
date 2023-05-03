@@ -156,7 +156,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     public destroy(): void {
         const el: HTEle = this.element;
         el.style.display = '';
-        removeClass([this.element], [CLS_ROOT, CLS_DEVICE]);
+        removeClass([this.element], [CLS_ROOT, CLS_DEVICE, CLS_RTL]);
         const navs: HTEle[] = selectAll('.e-' + el.id + '_nav.' + CLS_VSCROLLNAV, el);
         const overlays: HTEle[] = selectAll('.' + CLS_OVERLAY, el);
         [].slice.call(overlays).forEach((ele: HTMLElement) => {

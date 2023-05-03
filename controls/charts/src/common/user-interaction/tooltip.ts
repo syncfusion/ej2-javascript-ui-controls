@@ -199,6 +199,7 @@ export class BaseTooltip extends ChartData {
                     controlInstance: this.chart,
                     enableRTL: chart.enableRtl,
                     controlName: 'Chart',
+                    allowHighlight: chart.getModuleName() === 'chart' && !series.marker.allowHighlight,
                     tooltipRender: () => {
                         module.removeHighlight();
                         module.highlightPoints();
@@ -227,6 +228,7 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 7;
+                this.svgTooltip.allowHighlight = chart.getModuleName() === 'chart' && !series.marker.allowHighlight;
                 this.svgTooltip.dataBind();
             }
         }

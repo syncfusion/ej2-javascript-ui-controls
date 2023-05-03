@@ -134,7 +134,7 @@ export class WorkbookAutoFill {
             patterns = this.getPattern(patrnRange, { isReverseFill: isReverseFill, isVFill: isVFill });
             data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
-            if (!patterns) {
+            if (!patterns || !patterns.length) {
                 return;
             }
             plen = patterns.length;

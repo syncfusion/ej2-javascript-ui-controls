@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I453038` - Drill operations now work properly while adding attribute hierarchy to the pivot table.
+
+#### New features
+
+- `#I398184` - Based on export properties, the pivot table will now export automatically utilizing engine export option support while using for toolbar options.
+- `#I442424` - The field list UI now supports setting the default sort order via the `load` event.
+- `#I436727` - While the data source is empty, the field list UI has been rendered with an empty layout.
+
+## 21.1.41 (2023-04-18)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I454110` - Pivot Table now works properly when conditional formatting is applied without a measure.
+
 ## 21.1.39 (2023-04-11)
 
 ### Pivot Table

@@ -7032,6 +7032,123 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Sample Browser - Test Case1', () => {
+        let mouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'SampleBrowserLineRouting' });
+            document.body.appendChild(ele);
+            let portCollection = [
+                { id: "left", offset: { x: 0, y: 0.5 } },
+                { id: 'top', offset: { x: 0.5, y: 0 } },
+                { id: 'right', offset: { x: 1, y: 0.5 } },
+                { id: "bottom", offset: { x: 0.5, y: 1 } }];
+
+            let nodes: NodeModel[] = [{
+                id: 'start', offsetX: 115, offsetY: 110, shape: { type: 'Flow', shape: 'Terminator' },
+                ports: [{ id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Hidden }],
+                style: { fill: '#D5535D' }, annotations: [{ content: 'Start', style: { color: 'white' } }]
+            },
+            {
+                id: 'process', offsetX: 115, offsetY: 255, shape: { type: 'Flow', shape: 'Process' },
+                style: { fill: '#65B091' }, annotations: [{ content: 'Process', style: { color: 'white' } }]
+            },
+            {
+                id: 'document', offsetX: 115, offsetY: 400, shape: { type: 'Flow', shape: 'Document' },
+                ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Hidden }],
+                annotations: [{ content: 'Document', style: { color: 'white' } }], style: { fill: '#5BA5F0' }
+            },
+            {
+                id: 'decision', offsetX: 390, offsetY: 110, shape: { type: 'Flow', shape: 'Decision' },
+                style: { fill: '#9A8AF7' }, annotations: [{ content: 'Decision', style: { color: 'white' } }]
+            },
+            {
+                id: 'document2', offsetX: 390, offsetY: 255, shape: { type: 'Flow', shape: 'Document' },
+                style: { fill: '#5BA5F0' }, annotations: [{ content: 'Document', style: { color: 'white' } }]
+            },
+            {
+                id: 'end', offsetX: 390, offsetY: 400, shape: { type: 'Flow', shape: 'Terminator' },
+                style: { fill: '#D5535D' }, annotations: [{ content: 'End', style: { color: 'white' } }]
+            },
+            {
+                id: 'process2', offsetX: 640, offsetY: 110, shape: { type: 'Flow', shape: 'Process' },
+                style: { fill: '#65B091' }, annotations: [{ content: 'Process', style: { color: 'white' } }]
+            },
+            {
+                id: 'card', offsetX: 640, offsetY: 255,
+                shape: { type: 'Flow', shape: 'Card' },
+                style: { fill: '#76C3F0' },
+                annotations: [{ content: 'Card', style: { color: 'white' } }],
+                ports: [
+                    { id: 'port1', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Hidden },
+                    { id: 'port2', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Hidden }
+                ],
+            }
+            ];
+            let connectors: ConnectorModel[] = [
+                { id: 'Connector1', sourceID: 'start', targetID: 'process', },
+                { id: 'Connector2', sourceID: 'process', targetID: 'document' },
+                { id: 'Connector3', sourceID: 'document', targetID: 'end' },
+                { id: 'Connector4', sourceID: 'start', targetID: 'decision' },
+                { id: 'Connector5', sourceID: 'decision', targetID: 'process2' },
+                { id: 'Connector6', sourceID: 'process2', targetID: 'card' },
+                { id: 'Connector7', sourceID: 'process', targetID: 'document2' },
+                { id: 'Connector8', sourceID: 'document2', targetID: 'card' },
+                { id: 'Connector9', sourceID: 'start', sourcePortID: 'port1', targetID: 'card', targetPortID: 'port1' },
+                { id: 'Connector10', sourceID: 'card', sourcePortID: 'port2', targetID: 'document', targetPortID: 'port1' }
+            ];
+            diagram = new Diagram({
+                width: 1000, height: 600,
+                nodes: nodes, connectors: connectors,
+                snapSettings: {
+                    constraints: SnapConstraints.None
+                },
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+                getNodeDefaults: function (node: NodeModel) {
+                    node.height = 50;
+                    if (node.id === 'decision') {
+                        node.height = 70;
+                    }
+                    node.width = 120;
+                    node.style = { strokeColor: 'transparent' };
+                    return node;
+                },
+                getConnectorDefaults: function (connector: ConnectorModel) {
+                    connector.type = 'Orthogonal';
+                    connector.style = { strokeColor: '#707070 ', strokeWidth: 1.25 };
+                    connector.targetDecorator = { style: { fill: '#707070 ', strokeColor: '#707070 ' } };
+                    return connector;
+                }
+            });
+            diagram.appendTo('#SampleBrowserLineRouting');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Exception raised - Line routing issue', (done: Function) => {
+            for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
+            mouseEvents.clickEvent(diagramCanvas, 350, 250);
+            mouseEvents.mouseDownEvent(diagramCanvas, 350, 250);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 230, 110);
+            mouseEvents.mouseUpEvent(diagramCanvas, 230, 110);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 115 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 135 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 115 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 230).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 115 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 115 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 375).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 175 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 400 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 330.11 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 400).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 175 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 110 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 190 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 110).toBe(true);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 110 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 580 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 110).toBe(true);
+            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 640 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 135 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 640 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 230).toBe(true);
+            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 175 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 255 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 330 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 255).toBe(true);
+            expect((diagram.connectors[7] as Connector).intermediatePoints[0].x == 450 && (diagram.connectors[7] as Connector).intermediatePoints[0].y == 255 && (diagram.connectors[7] as Connector).intermediatePoints[1].x == 580 && (diagram.connectors[7] as Connector).intermediatePoints[1].y == 255).toBe(true);
+            expect((diagram.connectors[8] as Connector).intermediatePoints[0].x == 115 && (diagram.connectors[8] as Connector).intermediatePoints[0].y == 85 && (diagram.connectors[8] as Connector).intermediatePoints[1].x == 115 && (diagram.connectors[8] as Connector).intermediatePoints[1].y == 70 && (diagram.connectors[8] as Connector).intermediatePoints[2].x == 190 && (diagram.connectors[8] as Connector).intermediatePoints[2].y == 70 && (diagram.connectors[8] as Connector).intermediatePoints[3].x == 190 && (diagram.connectors[8] as Connector).intermediatePoints[3].y == 210 && (diagram.connectors[8] as Connector).intermediatePoints[4].x == 720 && (diagram.connectors[8] as Connector).intermediatePoints[4].y == 210 && (diagram.connectors[8] as Connector).intermediatePoints[5].x == 720 && (diagram.connectors[8] as Connector).intermediatePoints[5].y == 255 && (diagram.connectors[8] as Connector).intermediatePoints[6].x == 700 && (diagram.connectors[8] as Connector).intermediatePoints[6].y == 255).toBe(true);
+            expect((diagram.connectors[9] as Connector).intermediatePoints[0].x == 640 && (diagram.connectors[9] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[9] as Connector).intermediatePoints[1].x == 640 && (diagram.connectors[9] as Connector).intermediatePoints[1].y == 350 && (diagram.connectors[9] as Connector).intermediatePoints[2].x == 30 && (diagram.connectors[9] as Connector).intermediatePoints[2].y == 350 && (diagram.connectors[9] as Connector).intermediatePoints[3].x == 30 && (diagram.connectors[9] as Connector).intermediatePoints[3].y == 400 && (diagram.connectors[9] as Connector).intermediatePoints[4].x == 55 && (diagram.connectors[9] as Connector).intermediatePoints[4].y == 400).toBe(true);
+            done();
+        });
+    });
+
     describe('EJ2-37668 -  Connector did not render properly for the port to port connection', () => {
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramLineRouting2' });

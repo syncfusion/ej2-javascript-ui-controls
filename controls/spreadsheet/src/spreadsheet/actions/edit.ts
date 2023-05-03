@@ -5,14 +5,14 @@ import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, compl
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, skipDefaultValue } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs } from '../../workbook/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid, NumberFormatArgs, parseLocaleNumber, getViewportIndexes } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference, workbookFormulaOperation } from '../../workbook/index';
 import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, dialog, locale } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
-import { checkFormulaRef } from '../../workbook/common/index';
+import { checkFormulaRef, getData, VisibleMergeIndexArgs } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 
@@ -416,8 +416,8 @@ export class Edit {
                 return;
             }
         }
-        this.updateEditCellDetail(address, value);
-        this.initiateEditor(refreshCurPos);
+        const isMergedHiddenCell: boolean = this.updateEditCellDetail(address, value);
+        this.initiateEditor(refreshCurPos, isMergedHiddenCell);
         this.positionEditor();
         this.parent.isEdit = this.isEdit = true;
         this.parent.notify(clearCopy, null);
@@ -702,9 +702,9 @@ export class Edit {
         }
     }
 
-    private updateEditCellDetail(addr?: string, value?: string): void {
+    private updateEditCellDetail(addr?: string, value?: string): boolean {
         let sheetIdx: number;
-        let sheet: SheetModel;
+        let sheet: SheetModel; let isMergedHiddenCell: boolean;
         if (isNullOrUndefined(this.editCellData.sheetIndex)) {
             if (addr && addr.split('!').length > 1) {
                 sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(addr));
@@ -727,8 +727,14 @@ export class Edit {
         }
         if (addr) {
             const range: number[] = getRangeIndexes(addr);
-            const rowIdx: number = range[0];
-            const colIdx: number = range[1];
+            let rowIdx: number = range[0];
+            let colIdx: number = range[1];
+            const model: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+            if (model.colSpan > 1 || model.rowSpan > 1) {
+                const mergeArgs: VisibleMergeIndexArgs = { sheet: sheet, cell: model, rowIdx: rowIdx, colIdx: colIdx };
+                setVisibleMergeIndex(mergeArgs);
+                rowIdx = mergeArgs.rowIdx; colIdx = mergeArgs.colIdx; isMergedHiddenCell = mergeArgs.isMergedHiddenCell;
+            }
             const cellElem: HTMLElement = this.parent.getCell(rowIdx, colIdx);
             const cellPosition: { top: number, left: number } = getCellPosition(
                 sheet, range, this.parent.frozenRowCount(sheet), this.parent.frozenColCount(sheet),
@@ -744,11 +750,11 @@ export class Edit {
                 position: cellPosition
             };
         }
+        return isMergedHiddenCell;
     }
 
-    private initiateEditor(refreshCurPos: boolean): void {
-        const data: Promise<Map<string, CellModel>> = this.parent.getData(this.editCellData.fullAddr);
-        data.then((values: Map<string, CellModel>): void => {
+    private initiateEditor(refreshCurPos: boolean, isMergedHiddenCell: boolean): void {
+        getData(this.parent, this.editCellData.fullAddr, false, isMergedHiddenCell).then((values: Map<string, CellModel>): void => {
             if (!this.parent) { return; }
             (values as Map<string, CellModel>).forEach((cell: CellModel): void => {
                 const args: { [key: string]: CellModel | string } = { cell: cell, value: cell ? cell.value : '' };

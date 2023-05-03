@@ -779,8 +779,8 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         condition = this.parent.getValueFromArg(argArr[0], null, true);
-        if (condition === this.parent.trueValue || condition === this.parent.falseValue) {
-            return condition;
+        if (condition === this.parent.trueValue || condition === this.parent.falseValue || condition[0] === this.parent.tic || (this.parent.getErrorStrings().indexOf(condition) === -1 && condition !== "NaN" && condition !== "")) {
+            return condition.split('"').join('');
         }
         if (condition[0] === this.parent.arithMarker) {
             condition = condition.replace(this.parent.arithMarker, ' ');

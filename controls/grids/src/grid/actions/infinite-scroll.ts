@@ -1077,6 +1077,25 @@ export class InfiniteScroll implements IAction {
         const scrollEle: Element = this.parent.getContent().firstElementChild;
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
         const isMovable: boolean = this.parent.getFrozenMode() === literals.leftRight &&  e.tableName === 'movable';
+        if ((this.parent.isAngular || this.parent.isReact || this.parent.isVue || this.parent.isVue3) && isInfiniteScroll &&
+         !e.args.isFrozen && this.parent.infiniteScrollSettings.enableCache){
+            const isChildGrid: boolean = this.parent.childGrid && this.parent.element.querySelectorAll('.e-childgrid').length ? true : false;
+            const rows: Element[] | NodeListOf<Element> = this.parent.getDataRows();
+            if (frozenCols) {
+                this.parent.contentModule['freezeRowElements'] = rows;
+                const mCont: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
+                const frLCont: Element = this.parent.getContent().querySelector('.e-frozen-left-content');
+                if (mCont && mCont.querySelectorAll('.e-templatecell').length) {
+                    (this.parent as Grid).refreshReactTemplateTD(this.parent.getMovableDataRows(), isChildGrid, true);
+                }
+                if (frLCont && frLCont.querySelectorAll('.e-templatecell').length) {
+                    (this.parent as Grid).refreshReactTemplateTD(this.parent.getDataRows(), isChildGrid, true);
+                }
+                this.parent.contentModule['freezeRowElements'] = this.parent.getRows();
+            } else {
+                (this.parent as Grid).refreshReactTemplateTD(rows, isChildGrid);
+            }
+        }
         if ((isInfiniteScroll && !e.args.isFrozen && !isMovable) || !isInfiniteScroll) {
             if (isInfiniteScroll && e.args.direction === 'up') {
                 e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);

@@ -1064,7 +1064,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
         }
-        if (!this.element.classList.contains("e-dialog") && !this.element.classList.contains("e-card") && document.scrollingElement) {
+        if (document.scrollingElement && (!isdragscroll && !this.clone)) {
             let isVerticalScroll: boolean = document.scrollingElement.scrollHeight > 0 && document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight && document.scrollingElement.scrollTop > 0;
             let isHorrizontalScroll: boolean = document.scrollingElement.scrollWidth > 0 && document.scrollingElement.scrollWidth > document.scrollingElement.clientWidth && document.scrollingElement.scrollLeft > 0;
             pageX = isHorrizontalScroll ? pageX - document.scrollingElement.scrollLeft : pageX;

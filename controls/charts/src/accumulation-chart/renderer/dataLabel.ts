@@ -912,7 +912,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
             this.textTrimming(point, this.areaRect, dataLabel.font, position, dataLabel);
         }
-        if (point.labelVisible && point.labelRegion && !dataLabel.maxWidth  && dataLabel.textOverflow !== 'Clip' &&  ((point.labelRegion.y + point.labelRegion.height >
+        if (point.labelVisible && point.labelRegion && !dataLabel.maxWidth  && dataLabel.textOverflow !== 'Clip' &&  ((point.labelRegion.y + point.labelRegion.height / 2 >
             this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
                 point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
             this.setPointVisibileFalse(point);

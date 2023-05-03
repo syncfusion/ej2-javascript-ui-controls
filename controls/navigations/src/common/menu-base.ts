@@ -880,7 +880,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.trigger('onClose', closeArgs); this.navIdx.pop();
                         if (!this.isMenu) {
                             EventHandler.remove(ul, 'keydown', this.keyHandler);
-                            this.keyType = '';
+                            if (this.keyType === 'right') {
+                                this.keyType = '';
+                            }
                         }
                     }
                     this.updateReactTemplate(); let trgtliId: string; let closedLi: Element; let trgtLi: Element;
@@ -2229,17 +2231,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
                 if (ishide) {
-                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                        ul.children[index + 1].classList.add(HIDE);
-                    } else {
                         ul.children[index as number].classList.add(HIDE);
-                    }
                 } else {
-                    if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
-                        ul.children[index + 1].classList.remove(HIDE);
-                    } else {
-                        ul.children[index as number].classList.remove(HIDE);
-                    }
+                    ul.children[index as number].classList.remove(HIDE);
                 }
             }
         }

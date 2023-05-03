@@ -1,10 +1,11 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, isImported } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, getSwapRange } from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
 import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
+import { getSwapRange, skipHiddenIdx, isHiddenCol } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
 import { deleteChart, deleteImage } from '../common/index';
 /**
@@ -228,9 +229,17 @@ export class CellFormat {
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
         first: string, lastCell: boolean, manualUpdate: boolean, sheet: SheetModel): void {
         if (first && first.includes('Row')) { return; }
-        const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
+        let col: number = colIdx;
+        let model: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        if (model.colSpan > 1 && isHiddenCol(sheet, colIdx)) {
+            col = skipHiddenIdx(sheet, colIdx, true, 'columns');
+            if (col > colIdx + model.colSpan - 1)  {
+                col = colIdx;
+            }
+        }
+        const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, col, <HTMLTableRowElement>pRow);
         if (prevCell) {
-            let model: CellModel = getCell(rowIdx - 1, colIdx, sheet, false, true);
+            model = getCell(rowIdx - 1, colIdx, sheet, false, true);
             if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {
                 const mergeArgs: { range: number[] } = { range: [rowIdx - 1, colIdx, rowIdx - 1, colIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);

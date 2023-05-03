@@ -542,4 +542,12 @@ export interface AccumulationSeriesModel {
      */
     opacity?: number;
 
+    /**
+     * Defines the pattern of dashes and gaps to the series border.
+     *
+     * @default '0'
+     */
+
+    dashArray?: string;
+
 }

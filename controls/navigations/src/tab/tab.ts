@@ -1769,6 +1769,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         const icon: Str | Object = (isNOU(this.items[index].header) ||
                             isNOU(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
                         const textVal: Str | Object = this.items[index].headerTemplate || this.items[index].header.text;
+                        if (properties[j] === 'headerTemplate') {
+                            this.clearTabTemplate(hdrItem, properties[j], CLS_TB_ITEM);
+                        }
                         if ((textVal === '') && (icon === '')) {
                             this.removeTab(index);
                         } else {
@@ -1797,7 +1800,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         } else if (newVal === '' && oldVal[0] === '#') {
                             (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
                             cntItem.innerHTML = <Str>newVal;
-                        } else if ((this as any).isReact) {
+                        } else if ((this as any).isAngular || (this as any).isReact) {
+                            this.clearTabTemplate(cntItem, properties[j], CLS_ITEM);
                             cntItem.innerHTML = '';
                             this.templateCompile(cntItem, <Str>newVal, index);
                         } else if (typeof newVal !== 'function') {
@@ -1842,6 +1846,30 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.select(this.selectedItem);
                 this.draggableItems = [];
                 this.bindDraggable();
+            }
+        }
+    }
+
+    private clearTabTemplate(templateEle: HTMLElement, templateName: string, className: string): void {
+        if ((this as Record<string, any>).registeredTemplate && (this as Record<string, any>).registeredTemplate[templateName]) {
+            const registeredTemplates: Record<string, any> = (this as Record<string, any>).registeredTemplate;
+            for (let index = 0; index < registeredTemplates[templateName].length; index++) {
+                const registeredItem = registeredTemplates[templateName][index].rootNodes[0];
+                const closestItem = closest(registeredItem, '.' + className);
+                if (!isNullOrUndefined(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate([templateName], [registeredTemplates[templateName][index]]);
+                    break;
+                }
+            }
+        } else if ((this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+            const portals: Record<string, any>[] = (this as Record<string, any>).portals;
+            for (let index = 0; index < portals.length; index++) {
+                const portalItem: Record<string, any> = portals[index];
+                const closestItem: Element = closest(portalItem.containerInfo, '.' + className);
+                if (!isNullOrUndefined(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate([templateName], index);
+                    break;
+                }
             }
         }
     }
@@ -2182,6 +2210,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
+                const header: HTEle =
+                    select('#' + CLS_ITEM + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_TB_ITEMS, this.element));
+                if (!isNOU(header)) {
+                    this.clearTabTemplate(header, 'headerTemplate', CLS_TB_ITEM);
+                }
                 this.tbObj.removeItems(index);
                 if (this.allowDragAndDrop && (index !== Array.prototype.indexOf.call(this.itemIndexArray, trg.id))) {
                     index = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
@@ -2193,32 +2226,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 const cntTrg: HTEle =
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
                 if (!isNOU(cntTrg)) {
-                    const registeredTemplate = (this as any).registeredTemplate;
-                    const portal = (this as any).portals;
-                    if (registeredTemplate && registeredTemplate.content) {
-                        var templateToClear = [];
-                        for (let i = 0; i < registeredTemplate.content.length; i++) {
-                            let registeredItem = registeredTemplate.content[i].rootNodes[0];
-                            let closestItem = closest(registeredItem, '.' + CLS_ITEM);
-                            if (!isNullOrUndefined(registeredItem) && closestItem === cntTrg) {
-                                templateToClear.push(registeredTemplate.content[i]);
-                                break;
-                            }
-                        }
-                        if (templateToClear.length > 0) {
-                            this.clearTemplate(['content'], templateToClear);
-                        }
-                    }
-                   /*  else if (portal) {
-                        for (var i = 0; i < portal.length; i++) {
-                            var portalItem = portal[i];
-                            var closestItem = closest(portalItem.containerInfo, '.' + CLS_ITEM);
-                            if (!isNullOrUndefined(portalItem) && closestItem === cntTrg) {
-                                this.clearTemplate(['content'], i);
-                                break;
-                            }
-                        }
-                    } */
+                    this.clearTabTemplate(cntTrg, 'content', CLS_ITEM);
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);

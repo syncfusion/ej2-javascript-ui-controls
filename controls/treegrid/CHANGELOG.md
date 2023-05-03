@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I440455`, `#F180980` - Resolved the issue where the data source was not being rendered in the row template sample.
+
+## 21.1.41 (2023-04-18)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I448090` - The excel filtering dialog box has been fixed to display the data source after filtering a column.
+- `#I414166` - Virtualization has been resolved when enabling it in the load event.
+
 ## 21.1.38 (2023-04-04)
 
 ### Tree Grid

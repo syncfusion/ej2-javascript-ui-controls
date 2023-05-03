@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F181471` - Now, deleted comment value will not appeared while importing the exported XFDF/JSON annotation data.
+- `#I453496` - Now, when `enableAnnotation` is set to false, the script error does not happen while scrolling the document.
+- `#I452488` - Now, large files are loaded through the document file path.
+- `#F181447` - Now, the free text annotation content is changed properly while resizing.
+
 ## 21.1.41 (2023-04-18)
 
 ### PDF Viewer
@@ -11,6 +22,7 @@
 - `#F181315` - Now, the `commentEdit` event is triggered when editing free text annotations.
 - `#I452575` - Now, `clearFormFields` API deletes the signature content only and preserves form field.
 - `#I449909` - Now, the image in the provided document is rendered properly.
+- `#I449638` - The issue with Signature canvas content clearing on window resizing has been resolved.
 
 ## 21.1.39 (2023-04-11)
 

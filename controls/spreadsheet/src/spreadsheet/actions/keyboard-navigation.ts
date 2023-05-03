@@ -692,7 +692,9 @@ export class KeyboardNavigation {
                 cont.scrollTop = offsetTopSize - Math.ceil(getRowsHeight(sheet, paneTopLeftIdxes[0], actIdxes[0], true) + cont.getBoundingClientRect().height);
             } else {
                 cont.scrollTop = offsetTopSize - Math.ceil(getRowHeight(sheet, actIdxes[0], true));
-                this.parent.scrollModule.isKeyScroll = false;
+                if (cont.scrollTop) {
+                    this.parent.scrollModule.isKeyScroll = false;
+                }
             }
         }
         const scrollLeftIdx: number = this.getRightIdx(leftIdx);
@@ -707,7 +709,9 @@ export class KeyboardNavigation {
                 hCont.scrollLeft -= getColumnsWidth(sheet, paneTopLeftIdxes[1], actIdxes[1], true) + hCont.getBoundingClientRect().width;
             } else {
                 hCont.scrollLeft -= getColumnWidth(sheet, actIdxes[1], null, true) * x;
-                this.parent.scrollModule.isKeyScroll = false;
+                if (hCont.scrollLeft) {
+                    this.parent.scrollModule.isKeyScroll = false;
+                }
             }
         }
     }

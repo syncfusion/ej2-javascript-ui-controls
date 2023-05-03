@@ -148,6 +148,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      *
      * By default, this property is set to `null`, which enables all types of zooming.
      *
+     * @aspNumberEnum
      * @default null
      */
     @Property(null)
@@ -1034,6 +1035,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }
         if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
             this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar | ZoomTrigger.Commands);
+        }
+        if (isNullOrUndefined(this.zoomSettings.zoomFactor)) {
+            this.zoomSettings.zoomFactor = 1;
+        }
+        if (isNullOrUndefined(this.zoomSettings.maxZoomFactor)) {
+            this.zoomSettings.maxZoomFactor = 10;
         }
     }
 
@@ -12903,27 +12910,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {ImageData}.
      */
     public getImageData(): ImageData {
-        if (!isNullOrUndefined(this.activeObj.shape)) {
-            this.performCancel();
-        }
-        let currentObj: CurrentObject;
-        if (this.defaultZoomFactor > 0) {
-            currentObj = this.getCurrentObj();
-            currentObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-            currentObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-            currentObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-        }
-        this.resetZoom();
-        const data: ImageData = this.lowerContext.getImageData(this.destLeft, this.destTop, this.destWidth, this.destHeight);
-        if (!isNullOrUndefined(currentObj)) {
-            this.setCurrentObj(currentObj);
-            this.objColl = extend([], currentObj.objColl, [], true) as SelectionPoint[];
-            this.pointColl = extend([], currentObj.pointColl, [], true) as Point[];
-            this.freehandCounter = this.pointColl.length;
-            this.lowerContext.filter = 'none';
-            this.zoomObjColl(); this.zoomFreehandDrawColl();
-            this.lowerContext.filter = currentObj.filter;
-        }
+        const canvas: HTMLCanvasElement = this.exportChangesToCanvas();
+        const data: ImageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
         return data;
     }
 
@@ -14101,7 +14089,7 @@ export enum ShapeType {
 /**
  * An enumeration representing the different ways to trigger zooming in the image editor.
  *
- * @enum {number}
+ * @aspNumberEnum
  */
 export enum ZoomTrigger {
     /** Zooming triggered by mouse wheel. */

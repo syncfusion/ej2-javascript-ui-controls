@@ -288,6 +288,15 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public fill: string;
 
     /**
+     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     *
+     * @default true
+     */
+
+    @Property(true)
+    public allowHighlight: boolean;
+
+    /**
      * The opacity of the marker.
      *
      * @default 1
@@ -415,10 +424,10 @@ export class Trendline extends ChildProperty<Trendline> {
     /**
      * Defines the pattern of dashes and gaps to stroke.
      *
-     * @default '0'
+     * @default ''
      */
 
-    @Property('0')
+    @Property('')
     public dashArray: string;
 
     /**
@@ -971,10 +980,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
      *
-     * @default '0'
+     * @default ''
      */
 
-    @Property('0')
+    @Property('')
     public dashArray: string;
 
     /**

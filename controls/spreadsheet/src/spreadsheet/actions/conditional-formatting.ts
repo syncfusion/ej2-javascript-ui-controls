@@ -2,7 +2,7 @@ import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
 import { renderCFDlg, locale, dialog, focus } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
-import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
+import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, DataBar, ColorScale, IconSet } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -101,7 +101,9 @@ export class ConditionalFormatting {
     }
 
     private dlgClickHandler(action: string): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const cfValues: string[] = ['', ''];
+        let cfType: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
         const dlgCont: HTMLElement = this.parent.element.querySelector('.e-conditionalformatting-dlg').
             getElementsByClassName('e-dlg-content')[0].querySelector('.e-cf-dlg') as HTMLElement;
         const mainCont: HTMLElement = dlgCont.querySelector('.e-cfmain');
@@ -115,8 +117,13 @@ export class ConditionalFormatting {
                 dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[1].value : '';
             parseLocaleNumber(cfValues, this.parent.locale);
         }
+        if (action === l10n.getConstant('DuplicateValues') + '...') {
+            cfType = inpEle.value === l10n.getConstant('Duplicate') ? 'Duplicate' : 'Unique';
+        } else {
+            cfType = this.getType(action);
+        }
         let cf: ConditionalFormatModel = {
-            type: action === 'Duplicate Values...' ? <HighlightCell>inpEle.value : this.getType(action),
+            type: cfType,
             cFColor: this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value),
             range: this.parent.getActiveSheet().selectedRange
         };

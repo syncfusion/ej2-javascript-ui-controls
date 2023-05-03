@@ -4497,6 +4497,12 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('L16', '=IFERROR(A2+B2,"ERROR")');
                 helper.edit('L17', '=IFERROR(A4-B4,"ERROR")');
                 helper.edit('L18', '=IFERROR(A8*B8,"ERROR")');
+                helper.edit('L19', '=IFERROR(B13,"ERROR")');
+                helper.edit('L20', '=IFERROR(B14,"ERROR")');
+                helper.edit('L21', '=IFERROR(ADD,"ERROR")');
+                helper.edit('L22', '=IFERROR("ADD","ERROR")');
+                helper.edit('M1', 'B2');
+                helper.edit('L23', '=IFERROR(M1,"ERROR")');
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[0].cells[11].value).toBe('ERROR');
                     expect(helper.getInstance().sheets[0].rows[1].cells[11].value).toBe('ERROR');
@@ -4516,6 +4522,11 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.getInstance().sheets[0].rows[15].cells[11].value).toBe('ERROR');
                     expect(helper.getInstance().sheets[0].rows[16].cells[11].value).toBe('ERROR');
                     expect(helper.getInstance().sheets[0].rows[17].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[18].cells[11].value).toBe('dog');
+                    expect(helper.getInstance().sheets[0].rows[19].cells[11].value).toBe('lion');
+                    expect(helper.getInstance().sheets[0].rows[20].cells[11].value).toBe('ERROR');
+                    expect(helper.getInstance().sheets[0].rows[21].cells[11].value).toBe('ADD');
+                    expect(helper.getInstance().sheets[0].rows[22].cells[11].value).toBe('B2');
                     done();
                 });
             });

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 21.2.3 (2023-05-03)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I455137` - An issue with Horizontal scroll is not destroyed in RTL mode has been fixed.
+
+### Menu
+
+#### Bug Fixes
+
+- `#I455183` - The issue with "Script error thrown while using `hideMenuItems` method in menu component" has been resolved.
+
 ## 21.1.39 (2023-04-11)
 
 ### Menu

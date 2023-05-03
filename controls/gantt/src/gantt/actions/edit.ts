@@ -865,7 +865,7 @@ export class Edit {
                 this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
-                (args.action === "DrawConnectorLine")) {
+                (args.action === "DrawConnectorLine") || (args.action === "DialogEditing")) {
                 this.updateChildItems(ganttRecord);
             }
             this.updateParentItemOnEditing();

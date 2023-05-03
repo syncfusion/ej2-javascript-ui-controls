@@ -13,7 +13,7 @@ Syncfusion provides a predefined [Word Processor server docker image](https://hu
 </p>
 
 <p align="center">
-![JavaScript Word Processor Control](https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-word-processor.png)
+  <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-word-processor.png" alt="JavaScript Word Processor Control">
 </p>
 
 <p align="center">

@@ -1820,13 +1820,12 @@ export class DiagramRenderer {
             if (group.flip !== 'None') {
                 selectedNode = Node;
             }
-            if (selectedNode && selectedNode.flipMode) { isNodeSelected = true; }
-            if (group.flip !== 'None' && selectedNode && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'None') {
-                group.flip = 'None';
-                for (let k = 0; k < group.children.length; k++) {
-                    group.children[parseInt(k.toString(), 10)].flip = 'None';
-                }
+            // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
+            // Below code to set selected node value
+            if (group.flip == 'None') {
+                selectedNode = Node;
             }
+            if (selectedNode && selectedNode.flipMode) { isNodeSelected = true; }
             if (!(group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
                 if (isNodeSelected && selectedNode) {
                     if (group.children && group.children[0] instanceof DiagramNativeElement) {
@@ -1838,13 +1837,13 @@ export class DiagramRenderer {
                     if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
                         this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
                         return;
-                    } else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Basic' && selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && selectedNode.flipMode === 'Label')) {
+                    } 
+                    //Below code to check and flip the node except for flip mode Port.
+                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && selectedNode.flipMode === 'Label')) {
                         this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
-                        if (selectedNode.shape.type === 'Text') { } else {
                             this.renderFlipElement(group, innerNodeContent, group.flip);
-                        }
                     }
                     //Below code to check and flip the text element in the node.
                     else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
@@ -1856,8 +1855,19 @@ export class DiagramRenderer {
                             }
                         }
                     }
+                    //Below code to check and flip for flip mode all in the node.
+                    else if(group.flip !== 'None' && selectedNode.flipMode === 'All'){
+                        for (var i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                            }
+                        }
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    //Below code to check and flip the element for None in the node.
                     else {
-                        this.renderFlipElement(group, canvas, group.flip);
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                 }
             }

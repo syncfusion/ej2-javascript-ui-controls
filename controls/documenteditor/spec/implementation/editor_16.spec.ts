@@ -432,3 +432,41 @@ describe('Character format preservation for paste', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
 });
+
+describe('Validate the inserted form fields order', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the order of Form Fields', () => {
+        console.log('Check the order of Form Fields');
+        container.openBlank();
+        container.editor.insertText("First Paragraph");
+        container.editor.onEnter();
+        container.editor.insertText("Second Paragraph");
+        container.editor.insertFormField('CheckBox');
+        container.selection.moveToLineStart();
+        container.editor.insertFormField('Text');
+        let formFieldNames: string[] = container.getFormFieldNames();
+        expect(formFieldNames[0]).toEqual('Text1');
+        expect(formFieldNames[1]).toEqual('CheckBox1');
+    });
+});

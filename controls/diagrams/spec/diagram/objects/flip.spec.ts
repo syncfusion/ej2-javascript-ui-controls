@@ -572,4 +572,125 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('FlipMode Operation for node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram12' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'RightTriangle' },
+                ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 500, shape: { type: 'Basic', shape: 'RightTriangle' },
+                ports: [{ id: 'port2', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, }]
+            };
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePortID: 'port1', targetPortID: 'port2', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal'
+            }
+            let connector2: ConnectorModel = {
+                id: 'connector2', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal'
+            }
+            diagram = new Diagram({
+                width: '600', height: '530px', nodes: [node, node2],
+                connectors: [connector, connector2],
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+
+            diagram.appendTo('#diagram12');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking without flip', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip horizontal to ports', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Horizontal";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Vertical to ports', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Vertical";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Both to ports', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Both";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip horizontal to Label', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Horizontal";
+            diagram.nodes[0].flipMode= "Label";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Vertical to Label', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Vertical";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Both to Label', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Both";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip horizontal to All', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Horizontal";
+            diagram.nodes[0].flipMode= "All";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Vertical to All', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Vertical";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+        it('Checking flip Both to All', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
+            diagram.nodes[0].flip= "Both";
+            expect(diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100 &&
+                diagram.nodes[0].ports[0].offset.x === 0 && diagram.nodes[0].ports[0].offset.y === 0.5).toBe(true);
+            done();
+        });
+    });
 });

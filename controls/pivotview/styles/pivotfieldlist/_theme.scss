@@ -177,6 +177,7 @@
 
       .e-checkbox-layout {
         max-width: 45%;
+        overflow: visible;
       }
 
     }
@@ -1340,16 +1341,18 @@
               margin-top: 20px;
               overflow: auto;
 
+              .e-acrdn-header {
+                align-items: center;
+                display: flex;
+              }
+
               .e-acrdn-header-icon {
                 display: table;
                 font-size: 12px;
-                height: 36px;
-                min-height: 36px;
                 min-width: 28px;
                 padding: 0;
                 position: absolute;
                 right: 16px;
-                top: 0;
 
                 .e-list-icon {
                   cursor: pointer;

@@ -482,7 +482,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
             EventHandler.remove(this.getPopUpElement(), 'click', this.clickHandler);
             EventHandler.remove(this.getPopUpElement(), 'keydown', this.keyBoardHandler);
-            if (this.isPopupCreated) {
+            if (this.isPopupCreated && this.dropDown) {
+                this.dropDown.element = null;
                 this.dropDown = undefined;
             }
         }
@@ -707,13 +708,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if (ul) {
                     ul.focus();
                 }
-                const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
+                const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };    
                 this.trigger('open', openArgs);
-                if(this.enableRtl && ul.parentElement.style.left !== '0px')
-                {
-                    const popupRect = ul.parentElement.offsetWidth - this.element.offsetWidth;
-                    ul.parentElement.style.left = parseFloat(ul.parentElement.style.left) - popupRect + "px";
-                }    
             }
         });
     }

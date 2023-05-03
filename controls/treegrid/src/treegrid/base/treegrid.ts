@@ -2306,7 +2306,23 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private updateRowTemplate(): void {
-        this.treeColumnRowTemplate();
+        if (this.rowTemplate) {
+            if ((<{ isReact?: boolean }>this).isReact && (this.getContentTable() as HTMLTableElement).rows.length === 0) {
+                setTimeout(() => {
+                   this.treeColumnRowTemplate();
+                   if (this.enableCollapseAll) {
+                       const currentData: ITreeData[] = this.getCurrentViewRecords();
+                       const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+                       for (let i: number = 0; i < rows.length; i++) {
+                           let args: RowDataBoundEventArgs = { data: currentData[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)] };
+                           this.renderModule.RowModifier(args);
+                       }
+                   }
+               }, 0);
+           } else {
+               this.treeColumnRowTemplate();
+           }
+        }
     }
 
     private bindedDataSource(): void {
@@ -2349,22 +2365,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (requestType === 'reorder') {
                 this.notify('getColumnIndex', {});
             }
-            if (requestType === 'filterbeforeopen' && args.columnName && this.filterSettings.hierarchyMode !== 'None') {
-                for (let j: number = 0; j < this.columns.length; j++) {
-                    const fields: string = 'field';
-                    if (this.columns[parseInt(j.toString(), 10)][`${fields}`] === args.columnName) {
-                        const taskFields: string[] = [];
-                        for (let i: number = 0; i < this.grid.currentViewData.length; i++) {
-                            const fieldValue: string = this.grid.currentViewData[parseInt(i.toString(), 10)][args.columnName];
-                            if (taskFields.indexOf(fieldValue) === -1) {
-                                taskFields.push(fieldValue);
-                            }
-                        }
-                        args['filterModel'].options.dataSource = taskFields.map((name: string) => ({ [args.columnName]: name }));
-                        args['filterModel'].options.filteredColumns = args['filterModel'].options.filteredColumns.filter((col: { field: string; }) => col.field === args.columnName);
-                    }
-                }
-            }            
             if (isRemoteData(this) && this.enableVirtualization) {
                 if (args.requestType === 'virtualscroll') {
                     this.query.expand('VirtualScrollingAction');
@@ -4493,17 +4493,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private treeColumnRowTemplate(): void {
-        if (this.rowTemplate) {
-            let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
-            rows = [].slice.call(rows);
-            for (let i: number = 0; i < rows.length; i++) {
-                const rcell: HTMLElement = (this.grid.getContentTable() as HTMLTableElement).rows[parseInt(i.toString(), 10)]
-                    .cells[this.treeColumnIndex];
-                const row: Object = rows[parseInt(i.toString(), 10)];
-                const rowData: Object = this.grid.getRowsObject()[parseInt(i.toString(), 10)].data;
-                const arg: Object = { data: rowData, row: row, cell: rcell, column: this.getColumns()[this.treeColumnIndex] };
-                this.renderModule.cellRender(arg);
-            }
+        let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+        rows = [].slice.call(rows);
+        for (let i: number = 0; i < rows.length; i++) {
+            const rcell: HTMLElement = (this.grid.getContentTable() as HTMLTableElement).rows[parseInt(i.toString(), 10)]
+                .cells[this.treeColumnIndex];
+            const row: Object = rows[parseInt(i.toString(), 10)];
+            const rowData: Object = this.grid.getRowsObject()[parseInt(i.toString(), 10)].data;
+            const arg: Object = { data: rowData, row: row, cell: rcell, column: this.getColumns()[this.treeColumnIndex] };
+            this.renderModule.cellRender(arg);
         }
     }
     private collapseRemoteChild(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[] }, isChild?: boolean): void {

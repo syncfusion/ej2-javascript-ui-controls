@@ -8,6 +8,7 @@ import { WColumnFormat, WSectionFormat } from './../../implementation/format/ind
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
 import { HelperMethods } from '../editor/editor-helper';
+import { DialogUtility } from '@syncfusion/ej2-popups';
 
 /**
  * The Page setup dialog is used to modify formatting of selected sections.
@@ -470,6 +471,8 @@ export class PageSetupDialog {
      */
     public applyPageSetupProperties = (): void => {
         const sectionFormat: WSectionFormat = new WSectionFormat();
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
         let currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         sectionFormat.bottomMargin = this.bottomMarginBox.value;
         sectionFormat.topMargin = this.topMarginBox.value;
@@ -481,6 +484,18 @@ export class PageSetupDialog {
         sectionFormat.differentFirstPage = this.checkBox2.checked;
         sectionFormat.headerDistance = this.headerBox.value;
         sectionFormat.footerDistance = this.footerBox.value;
+        if (this.widthBox.value < (this.leftMarginBox.value + this.rightMarginBox.value)) {
+            DialogUtility.alert(localValue.getConstant('Left and right margins.'));
+            return;
+        }
+        if (this.widthBox.value < (this.leftMarginBox.value + this.rightMarginBox.value + 36)) {
+            DialogUtility.alert(localValue.getConstant('Column width cannot be less than 36 pt.'));
+            return;
+        }
+        if (Math.abs((this.topMarginBox.value + this.bottomMarginBox.value)) > this.heightBox.value) {
+            DialogUtility.alert(localValue.getConstant('The top/bottom margins are too large for the page height in some sections.'));
+            return;
+        }
         sectionFormat.numberOfColumns = currentSectionFormat.numberOfColumns;
         sectionFormat.equalWidth = currentSectionFormat.equalWidth;
         sectionFormat.lineBetweenColumns = currentSectionFormat.lineBetweenColumns;

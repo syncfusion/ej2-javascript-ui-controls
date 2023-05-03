@@ -342,7 +342,7 @@ export class ContentRender implements IRenderer {
         }
         const isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
         /* eslint-disable */
-        if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
+        if (!(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && (this.parent as any).registeredTemplate
             && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
             const templatetoclear: any = [];
             for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
@@ -355,11 +355,16 @@ export class ContentRender implements IRenderer {
             }
             this.parent.destroyTemplate(['template'], templatetoclear);
         }
-        if ((this.parent.isReact || this.parent.isVue) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-            const templates: string[] = [
+        if ((this.parent.isReact || this.parent.isVue) && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && !args.isFrozen) {
+            let templates: string[] = [
                 this.parent.isVue ? 'template' : 'columnTemplate', 'rowTemplate', 'detailTemplate',
                 'captionTemplate', 'commandsTemplate', 'groupFooterTemplate', 'groupCaptionTemplate'
             ];
+            if (args.requestType === 'infiniteScroll' && this.parent.infiniteScrollSettings.enableCache) {
+                templates = [
+                    this.parent.isVue ? 'template' : 'columnTemplate', 'commandsTemplate'
+                ];
+            }
             clearReactVueTemplates(this.parent, templates);
         }
         if (this.parent.enableColumnVirtualization) {

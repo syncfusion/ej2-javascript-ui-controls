@@ -536,14 +536,14 @@ describe('DropDown Tree control Remote datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             let li: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[0].classList.contains('e-active')).toBe(false);
             keyboardEventArgs.action = 'enter';
             ddtreeObj.treeAction(keyboardEventArgs);
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
             ddtreeObj.showPopup();
-            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
             expect(li[0].classList.contains('e-node-focus')).toBe(true);
             expect(li[0].classList.contains('e-active')).toBe(true);
             expect(ddtreeObj.text).toBe('Music');

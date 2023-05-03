@@ -4648,7 +4648,7 @@ export abstract class ElementBox {
                     documentHelper.fields.push(fieldBegin);
                 }
                 if (!isNullOrUndefined(fieldBegin.formFieldData) &&
-                    documentHelper.formFields.indexOf(fieldBegin) === -1) {
+                    documentHelper.formFields.indexOf(fieldBegin) === -1 && !documentHelper.layout.isInsertFormField) {
                     documentHelper.formFields.push(fieldBegin);
                 }
             }

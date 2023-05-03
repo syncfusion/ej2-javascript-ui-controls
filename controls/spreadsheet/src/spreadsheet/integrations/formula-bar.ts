@@ -12,7 +12,7 @@ import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, e
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
-import { workbookFormulaOperation, selectionComplete } from '../../workbook/common/event';
+import { workbookFormulaOperation, selectionComplete, getData } from '../../workbook/index';
 import { isFormulaBarEdit, removeAllChildren } from '../common/index';
 
 /**
@@ -198,8 +198,8 @@ export class FormulaBar {
             }
         } else {
             address = range[0];
-            const data: Promise<Map<string, CellModel>> = this.parent.getData(`${getSheetName(this.parent as Workbook)}!${address}`);
-            data.then((values: Map<string, CellModel>): void => {
+            const cellAddr: string = `${getSheetName(this.parent)}!${address}`;
+            getData(this.parent, cellAddr, false, true).then((values: Map<string, CellModel>): void => {
                 if (!this.parent) {
                     return;
                 }

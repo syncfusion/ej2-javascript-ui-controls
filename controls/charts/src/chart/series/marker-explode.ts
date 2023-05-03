@@ -140,7 +140,7 @@ export class MarkerExplode extends ChartData {
                         stopTimer(this.markerExplode);
                         this.isRemove = true;
                         data.point.symbolLocations.map((location: ChartLocation, index: number) => {
-                            if (!data.series.isRectSeries || data.point.marker.visible) {
+                            if (data.series.marker.allowHighlight && (!data.series.isRectSeries || data.point.marker.visible)) {
                                 this.drawTrackBall(data.series, data.point, location, index);
                             }
                         });

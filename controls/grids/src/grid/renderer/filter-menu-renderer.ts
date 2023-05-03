@@ -1,7 +1,7 @@
 import { isNullOrUndefined, getValue, L10n, remove } from '@syncfusion/ej2-base';
 import { Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
+import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI, FilterMenuRendererArgs } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -101,7 +101,7 @@ export class FilterMenuRenderer {
     }
 
     private renderDlgContent(target: Element, column: Column): void {
-        const args: Object = {
+        const args: FilterMenuRendererArgs = {
             requestType: events.filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
@@ -197,7 +197,7 @@ export class FilterMenuRenderer {
             optrInput.value === 'Null' || optrInput.value === 'Not Null') {
             valInput.setAttribute('disabled', '');
         }
-        else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+        else if (!isNullOrUndefined(valInput && valInput.getAttribute('disabled'))) {
             valInput.removeAttribute('disabled');
         }
         if (!column.filterTemplate) {

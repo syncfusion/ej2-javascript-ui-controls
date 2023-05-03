@@ -237,7 +237,7 @@ export class MDXQuery {
                         while (i < dimensions.length) {
                             if (dimensions[i as number].name.toLowerCase() === '[measures]') {
                                 if (measureQuery !== '') {
-                                    levelQuery.push('({{' + drillInfo[i as number] + '}})');
+                                    levelQuery.push(drillInfo[i as number] ? '({{' + drillInfo[i as number] + '}})' : '(' + measureQuery + ')');
                                 }
                             } else if (drillInfo[i as number] && (drillInfo[i as number].indexOf(dimensions[i as number].name) !== -1 ||
                                 (dimensions[i as number].isNamedSet && this.fieldList[dimensions[i as number].name] && drillInfo[i as number].indexOf(this.fieldList[dimensions[i as number].name].pid.split('Sets_')[1]) !== -1))) {

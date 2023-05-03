@@ -1346,5 +1346,45 @@ describe('Conditional formatting ->', () => {
                 });
             });
         });
+        describe('EJ2-72118 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Console error on highlighting duplicate values in localization', (done: Function) => {
+                helper.edit('H5', '27');
+                helper.edit('H8', '66');
+                helper.invoke('conditionalFormat', [{ type: 'Duplicate', cFColor: "RedFT", range: 'H2:H11' }]);
+                expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [4, 7]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [7, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [7, 7]).style.color).toBe('rgb(156, 0, 85)');
+                helper.edit('G5', '7');
+                helper.edit('G8', '13');
+                helper.invoke('conditionalFormat', [{ type: 'Duplicate', cFColor: "YellowFT", range: 'G2:G11' }]);
+                expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [3, 7]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [6, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [6, 7]).style.color).toBe('rgb(156, 0, 85)');
+                helper.edit('A3', 'Casual Shoes');
+                helper.edit('A10', 'Loafers');
+                helper.invoke('conditionalFormat', [{ type: 'Duplicate', cFColor: "GreenFT", range: 'A2:A11' }]);
+                expect(helper.invoke('getCell', [2, 0]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [2, 0]).style.color).toBe('rgb(0, 97, 0)');
+                expect(helper.invoke('getCell', [9, 0]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [9, 0]).style.color).toBe('rgb(0, 97, 0)');
+                helper.invoke('conditionalFormat', [{ type: 'Unique', cFColor: "GreenFT", range: 'E2:E11' }]);
+                expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [3, 4]).style.color).toBe('rgb(0, 97, 0)');
+                helper.invoke('conditionalFormat', [{ type: 'Unique', cFColor: "GreenFT", range: 'D2:D11' }]);
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [1, 3]).style.color).toBe('rgb(0, 97, 0)');
+                done();
+            });
+        });
     });
 });

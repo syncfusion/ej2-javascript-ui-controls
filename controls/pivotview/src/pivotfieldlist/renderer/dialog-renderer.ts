@@ -202,6 +202,7 @@ export class DialogRenderer {
         if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
             (this.parent as PivotFieldList).pivotChange = false;
         }
+        this.parent.isDeferUpdateApplied = true;
         this.parent.updateDataSource(false);
         const parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();

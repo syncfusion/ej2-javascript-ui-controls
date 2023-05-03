@@ -1627,6 +1627,15 @@ export interface ExcelHeaderQueryCellInfoEventArgs {
     hyperLink?: Hyperlink;
 }
 
+export interface FilterMenuRendererArgs {
+    /** Defines the current action. */
+    requestType?: string;
+    /** Defines the field name of current column */
+    columnName?: string;
+    /** Defines the field type of current column */
+    columnType?: string;
+}
+
 export interface FilterSearchBeginEventArgs {
     /** Defines the current action. */
     requestType?: string;

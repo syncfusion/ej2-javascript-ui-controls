@@ -1,4 +1,4 @@
-import { IFieldOptions } from '../../base/engine';
+import { IDataSet, IFieldOptions } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -62,25 +62,29 @@ export class AxisFields {
                 element.innerHTML = '';
             }
         }
-        /* eslint-enable @typescript-eslint/no-explicit-any */
-        const axis: string[] = ['rows', 'columns', 'values', 'filters'];
-        if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings.showFieldsPanel) {
-            axis.push('all-fields');
-            fields.push([]);
-            for (const key of (this.parent.engineModule && this.parent.engineModule.fieldList ?
-                Object.keys(this.parent.engineModule.fieldList) : [])) {
-                if (this.parent.engineModule.fieldList[key as string] && !this.parent.engineModule.fieldList[key as string].isSelected) {
-                    fields[fields.length - 1].push(PivotUtil.getFieldInfo(key, this.parent, true).fieldItem);
+        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)
+        || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '')) {
+            /* eslint-enable @typescript-eslint/no-explicit-any */
+            const axis: string[] = ['rows', 'columns', 'values', 'filters'];
+            if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings.showFieldsPanel) {
+                axis.push('all-fields');
+                fields.push([]);
+                for (const key of (this.parent.engineModule && this.parent.engineModule.fieldList ?
+                    Object.keys(this.parent.engineModule.fieldList) : [])) {
+                    if (this.parent.engineModule.fieldList[key as string] &&
+                        !this.parent.engineModule.fieldList[key as string].isSelected) {
+                        fields[fields.length - 1].push(PivotUtil.getFieldInfo(key, this.parent, true).fieldItem);
+                    }
                 }
             }
-        }
-        for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {
-            if (fields[i as number]) {
-                const args: PivotButtonArgs = {
-                    field: fields[i as number],
-                    axis: axis[i as number].toString()
-                };
-                this.parent.notify(events.pivotButtonUpdate, args);
+            for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {
+                if (fields[i as number]) {
+                    const args: PivotButtonArgs = {
+                        field: fields[i as number],
+                        axis: axis[i as number].toString()
+                    };
+                    this.parent.notify(events.pivotButtonUpdate, args);
+                }
             }
         }
     }

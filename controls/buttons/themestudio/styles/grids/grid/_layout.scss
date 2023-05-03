@@ -3602,11 +3602,6 @@
     }
 
     &.sf-grid {
-
-      .e-table {
-        border-spacing: .25px;
-      }
-
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;
       }
@@ -3791,7 +3786,9 @@
 }
 
 #{&}.e-grid-min-height {
-  .e-rowcell {
+  .e-rowcell,
+  .e-icon-grightarrow,
+  .e-icon-gdownarrow {
     line-height: 0;
     padding-bottom: 0;
     padding-top: 0;

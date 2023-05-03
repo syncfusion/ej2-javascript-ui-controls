@@ -155,6 +155,6 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     private getInfiniteIndex(args: InfiniteScrollArgs): number {
         return args.requestType === 'infiniteScroll' || args.requestType === 'delete' || (args as SaveEventArgs).action === 'add'
-            ? args.startIndex : 0;
+            ? (isNullOrUndefined(args.startIndex) ? args['index'] : args.startIndex) : 0;
     }
 }

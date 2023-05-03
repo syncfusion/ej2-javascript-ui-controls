@@ -2707,7 +2707,7 @@ export class Drawing {
                 actualObject.wrapper.children[1].isDirt = true;
             }
         }
-        if (this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
+        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
             actualObject.wrapper.width = undefined;
             actualObject.wrapper.height = undefined;
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));

@@ -5698,7 +5698,13 @@ Remove terinal segment in initial
                     // EJ2-65876 - Exception occurs on line routing injection module
                     if(connector.sourceID != connector.targetID && connector.segments.length>1){
                         //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
+                        let sourceNode:NodeModel= this.diagram.getObject(connector.sourceID);
+                        let targetNode:NodeModel = this.diagram.getObject(connector.targetID);
+                        let Connectorlength1 =targetNode.wrapper.outerBounds.middleLeft.x- sourceNode.wrapper.outerBounds.middleRight.x;
+                        let Connectorlength2 =targetNode.wrapper.outerBounds.topCenter.y- sourceNode.wrapper.outerBounds.bottomCenter.y;
+                        if( Connectorlength1 > 30 || Connectorlength2>30){
                             this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                        }
                     }
                     if (isBlazor()) {
                         updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));

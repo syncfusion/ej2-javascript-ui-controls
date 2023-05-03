@@ -1639,6 +1639,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private destroyOtherComp(): void {
         if (this.isPicker()) {
+            const popup: HTMLElement = closest(this.hueSlider.element, '.e-color-picker') as HTMLElement;
+            const numericElemColl: NodeListOf<HTMLElement> = popup.querySelectorAll('.e-numerictextbox');
+            for (let i: number = 0; i < numericElemColl.length; i++) {
+                (getInstance(numericElemColl[i as number], NumericTextBox) as NumericTextBox).destroy();
+            }
             this.hueSlider.destroy();
             if (this.enableOpacity) { this.opacitySlider.destroy(); this.opacitySlider = null; }
             this.hueSlider = null;

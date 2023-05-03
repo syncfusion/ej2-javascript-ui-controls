@@ -227,6 +227,14 @@ export interface MarkerSettingsModel {
     fill?: string;
 
     /**
+     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     *
+     * @default true
+     */
+
+    allowHighlight?: boolean;
+
+    /**
      * The opacity of the marker.
      *
      * @default 1
@@ -264,7 +272,7 @@ export interface TrendlineModel {
     /**
      * Defines the pattern of dashes and gaps to stroke.
      *
-     * @default '0'
+     * @default ''
      */
 
     dashArray?: string;
@@ -732,7 +740,7 @@ export interface SeriesBaseModel {
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
      *
-     * @default '0'
+     * @default ''
      */
 
     dashArray?: string;

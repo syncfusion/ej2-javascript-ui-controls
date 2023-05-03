@@ -1634,7 +1634,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 case 'moveDown':
                     let focusedElement: HTMLElement= this.treeObj.element.querySelector('li');
                     focusedElement.focus();
-                    addClass([focusedElement], ['e-hover', 'e-node-focus']);
+                    addClass([focusedElement], ['e-node-focus']);
                 }
             }
         });
@@ -2288,7 +2288,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                                                                             && this.treeItems.length > 0)) {
                     let focusedElement: HTMLElement= this.treeObj.element.querySelector('li');
                     focusedElement.focus();
-                    addClass([focusedElement], ['e-hover', 'e-node-focus']);
+                    addClass([focusedElement], ['e-node-focus']);
                 }
                 if (this.checkSelectAll && this.checkBoxElement) {
                     const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;

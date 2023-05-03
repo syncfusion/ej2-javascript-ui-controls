@@ -151,7 +151,9 @@ export class ConditionalFormatting {
                 conditionalFormattingInfo: this.parent.dataSourceSettings.conditionalFormatSettings as IConditionalFormatSettings[]
             };
             this.parent.actionObj.actionInfo = actionInfo;
-            this.parent.renderPivotGrid();
+            if(this.parent.dataSourceSettings.values.length > 0) {
+                this.parent.renderPivotGrid();
+            }
             this.dialog.close();
         }
     }

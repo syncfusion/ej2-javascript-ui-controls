@@ -12,7 +12,7 @@ import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding, DiagramConstraints } from '../../../src/diagram/index';
 import {  IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
 
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
@@ -2331,6 +2331,66 @@ describe('Node shape change at runtime not makes node disappear', () => {
         ((diagram.nodes[1].shape as BasicShapeModel).shape === 'Rectangle')
          && diagram.nodes[0].wrapper.children[0].id !==undefined
          && diagram.nodes[1].wrapper.children[0].id !==undefined).toBe(true)
+        done();        
+    });
+});
+
+describe('Performance of diagram while rendering large number of nodes and connectors', () => {
+    let diagram: Diagram; let elements: HTMLElement;
+    let end:number; let start:number;
+    beforeAll((): void => {
+        elements = createElement('div', { styles: 'width:1000px;height:600px;' });
+        elements.appendChild(createElement('div', { id: 'diagramPerformance_1' }));
+        document.body.appendChild(elements);
+        let nodes: NodeModel[] = renderNodes();
+        let connectors: ConnectorModel[] = renderConnectors();
+
+        function renderNodes() {
+            var nodeCollection = [];
+            for (var i = 0; i < 6000; i++) {
+                nodeCollection.push({
+                    id: 'node' + i,
+                    offsetX: 10 + i * 20,
+                    offsetY: 260 + 250 * Math.sin((Math.PI * i) / 22.5),
+                    width: 42,
+                    height: 16,
+                    annotations: [{ content: i.toString() }],
+                });
+            }
+            return nodeCollection;
+        }
+        function renderConnectors() {
+            var connectorCollection = [];
+            for (var i = 0; i < 6000 - 15; i++) {
+                connectorCollection.push({
+                    id: 'connector' + i,
+                    sourceID: nodes[i].id,
+                    targetID: nodes[i + 15].id,
+                });
+            }
+            return connectorCollection;
+        }
+
+
+        diagram = new Diagram({
+            width: '1000px', height: '600px', nodes: nodes, connectors: connectors,
+            constraints: DiagramConstraints.Default | DiagramConstraints.Virtualization,
+        });
+
+
+         start = (new Date()).getTime();
+        diagram.appendTo('#diagramPerformance_1');
+
+         end = (new Date()).getTime();
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        elements.remove();  
+    });
+    it('Checking the rendering time of diagram', (done: Function) => {
+        let renderingTimeInMs = end-start;
+        expect(renderingTimeInMs < 4000).toBe(true);
         done();        
     });
 });

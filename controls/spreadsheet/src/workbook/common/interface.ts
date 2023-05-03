@@ -577,3 +577,14 @@ export interface FindArgs {
     sheetIdx?: number;
     sheets?: SheetModel[];
 }
+/**
+ * Specifies the arguments for `setVisibleMergeIndex` method.
+ * @hidden
+ */
+export interface VisibleMergeIndexArgs {
+    sheet: SheetModel;
+    cell: CellModel;
+    rowIdx: number;
+    colIdx: number;
+    isMergedHiddenCell?: boolean;
+}

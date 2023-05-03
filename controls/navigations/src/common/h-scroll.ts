@@ -156,6 +156,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         ele.style.display = '';
         ele.classList.remove(CLS_ROOT);
         ele.classList.remove(CLS_DEVICE);
+        ele.classList.remove(CLS_RTL);
         const nav: HTEle[] =  selectAll('.e-' + ele.id + '_nav.' + CLS_HSCROLLNAV, ele);
         const overlay: HTEle[] = selectAll('.' + CLS_OVERLAY, ele);
         [].slice.call(overlay).forEach((ele: HTEle) => {

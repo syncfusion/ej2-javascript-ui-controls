@@ -97,7 +97,7 @@ export class Render {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;
         }
-        if ((['Agenda', 'Year'].indexOf(this.parent.currentView) === -1 ||
+        if ((['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(this.parent.currentView) === -1 ||
             (this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.orientation === 'Vertical'))
             && this.parent.activeViewOptions.allowVirtualScrolling
             && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {

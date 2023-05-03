@@ -705,6 +705,15 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     @Property(1)
     public opacity: number;
 
+    /**
+     * Defines the pattern of dashes and gaps to the series border.
+     *
+     * @default '0'
+     */
+
+    @Property('0')
+    public dashArray: string;
+
     /** @private */
     public points: AccPoints[] = [];
     /** @private */
@@ -957,7 +966,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             point.color = argsData.fill;
             option = new PathOption(
                 pointId + point.index, point.color, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
-                '', ''
+                argsData.series.dashArray, ''
             );
             accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
                 renderPoint(point, this, accumulation, option, seriesGroup, redraw);
