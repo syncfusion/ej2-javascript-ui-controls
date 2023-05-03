@@ -532,12 +532,22 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(false)
     public enableRTL: boolean;
 
+    /**
+     * change tooltip location.
+     *
+     * @default false.
+     * @private
+     */
+    @Property(false)
+    public allowHighlight: boolean;
+
     //Internal variables
 
     private elementSize: Size;
 
     private toolTipInterval: number;
     private padding: number;
+    private highlightPadding: number;
     private areaMargin: number;
     private textElements: Element[];
     private templateFn: Function;
@@ -590,6 +600,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.themeStyle = getTooltipThemeColor(this.theme);
         this.formattedText = [];
         this.padding = 5;
+        this.highlightPadding = 3;
         this.areaMargin = 10;
         this.isFirst = true;
         this.markerPoint = [];
@@ -719,6 +730,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 isLeft = (rect.x < (location.x + this.clipBounds.x));
                 x = (isLeft ? 0 : this.arrowPadding);
+                if (this.allowHighlight) {
+                    rect.x += isLeft ? this.highlightPadding : -(2 * this.highlightPadding);
+                }
             }
         }
         if (this.header !== '') {
@@ -1149,7 +1163,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!this.inverted) {
             location = new TooltipLocation(
                 location.x + clipX - this.elementSize.width / 2 - this.padding,
-                location.y + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight
+                location.y + clipY - this.elementSize.height - (2 * (this.allowHighlight ? this.highlightPadding: this.padding)) - this.arrowPadding - markerHeight
             );
             arrowLocation.x = tipLocation.x = width / 2;
             if ((location.y < boundsY || (this.isNegative)) && !(this.controlName === 'Progressbar')) {

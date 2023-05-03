@@ -1690,9 +1690,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             className: item.cssClass ? (constants.RIBBON_TEMPLATE + constants.SPACE + item.cssClass) : constants.RIBBON_TEMPLATE,
             id: item.id
         });
-        if (item.disabled) { 
+        if (item.disabled) {
             itemEle.classList.add(constants.DISABLED_CSS);
-            itemEle.setAttribute('disabled', ''); 
+            itemEle.setAttribute('disabled', '');
         }
         itemElement.appendChild(itemEle);
         this.renderItemTemplate(item, itemEle);
@@ -1845,7 +1845,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private destroyFunction(item: RibbonItemModel, ele: HTMLElement): void {
         const moduleName: string = this.getItemModuleName(item);
-        if (moduleName !== 'template') {
+        if (moduleName === 'colorpicker') {
+            this.ribbonColorPickerModule.unwireColorPickerEvents(ele);
+        } else if (moduleName !== 'template') {
             destroyControl(ele, moduleName);
         }
         if (item.ribbonTooltipSettings) {

@@ -447,4 +447,12 @@ export interface TooltipModel extends ComponentModel{
      */
     enableRTL?: boolean;
 
+    /**
+     * change tooltip location.
+     *
+     * @default false.
+     * @private
+     */
+    allowHighlight?: boolean;
+
 }

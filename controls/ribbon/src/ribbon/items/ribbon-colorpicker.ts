@@ -68,8 +68,16 @@ export class RibbonColorPicker {
             select: colorPickerSettings.select
         }, inputEle);
         const wrapper: HTMLElement = colorPicker.element.parentElement;
-        EventHandler.add(wrapper, 'mouseenter', () => { wrapper.classList.add(RIBBON_HOVER); }, this);
-        EventHandler.add(wrapper, 'mouseleave', () => { wrapper.classList.remove(RIBBON_HOVER); }, this);
+        EventHandler.add(wrapper, 'mouseenter', this.toggleWrapperHover.bind(this, wrapper, true), this);
+        EventHandler.add(wrapper, 'mouseleave', this.toggleWrapperHover.bind(this, wrapper, false), this);
+    }
+
+    private toggleWrapperHover(wrapper: HTMLElement, isAdd: boolean): void {
+        if (isAdd) {
+            wrapper.classList.add(RIBBON_HOVER);
+        } else {
+            wrapper.classList.remove(RIBBON_HOVER);
+        }        
     }
 
     /**
@@ -171,5 +179,17 @@ export class RibbonColorPicker {
         delete prop.open;
         const colorPickerObj: ColorPicker = getComponent(inputEle, ColorPicker);
         colorPickerObj.setProperties(prop);
+    }
+
+    /**
+     * @param {HTMLElement} element - Gets the colorpicker element to be destroyed.
+     * @returns {void}
+     * @hidden
+     */
+    public unwireColorPickerEvents(element: HTMLElement): void {
+        const colorPickerObj: ColorPicker = getComponent(element, ColorPicker);
+        const wrapper: HTMLElement = colorPickerObj.element.parentElement;
+        EventHandler.remove(wrapper, 'mouseenter', this.toggleWrapperHover);
+        EventHandler.remove(wrapper, 'mouseleave', this.toggleWrapperHover);
     }
 }
