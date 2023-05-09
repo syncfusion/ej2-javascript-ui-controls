@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.4 (2023-05-09)
+
+### Heatmap
+
+#### Bug fixes
+
+- `#I456795` - The extra text element in the HeatMap component's DOM has now been properly removed.
+
+## 21.1.41 (2023-04-18)
 
 ### Heatmap
 

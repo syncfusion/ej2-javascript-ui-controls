@@ -9637,17 +9637,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updatePorts(updateNode, node.flip);
                     }
                 }
+                //EJ2-826617 - Flip option for BPMN node
+                else{
+                    this.updatePorts(actualObject, actualObject.flip);
+                }
             } else {
-                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
+                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
                     this.updatePorts(actualObject, node.flip);
+                }
+                //EJ2-826617 - Flip 'None' is not working properly
+                else if(actualObject.flip === 'None'){
+                    this.updatePorts(actualObject, node.flip);
+                }
             }
         }
         // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
         if (node.flipMode !== undefined) {
             update = true;
             updateConnector = true;
-            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
-            this.updatePorts(actualObject, actualObject.flip);
+            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
+                this.updatePorts(actualObject, actualObject.flip);
+            }
+            //EJ2-826617 - Flip mode 'Label' does not triggers the port
+            else if( actualObject.flipMode === 'Label'){
+                this.updatePorts(actualObject, 'None');
+            }
+            //EJ2-826617 - Flip mode 'None' is not working properly
+            else if(actualObject.flipMode === 'None'){
+                this.updatePorts(actualObject, actualObject.flipMode);
+            }
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
@@ -10970,6 +10988,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.diagramActions & DiagramAction.DragUsingMouse) {
             this.renderPageBreaks();
+            //EJ2-826378 - Scroller not updated properly when we drag node outside viewport.
+            // While dragging, we need to update the scroller.
+            this.scroller.updateScrollOffsets();
+            this.scroller.setSize();
         }
     }
 

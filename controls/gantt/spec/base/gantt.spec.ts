@@ -1174,8 +1174,7 @@ describe('Gantt - Base', () => {
                         { field: 'Progress', headerText: 'Progress', allowFiltering: false },
                     ],
                     durationUnit: 'Day',
-                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    toolbar: [],
                     timelineSettings: {
                         timelineUnitSize: 65,
                         topTier: {
@@ -1198,6 +1197,7 @@ describe('Gantt - Base', () => {
         });
         it('End Date greater than start date', () => {
             expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.getDate()).toBe(5);
+            expect(ganttObj.toolbarModule).toBe(undefined);
         });
         afterAll(() => {
             destroyGantt(ganttObj);

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 21.2.4 (2023-05-09)
+
+### ContextMenu
+
+#### New Features
+
+- `#I458989` - Provided the new parameter target to `beforeOpen` event argument of context menu component.
+
+#### Bug Fixes
+
+- `#I461864` - The issue with "Error is not handled gracefully in context menu enableItems method" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I458102` - An issue where the tab header did not update with dynamic data when the tab directives were rendered as HTML elements has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Toolbar

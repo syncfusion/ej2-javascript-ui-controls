@@ -793,23 +793,20 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setProperties({ headerPlacement: 'Bottom' }, true);
             }
             const count: number = this.hdrEle.children.length;
-            const hdrItems: string[] = [];
+            const hdrItems: Element[] = [];
             for (let i: number = 0; i < count; i++) {
-                hdrItems.push(this.hdrEle.children.item(i).innerHTML);
+                hdrItems.push(this.hdrEle.children.item(i));
             }
             if (count > 0) {
-                while (this.hdrEle.firstElementChild) {
-                    detach(this.hdrEle.firstElementChild);
-                }
                 const tabItems: HTMLElement = this.createElement('div', { className: CLS_ITEMS });
                 this.hdrEle.appendChild(tabItems);
-                hdrItems.forEach((item: string, index: number) => {
+                hdrItems.forEach((item: Element, index: number) => {
                     this.lastIndex = index;
                     const attr: object = {
                         className: CLS_ITEM, id: CLS_ITEM + this.tabId + '_' + index
                     };
                     const txt: Str = this.createElement('span', {
-                        className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
+                        className: CLS_TEXT, attrs: { 'role': 'presentation' }
                     }).outerHTML;
                     const cont: Str = this.createElement('div', {
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
@@ -818,6 +815,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         className: CLS_WRAP, innerHTML: cont,
                         attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-disabled': 'false' }
                     });
+                    wrap.querySelector('.' + CLS_TEXT).appendChild(item);
                     tabItems.appendChild(this.createElement('div', attr));
                     selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
                 });

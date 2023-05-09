@@ -3226,6 +3226,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             case 'tooltip':
                 if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
                     this.setTooltip(prop);
+                    this.wireEvents();
                 }
                 break;
             case 'type':

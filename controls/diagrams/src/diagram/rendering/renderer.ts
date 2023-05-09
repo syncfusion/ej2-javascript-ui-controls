@@ -1548,8 +1548,10 @@ export class DiagramRenderer {
 
         const options: BaseAttributes = this.getBaseAttributes(element, transform);
         if (centerPoint) {
-            options.x = (centerPoint as any).cx - 2;
-            options.y = (centerPoint as any).cy - 2;
+            //Bug 827039: Bezier annotation content alignment is not working properly.
+            // Removed -2 cx-2 and cy-2 from the below two line to resolve the alignment issue.
+            options.x = (centerPoint as any).cx;
+            options.y = (centerPoint as any).cy;
             // (EJ2-56874) - Set the calculated x and y position to the bezier connector annotation's(text element) bounds x,y position
             element.bounds.x = options.x;
             element.bounds.y = options.y;
@@ -1798,11 +1800,22 @@ export class DiagramRenderer {
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     this.renderFlipElement(child, parentG, child.flip);
                 }
+                //EJ2-826617 - for BPMN node label
+                if(child instanceof TextElement && parentG && (group.elementActions & ElementAction.ElementIsGroup)){
+                    this.renderFlipElement(child, parentG, child.flip);
+                }
                 if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    this.renderFlipElement(group, parentG, child.flip);
+                    //EJ2-826617 - for BPMN node port
+                    if(parentG.id.includes("bpmn")){
+                        this.renderFlipElement(group, parentG, child.flip);
+                        child.flip ='None';
+                    }
+                    else{
+                        this.renderFlipElement(group, parentG, child.flip);
+                    }
                 }
                 if (!(child instanceof TextElement) && group.flip !== 'None' &&
-                    (group.elementActions & ElementAction.ElementIsGroup)) {
+                    (group.elementActions & ElementAction.ElementIsGroup) && !(child.elementActions & ElementAction.ElementIsPort) && parentG) {
                     this.renderFlipElement(child, parentG || canvas, group.flip);
                 }
             }
@@ -1846,7 +1859,53 @@ export class DiagramRenderer {
                             this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None'  && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                        for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                return;
+                            }
+                        }
+                    }
+                    //Below code to check and flip for flip mode all in the node.
+                    else if(group.flip !== 'None' && selectedNode.flipMode === 'All'){
+                        for (var i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                            }
+                        }
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    //Below code to check and flip the element for None in the node.
+                    else {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                }
+            }
+             //EJ2-826617 - Flip and flip mode option for BPMN node
+             if ((group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
+                if (isNodeSelected && selectedNode) {
+                    if (group.children && group.children[0] instanceof DiagramNativeElement) {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
+                    } else {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
+                    }
+                    //Below code to check and flip the node.
+                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
+                        this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
+                        return;
+                    } 
+                    //Below code to check and flip the node except for flip mode Port.
+                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && selectedNode.flipMode === 'Label')) {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
+                            this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    //Below code to check and flip the text element in the node.
+                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
                         for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');

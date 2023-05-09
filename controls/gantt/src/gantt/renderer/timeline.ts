@@ -236,7 +236,7 @@ export class Timeline {
         let secondValue: ZoomTimelineSettings;
         const zoomingCollections: ZoomTimelineSettings[] = [...this.parent.zoomingLevels];
         const sortedCollectons: ZoomTimelineSettings[] = zoomingCollections.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
-            (a.perDayWidth < b.perDayWidth) ? 1 : -1);
+            (!a.perDayWidth && !b.perDayWidth ? 0 : (a.perDayWidth < b.perDayWidth) ? 1 : -1));
         if (perDayWidth === 0) { // return when the Gantt chart is not in viewable state.
             return;
         }

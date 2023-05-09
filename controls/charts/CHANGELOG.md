@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 21.2.4 (2023-05-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I457088` - Fixed the console error thrown on clicking on the legend.
+- `#I459170` - Now the accumulation data label is visible when using a template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Chart

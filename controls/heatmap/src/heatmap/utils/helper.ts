@@ -982,7 +982,15 @@ export function removeElement(id: string): void {
     const element: Element = getElement(id);
     if (element) {
         remove(element);
+        removeMeasureElement();
     }
+}
+
+/**
+ * @private
+ */
+export function removeMeasureElement(): void {
+    removeElement('heatmapmeasuretext');
 }
 
 /**

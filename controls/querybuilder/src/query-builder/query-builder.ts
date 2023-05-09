@@ -1,7 +1,7 @@
 /**
  * Query Builder Source
  */
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
@@ -906,18 +906,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 template = this.ruleTemplateFn(args, this, ruleElem.id, templateID)[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((this as any).isAngular) {
                 const templateColl: Element [] = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
                 template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isVue3) {
+                template = this.ruleTemplateFn(args, this, 'Template', templateID);
+                elem = template;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                append(elem as any, ruleElem);
+                ruleElem.children[ruleElem.children.length - 1].className += ' e-rule-field';
             } else {
                 template = this.ruleTemplateFn(args, this, 'Template', templateID)[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
             }
-            elem = template; elem.className += ' e-rule-field';
         } else {
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
+            ruleElem.appendChild(elem);
         }
-        ruleElem.appendChild(elem);
         if (column && column.ruleTemplate && rule) { this.renderReactTemplates(); }
         return ruleElem;
     }
@@ -1407,14 +1419,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 template = this.headerFn(args, this, groupElem.id, templateID)[0];
+                groupHdr.appendChild(template);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((this as any).isAngular) {
                 const templateColl: Element [] = this.headerFn(args, this, groupElem.id, templateID);
                 template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
+                groupHdr.appendChild(template);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isVue3) {
+                template = this.headerFn(args, this, groupElem.id, templateID);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                append(template as any, groupHdr);
             } else {
                 template = this.headerFn(args, this, 'Template', templateID)[0];
+                groupHdr.appendChild(template);
             }
-            groupHdr.appendChild(template);
             this.renderReactTemplates();
         }
         return groupElem;

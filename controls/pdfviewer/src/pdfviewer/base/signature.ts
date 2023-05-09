@@ -997,6 +997,7 @@ export class Signature {
         fontDiv.style.backgroundColor = 'white';
         fontDiv.style.color = 'black';
         fontDiv.style.marginTop = '8px'
+        fontDiv.style.paddingRight = '0px';
         typeDiv.appendChild(fontDiv);
         input = document.createElement('input');
         input.type = 'checkbox';

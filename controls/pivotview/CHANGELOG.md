@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.4 (2023-05-09)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I455857` - When using the Server-side Pivot engine, the DistinctCount aggregate will now be applied properly to string values in the pivot table.
+
 ## 21.2.3 (2023-05-03)
 
 ### Pivot Table

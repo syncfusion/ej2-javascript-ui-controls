@@ -3856,7 +3856,7 @@ export class PdfViewerBase {
                 this.annotationEvent = event;
             } else {
                 this.diagramMouseLeave(event);
-                if (this.isAnnotationDrawn) {
+                if (this.isAnnotationDrawn && !this.pdfViewer.isFormDesignerToolbarVisible) {
                     this.diagramMouseUp(event);
                     this.isAnnotationAdded = true;
                 }
@@ -6376,8 +6376,6 @@ export class PdfViewerBase {
         }
         proxy.pdfViewer.fireFormImportStarted(source);
         // eslint-disable-next-line
-        jsonObject.action = 'ImportFormFields';
-        // eslint-disable-next-line
         jsonObject['hashId'] = proxy.hashId;
         // eslint-disable-next-line
         jsonObject['elementId'] = this.pdfViewer.element.id;
@@ -6386,6 +6384,9 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             (jsonObject as any).document = proxy.jsonDocumentId;
         }
+        jsonObject = Object.assign(jsonObject, this.constructJsonDownload());
+        // eslint-disable-next-line
+        jsonObject.action = 'ImportFormFields';
         const url: string = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.importFormFields;
         proxy.importFormFieldsRequestHandler = new AjaxHandler(this.pdfViewer);
         proxy.importFormFieldsRequestHandler.url = url;

@@ -3123,6 +3123,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.header = null;
         this.previousSelectedLI = null;
         this.valueTempElement = null;
+        this.actionData.ulElement = null;
         super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */

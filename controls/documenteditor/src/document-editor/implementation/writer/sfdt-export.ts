@@ -1037,6 +1037,9 @@ export class SfdtExport {
             inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]] = [];
             for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
                 let textFrameBlock: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
+                if (textFrameBlock.hasOwnProperty('contentControlProperties') && !isNullOrUndefined(element.paragraph) && (element.paragraph.hasOwnProperty('contentControlProperties'))) {
+                    this.blocks = [];
+                }
                 this.writeBlock(textFrameBlock, 0, inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]]);
             }
         }

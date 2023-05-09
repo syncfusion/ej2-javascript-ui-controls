@@ -1658,7 +1658,7 @@ export class DatePicker extends Calendar implements IInput {
             this.modal = null;
         }
         if (Browser.isDevice) {
-            if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+            if (!isNullOrUndefined(this.mobilePopupWrapper) && (prevent && (isNullOrUndefined(this.preventArgs) || !this.preventArgs.cancel))) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
             }

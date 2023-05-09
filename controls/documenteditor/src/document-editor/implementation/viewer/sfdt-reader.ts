@@ -726,6 +726,10 @@ export class SfdtReader {
                         }
                         cellStartContentControl.line = (cell.firstChild as ParagraphWidget).firstChild as LineWidget;
                         ((cell.firstChild as ParagraphWidget).firstChild as LineWidget).children.splice(0, 0, cellStartContentControl);
+                        if ((cell.lastChild as ParagraphWidget).childWidgets.length === 0) {
+                            const lineWidget: LineWidget = new LineWidget(cell.lastChild as ParagraphWidget);
+                            (cell.lastChild as ParagraphWidget).childWidgets.push(lineWidget);
+                        }
                         cellEndContentControl.line = (cell.lastChild as ParagraphWidget).lastChild as LineWidget;
                         ((cell.lastChild as ParagraphWidget).lastChild as LineWidget).children.push(cellEndContentControl);
                     }
@@ -1796,6 +1800,15 @@ export class SfdtReader {
                     sourceFormat[fontFamilyProperty[keyIndex]] = sourceFormat[fontFamilyProperty[keyIndex]].replace('"', '');
                 }
                 characterFormat.fontFamily = sourceFormat[fontFamilyProperty[keyIndex]];
+                if (isNullOrUndefined(sourceFormat[fontFamilyFarEastProperty[keyIndex]])) {
+                    characterFormat.fontFamilyFarEast = sourceFormat[fontFamilyProperty[keyIndex]];
+                }
+                if (isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[keyIndex]])) {
+                    characterFormat.fontFamilyAscii = sourceFormat[fontFamilyProperty[keyIndex]];
+                }
+                if (isNullOrUndefined(sourceFormat[fontFamilyNonFarEastProperty[keyIndex]])) {
+                    characterFormat.fontFamilyNonFarEast = sourceFormat[fontFamilyProperty[keyIndex]];
+                }
             }
             if (!isNullOrUndefined(sourceFormat[boldProperty[keyIndex]])) {
                 characterFormat.bold = HelperMethods.parseBoolValue(sourceFormat[boldProperty[keyIndex]]);

@@ -529,17 +529,28 @@ export class DataUtil {
      * @param  {Object} from - Defines the source object.
      */
     public static getObject(nameSpace: string, from: Object): Object {
-        if (!nameSpace) { return from; }
-        if (!from) { return undefined; }
+        if (!nameSpace) {
+            return from;
+        }
+        if (!from) {
+            return undefined;
+        }
         if (nameSpace.indexOf('.') === -1) {
-            return from[nameSpace];
+            const lowerCaseNameSpace: string = nameSpace.charAt(0).toLowerCase() + nameSpace.slice(1);
+            const upperCaseNameSpace: string = nameSpace.charAt(0).toUpperCase() + nameSpace.slice(1);
+            return from[nameSpace] || from[lowerCaseNameSpace] || from[upperCaseNameSpace];
         }
         let value: Object = from;
         const splits: string[] = nameSpace.split('.');
-
         for (let i: number = 0; i < splits.length; i++) {
-            if (value == null) { break; }
+            if (value == null) {
+                break;
+            }
             value = value[splits[i]];
+            if (!value) {
+                const casing: string = splits[i].charAt(0).toUpperCase() + splits[i].slice(1);
+                value = from[casing] || from[casing.charAt(0).toLowerCase() + casing.slice(1)];
+            }
         }
         return value;
     }

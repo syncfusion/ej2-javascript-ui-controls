@@ -5,7 +5,7 @@ import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget } from '../viewer/page';
+import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget, HeaderFooterWidget, Page } from '../viewer/page';
 import { WRowFormat, WCharacterFormat } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/index';
@@ -803,6 +803,15 @@ export class ChangesSingleView {
     }
     private selectRevision(): void {
         let ranges: object = this.revision.range[0];
+        let page: Page;
+        let evenFooter;
+        if (!isNullOrUndefined(ranges)) {
+            page = ranges instanceof WCharacterFormat ? this.owner.documentHelper.selection.getPage(ranges.ownerBase as ParagraphWidget) : this.owner.documentHelper.selection.getPage((ranges as FieldElementBox).paragraph);
+            evenFooter = ranges instanceof WCharacterFormat ? ((ranges.ownerBase as ParagraphWidget).containerWidget as HeaderFooterWidget).headerFooterType : ((ranges as FieldElementBox).paragraph.containerWidget as HeaderFooterWidget).headerFooterType;
+        }
+        if ((isNullOrUndefined(page) && (evenFooter === "EvenFooter"))) {
+            return;
+        }
         if (ranges instanceof WRowFormat) {
             let groupingAccept: Revision[] = this.trackChangesPane.groupTableRevisions(this.owner.revisions.changes, this.owner.revisions.changes.indexOf(this.revision));
             this.owner.selection.selectTableRevision(groupingAccept);

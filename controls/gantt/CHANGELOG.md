@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 21.2.4 (2023-05-09)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I457032` - Task label not rendered properly when we render as template issue has been fixed.
+- `#I457212` - Timeline renders different in `Firefox` and `Chrome` issue has been fixed.
+- `#I456146` - Console error occur while changing task field after removing toolbar issue has been fixed.
+- `#F181579` - Style not reflected on the notes column when we perform dialog edit issue has been fixed.
+- `#I456453` - `CSS class` is not updated while changing it through `updateRecordbyId` method issue has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Gantt Chart
@@ -9,7 +21,7 @@
 #### Bug Fixes
 
 - `#I441205` - Two spinner appears while performing action issue has been fixed.
--`#I451257`- No proper template for manual milestone parent.
+- `#I451257` - No proper template for manual milestone parent.
 - `#I443041` - Gantt react performance rendering issue during initial load has been fixed.
 
 ## 21.1.41 (2023-04-18)

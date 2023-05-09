@@ -28,6 +28,7 @@ export class DialogRenderer {
     public adaptiveElement: Tab;
     private deferUpdateApplyButton: Button;
     private deferUpdateCancelButton: Button;
+    private lastTabIndex: number;
 
     /** Constructor for render module
      *
@@ -353,7 +354,13 @@ export class DialogRenderer {
     }
 
     private dialogOpen(): void {
-        this.adaptiveElement.refresh();
+        if (this.lastTabIndex === 4) {
+            this.adaptiveElement.items[this.lastTabIndex].content = '';
+            this.adaptiveElement.dataBind();
+            this.parent.notify(events.initCalculatedField, {});
+        } else {
+            this.adaptiveElement.refresh();
+        }
     }
 
     /**
@@ -437,6 +444,7 @@ export class DialogRenderer {
     }
     private tabSelect(e: SelectEventArgs): void {
         const fieldWrapper: HTMLElement = closest(this.parentElement, '.' + cls.WRAPPER_CLASS) as HTMLElement;
+        this.lastTabIndex = e.selectedIndex;
         if (fieldWrapper && fieldWrapper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
             if (e.selectedIndex !== 4) {
                 addClass(

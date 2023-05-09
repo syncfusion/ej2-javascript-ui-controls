@@ -10,7 +10,7 @@ import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dr
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { profile , inMB, getMemoryProfile } from './common.spec';
-import { DataManager, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 MultiSelect.Inject(CheckBoxSelection);
 
@@ -3445,8 +3445,9 @@ describe('QueryBuilder', () => {
     });
     describe('Data Manager', () => {
         let data: DataManager = new DataManager({
-            url: 'https://js.syncfusion.com/ejServices/Wcf/Northwind.svc/Orders/',
-            adaptor: new ODataAdaptor
+            url: 'https://services.syncfusion.com/js/production/api/orders',
+            adaptor: new WebApiAdaptor,
+	    crossDomain: true
         });
         let valRule: RuleModel = {
             'condition': 'and',

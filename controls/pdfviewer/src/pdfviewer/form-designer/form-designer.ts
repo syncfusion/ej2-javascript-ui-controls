@@ -2290,6 +2290,9 @@ export class FormDesigner {
      */
     public setFormFieldMode(formFieldType: FormFieldType,
         options?: Item[]): void {
+        if (this.pdfViewer.selectedItems && !isNullOrUndefined((this.pdfViewer.selectedItems as any).annotations) && (this.pdfViewer.selectedItems as any).annotations.length > 0 && this.pdfViewerBase.activeElements && !isNullOrUndefined(this.pdfViewerBase.activeElements.activePageID)) {
+            this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        }
         switch (formFieldType) {
             case 'Textbox':
                 this.activateTextboxElement(formFieldType);
@@ -3202,10 +3205,10 @@ export class FormDesigner {
                         designerName.innerHTML = "";
                         designerName.style.position = 'initial';
                         if (collections[i].formFieldAnnotationType === 'RadioButton') {
-                            this.updateRadioButtonDesignerProperties(collections[i]);
+                            this.updateRadioButtonDesignerProperties(collections[i], true);
                         }
                         if (collections[i].formFieldAnnotationType === 'Checkbox') {
-                            this.updateCheckboxFormDesignerProperties(collections[i]);
+                            this.updateCheckboxFormDesignerProperties(collections[i], true);
                         }
                         this.pdfViewer.clearSelection(collections[i].pageIndex);
                     }
@@ -3757,18 +3760,11 @@ export class FormDesigner {
                     }
                 }
             }
-            for (let j = 0; j < this.pdfViewer.formFieldCollection.length; j++) {
-                for (let k = 0; k < this.pdfViewer.formFieldCollections.length; k++) {
-                    let items = this.loadedFormFieldValue(this.pdfViewer.formFieldCollections[k], this.pdfViewer.formFieldCollection[j]);
-                    let nonRenderField: any = formFieldsData.filter(function (value: any) {
-                        if (items.id + '_content' === value.FormField.id || items.id === value.FormField.id) {
-                            return items;
-                        }
-                    })
-                    if (nonRenderField.length === 0) {
-                        formFieldsData.push({ Key: items.id + "_content", FormField: items })
-                    }
-                }
+            // Get Formfields present in non rendered pages
+            let formFieldNotContains: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(({ id: id1 }) => !this.pdfViewer.formFieldCollection.some(({ id: id2 }) => id2 === id1));
+            for (let k = 0; k < formFieldNotContains.length; k++) {
+                let items: any = this.loadedFormFieldValue(formFieldNotContains[k]);
+                formFieldsData.push({ Key: items.id + "_content", FormField: items })
             }
             return (JSON.stringify(formFieldsData));
         } else {
@@ -3778,7 +3774,7 @@ export class FormDesigner {
     /**
      * @private
     */
-    private loadedFormFieldValue(currentData: any, items: any) {
+    private loadedFormFieldValue(currentData: any) {
         let backgroundColor: any = this.hexToRgb(currentData.backgroundColor);
         let bounds: any = currentData.bounds;
         let backColor: any = currentData.backgroundColor ? { r: backgroundColor[0], g: backgroundColor[1], b: backgroundColor[2], a: backgroundColor[3] } : { r: 218, g: 234, b: 247, a: 100 };
@@ -3788,11 +3784,6 @@ export class FormDesigner {
         let borderColor: any = this.hexToRgb(currentData.borderColor);
         let borderRGB: any = currentData.borderColor ? { r: borderColor[0], g: borderColor[1], b: borderColor[2], a: 100 } : { r: 48, g: 48, b: 48, a: 100 };
         let value: string;
-
-        if ((currentData.name === items.name) && (currentData.type === 'Textbox' || currentData.type === 'PasswordField')) {
-            value = items.value;
-        }
-
         let options: ItemModel[]  = [];
         let dropListoptions: any = [];
         let selectedIndex: any = [];
@@ -3910,7 +3901,7 @@ export class FormDesigner {
             var field = {
                 lineBound: { X: bounds.x, Y: bounds.y, Width: bounds.width, Height: bounds.height }, 
                 pageNumber: parseFloat(currentData.pageIndex) + 1, name: currentData.name, tooltip: currentData.tooltip,
-                value: currentData.value, signatureType: items.signatureType ? items.signatureType : '', id: currentData.id, 
+                value: currentData.value, signatureType: currentData.signatureType ? currentData.signatureType : '', id: currentData.id, 
                 isChecked: currentData.isChecked ? currentData.isChecked : false, isSelected: currentData.isSelected ? currentData.isSelected : false, 
                 fontFamily: currentData.fontFamily, fontStyle: currentData.fontStyle, backgroundColor: backColor, 
                 fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
@@ -4081,12 +4072,12 @@ export class FormDesigner {
                     this.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
                     break;
                 case 'Checkbox':
-                    this.updateCheckboxFormDesignerProperties(selectedItem);
+                    this.updateCheckboxFormDesignerProperties(selectedItem, false);
                     const point1: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
                     this.updateFormDesignerFieldInSessionStorage(point1, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
                     break;
                 case 'RadioButton':
-                    this.updateRadioButtonDesignerProperties(selectedItem);
+                    this.updateRadioButtonDesignerProperties(selectedItem, false);
                     const point2: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
                     this.updateFormDesignerFieldInSessionStorage(point2, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
                     break;
@@ -4462,13 +4453,16 @@ export class FormDesigner {
     /**
      * @private
      */
-    public updateCheckboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+    public updateCheckboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, updateValue?: boolean, isUndoRedo?: boolean): void {
         let checkBoxElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index: number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
             this.updateNamePropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldValue || isUndoRedo) {
+            this.updateValuePropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData,updateValue);
         }
         if (this.backgroundColorValue || isUndoRedo) {
             this.updateBackgroundColorPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
@@ -4513,13 +4507,16 @@ export class FormDesigner {
     /**
      * @private
      */
-    public updateRadioButtonDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+    public updateRadioButtonDesignerProperties(selectedItem: PdfFormFieldBaseModel, updateValue?: boolean, isUndoRedo?: boolean): void {
         let radioButton: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index: number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
             this.updateNamePropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldValue || isUndoRedo) {
+            this.updateValuePropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData,updateValue);
         }
         if (this.formFieldChecked) {
             this.checkboxCheckedState = this.formFieldChecked.checked;
@@ -4742,7 +4739,7 @@ export class FormDesigner {
     /**
      * @private
      */
-    public updateValuePropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any) {
+    public updateValuePropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any, updateValue?: boolean) {
         let isValueChanged: boolean = false
         let oldValue: any, newValue: any;
         if (selectedItem.formFieldAnnotationType !== "DropdownList" && this.formFieldValue && (selectedItem.value !== this.formFieldValue.value)) {
@@ -4758,8 +4755,12 @@ export class FormDesigner {
         if (isUndoRedo) {
             element.value = selectedItem.value;
         } else {
-            selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = this.formFieldValue.value;
-            selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = this.formFieldValue.value;
+            if (updateValue) {
+                isValueChanged = false;
+            } else {
+                selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = this.formFieldValue.value;
+                selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = this.formFieldValue.value;
+            }
         }
         if (index > -1) {
             formFieldsData[index].FormField.value = selectedItem.value;
@@ -5532,7 +5533,7 @@ export class FormDesigner {
             // eslint-disable-next-line max-len
            this.formFieldValue = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Value'), value: selectedItem.value, cssClass: 'e-pv-properties-formfield-value' }, (formFieldValueContainer as HTMLInputElement));
        }
-        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'Textbox' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'PasswordField') {
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'Textbox' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'PasswordField' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== "RadioButton" && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== "Checkbox") {
             this.formFieldValue.enabled = false;
             this.formFieldValue.value = '';
         }

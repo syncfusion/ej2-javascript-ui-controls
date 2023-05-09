@@ -10665,6 +10665,11 @@ export class Selection {
         if (!isNullOrUndefined(revision) && revision.range.length > 0) {
             let firstElement: any = revision.range[0];
             let lastElement: any = revision.range[revision.range.length - 1];
+            let page: Page = firstElement instanceof WCharacterFormat ? this.getPage(firstElement.ownerBase as ParagraphWidget) : this.getPage((firstElement as FieldElementBox).paragraph);
+            let evenFooter: string = firstElement instanceof WCharacterFormat ? ((firstElement.ownerBase as ParagraphWidget).containerWidget as HeaderFooterWidget).headerFooterType : ((firstElement as FieldElementBox).paragraph.containerWidget as HeaderFooterWidget).headerFooterType;
+            if ((isNullOrUndefined(page) && (evenFooter === "EvenFooter"))) {
+                return;
+            }
             if (firstElement instanceof WRowFormat) {
                 let rowWidget: TableRowWidget = firstElement.ownerBase;
                 let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;

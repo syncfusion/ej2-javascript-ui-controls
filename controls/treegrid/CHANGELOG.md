@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.4 (2023-05-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I181658` - Fixed the issue where a script error was thrown when moving a dropdown option with key input (Arrow Keys) in edit template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Tree Grid

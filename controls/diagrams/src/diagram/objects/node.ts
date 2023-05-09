@@ -2892,6 +2892,10 @@ export class Node extends NodeBase implements IElement {
         portContent.id = this.id + '_' + (ports.id);
         portContent.margin = ports.margin as Margin;
         portContent.data = pathdata;
+        //EJ2-826617 - For BPMN node port flip is to be defined.
+        if(Node.shape.type==='Bpmn'){
+            portContent.flip = this.flip;
+        }
         const style: ShapeStyleModel = ports.style;
         portContent.style = {
             fill: style.fill, strokeColor: style.strokeColor, gradient: null,

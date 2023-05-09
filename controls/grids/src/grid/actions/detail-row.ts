@@ -222,7 +222,7 @@ export class DetailRow {
         if (gObj.isPrinting && rowObj.isExpand && gObj.expandedRows &&
             gObj.expandedRows[rowObj.index] && gObj.expandedRows[rowObj.index].gridModel) {
             (gObj.expandedRows[rowObj.index].gridModel as IGrid).hierarchyPrintMode = gObj.childGrid.hierarchyPrintMode;
-            gridModel = gObj.expandedRows[rowObj.index].gridModel;
+            gridModel = extend({}, gObj.expandedRows[rowObj.index].gridModel, gObj.childGrid, true);
         } else {
             if (gObj.isPrinting && gObj.childGrid.allowPaging) {
                 gObj.childGrid.allowPaging = printMode === 'CurrentPage';

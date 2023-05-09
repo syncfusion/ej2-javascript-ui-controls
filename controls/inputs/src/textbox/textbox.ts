@@ -295,7 +295,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.updateHTMLAttrToElement();
                 this.updateHTMLAttrToWrapper();
                 this.checkAttributes(true);
-                Input.validateInputType(this.textboxWrapper.container, this.element);
+                this.multiline && !isNullOrUndefined(this.textarea) ? Input.validateInputType(this.textboxWrapper.container, this.textarea) : Input.validateInputType(this.textboxWrapper.container, this.element);
             }
                 break;
             case 'readonly':
@@ -559,7 +559,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) < 0 ) {
-                    this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea.setAttribute(key, this.htmlAttributes[`${key}`]) :  this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }

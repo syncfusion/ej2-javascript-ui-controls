@@ -1589,6 +1589,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private currentPointIndex: number = 0;
     private currentSeriesIndex: number = 0;
     private currentLegendIndex: number = 0;
+    private previousPageX: number = null;
+    private previousPageY: number = null;
 
     /**
      * Constructor for creating the widget
@@ -1755,6 +1757,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.processData();
 
         this.renderComplete();
+
+        this.mouseMoveEvent();
 
         this.allowServerDataBinding = true;
     }
@@ -2270,12 +2274,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public print(id?: string[] | string | Element): void {
         const exportChart: ExportUtils = new ExportUtils(this);
         let width: string = this.width;
-        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+        if (this.getModuleName() == 'chart' && parseInt(this.width) >= 80 && this.width.indexOf('%') > -1) {
             this.width = '80%';
             this.dataBind();
         }
         exportChart.print(id);
-        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+        if (this.getModuleName() == 'chart' && parseInt(this.width) >= 80 && this.width.indexOf('%') > -1) {
             this.width = width;
             this.dataBind();
         } 
@@ -2961,6 +2965,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageX = e.clientX;
             pageY = e.clientY;
         }
+        this.previousPageX = pageX;
+        this.previousPageY = pageY;
         if (getElement(this.svgId)) {
             this.setMouseXY(pageX, pageY);
             this.chartOnMouseMove(e);
@@ -2988,6 +2994,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageY = e.clientY;
 
         }
+        this.previousPageX = null;
+        this.previousPageY = null;
         this.setMouseXY(pageX, pageY);
         this.chartOnMouseLeave(e);
         return false;
@@ -4078,6 +4086,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement(this.element.id + '_ej2_chart_selection');
         removeElement(this.element.id + '_ej2_chart_highlight');
     }
+
+    /**
+     * To trigger the manual mouse move event for live chart tooltip
+     */
+     private mouseMoveEvent(): void {
+        if (this.tooltip.enable && this.previousPageX !== null && this.previousPageY !== null) {
+            const mousemove: MouseEvent = document.createEvent('MouseEvent');
+            mousemove.initMouseEvent('mousemove', true, false, window, 1, 100, 100, this.previousPageX, this.previousPageY, false, false, false, false, 0, null);
+            this.element.dispatchEvent(mousemove);
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @private

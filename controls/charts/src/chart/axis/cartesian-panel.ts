@@ -1393,8 +1393,9 @@ export class CartesianAxisLayoutPanel {
                 case 'Shift':
                     if ((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) {
                         intervalLength -= (rect.x - options.x);
-                        if (anchor == '' && options.x > 0 && !isInverse) {
-                            pointX = options.x;
+                        if (anchor == '' && !isInverse) {
+                            if (options.x <= 0) { pointX = options.x = 0; }
+                            else { pointX = options.x; }
                             intervalLength = rect.width / length;
                         }
                         else if (!(anchor === 'start' && options.x > 0)) {

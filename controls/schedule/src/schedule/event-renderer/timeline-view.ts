@@ -188,10 +188,20 @@ export class TimelineEvent extends MonthEvent {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
                 this.wireAppointmentEvents(appointmentElement, event);
-                this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
+                    const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+                    const conWidth: number = conWrap.getBoundingClientRect().width;
+                    const isWithoutScroll: boolean = conWrap.offsetHeight === conWrap.clientHeight &&
+                        conWrap.offsetWidth === conWrap.clientWidth;
+                    this.renderEventElement(event, appointmentElement, cellTd);
                     const firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
+                    if (isWithoutScroll &&
+                        (conWrap.offsetWidth > conWrap.clientWidth || conWidth !== conWrap.getBoundingClientRect().width)) {
+                        this.adjustAppointments(conWidth);
+                    }
+                } else {
+                    this.renderEventElement(event, appointmentElement, cellTd);
                 }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
@@ -282,6 +292,21 @@ export class TimelineEvent extends MonthEvent {
                 setStyleAttribute(monthHeader, { 'height': height + 'px' });
             }
         }
+    }
+
+    private adjustAppointments(conWidth: number): void {
+        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
+        this.cellWidth = this.workCells[0].getBoundingClientRect().width;
+        const currentPercentage: number = (this.cellWidth * tr.children.length) / (conWidth / 100);
+        const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+        apps.forEach((app: HTMLElement) => {
+            if (this.parent.enableRtl && app.style.right !== '0px') {
+                app.style.right = ((parseFloat(app.style.right) / 100) * currentPercentage) + 'px';
+            } else if (app.style.left !== '0px') {
+                app.style.left = ((parseFloat(app.style.left) / 100) * currentPercentage) + 'px';
+            }
+            app.style.width = ((parseFloat(app.style.width) / 100) * currentPercentage) + 'px';
+        });
     }
 
     private getFirstChild(index: number): HTMLElement {

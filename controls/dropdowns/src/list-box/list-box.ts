@@ -2221,10 +2221,12 @@ export class ListBox extends DropDownBase {
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
+                            (li as HTMLElement).focus();
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
+                                (li as HTMLElement).focus();
                             } else {
                                 li.classList.remove(cssClass.selected);
                                 li.removeAttribute('aria-selected');

@@ -249,7 +249,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
         }
-        if (this.activeKey === 'downArrow') {
+        if (this.activeKey === 'downArrow' && !isNaN(this.rowIndex)) {
             const firstBlock: number = Math.ceil(this.rowIndex / this.getBlockSize());
             if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
                 infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];

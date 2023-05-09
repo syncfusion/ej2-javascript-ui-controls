@@ -1533,7 +1533,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'downArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit[`obj`])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findnextRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -1549,7 +1554,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'upArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit[`obj`])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findPreviousRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;

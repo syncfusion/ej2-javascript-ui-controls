@@ -8127,9 +8127,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
-                importData = JSON.stringify(importData);
-                this.viewerBase.isPDFViewerJson = false;
-                this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                let imporedAnnotation: any = importData.pdfAnnotation;
+                if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
+                    this.viewerBase.importAnnotations(importData);
+                } else {
+                    importData = JSON.stringify(importData);
+                    this.viewerBase.isPDFViewerJson = false;
+                    this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                }
             }
         }
     }
