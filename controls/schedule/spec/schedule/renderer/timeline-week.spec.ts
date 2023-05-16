@@ -4363,6 +4363,69 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('ES-826421 - Appointment misalignment issue', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 7,
+            Subject: 'Project Review',
+            StartTime: new Date(2023, 0, 4, 11, 15),
+            EndTime: new Date(2023, 0, 4, 13, 0),
+            TaskId: 1
+        }, {
+            Id: 13,
+            Subject: 'Resolution-based testing',
+            StartTime: new Date(2023, 0, 7, 13, 0),
+            EndTime: new Date(2023, 0, 7, 15, 15),
+            TaskId: 1
+        }, {
+            Id: 45,
+            Subject: 'Timeline estimation',
+            StartTime: new Date(2023, 0, 4, 9),
+            EndTime: new Date(2023, 0, 4, 11),
+            TaskId: 1
+        }, {
+            Id: 47,
+            Subject: 'Project Review',
+            StartTime: new Date(2023, 0, 4, 14),
+            EndTime: new Date(2023, 0, 4, 16),
+            TaskId: 1
+        }, {
+            Id: 49,
+            Subject: 'Project Preview',
+            StartTime: new Date(2023, 0, 4, 18, 0),
+            EndTime: new Date(2023, 0, 4, 20),
+            TaskId: 1
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '200px',
+                selectedDate: new Date(2023, 0, 4),
+                timeScale: { enable: false },
+                rowAutoHeight: true,
+                views: ['TimelineWeek'],
+                group: { resources: ['Categories'] },
+                resources: [{
+                    field: 'TaskId', title: 'Category',
+                    name: 'Categories', allowMultiple: true,
+                    dataSource: [{ text: 'Nancy', id: 1, groupId: 1, color: '#df5286' }],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the scroll width of the col elements', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.style.height).toEqual('117px');
+            expect(contentWrap.offsetWidth > contentWrap.clientWidth).toBeTruthy();
+            const appEle: HTMLElement = schObj.element.querySelector('.e-appointment[data-id="Appointment_45"]') as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1672790400000"]') as HTMLElement;
+            expect(appEle.offsetLeft).toEqual(workCell.offsetLeft);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

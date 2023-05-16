@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I420916` - Now, RichTextEditor is in RTL mode, the direction of the toolbar items has changed properly.
+
+## 21.2.4 (2023-05-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I439501` - Now, when pasting the list content from MS Word, the roman number list formats are aligned properly.
+
+- `#I456849` - Now, when the image is loaded from the Rich Text Editor value the resizing works properly.
+
 ## 21.1.41 (2023-04-18)
 
 ### RichTextEditor

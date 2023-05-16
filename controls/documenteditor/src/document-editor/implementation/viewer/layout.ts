@@ -1878,7 +1878,7 @@ export class Layout {
             }
         }
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
-            !(element instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame && !(element instanceof CommentCharacterElementBox))) {
+            !(element instanceof ShapeElementBox && element.textWrappingStyle == 'Inline') && !(paragraph.containerWidget instanceof TextFrame && !(element instanceof CommentCharacterElementBox))) {
             this.adjustPosition(element, element.line.paragraph.bodyWidget);
         }
         if (this.viewer instanceof PageLayoutViewer &&
@@ -2010,6 +2010,29 @@ export class Layout {
             if (elementIndex > -1) {
                 this.addSplittedLineWidget(line, elementIndex);
             }
+        }
+        // We don't have a carriage return support, thus we have to manage it by creating a new paragraph if the break is a carriage return character.
+        // Todo: Remove this code once carriage return break support is implemented.
+        if (text === '\r') {
+            element.width = 0;
+            (element as TextElementBox).text = '';
+            let newParagraph = new ParagraphWidget();
+            let newline = new LineWidget(newParagraph);
+            newParagraph.childWidgets.push(newline);
+            do {
+                let lastElement: ElementBox = line.children[line.children.length - 1];
+                if (lastElement === element) {
+                    break;
+                }
+                line.children.splice(line.children.indexOf(lastElement), 1);
+                newline.children.splice(0, 0, lastElement);
+                lastElement.line = newline;
+            } while (true);
+            newParagraph.containerWidget = paragraph.containerWidget;
+            paragraph.containerWidget.childWidgets.splice(paragraph.indexInOwner + 1, 0, newParagraph);
+            newParagraph.paragraphFormat = paragraph.paragraphFormat;
+            newParagraph.characterFormat = paragraph.characterFormat;
+            newParagraph.index = paragraph.index + 1;
         }
         if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f' || text === String.fromCharCode(14)) {
             if (this.isXPositionUpdated) {
@@ -6036,9 +6059,9 @@ export class Layout {
         return colIndex < row.ownerTable.tableHolder.columns.length;
     }
 
-    private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, cellIndex?: number, isMultiColumnSplit?: boolean): TableRowWidget {
+    private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, cellIndex?: number, isMultiColumnSplit?: boolean, isRowSpan?: boolean): TableRowWidget {
         if (!(isMultiColumnSplit && lineIndexInCell === 0) && (this.isFirstLineFitForRow(viewer.clientArea.bottom, tableRowWidget) && tableRowWidget.childWidgets.length > 0)) {
-            splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit);
+            splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget, footNoteCollection, lineIndexInCell, isMultiColumnSplit, undefined, isRowSpan);
             if (this.documentHelper.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
                 if (isLastRow) {
                     for (let i: number = 0; i < splittedWidget.childWidgets.length; i++) {
@@ -6059,7 +6082,7 @@ export class Layout {
         return splittedWidget;
     }
 
-    private getSplittedWidgetForRow(bottom: number, tableCollection: TableWidget[], rowCollection: TableRowWidget[], tableRowWidget: TableRowWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, count?: number): TableRowWidget {
+    private getSplittedWidgetForRow(bottom: number, tableCollection: TableWidget[], rowCollection: TableRowWidget[], tableRowWidget: TableRowWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, count?: number, isRowSpan?: boolean): TableRowWidget {
         let splittedWidget: TableRowWidget = undefined;
         let rowIndex: number = tableRowWidget.index;
         this.isRelayoutneed = false;
@@ -6074,6 +6097,10 @@ export class Layout {
                 cellHeight = cellWidget.height;
             }
             footNoteCollection = [];
+            if (isNullOrUndefined(splittedCell) && cellWidget === tableRowWidget.childWidgets[tableRowWidget.childWidgets.length - 1] && this.isVerticalMergedCellContinue(tableRowWidget) && this.isRowSpanEnd(tableRowWidget, this.viewer) && this.documentHelper.splittedCellWidgets.length > 0 && isRowSpan) {
+                splittedWidget = this.getSplittedWidgetForSpannedRow(bottom, tableRowWidget, tableCollection, rowCollection, footNoteCollection);
+                splittedCell = undefined;
+            }
             if (!isNullOrUndefined(splittedCell)) {
                 if (splittedCell === cellWidget) {
                     //Returns if the whole content of the row does not fit in current page.
@@ -6132,6 +6159,36 @@ export class Layout {
                 (tableRowWidget.childWidgets[i] as TableCellWidget).height = cellHeight;
             }
             tableRowWidget.height = cellHeight;
+        }
+        return splittedWidget;
+    }
+    private getSplittedWidgetForSpannedRow(bottom: number, tableRowWidget: TableRowWidget, tableCollection: TableWidget[], rowCollection: TableRowWidget[], footNoteCollection: FootnoteElementBox[]): TableRowWidget {
+        let splittedWidget: TableRowWidget = undefined;
+        let splittedCell: TableCellWidget = undefined;
+        let issplit: boolean = false;
+        for (let i: number = 0; i < this.documentHelper.splittedCellWidgets.length; i++) {
+            splittedCell = this.documentHelper.splittedCellWidgets[i];
+            if (isNullOrUndefined(splittedWidget)) {
+                splittedWidget = new TableRowWidget();
+                splittedWidget.containerWidget = tableRowWidget.containerWidget;
+                splittedWidget.index = tableRowWidget.index;
+                splittedWidget.rowFormat = tableRowWidget.rowFormat;
+                splittedWidget.isRenderBookmarkEnd = tableRowWidget.isRenderBookmarkEnd;
+                this.updateWidgetLocation(tableRowWidget, splittedWidget);
+                rowCollection.push(splittedWidget);
+            }
+            splittedWidget.childWidgets.push(splittedCell);
+            splittedCell.containerWidget = splittedWidget;
+            this.isRelayoutneed = true;
+            let count: number = (this.documentHelper.splittedCellWidgets[i] as TableCellWidget).index;
+            while (count > 0 && !issplit) {
+                let cellWidget: TableCellWidget = tableRowWidget.childWidgets[count - 1] as TableCellWidget;
+                splittedCell = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
+                splittedWidget.childWidgets.splice(0, 0, splittedCell);
+                splittedCell.containerWidget = splittedWidget;
+                count--;
+            }
+            issplit = true;
         }
         return splittedWidget;
     }
@@ -6272,7 +6329,7 @@ export class Layout {
                         if (isInsertSplittedWidgets) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, splittedWidget, tableRowWidget.indexInOwner - 1);
                         } else {
-                            splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements);
+                            splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, undefined, undefined, undefined, true);
                             if (isNullOrUndefined(splittedWidget)) {
                                 isInsertSplittedWidgets = (tableRowWidget.y === viewer.clientArea.y
                                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight);
@@ -6285,6 +6342,12 @@ export class Layout {
                         }
                     } else if (isLastRow && !isAllowBreakAcrossPages) {
                         splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements);
+                    } else if (this.isRowSpanEnd(row, viewer) && !isAllowBreakAcrossPages) {
+                        if (heightType === 'AtLeast' && row.ownerTable.spannedRowCollection.keys.length > 0)
+                            splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, lineIndexInCell, cellIndex, isMultiColumnSplit);
+                        if (isNullOrUndefined(splittedWidget)) {
+                            this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
+                        }
                     }
                 }
                 //Create New table for splitted widget
@@ -7237,6 +7300,7 @@ export class Layout {
                 && (container.childWidgets[i + 1] as Widget).y < ((container.childWidgets[i] as Widget).y + (container.childWidgets[i] as Widget).height)) {
                 skipHeight = true;
             }
+            this.viewer.cutFromTop(top);
             (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
             (container.childWidgets[i] as Widget).y = top;
             if (!isNullOrUndefined(bodyWidget) && widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
@@ -8067,7 +8131,8 @@ export class Layout {
         if (wrapDiff > 0) {
             this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
         }
-        if (table.wrapTextAround && table.bodyWidget) {
+        let tableWidget: TableWidget[] = table.getSplitWidgets() as TableWidget[];
+        if (table.wrapTextAround && table.bodyWidget && table.bodyWidget.lastChild !== tableWidget[tableWidget.length - 1]) {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;

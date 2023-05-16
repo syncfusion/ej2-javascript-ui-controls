@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I459154` - An issue with Schedule performance while rendering large set all-day appointments in vertical views has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I457705` - An issue with appointment not dropped on target cell when start and end time is same has been fixed.
+- `#I457928` - An issue with the appointment misalignment has been fixed.
+
 ## 21.1.41 (2023-04-18)
 
 ### Schedule

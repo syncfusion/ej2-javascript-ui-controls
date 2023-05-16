@@ -368,6 +368,10 @@ export class DataManipulation {
             qry.expand(expandDetail);
         }
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
+        if (rowDetails.action === 'remoteExpand' && this.parent.grid.filterModule && this.parent.grid.filterModule['value']) {
+            const filterqry: QueryOptions[] = this.parent.grid.getDataModule().generateQuery().queries.filter((e: QueryOptions) => e.fn !== 'onPage' && typeof e.e.predicates !== 'undefined');
+            qry.queries.push(filterqry[0]);
+        }
         showSpinner(this.parent.element);
         dm.executeQuery(qry).then((e: ReturnOption) => {
             const remoteExpandedData: string = 'remoteExpandedData';
@@ -389,7 +393,25 @@ export class DataManipulation {
                 });
             }
             const haveChild: boolean[] = getObject('actual.nextLevel', e);
-            const result: ITreeData[] = <ITreeData[]>e.result;
+            let result: ITreeData[] = <ITreeData[]>e.result;
+            const resultChildData: ITreeData[] = [];
+            if (rowDetails.action === 'remoteExpand' && this.parent.grid.filterModule && this.parent.grid.filterModule['value']) {
+                for (let i: number = 0; i < datas.length; i++) {
+                    if (Object.prototype.hasOwnProperty.call(datas[parseInt(i.toString(), 10)], this.parent.parentIdMapping) && datas[parseInt(i.toString(), 10)]['' + this.parent.parentIdMapping] !== null && datas[parseInt(i.toString(), 10)].level === 0) {
+                        datas.splice(i, 1);
+                        i--;
+                    }
+                }
+                for (let i: number = 0; i < result.length; i++) {
+                    if (rowDetails.record['' + this.parent.idMapping] !== result[parseInt(i.toString(), 10)]['' + this.parent.idMapping] &&
+                        rowDetails.record['' + this.parent.idMapping] === result[parseInt(i.toString(), 10)]['' + this.parent.parentIdMapping]) {
+                        if (Object.prototype.hasOwnProperty.call(result, i)) {
+                            resultChildData.push(result[parseInt(i.toString(), 10)]);
+                        }
+                    }
+                }
+                result = resultChildData;
+            }
             rowDetails.record.childRecords = result;
             for (let r: number = 0; r < result.length; r++) {
                 if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'remoteExpand') {

@@ -183,12 +183,16 @@ export interface ScrollOffset {
 }
 
 /**
- * Custom Sort Compare Function to sort Swimlane rows W
+ * Custom Sort Compare Function to sort Swimlane rows.
  *
  * @interface SortCompareFunction
  */
 export interface SortComparerFunction {
-    /** Defines the Swimlane Header Arguments */
+    /** Defines the Swimlane Header Arguments 
+    * ```props
+    * (param: HeaderArgs[]):- HeaderArgs[];
+    * ```
+    */
     (param: HeaderArgs[]): HeaderArgs[];
 }
 

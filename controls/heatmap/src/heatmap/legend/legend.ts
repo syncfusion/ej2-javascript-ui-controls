@@ -1235,10 +1235,7 @@ export class Legend {
                 getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
             document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip').style.visibility = 'visible';
         } else {
-            const element: HTMLElement = document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip');
-            if (element) {
-                element.style.visibility = 'hidden';
-            }
+            removeElement(this.heatMap.element.id + '_legendTitle_Tooltip');
         }
     }
     /**
@@ -1263,10 +1260,7 @@ export class Legend {
 
             }
         } else {
-            const element: HTMLElement = document.getElementById(this.heatMap.element.id + '_LegendLabel_Tooltip');
-            if (element) {
-                element.style.visibility = 'hidden';
-            }
+            removeElement(this.heatMap.element.id + '_LegendLabel_Tooltip');
         }
     }
 

@@ -141,43 +141,10 @@ export class HelperMethods {
             zipArchive.open(JSON.stringify(json.sfdt));
             let zipItem: ZipArchiveItem = zipArchive.items[0] as ZipArchiveItem;
             let value: Uint8Array = new Uint8Array(zipItem.data as ArrayBuffer);
-            let str: string = HelperMethods.utf8ArrayToString(value);            
+            let str: string = new TextDecoder("utf-8").decode(value);
             json = JSON.parse(str);
         }
         return json;
-    }
-    /* eslint-disable */
-    /**
-     * @private
-     * Convert the Uint8Array to string.
-     * @param array 
-     * @returns 
-     */
-    public static utf8ArrayToString(array: Uint8Array): string {
-        let out: string = '';
-        let i: number = 0;
-        let c: number = 0;
-        let c1: number = 0;
-        let c2: number = 0;
-        let c3: number = 0;
-        while (i < array.length) {
-            /*eslint-disable*/
-            c = array[i];
-            if (c < 128) {
-                out += String.fromCharCode(c);
-                i++;
-            } else if (c > 191 && c < 224) {
-                c2 = array[i + 1];
-                out += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                i += 2;
-            } else {
-                c2 = array[i + 1];
-                c3 = array[i + 2];
-                out += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                i += 3;
-            }
-        }
-        return out;
     }
     /* eslint-enable */
     /**

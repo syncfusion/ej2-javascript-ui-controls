@@ -53,8 +53,9 @@ export class AxisFieldRenderer {
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
-        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)
-        || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '')) {
+        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0) ||
+        (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '') ||
+            (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '')) {
             const axis: string[] = ['rows', 'columns', 'values', 'filters'];
             for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
                 if (fields[len as number]) {

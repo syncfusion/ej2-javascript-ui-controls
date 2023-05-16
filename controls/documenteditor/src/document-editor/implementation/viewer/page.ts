@@ -1485,6 +1485,9 @@ export class ParagraphWidget extends BlockWidget {
                                 lineWidget.children.splice(i + j, 0, clonedtextElement);
                                 clonedtextElement.line = lineWidget;
                                 iIncrementer++;
+                                if (textElement.revisions.length > 0) {
+                                    this.updateTextElementInRevisionRange(textElement, clonedtextElement);
+                                }
                             }
                             else {
                                 //Replace the source text range with splitted text.
@@ -1607,7 +1610,7 @@ export class ParagraphWidget extends BlockWidget {
                     let currentTxtRange: TextElementBox = elementBox;
                     let nextTxtRange: TextElementBox = lineWidget.children[i + 1] as TextElementBox;
 
-                    if (currentTxtRange.characterFormat.complexScript && currentTxtRange.scriptType == nextTxtRange.scriptType &&
+                    if ((currentTxtRange.characterFormat.complexScript || currentTxtRange.characterFormat.bidi) && currentTxtRange.scriptType == nextTxtRange.scriptType &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
                         && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {

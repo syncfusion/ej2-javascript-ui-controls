@@ -7,7 +7,7 @@ import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from 
 // eslint-disable-next-line
 import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';
+import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility, removeMeasureElement } from './utils/helper';
 import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';
 import { removeElement, CanvasTooltip, getTooltipText } from './utils/helper';
 import { HeatMapModel } from './heatmap-model';
@@ -639,6 +639,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.legendModule.createTooltipDiv();
             }
         }
+        removeMeasureElement();
     }
 
     /**
@@ -895,6 +896,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.touchInstance.destroy();
         this.touchInstance = null;
         super.destroy();
+        removeMeasureElement();
         this.element.innerHTML = '';
         this.element.classList.remove('e-heatmap');
     }

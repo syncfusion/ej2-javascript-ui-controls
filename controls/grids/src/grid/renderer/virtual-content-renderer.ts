@@ -249,7 +249,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
         }
-        if (this.activeKey === 'downArrow') {
+        if (this.activeKey === 'downArrow' && !isNaN(this.rowIndex)) {
             const firstBlock: number = Math.ceil(this.rowIndex / this.getBlockSize());
             if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
                 infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
@@ -635,9 +635,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             // To overcome the white space issue in last page (instead of position absolute)
             this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         } else {
-            const virtualHeight: number = (this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() :
+            const virtualHeight: number = (this.offsets[isGroupAdaptive(this.parent) && this.count !== 0 ? this.getGroupedTotalBlocks() :
                 this.getTotalBlocks()]);
             this.virtualEle.setVirtualHeight(virtualHeight, width);
+            if (this.virtualEle && this.virtualEle.wrapper) {
+                this.virtualEle.wrapper.style.minHeight = !isNullOrUndefined(virtualHeight) ? formatUnit(<number>this.parent.height) : '0px';
+            }
         }
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);

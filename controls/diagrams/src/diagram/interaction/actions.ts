@@ -8,7 +8,7 @@ import { identityMatrix, transformPointByMatrix, Matrix, rotateMatrix } from '..
 import { DiagramElement } from '../core/elements/diagram-element';
 import { getUserHandlePosition, checkPortRestriction, canShowControlPoints } from '../utility/diagram-util';
 import { NodeModel } from './../objects/node-model';
-import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb } from '../utility/constraints-util';
+import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb, canSingleSelect, canMultiSelect } from '../utility/constraints-util';
 import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate } from '../utility/constraints-util';
 import { canShowCorner, canResizeCorner } from '../utility/diagram-util';
 import { Point } from '../primitives/point';
@@ -130,7 +130,9 @@ export function findToolToActivate(
     }
     //Panning
     if (canZoomPan(diagram) && !obj) { return 'Pan'; }
-    if (target instanceof PointPort && (!canZoomPan(diagram))) {
+   //826364 - Drawing Tool is not activated on hovering the ports while both ZoomPan and single select constraints enabled
+    if (canZoomPan(diagram) && !obj) { return 'Pan'; }
+      if (target instanceof PointPort && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
         const action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }
     }

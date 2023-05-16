@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I460490` - Now, the signature style is saved when we save the typed signature option.
+- `#I460513` - Now, the exception does not occur when downloading the provided PDF file.
+- `#I459487` - Now, the script error does not occur when importing the values programmatically.
+- `#I461544` - Now, scrolling the multiline textbox field works when we set it to read-only.
+- `#I462652` - Now, the form field validation works properly for non-rendered pages.
+- `#I460704` - Now, the script error does not occur when pressing the delete key.
+
+## 21.2.4 (2023-05-09)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I426363`, `F180068` – Provided support for value property in the radio button and checkbox field,
+
+#### Bug Fixes
+
+- `#I456051` - Now, the stamp annotations are displayed correctly in the provided document.
+- `#I452436` - Now, the radio button and checkbox are added properly.
+- `#I403367` - Now, underlining and text selection are working properly in the provided document.
+- `#I456864` - Now, the download performance has been enhanced when downloading the provided document.
+- `#I458313` - Now, the add annotation API working fine when the annotation object is given as input.
+
 ## 21.2.3 (2023-05-03)
 
 ### PDF Viewer

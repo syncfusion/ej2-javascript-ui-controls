@@ -154,8 +154,9 @@ export class PdfExport {
         this.headerOnPages = args[`${header}`];
         this.drawPosition = args[`${drawPos}`];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
-            && pdfExportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+            pdfExportProperties.dataSource = pdfExportProperties.dataSource instanceof DataManager ?
+                pdfExportProperties.dataSource : new DataManager(pdfExportProperties.dataSource);
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(query).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
@@ -597,12 +598,6 @@ export class PdfExport {
                 this.hideColumnInclude = pdfExportProperties.includeHiddenColumn;
             }
             if (!isNullOrUndefined(pdfExportProperties.dataSource)) {
-                if (!(pdfExportProperties.dataSource instanceof DataManager)) {
-                    dataSource = pdfExportProperties.dataSource as Object[];
-                    if (pdfExportProperties.query) {
-                        dataSource = this.parent.getDataModule().dataManager.executeLocal(pdfExportProperties.query);
-                    }
-                }
                 this.customDataSource = true;
                 this.currentViewData = false;
             } else if (!isNullOrUndefined(pdfExportProperties.exportType)) {

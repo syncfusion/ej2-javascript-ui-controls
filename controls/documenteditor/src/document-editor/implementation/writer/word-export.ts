@@ -1606,7 +1606,9 @@ export class WordExport {
     private serializeTrackChanges(writer: XmlWriter, type: any, author: any, date: any): void {
         writer.writeStartElement('w', type, this.wNamespace);
         writer.writeAttributeString('w', 'id', this.wNamespace, (this.trackChangesId++).toString());
-        writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        if(author != "Unknown") {
+            writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        }
         writer.writeAttributeString('w', 'date', this.wNamespace, date);
     }
 

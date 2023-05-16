@@ -2673,6 +2673,8 @@ export class Drawing {
                     if (children[parseInt(i.toString(), 10)].textNodes) {
                         if (actualObject.shapeAnnotationType === 'FreeText') {
                             if (node.dynamicText) {
+                                // eslint-disable-next-line max-len
+                                this.pdfViewer.annotationModule.triggerAnnotationPropChange(actualObject, false, false, false, false, false, false, false, true, (actualObject as PdfAnnotationBaseModel).dynamicText, node.dynamicText);
                                 children[parseInt(i.toString(), 10)].content = node.dynamicText;
                                 actualObject.dynamicText = node.dynamicText;
                             } else {

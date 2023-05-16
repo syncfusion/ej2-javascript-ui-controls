@@ -44,6 +44,12 @@ export class MsWordPaste {
         'object', 'ol', 'pre', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul',
         'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
     private borderStyle: string[] = ['border-top', 'border-right', 'border-bottom', 'border-left'];
+    private upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
+        'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+    private lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
+        'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
+    private lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
+        'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
     private removableElements: string[] = ['o:p', 'style'];
     private listContents: string[] = [];
     private addEventListener(): void {
@@ -547,6 +553,12 @@ export class MsWordPaste {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 64);
                         } else if (listStyleType === 'lower-alpha') {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 96);
+                        } else if (listStyleType === 'upper-roman') {
+                            startAttr = this.upperRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
+                        } else if (listStyleType === 'lower-roman') {
+                            startAttr = this.lowerRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
+                        } else if (listStyleType === 'lower-greek') {
+                            startAttr = this.lowerGreekNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
                         }
                     }
                     if ((listNodes[i as number] as HTMLElement).style.marginLeft !== '') {
@@ -595,22 +607,16 @@ export class MsWordPaste {
     }
     private getlistStyleType(listContent: string, type: string): string {
         let currentListClass: string;
-        const upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
-            'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
-        const lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
-            'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
-        const lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
-            'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
         if (type === 'ol') {
             const charCode: number = listContent.split('.')[0].charCodeAt(0);
             switch (true) {
-            case upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'upper-roman';
                 break;
-            case lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'lower-roman';
                 break;
-            case lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'lower-greek';
                 break;
             case (charCode > 64 && charCode < 91):

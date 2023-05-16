@@ -495,6 +495,10 @@
       font-size: $grouped-bigger-text-font-size;
     }
 
+    &.e-device .e-groupheadercell {
+      padding: $grid-device-group-headercell-padding;
+    }
+
     .e-groupheadercell:hover {
       padding: $grid-bigger-group-headercell-hover-padding;
     }
@@ -551,6 +555,7 @@
 
     &.e-device .e-groupheadercell span {
       line-height: $grid-device-groupheadercell-span-line-height;
+      padding: $grid-device-grouped-headercell-span-padding;
     }
 
     &.e-device .e-rowcell,
@@ -631,6 +636,13 @@
       }
     }
 
+    &.e-device span.e-ungroupbutton.e-icons {
+      margin-top: $grid-device-ungroupbutton-icon-margin-top;
+      @if $grid-skin == 'bootstrap4' {
+        padding-top: 0;
+      }
+    }
+
     span.e-ungroupbutton.e-icons:hover {
       @if $grid-skin == 'tailwind' {
         color: $cool-gray-700;
@@ -647,6 +659,10 @@
       @else if $grid-skin == 'bootstrap4' {
         margin-left: -4px;
       }
+    }
+
+    &.e-device span.e-groupsort.e-icons {
+      margin-top: $grid-device-group-sorticon-margin-top;
     }
 
     &.e-rtl span.e-groupsort.e-icons {
@@ -1952,6 +1968,8 @@
       border-top-style: $grid-border-type;
       border-top-width: $grid-border-size;
       padding: .3em;
+      font-weight: normal;
+      text-align: left;
     }
 
     th.e-detailcell .e-rowcell,
@@ -3286,6 +3304,7 @@
       &.e-default.e-bothlines .e-detailcell {
         border-right-style: solid;
         border-right-width: 1px;
+        text-align: right;
       }
 
       & .e-cc-searchdiv span.e-ccsearch-icon.e-icons {
@@ -3783,6 +3802,10 @@
   &.e-rtl .e-groupheadercell span {
     padding: $grid-bigger-rtl-group-span-padding;
   }
+
+  &.e-device.e-rtl .e-groupheadercell span {
+    padding: $grid-device-rtl-grouped-headercell-span-padding;
+  }
 }
 
 #{&}.e-grid-min-height {
@@ -3999,9 +4022,17 @@
       position: absolute;
       top: 6px;
       white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       width: 45%;
     }
 
+    & .e-verticalwrap td::before {
+      line-height: $grid-rowcell-wrap-height;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+    
     & td[data-cell] {
       padding-bottom: 5px;
       padding-left: 55%;

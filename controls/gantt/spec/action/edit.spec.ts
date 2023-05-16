@@ -29,7 +29,8 @@ describe('Gantt Edit support', () => {
                         resourceInfo: 'Resource',
                         dependency: 'Predecessor',
                         indicators: 'Indicators',
-                        child: 'subtasks'
+                        child: 'subtasks',
+                        cssClass: 'cssClass',
                     },
                     resourceIDMapping: 'resourceId',
                     resourceNameMapping: 'resourceName',
@@ -81,6 +82,12 @@ describe('Gantt Edit support', () => {
             ganttObj.editModule.updateRecordByID(data[0]);
             expect(getValue('TaskName', ganttObj.flatData[3])).toBe('Update Record1');
         });
+
+        it('Update Record By ID with cssClass', () => {
+            let data: object[] = [{cssClass: 'ganttClosed',TaskID: 3,TaskName: 'Changed task',StartDate: new Date('04/02/2019'),Duration: 4,Progress: 50}]
+            ganttObj.editModule.updateRecordByID(data[0]);
+            expect(getValue('cssClass',ganttObj.flatData[2])).toBe('ganttClosed')
+        })
 
         it('Update Record By Id Without Enddate', () => {
             let data: object[] = [{ TaskID: 4, TaskName: 'Update Record2', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2FF", Notes: 'Notes 3',

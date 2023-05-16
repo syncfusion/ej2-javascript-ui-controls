@@ -3501,7 +3501,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setAutoHeight(element: HTMLElement): void {
         if (!isNOU(element)) {
-            element.style.height = '';
             element.style.height = this.inputElement.scrollHeight + 'px';
             element.style.overflow = 'hidden';
         }

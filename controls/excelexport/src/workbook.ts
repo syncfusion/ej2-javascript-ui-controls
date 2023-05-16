@@ -819,6 +819,9 @@ export class Workbook {
             case 'number':
                 try {
                     returnFormat = this.intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+                    if(this.currency.length >1){
+                        returnFormat = returnFormat.replace(this.currency, '[$'+this.currency+']');
+                    }
                 } catch (error) {
                     returnFormat = numberFormat;
                 }

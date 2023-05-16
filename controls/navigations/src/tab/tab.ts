@@ -769,15 +769,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setContentHeight(true);
                 this.select(this.selectedItem);
             }
-            this.tbItem = selectAll('.' + CLS_TB_ITEM, this.hdrEle);
-            if (!isNOU(this.tbItem)) {
-                for (let i: number = 0; i < this.items.length; i++) {
-                    if (this.tbItem[i]) {
-                        const tabID: string = this.items[i].id;
-                        this.tbItem[i].setAttribute('data-id', tabID);
-                    }
-                }
-            }
             this.setRTL(this.enableRtl);
         }
     }
@@ -793,23 +784,20 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setProperties({ headerPlacement: 'Bottom' }, true);
             }
             const count: number = this.hdrEle.children.length;
-            const hdrItems: string[] = [];
+            const hdrItems: Element[] = [];
             for (let i: number = 0; i < count; i++) {
-                hdrItems.push(this.hdrEle.children.item(i).innerHTML);
+                hdrItems.push(this.hdrEle.children.item(i));
             }
             if (count > 0) {
-                while (this.hdrEle.firstElementChild) {
-                    detach(this.hdrEle.firstElementChild);
-                }
                 const tabItems: HTMLElement = this.createElement('div', { className: CLS_ITEMS });
                 this.hdrEle.appendChild(tabItems);
-                hdrItems.forEach((item: string, index: number) => {
+                hdrItems.forEach((item: Element, index: number) => {
                     this.lastIndex = index;
                     const attr: object = {
                         className: CLS_ITEM, id: CLS_ITEM + this.tabId + '_' + index
                     };
                     const txt: Str = this.createElement('span', {
-                        className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
+                        className: CLS_TEXT, attrs: { 'role': 'presentation' }
                     }).outerHTML;
                     const cont: Str = this.createElement('div', {
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
@@ -818,6 +806,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         className: CLS_WRAP, innerHTML: cont,
                         attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-disabled': 'false' }
                     });
+                    wrap.querySelector('.' + CLS_TEXT).appendChild(item);
                     tabItems.appendChild(this.createElement('div', attr));
                     selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
                 });
@@ -950,7 +939,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.itemIndexArray.splice((index + i), 0, CLS_ITEM + this.tabId + '_' + this.lastIndex);
             }
             const attrObj: Object = {
-                id: CLS_ITEM + this.tabId + '_' + this.lastIndex
+                id: CLS_ITEM + this.tabId + '_' + this.lastIndex, 'data-id': item.id
             };
             const tItem: { [key: string]: {} } = { htmlAttributes: attrObj, template: wrap };
             tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden + ' '
@@ -1984,6 +1973,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         };
         this.trigger('onDragStart', dragArgs, (tabitemDragArgs: DragEventArgs) => {
             if (tabitemDragArgs.cancel) {
+                const dragObj: Draggable = (e.element as EJ2Instance).ej2_instances[0] as Draggable;
+                if (!isNullOrUndefined(dragObj)) {
+                    dragObj.intDestroy(e.event);
+                }
                 detach(this.cloneElement);
             } else {
                 this.removeActiveClass();

@@ -154,7 +154,8 @@ describe('Chart Control', () => {
 
             tooltip = document.getElementById('chartContainer_tooltip');
             expect(tooltip !== null).toBe(true);
-            
+            trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
+
             done();
         });
         it('Shared Tooltip', (done: Function) => {
@@ -172,6 +173,7 @@ describe('Chart Control', () => {
                 expect(tooltip !== null).toBe(true);
                 let element: HTMLElement = document.getElementById('chartContainer_tooltip_path');
                 expect(element.getAttribute('d') !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -318,6 +320,7 @@ describe('Chart Control', () => {
 
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -338,6 +341,7 @@ describe('Chart Control', () => {
 
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -809,6 +813,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -1026,6 +1031,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -1458,6 +1464,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 //  expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;

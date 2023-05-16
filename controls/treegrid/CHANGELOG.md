@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I826966` - Fixed a bug where records were getting missed when adding a record at the bottom of the virtualization enabled sample.
+- `#I454734` - Resolved filtering is not working properly when using remote data with hierarchy mode as "Both".
+
+## 21.2.4 (2023-05-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I181658` - Fixed the issue where a script error was thrown when moving a dropdown option with key input (Arrow Keys) in edit template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Tree Grid

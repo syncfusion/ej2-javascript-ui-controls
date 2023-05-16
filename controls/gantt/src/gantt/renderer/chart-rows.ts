@@ -245,7 +245,12 @@ export class ChartRows extends DateProcessor {
                  data.ganttProperties.segments.length === 0))) {
                 if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                     let templateElement: any = this.createDivElement(template)[0];
-                    templateElement.innerText = labelString;
+                    if (this.parent.disableHtmlEncode) {
+                       templateElement.innerText = labelString;
+                    }
+                    else {
+                       templateElement.innerHTML = labelString;
+                    }
                     let childLabel: string = this.parent.labelSettings.taskLabel;
                     if (childLabel && childLabel['elementRef'])
                         templateElement.appendChild(tempDiv);
@@ -952,7 +957,12 @@ export class ChartRows extends DateProcessor {
                         this.taskBarHeight + 'px;"></span>';
                 }
                 let labelElement: any = this.createDivElement(labelDiv)[0];
-                labelElement.innerText = labelString;
+                if (this.parent.disableHtmlEncode) {
+                   labelElement.innerText = labelString;
+                }
+                else {
+                   labelElement.innerHTML = labelString;
+                }
                 let parentLabel: string = this.parent.labelSettings.taskLabel;
                 if (parentLabel && parentLabel['elementRef'])
                     labelElement.appendChild(div);

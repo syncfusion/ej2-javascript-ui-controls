@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.4 (2023-05-09)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the file corruption issue due to currency symbol in Grid to CSV export.
+
+## 21.1.35 (2023-03-23)
 
 ### Excel Export
 

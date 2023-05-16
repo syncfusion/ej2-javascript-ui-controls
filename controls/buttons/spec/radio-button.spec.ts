@@ -270,7 +270,7 @@ describe('RadioButton', () => {
                 preventDefault: (): void => { /** NO Code */ },
                 type: 'mousedown'
             };
-            radio.labelRippleHandler(event);
+            radio.labelMouseDownHandler(event);
             expect(element.parentElement.children[0].classList.contains('e-ripple-container')).toEqual(false);
         });
 

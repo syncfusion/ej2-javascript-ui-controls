@@ -83,6 +83,10 @@ export class Editor {
     private isInsertText: boolean = false;
     private keywordIndex: number = 0;
     /**
+    * @private
+    */
+    public handledEnter: boolean = false;
+    /**
      * @private
      */
     public removeEditRange: boolean = false;
@@ -7623,7 +7627,7 @@ export class Editor {
             let bodyWidget: BodyWidget = selection.start.paragraph.bodyWidget;
             let splittedSection: BodyWidget[] = bodyWidget.getSplitWidgets() as BodyWidget[];
             bodyWidget = splittedSection[splittedSection.length - 1];
-            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
+            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex && bodyWidget.sectionFormat.numberOfColumns > 1))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
                 let startPosition: TextPosition = this.documentHelper.selection.start;
                 let endPosition: TextPosition = this.documentHelper.selection.end;
                 let startInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
@@ -7865,7 +7869,7 @@ export class Editor {
                 if (isNotEmpty) {
                     top = Math.max(headerDistance + section.page.headerWidget.height, top);
                 }
-                if (firstBlock.y !== top) {
+                if (firstBlock.y !== top && section.sectionFormat.breakCode !== "NoBreak") {
                     this.owner.viewer.updateClientArea(section, section.page);
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
@@ -11799,9 +11803,14 @@ export class Editor {
         let startLine: LineWidget = undefined;
         let endLineWidget: LineWidget = undefined;
         let isCombineLastBlock = this.combineLastBlock;
+        let tempStartOffset : number;
         if (paragraph === start.paragraph) {
             startOffset = start.offset;
             startLine = start.currentWidget;
+            tempStartOffset = startOffset;
+            if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+                startOffset++;
+            }
             if (end.paragraph.isInsideTable) {
                 isCombineNextParagraph = this.isEndInAdjacentTable(paragraph, end.paragraph);
             }
@@ -11826,14 +11835,17 @@ export class Editor {
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
-        if (startOffset > paragraphStart && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
+        if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
+            startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
             start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
-            isCombineLastBlock = true;
+        }
+        if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+            startOffset--;
         }
         let paraEnd: TextPosition = end.clone();
         paraEnd.offset = paraEnd.offset - 1;
@@ -13731,6 +13743,7 @@ export class Editor {
      * @returns {void}
      */
     public onEnter(breakType?: string): void {
+        this.handledEnter = true;
         let selection: Selection = this.documentHelper.selection;
         var format: SelectionCharacterFormat;
         if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
@@ -13841,6 +13854,7 @@ export class Editor {
         }
         this.documentHelper.layout.islayoutFootnote = false;
         this.updateHistoryForComments(commentStartToInsert);
+        this.handledEnter = false;
     }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {
         let insertIndex: number = 0;

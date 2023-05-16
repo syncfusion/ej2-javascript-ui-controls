@@ -93,6 +93,7 @@ export class PasteCleanup {
         }
         this.parent.trigger(events.beforePasteCleanup, {value : value});
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
+            let file: File;
             if (value.length === 0) {
                 const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
                 value = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
@@ -100,7 +101,7 @@ export class PasteCleanup {
                 value = value.replace(/</g, '&lt;');
                 value = value.replace(/>/g, '&gt;');
                 this.containsHtml = htmlRegex.test(value);
-                const file: File = e && (e.args as ClipboardEvent).clipboardData &&
+                file = e && (e.args as ClipboardEvent).clipboardData &&
                 (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
                     ((e.args as ClipboardEvent).clipboardData.items[0].getAsFile() === null ?
                         (!isNOU((e.args as ClipboardEvent).clipboardData.items[1]) ?
@@ -145,9 +146,6 @@ export class PasteCleanup {
             const currentDocument: Document = this.contentRenderer.getDocument();
             const range: Range = this.nodeSelectionObj.getRange(currentDocument);
             this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
-            this.parent.trigger(events.afterPasteCleanup, { value : value}, (updatedArgs: PasteCleanupArgs) => {
-                value = updatedArgs.value;
-            });
             const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
             tempDivElem.innerHTML = value;
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
@@ -156,7 +154,7 @@ export class PasteCleanup {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
                     this.pasteDialog(value, args);
-                } else if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                } else if (Browser.userAgent.indexOf('Firefox') !== -1 && isNOU(file)) {
                     this.fireFoxImageUpload();
                 }
             } else if (!isValueNotEmpty && !this.parent.pasteCleanupSettings.plainText &&
@@ -171,11 +169,10 @@ export class PasteCleanup {
             } else {
                 (e.args as ClipboardEvent).preventDefault();
                 this.formatting(value, true, args);
-            } 
+            }
         }
     }
     private fireFoxImageUpload(): void {
-        // Timeout 500 is added to capture after default paste image from file manager is completed.
         setTimeout(() => {
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
                 let currentFocusNode = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startContainer;
@@ -679,6 +676,38 @@ export class PasteCleanup {
         this.addTempClass(clipBoardElem);
         if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
         !isNOU(clipBoardElem.querySelector('table'))) {
+            const tempWrapperElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+            tempWrapperElem.innerHTML = value;
+            const filesData: FileInfo[] = [];
+            if (!isNOU(tempWrapperElem.querySelector('img'))) {
+                const imgElem: NodeListOf<HTMLImageElement> = tempWrapperElem.querySelectorAll('img');
+                const base64Src: string[] = [];
+                const imgName: string[] = [];
+                const uploadImg: Element[] = [];
+                for (let i: number = 0; i < imgElem.length; i++) {
+                    if (imgElem[i as number].getAttribute('src') &&
+                        imgElem[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+                        base64Src.push(imgElem[i as number].getAttribute('src'));
+                        imgName.push(getUniqueID('rte_image'));
+                        uploadImg.push(imgElem[i as number]);
+                    }
+                }
+                const fileList: File[] = [];
+                let currentData: FileInfo;
+                for (let i: number = 0; i < base64Src.length; i++) {
+                    fileList.push(this.base64ToFile(base64Src[i as number], imgName[i as number]));
+                    currentData = {
+                        name: fileList[i as number].name, rawFile: fileList[i as number],
+                        size: fileList[i as number].size, type: fileList[i as number].type,
+                        status: '', validationMessages: { minSize: '', maxSize: '' }, statusCode: '1'
+                    };
+                    filesData.push(currentData);
+                }
+            }
+            this.parent.trigger(
+                events.afterPasteCleanup,
+                { value : clipBoardElem.innerHTML, filesData: filesData }, (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
+            clipBoardElem.innerHTML = value;
             this.parent.formatter.editorManager.execCommand(
                 'inserthtml',
                 'pasteCleanup',
@@ -778,6 +807,10 @@ export class PasteCleanup {
             this.saveSelection.restore();
             clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
             this.addTempClass(clipBoardElem);
+            this.parent.trigger(
+                events.afterPasteCleanup,
+                { value : clipBoardElem.innerHTML, filesData: null }, (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
+            clipBoardElem.innerHTML = value;
             this.parent.formatter.editorManager.execCommand(
                 'inserthtml',
                 'pasteCleanup',

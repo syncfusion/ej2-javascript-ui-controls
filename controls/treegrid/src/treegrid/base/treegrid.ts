@@ -1533,7 +1533,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'downArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findnextRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -1549,7 +1554,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'upArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findPreviousRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -2309,19 +2319,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.rowTemplate) {
             if ((<{ isReact?: boolean }>this).isReact && (this.getContentTable() as HTMLTableElement).rows.length === 0) {
                 setTimeout(() => {
-                   this.treeColumnRowTemplate();
-                   if (this.enableCollapseAll) {
-                       const currentData: ITreeData[] = this.getCurrentViewRecords();
-                       const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
-                       for (let i: number = 0; i < rows.length; i++) {
-                           let args: RowDataBoundEventArgs = { data: currentData[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)] };
-                           this.renderModule.RowModifier(args);
-                       }
-                   }
-               }, 0);
-           } else {
-               this.treeColumnRowTemplate();
-           }
+                    this.treeColumnRowTemplate();
+                    if (this.enableCollapseAll) {
+                        const currentData: ITreeData[] = this.getCurrentViewRecords();
+                        const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+                        for (let i: number = 0; i < rows.length; i++) {
+                            const args: RowDataBoundEventArgs = {
+                                data: currentData[parseInt(i.toString(), 10)],
+                                row: rows[parseInt(i.toString(), 10)]
+                            };
+                            this.renderModule.RowModifier(args);
+                        }
+                    }
+                }, 0);
+            } else {
+                this.treeColumnRowTemplate();
+            }
         }
     }
 

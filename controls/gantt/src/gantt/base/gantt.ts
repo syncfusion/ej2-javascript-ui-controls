@@ -3078,7 +3078,7 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.toolbar) {
+        if (this.toolbar && this.toolbar.length > 0) {
             modules.push({
                 member: 'toolbar',
                 args: [this]

@@ -7876,10 +7876,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         fieldName = currentData.FieldName;
                     }
                     //map the signature field and its data object to find the signature field name.
-                    if (FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "SignatureField" ||
-                        FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "InitialField") {
-                        fieldName = currentData.FieldName.split('_')[0];
-                        currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
+                    let fieldData: any = FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0];});
+                    if (!isNullOrUndefined(fieldData) && !isNullOrUndefined(fieldData[0])) {
+                        if (fieldData[0].Name === "SignatureField" || fieldData[0].Name === "InitialField") {
+                            fieldName = currentData.FieldName.split('_')[0];
+                            currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
+                        }
                     }
                     if (fieldName === fieldValue.name) {
                         if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
@@ -8127,9 +8129,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
-                importData = JSON.stringify(importData);
-                this.viewerBase.isPDFViewerJson = false;
-                this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                let imporedAnnotation: any = importData.pdfAnnotation;
+                if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
+                    this.viewerBase.importAnnotations(importData);
+                } else {
+                    importData = JSON.stringify(importData);
+                    this.viewerBase.isPDFViewerJson = false;
+                    this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                }
             }
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#F182133` - The issue with "Ripple element is not destroyed properly while clicking on radio button component" has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Switch

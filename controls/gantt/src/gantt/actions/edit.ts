@@ -475,7 +475,7 @@ export class Edit {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
-                tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
+                tasks.baselineEndDate, tasks.id, tasks.segments,tasks.cssClass].indexOf(key) !== -1) {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
                 let value: any = data[key as string];
@@ -487,7 +487,9 @@ export class Edit {
                     ganttPropKey = 'taskId';
                 } else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
-                } else if ((key === tasks.segments)&&(!isNullOrUndefined(ganttData.ganttProperties.segments)) ) {
+                }else if (key === tasks.cssClass) {
+                    ganttPropKey = 'cssClass'
+                }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
                     ganttPropKey = 'segments';
                     /* eslint-disable-next-line */
                     if (data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {

@@ -1259,7 +1259,8 @@ export class Filter implements IAction {
             const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             const popupEle: Element = parentsUntil(target, 'e-popup');
-            const hasDialogClosed: Element = this.parent.element.querySelector('.e-filter-popup');
+            const hasDialogClosed: Element = this.parent.element.classList.contains('e-device') ? document.querySelector('.e-filter-popup')
+                : this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }

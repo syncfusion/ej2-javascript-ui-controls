@@ -416,7 +416,7 @@ export class Marker {
                 if ((target.indexOf('_cluster_') > -1)) {
                     let isClusterSame: boolean = false;
                     const clusterElement: HTMLElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? layer.markerClusterSettings.shape === 'Balloon' ? target.split('_datalabel_')[0] + '_Group' : target.split('_datalabel_')[0] : layer.markerClusterSettings.shape === 'Balloon' ? target + '_Group' : target);
-                    const indexes: number[] = layer.markerClusterSettings.shape === 'Balloon' ? (clusterElement.children[0] as HTMLElement).innerText.split(',').map(Number) : (clusterElement as HTMLElement).innerText.split(',').map(Number);
+                    const indexes: number[] = layer.markerClusterSettings.shape === 'Balloon' ? (clusterElement.children[0] as HTMLElement).textContent.split(',').map(Number) : (clusterElement as HTMLElement).textContent.split(',').map(Number);
                     collection = [];
                     for (const i of indexes) {
                         collection.push({ data: marker.dataSource[i as number], index: i });

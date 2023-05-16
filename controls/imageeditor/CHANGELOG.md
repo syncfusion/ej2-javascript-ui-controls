@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Blinking while resizing selection in mobile mode" has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Image Editor

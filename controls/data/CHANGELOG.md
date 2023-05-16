@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.4 (2023-05-09)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#F180240` - Provided support to render and perform Grid data actions without using `ContractResolver` in `ASP.NET Core`.
+
+## 21.1.38 (2023-04-04)
 
 ### DataManager
 

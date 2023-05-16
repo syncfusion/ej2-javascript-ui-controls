@@ -6984,7 +6984,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             isShape = this.findTargetObj(x, y, isCropSelection);
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (!isCropSelection) {
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            }
             if (isTextArea) {
                 this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
                 this.textArea.style.display = 'block';
@@ -7021,7 +7023,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             isShape = this.findTargetObj(x, y, isCropSelection);
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (!isCropSelection) {
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            }
             if (isTextArea) {
                 this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
                 this.textArea.style.display = 'block';

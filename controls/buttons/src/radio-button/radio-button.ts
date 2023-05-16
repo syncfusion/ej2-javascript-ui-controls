@@ -320,9 +320,20 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         }
     }
 
-    private labelRippleHandler(e: MouseEvent): void {
-        const ripple: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
-        rippleMouseHandler(e, ripple);
+    private labelMouseDownHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        rippleMouseHandler(e, rippleSpan);
+    }
+
+    private labelMouseUpHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = 0; i < rippleElem.length - 1; i++) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
     }
 
     private formResetHandler(): void {
@@ -486,8 +497,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         const rippleLabel: Element = label.getElementsByTagName('label')[0];
         if (rippleLabel) {
-            EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
-            EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
+            EventHandler.remove(rippleLabel, 'mousedown', this.labelMouseDownHandler);
+            EventHandler.remove(rippleLabel, 'mouseup', this.labelMouseUpHandler);
         }
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
@@ -502,8 +513,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         const rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
         if (rippleLabel) {
-            EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
-            EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+            EventHandler.add(rippleLabel, 'mousedown', this.labelMouseDownHandler, this);
+            EventHandler.add(rippleLabel, 'mouseup', this.labelMouseUpHandler, this);
         }
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);

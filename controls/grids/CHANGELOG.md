@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I459274` - The issue regarding the `All` page size is not working properly with the `RemoteSaveAdaptor` has been resolved.
+- `#I459703` - Pager component's tooltip not getting updated on locale change issue has been fixed.
+- `#F181837` - The problem related to copy-pasting when adding a new record has been resolved.
+- `#I452083` - The issue of text overlapping in the vertical row rendering mode of the adaptive grid has been resolved.
+- `#FB43372` -The Content Security Policy violation issue related to grid paging and grouping has been resolved.
+- `#I460038` - Resolved the issue where the detail template being rendered with bold and centred formatting.
+
+## 21.2.4 (2023-05-09)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F169671` - Now, the `ExcelQueryCellInfo` event is called properly in both parent and child grids.
+- `#I441999` - Ensured that the `recordDoubleClick` event is now properly triggered on iPad devices as well.
+- `#F181654` - Fixed issue where the react state value was being updated incorrectly with Grid templates.
+- `#I451314` - Provided  support for exporting to PDF with custom data sources.
+- `#I457476` - Resolved a script error that occurred when the down arrow key was long-pressed while the frozen and virtual scrolling feature was enabled in the Grid.
+
 ## 21.2.3 (2023-05-03)
 
 ### Grid
