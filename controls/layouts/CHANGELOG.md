@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.6 (2023-05-23)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I451526` -  The issue with the "Pane resizing would not works properly" has been resolved.
+
 ## 20.4.48 (2023-02-01)
 
 ### Splitter

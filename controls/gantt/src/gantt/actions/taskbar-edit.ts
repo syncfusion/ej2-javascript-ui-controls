@@ -1688,6 +1688,11 @@ export class TaskbarEdit extends DateProcessor {
         if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
             this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor) {
             this.parent.connectorLineEditModule.updatePredecessor(this.connectorSecondRecord, this.finalPredecessor);
+            if(this.parent.UpdateOffsetOnTaskbarEdit)
+            {
+                this.parent.connectorLineEditModule['calculateOffset'](this.connectorSecondRecord);
+            }
+            
         } else {
             if (x1 !== x2 || (Math.abs(y1 - resMouseY) >= (this.parent.rowHeight - this.parent.taskbarHeight) / 2)) {
                 if (item !== null) {

@@ -1050,9 +1050,12 @@ export class DragAndDrop extends ActionBase {
             }
         } else {
             if (this.isCursorAhead || cursorDrag) {
-                eventStart.setMinutes(eventStart.getMinutes() +
-                    (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval));
+                const minutes: number = this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval;
+                eventStart.setMinutes(eventStart.getMinutes() + minutes);
                 eventStart.setMilliseconds(-(eventDuration));
+                if (eventStart.getTime() === util.resetTime(eventStart).getTime() && eventStart.getMinutes() === 0 && eventDuration === 0) {
+                    eventStart.setMinutes(-minutes);
+                }
             } else {
                 eventStart.setMinutes(eventStart.getMinutes() -
                     (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));

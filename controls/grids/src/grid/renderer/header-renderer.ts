@@ -292,7 +292,7 @@ export class HeaderRender implements IRenderer {
         if (this.getTable() && !isFrozen) {
             remove(this.getTable());
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'grid' } });
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { role: 'grid' } });
         const tblName: freezeTable = tableName ? tableName : gObj.getFrozenLeftCount() ? 'frozen-left' : 'frozen-right';
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tblName);
         const thead: Element = findHeaderRow.thead;

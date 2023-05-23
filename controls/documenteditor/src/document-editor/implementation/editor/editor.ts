@@ -83,6 +83,10 @@ export class Editor {
     private isInsertText: boolean = false;
     private keywordIndex: number = 0;
     /**
+    * @private
+    */
+    public handledEnter: boolean = false;
+    /**
      * @private
      */
     public removeEditRange: boolean = false;
@@ -1233,6 +1237,7 @@ export class Editor {
      * @returns {void}
      */
     public fireContentChange(): void {
+        this.owner.documentHelper.render.commentMarkDictionary.clear();
         if (this.selection.isHighlightEditRegion) {
             if (this.owner.enableLockAndEdit) {
                 this.owner.collaborativeEditingModule.updateLockRegion();
@@ -6457,16 +6462,15 @@ export class Editor {
         columns = columns || 1;
         const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
-        if (columns < 1 || columns > 63) {
-            DialogUtility.alert(localeValue.getConstant('Number of columns must be between 1 and 63.'));
+        if (columns < 1 || columns > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
+            let columnAlertPopup: string = localeValue.getConstant('Number of columns must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (rows < 1 || rows > this.documentHelper.owner.documentEditorSettings.maximumRows) {
-            if (this.documentHelper.owner.locale == 'en-US') {
-                DialogUtility.alert('Number of rows must be between 1 and ' + this.documentHelper.owner.documentEditorSettings.maximumRows + '.');
-            } else {
-                DialogUtility.alert(localeValue.getConstant('Number of rows must be between 1 and 32767.'));
-            }
+            let rowAlertPopup: string = localeValue.getConstant('Number of rows must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            localeValue.getConstant('Number of rows must be between 1 and 32767.').replace("32767", this.documentHelper.owner.documentEditorSettings.maximumRows.toString());
+            DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         let table: TableWidget = this.createTable(rows, columns);
@@ -7623,7 +7627,7 @@ export class Editor {
             let bodyWidget: BodyWidget = selection.start.paragraph.bodyWidget;
             let splittedSection: BodyWidget[] = bodyWidget.getSplitWidgets() as BodyWidget[];
             bodyWidget = splittedSection[splittedSection.length - 1];
-            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
+            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex && bodyWidget.sectionFormat.numberOfColumns > 1))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
                 let startPosition: TextPosition = this.documentHelper.selection.start;
                 let endPosition: TextPosition = this.documentHelper.selection.end;
                 let startInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
@@ -7865,7 +7869,7 @@ export class Editor {
                 if (isNotEmpty) {
                     top = Math.max(headerDistance + section.page.headerWidget.height, top);
                 }
-                if (firstBlock.y !== top) {
+                if (firstBlock.y !== top && section.sectionFormat.breakCode !== "NoBreak") {
                     this.owner.viewer.updateClientArea(section, section.page);
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
@@ -11799,9 +11803,14 @@ export class Editor {
         let startLine: LineWidget = undefined;
         let endLineWidget: LineWidget = undefined;
         let isCombineLastBlock = this.combineLastBlock;
+        let tempStartOffset : number;
         if (paragraph === start.paragraph) {
             startOffset = start.offset;
             startLine = start.currentWidget;
+            tempStartOffset = startOffset;
+            if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+                startOffset++;
+            }
             if (end.paragraph.isInsideTable) {
                 isCombineNextParagraph = this.isEndInAdjacentTable(paragraph, end.paragraph);
             }
@@ -11826,14 +11835,17 @@ export class Editor {
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
-        if (startOffset > paragraphStart && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
+        if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
+            startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
             start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
-            isCombineLastBlock = true;
+        }
+        if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+            startOffset--;
         }
         let paraEnd: TextPosition = end.clone();
         paraEnd.offset = paraEnd.offset - 1;
@@ -13731,10 +13743,12 @@ export class Editor {
      * @returns {void}
      */
     public onEnter(breakType?: string): void {
+        this.handledEnter = true;
         let selection: Selection = this.documentHelper.selection;
         var format: SelectionCharacterFormat;
         if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
-            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
+            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal' ||
+            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal (Web)') {
             format = new SelectionCharacterFormat(undefined)
             format.cloneFormat(this.selection.characterFormat);
             let eleme: ElementBox = (selection.start.paragraph.lastChild as LineWidget).children[(selection.start.paragraph.lastChild as LineWidget).children.length - 1];
@@ -13841,6 +13855,7 @@ export class Editor {
         }
         this.documentHelper.layout.islayoutFootnote = false;
         this.updateHistoryForComments(commentStartToInsert);
+        this.handledEnter = false;
     }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {
         let insertIndex: number = 0;
@@ -18674,6 +18689,35 @@ export class Editor {
         this.documentHelper.editRanges.get(user).splice(index, 1);
         if (this.documentHelper.editRanges.get(user).length === 0) {
             this.documentHelper.editRanges.remove(user);
+        }
+        if(editStart.columnFirst!=-1 && editStart.columnLast !=-1){
+            let row = editStart.paragraph.associatedCell.ownerRow;
+            if (row.editRangeID.containsKey(editStart.editRangeId)) {
+                let cell = row.getCellUsingColumnIndex(row.rowIndex, editStart.columnFirst);
+                if (!isNullOrUndefined(cell)) {
+                    if (cell.isRenderEditRangeStart && cell.isRenderEditRangeEnd ) {
+                        cell.isRenderEditRangeEnd = false;
+                        cell.isRenderEditRangeStart = false;
+                        row.editRangeID.remove(editStart.editRangeId);
+                    }
+                }
+            } else {
+                let table = editStart.paragraph.associatedCell.ownerTable;
+                for (let i = row.rowIndex - 1; i >= 0; i--) {
+                    let previousRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    if (previousRow.editRangeID.containsKey(editStart.editRangeId)) {
+                        let previousCell = previousRow.getCellUsingColumnIndex(previousRow.rowIndex, editStart.columnFirst);
+                        if (!isNullOrUndefined(previousCell)) {
+                            if (previousCell.isRenderEditRangeStart && previousCell.isRenderEditRangeEnd) {
+                                previousCell.isRenderEditRangeEnd = false;
+                                previousCell.isRenderEditRangeStart = false;
+                                previousRow.editRangeID.remove(editStart.editRangeId);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         editStart.removeEditRangeMark();
         editStart.editRangeEnd.line.children.splice(editStart.editRangeEnd.indexInOwner, 1);

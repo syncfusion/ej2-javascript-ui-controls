@@ -944,12 +944,12 @@ export class OlapEngine {
         let captionColection: string = tuple.captionCollection;
         if (tuple.measure) {
             const measureName: string = tuple.measure.querySelector('Caption').textContent;
-            const measurePosition: number = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
-            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const measurePosition: number = tuple.uNameCollection.split(/[~~::]+/g).indexOf(tuple.measureName);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~::]+/g);
             captionCollectionArray.splice(measurePosition, 0, measureName);
             captionColection = captionCollectionArray.join('.');
         } else {
-            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~::]+/g);
             captionColection = captionCollectionArray.join('.');
         }
         return captionColection;
@@ -1475,7 +1475,7 @@ export class OlapEngine {
                             levelName = colMembers[j as any];
                         }
                         else {
-                            levelName = levelName + '.' + colMembers[j as any];
+                            levelName = levelName + this.valueSortSettings.headerDelimiter + colMembers[j as any];
                         }
                     }   /* eslint-enable @typescript-eslint/no-explicit-any */
                     const isNamedSet: boolean = this.namedSetsPosition['column'][memPos as number] ? true : false;

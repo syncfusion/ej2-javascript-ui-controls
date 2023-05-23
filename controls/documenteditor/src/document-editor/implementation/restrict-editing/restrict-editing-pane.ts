@@ -235,7 +235,7 @@ export class RestrictEditing {
         highlightRegion.appendChild(highlightRegionInput);
         this.stopReadOnlyOptions.appendChild(highlightRegion);
 
-        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') ,enableRtl:this.documentHelper.owner.enableRtl }, highlightRegionInput);
+        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') ,change: this.changeHighlightOptions.bind(this),enableRtl:this.documentHelper.owner.enableRtl }, highlightRegionInput);
         let lastButtonDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
@@ -265,6 +265,12 @@ export class RestrictEditing {
                 this.stopReadOnlyOptions.style.display = 'none';
                 break;
         }
+    }
+    private changeHighlightOptions (): void {
+        this.documentHelper.owner.documentEditorSettings.highlightEditableRanges = this.highlightCheckBox.checked;
+        setTimeout((): void => {
+            this.documentHelper.owner.focusIn();
+        }, 10);
     }
     /**
      * @returns {void}
@@ -407,7 +413,7 @@ export class RestrictEditing {
                 this.protectionTypeDrop.value = 'Tracked changes';
                 break;
         }
-        this.highlightCheckBox.checked = true;
+        this.highlightCheckBox.checked = this.documentHelper.owner.documentEditorSettings.highlightEditableRanges;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.usersCollection.slice();
         this.addedUser.dataBind();

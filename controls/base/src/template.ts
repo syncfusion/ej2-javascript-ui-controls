@@ -236,7 +236,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
  * @returns {string} ?
  */
 function addNameSpace(str: string, addNS: boolean, nameSpace: string, ignoreList: string[], ignorePrefix: boolean): string {
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix) ? nameSpace + '.' + str : str);
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix && str !== "true" && str !== "false") ? nameSpace + '.' + str : str);
 }
 
 /**

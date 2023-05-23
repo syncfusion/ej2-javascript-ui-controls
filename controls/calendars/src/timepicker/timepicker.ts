@@ -954,7 +954,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.generateList();
             append([this.listWrapper], this.popupWrapper);
         }
-        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
         detach(this.popupWrapper);
@@ -2744,7 +2743,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.invalidValueString = null;
                 this.checkInvalidValue(newProp.value);
                 newProp.value = this.value;
-                if (!this.invalidValueString && !this.enableMask) {
+                if (!this.invalidValueString) {
                     if (typeof newProp.value === 'string') {
                         this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
                         newProp.value = this.value;
@@ -2755,13 +2754,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     this.initValue = newProp.value;
                     newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
-                } else if (this.enableMask) {
-                    this.updateInputValue(this.maskedDateValue);
-                    this.checkErrorState(this.maskedDateValue);
                 } else {
                     this.updateInputValue(this.invalidValueString);
                     this.checkErrorState(this.invalidValueString);
                 }
+                if (this.enableMask && isNullOrUndefined(newProp.value)) {
+                        this.updateInputValue(this.maskedDateValue);
+                        this.checkErrorState(this.maskedDateValue);
+                    }
                 this.checkValueChange(null, false);
                 if (this.isPopupOpen()) {
                     this.setScrollPosition();

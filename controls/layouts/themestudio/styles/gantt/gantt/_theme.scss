@@ -9,6 +9,10 @@
       border-radius: $gantt-header-border-radius;
     }
 
+    .e-grid .e-spinner-pane {
+      display: none;
+    }
+    
     .e-cloneproperties.e-draganddrop {
       box-shadow: $gantt-clone-prop-box-shadow;
       opacity: .95;

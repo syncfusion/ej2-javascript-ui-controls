@@ -1493,6 +1493,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const index: number = this.isSelectCustom ? null : this.activeIndex;
         this.setProperties({ 'index': index, 'text': dataItem.text, 'value': dataItem.value }, true);
         this.detachChangeEvent(eve);
+        this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
     }
 
     private detachChanges(value: string | number | boolean | {
@@ -2171,7 +2172,6 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
-                EventHandler.remove(document, 'mousedown', this.onDocumentClick);
                 if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
                     this.isActive = true;
                     this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
@@ -3123,6 +3123,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.header = null;
         this.previousSelectedLI = null;
         this.valueTempElement = null;
+        this.actionData.ulElement = null;
         super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */

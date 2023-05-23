@@ -174,7 +174,7 @@ export class NonWorkingDay {
 
     private updateHolidayLabelHeight(): void {
         const height: number = this.parent.getContentHeight();
-        let gantttable = document.getElementById("ganttContainer");
+        let gantttable = this.parent.element;
         // eslint-disable-next-line
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {

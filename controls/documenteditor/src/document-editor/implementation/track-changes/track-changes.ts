@@ -54,6 +54,9 @@ export class Revision {
     private skipUnLinkElement: boolean = false;
     public constructor(documentHelper: DocumentEditor, author: string, date: string) {
         this.author = author;
+        if(isNullOrUndefined(this.author)) {
+            this.author = "Unknown";
+        }
         this.date = date;
         this.owner = documentHelper;
     }

@@ -117,6 +117,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public maximumRows: number;
 
     /**
+     * Gets or sets the maximum number of columns allowed while inserting a table in Document editor component.
+     * > The maximum value is 63, as per Microsoft Word application and you can set any value less than 63 to this property. If you set any value greater than 63, then Syncfusion Document editor will automatically reset as 63.
+     * @default 63
+     * @returns {number}
+     */
+    @Property(63)
+    public maximumColumns: number;
+
+    /**
      * Gets or sets a value indicating whether to show the hidden characters like spaces, tab, paragraph marks, and breaks.
      *
      * @default false
@@ -145,6 +154,16 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(true)
     public optimizeSfdt: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to highlight the editable ranges in the document where the current user can edit. 
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` if editable ranges in the document is highlighted. Otherwise `false`.
+     */
+    @Property(true)
+    public highlightEditableRanges: boolean;
 }
 
 /**
@@ -1357,6 +1376,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
                     this.viewer.updateScrollBars();
                 }
+                if(!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)){
+                    if (this.documentHelper && this.documentHelper.restrictEditingPane) {
+                        this.documentHelper.restrictEditingPane.highlightCheckBox.checked = model.documentEditorSettings.highlightEditableRanges;
+                    }
+                }
                 if (!isNullOrUndefined(model.documentEditorSettings.showBookmarks) && (model.documentEditorSettings.showBookmarks !== oldProp.documentEditorSettings.showBookmarks)) {
                     this.viewer.updateScrollBars();
                 }
@@ -2379,8 +2403,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Emboss3D':'Emboss3D',
         'ThinThickLargeGap':'ThinThickLargeGap',
         'ThinThickMediumGap':'ThinThickMediumGap',
-        'Number of rows must be between 1 and 32767.': 'Number of rows must be between 1 and 32767.',
-        'Number of columns must be between 1 and 63.':'Number of columns must be between 1 and 63.',
+        'Number of rows must be between': 'Number of rows must be between',
+        'Number of columns must be between':'Number of columns must be between',
+        'and' : 'and',
         'Unlimited' : 'Unlimited',
         'Regular text': 'Regular text',
         'Date': 'Date',

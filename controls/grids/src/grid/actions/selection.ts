@@ -2674,10 +2674,12 @@ export class Selection implements IAction {
             if (state) {
                 const selectedStateKeys: string[] = Object.keys(this.selectedRowState);
                 const unSelectedRowStateKeys: string[] = Object.keys(this.unSelectedRowState);
-                for (const data of this.parent.currentViewData) {
-                    const key: string = data[this.primaryKey].toString();
-                    if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
-                        this.selectedRowState[data[this.primaryKey]] = true;
+                if (this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick' && selectedStateKeys.length !== 1) {
+                    for (const data of this.parent.currentViewData) {
+                        const key: string = data[this.primaryKey].toString();
+                        if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
+                            this.selectedRowState[data[this.primaryKey]] = true;
+                        }
                     }
                 }
             }

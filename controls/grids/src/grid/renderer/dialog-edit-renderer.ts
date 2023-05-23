@@ -215,7 +215,7 @@ export class DialogEditRender {
             div.appendChild(form);
             return div;
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px', role: 'grid' } });
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { role: 'grid' } });
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         const cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {

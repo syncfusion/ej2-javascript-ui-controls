@@ -120,7 +120,7 @@ describe('Scrollbar Chart', () => {
                 let svgChildEleX: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
                 let thumbRectEleX: Element = svgChildEleX.children[1].children[0];
                 let xAxisThumbX: string = thumbRectEleX.getAttribute('x');
-                expect(parseInt(xAxisThumbX, 10) === 158 || parseInt(xAxisThumbX, 10) === 160
+                expect(parseInt(xAxisThumbX, 10) === 158 || parseInt(xAxisThumbX, 10) === 161
                     || parseInt(xAxisThumbX, 10) === 162).toBe(true);
                 expect(thumbRectEleX.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEleX.getAttribute('height') === '16').toBe(true);

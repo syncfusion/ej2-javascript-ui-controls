@@ -3103,6 +3103,9 @@ export class DocumentHelper {
             this.viewerContainer.scrollLeft = x - (this.pageContainer.offsetWidth / 100) * 20;
         } else if (scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
             this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            while (this.viewerContainer.scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
+                this.viewerContainer.scrollLeft = this.viewerContainer.scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            }
         }
     }
     public getLineWidget(cursorPoint: Point): LineWidget {

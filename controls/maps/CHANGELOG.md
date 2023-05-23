@@ -8,7 +8,23 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.6 (2023-05-23)
+
+### Maps
+
+#### Bug fixes
+
+- `#I457059` - Marker template will now be properly clustered in the Maps component.
+
+## 21.2.4 (2023-05-09)
+
+### Maps
+
+#### Bug fixes
+
+- `#F181587` - The click event will now be properly triggered in the button element in the tooltip template.
+
+## 21.1.41 (2023-04-18)
 
 ### Maps
 

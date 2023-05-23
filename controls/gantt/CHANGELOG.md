@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## 21.2.6 (2023-05-23)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461435` - Adding and deleting record rapidly while displaying tooltip cause error has been fixed.
+- `#I461087` - Offset value getting modified incorrectly issue has been fixed.
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+
+## 21.2.5 (2023-05-16)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+- `#I181309` - splitter position not updating after resize issue has been fixed.
+- `#I449506` - Moving child row referencing another parent row will not move all of the descendants of that another parent row issue has been fixed.
+- `#I457803` - Offset value is not correctly updated while connecting predecessor issue has been fixed.
+- `#I449944` - Zoom out button in toolbar not enabled once after zoom in operation issue has been fixed.
+- `#I434098` - Issue while rendering resource view without child mapping has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I457032` - Task label not rendered properly when we render as template issue has been fixed.
+- `#I457212` - Timeline renders different in `Firefox` and `Chrome` issue has been fixed.
+- `#I456146` - Console error occur while changing task field after removing toolbar issue has been fixed.
+- `#F181579` - Style not reflected on the notes column when we perform dialog edit issue has been fixed.
+- `#I456453` - `CSS class` is not updated while changing it through `updateRecordbyId` method issue has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Gantt Chart
@@ -9,7 +44,7 @@
 #### Bug Fixes
 
 - `#I441205` - Two spinner appears while performing action issue has been fixed.
--`#I451257`- No proper template for manual milestone parent.
+- `#I451257` - No proper template for manual milestone parent.
 - `#I443041` - Gantt react performance rendering issue during initial load has been fixed.
 
 ## 21.1.41 (2023-04-18)

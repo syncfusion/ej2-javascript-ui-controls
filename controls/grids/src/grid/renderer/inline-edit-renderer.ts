@@ -307,7 +307,7 @@ export class InlineEditRender {
             td.appendChild(form);
             return td;
         }
-        const table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { cellspacing: '0.25', role: 'grid' } });
+        const table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { role: 'grid' } });
         table.appendChild(gObj.getContentTable().querySelector(literals.colGroup).cloneNode(true));
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         const tr: Element = this.parent.createElement('tr');

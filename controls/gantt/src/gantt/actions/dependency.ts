@@ -759,6 +759,9 @@ export class Dependency {
                 if ((predecessorLength && predecessorNames !== predecessorLength)) {
                     validUpdate = true;
                 }
+                else if (record.hasChildRecords && record.ganttProperties.predecessor.length > 0 && ganttProp.hasChildRecords && !ganttProp.ganttProperties.predecessor) {
+                    validUpdate = true;
+                }
                 if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction !== 'ChildDrag')) {
                     if (!ganttProp.hasChildRecords && record.hasChildRecords) {
                         this.parent.editModule['updateChildItems'](record);

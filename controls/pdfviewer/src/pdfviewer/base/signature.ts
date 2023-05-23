@@ -997,6 +997,7 @@ export class Signature {
         fontDiv.style.backgroundColor = 'white';
         fontDiv.style.color = 'black';
         fontDiv.style.marginTop = '8px'
+        fontDiv.style.paddingRight = '0px';
         typeDiv.appendChild(fontDiv);
         input = document.createElement('input');
         input.type = 'checkbox';
@@ -1318,7 +1319,10 @@ export class Signature {
         for (let i: number = 0; i < this.signfontStyle.length; i++) {
             this.fontsign[parseInt(i.toString(), 10)].innerHTML = textBox.value;
             this.fontsign[parseInt(i.toString(), 10)].style.fontFamily = this.signfontStyle[parseInt(i.toString(), 10)].FontName;
-            if (this.signfontStyle[parseInt(i.toString(), 10)].FontName === 'Helvetica') {
+            if(this.fontName!=="" && this.signfontStyle[parseInt(i.toString(), 10)].FontName === this.fontName){
+                this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
+            }
+            else if (isNullOrUndefined(this.fontName) && this.signfontStyle[parseInt(i.toString(), 10)].FontName === 'Helvetica') {
                 this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
             }
             fontDiv.appendChild(this.fontsign[parseInt(i.toString(), 10)]);

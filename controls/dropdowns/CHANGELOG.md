@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+## 21.2.6 (2023-05-23)
+
+- `#I451885` - Resolved the performance issue when multiselect component is rendered with large number of data.
+
+## 21.2.5 (2023-05-16)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I461307` - Issue with "No Records Template not renders properly when we set the default string in listbox" has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `I460077` - Issue with "The popup is not closing properly when the focus is moved between two dropdowns" has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I452948` - "The memory leak issue detected in the combobox component within the detach element tab of the Edge browser" has been resolved.
+
+## 21.2.4 (2023-05-09)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I453746` - Issue with "Selected items not focusing properly in listbox while using selectItems method" has been resolved.
+- `#I461307` - Issue with "No Records Template not renders properly when we set the default string in listbox" has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### ListBox

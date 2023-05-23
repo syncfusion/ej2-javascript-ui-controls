@@ -2343,7 +2343,7 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
-            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
+            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode === false) {
                 this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
             } else {
                 this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);

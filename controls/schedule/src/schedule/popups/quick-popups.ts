@@ -225,13 +225,6 @@ export class QuickPopups {
         this.quickDialog.content = this.l10n.getConstant('editContent');
         this.quickDialog.header = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteTitle' : 'editTitle');
         this.quickDialogClass('Recurrence');
-        const activeEvent: Record<string, any> = (<Record<string, any>>this.parent.activeEventData.event);
-        if (this.parent.eventSettings.editFollowingEvents && this.parent.currentAction === 'EditOccurrence'
-            && !isNullOrUndefined(activeEvent[this.parent.eventFields.recurrenceID]) && activeEvent[this.parent.eventFields.recurrenceID]
-            !== activeEvent[this.parent.eventFields.id]) {
-            const followingEventButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_FOLLOWING);
-            addClass([followingEventButton], cls.DISABLE_CLASS);
-        }
         this.showQuickDialog('RecurrenceAlert');
     }
 

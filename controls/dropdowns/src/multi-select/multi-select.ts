@@ -2457,11 +2457,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private removeChipFocus(): void {
         const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP);
-        const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
         removeClass(elements, CHIP_SELECTED);
         if (Browser.isDevice) {
+            const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
             for (let index: number = 0; index < closeElements.length; index++) {
                 (<HTMLElement>closeElements[index as number]).style.display = 'none';
             }
@@ -2955,7 +2955,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {
         let data: string = '';
         const delim: boolean = this.mode === 'Delimiter' || this.mode === 'CheckBox';
-        const text: string[] = <string[]>[];
+        const text: string[] = [];
         let temp: string;
         const tempData: Object = this.listData;
         this.listData = this.mainData;
@@ -2963,27 +2963,33 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.hiddenElement.innerHTML = '';
         }
         if (!isNullOrUndefined(this.value)) {
-            for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
+            let valueLength: number = this.value.length;
+            let hiddenElementContent: string = '';
+            for (let index: number = 0; index < valueLength; index++) {
+                const valueItem: any = this.value[index as number];
                 const listValue: Element = this.findListElement(
-                    ((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement),
+                    (!isNullOrUndefined(this.mainList) ? this.mainList : this.ulElement),
                     'li',
                     'data-value',
-                    this.value[index as number]);
+                    valueItem
+                );
                 if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                     index -= 1;
+                    valueLength -= 1;
                 } else {
                     if (this.listData) {
-                        temp = this.getTextByValue(this.value[index as number]);
+                        temp = this.getTextByValue(valueItem);
                     } else {
-                        temp = <string>this.value[index as number];
+                        temp = <string>valueItem;
                     }
                     data += temp + delimiterChar + ' ';
                     text.push(temp);
                 }
-                if (!isNullOrUndefined(this.hiddenElement)) {
-                    this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index as number] + '">' + index + '</option>';
-                }
+                hiddenElementContent += `<option selected value="${valueItem}">${index}</option>`;
+            }
+            if (!isNullOrUndefined(this.hiddenElement)) {
+                this.hiddenElement.innerHTML = hiddenElementContent;
             }
         }
         this.setProperties({ text: text.toString() }, true);

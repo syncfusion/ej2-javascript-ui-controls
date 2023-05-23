@@ -1412,7 +1412,20 @@ export class BatchEdit {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {
-                gObj.trigger(events.cellSaved, cellSaveArgs);
+                const isReactCompiler: boolean = gObj.isReact && column.template && typeof (column.template) !== 'string';
+                const isReactChild: boolean = gObj.parentDetails && gObj.parentDetails.parentInstObj && gObj.parentDetails.parentInstObj.isReact;
+                if (isReactCompiler || isReactChild) {
+                    if (gObj.requireTemplateRef) {
+                        gObj.renderTemplates(function (): void {
+                            gObj.trigger(events.cellSaved, cellSaveArgs);
+                        });
+                    } else {
+                        gObj.renderTemplates();
+                        gObj.trigger(events.cellSaved, cellSaveArgs);
+                    }
+                } else {
+                    gObj.trigger(events.cellSaved, cellSaveArgs);
+                }
             }
             gObj.notify(events.toolbarRefresh, {});
             this.isColored = false;

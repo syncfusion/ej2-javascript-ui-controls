@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.1.35 (2023-05-9)
+
+### Common
+
+#### Bug Fixes
+
+- `#I451675` - The issue in the `template engine` when using `boolean` value has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Common

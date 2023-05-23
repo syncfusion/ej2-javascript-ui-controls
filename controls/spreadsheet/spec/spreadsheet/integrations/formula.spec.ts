@@ -354,6 +354,22 @@ describe('Spreadsheet formula module ->', () => {
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":66.5,"formula":"=SUMPRODUCT(D1:D5);"}');
             done();
         });
+        it('SUMPRODUCT formula with row and column range is entered in reverse order', (done: Function) => {
+            const cellEle: HTMLElement = helper.invoke('getCell', [4, 9]);
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:D5,E5:E2)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E2:E5)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E5:E2)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:F2,F3:D3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,D3:F3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,F3:D3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
+            done();
+        });
         it('ROUNDUP formula with more than 2 inputs', (done: Function) => {
             helper.edit('J5', '=ROUNDUP(C2,C3,C4);');
             expect(helper.invoke('getCell', [4, 9]).textContent).toBe('invalid arguments');

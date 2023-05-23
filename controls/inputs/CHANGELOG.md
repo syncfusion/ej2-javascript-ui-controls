@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.6 (2023-05-23)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I460888` - Issue with "Console error occurs when deleting files after data load" has been resolved.
+
 ## 21.1.38 (2023-04-04)
 
 ### Range Slider

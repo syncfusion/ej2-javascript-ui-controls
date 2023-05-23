@@ -144,7 +144,8 @@ export class HtmlEditor {
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
                 : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
-                pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
+                pointer = range.startOffset === 0 ? range.startOffset :
+                    range.startContainer.textContent.replace(regEx, '').trim().length !== 0 ? range.startOffset - 1 : 0;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
@@ -358,7 +359,7 @@ export class HtmlEditor {
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
                     // eslint-disable-next-line
                     this.oldRangeElement, this.oldRangeElement.childNodes.length);
-                if (this.oldRangeElement.querySelector('BR')) {
+                if (this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }
                 if (!isNullOrUndefined(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {

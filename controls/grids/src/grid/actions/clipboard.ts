@@ -73,7 +73,7 @@ export class Clipboard implements IAction {
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
             const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
-                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
+                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow' || !this.clipBoardTextArea) {
                 return;
             }
             this.activeElement = document.activeElement;
@@ -86,7 +86,7 @@ export class Clipboard implements IAction {
                     (this.activeElement as HTMLInputElement).focus();
                     window.scrollTo(x, y);
                     this.paste(
-                        this.clipBoardTextArea.value,
+                        this.copyContent,
                         this.parent.getSelectedRowCellIndexes()[0].rowIndex,
                         this.parent.getSelectedRowCellIndexes()[0].cellIndexes[0]
                     );
@@ -207,7 +207,7 @@ export class Clipboard implements IAction {
             this.clipBoardTextArea.value = this.copyContent = '';
             let mRows: Element[];
             let frRows: Element[];
-            const rows: Element[] = this.parent.getRows();
+            const rows: Element[] = this.parent.getDataRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
                 if (this.parent.getFrozenMode() === literals.leftRight || this.parent.getFrozenMode() === 'Right') {

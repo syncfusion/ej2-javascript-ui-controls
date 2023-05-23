@@ -660,7 +660,7 @@ export class CommentPane {
             }
             const commentStart: CommentCharacterElementBox = this.getCommentStart(comment);
             if (!commentStart.commentMark) {
-                commentStart.renderCommentMark();
+                // commentStart.renderCommentMark();
             }
             classList(commentStart.commentMark, ['e-de-cmt-mark-selected'], []);
             commentView.showDrawer();

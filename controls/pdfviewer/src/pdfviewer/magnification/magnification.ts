@@ -1275,6 +1275,7 @@ export class Magnification {
             }
             this.calculateScrollValues(scrollValue);
             this.isTapToFitZoom = !this.isTapToFitZoom;
+            setTimeout(() => { this.isMagnified = false; }, 500);
             this.isDoubleTapZoom = false;
         } else {
             if (isBlazor()) {

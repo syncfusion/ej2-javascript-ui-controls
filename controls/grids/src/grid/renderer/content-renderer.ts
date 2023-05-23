@@ -262,7 +262,7 @@ export class ContentRender implements IRenderer {
         const table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
             this.parent.createElement('table', {
                 className: literals.table, attrs: {
-                    cellspacing: '0.25px', role: 'grid',
+                    role: 'grid',
                     id: this.parent.element.id + id
                 }
             });
@@ -661,6 +661,18 @@ export class ContentRender implements IRenderer {
         } else {
             tbody.appendChild(frag);
             this.getTable().appendChild(tbody);
+        }
+        if (this.parent.rowRenderingMode === 'Vertical' && this.parent.allowTextWrap && (this.parent.textWrapSettings.wrapMode === 'Header'
+            || this.parent.textWrapSettings.wrapMode === 'Both')) {
+            const cells: NodeListOf<HTMLTableCellElement> = tbody.querySelectorAll('td');
+            for (let i: number = 0; i < cells.length; i++) {
+                const headerCellHeight: number = parseFloat(document.defaultView.getComputedStyle(cells[parseInt(i.toString(), 10)], '::before').getPropertyValue('height'));
+                const cellHeight: number = cells[parseInt(i.toString(), 10)].offsetHeight;
+                if (headerCellHeight > cellHeight) {
+                    cells[parseInt(i.toString(), 10)].style.height = headerCellHeight + 'px';
+                    cells[parseInt(i.toString(), 10)].style.boxSizing = 'content-box';
+                }
+            }
         }
     }
 

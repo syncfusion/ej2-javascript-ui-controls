@@ -67,6 +67,14 @@ export interface DocumentEditorSettingsModel {
     maximumRows?: number;
 
     /**
+     * Gets or sets the maximum number of columns allowed while inserting a table in Document editor component.
+     * > The maximum value is 63, as per Microsoft Word application and you can set any value less than 63 to this property. If you set any value greater than 63, then Syncfusion Document editor will automatically reset as 63.
+     * @default 63
+     * @returns {number}
+     */
+    maximumColumns?: number;
+
+    /**
      * Gets or sets a value indicating whether to show the hidden characters like spaces, tab, paragraph marks, and breaks.
      *
      * @default false
@@ -92,6 +100,15 @@ export interface DocumentEditorSettingsModel {
      * @returns {boolean} Returns `true` if sfdt content generated is optimized. Otherwise `false`.
      */
     optimizeSfdt?: boolean;
+
+    /**
+     * Gets or sets a value indicating whether to highlight the editable ranges in the document where the current user can edit. 
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` if editable ranges in the document is highlighted. Otherwise `false`.
+     */
+    highlightEditableRanges?: boolean;
 
 }
 

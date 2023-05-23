@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.6 (2023-05-23)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#SF-461465` - Issue with "Time picker dropdown width not responsive to input and icon" has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### DatePicker
