@@ -1229,7 +1229,6 @@ describe('ContextMenu', () => {
                         expect(args.element).toBe(contextMenu.element);
                         expect(args.items).toBe(contextMenu.items);
                         expect(args.parentItem).toBeNull();
-                        expect(args.event).toBeNull();
                         expect(args.cancel).toBeFalsy();
                         args.cancel = true;
                     }

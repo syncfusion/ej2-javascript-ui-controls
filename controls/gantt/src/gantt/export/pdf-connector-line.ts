@@ -1,5 +1,5 @@
 import { PointF, PdfPage, PdfGraphics, PdfPen, PdfBrush, PdfSolidBrush, RectangleF, PdfColor, SizeF } from '@syncfusion/ej2-pdf-export';
-import { IGanttStyle, PageDetail } from './../base/interface';
+import { IGanttStyle, PageDetail, PdfExportProperties } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { pixelToPoint } from '../base/utils';
 import { PdfGantt } from './pdf-gantt';
@@ -25,6 +25,7 @@ export class PdfGanttPredecessor {
     public pdfGantt?: PdfGantt;
     public parent?: Gantt;
     public ganttStyle: IGanttStyle;
+    public pdfExportProperties: PdfExportProperties;
     /**
      * @returns {PdfGanttPredecessor} .
      * @hidden
@@ -36,10 +37,23 @@ export class PdfGanttPredecessor {
         this.parent = parent;
         this.pdfGantt = pdfGantt;
     }
-    public findindex(num: number) {
-        var dataindex: number;
-        this.parent.currentViewData.map((data, index) => { if (data.index == num) { dataindex = index } })
-        return dataindex
+    public findindex(num: number, pdfExportProperties: PdfExportProperties): number {
+        var dataindex;
+        if (pdfExportProperties.exportType === 'CurrentViewData') {
+            this.parent.currentViewData.map(function (data, index) {
+                if (data.index == num) {
+                    dataindex = index;
+                }
+            });
+        } else {
+            this.parent.flatData.map(function (data, index) {
+                if (data.index == num) {
+                    dataindex = index;
+                }
+            });
+        }
+
+        return dataindex;
     }
     /**
      * Calculate the predecesor line point and draw the predecessor
@@ -48,11 +62,11 @@ export class PdfGanttPredecessor {
      * @returns {void}
      * @private
      */
-    public drawPredecessor(pdfGantt: PdfGantt): void {
+    public drawPredecessor(pdfGantt: PdfGantt, pdfExportProperties: PdfExportProperties): void {
         this.pdfGantt = pdfGantt;
         const pages: PdfPage[] = pdfGantt.result.page.section.getPages() as PdfPage[];
-        const parentTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.parentIndex)];
-        const childTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.childIndex)];
+        const parentTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.parentIndex, pdfExportProperties)];
+        const childTask: PdfGanttTaskbarCollection = pdfGantt.taskbarCollection[this.findindex(this.childIndex, pdfExportProperties)];
         let startPage: PdfPage = new PdfPage();
         let endPage: PdfPage = new PdfPage();
         let predecessorType: string = '';
@@ -61,98 +75,98 @@ export class PdfGanttPredecessor {
         let parentY: number = 0;
         let childY: number = 0;
         switch (this.type) {
-        case 'FS':
-            if (childTask.startPage > -1 && parentTask.endPage > -1) {
-                startPage = pages[parentTask.endPage];
-                endPage = pages[childTask.startPage];
-                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                if (this.parentIndex < this.childIndex) {
-                    if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
-                        predecessorType = 'FSType1';
+            case 'FS':
+                if ((!isNullOrUndefined(childTask) && childTask.startPage > -1) && (!isNullOrUndefined(parentTask) && parentTask.endPage > -1)) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType1';
+                        } else {
+                            predecessorType = 'FSType2';
+                        }
                     } else {
-                        predecessorType = 'FSType2';
+                        if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                            predecessorType = 'FSType3';
+                        } else {
+                            predecessorType = 'FSType4';
+                        }
                     }
                 } else {
-                    if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
-                        predecessorType = 'FSType3';
-                    } else {
-                        predecessorType = 'FSType4';
-                    }
+                    return;
                 }
-            } else {
-                return;
-            }
-            break;
-        case 'SF':
-            if (childTask.endPage > -1 && parentTask.startPage > -1) {
-                startPage = pages[parentTask.startPage];
-                endPage = pages[childTask.endPage];
-                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                if (this.parentIndex < this.childIndex) {
-                    if (this.parentLeft > this.childLeft + this.childWidth) {
-                        predecessorType = 'SFType1';
+                break;
+            case 'SF':
+                if ((!isNullOrUndefined(childTask) && childTask.endPage > -1) && (!isNullOrUndefined(parentTask) && parentTask.startPage > -1)) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType1';
+                        } else {
+                            predecessorType = 'SFType2';
+                        }
                     } else {
-                        predecessorType = 'SFType2';
+                        if (this.parentLeft > this.childLeft + this.childWidth) {
+                            predecessorType = 'SFType3';
+                        } else {
+                            predecessorType = 'SFType4';
+                        }
                     }
                 } else {
-                    if (this.parentLeft > this.childLeft + this.childWidth) {
-                        predecessorType = 'SFType3';
-                    } else {
-                        predecessorType = 'SFType4';
-                    }
+                    return;
                 }
-            } else {
-                return;
-            }
-            break;
-        case 'FF':
-            if (childTask.endPage > -1 && parentTask.endPage > -1) {
-                startPage = pages[parentTask.endPage];
-                endPage = pages[childTask.endPage];
-                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
-                if (this.parentIndex < this.childIndex) {
-                    if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
-                        predecessorType = 'FFType1';
+                break;
+            case 'FF':
+                if ((!isNullOrUndefined(childTask) && childTask.endPage > -1) && (!isNullOrUndefined(parentTask) && parentTask.endPage > -1)) {
+                    startPage = pages[parentTask.endPage];
+                    endPage = pages[childTask.endPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType1';
+                        } else {
+                            predecessorType = 'FFType2';
+                        }
                     } else {
-                        predecessorType = 'FFType2';
+                        if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                            predecessorType = 'FFType3';
+                        } else {
+                            predecessorType = 'FFType4';
+                        }
                     }
                 } else {
-                    if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
-                        predecessorType = 'FFType3';
-                    } else {
-                        predecessorType = 'FFType4';
-                    }
+                    return;
                 }
-            } else {
-                return;
-            }
-            break;
-        case 'SS':
-            if (childTask.startPage > -1 && parentTask.startPage > -1) {
-                startPage = pages[parentTask.startPage];
-                endPage = pages[childTask.startPage];
-                parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
-                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                if (this.parentIndex < this.childIndex) {
-                    if (this.parentLeft >= this.childLeft) {
-                        predecessorType = 'SSType1';
+                break;
+            case 'SS':
+                if ((!isNullOrUndefined(childTask) && childTask.startPage > -1) && (!isNullOrUndefined(parentTask) && parentTask.startPage > -1)) {
+                    startPage = pages[parentTask.startPage];
+                    endPage = pages[childTask.startPage];
+                    parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
+                    childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                    if (this.parentIndex < this.childIndex) {
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType1';
+                        } else {
+                            predecessorType = 'SSType2';
+                        }
                     } else {
-                        predecessorType = 'SSType2';
+                        if (this.parentLeft >= this.childLeft) {
+                            predecessorType = 'SSType3';
+                        } else {
+                            predecessorType = 'SSType4';
+                        }
                     }
                 } else {
-                    if (this.parentLeft >= this.childLeft) {
-                        predecessorType = 'SSType3';
-                    } else {
-                        predecessorType = 'SSType4';
-                    }
+                    return;
                 }
-            } else {
-                return;
-            }
-            break;
+                break;
         }
         let midPoint: number = Math.round((this.parent.rowHeight - 1) / 2.0);
         midPoint = pixelToPoint(midPoint);

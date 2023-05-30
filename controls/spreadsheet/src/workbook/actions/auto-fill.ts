@@ -1,6 +1,6 @@
-import { isNullOrUndefined, isUndefined, Internationalization } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, Internationalization, L10n } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
-import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
+import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
 
@@ -41,6 +41,7 @@ export class WorkbookAutoFill {
 
     private getFillInfo(options: { dataRange: number[], fillRange: number[], direction: AutoFillDirection, fillType: AutoFillType }):
     { fillType: AutoFillType, disableItems: string[] } {
+        const l10n: L10n = this.parent.serviceLocator.getService(workbookLocale);
         let val: string = '';
         let isStringType: boolean = true;
         let fillType: AutoFillType = 'CopyCells';
@@ -58,7 +59,7 @@ export class WorkbookAutoFill {
             }
         }
         if (!len || isStringType) {
-            disableItems.push('Fill Series');
+            disableItems.push(l10n.getConstant('FillSeries'));
             fillType = (options.fillType === 'FillSeries') ? fillType : options.fillType;
         }
         if (!isVFill || (isVFill && options.dataRange[1] !== options.dataRange[3])) {

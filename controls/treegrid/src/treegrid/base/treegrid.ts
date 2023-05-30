@@ -213,6 +213,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area,
      * ```
      * also it will display the tooltip while hover on ellipsis is applied.
+     *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @isEnumeration true
@@ -349,6 +350,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * * AllPages :- Prints all pages of the TreeGrid.
      * * CurrentPage :- Prints the current page of the TreeGrid.
      * ```
+     *
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.PrintMode
@@ -552,6 +554,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * * Vertical :- Displays the vertical TreeGrid lines only.
      * * Default :- Displays TreeGrid lines based on the theme.
      * ```
+     *
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.GridLine
@@ -1533,7 +1536,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'downArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findnextRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -1549,7 +1557,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'upArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findPreviousRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -2309,19 +2322,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.rowTemplate) {
             if ((<{ isReact?: boolean }>this).isReact && (this.getContentTable() as HTMLTableElement).rows.length === 0) {
                 setTimeout(() => {
-                   this.treeColumnRowTemplate();
-                   if (this.enableCollapseAll) {
-                       const currentData: ITreeData[] = this.getCurrentViewRecords();
-                       const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
-                       for (let i: number = 0; i < rows.length; i++) {
-                           let args: RowDataBoundEventArgs = { data: currentData[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)] };
-                           this.renderModule.RowModifier(args);
-                       }
-                   }
-               }, 0);
-           } else {
-               this.treeColumnRowTemplate();
-           }
+                    this.treeColumnRowTemplate();
+                    if (this.enableCollapseAll) {
+                        const currentData: ITreeData[] = this.getCurrentViewRecords();
+                        const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+                        for (let i: number = 0; i < rows.length; i++) {
+                            const args: RowDataBoundEventArgs = {
+                                data: currentData[parseInt(i.toString(), 10)],
+                                row: rows[parseInt(i.toString(), 10)]
+                            };
+                            this.renderModule.RowModifier(args);
+                        }
+                    }
+                }, 0);
+            } else {
+                this.treeColumnRowTemplate();
+            }
         }
     }
 
@@ -3874,7 +3890,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
-                record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                if (this.enableVirtualization && this.isCollapseAll) {
+                    record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+                }
+                else {
+                    record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                }
             }
         }
         return record;
@@ -4102,7 +4123,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (rows.length) {
                 for (let i: number = 0; i < rows.length; i++) {
                     if (action === 'collapse') {
-                        this.collapseRow(rows[parseInt(i.toString(), 10)]);
+                        if (!isNullOrUndefined(this.getCurrentViewRecords()[rows[parseInt(i.toString(), 10)].rowIndex])) {
+                            this.collapseRow(rows[parseInt(i.toString(), 10)]);
+                        }
                     }
                     else {
                         this.expandRow(rows[parseInt(i.toString(), 10)]);
@@ -4565,7 +4588,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
                 if (cRow.length && childRecord.expanded) {
-                    this.collapseRemoteChild({ record: childRecord, rows: cRow }, true);
+                    this.collapseRemoteChild({ record: childRecord, rows: cRow }, false);
                 }
             }
         }

@@ -1193,7 +1193,7 @@ export class Mention extends DropDownBase {
             const selectedNodePosition: number = this.getTriggerCharPosition();
             globalRange = this.range;
             range = document.createRange();
-            if (this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1 && this.isTyped) {
+            if (this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1) {
                 range.setStart(globalRange.startContainer, selectedNodePosition);
                 range.setEnd(globalRange.startContainer, selectedNodePosition);
             }

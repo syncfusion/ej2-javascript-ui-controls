@@ -114,6 +114,9 @@ export class VirtualScroll {
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
+            if (requestType === 'save') {
+                endIndex = counts.count;
+            }
             //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) &&
             //this.prevendIndex === endIndex && this.prevstartIndex === startIndex) {
             if (!isNullOrUndefined(this.expandCollapseRec) && (pageingDetails.actionArgs.requestType === 'virtualscroll' ||

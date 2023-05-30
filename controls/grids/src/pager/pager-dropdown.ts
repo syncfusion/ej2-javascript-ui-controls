@@ -144,7 +144,7 @@ export class PagerDropDown {
     private isPageSizeAll(value: string | number): boolean {
         const pageSizeNum : string | number = typeof(value) === 'string' && value !== this.pagerModule.getLocalizedLabel('All') ?
             parseInt(value, 10) : value;
-        if (pageSizeNum === this.pagerModule.totalRecordsCount || value === this.pagerModule.getLocalizedLabel('All')) {
+        if (this.pagerModule.isAll && (pageSizeNum === this.pagerModule.totalRecordsCount || value === this.pagerModule.getLocalizedLabel('All'))) {
             return true;
         }
         else {

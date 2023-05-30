@@ -1,6 +1,103 @@
 /**
  * Gantt data-source spec
  */
+export let projectNewData :any = [
+    {
+        "id": 370,
+        "title": "Backlog",
+        "dateStart": "2022-12-08T13:00:00.000Z",
+        "dateEnd": "2022-12-09T22:00:00.000Z",
+        "duration": null,
+        "taskStatus": {
+            "id": 1,
+            "status": "Backlog"
+        },
+        "isMilestone": false,
+        "description": "",
+        "parentTaskId": null,
+        "dependencies": [],
+        "children": [],
+        "assignedUsers": [
+            {
+                "id": 1,
+                "fullName": "John Henry"
+            }
+        ]
+    },
+    {
+        "id": 369,
+        "title": "In progress Task",
+        "dateStart": "2022-12-09T13:00:00.000Z",
+        "dateEnd": "2022-12-09T22:00:00.000Z",
+        "duration": null,
+        "taskStatus": {
+            "id": 2,
+            "status": "In Progress"
+        },
+        "isMilestone": false,
+        "description": "",
+        "parentTaskId": null,
+        "dependencies": [],
+        "children": [],
+        "assignedUsers": [
+            {
+                "id": 2,
+                "fullName": "Jane Doe"
+            }
+        ]
+    },
+    {
+        "id": 368,
+        "title": "Done task",
+        "dateStart": "2022-12-13T13:00:00.000Z",
+        "dateEnd": "2022-12-13T22:00:00.000Z",
+        "billRate": null,
+        "duration": null,
+        "taskStatus": {
+            "id": 3,
+            "status": "Done"
+        },
+        "isMilestone": false,
+        "description": "",
+        "parentTaskId": null,
+        "dependencies": [],
+        "children": [
+            {
+                "id": 371,
+                "title": "A sub task",
+                "dateStart": "2022-12-26T05:00:00.000Z",
+                "dateEnd": null,
+                "billRate": null,
+                "duration": null,
+                "isMilestone": false,
+                "description": "",
+                "parentTaskId": 368,
+                "dependencies": [],
+                "children": [],
+            }
+        ],
+        "assignedUsers": [
+            {
+                "id": 3,
+                "fullName": "Jimmy Biscuits"
+            }
+        ]
+    }
+];
+export let resourceCollectionid:any = [
+    {
+        "id": 1,
+        "fullName": "John Henry"
+    },
+    {
+        "id": 2,
+        "fullName": "Jane Doe"
+    },
+    {
+        "id": 3,
+        "fullName": "Jimmy Biscuits"
+    }
+];
 export let projectResources: Object[] = [
     { ResourceId: 1, ResourceName: 'Project Manager' },
     { ResourceId: 2, ResourceName: 'Software Analyst' },
@@ -2630,7 +2727,7 @@ export let cellEditData: object[] = [
             { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 1',
               BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), EstimatedWork: 40.45 }, 
             { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 2',
-            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3, 1], EstimatedWork: 20 },
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3, 1], EstimatedWork: 20,cssClass: 'css', },
             { TaskID: 4, TaskName: 'Milestone Task', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2", Notes: 'Notes 3',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [4], EstimatedWork: 80  },
         ]
@@ -2672,6 +2769,67 @@ export let resourcesData: Object[] = [
     { resourceId: 3, resourceName: 'Resource 3' },
     { resourceId: 4, resourceName: 'Resource 4' },
 ];
+export let resourcesData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                    Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+                {
+                    TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+                },
+            ]
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                    Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: '3FS+2', work: 30
+                },
+                {
+                    TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2019'), Duration: 12,
+                    resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+                },
+                {
+                    TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                    Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+                },
+                {
+                    TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                    Duration: 4, Progress: 30, resources: [4]
+                },
+                {
+                    TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                    Progress: 30, Predecessor: '9SS', resources: [3]
+                },
+                {
+                    TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                    Duration: 3, resources: [2]
+                },
+                {
+                    TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                    Duration: 4, Progress: 30, resources: [3]
+                }
+            ]
+        },
+        {
+            TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+            Progress: 30,
+        }
+    
+]
 
 export let resources: Object[] = [
     { resourceId: 1, resourceName: 'Resource 1' },

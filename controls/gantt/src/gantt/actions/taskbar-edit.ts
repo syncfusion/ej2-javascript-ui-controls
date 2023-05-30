@@ -1686,8 +1686,14 @@ export class TaskbarEdit extends DateProcessor {
             this.dependencyCancel = true;
         }
         if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-            this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor) {
+            this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor && (!this.connectorSecondRecord.hasChildRecords || 
+                    this.connectorSecondRecord.hasChildRecords && this.parent.allowParentDependency)) {
             this.parent.connectorLineEditModule.updatePredecessor(this.connectorSecondRecord, this.finalPredecessor);
+            if(this.parent.UpdateOffsetOnTaskbarEdit)
+            {
+                this.parent.connectorLineEditModule['calculateOffset'](this.connectorSecondRecord);
+            }
+            
         } else {
             if (x1 !== x2 || (Math.abs(y1 - resMouseY) >= (this.parent.rowHeight - this.parent.taskbarHeight) / 2)) {
                 if (item !== null) {
@@ -2029,7 +2035,9 @@ export class TaskbarEdit extends DateProcessor {
             }
             this.showHideTaskBarEditingElements(element, this.highlightedSecondElement, true);
         }
-        if (isNullOrUndefined(this.connectorSecondAction) && !isNullOrUndefined(this.connectorSecondElement)) {
+        if (isNullOrUndefined(this.connectorSecondAction) && !isNullOrUndefined(this.connectorSecondElement) &&
+                (!this.connectorSecondRecord.hasChildRecords || this.connectorSecondRecord.hasChildRecords &&
+                this.parent.allowParentDependency)) {
             this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointAllowBlock]);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointAllowBlock]);

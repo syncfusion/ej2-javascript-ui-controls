@@ -650,7 +650,7 @@ export class Splitter extends Component<HTMLElement> {
         const prePaneSize: number = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
         const nextPaneSize: number = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
         const splitBarSize: number = isNullOrUndefined(this.separatorSize) ? BAR_SIZE_DEFAULT : this.separatorSize;
-        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
+        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.previousPane.style.flexBasis.indexOf('p') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
             const previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
             const nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
             this.totalPercent = previousFlexBasis + nextFlexBasis;
@@ -1430,8 +1430,10 @@ export class Splitter extends Component<HTMLElement> {
                         updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePaneOffset + sizeDiff) + '%'
                             : (updatePaneOffset + sizeDiff) + 'px';
                         const flexPaneOffset: number = this.orientation === 'Horizontal' ? flexPane.offsetWidth : flexPane.offsetHeight;
-                        flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
+                        if(flexPane.style.flexBasis !== ''){
+                            flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
                             this.convertPixelToPercentage(flexPaneOffset - sizeDiff) + '%' : (flexPaneOffset - sizeDiff) + 'px';
+                        }
                     }
                 }
             }

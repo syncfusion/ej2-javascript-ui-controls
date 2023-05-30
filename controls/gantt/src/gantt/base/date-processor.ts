@@ -185,7 +185,7 @@ export class DateProcessor {
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
                     const value: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
-                    if (hour >= value.to && (this.parent.workingTimeRanges[i + 1] &&
+                    if (hour > value.to && (this.parent.workingTimeRanges[i + 1] &&
                         hour < this.parent.workingTimeRanges[i + 1].from)) {
                         this.setTime(this.parent.workingTimeRanges[i + 1].from, cloneDate);
                         break;

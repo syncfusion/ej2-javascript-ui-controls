@@ -2777,6 +2777,9 @@ export class Annotation {
             // eslint-disable-next-line max-len
             this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
             this.modifyInCollections(currentAnnotation, 'dynamicText');
+            if (!isNullOrUndefined(this.freeTextAnnotationModule) && this.freeTextAnnotationModule.previousText !== 'Type Here' && this.freeTextAnnotationModule.previousText !== currentAnnotation.dynamicText) {
+                this.triggerAnnotationPropChange(this.pdfViewerBase, false, false, false, false, false, false, false, true, this.freeTextAnnotationModule.previousText, currentAnnotation.dynamicText);
+            }
             this.pdfViewer.renderDrawing();
         }
     }
@@ -3764,13 +3767,14 @@ export class Annotation {
     // eslint-disable-next-line
     public getEventPageNumber(event: any): number {
         let eventTarget: HTMLElement = event.target as HTMLElement;
+        let eventParentElement: HTMLElement = event.target.parentElement as HTMLElement;
         if (eventTarget.classList.contains('e-pv-hyperlink')) {
-            eventTarget = eventTarget.parentElement;
-        } else if (eventTarget.parentElement && eventTarget.parentElement.classList.contains('foreign-object')) {
-            eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
+            eventTarget = eventParentElement;
+        } else if (eventParentElement && eventParentElement.classList.contains('foreign-object') && eventParentElement.parentElement && eventParentElement.parentElement.parentElement && eventParentElement.parentElement.parentElement.parentElement) {
+            eventTarget = eventParentElement.parentElement.parentElement.parentElement;
         }
         else if (eventTarget.classList.contains('e-pdfviewer-formFields')) {
-            eventTarget = eventTarget.parentElement;
+            eventTarget = eventParentElement;
         }
         let pageString: any;
         if (eventTarget) {

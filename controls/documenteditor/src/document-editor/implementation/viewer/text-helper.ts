@@ -754,6 +754,9 @@ export class TextHelper {
                     //         fontNameFromTheme = fontName;
                     // }
                 }
+                else if (isNullOrUndefined(fontNameFromTheme) && this.documentHelper.themeFontLanguage != null && (fontName === "minorBidi" || fontName === "majorBidi")) {
+                    return fontName = this.getFontNameWithFontScript(majorMinorFontScheme, this.documentHelper.themeFontLanguage.localeIdBidi, hintType);
+                }
             }
             
             if (isNullOrUndefined(fontNameFromTheme))
@@ -766,62 +769,61 @@ export class TextHelper {
         // /// <summary>
         // /// Gets the font name from a theme part for the specified font script.
         // /// </summary>
-        // private getFontNameWithFontScript(majorMinorFontScheme: MajorMinorFontScheme, localeID: number, hintType: FontHintType): string
-        // {
-        //     let fontName: string = null;
-        //     //To-Do: Should extend this behavior deponds on the localeID.
-        //     let lang: string = LocaleIDs[localeID];
-        //     let fontTypeFaces: Dictionary<string, string> = majorMinorFontScheme.fontTypeface;
-        //     //Gujarati
-        //     //If lang script is "gu-IN" or "gu", we should retrive the "Gujr" font from a theme part.
-        //     if ((lang == 'gu_IN' || localeID == 71) && fontTypeFaces.containsKey("Gujr"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Hindi
-        //     //If lang script is "hi-IN" or "hi", we should retrive the "Deva" font from a theme part.
-        //     //Marathi
-        //     //If lang script is "mr-IN" or "mr", we should retrive the "Deva" font from a theme part.
-        //     else if ((lang == 'hi_IN' || lang == 'mr_IN' || localeID == 57 || localeID == 78)
-        //         && fontTypeFaces.containsKey("Deva"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Korean
-        //     //If lang script is "ko-KR" or "ko", we should retrive the "Hang" font from a theme part.
-        //     else if ((lang == 'ko_KR' || localeID == 18) && fontTypeFaces.containsKey("Hang"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Chinese - Simplified
-        //     //If lang script is "zh-CN", "zh-SG" or "zh", we should retrive the "Hans" font from a theme part.
-        //     else if ((lang == 'zh_CN' || lang == 'zh_SG' || localeID == 4) && fontTypeFaces.containsKey("Hans"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Chinese - Traditional
-        //     //If lang script is "zh-TW", "zh-HK", or "zh-MO", we should retrive the "Hant" font from a theme part.
-        //     else if ((lang == 'zh_TW' || lang == 'zh_HK' || lang == 'zh_MO') 
-        //         && fontTypeFaces.containsKey("Hant"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Japanese
-        //     //If lang script is "ja-JP" or "ja", we should retrive the "Jpan" font from a theme part.
-        //     else if ((lang == 'ja_JP' || localeID == 17) && fontTypeFaces.containsKey("Jpan"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Tamil
-        //     //If lang script is "ta-IN" or "ta", we should retrive the "Taml" font from a theme part.
-        //     else if ((lang == 'ta_IN' || localeID == 73) && fontTypeFaces.containsKey("Taml"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Telugu
-        //     //If lang script is "te-IN" or "te", we should retrive the "Telu" font from a theme part.
-        //     else if ((lang == 'te_IN' || localeID == 74) && fontTypeFaces.containsKey("Telu"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Hebrew
-        //     //If lang script is "he-IL" or "he", we should retrive the "Hebr" font from a theme part.
-        //     else if ((lang == 'he_IL' || lang == 'yi_Hebr' || localeID == 13) && fontTypeFaces.containsKey("Hebr"))
-        //         fontName = fontTypeFaces.get("Arab");
-        //     //Thai
-        //     //If lang script is "th_TH" or "th", we should retrive the "Thai" font from a theme part.
-        //     else if ((lang == 'th_TH' || localeID == 30) && fontTypeFaces.containsKey("Thai"))
-        //         fontName = fontTypeFaces.get("Thai");
-        //     //Arabic
-        //     else if (hintType == FontHintType.CS && fontTypeFaces.containsKey("Arab"))
-        //         fontName = fontTypeFaces.get("Arab");
+    private getFontNameWithFontScript(majorMinorFontScheme: MajorMinorFontScheme, localeID: number, hintType: FontHintType): string {
+        let fontName: string = null;
+        //To-Do: Should extend this behavior deponds on the localeID.
+        let lang: string = localeID.toString();
+        let fontTypeFaces: Dictionary<string, string> = majorMinorFontScheme.fontTypeface;
+        //Gujarati
+        //If lang script is "gu-IN" or "gu", we should retrive the "Gujr" font from a theme part.
+        if ((lang == 'gu_IN' || localeID == 1095) && fontTypeFaces.containsKey("Gujr"))
+            fontName = fontTypeFaces.get("Arab");
+        //Hindi
+        //If lang script is "hi-IN" or "hi", we should retrive the "Deva" font from a theme part.
+        //Marathi
+        //If lang script is "mr-IN" or "mr", we should retrive the "Deva" font from a theme part.
+        else if ((lang == 'hi_IN' || lang == 'mr_IN' || localeID == 1081 || localeID == 1102)
+            && fontTypeFaces.containsKey("Deva"))
+            fontName = fontTypeFaces.get("Arab");
+        //Korean
+        //If lang script is "ko-KR" or "ko", we should retrive the "Hang" font from a theme part.
+        else if ((lang == 'ko_KR' || localeID == 1042) && fontTypeFaces.containsKey("Hang"))
+            fontName = fontTypeFaces.get("Arab");
+        //Chinese - Simplified
+        //If lang script is "zh-CN", "zh-SG" or "zh", we should retrive the "Hans" font from a theme part.
+        else if ((lang == 'zh_CN' || lang == 'zh_SG' || localeID == 2052) && fontTypeFaces.containsKey("Hans"))
+            fontName = fontTypeFaces.get("Arab");
+        //Chinese - Traditional
+        //If lang script is "zh-TW", "zh-HK", or "zh-MO", we should retrive the "Hant" font from a theme part.
+        else if ((lang == 'zh_TW' || lang == 'zh_HK' || lang == 'zh_MO')
+            && fontTypeFaces.containsKey("Hant"))
+            fontName = fontTypeFaces.get("Arab");
+        //Japanese
+        //If lang script is "ja-JP" or "ja", we should retrive the "Jpan" font from a theme part.
+        else if ((lang == 'ja_JP' || localeID == 1041) && fontTypeFaces.containsKey("Jpan"))
+            fontName = fontTypeFaces.get("Arab");
+        //Tamil
+        //If lang script is "ta-IN" or "ta", we should retrive the "Taml" font from a theme part.
+        else if ((lang == 'ta_IN' || localeID == 1097) && fontTypeFaces.containsKey("Taml"))
+            fontName = fontTypeFaces.get("Arab");
+        //Telugu
+        //If lang script is "te-IN" or "te", we should retrive the "Telu" font from a theme part.
+        else if ((lang == 'te_IN' || localeID == 1098) && fontTypeFaces.containsKey("Telu"))
+            fontName = fontTypeFaces.get("Arab");
+        //Hebrew
+        //If lang script is "he-IL" or "he", we should retrive the "Hebr" font from a theme part.
+        else if ((lang == 'he_IL' || lang == 'yi_Hebr' || localeID == 1037) && fontTypeFaces.containsKey("Hebr"))
+            fontName = fontTypeFaces.get("Arab");
+        //Thai
+        //If lang script is "th_TH" or "th", we should retrive the "Thai" font from a theme part.
+        else if ((lang == 'th_TH' || localeID == 1054) && fontTypeFaces.containsKey("Thai"))
+            fontName = fontTypeFaces.get("Thai");
+        //Arabic
+        else if (hintType == FontHintType.CS && fontTypeFaces.containsKey("Arab"))
+            fontName = fontTypeFaces.get("Arab");
 
-        //     return fontName;
-        // }
+        return fontName;
+    }
 
     public destroy(): void {
         this.documentHelper = undefined;

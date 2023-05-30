@@ -3,7 +3,7 @@
  */
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll } from '../../src/index';
 import { resourceCollection, resourceSelefReferenceData, resourcesData, normalResourceData, multiTaskbarData, multiResources,
-     virtualResourceData, editingResources } from '../base/data-source.spec';
+    virtualResourceData, editingResources, resourceCollectionid, projectNewData, resourcesData1} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers, VirtualScroll);
 interface EJ2Instance extends HTMLElement {
@@ -892,12 +892,12 @@ describe('Self reference data', () => {
       });
   });
   
-       describe("Add record using method", () => {
+    describe("Add record using method", () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
       ganttObj = createGantt(
         {
-            dataSource: resourcesData,
+            dataSource: resourcesData1,
             resources: resourceCollection,
             viewType: 'ResourceView',
             showOverAllocation: true,
@@ -977,10 +977,11 @@ describe('Self reference data', () => {
             TaskName: 'Identify Site',
             StartDate: new Date('04/02/2019'),
             Duration: 3,
-            Progress: 50
+            Progress: 50,
         };
+        expect(ganttObj.flatData.length).toBe(18);
         ganttObj.editModule.addRecord(record, 'Below', 2);
-        expect(ganttObj.flatData.length).toBe(12);
+        expect(ganttObj.flatData.length).toBe(19);
     });
   });
  describe("CR issues", () => {
@@ -2112,5 +2113,63 @@ describe('Resource view with persistence', () => {
         it('check duration value for parent task', () => {
            expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(7);
         });
+    });
+});
+describe('cr issue same id', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            resources: resourceCollectionid,
+            viewType: 'ResourceView',
+            allowSorting: true,
+            taskFields: {
+                id: "id",
+                name: "title",
+                startDate: "dateStart",
+                endDate: "dateEnd",
+                duration: "duration",
+                resourceInfo: "assignedUsers",
+                child: "children"
+            },
+            resourceFields: {
+                id: 'id',
+                name: 'fullName',
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('same id resoure and tasksetting', () => {
+       expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("John Henry");
     });
 });

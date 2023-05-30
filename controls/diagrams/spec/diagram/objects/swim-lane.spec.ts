@@ -11662,4 +11662,266 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
         });
     });
 
+    describe('Swimlane child nodes are not selectable after save and load with prevent defaults as true', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwim_select' });
+            document.body.appendChild(ele);
+            let node: NodeModel[] = [{
+                id:'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    //Intialize header to swimlane
+                    header: {
+                        annotation: { content: 'SwimLane Header', },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node1',
+                                    annotations: [
+                                        {
+                                            content: 'Consumer learns \n of product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'PRODUCT' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node2',
+                                    annotations: [
+                                        {
+                                            content: 'product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'SALES' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node3',
+                                    annotations: [
+                                        {
+                                            content: 'sales',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 120,
+                            // set the phase info
+                            addInfo: { name: 'phase1' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 300, offsetY: 250,
+                height: 200,
+                width: 350
+            },];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                serializationSettings:{preventDefaults:true},
+                nodes: node,
+            });
+            diagram.appendTo('#diagramSwim_select');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Add child nodes into lane and check the nodes is selectable or not after save and load', (done: Function) => {
+            let newNode = {id:'newNode',width:70,height:50,margin:{left:200,top:20}};
+            diagram.addChild(diagram.nameTable['swimlanestackCanvas10'],newNode);
+            diagram.select([diagram.nameTable['newNode']]);
+            let newNodeZIndex = diagram.selectedItems.nodes[0].zIndex;
+            let data = diagram.saveDiagram();
+            diagram.loadDiagram(data);
+            let newNode1 = {id:'newNode1',width:70,height:50,margin:{left:200,top:20}};
+            diagram.addChild(diagram.nameTable['swimlanestackCanvas20'],newNode1);
+            diagram.select([diagram.nameTable['newNode1']]);
+            let newNode1ZIndex = diagram.selectedItems.nodes[0].zIndex;
+            expect(newNodeZIndex === 12 && newNode1ZIndex === 13).toBe(true);
+            let saveData = diagram.saveDiagram(); 
+            diagram.loadDiagram(saveData);
+            let newNode2 = {id:'newNode2',width:70,height:50,margin:{left:200,top:20}};
+            diagram.addChild(diagram.nameTable['swimlanestackCanvas30'],newNode2);
+            diagram.select([diagram.nameTable['newNode2']]);
+            let newNode2Zindex = diagram.selectedItems.nodes[0].zIndex;
+            expect(newNode2Zindex === 14).toBe(true);
+        });
+    });
+    describe('828495- Exception occurs while dragging swimlane after adding shape then undo action is performed', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwim_select' });
+            document.body.appendChild(ele);
+            let node: NodeModel[] = [
+                {
+                    id: 'nodesample',
+                    height: 50,
+                    width: 50,
+                    offsetX: 520,
+                    offsetY: 250,
+                    constraints: NodeConstraints.Default || NodeConstraints.AllowDrop
+                },
+                {
+                    constraints: NodeConstraints.Default || NodeConstraints.AllowDrop,
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        orientation: 'Horizontal',
+                        //Intialize header to swimlane
+                        header: {
+                            annotation: { content: 'SwimLane Header', },
+                            height: 50, style: { fontSize: 11 },
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                height: 100,
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                children: [
+                                    {
+                                        id: 'node1',
+                                        annotations: [
+                                            {
+                                                content: 'Consumer learns \n of product',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 30 },
+                                        height: 40, width: 100,
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                height: 100,
+                                header: {
+                                    annotation: { content: 'PRODUCT' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                children: [
+                                    {
+                                        id: 'node2',
+                                        annotations: [
+                                            {
+                                                content: 'product',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 30 },
+                                        height: 40, width: 100,
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas3',
+                                height: 100,
+                                header: {
+                                    annotation: { content: 'SALES' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                children: [
+                                    {
+                                        id: 'node3',
+                                        annotations: [
+                                            {
+                                                content: 'sales',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 30 },
+                                        height: 40, width: 100,
+                                    },
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 120,
+                                // set the phase info
+                                addInfo: { name: 'phase1' },
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 300, offsetY: 250,
+                    height: 200,
+                    width: 350
+                },];
+    
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                serializationSettings: { preventDefaults: true },
+                nodes: node,
+            });
+            diagram.appendTo('#diagramSwim_select');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Add shape to swimlane and Undo then drag swmilane', (done: Function) => {
+            debugger
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.dragAndDropEvent(diagramCanvas, 520, 250, 340, 250, false, false)
+            mouseEvents.clickEvent(diagramCanvas, 600, 300, false, false)
+            diagram.undo();
+            diagram.select(diagram.nodes);
+            diagram.drag(diagram.nodes[1], 100, 100);
+            expect(diagram.nodes[1].offsetX == 400 && diagram.nodes[1].offsetY == 350).toBe(true);
+            done();
+        });
+    });
 });

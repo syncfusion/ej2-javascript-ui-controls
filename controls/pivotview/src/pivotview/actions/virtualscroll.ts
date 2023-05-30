@@ -254,11 +254,11 @@ export class VirtualScroll {
         const pivot: PivotView = control ? control : this.parent;
         const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
-            pivotValues: pivot.pivotValues
+            pivotValues: engine.pivotValues
         };
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-            this.parent.pivotValues = engine.pivotValues;
+            this.parent.pivotValues = observedArgs.pivotValues;
         });
     }
 

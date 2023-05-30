@@ -9,7 +9,7 @@ import { DateFormatOptions, createElement, isNullOrUndefined } from '@syncfusion
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
 import { Orientation } from '../utils/enum';
-import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds } from '../../common/utils/helper';
+import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds, degreeToRadian } from '../../common/utils/helper';
 import { subArray, inside, appendChildElement, stringToNumber } from '../../common/utils/helper';
 import { TextAlignment } from '../../common/utils/enum';
 import { Thickness, logBase, createZoomingLabels, getElement } from '../../common/utils/helper';
@@ -525,7 +525,7 @@ export class CartesianAxisLayoutPanel {
                         axis, i, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft, axis.plotOffsetRight, isInside ? outsideElement : this.element, axis.updatedRect
                     );
                 }
-                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0) {
+                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
                     this.drawXAxisGridLine(
                         axis, i, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect
                     );
@@ -548,7 +548,7 @@ export class CartesianAxisLayoutPanel {
                 if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
                     this.drawAxisLine(axis, i, 0, axis.plotOffset, axis.plotOffsetBottom, axis.plotOffsetTop, 0, 0, isInside ? outsideElement : this.element, axis.updatedRect);
                 }
-                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0) {
+                if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
                     this.drawYAxisGridLine(
                         axis, i, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect
                     );
@@ -831,7 +831,7 @@ export class CartesianAxisLayoutPanel {
         const labelSpace: number = axis.labelPadding;
         let options: TextOption; let isAxisBreakLabel: boolean;
         const isLabelInside: boolean = axis.labelPosition === 'Inside';
-        const isOpposed: boolean = axis.isAxisOpposedPosition;
+        const isOpposed: boolean = axis.isAxisOpposedPosition;let RotatedWidth: number;
         const tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
         let padding: number = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         const angle: number = axis.angle % 360;
@@ -857,6 +857,11 @@ export class CartesianAxisLayoutPanel {
         });
         const LabelMaxWidth: number = Math.max(...sizeWidth);
         const breakLabelMaxWidth: number = Math.max(...breakLabelSizeWidth);
+        RotatedWidth = LabelMaxWidth;
+        if (angle >= -45 && angle <= 45 && angle !== 0) {
+            RotatedWidth = LabelMaxWidth * Math.cos(angle * Math.PI / 180);
+            if (RotatedWidth < 0) { RotatedWidth = - RotatedWidth }
+        }
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             label = axis.visibleLabels[i as number];
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i as number].originalText);
@@ -893,7 +898,7 @@ export class CartesianAxisLayoutPanel {
             if (isLabelInside) {
                 yAxisLabelX = labelPadding + ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
             } else {
-                yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
+                yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : RotatedWidth)) / 2);
             }
             pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             if (isVerticalAngle) {
@@ -913,7 +918,7 @@ export class CartesianAxisLayoutPanel {
             case 'Shift':
                 if ((i === 0 || (isInverse && i === len - 1)) && options.y > rect.y + rect.height) {
                     options.y = pointY = rect.y + rect.height;
-                } else if (((i === len - 1) || (isInverse && i === 0)) && (options.y - elementSize.height * 0.5 < rect.y)) {
+                } else if (((i === len - 1) || (isInverse && i === 0)) && (options.y < rect.y)) {
                     options.y = pointY = rect.y + elementSize.height * 0.5;
                 }
                 break;
@@ -1301,6 +1306,7 @@ export class CartesianAxisLayoutPanel {
         const angle: number = axis.angle % 360;
         const isHorizontalAngle: boolean = (angle === 0 || angle === -180 || angle === 180);
         let options: TextOption; let labelWidth: number;
+        let RotatedWidth: number;
         const isInverse: boolean = axis.isAxisInverse;
         let previousEnd: number = isInverse ? (rect.x + rect.width) : rect.x;
         let width: number = 0; const length: number = axis.visibleLabels.length;
@@ -1380,6 +1386,10 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
+            if (anchor === 'end' && !((angle > 0 && angle < 90) || (angle > 180 && angle < 270) || (angle < -90 && angle > -180) || (angle < -270 && angle > -360))) {
+                RotatedWidth = labelWidth * Math.cos(angle * Math.PI / 180);
+                if (RotatedWidth < 0) { RotatedWidth = - RotatedWidth }
+            }
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                 case 'None':
@@ -1391,16 +1401,20 @@ export class CartesianAxisLayoutPanel {
                     }
                     break;
                 case 'Shift':
-                    if ((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) {
+                        if ((i === 0 || (isInverse && i === len - 1)) && (options.x < rect.x || (anchor === 'end' && options.x - RotatedWidth <= rect.x))) {
                         intervalLength -= (rect.x - options.x);
-                        if (anchor == '' && options.x > 0 && !isInverse) {
-                            pointX = options.x;
+                        if (anchor == '' && !isInverse) {
+                            if (options.x <= 0) { pointX = options.x = 0; }
+                            else { pointX = options.x; }
                             intervalLength = rect.width / length;
+                        }
+                        else if (anchor === 'end' && angle !== 0) {
+                            options.x = pointX = rect.x + RotatedWidth + padding;
                         }
                         else if (!(anchor === 'start' && options.x > 0)) {
                             options.x = pointX = !isHorizontalAngle ? rect.x + padding : rect.x;
                         }
-                    } else if ((i === len - 1 || (isInverse && i === 0)) && ((options.x + width) > rect.x + rect.width)) {
+                    } else if ((i === len - 1 || (isInverse && i === 0)) && (((options.x + width) > rect.x + rect.width && anchor !== 'end') || (anchor === 'end' && options.x > rect.x + rect.width))) {
                         if (elementSize.width > intervalLength && axis.labelIntersectAction === 'Trim') {
                             intervalLength -= (options.x + width - (rect.x + rect.width));
                         } else {

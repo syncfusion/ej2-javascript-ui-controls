@@ -28,6 +28,7 @@ export interface TreeGridModel extends ComponentModel{
      * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area,
      * ```
      * also it will display the tooltip while hover on ellipsis is applied.
+     *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @isEnumeration true
@@ -131,6 +132,7 @@ export interface TreeGridModel extends ComponentModel{
      * * AllPages :- Prints all pages of the TreeGrid.
      * * CurrentPage :- Prints the current page of the TreeGrid.
      * ```
+     *
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.PrintMode
@@ -329,6 +331,7 @@ export interface TreeGridModel extends ComponentModel{
      * * Vertical :- Displays the vertical TreeGrid lines only.
      * * Default :- Displays TreeGrid lines based on the theme.
      * ```
+     *
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.GridLine

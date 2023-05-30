@@ -558,7 +558,9 @@
       &.e-left-handler,
       &.e-right-handler {
         height: 100%;
-        width: 10px;
+        min-width: 1px;
+        max-width: 10px;
+        width: 20%;
       }
 
       &.e-left-handler {
@@ -575,7 +577,9 @@
 
       &.e-top-handler,
       &.e-bottom-handler {
-        height: 10px;
+        min-height: 1px;
+        max-height: 10px;
+        height: 20%;
         width: 100%;
       }
 

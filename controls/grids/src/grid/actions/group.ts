@@ -458,6 +458,9 @@ export class Group implements IAction {
         if ((e.target as Element).classList.contains('e-ungroupbutton')) {
             this.groupCancelFocus = true;
         }
+        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')) {
+            e.preventDefault();
+        }
         const trgtEle: HTMLTableCellElement = parentsUntil((e.target as Element), 'e-recordplusexpand') as HTMLTableCellElement ||
             parentsUntil((e.target as Element), 'e-recordpluscollapse') as HTMLTableCellElement;
         if (trgtEle && (trgtEle.children[0].classList.contains('e-icon-gdownarrow') || trgtEle.children[0].classList.contains('e-icon-grightarrow'))) {

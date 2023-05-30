@@ -1537,3 +1537,88 @@ describe('PDFGrid_ParentGrid_points ',()=>{
         document.destroy();
     })
 })
+describe('Customer bug',()=>{
+    it('826845-Row layout issue', (done) => {
+        var mainval = "mainval custom header";
+        let pdfDocument = new PdfDocument();
+        pdfDocument.pageSettings.size = { height: 842, width: 595 };
+        pdfDocument.pageSettings.orientation = 1;
+        let page = pdfDocument.pages.add();
+        let hfont = new PdfStandardFont(2, 13);
+        let brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        let bounds = new RectangleF(0, 0, pdfDocument.pageSettings.getActualSize().width, 50);
+        let header = new PdfPageTemplateElement(bounds);
+        header.graphics.drawString(mainval, hfont, null, brush, 0, 0, 100, 40, null);
+        pdfDocument.template.top = header;
+        let pdfGrid = new PdfGrid();
+        pdfGrid.columns.add(4);
+        pdfGrid.headers.add(2);
+        let headerRow1: PdfGridRow = pdfGrid.headers.getHeader(0);
+        headerRow1.cells.getCell(0).value = 'Order details';
+        headerRow1.cells.getCell(0).style.font = hfont;
+        headerRow1.cells.getCell(0).columnSpan = 4;
+        let headerRow2: PdfGridRow = pdfGrid.headers.getHeader(1);
+        headerRow2.cells.getCell(0).value = 'ShipCity';
+        headerRow2.cells.getCell(0).style.font = hfont;
+        headerRow2.cells.getCell(1).value = 'Freight($)';
+        headerRow2.cells.getCell(1).style.font = hfont;
+        headerRow2.cells.getCell(2).value = 'Arriving Flight';
+        headerRow2.cells.getCell(2).style.font = hfont;
+        headerRow2.cells.getCell(3).value = 'Product Type';
+        headerRow2.cells.getCell(3).style.font = hfont;
+        for (let i: number = 0; i < 150; i++) {
+            let row: PdfGridRow = pdfGrid.rows.addRow();
+            row.cells.getCell(0).value = 'Berlin';
+            row.cells.getCell(1).value = '$' + i.toString() + '00';
+            row.cells.getCell(2).value = 'IB 2312';
+            row.cells.getCell(3).value = 'Laptop';
+        }
+        var gridResult = pdfGrid.draw(page, new PointF(0, 30));
+        expect(pdfDocument.pages.indexOf(gridResult.page)).toEqual(4);
+        expect(gridResult.bounds.y).toEqual(0);
+        expect(gridResult.bounds.height).toEqual(385.19599999999986);
+        let pdfGrid2: PdfGrid = new PdfGrid();
+        pdfGrid2.columns.add(4);
+        pdfGrid2.headers.add(2);
+        let headerRow2_1: PdfGridRow = pdfGrid2.headers.getHeader(0);
+        headerRow2_1.cells.getCell(0).value = 'Order details';
+        headerRow2_1.cells.getCell(0).style.font = hfont;
+        headerRow2_1.cells.getCell(0).columnSpan = 4;
+        let headerRow2_2: PdfGridRow = pdfGrid2.headers.getHeader(1);
+        headerRow2_2.cells.getCell(0).value = 'ShipCity';
+        headerRow2_2.cells.getCell(0).style.font = hfont;
+        headerRow2_2.cells.getCell(1).value = 'Freight($)';
+        headerRow2_2.cells.getCell(1).style.font = hfont;
+        headerRow2_2.cells.getCell(2).value = 'Arriving Flight';
+        headerRow2_2.cells.getCell(2).style.font = hfont;
+        headerRow2_2.cells.getCell(3).value = 'Product Type';
+        headerRow2_2.cells.getCell(3).style.font = hfont;
+        for (let i: number = 0; i < 150; i++) {
+            let row: PdfGridRow = pdfGrid2.rows.addRow();
+            row.cells.getCell(0).value = 'Germany';
+            row.cells.getCell(1).value = '$' + i.toString() + '00';
+            row.cells.getCell(2).value = 'IB 2312';
+            row.cells.getCell(3).value = 'Laptop';
+        }
+        var gridResult2 = pdfGrid2.draw(gridResult.page, new PointF(0, gridResult.bounds.y + gridResult.bounds.height + 30));
+        expect(pdfDocument.pages.indexOf(gridResult2.page)).toEqual(9);
+        expect(gridResult2.bounds.y).toEqual(0);
+        expect(gridResult2.bounds.height).toEqual(313.9559999999999);
+        //Save the document.
+        //pdfDocument.save('826845_GridIssue.pdf');
+        pdfDocument.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, '826845_GridIssue.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        pdfDocument.destroy();
+    });
+});

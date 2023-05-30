@@ -125,19 +125,17 @@ export class TableDialog {
      * @returns {void}
      */
     public onInsertTableClick = (): void => {
-        if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value > 63) {
-            DialogUtility.alert(this.localeValue.getConstant('Number of columns must be between 1 and 63.'));
+        if (this.columnValueTexBox.value < 1 || this.columnValueTexBox.value > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
+            let columnAlertPopup: string = this.localeValue.getConstant('Number of columns must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > this.documentHelper.owner.documentEditorSettings.maximumRows) {
-            if(this.documentHelper.owner.locale == 'en-US') {
-                DialogUtility.alert('Number of rows must be between 1 and ' + this.documentHelper.owner.documentEditorSettings.maximumRows + '.');
-            } else {
-                DialogUtility.alert(this.localeValue.getConstant('Number of rows must be between 1 and 32767.'));
-            }
+            let rowAlertPopup: string = this.localeValue.getConstant('Number of rows must be between') + ' 1 ' + this.localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
-        if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows && this.columnValueTexBox.value <= 63) {
+        if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows && this.columnValueTexBox.value <= this.documentHelper.owner.documentEditorSettings.maximumColumns) {
             const rowCount: number = this.rowValueTextBox.value;
             const columnCount: number = this.columnValueTexBox.value;
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {

@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## 21.2.8 (2023-05-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I464428` - Now, the underline and strikethrough toolbar status are updated properly after pasting the content.
+
+## 21.2.6 (2023-05-23)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I458845` - Now, entering any value at the end of the content in the Rich Text Editor works properly.
+
+- `#I456729` - Now, the table row delete works properly even after cell merging is done in the table in the Rich Text Editor.
+
+- `#I456729` - Now, the multilevel lists are aligned properly when pasting the list content from MS Word into the Rich Text Editor.
+
+- `#I459516` - Now, when using the backspace key in Rich Text Editor, the random spaces will not be removed.
+
+- `#I449973` - Now, when inserting the Mention list into the Rich Text Editor using the `Tab` key, the mention character will no longer appear.
+
+## 21.2.5 (2023-05-16)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I456729` - Now, pasting the content alone with images from MS Word works properly in the Rich Text Editor.
+
+- `#I420916` - Now, RichTextEditor is in RTL mode, the direction of the toolbar items has changed properly.
+
+## 21.2.4 (2023-05-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I439501` - Now, when pasting the list content from MS Word, the roman number list formats are aligned properly.
+
+- `#I456849` - Now, when the image is loaded from the Rich Text Editor value the resizing works properly.
+
 ## 21.1.41 (2023-04-18)
 
 ### RichTextEditor

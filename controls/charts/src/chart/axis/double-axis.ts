@@ -193,6 +193,7 @@ export class Double {
                 series.yMin = this.chart.dragY - axis.visibleRange.interval;
             }
         }
+        if (series.yMin == series.yMax && series.points.length === 1 && series.yMax > 0 && series.yMin > 0) { series.yMin = 0; }  
         this.findMinMax(series.yMin, series.yMax);
     }
     private findMinMax(min: Object, max: Object): void {
@@ -402,7 +403,8 @@ export class Double {
      */
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
-        return isCustom ? format.replace('{value}', axis.format(tempInterval))
-            : axis.format(tempInterval);
+        let labelValue: Number = !(tempInterval % 1) ? tempInterval : parseFloat(Number(axis.format(tempInterval)).toFixed(((axis.format(tempInterval).split('0').length - 1 > 10) ? 10 : 20)));
+        return isCustom ? format.replace('{value}', axis.format(labelValue))
+            : format ? axis.format(tempInterval) : axis.format(labelValue);
     }
 }

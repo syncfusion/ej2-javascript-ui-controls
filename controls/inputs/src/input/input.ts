@@ -250,10 +250,13 @@ export namespace Input {
     }
 
     function updateIconState(value: string | number, button: HTMLElement, readonly?: boolean): void {
-        if (value && !readonly) {
-            removeClass([button], CLASSNAMES.CLEARICONHIDE);
-        } else {
-            addClass([button], CLASSNAMES.CLEARICONHIDE);
+        if (!isNullOrUndefined(button)){
+            if(value && !readonly) {
+                removeClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
+            else{
+                addClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
         }
     }
 
@@ -310,8 +313,7 @@ export namespace Input {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
-        if (isBindClearAction === undefined || isBindClearAction)
-        {
+        if (!isNullOrUndefined(button) && (isBindClearAction === undefined || isBindClearAction)){
             button.addEventListener('click', (event: MouseEvent) => {
                 if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
                     event.preventDefault();
@@ -334,9 +336,13 @@ export namespace Input {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         element.addEventListener('blur', (event: FocusEvent) => {
             setTimeout (() => {
-                addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if(!isNullOrUndefined(button)){
+                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    button = !isNullOrUndefined(element) && element.classList.contains('e-combobox') ? null : button ;
+                }
             }, 200);
         });
+        
     }
     export function destroy(): void {
         privateInputObj = null;

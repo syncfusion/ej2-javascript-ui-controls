@@ -2,11 +2,30 @@
  * tab spec document
  */
 import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
-import { Tab, SelectingEventArgs, RemoveEventArgs, AddEventArgs, SelectEventArgs } from '../src/tab/tab';
+import { Tab, SelectingEventArgs, RemoveEventArgs, AddEventArgs, SelectEventArgs, DragEventArgs } from '../src/tab/tab';
 import { TabActionSettingsModel, TabAnimationSettingsModel, TabItemModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 import '../node_modules/es6-promise/dist/es6-promise';
+
+/**
+ * Method to trigger mouse event
+ *
+ * @param {HTMLElement} node Accepts the DOM element
+ * @param {string} eventType Accepts the event type
+ * @param {number} x Accepts the X value
+ * @param {number} y Accepts the Y value
+ * @param {boolean} isShiftKey Accepts the shift key allowed or not
+ * @param {boolean} isCtrlKey Accepts the ctrl key allowed or not
+ * @returns {void}
+ * @private
+ */
+// eslint-disable-next-line max-len
+export function triggerMouseEvent(node: HTMLElement, eventType: string, x: number = 0, y: number = 0, isShiftKey?: boolean, isCtrlKey?: boolean): void {
+    const mouseEve: MouseEvent = new MouseEvent(eventType);
+    mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, 0, null);
+    node.dispatchEvent(mouseEve);
+}
 
 describe('Tab Control', () => {
     beforeAll(() => {
@@ -588,6 +607,20 @@ describe('Tab Control', () => {
             tab.dataBind();
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.style.width).not.toEqual("-20%");
+        });
+        it('onPropertyChange - checking data-id attributes', () => {
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+            let newItems: object[] = [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" }
+            ];
+            tab.items = newItems;
+            tab.dataBind();
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item')[0].getAttribute('data-id')).not.toEqual(null);
+            expect(element.querySelectorAll('.e-toolbar-item')[0].getAttribute('data-id')).toEqual('tabitem_0');
+            expect(element.querySelectorAll('.e-toolbar-item')[1].getAttribute('data-id')).toEqual('tabitem_1');
         });
     });
     describe('Height property testing', () => {
@@ -11128,6 +11161,60 @@ describe('Tab Control', () => {
             ele2.click();
             expect(i).toEqual(1);
             ele2.click();
+            expect(i).toEqual(1);
+        });
+    });
+
+    describe('ES-828018 - Drag and drop is not working in the tab ', () => {
+        let tab: Tab;
+        let i: number = 0;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('after setting args.cancel to true in the dragStart event issue fixed', () => {
+            var j = 0;
+            tab = new Tab({
+                allowDragAndDrop: true,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ],
+                onDragStart: (args: DragEventArgs) => {
+                    j++;
+                    const tabItemsCount = tab.items.length;
+                    if (args.index === tabItemsCount - 1) {
+                      args.cancel = true;
+                    }
+                },
+                dragging: (args: DragEventArgs) => {
+                    i++;
+                },
+            });
+            tab.appendTo('#ej2Tab');
+            expect(j).toEqual(0);
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            const dragElement: HTMLElement = element.querySelectorAll('.e-toolbar-item')[2] as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', 8, 48);
+            triggerMouseEvent(dragElement, 'mousemove', 8, 58);
+            triggerMouseEvent(dragElement, 'mousemove', 8, 68);
+            expect(j).toEqual(1);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(i).toEqual(0);
+            const secondItemDragElement: HTMLElement = element.querySelectorAll('.e-toolbar-item')[1] as HTMLElement;
+            triggerMouseEvent(secondItemDragElement, 'mousedown', 8, 30);
+            triggerMouseEvent(secondItemDragElement, 'mousemove', 8, 40);
+            triggerMouseEvent(secondItemDragElement, 'mousemove', 8, 50);
+            expect(j).toEqual(2);
+            triggerMouseEvent(secondItemDragElement, 'mouseup');
             expect(i).toEqual(1);
         });
     });

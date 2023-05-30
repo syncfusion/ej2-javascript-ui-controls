@@ -2,6 +2,62 @@
 
 ## [Unreleased]
 
+## 21.2.8 (2023-05-30)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I829933` - The issue with "hideItems method of context menu not working properly for sub menu item" has been resolved.
+
+### TreeView
+
+#### Bug fixes
+
+- `#I457872` - Resolved the issue where customized theme styles were not correctly applied for active node text of TreeView component.
+
+## 21.2.6 (2023-05-23)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I461717` - An issue with the accordion old templates is not cleared after the property change has been fixed.
+
+## 21.2.5 (2023-05-16)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I459316` - Now the nodeExpanding event triggers for addNodes method based on the value of preventExpand argument.
+- `#I450146` - Provided the horizontal scroll support for the TreeView component in mobile mode.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I459687` - An issue with the "Drag and drop is not working in the tab after setting `args.cancel` to true in the `dragStart` event" has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### ContextMenu
+
+#### New Features
+
+- `#I458989` - Provided the new parameter target to `beforeOpen` event argument of context menu component.
+
+#### Bug Fixes
+
+- `#I461864` - The issue with "Error is not handled gracefully in context menu enableItems method" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I458102` - An issue where the tab header did not update with dynamic data when the tab directives were rendered as HTML elements has been fixed.
+- `#I457021` - The issue where the `data-id` attribute was being removed from tab items upon property change has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Toolbar

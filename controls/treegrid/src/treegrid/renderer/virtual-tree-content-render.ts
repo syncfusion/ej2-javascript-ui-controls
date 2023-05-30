@@ -414,7 +414,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
             }
             if (currentViewData.length && (currentViewData[0][`${indexValue}`] >= this.parent.pageSettings.pageSize / 2) &&
-            ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2))) {
+                ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] - (this.parent.pageSettings.pageSize / 2);
                 this.endIndex = this.startIndex + this.parent.pageSettings.pageSize;
             }
@@ -453,8 +453,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.startIndex =  !isLastBlock ? lastIndex - this.parent.pageSettings.pageSize : nextSetResIndex;
             this.endIndex = lastIndex;
+            if ((nextSetResIndex + this.parent.pageSettings.pageSize) > this.totalRecords && (this.endIndex - this.startIndex) < (this.parent.pageSettings.pageSize / 2) && (this.endIndex - nextSetResIndex) < (this.parent.pageSettings.pageSize / 2)) {
+                this.startIndex = lastIndex - (this.parent.pageSettings.pageSize / 2);
+            }
             if (currentViewData.length && this.startIndex > currentViewData[0][`${indexValue}`] &&
-            ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2))){
+                ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] + (this.parent.pageSettings.pageSize / 2);
             }
             if (scrollArgs.offset.top > (rowHeight * this.totalRecords)) {

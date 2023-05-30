@@ -847,7 +847,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid
+            hash: this.guid,
+            isGroupingUpdated: this.currentAction === 'onRefresh' && this.dataSourceSettings.groupSettings.length > 0
         };
         this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
             this.request = observedArgs.request;

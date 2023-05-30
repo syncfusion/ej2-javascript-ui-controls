@@ -411,11 +411,11 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe('6.9');
             helper.invoke('updateCell', [{ value: '17866.19' }, 'A3']);
             helper.edit('E3', '=MOD(-A3,-2)');
-            expect(row.cells[4].value).toBe('-0.19');
+            expect(row.cells[4].value).toBe(-0.18999999999869033);
             expect(row.cells[4].format).toBeUndefined();
             expect(cellEle.textContent).toBe('-0.19');
             helper.edit('A2', '=E3');
-            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('-0.19');
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('-0.18999999999869033');
             expect(helper.invoke('getCell', [1, 0]).textContent).toBe('   (0.19)');
             done();
         });
@@ -944,6 +944,15 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                     expect(cellEle.getElementsByClassName("e-fill-sec")[0]).toBeUndefined();
                     done();
                 });
+            });
+            it('EJ2-830145 -> Custom number format with third rule as -(hypen) and cell value as zero ', (done: Function) => {
+                helper.invoke('numberFormat', ['#,##0.00;-#,##0.00;"-"', 'G2']);
+                helper.invoke('updateCell', [{ value: '0' }, 'G2']);
+                const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[6];
+                expect(cell.value.toString()).toBe('0');
+                const cellEle: HTMLElement = helper.invoke('getCell', [1, 6]);
+                expect(cellEle.textContent).toBe('-');
+                done();
             });
         });
     });

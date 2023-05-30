@@ -127,12 +127,14 @@ export class Timeline {
             if (isZoomIn) {
                 if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true)
                 } else {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
                 }
             } else {
                 if (currentLevel === this.parent.zoomingLevels[0].level) {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true);
                 } else {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true); // enable toolbar items.
                 }
@@ -236,7 +238,7 @@ export class Timeline {
         let secondValue: ZoomTimelineSettings;
         const zoomingCollections: ZoomTimelineSettings[] = [...this.parent.zoomingLevels];
         const sortedCollectons: ZoomTimelineSettings[] = zoomingCollections.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
-            (a.perDayWidth < b.perDayWidth) ? 1 : -1);
+            (!a.perDayWidth && !b.perDayWidth ? 0 : (a.perDayWidth < b.perDayWidth) ? 1 : -1));
         if (perDayWidth === 0) { // return when the Gantt chart is not in viewable state.
             return;
         }
@@ -469,9 +471,9 @@ export class Timeline {
         }
         const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>  {
             if (tier === "bottomTier") {
-                return (a.bottomTier.count < b.bottomTier.count) ? 1 : -1;
+                return (!a.bottomTier.count || !b.bottomTier.count) ? 0 : ((a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
             } else {
-                return (a.topTier.count < b.topTier.count) ? 1 : -1;
+                return (!a.topTier.count || !b.topTier.count) ? 0 : ((a.topTier.count < b.topTier.count) ? 1 : -1);
             }
         });
         for (let i: number = 0; i < sortedUnitLevels.length; i++) {

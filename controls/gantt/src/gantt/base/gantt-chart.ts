@@ -309,7 +309,10 @@ export class GanttChart {
     private setVirtualHeight(): void {
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
             const wrapper: HTMLElement = getValue('virtualTrack', this.parent.ganttChartModule.virtualRender);
-            wrapper.style.height = this.parent.updatedRecords.length * this.parent.rowHeight + 'px';
+            wrapper.style.height = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtrack')[0] as HTMLElement).style.height;
+            const wrapper1: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
+            const treegridVirtualHeight = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
+            wrapper1.style.transform = treegridVirtualHeight;
         }
     }
     /**

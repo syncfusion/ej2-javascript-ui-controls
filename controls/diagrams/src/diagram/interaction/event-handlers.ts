@@ -2142,8 +2142,12 @@ export class DiagramEventHandler {
                 for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children.length; j++) {
                     const id: string = (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)].id;
                     const childNode: NodeModel = this.diagram.nameTable[`${id}`];
-                    childNode.offsetX = childNode.wrapper.offsetX;
-                    childNode.offsetY = childNode.wrapper.offsetY;
+                    //828489 - Exception occurs while dragging swimlane after adding shape then undo action is performed
+                    if(childNode)
+                    {
+                        childNode.offsetX = childNode.wrapper.offsetX;
+                        childNode.offsetY = childNode.wrapper.offsetY;
+                    }  
                 }
             }
         }

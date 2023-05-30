@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## 21.2.8 (2023-05-30)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F181551` - The tooltip now displays the percentage of each stacking group.
+- `#F182191` - Now, tooltip values are displayed correctly when no data is given for the data point in a series.
+- `#I461357` - Now, zooming and selection are working properly when using both at the same time.
+- `#I452148` - The issue of the y-axis label overlap has been fixed.
+- `#I464813` - Fixed MinorGridLine to be visible even when the width is not set for MajorTickLine.
+- `#I463171` - Fixed issue where column width was not being set properly.
+- `#I462090` - Fixed an issue where startFromAxis was not working correctly for stripLine.
+
+## 21.2.6 (2023-05-23)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F182033` - The marker is now proper while zooming the chart.
+
+## 21.2.5 (2023-05-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F181976` - Now the tooltip is proper when using two axes in a chart.
+- `#I451537` - Now, the axis label value is correct when an interval is not given.
+- `#I451537` - Fixed an issue where the axis label was not displaying correctly.
+- `#I451537` - Now, the secondary axis label will be correctly displayed without an interval.
+- `#I452395` - Fixed an issue where the y-axis axis label was displaying double values.
+- `#I452390` - Fixed the issue where the axis label was being trimmed despite the shift given to the edgeLabelPlacement.
+
+## 21.2.4 (2023-05-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I457088` - Fixed the console error thrown on clicking on the legend.
+- `#I459170` - Now the accumulation data label is visible when using a template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Chart

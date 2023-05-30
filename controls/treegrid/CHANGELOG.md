@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## 21.2.8 (2023-05-30)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#461200` - Resolved After expanding parent record in virtualization enabled remote data, the child records were not updated properly.
+- `#I459187` -Fixed an issue where the Records are missing on adding a record as child and below.
+- `#I462460` , `#I461924` - Resolved Script Error throws while using Virtualization with Collapse All action.
+
+## 21.2.6 (2023-05-23)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I459413` - Fixed an issue where the expanded status in remote data was not updating correctly for nested child records.
+
+## 21.2.5 (2023-05-16)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I826966` - Fixed a bug where records were getting missed when adding a record at the bottom of the virtualization enabled sample.
+- `#I454734` - Resolved filtering is not working properly when using remote data with hierarchy mode as "Both".
+
+## 21.2.4 (2023-05-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I181658` - Fixed the issue where a script error was thrown when moving a dropdown option with key input (Arrow Keys) in edit template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Tree Grid

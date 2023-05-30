@@ -1019,6 +1019,16 @@ export class ListBox extends DropDownBase {
         }
         this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
+        let selElems: Element[] = [];
+	for (let i: number = 0; i < items.length; i++) {
+	    const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+	    for (let j: number = 0; j < liColl.length; j++) {
+	        if (items[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+	            selElems.push(liColl[j as number])
+		}
+	    }
+	}
+	this.triggerChange(selElems, null);
     }
 
     /**
@@ -2210,8 +2220,10 @@ export class ListBox extends DropDownBase {
                 }
                 if (typeof(text) === 'string') {
                     text = text.split('\\').join('\\\\');
+                    li = this.list.querySelector('[data-value="' + text.replace(/"/g, '\\"') + '"]');
+                } else {
+                    li = this.list.querySelector('[data-value="' + text + '"]');
                 }
-                li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
@@ -2221,10 +2233,12 @@ export class ListBox extends DropDownBase {
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
+                            (li as HTMLElement).focus();
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
+                                (li as HTMLElement).focus();
                             } else {
                                 li.classList.remove(cssClass.selected);
                                 li.removeAttribute('aria-selected');
@@ -2242,9 +2256,12 @@ export class ListBox extends DropDownBase {
         ele.innerHTML = '';
         if (this.value) {
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
-                innerHTML += '<option selected value="' + this.value[i as number] + '"></option>';
+                innerHTML += '<option selected>' + this.value[i as number] + '</option>';
             }
             ele.innerHTML += innerHTML;
+            for (let i: number = 0, len: number = ele.childNodes.length; i < len; i++) {
+                (ele.childNodes[i as number] as HTMLElement).setAttribute('value', this.value[i as number].toString());
+            }
         }
         this.checkSelectAll();
     }

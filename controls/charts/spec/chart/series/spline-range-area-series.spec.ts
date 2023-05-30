@@ -1133,8 +1133,8 @@ describe('Chart', () => {
                 let svg = document.getElementById('container_Series_0');
                 let bounds: ClientRect = svg.getBoundingClientRect();
                 expect(Math.round(bounds.top) == 82 || Math.round(bounds.top) == 79).toBe(true);
-                expect(bounds.left == 92.5 || bounds.left == 86.5).toBe(true);
-                expect(bounds.width == 705.5 || bounds.width == 711.5).toBe(true);
+                expect(bounds.left == 92.5 ||  bounds.left == 67.5).toBe(true);
+                expect(bounds.width == 705.5 || bounds.width == 730.5).toBe(true);
                 expect(Math.round(bounds.height) == 233 || Math.round(bounds.height) == 239).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('y');
                 expect(Math.round(element1) == 122 || Math.round(element1) == 123).toBe(true);

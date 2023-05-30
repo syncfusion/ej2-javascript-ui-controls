@@ -1824,6 +1824,9 @@ export class Gantt extends Component<HTMLElement>
         const ganttHeader: Element = this.chartPane.childNodes[0].childNodes[0] as Element;
         this.scrollLeftValue = this.chartPane.childNodes[0].childNodes[0]['scrollLeft']
         const ganttContent: Element = this.chartPane.childNodes[0].childNodes[1] as Element;
+        if (this.treeGrid.element) {
+            this.ganttChartModule['setVirtualHeight']();
+        }
         if (!this.contentMaskTable) {
             if (ganttContent) {
                 let content: Element = ganttContent;
@@ -3078,7 +3081,7 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.toolbar) {
+        if (this.toolbar && this.toolbar.length > 0) {
             modules.push({
                 member: 'toolbar',
                 args: [this]

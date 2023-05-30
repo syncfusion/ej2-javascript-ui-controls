@@ -1012,7 +1012,7 @@ export class StickyNotesAnnotation {
     private commentDivFocus(args: any): void {
         // eslint-disable-next-line
         if (!this.isNewcommentAdded) {
-            if (args.relatedTarget !== null) {
+            if (args.relatedTarget !== null && args.relatedTarget.id === this.pdfViewer.element.id + '_viewerContainer') {
                 args.preventDefault();
                 args.target.blur();
             }

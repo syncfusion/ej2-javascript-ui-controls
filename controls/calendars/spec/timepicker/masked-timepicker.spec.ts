@@ -609,6 +609,7 @@ describe('EJ2-54456-When enabling mask support, the change event will not be tri
         },
      });
         timepicker.appendTo('#timepicker');
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
         timepicker.focusIn();
         expect(timepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(true);
          timepicker.liCollections[0].click();
@@ -616,12 +617,14 @@ describe('EJ2-54456-When enabling mask support, the change event will not be tri
         expect(timepicker.inputElement.value === "12:00 AM").toBe(true);
         timepicker.element.selectionStart = 0;
         timepicker.element.selectionEnd = 2;
+        timepicker.element.value = '1:00 AM';
         keyEventArgs.action = 'shiftTab';
         timepicker.inputHandler(keyEventArgs);
         timepicker.inputBlurHandler();
         expect(timepicker.inputElement.value === "1:00 AM").toBe(true);
         timepicker.element.selectionStart = 0;
         timepicker.element.selectionEnd = 2;
+        timepicker.element.value = '12:00 AM';
         keyEventArgs.key = 'ArrowDown';
         timepicker.inputHandler(keyEventArgs);
         timepicker.inputBlurHandler();
@@ -710,6 +713,7 @@ describe('EJ2-54456-When enabling mask support, the change event will not be tri
                 expect((args.value) == (timepicker.value)).toBe(true);
             }});
             timepicker.appendTo('#timepicker');
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             timepicker.focusIn();
             timepicker.liCollections[0].click();
             expect(timepicker.inputElement.value === "12:00 AM").toBe(true);

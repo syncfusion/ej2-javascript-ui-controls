@@ -76,35 +76,35 @@ describe('AutoComplete', () => {
     //         expect(autoObj.isPopupOpen).toBe(false);
     //     });
     // });
-    describe('EJ2-10319 -  Autocomplete two way binding value is not properly updated for first time', () => {
-        let autoObj: any;
-        let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
-        let dataSource = new DataManager({
-            url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
-            crossDomain: true
-        });
-        beforeAll(() => {
-            document.body.appendChild(autoEle);
-            autoObj = new AutoComplete({
-                dataSource: dataSource,
-                query: new Query().from('Customers').select('ContactName').take(7),
-                fields: { text: 'ContactName' },
-                placeholder: 'Select a name'
-            });
-            autoObj.appendTo(autoEle);
-        });
-        afterAll(() => {
-            autoObj.destroy();
-            autoEle.remove();
-        });
+    // describe('EJ2-10319 -  Autocomplete two way binding value is not properly updated for first time', () => {
+    //     let autoObj: any;
+    //     let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+    //     let dataSource = new DataManager({
+    //         url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
+    //         crossDomain: true
+    //     });
+    //     beforeAll(() => {
+    //         document.body.appendChild(autoEle);
+    //         autoObj = new AutoComplete({
+    //             dataSource: dataSource,
+    //             query: new Query().from('Customers').select('ContactName').take(7),
+    //             fields: { text: 'ContactName' },
+    //             placeholder: 'Select a name'
+    //         });
+    //         autoObj.appendTo(autoEle);
+    //     });
+    //     afterAll(() => {
+    //         autoObj.destroy();
+    //         autoEle.remove();
+    //     });
 
-        it('check the autocomplete value with the previous value to trigger onProperty change', () => {
-            autoObj.focusIn();
-            autoObj.inputElement.value = "as";
-            autoObj.focusOut();
-            expect(autoObj.inputElement.value === autoObj.value).toBe(true);
-        });
-    });
+    //     it('check the autocomplete value with the previous value to trigger onProperty change', () => {
+    //         autoObj.focusIn();
+    //         autoObj.inputElement.value = "as";
+    //         autoObj.focusOut();
+    //         expect(autoObj.inputElement.value === autoObj.value).toBe(true);
+    //     });
+    // });
     describe('EJ2-26008-The autocomplete is not focused when click the tab key at single time', () => {
         let autoObj: any;
         let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });

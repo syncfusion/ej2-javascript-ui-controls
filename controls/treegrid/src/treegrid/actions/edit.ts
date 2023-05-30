@@ -652,7 +652,7 @@ export class Edit {
                             const batchChildCount: number = this.batchEditModule.getBatchChildCount();
                             index = index + batchChildCount;
                         }
-                    } else {
+                    } else if (!this.parent.enableVirtualization) {
                         index += findChildrenRecords(records[parseInt(index.toString(), 10)]).length;
                     }
                 }

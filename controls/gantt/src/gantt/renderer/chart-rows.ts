@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper, append } from '@syncfusion/ej2-base';
 import { formatUnit, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
@@ -190,7 +190,7 @@ export class ChartRows extends DateProcessor {
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
                 if (taskLabelTemplateNode && taskLabelTemplateNode.length > 0) {
-                    tempDiv.appendChild(taskLabelTemplateNode[0]);
+                    append(taskLabelTemplateNode, tempDiv);
                     labelString = tempDiv.innerHTML;
                 }
             } else {
@@ -245,7 +245,12 @@ export class ChartRows extends DateProcessor {
                  data.ganttProperties.segments.length === 0))) {
                 if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                     let templateElement: any = this.createDivElement(template)[0];
-                    templateElement.innerText = labelString;
+                    if (this.parent.disableHtmlEncode) {
+                       templateElement.innerText = labelString;
+                    }
+                    else {
+                       templateElement.innerHTML = labelString;
+                    }
                     let childLabel: string = this.parent.labelSettings.taskLabel;
                     if (childLabel && childLabel['elementRef'])
                         templateElement.appendChild(tempDiv);
@@ -778,7 +783,7 @@ export class ChartRows extends DateProcessor {
             if (leftLabelTemplateNode[0]['data'] === 'null') {
                 leftLabelTemplateNode[0]['data'] = '';
             }
-            leftLabelNode[0].appendChild([].slice.call(leftLabelTemplateNode)[0]);
+            append(leftLabelTemplateNode, leftLabelNode[0] as Element);
         }
         if (this.parent.enableRtl) {
             (leftLabelNode[0] as HTMLElement).style.paddingLeft = '25px';
@@ -834,7 +839,7 @@ export class ChartRows extends DateProcessor {
             if (rightLabelTemplateNode[0]['data'] === 'null') {
                 rightLabelTemplateNode[0]['data'] = '';
             }
-            rightLabelNode[0].appendChild([].slice.call(rightLabelTemplateNode)[0]);
+            append(rightLabelTemplateNode, rightLabelNode[0] as Element);
         }
         if (this.parent.enableRtl) {
             (rightLabelNode[0] as HTMLElement).style.marginLeft = '0px';
@@ -952,7 +957,12 @@ export class ChartRows extends DateProcessor {
                         this.taskBarHeight + 'px;"></span>';
                 }
                 let labelElement: any = this.createDivElement(labelDiv)[0];
-                labelElement.innerText = labelString;
+                if (this.parent.disableHtmlEncode) {
+                   labelElement.innerText = labelString;
+                }
+                else {
+                   labelElement.innerHTML = labelString;
+                }
                 let parentLabel: string = this.parent.labelSettings.taskLabel;
                 if (parentLabel && parentLabel['elementRef'])
                     labelElement.appendChild(div);
@@ -1493,12 +1503,12 @@ export class ChartRows extends DateProcessor {
                 }
             }
             if ((this.templateData.ganttProperties.autoDuration !== 0) && !this.templateData.ganttProperties.isMilestone && parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
-                taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
+                append(parentTaskbarTemplateNode, taskbarContainerNode[0] as Element);
             }
             else if((this.templateData.ganttProperties.duration === 0 && this.templateData.ganttProperties.isMilestone && this.templateData.ganttProperties.isAutoSchedule)){
                 const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
                 if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
-                    taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
+                    append(milestoneTemplateNode, taskbarContainerNode[0] as Element);
                 }
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
@@ -1550,7 +1560,7 @@ export class ChartRows extends DateProcessor {
                             taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
                         }
                     } else {
-                        taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                        append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
                     }
                 }
                 if (childTaskbarProgressResizeNode) {

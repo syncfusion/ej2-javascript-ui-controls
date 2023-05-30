@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.8 (2023-05-30)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I460895` - Issue with Query builder template not render in Vue3 platform has been fixed.
+
+## 21.1.37 (2023-03-29)
 
 ### QueryBuilder
 

@@ -35,7 +35,7 @@ export class ExpandCellRenderer extends IndentCellRenderer implements ICellRende
             node.className = isExpand ? 'e-recordplusexpand' : 'e-recordpluscollapse';
             node.appendChild(this.parent.createElement('a', {
                 className: isExpand ? 'e-icons e-gdiagonaldown e-icon-gdownarrow' : 'e-icons e-gnextforward e-icon-grightarrow',
-                attrs: { href: '#', 'title': isExpand ? 'expanded' : 'collapsed', 'onclick': 'event.preventDefault()' }
+                attrs: { href: '#', 'title': isExpand ? 'expanded' : 'collapsed' }
             }));
         }
         return node;

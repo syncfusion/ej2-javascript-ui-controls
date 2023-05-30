@@ -29,6 +29,7 @@ export type FilterHierarchyMode =
  * * CsvExport :- Export the TreeGrid to Csv.
  * * Print :- Print the TreeGrid.
  * ```
+ *
  * @hidden
  */
 export type ToolbarItems =
@@ -96,6 +97,7 @@ export type PageSizeMode =
  * * LastPage :- Go to the last page.
  * * NextPage :- Go to the next page.
  * ```
+ *
  * @hidden
  */
 export type ContextMenuItem =

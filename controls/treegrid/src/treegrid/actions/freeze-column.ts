@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeContentRender, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
+import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../models/column';
 import { Grid, Freeze as FreezeColumn  } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';

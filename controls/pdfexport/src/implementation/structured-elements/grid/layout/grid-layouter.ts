@@ -1612,6 +1612,7 @@ export class PdfGridLayouter extends ElementLayouter {
             let skipcell : boolean = false;
             let stringResult  : PdfStringLayoutResult = null;
             if (!skipcell) {
+                row.cells.getCell(i)._rowHeight = row.height;
                 stringResult = row.cells.getCell(i).draw(this.currentGraphics, new RectangleF(location, size), cancelSpans);
             }
             //If still row is to be drawn, set cell finished drawing cell as false and update the text to be drawn.

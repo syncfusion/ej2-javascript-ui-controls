@@ -2,7 +2,10 @@
  * Gantt connector line spec
  */
 import { Gantt, Edit } from '../../src/index';
-import { createGantt, destroyGantt } from '../base/gantt-util.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 describe('Gantt connector line support', () => {
          let connectorLineFSDatasource: Object[] = [
             {
@@ -639,5 +642,78 @@ describe('Gantt connector line support', () => {
          beforeEach((done: Function) => {
              setTimeout(done, 2000);
          });
+     });
+     describe('offset not updating properly issue', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj= createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'TaskId',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor'
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                    allowSelection: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    allowUnscheduledTasks: true,
+                    editSettings: {
+                        allowTaskbarEditing: true,
+                        allowEditing: true,
+                        allowAdding:true
+                    }
+            }, done);
+        });
+
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+
+        it('check offset value after adding dependency', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(0);
+                }
+            };
+            ganttObj.openAddDialog(); 
+            let taskName: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            taskName.value="New Task 2";
+            taskName.dataBind();
+            let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration.value="2 days";
+            duration.dataBind();
+            ganttObj.dataBind();
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save, 'click');
+            ganttObj.openAddDialog();
+            let taskName1: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            taskName1.value="New Task 1";
+            taskName1.dataBind();
+            let duration1: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration1.value="3 days";
+            duration1.dataBind();
+            let save1: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save1, 'click');
+            ganttObj.openEditDialog(1);
+            let duration2: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration2.value="3 days";
+            duration2.dataBind();
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "2-New Task 1";
+            input.dataBind();
+            ganttObj.dataBind();
+            triggerMouseEvent(save, 'click');  
+        });
      });
 });

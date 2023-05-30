@@ -48,6 +48,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public previousPageNo: number;
     /** @hidden */
     public isAllPage: boolean;
+    public isAll: boolean = true;
     private defaultConstants: Object;
     private pageRefresh: string = 'pager-refresh';
     private parent: object;

@@ -227,7 +227,7 @@ export interface MarkerSettingsModel {
     fill?: string;
 
     /**
-     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     * Trackball is enabled by default when the mouse moves, but it can be disabled by setting "false" to the marker's "allowHighlight" property.
      *
      * @default true
      */

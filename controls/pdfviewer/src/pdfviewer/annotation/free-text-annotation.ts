@@ -930,10 +930,6 @@ export class FreeTextAnnotation {
             // eslint-disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             this.inputBoxCount += 1;
-            if (!isNewlyAdded && this.previousText !== inputValue) {
-                // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
-            }
         } else {
             this.inputBoxElement.focus();
             if (!this.isTextSelected) {

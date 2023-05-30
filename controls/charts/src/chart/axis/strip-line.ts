@@ -11,7 +11,7 @@ import { Axis } from '../axis/axis';
 import { StripLineSettingsModel } from '../model/chart-base-model';
 import {
     valueToCoefficient, textElement, RectOption,
-    appendChildElement, appendClipElement, withIn, getElement
+    appendChildElement, appendClipElement, withIn, getElement, ImageOption
 } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
@@ -97,6 +97,7 @@ export class StripLine {
         start: number, end: number, size: number, startFromAxis: boolean, axis: Axis,
         stripline: StripLineSettingsModel): { from: number, to: number } {
         let from: number = (!stripline.isRepeat && startFromAxis) ? axis.visibleRange.min : start;
+        if (axis.valueType === 'Double' && size !== null && !startFromAxis && stripline.start == null) { from += size; }
         let to: number = this.getToValue(Math.max(start, isNullOrUndefined(end) ? start : end), from, size, axis, end, stripline);
         from = this.findValue(from, axis); to = this.findValue(to, axis);
         return { from: valueToCoefficient(axis.isAxisInverse ? to : from, axis), to: valueToCoefficient(axis.isAxisInverse ? from : to, axis) };
@@ -312,6 +313,26 @@ export class StripLine {
             chart.redraw, true, 'x', 'y', null, null, true, true, previousRect
         );
     }
+
+    /**
+     * To draw the Image
+     *
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} rect rect
+     * @param {string} id id
+     * @param {Element} parent parent
+     * @param {Chart} chart chart
+     */
+    private drawImage(stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart): void {
+        if (stripline.sizeType === 'Pixel') {
+            rect.width = rect.width ? rect.width : stripline.size;
+            rect.height = rect.height ? rect.height : stripline.size;
+        }
+        const image: ImageOption = new ImageOption(rect.height, rect.width, stripline.imageUrl, rect.x, rect.y, id, 'visible', 'none');
+        let htmlObject: HTMLElement = chart.renderer.drawImage(image) as HTMLElement;
+        appendChildElement(chart.enableCanvas, parent, htmlObject, chart.redraw, true, 'x', 'y', null, null, true, true);
+    }
+
     /**
      * To create the text on strip line
      *
@@ -426,7 +447,9 @@ export class StripLine {
         startValue: number, segmentAxis: Axis, count: number
     ): void {
         const rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
-        if (stripline.sizeType === 'Pixel') {
+        if (stripline.imageUrl) {
+            this.drawImage(stripline, rect, id + 'rect_' + axis.name + '_' + count, striplineGroup, chart);
+        } else if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         } else {
             if (rect.height !== 0 && rect.width !== 0) {

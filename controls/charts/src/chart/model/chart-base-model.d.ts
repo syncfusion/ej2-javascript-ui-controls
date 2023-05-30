@@ -376,6 +376,13 @@ export interface StripLineSettingsModel {
      */
     opacity?: number;
 
+    /**
+     * The URL of the background image for the strip line.
+     *
+     * @default ''
+     */
+    imageUrl?: string;
+
 }
 
 /**
