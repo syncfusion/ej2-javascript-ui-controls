@@ -1887,9 +1887,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {string}
      */
     public currentView(): string {
-        if (this.contentElement.classList.contains(YEAR)) {
+        if (!isNullOrUndefined(this.contentElement) && this.contentElement.classList.contains(YEAR)) {
             return 'Year';
-        } else if (this.contentElement.classList.contains(DECADE)) {
+        } else if (!isNullOrUndefined(this.contentElement) && this.contentElement.classList.contains(DECADE)) {
             return 'Decade';
         } else {
             return 'Month';

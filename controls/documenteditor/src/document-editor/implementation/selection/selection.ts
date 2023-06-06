@@ -3165,7 +3165,7 @@ export class Selection {
                 }
             } else {
                 if (inline instanceof ElementBox && inline.nextNode instanceof ElementBox) {
-                    text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, undefined, 0, includeObject);
+                    text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, endInline, endIndex, includeObject);
                 } else {
 
                     let nextParagraphWidget: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(startPosition.paragraph) as ParagraphWidget;
@@ -5810,7 +5810,7 @@ export class Selection {
         const margin: Margin = element.margin;
         let top: number = 0;
         let left: number = 0;
-        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode)) {
+        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode) && !this.owner.editor.handledEnter) {
             lineWidget = this.getNextLineWidget(element.line.paragraph, element);
             index = 0;
         } else {
@@ -10665,6 +10665,11 @@ export class Selection {
         if (!isNullOrUndefined(revision) && revision.range.length > 0) {
             let firstElement: any = revision.range[0];
             let lastElement: any = revision.range[revision.range.length - 1];
+            let page: Page = firstElement instanceof WCharacterFormat ? this.getPage(firstElement.ownerBase as ParagraphWidget) : this.getPage((firstElement as FieldElementBox).paragraph);
+            let evenFooter: string = firstElement instanceof WCharacterFormat ? ((firstElement.ownerBase as ParagraphWidget).containerWidget as HeaderFooterWidget).headerFooterType : ((firstElement as FieldElementBox).paragraph.containerWidget as HeaderFooterWidget).headerFooterType;
+            if ((isNullOrUndefined(page) && (evenFooter === "EvenFooter"))) {
+                return;
+            }
             if (firstElement instanceof WRowFormat) {
                 let rowWidget: TableRowWidget = firstElement.ownerBase;
                 let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;

@@ -881,6 +881,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if(!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
             this.documentEditor.documentEditorSettings.maximumRows = this.documentEditorSettings.maximumRows;
         }
+        if(!isNullOrUndefined(this.documentEditorSettings.maximumColumns)) {
+            this.documentEditor.documentEditorSettings.maximumColumns = this.documentEditorSettings.maximumColumns;
+        }
         if(!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
             this.documentEditor.documentEditorSettings.showHiddenMarks = this.documentEditorSettings.showHiddenMarks;
         }
@@ -895,6 +898,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if (!isNullOrUndefined(this.documentEditorSettings.autoResizeSettings)) {
             this.documentEditor.documentEditorSettings.autoResizeSettings = this.documentEditorSettings.autoResizeSettings;
+        }
+        if(!isNullOrUndefined(this.documentEditorSettings.highlightEditableRanges)){
+            this.documentEditor.documentEditorSettings.highlightEditableRanges = this.documentEditorSettings.highlightEditableRanges;
         }
     }
     /**
@@ -988,6 +994,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
             showRevisions: true,
+            showComments: true,
             enableLockAndEdit: this.enableLockAndEdit,
             enableAutoFocus: this.enableAutoFocus
         });

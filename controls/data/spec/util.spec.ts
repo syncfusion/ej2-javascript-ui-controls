@@ -187,6 +187,11 @@ describe('DataUtil', () => {
             expect(DataUtil.fnOperators.wildcard('HaN%ar', '*a?%*', true)).toBe(true);
             expect(DataUtil.fnOperators.wildcard('Áèèleè', '*e?le*', true, true)).toBe(true);
         });
+        it('Searching was not working with brackets.', () => {
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', '*)')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', '*(*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', 'Chai (')).toBe(true);
+        });
     });
     describe('parse method', () => {
         it('To check method is properly working when given text as boolean.', () => {

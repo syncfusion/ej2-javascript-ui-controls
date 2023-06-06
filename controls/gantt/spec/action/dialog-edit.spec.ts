@@ -2610,5 +2610,131 @@
                  triggerMouseEvent(saveRecord, 'click');
              }
          });
-     });	
+     });
+// describe('Edit duration in predecessor connected record', () => {
+//     let ganttObj: Gantt;
+//     let bwData = [
+//         {
+//             TaskID: 4,
+//             TaskName: 'New Task 4',
+//             StartDate: new Date('05/22/2023'),
+//             EndDate: new Date('05/22/2023'),
+//             Progress: 38,
+//             Duration: 1,
+//         },
+//         {
+//             TaskID: 5,
+//             TaskName: 'New Task 5',
+//             StartDate: new Date('05/22/2023'),
+//             EndDate: new Date('05/22/2023'),
+//             Progress: 68,
+//             Duration: 1,
+//             Predecessor: 4,
+//         },
+//         {
+//             TaskID: 6,
+//             TaskName: 'New Task 6',
+//             StartDate: new Date('05/22/2023'),
+//             EndDate: new Date('05/22/2023'),
+//             Progress: 57,
+//             Duration: 1,
+//             Predecessor: 5,
+//         }
+
+//     ];
+//     beforeAll(function (done) {
+//         ganttObj = createGantt({
+//             dataSource: bwData,
+//             allowSorting: true,
+//             allowReordering: true,
+//             enableContextMenu: true,
+//             taskFields: {
+//                 id: 'TaskID',
+//                 name: 'TaskName',
+//                 startDate: 'StartDate',
+//                 endDate: 'EndDate',
+//                 duration: 'Duration',
+//                 progress: 'Progress',
+//                 dependency: 'Predecessor',
+//                 parentID: 'parentID',
+//             },
+//             renderBaseline: true,
+//             baselineColor: 'red',
+//             editSettings: {
+//                 allowAdding: true,
+//                 allowEditing: true,
+//                 allowDeleting: true,
+//                 allowTaskbarEditing: true,
+//                 showDeleteConfirmDialog: true
+//             },
+//             columns: [
+//                 { field: 'TaskID', headerText: 'Task ID' },
+//                 { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+//                 { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+//                 { field: 'Duration', headerText: 'Duration', },
+//                 { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+//                 { field: 'CustomColumn', headerText: 'CustomColumn' }
+//             ],
+
+//             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+//                 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+//             allowExcelExport: true,
+//             allowPdfExport: true,
+//             allowSelection: false,
+//             enableVirtualization: false,
+//             allowRowDragAndDrop: true,
+//             splitterSettings: {
+//                 position: "50%",
+//             },
+//             tooltipSettings: {
+//                 showTooltip: true
+//             },
+//             filterSettings: {
+//                 type: 'Menu'
+//             },
+//             allowFiltering: true,
+//             gridLines: "Both",
+//             showColumnMenu: true,
+//             highlightWeekends: true,
+//             timelineSettings: {
+//                 showTooltip: true,
+//                 topTier: {
+//                     unit: 'Week',
+//                     format: 'dd/MM/yyyy'
+//                 },
+//                 bottomTier: {
+//                     unit: 'Day',
+//                     count: 1
+//                 }
+//             },
+//             allowResizing: true,
+//             readOnly: false,
+//             taskbarHeight: 20,
+//             rowHeight: 40,
+//             height: '550px',
+//         }, done);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+//     beforeEach((done) => {
+//         setTimeout(done, 1000);
+//         ganttObj.openEditDialog(5);
+//     });
+//     it('Change duration', () => {
+//         ganttObj.actionComplete = function (args: any): void {
+//             if (args.action === "DialogEditng") {
+//                 expect(ganttObj.getFormatedDate(args.modifiedRecords[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('6/6/2023')
+//             }
+//         };
+//         ganttObj.dataBind();
+//         let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+//         textObj.value = '10 day';
+//         textObj.dataBind();
+//         let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+//         triggerMouseEvent(saveRecord, 'click');
+//     });
+// });
  });

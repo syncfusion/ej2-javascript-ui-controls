@@ -165,6 +165,7 @@ export interface FilterSettingsModel {
      * *  OnEnter :- Initiates filter operation after Enter key is pressed.
      * *  Immediate :- Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
      * ```
+     *
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.FilterBarMode

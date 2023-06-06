@@ -961,7 +961,7 @@ export class StickyNotesAnnotation {
             for (let j: number = 0; j < textBox.length; j++) {
                 textBox[j].style.display = 'none';
             }
-            if (!data) {
+            if (!data && type !== 'freeText') {
                 editObj.enableEditMode = true;
             }
             this.getButtonState(editObj, commentTextBox);
@@ -1012,7 +1012,7 @@ export class StickyNotesAnnotation {
     private commentDivFocus(args: any): void {
         // eslint-disable-next-line
         if (!this.isNewcommentAdded) {
-            if (args.relatedTarget !== null) {
+            if (args.relatedTarget !== null && args.relatedTarget.id === this.pdfViewer.element.id + '_viewerContainer') {
                 args.preventDefault();
                 args.target.blur();
             }
@@ -1907,7 +1907,7 @@ export class StickyNotesAnnotation {
                 }
             }
             if (!isLocked) {
-                if (this.pdfViewer.selectedItems.annotations[0].isReadonly) {
+                if (!isNullOrUndefined(this.pdfViewer.selectedItems) && this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].isReadonly) {
                     event.currentTarget.ej2_instances[0].enableEditMode = false;
                 } else {
                     event.currentTarget.ej2_instances[0].enableEditMode = true;

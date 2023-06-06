@@ -996,7 +996,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.panelPropertyChange(item, { sizeX: item.sizeX - 1 });
         }
         this.shadowEle.style.top = ((item.row * this.getCellSize()[1] + (item.row * this.cellSpacing[1]))) + 'px';
-        this.shadowEle.style.left = ((item.col * this.getCellSize()[0]) + ((item.col) * this.cellSpacing[0])) + 'px';
+        if (this.handleClass.indexOf('west') >= 0) {
+            this.shadowEle.style.left = ((item.col * this.getCellSize()[0]) + ((item.col - 1) * this.cellSpacing[0])) + 'px';
+        }
+        else {
+            this.shadowEle.style.left = ((item.col * this.getCellSize()[0]) + ((item.col) * this.cellSpacing[0])) + 'px';
+        }
         this.shadowEle.style.height = ((item.sizeY * (this.getCellSize()[1] + (this.cellSpacing[1])))) + 'px';
         this.shadowEle.style.width = ((item.sizeX * (this.getCellSize()[0] + (this.cellSpacing[0])))) + 'px';
         if (oldSizeX !== item.sizeX || oldSizeY !== item.sizeY) {
@@ -1013,6 +1018,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             };
             this.setAttributes(value, el);
             this.mainElement = el;
+            this.checkCollision = [];
             this.updatePanelLayout(el, this.getCellInstance(el.id));
             this.updateOldRowColumn();
             this.sortedPanel();
@@ -1095,11 +1101,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     }
     protected pixelsToColumns(pixels: number, isCeil: boolean): number {
-        const curColWidth: number = <number>this.cellSize[0];
         if (isCeil) {
-            return Math.ceil(pixels / curColWidth);
+            return Math.ceil(pixels / <number>this.cellSize[0]);
         } else {
-            return Math.floor(pixels / curColWidth);
+            return Math.floor(pixels / (<number>this.cellSize[0] + this.cellSpacing[0]));
         }
     }
     protected pixelsToRows(pixels: number, isCeil: boolean): number {

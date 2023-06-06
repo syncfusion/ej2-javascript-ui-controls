@@ -3,7 +3,7 @@
  */
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll } from '../../src/index';
 import { resourceCollection, resourceSelefReferenceData, resourcesData, normalResourceData, multiTaskbarData, multiResources,
-     virtualResourceData, editingResources } from '../base/data-source.spec';
+    virtualResourceData, editingResources, resourceCollectionid, projectNewData, resourcesData1} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers, VirtualScroll);
 interface EJ2Instance extends HTMLElement {
@@ -892,12 +892,12 @@ describe('Self reference data', () => {
       });
   });
   
-       describe("Add record using method", () => {
+    describe("Add record using method", () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
       ganttObj = createGantt(
         {
-            dataSource: resourcesData,
+            dataSource: resourcesData1,
             resources: resourceCollection,
             viewType: 'ResourceView',
             showOverAllocation: true,
@@ -977,10 +977,11 @@ describe('Self reference data', () => {
             TaskName: 'Identify Site',
             StartDate: new Date('04/02/2019'),
             Duration: 3,
-            Progress: 50
+            Progress: 50,
         };
+        expect(ganttObj.flatData.length).toBe(18);
         ganttObj.editModule.addRecord(record, 'Below', 2);
-        expect(ganttObj.flatData.length).toBe(12);
+        expect(ganttObj.flatData.length).toBe(19);
     });
   });
  describe("CR issues", () => {
@@ -2112,5 +2113,235 @@ describe('Resource view with persistence', () => {
         it('check duration value for parent task', () => {
            expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(7);
         });
+    });
+});
+describe('cr issue same id', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            resources: resourceCollectionid,
+            viewType: 'ResourceView',
+            allowSorting: true,
+            taskFields: {
+                id: "id",
+                name: "title",
+                startDate: "dateStart",
+                endDate: "dateEnd",
+                duration: "duration",
+                resourceInfo: "assignedUsers",
+                child: "children"
+            },
+            resourceFields: {
+                id: 'id',
+                name: 'fullName',
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('same id resoure and tasksetting', () => {
+       expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("John Henry");
+    });
+});
+describe('Render multitaskbar with virtualization', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: multiTaskbarData,
+                resources: multiResources,
+                enableVirtualization: true,
+                enableMultiTaskbar: true,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    expandState: 'isExpand',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 100);
+        });
+        it('Multitaskbar with virtualization', () => {
+           expect((ganttObj.chartRowsModule.ganttChartTableBody.childNodes[0] as Element).getElementsByClassName('e-taskbar-main-container').length).toBe(3);
+        });
+    });
+let sampleData: object[] = [
+        { TaskID: 11, TaskName: 'Parent' },
+        {
+          TaskID: 12,
+          TaskName: 'Article #5678567',
+          parentId: 11,
+          StartDate: new Date('02/13/2023'),
+          EndDate: new Date('02/28/2023'),
+          Segments: [
+            {
+              StartDate: new Date('02/13/2023'),
+              EndDate: new Date('02/18/2023'),
+              projectName: 'Topology 2-1'
+            },
+            {
+              StartDate: new Date('02/20/2023'),
+              EndDate: new Date('02/28/2023'),
+              projectName: 'Topology 2-2'
+            }
+          ]
+        },
+        { TaskID: 13, TaskName: 'Child of FIRST 2', parentId: 11 },
+        { TaskID: 14, TaskName: 'Child of FIRST 3', parentId: 11 },
+        { TaskID: 15, TaskName: 'NEXT' },
+        { TaskID: 16, TaskName:'Child of NEXT 1', parentId: 15 },
+        { TaskID: 17, TaskName: 'Child of NEXT 2', parentId: 15 },
+        { TaskID: 14, TaskName: 'Child of FIRST 4', parentId: 11 },
+        { TaskID: 16, TaskName: 'Child of NEXT 3', parentId: 15 }
+          ];
+describe('Bug-829910-Incorrect render of segments', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource:sampleData ,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'parentId',
+                segments: 'Segments',
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'StartDate' },
+                { field: 'Progress' },
+                { field: 'Duration' },
+            ],
+            includeWeekend: true,
+            gridLines: 'Both',
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            projectStartDate: new Date('01/28/2023'),
+            projectEndDate: new Date('05/18/2023')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Checking that the segments start and end date values are appropriately rendered', () => {
+
+    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.segments[0].startDate,'M/dd/yyyy')).toEqual('2/13/2023');
+    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.segments[0].endDate,'M/dd/yyyy')).toEqual('2/18/2023');
+    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.segments[1].startDate,'M/dd/yyyy')).toEqual('2/20/2023');
+    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.segments[1].endDate,'M/dd/yyyy')).toEqual('2/28/2023');
     });
 });

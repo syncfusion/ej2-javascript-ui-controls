@@ -299,6 +299,27 @@
     }
   }
 
+  .e-rtl {
+    .e-rte-toolbar,
+    .e-rte-dropdown-popup {
+      .e-unorder-list::before {
+        content: '\e997';
+      }
+  
+      .e-order-list::before {
+        content: '\e998';
+      }
+  
+      .e-indent::before {
+        content: '\e999';
+      }
+  
+      .e-outdent::before {
+        content: '\e99a';
+      }
+    }
+  }
+
   .e-richtexteditor {
     .e-south-east::before,
     .e-south-west::before {

@@ -215,6 +215,49 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         destroy(rteObj);
     });
 });
+                
+describe('827539: Random spaces got removed while pressing backspace key in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the random node not being removed in the editor', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>
+            <font size="2" face="Arial,Helvetica,sans-serif" color="000000">###Begrüßung### <br></font>
+          </p><p>
+            <font size="2" face="Arial,Helvetica,sans-serif" color="000000">wir hatten Sie zu einem Online-Einstellungstest der
+              <font size="2" face="Arial,Helvetica,sans-serif" color="000000">###ProjektFirma###</font>
+              eingeladen. <br>
+            </font>
+          </p><p>
+            <font size="2" face="Arial,Helvetica,sans-serif" color="000000">Da Sie unsere Einladung ohne Angabe von Gründen nicht
+              wahrgenommen haben, gehen wir davon aus, dass Sie sich
+              zwischenzeitlich für einen anderen Ausbildungsplatz
+              entschieden haben und werden Sie somit im
+              Bewerberauswahlverfahren nicht weiter berücksichtigen.<br><br>
+
+              Für Ihre weitere Suche nach einem Ausbildungsplatz wünschen
+              wir Ihnen viel Erfolg.</font>
+          </p><p><font size="2" face="Arial,Helvetica,sans-serif" color="000000">###Signatur###<br></font>
+          </p><p>
+            <font size="2" face="Arial,Helvetica,sans-serif" color="000000"><br></font>
+          </p><p>
+            <font size="2" face="Arial,Helvetica,sans-serif" color="000000">
+            </font>
+          </p>`,
+        });
+        let node: any = (rteObj.inputElement.childNodes[3] as HTMLElement).firstElementChild.firstChild;
+        setCursorPoint(document, node, 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(((rteObj as any).inputElement.childNodes[2] as HTMLElement).firstElementChild.querySelectorAll('BR').length === 2).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 
 describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the list issue testing', () => {
     let rteObj: RichTextEditor;
@@ -1737,6 +1780,66 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
             Browser.userAgent =defaultUserAgent;
+        });
+    });
+
+    describe('826826 - Placing cursor at the and entering the space key', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class='focusNode'>Your order nr. <span contenteditable="false" class="pds-content-variable" id="847c7ece-b25a-4467-a0e8-394c1607f8af" data-id="6661" data-format-id="0" data-strict="true">orderNo</span> has been passed to the​​<span class="pds-conditional-text" id="41b565d9-dc61-4d76-842f-44d7b6ec15be" data-visible="true" data-condition="f4aa50d8-f8c4-4573-b3bd-8bdf9f6675d2">courier 1</span>​<span class="pds-conditional-text" id="125a73b2-fe16-4966-bd0c-fc05a10d3b95" data-visible="true" data-condition="0b4f1f5b-e998-496d-8625-1df7914f4e4d">courier 2</span>​<span class="pds-conditional-text" id="40231106-eb29-490c-a60a-822c9e0a60ad" data-visible="true" data-condition="8b342740-6ada-4781-a0df-9ecf8ad38303">courier 3</span>​<span class="pds-conditional-text" id="9dad2442-8c88-4f4c-b19d-bb29d81a9362" data-visible="true" data-condition="2574340a-7373-463b-a954-68bb274e6e8f">courier 4</span>​<span class="pds-conditional-text" id="68fa59d5-6cc0-46f0-a8e6-d89238b5ff29" data-visible="true" data-condition="c2373318-e19b-46bd-8ff6-35987648646a">courier 5</span>​<span class="pds-conditional-text" id="dc2ed81f-ff45-4bca-818e-c6c17fbafa87" data-visible="true" data-condition="056d33f8-7c44-485d-9728-6cf69af0993a">courier 6</span>​<span class="pds-conditional-text" id="e3c25d06-35d1-4510-8724-878ba1b70225" data-visible="true" data-condition="da0e33e1-33ca-431d-8cb0-805d4f82c557">courier 7</span>&ZeroWidthSpace;<span class="pds-conditional-text" id="6725b011-d01a-4489-a1e7-53e533267783" data-visible="true" data-condition="b065c7d4-f486-4ec0-9f42-50442af4120e">technician</span>&ZeroWidthSpace;&ZeroWidthSpace;.&ZeroWidthSpace;&ZeroWidthSpace; &ZeroWidthSpace;<span class="pds-conditional-text" id="28ef3e2d-9197-4455-9e45-6fc11f7cdd23" data-visible="true" data-condition="0ac52b7e-9634-4cf8-9a81-06a983c5b645">You can now track it yourself under the number <span contenteditable="false" class="pds-content-variable" id="d5ad50eb-0cad-4861-84a9-edb87855db5f" data-id="1517" data-format-id="0" data-strict="true">ID</span> at <span contenteditable="false" class="pds-content-variable" id="d2a761c1-59bb-4c10-9b63-bb1de454ec34" data-id="1451" data-format-id="0" data-strict="true">courierID</span> .</span>&ZeroWidthSpace;&ZeroWidthSpace;&ZeroWidthSpace;&nbsp;</p>`
+            });
+        });
+
+        it('826826 - Placing cursor at the and entering the space key', () => {
+            let keyBoardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            keyBoardEvent.which = 32;
+            keyBoardEvent.code = 'Space';
+            keyBoardEvent.type = 'keydown';
+            rteObj.contentModule.getEditPanel().innerHTML = `<p class='focusNode'>Your order nr. <span contenteditable="false" class="pds-content-variable" id="847c7ece-b25a-4467-a0e8-394c1607f8af" data-id="6661" data-format-id="0" data-strict="true">orderNo</span> has been passed to the​​<span class="pds-conditional-text" id="41b565d9-dc61-4d76-842f-44d7b6ec15be" data-visible="true" data-condition="f4aa50d8-f8c4-4573-b3bd-8bdf9f6675d2">courier 1</span>​<span class="pds-conditional-text" id="125a73b2-fe16-4966-bd0c-fc05a10d3b95" data-visible="true" data-condition="0b4f1f5b-e998-496d-8625-1df7914f4e4d">courier 2</span>​<span class="pds-conditional-text" id="40231106-eb29-490c-a60a-822c9e0a60ad" data-visible="true" data-condition="8b342740-6ada-4781-a0df-9ecf8ad38303">courier 3</span>​<span class="pds-conditional-text" id="9dad2442-8c88-4f4c-b19d-bb29d81a9362" data-visible="true" data-condition="2574340a-7373-463b-a954-68bb274e6e8f">courier 4</span>​<span class="pds-conditional-text" id="68fa59d5-6cc0-46f0-a8e6-d89238b5ff29" data-visible="true" data-condition="c2373318-e19b-46bd-8ff6-35987648646a">courier 5</span>​<span class="pds-conditional-text" id="dc2ed81f-ff45-4bca-818e-c6c17fbafa87" data-visible="true" data-condition="056d33f8-7c44-485d-9728-6cf69af0993a">courier 6</span>​<span class="pds-conditional-text" id="e3c25d06-35d1-4510-8724-878ba1b70225" data-visible="true" data-condition="da0e33e1-33ca-431d-8cb0-805d4f82c557">courier 7</span>&ZeroWidthSpace;<span class="pds-conditional-text" id="6725b011-d01a-4489-a1e7-53e533267783" data-visible="true" data-condition="b065c7d4-f486-4ec0-9f42-50442af4120e">technician</span>&ZeroWidthSpace;&ZeroWidthSpace;.&ZeroWidthSpace;&ZeroWidthSpace; &ZeroWidthSpace;<span class="pds-conditional-text" id="28ef3e2d-9197-4455-9e45-6fc11f7cdd23" data-visible="true" data-condition="0ac52b7e-9634-4cf8-9a81-06a983c5b645">You can now track it yourself under the number <span contenteditable="false" class="pds-content-variable" id="d5ad50eb-0cad-4861-84a9-edb87855db5f" data-id="1517" data-format-id="0" data-strict="true">ID</span> at <span contenteditable="false" class="pds-content-variable" id="d2a761c1-59bb-4c10-9b63-bb1de454ec34" data-id="1451" data-format-id="0" data-strict="true">courierID</span> .</span>&ZeroWidthSpace;&ZeroWidthSpace;&ZeroWidthSpace;&nbsp;</p>`;
+            let focusNode: HTMLElement = editNode.querySelector('.focusNode')
+            let sel1 = new NodeSelection().setSelectionText(document, focusNode.lastChild, focusNode.lastChild, 4, 4);
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.contentModule.getEditPanel().innerHTML === `<p class="focusNode">Your order nr. <span contenteditable="false" class="pds-content-variable" id="847c7ece-b25a-4467-a0e8-394c1607f8af" data-id="6661" data-format-id="0" data-strict="true">orderNo</span> has been passed to the<span class="pds-conditional-text" id="41b565d9-dc61-4d76-842f-44d7b6ec15be" data-visible="true" data-condition="f4aa50d8-f8c4-4573-b3bd-8bdf9f6675d2">courier 1</span><span class="pds-conditional-text" id="125a73b2-fe16-4966-bd0c-fc05a10d3b95" data-visible="true" data-condition="0b4f1f5b-e998-496d-8625-1df7914f4e4d">courier 2</span><span class="pds-conditional-text" id="40231106-eb29-490c-a60a-822c9e0a60ad" data-visible="true" data-condition="8b342740-6ada-4781-a0df-9ecf8ad38303">courier 3</span><span class="pds-conditional-text" id="9dad2442-8c88-4f4c-b19d-bb29d81a9362" data-visible="true" data-condition="2574340a-7373-463b-a954-68bb274e6e8f">courier 4</span><span class="pds-conditional-text" id="68fa59d5-6cc0-46f0-a8e6-d89238b5ff29" data-visible="true" data-condition="c2373318-e19b-46bd-8ff6-35987648646a">courier 5</span><span class="pds-conditional-text" id="dc2ed81f-ff45-4bca-818e-c6c17fbafa87" data-visible="true" data-condition="056d33f8-7c44-485d-9728-6cf69af0993a">courier 6</span><span class="pds-conditional-text" id="e3c25d06-35d1-4510-8724-878ba1b70225" data-visible="true" data-condition="da0e33e1-33ca-431d-8cb0-805d4f82c557">courier 7</span><span class="pds-conditional-text" id="6725b011-d01a-4489-a1e7-53e533267783" data-visible="true" data-condition="b065c7d4-f486-4ec0-9f42-50442af4120e">technician</span>. <span class="pds-conditional-text" id="28ef3e2d-9197-4455-9e45-6fc11f7cdd23" data-visible="true" data-condition="0ac52b7e-9634-4cf8-9a81-06a983c5b645">You can now track it yourself under the number <span contenteditable="false" class="pds-content-variable" id="d5ad50eb-0cad-4861-84a9-edb87855db5f" data-id="1517" data-format-id="0" data-strict="true">ID</span> at <span contenteditable="false" class="pds-content-variable" id="d2a761c1-59bb-4c10-9b63-bb1de454ec34" data-id="1451" data-format-id="0" data-strict="true">courierID</span> .</span>&nbsp;</p>`).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('826826 - Placing cursor at the and entering the space key', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class='focusNode'>&ZeroWidthSpace;&ZeroWidthSpace;&ZeroWidthSpace;&nbsp;</p>`
+            });
+        });
+
+        it('826826 - Placing cursor at the start and entering the space key with non width space cotent', () => {
+            let keyBoardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            keyBoardEvent.which = 32;
+            keyBoardEvent.code = 'Space';
+            keyBoardEvent.type = 'keydown';
+            rteObj.contentModule.getEditPanel().innerHTML = `<p class='focusNode'>&ZeroWidthSpace;&ZeroWidthSpace;&ZeroWidthSpace;&nbsp;</p>`;
+            let focusNode: HTMLElement = editNode.querySelector('.focusNode')
+            let sel1 = new NodeSelection().setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 0, 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.contentModule.getEditPanel().innerHTML === `<p class="focusNode">&nbsp;</p>`).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 

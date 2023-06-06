@@ -1219,6 +1219,10 @@ export interface PasteCleanupArgs {
      * Returns the content in the ClipboardEvent arguments.
      */
     value: string;
+    /**
+     * Returns the list of image files data that is pasted.
+     */
+    filesData: FileInfo[]
 }
 
 /**

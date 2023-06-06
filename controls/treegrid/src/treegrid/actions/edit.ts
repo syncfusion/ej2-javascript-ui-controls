@@ -88,6 +88,10 @@ export class Edit {
     }
     private gridDblClick(e: MouseEvent): void {
         this.doubleClickTarget = e.target as HTMLElement;
+        if ((e.target as HTMLElement).classList.contains('e-frame') && this.parent.getCurrentViewRecords().length === 0)
+        {
+            this.doubleClickTarget = null;
+        }
     }
     private getRowPosition(addArgs: { newRowPosition: RowPosition, addRowIndex: number, dataRowIndex: number }): void {
         addArgs.newRowPosition = this.parent.editSettings.newRowPosition;
@@ -95,7 +99,9 @@ export class Edit {
         addArgs.dataRowIndex = +this.prevAriaRowIndex;
     }
     private beforeStartEdit(args: Object) : void {
-        this.parent.trigger(events.actionBegin, args);
+        if (this.parent.editSettings.mode === 'Cell') {
+            this.parent.trigger(events.actionBegin, args);
+        }
     }
     private beforeBatchCancel(args: Object) : void {
         if (this.parent.editSettings.mode === 'Cell') {
@@ -652,7 +658,7 @@ export class Edit {
                             const batchChildCount: number = this.batchEditModule.getBatchChildCount();
                             index = index + batchChildCount;
                         }
-                    } else {
+                    } else if (!this.parent.enableVirtualization) {
                         index += findChildrenRecords(records[parseInt(index.toString(), 10)]).length;
                     }
                 }

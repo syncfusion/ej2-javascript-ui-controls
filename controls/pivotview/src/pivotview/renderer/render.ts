@@ -1582,8 +1582,8 @@ export class Render {
 
     private frameDataSource(type: string): IGridValues {
         let dataContent: IGridValues = [];
-        if (((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0) || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== ''))
-        && this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
+        if (((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0) || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ||
+        (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             if ((this.parent.enableValueSorting) || !this.engine.isEngineUpdated) {
                 let rowCnt: number = 0;
                 const pivotValues: IAxisSet[][] = this.parent.pivotValues;
@@ -1745,7 +1745,8 @@ export class Render {
             !this.parent.dataSourceSettings.alwaysShowValueHeader ?
             this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         this.pivotColumns = [];
-        if (((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) && !this.engine.isEmptyData) {
+        if ((((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) ||
+            (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];

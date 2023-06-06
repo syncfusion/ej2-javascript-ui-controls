@@ -83,6 +83,10 @@ export class Editor {
     private isInsertText: boolean = false;
     private keywordIndex: number = 0;
     /**
+    * @private
+    */
+    public handledEnter: boolean = false;
+    /**
      * @private
      */
     public removeEditRange: boolean = false;
@@ -1233,6 +1237,7 @@ export class Editor {
      * @returns {void}
      */
     public fireContentChange(): void {
+        this.owner.documentHelper.render.commentMarkDictionary.clear();
         if (this.selection.isHighlightEditRegion) {
             if (this.owner.enableLockAndEdit) {
                 this.owner.collaborativeEditingModule.updateLockRegion();
@@ -2584,7 +2589,14 @@ export class Editor {
         // Update selection end
         let endPosition: TextPosition = new TextPosition(this.owner);
         endPosition.setPositionForLineWidget(start.currentWidget, start.offset + text.length);
-        this.selection.selectPosition(isUpdate ? start : endPosition, endPosition);
+        if (this.owner.enableTrackChanges) {
+            if (!isUpdate) {
+                this.selection.start.setPositionInternal(this.selection.end);
+            }
+            this.selection.end.updatePhysicalPosition(true);
+        } else {
+            this.selection.selectPosition(isUpdate ? start : endPosition, endPosition);
+        }
     }
     /**
       * Inserts the section break at cursor position with specified section break type.
@@ -2932,7 +2944,7 @@ export class Editor {
             let currentRevision: Revision = element.revisions[i];
             for (let j: number = 0; j < compare.revisions.length; j++) {
 
-                if (currentRevision.author === compare.revisions[i].author && currentRevision.revisionType === compare.revisions[i].revisionType) {
+                if (currentRevision.author === compare.revisions[j].author && currentRevision.revisionType === compare.revisions[j].revisionType) {
                     return true;
                 }
             }
@@ -3023,7 +3035,7 @@ export class Editor {
         for (let i: number = 0; i < currentElementRevisions.length; i++) {
             for (let j: number = 0; j < elementToCombine.length; j++) {
                 let currentRevision: Revision = currentElementRevisions[i];
-                let revisionToCombine: Revision = elementToCombine[i];
+                let revisionToCombine: Revision = elementToCombine[j];
 
                 if (currentRevision.author === revisionToCombine.author && currentRevision.revisionType === revisionToCombine.revisionType) {
                     let rangeLength: number = revisionToCombine.range.length;
@@ -6457,16 +6469,15 @@ export class Editor {
         columns = columns || 1;
         const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
-        if (columns < 1 || columns > 63) {
-            DialogUtility.alert(localeValue.getConstant('Number of columns must be between 1 and 63.'));
+        if (columns < 1 || columns > this.documentHelper.owner.documentEditorSettings.maximumColumns) {
+            let columnAlertPopup: string = localeValue.getConstant('Number of columns must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            DialogUtility.alert(columnAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         if (rows < 1 || rows > this.documentHelper.owner.documentEditorSettings.maximumRows) {
-            if (this.documentHelper.owner.locale == 'en-US') {
-                DialogUtility.alert('Number of rows must be between 1 and ' + this.documentHelper.owner.documentEditorSettings.maximumRows + '.');
-            } else {
-                DialogUtility.alert(localeValue.getConstant('Number of rows must be between 1 and 32767.'));
-            }
+            let rowAlertPopup: string = localeValue.getConstant('Number of rows must be between') + ' 1 ' + localeValue.getConstant('and') + ' ' + this.documentHelper.owner.documentEditorSettings.maximumColumns.toString();
+            localeValue.getConstant('Number of rows must be between 1 and 32767.').replace("32767", this.documentHelper.owner.documentEditorSettings.maximumRows.toString());
+            DialogUtility.alert(rowAlertPopup).enableRtl = this.documentHelper.owner.enableRtl;
             return;
         }
         let table: TableWidget = this.createTable(rows, columns);
@@ -7409,7 +7420,7 @@ export class Editor {
         this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, bodyWidget, newParagraph, false);
     }
 
-    private moveInlines(currentParagraph: ParagraphWidget, newParagraph: ParagraphWidget, insertIndex: number, startOffset: number, startLine: LineWidget, endOffset: number, endLine: LineWidget): void {
+    private moveInlines(currentParagraph: ParagraphWidget, newParagraph: ParagraphWidget, insertIndex: number, startOffset: number, startLine: LineWidget, endOffset: number, endLine: LineWidget, removeBlock?: boolean): void {
         if (newParagraph.childWidgets.length === 0) {
             let line: LineWidget = new LineWidget(newParagraph);
             newParagraph.childWidgets.push(line);
@@ -7436,7 +7447,7 @@ export class Editor {
             }
         }
         this.removeEmptyLine(currentParagraph);
-        if (!currentParagraph.isInsideTable) {
+        if (!currentParagraph.isInsideTable && !removeBlock) {
             this.viewer.updateClientArea(currentParagraph.bodyWidget, currentParagraph.bodyWidget.page);
             this.documentHelper.layout.reLayoutParagraph(currentParagraph, 0, 0);
         }
@@ -7623,7 +7634,7 @@ export class Editor {
             let bodyWidget: BodyWidget = selection.start.paragraph.bodyWidget;
             let splittedSection: BodyWidget[] = bodyWidget.getSplitWidgets() as BodyWidget[];
             bodyWidget = splittedSection[splittedSection.length - 1];
-            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
+            if (((!isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak') || (bodyWidget.sectionFormat.breakCode === 'NoBreak' && (bodyWidget.sectionIndex === bodyWidget.page.bodyWidgets[0].sectionIndex && bodyWidget.sectionFormat.numberOfColumns > 1))) && !(bodyWidget instanceof HeaderFooterWidget) &&  !(!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget)) {
                 let startPosition: TextPosition = this.documentHelper.selection.start;
                 let endPosition: TextPosition = this.documentHelper.selection.end;
                 let startInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
@@ -7865,7 +7876,7 @@ export class Editor {
                 if (isNotEmpty) {
                     top = Math.max(headerDistance + section.page.headerWidget.height, top);
                 }
-                if (firstBlock.y !== top) {
+                if (firstBlock.y !== top && section.sectionFormat.breakCode !== "NoBreak") {
                     this.owner.viewer.updateClientArea(section, section.page);
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
@@ -8397,7 +8408,7 @@ export class Editor {
      */
     public intializeDefaultStyles(): void {
         let existingStyles: string[] = this.owner.getStyleNames('Paragraph');
-        let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
+        let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6', 'Header', 'Footer'];
         let styleNames: string[] = defaultStyleNames.filter((val: string) => {
             return existingStyles.indexOf(val) === -1;
         });
@@ -11540,6 +11551,7 @@ export class Editor {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 if (row.childWidgets.length === 1) {
                     if (deleteCells.indexOf(row.childWidgets[0] as TableCellWidget) >= 0) {
+                        this.removeFieldInWidget(row.childWidgets[0] as Widget, true);
                         table.childWidgets.splice(table.childWidgets.indexOf(row), 1);
                         row.destroy();
                         i--;
@@ -11548,6 +11560,7 @@ export class Editor {
                     for (let j: number = 0; j < row.childWidgets.length; j++) {
                         let tableCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                         if (deleteCells.indexOf(tableCell) >= 0) {
+                            this.removeFieldInWidget(tableCell as Widget, true);
                             row.childWidgets.splice(j, 1);
                             tableCell.destroy();
                             j--;
@@ -11646,6 +11659,7 @@ export class Editor {
                                 if (this.owner.enableTrackChanges && this.checkIsNotRedoing()) {
                                     this.trackRowDeletion(tableRow, true, false);
                                 } else {
+                                    this.removeFieldInBlock(tableRow, true);
                                     table.childWidgets.splice(i, 1);
                                     tableRow.destroy();
                                     i--;
@@ -11754,6 +11768,7 @@ export class Editor {
             }
             table.destroy();
         } else {
+            this.removeFieldInBlock(row, true);
             table.childWidgets.splice(table.childWidgets.indexOf(row), 1);
             row.destroy();
             this.updateTable(table);
@@ -11799,9 +11814,14 @@ export class Editor {
         let startLine: LineWidget = undefined;
         let endLineWidget: LineWidget = undefined;
         let isCombineLastBlock = this.combineLastBlock;
+        let tempStartOffset : number;
         if (paragraph === start.paragraph) {
             startOffset = start.offset;
             startLine = start.currentWidget;
+            tempStartOffset = startOffset;
+            if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+                startOffset++;
+            }
             if (end.paragraph.isInsideTable) {
                 isCombineNextParagraph = this.isEndInAdjacentTable(paragraph, end.paragraph);
             }
@@ -11826,14 +11846,17 @@ export class Editor {
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
-        if (startOffset > paragraphStart && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
+        if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
+            startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
             start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
-            isCombineLastBlock = true;
+        }
+        if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
+            startOffset--;
         }
         let paraEnd: TextPosition = end.clone();
         paraEnd.offset = paraEnd.offset - 1;
@@ -12114,7 +12137,7 @@ export class Editor {
         paragraph.childWidgets.push(lineWidget);
         let blockIndex: number = paragraphAdv.index;
         let insertIndex: number = paragraphAdv.indexInOwner;
-        this.moveInlines(paragraphAdv, paragraph, 0, startOffset, startLine, endOffset, endLine);
+        this.moveInlines(paragraphAdv, paragraph, 0, startOffset, startLine, endOffset, endLine, removeBlock);
         if (paragraphAdv.containerWidget.childWidgets[insertIndex]) {
             let line: BlockWidget = ((paragraphAdv.containerWidget.childWidgets[insertIndex] as ParagraphWidget));
             for (let i: number = 0; i < line.childWidgets.length; i++) {
@@ -12359,9 +12382,20 @@ export class Editor {
         for (let i: number = 0; i < collection.length; i++) {
             let element: FieldElementBox | BookmarkElementBox = isBookmark ?
                 this.documentHelper.bookmarks.get(collection[i] as string) : collection[i] as FieldElementBox;
-            if (element.line.paragraph === block) {
+            if (element.line.paragraph === block || (element instanceof BookmarkElementBox && element.reference.line.paragraph === block)) {
                 if (isBookmark) {
                     this.documentHelper.bookmarks.remove(collection[i] as string);
+                    element.line.children.splice(element.indexInOwner, 1);
+                    if(!isNullOrUndefined(element.line.paragraph.associatedCell)) {
+                        const cell = element.line.paragraph.associatedCell;
+                        cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
+                    }
+                    const endBookMarkElement = (element as BookmarkElementBox).reference;
+                    endBookMarkElement.line.children.splice(endBookMarkElement.indexInOwner, 1);
+                    if(!isNullOrUndefined(endBookMarkElement.line.paragraph.associatedCell)) {
+                        const cell = endBookMarkElement.line.paragraph.associatedCell;
+                        cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
+                    }
                 } else if (isContentControl) {
                     this.documentHelper.contentControlCollection.splice(i, 1);
                 } else {
@@ -12928,7 +12962,13 @@ export class Editor {
 
             let previousBlock: ParagraphWidget = this.checkAndInsertBlock(table, start, end, editAction, block instanceof ParagraphWidget ? block : undefined);
             if (selection.containsRow((table.firstChild as TableRowWidget), start.paragraph.associatedCell)) {
-                this.deleteContent(table, selection, editAction);
+                if (this.owner.enableTrackChanges) {
+                    for (let i: number = 0; i < table.childWidgets.length; i++) {
+                        this.trackRowDeletion(table.childWidgets[i] as TableRowWidget);
+                    }
+                } else {
+                    this.deleteContent(table, selection, editAction);
+                }
             } else {
                 if (this.owner.enableTrackChanges) {
                     if (isNullOrUndefined(end.paragraph.associatedCell) && !end.paragraph.isInsideTable) {
@@ -13243,6 +13283,9 @@ export class Editor {
                         this.removedEditRangeEndElements.push(inline);
                     }
                     lineWidget.children.splice(i, 1);
+                    if (!isNullOrUndefined(lineWidget.layoutedElements) && lineWidget.layoutedElements.length > 0) {
+                        lineWidget.layoutedElements.splice(i, 1);
+                    }
                 }
             } else if (inline instanceof TextElementBox) {
                 let span: ElementBox = this.handleDeleteTracking(inline, startIndex, endIndex);
@@ -13731,10 +13774,12 @@ export class Editor {
      * @returns {void}
      */
     public onEnter(breakType?: string): void {
+        this.handledEnter = true;
         let selection: Selection = this.documentHelper.selection;
         var format: SelectionCharacterFormat;
         if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
-            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal') {
+            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal' ||
+            selection.start.paragraph.paragraphFormat.baseStyle.name === 'Normal (Web)') {
             format = new SelectionCharacterFormat(undefined)
             format.cloneFormat(this.selection.characterFormat);
             let eleme: ElementBox = (selection.start.paragraph.lastChild as LineWidget).children[(selection.start.paragraph.lastChild as LineWidget).children.length - 1];
@@ -13841,6 +13886,7 @@ export class Editor {
         }
         this.documentHelper.layout.islayoutFootnote = false;
         this.updateHistoryForComments(commentStartToInsert);
+        this.handledEnter = false;
     }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {
         let insertIndex: number = 0;
@@ -14631,38 +14677,6 @@ export class Editor {
                 }
             }
         }
-        if (inline && (inline instanceof BookmarkElementBox || inline.previousNode instanceof BookmarkElementBox)) {
-            if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
-                if (inline.previousNode) {
-                    inline = inline.previousNode;
-                    paragraph = inline.line.paragraph;
-                    offset = inline.line.getOffset(inline, inline.length);
-                } else {
-                    // remove paragraph mark and move bookmark to previous paragraph
-                    if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
-                        let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget;
-                        let line: LineWidget = prevParagraph.lastChild as LineWidget;
-                        selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
-                        selection.end.setPositionParagraph(line, line.getEndOffset());
-                        this.removeWholeElement(selection);
-                        return;
-                    }
-                }
-                // Remove bookmark if selection is in between bookmark start and end element.
-            } else if (inline.nextNode instanceof BookmarkElementBox && inline instanceof BookmarkElementBox &&
-                inline.bookmarkType === 0 && inline.reference === inline.nextNode) {
-                this.deleteBookmark(inline.name);
-                return;
-            }
-            if (inline.length === 1 && inline.nextNode instanceof BookmarkElementBox && inline.previousNode instanceof BookmarkElementBox) {
-                let begin: BookmarkElementBox = inline.previousNode;
-                let end: BookmarkElementBox = inline.nextNode;
-                selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
-                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
-                this.removeWholeElement(selection);
-                return;
-            }
-        }
         // if (inline instanceof CommentCharacterElementBox && inline.commentType === 1) {
         //     let comment: CommentElementBox = inline.comment;
         //     if (comment.isReply) {
@@ -14707,17 +14721,51 @@ export class Editor {
                 return;
             }
             if (inline instanceof EditRangeEndElementBox) {
-                if (!isNullOrUndefined(inline.previousNode)) {
-                    inline = inline.previousNode;
-                    paragraph = inline.line.paragraph;
-                    offset = inline.line.getOffset(inline, inline.length);
-                }
+                do {
+                    if (!isNullOrUndefined(inline.previousNode)) {
+                        inline = inline.previousNode;
+                        paragraph = inline.line.paragraph;
+                        offset = inline.line.getOffset(inline, inline.length);
+                    } else { break; }
+                } while(inline instanceof EditRangeEndElementBox);
             }
             if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
                 && inline.previousNode instanceof EditRangeStartElementBox) {
                 let start: EditRangeStartElementBox = inline.previousNode;
                 let end: EditRangeEndElementBox = inline.nextNode;
                 selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
+        if (inline && (inline instanceof BookmarkElementBox || inline.previousNode instanceof BookmarkElementBox)) {
+            if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+                if (inline.previousNode) {
+                    inline = inline.previousNode;
+                    paragraph = inline.line.paragraph;
+                    offset = inline.line.getOffset(inline, inline.length);
+                } else {
+                    // remove paragraph mark and move bookmark to previous paragraph
+                    if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+                        let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget;
+                        let line: LineWidget = prevParagraph.lastChild as LineWidget;
+                        selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
+                        selection.end.setPositionParagraph(line, line.getEndOffset());
+                        this.removeWholeElement(selection);
+                        return;
+                    }
+                }
+                // Remove bookmark if selection is in between bookmark start and end element.
+            } else if (inline.nextNode instanceof BookmarkElementBox && inline instanceof BookmarkElementBox &&
+                inline.bookmarkType === 0 && inline.reference === inline.nextNode) {
+                this.deleteBookmark(inline.name);
+                return;
+            }
+            if (inline.length === 1 && inline.nextNode instanceof BookmarkElementBox && inline.previousNode instanceof BookmarkElementBox) {
+                let begin: BookmarkElementBox = inline.previousNode;
+                let end: BookmarkElementBox = inline.nextNode;
+                selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 this.removeWholeElement(selection);
                 return;
@@ -14910,6 +14958,9 @@ export class Editor {
                 inline.line = (inline.line.paragraph.nextRenderedWidget.firstChild as LineWidget);
             }
             lineWidget.children.splice(i, 1);
+            if (!isNullOrUndefined(lineWidget.layoutedElements) && lineWidget.layoutedElements.length > 0) {
+                lineWidget.layoutedElements.splice(i, 1);
+            }
             return true;
         }
         if (offset < count + inline.length) {
@@ -14940,6 +14991,9 @@ export class Editor {
                         }
                     }
                     lineWidget.children.splice(i, 1);
+                    if (!isNullOrUndefined(lineWidget.layoutedElements) && lineWidget.layoutedElements.length > 0) {
+                        lineWidget.layoutedElements.splice(i, 1);
+                    }
                 }
                 this.documentHelper.layout.reLayoutParagraph(lineWidget.paragraph, lineIndex, i, undefined, isRearrange);
             } else {
@@ -15090,7 +15144,7 @@ export class Editor {
                 } else if (revision.revisionType === 'Deletion') {
                     if (index !== -1 && revision.author !== this.owner.currentUser) {
                         let range: Object[] = revision.range;
-                        let startOff: number = (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
+                        let startOff: number = range[0] instanceof WCharacterFormat ? 0 : (range[0] as ElementBox).line.getOffset(range[0] as ElementBox, 0);
                         let lastEle: ElementBox = range[range.length - 1] as ElementBox;
                         let endOff: number = lastEle.line.getOffset(lastEle, lastEle.length);
                         let isRevisionInserted : boolean = false;
@@ -15130,9 +15184,10 @@ export class Editor {
                                 this.toCombineOrInsertRevision(elementBox, 'Deletion');
                             } else if (revision.range.length === 1 || indexInInline === 0) {
                                 this.handleDeleteBySplitting(elementBox, indexInInline, endOffset);
-                                if (rangeIndex !== -1 && revision.range.length !== 1) {
+                                if (rangeIndex > 0 && revision.range.length !== 1) {
                                     this.updateRevisionForSpittedTextElement(revision.range[(rangeIndex - 1)] as TextElementBox,
                                         revision.range[rangeIndex] as TextElementBox);
+                                    revision = this.retrieveRevisionInOder(elementBox);
                                     revision.range.splice(revision.range.indexOf(elementBox), 1);
                                 }
                             } else {
@@ -17385,18 +17440,10 @@ export class Editor {
             if (isShading) {
                 for (let i: number = 0; i < table.childWidgets.length; i++) {
                     const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-                    for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
-                        const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
-                        cellWidget.cellFormat.shading.copyFormat(format.shading);
-                    }
-                }
-            }
-            if (!isNullOrUndefined(isShading)) {
-                for (let i: number = 0; i < table.childWidgets.length; i++) {
-                    const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                     rowWidget.rowFormat.borders.copyFormat(format.borders);
                     for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
                         const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                        cellWidget.cellFormat.shading.copyFormat(format.shading);
                         cellWidget.cellFormat.borders.copyFormat(format.borders);
                     }
                 }
@@ -18674,6 +18721,35 @@ export class Editor {
         this.documentHelper.editRanges.get(user).splice(index, 1);
         if (this.documentHelper.editRanges.get(user).length === 0) {
             this.documentHelper.editRanges.remove(user);
+        }
+        if(editStart.columnFirst!=-1 && editStart.columnLast !=-1){
+            let row = editStart.paragraph.associatedCell.ownerRow;
+            if (row.editRangeID.containsKey(editStart.editRangeId)) {
+                let cell = row.getCellUsingColumnIndex(row.rowIndex, editStart.columnFirst);
+                if (!isNullOrUndefined(cell)) {
+                    if (cell.isRenderEditRangeStart && cell.isRenderEditRangeEnd ) {
+                        cell.isRenderEditRangeEnd = false;
+                        cell.isRenderEditRangeStart = false;
+                        row.editRangeID.remove(editStart.editRangeId);
+                    }
+                }
+            } else {
+                let table = editStart.paragraph.associatedCell.ownerTable;
+                for (let i = row.rowIndex - 1; i >= 0; i--) {
+                    let previousRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    if (previousRow.editRangeID.containsKey(editStart.editRangeId)) {
+                        let previousCell = previousRow.getCellUsingColumnIndex(previousRow.rowIndex, editStart.columnFirst);
+                        if (!isNullOrUndefined(previousCell)) {
+                            if (previousCell.isRenderEditRangeStart && previousCell.isRenderEditRangeEnd) {
+                                previousCell.isRenderEditRangeEnd = false;
+                                previousCell.isRenderEditRangeStart = false;
+                                previousRow.editRangeID.remove(editStart.editRangeId);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         editStart.removeEditRangeMark();
         editStart.editRangeEnd.line.children.splice(editStart.editRangeEnd.indexInOwner, 1);

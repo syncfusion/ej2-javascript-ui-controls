@@ -741,6 +741,7 @@ describe('Candle Series ', () => {
                 expect(tooltip.offsetTop < y + series.points[3].regions[0].height).toBe(true);
                 tooltip = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -899,6 +900,7 @@ describe('Candle Series ', () => {
                 expect(element1.textContent).toEqual('#3');
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
                 expect(element1.textContent === '22.979K' || element1.textContent === '22.976K' || element1.textContent === '22.867K').toBe(true);
+                trigger.mouseleavetEvent(chartArea, Math.ceil(x), Math.ceil(y));
                 done();
             }
             chartObj.loaded = loaded;

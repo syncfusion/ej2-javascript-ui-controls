@@ -416,6 +416,7 @@ export class Image {
                     (this.parent.inputElement.getBoundingClientRect().right - 32) ?
                     ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
                 img.style.width = currentWidth.toString() + 'px';
+                img.style.height = expectedY + 'px';
             } else if (img.style.width !== '') {
                 const currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
                     (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);

@@ -13,7 +13,7 @@ import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
 import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
+import { DataManager, Query, Predicate, JsonAdaptor } from '@syncfusion/ej2-data';
 import { SortOrder } from '@syncfusion/ej2-lists';
 import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 
@@ -976,7 +976,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 predicate = predicate.or(field, 'equal', (valuecheck[i as number] as string));
             }
         }
-        return this.getQuery(this.query).where(predicate);
+        if (this.dataSource instanceof DataManager && (this.dataSource as DataManager).adaptor instanceof JsonAdaptor) { 
+            return new Query().where(predicate);
+        }
+        else {
+            return this.getQuery(this.query).where(predicate);
+        }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
     protected onActionComplete(
@@ -1002,7 +1007,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         let valuecheck: string[] = [];
-        if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
+        if (!isNullOrUndefined(this.value)) {
             valuecheck = this.presentItemValue(this.ulElement);
         }
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
@@ -2457,11 +2462,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private removeChipFocus(): void {
         const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP);
-        const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
         removeClass(elements, CHIP_SELECTED);
         if (Browser.isDevice) {
+            const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
             for (let index: number = 0; index < closeElements.length; index++) {
                 (<HTMLElement>closeElements[index as number]).style.display = 'none';
             }
@@ -2718,9 +2723,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         // eslint-disable-next-line
         let elements: any = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
         if (elements && elements.length > 0) {
-            for (let temp: number = 0; temp < elements.length; temp++) {
-                this.header.appendChild(elements[temp as number]);
-            }
+            append(elements, this.header);
         }
         if (this.mode === 'CheckBox' && this.showSelectAll) {
             prepend([this.header], this.popupWrapper);
@@ -2745,9 +2748,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         // eslint-disable-next-line
         let elements: any = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
         if (elements && elements.length > 0 ) {
-            for (let temp: number = 0; temp < elements.length; temp++) {
-                this.footer.appendChild(elements[temp as number]);
-            }
+            append(elements, this.footer);
         }
         append([this.footer], this.popupWrapper);
         EventHandler.add(this.footer, 'mousedown', this.onListMouseDown, this);
@@ -2963,27 +2964,33 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.hiddenElement.innerHTML = '';
         }
         if (!isNullOrUndefined(this.value)) {
-            for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
+            let valueLength: number = this.value.length;
+            let hiddenElementContent: string = '';
+            for (let index: number = 0; index < valueLength; index++) {
+                const valueItem: any = this.value[index as number];
                 const listValue: Element = this.findListElement(
-                    ((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement),
+                    (!isNullOrUndefined(this.mainList) ? this.mainList : this.ulElement),
                     'li',
                     'data-value',
-                    this.value[index as number]);
+                    valueItem
+                );
                 if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                     index -= 1;
+                    valueLength -= 1;
                 } else {
                     if (this.listData) {
-                        temp = this.getTextByValue(this.value[index as number]);
+                        temp = this.getTextByValue(valueItem);
                     } else {
-                        temp = <string>this.value[index as number];
+                        temp = <string>valueItem;
                     }
                     data += temp + delimiterChar + ' ';
                     text.push(temp);
                 }
-                if (!isNullOrUndefined(this.hiddenElement)) {
-                    this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index as number] + '">' + index + '</option>';
-                }
+                hiddenElementContent += `<option selected value="${valueItem}">${index}</option>`;
+            }
+            if (!isNullOrUndefined(this.hiddenElement)) {
+                this.hiddenElement.innerHTML = hiddenElementContent;
             }
         }
         this.setProperties({ text: text.toString() }, true);

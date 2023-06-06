@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { createElement, classList, append } from '@syncfusion/ej2-base';
+import { attributes, createElement, classList, append } from '@syncfusion/ej2-base';
 import { Pager, IRender } from './pager';
 
 /**
@@ -76,7 +76,6 @@ export class NumericContainer implements IRender {
                 attrs: { role: 'link', tabindex: '-1', 'aria-label': pagerObj.getLocalizedLabel('Page') + i + pagerObj.getLocalizedLabel('Of') +
                     pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'), href: '#' , name: 'Goto page' + i }
             });
-            link.setAttribute('onclick', 'event.preventDefault()');
             if (pagerObj.currentPage === i) {
                 classList(link, ['e-currentitem', 'e-active'], ['e-pager-default']);
                 link.setAttribute('aria-selected', 'true');
@@ -178,7 +177,6 @@ export class NumericContainer implements IRender {
                     href: '#'
                 }
             });
-        this.PP.setAttribute('onclick', 'event.preventDefault()');
         prevPager.appendChild(this.PP);
         pagerContainer.appendChild(prevPager);
     }
@@ -196,7 +194,6 @@ export class NumericContainer implements IRender {
                     href: '#'
                 }
             });
-        this.NP.setAttribute('onclick', 'event.preventDefault()');
         nextPager.appendChild(this.NP);
         pagerContainer.appendChild(nextPager);
     }
@@ -226,6 +223,9 @@ export class NumericContainer implements IRender {
     private clickHandler(e: Event): boolean {
         const pagerObj: Pager = this.pagerModule;
         const target: Element = <Element>e.target as Element;
+        if (target.classList.contains('e-numericitem')) {
+            e.preventDefault();
+        }
         pagerObj.previousPageNo = pagerObj.currentPage;
         if (!target.classList.contains('e-disable') && !isNullOrUndefined(target.getAttribute('index'))) {
             pagerObj.currentPage = parseInt(target.getAttribute('index'), 10);
@@ -266,16 +266,56 @@ export class NumericContainer implements IRender {
             this.links[parseInt(i.toString(), 10)].removeAttribute('aria-current');
             this.links[parseInt(i.toString(), 10)].setAttribute('role', 'link');
         }
-        this.first.setAttribute('index', '1');
-        this.last.setAttribute('index', pagerObj.totalPages.toString());
-        this.prev.setAttribute('index', (pagerObj.currentPage - 1).toString());
-        this.next.setAttribute('index', (pagerObj.currentPage + 1).toString());
-        this.pagerElement.querySelector('.e-mfirst').setAttribute('index', '1');
-        this.pagerElement.querySelector('.e-mlast').setAttribute('index', pagerObj.totalPages.toString());
-        this.pagerElement.querySelector('.e-mprev').setAttribute('index', (pagerObj.currentPage - 1).toString());
-        this.pagerElement.querySelector('.e-mnext').setAttribute('index', (pagerObj.currentPage + 1).toString());
-        this.PP.setAttribute('index', (parseInt(this.links[0].getAttribute('index'), 10) - pagerObj.pageCount).toString());
-        this.NP.setAttribute('index', (parseInt(this.links[this.links.length - 1].getAttribute('index'), 10) + 1).toString());
+        attributes(this.first, {
+            'index': '1',
+            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip')
+        });
+        attributes(this.pagerElement.querySelector('.e-mfirst'), {
+            'index': '1',
+            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip')
+        });
+        attributes(this.last, {
+            'index': pagerObj.totalPages.toString(),
+            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip')
+        });
+        attributes(this.pagerElement.querySelector('.e-mlast'), {
+            'index': pagerObj.totalPages.toString(),
+            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip')
+        });
+        attributes(this.prev, {
+            'index': (pagerObj.currentPage - 1).toString(),
+            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip')
+        });
+        attributes(this.pagerElement.querySelector('.e-mprev'), {
+            'index': (pagerObj.currentPage - 1).toString(),
+            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip')
+        });
+        attributes(this.next, {
+            'index': (pagerObj.currentPage + 1).toString(),
+            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip')
+        });
+        attributes(this.pagerElement.querySelector('.e-mnext'), {
+            'index': (pagerObj.currentPage + 1).toString(),
+            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip')
+        });
+        attributes(this.PP, {
+            'index': (parseInt(this.links[0].getAttribute('index'), 10) - pagerObj.pageCount).toString(),
+            'title': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip')
+        });
+        attributes(this.NP, {
+            'index': (parseInt(this.links[this.links.length - 1].getAttribute('index'), 10) + 1).toString(),
+            'title': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+            'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip')
+        });
     }
 
     private updateStyles(): void {

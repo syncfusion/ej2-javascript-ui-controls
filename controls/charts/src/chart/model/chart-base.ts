@@ -417,6 +417,14 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      */
     @Property(1)
     public opacity: number;
+
+    /**
+     * The URL of the background image for the strip line.
+     *
+     * @default ''
+     */
+     @Property('')
+     public imageUrl : string;
 }
 
 /**

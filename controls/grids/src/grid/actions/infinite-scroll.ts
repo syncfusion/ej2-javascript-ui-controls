@@ -727,10 +727,15 @@ export class InfiniteScroll implements IAction {
     }
 
     private getVirtualInfiniteData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
-        this.getVirtualInfiniteEditedData();
-        data.virtualData = this.virtualInfiniteData;
-        data.isAdd = this.isAdd;
-        data.isCancel = this.isCancel;
+        if (this.parent.infiniteScrollSettings.enableCache && this.parent.isEdit && isNullOrUndefined(data['endEdit'])) {
+            this.parent.editModule.closeEdit();
+        }
+        else {
+            this.getVirtualInfiniteEditedData();
+            data.virtualData = this.virtualInfiniteData;
+            data.isAdd = this.isAdd;
+            data.isCancel = this.isCancel;
+        }
     }
 
     private editActionBegin(e: { data: Object, index: number }): void {

@@ -874,6 +874,8 @@ export function pathAnimation(
                 endPath = endDirections[index as number] ? endDirections[index as number].split(' ') : startPath;
                 if (startPath[0] === 'Z') {
                     currentDireciton += 'Z' + ' ';
+                } else if (startPath[0] === '') {
+                    currentDireciton = '';
                 } else {
                     currentDireciton += startPath[0] + ' ' +
                         linear(args.timeStamp, +startPath[1], (+endPath[1] - +startPath[1]), args.duration) + ' ' +

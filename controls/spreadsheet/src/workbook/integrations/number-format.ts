@@ -488,6 +488,7 @@ export class WorkbookNumberFormat {
             return '';
         }
         let isFormatted: boolean;
+        let isZeroFormat: boolean;
         let formattedText: string = cell.value;
         let cellValue: number | string = cell && checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).value;
         if (isNumber(cellValue)) {
@@ -506,6 +507,8 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('"') > -1 || customFormat.indexOf('\\') > -1) {
                 customFormat = this.processText(customFormat);
+                isZeroFormat = cellValue === 0 && !customFormat.includes('#') && !customFormat.includes('0') && !customFormat.includes('?') ;
+                if (isZeroFormat) { customFormat += '#'; }
             }
             const separatorCount: number = this.getSeparatorCount(cell);
             if (separatorCount) {
@@ -543,6 +546,9 @@ export class WorkbookNumberFormat {
             }
             if (!isFormatted) {
                 formattedText = this.getFormattedNumber(customFormat, cellValue);
+            }
+            if (isZeroFormat && formattedText) {
+                formattedText = formattedText.replace('0', '');
             }
             // Need to remove this line once this case is handled by core team.
             if (customFormat[0] === '#' && cellValue >= 0 && cellValue < 1) {
@@ -684,6 +690,15 @@ export class WorkbookNumberFormat {
                 }
             }
             if (options.args.format === 'General') {
+                if (options.args.cell && options.args.cell.formula && cellVal.includes('.') && cellVal.length > 11) {
+                    const decIndex: number = cellVal.indexOf('.') + 1;
+                    if (options.args.cell.formula.includes('RANDBETWEEN')) {
+                        options.fResult = cellVal = decIndex < 7 ? cellVal : (parseFloat(cellVal)).toFixed(0);
+                    } else {
+                        options.fResult = cellVal = decIndex < 11 ? Number(parseFloat(cellVal).toFixed(11 - decIndex)).toString() :
+                            parseFloat(cellVal).toFixed(0);
+                    }
+                }
                 const cellValArr: string[] = cellVal.split('.');
                 if (cellValArr[0].length > 11) {
                     cellVal = (Math.abs(Number(cellValArr[0])).toString()).substring(0,6).replace(/0+$/,'');

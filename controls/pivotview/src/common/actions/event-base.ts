@@ -697,7 +697,7 @@ export class EventBase {
         const memberObject: IMembers = this.parent.engineModule.fieldList[fieldName as string].members;
         const selectedNodes: string[] = filterObj ? Object.keys(filterObj) : [];
         for (const node of selectedNodes) {
-            const parent: string = memberObject[node as string].parent;
+            const parent: string = memberObject[node as string] ? memberObject[node as string].parent : undefined;
             if (parent !== undefined && PivotUtil.inArray(parent, parentNodes) === -1) {
                 parentNodes.push(parent);
             }

@@ -197,6 +197,7 @@ export class EventWindow {
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
+        const endTime: number = this.eventData[this.fields.endTime].getTime();
         const eventProp: PopupOpenEventArgs = {
             type: 'Editor',
             data: this.eventData,
@@ -221,6 +222,12 @@ export class EventWindow {
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             args.cancel = popupArgs.cancel;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
+            if (this.eventData[this.fields.endTime].getTime() === endTime && !this.cellClickAction &&
+                (<Date>this.eventData[this.fields.endTime]).getHours() === 0 &&
+                (<Date>this.eventData[this.fields.endTime]).getMinutes() === 0) {
+                this.eventData = <Record<string, any>>extend({}, this.eventData, null, true);
+                this.trimAllDay(this.eventData);
+            }
             this.refreshDateTimePicker(this.duration);
             if (this.cellClickAction && popupArgs.duration !== this.getSlotDuration() && isNullOrUndefined(this.parent.editorTemplate)) {
                 const startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as unknown as DateTimePicker;
@@ -916,12 +923,12 @@ export class EventWindow {
     }
 
     private showDetails(eventData: Record<string, any>): void {
+        this.eventData = eventData;
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
         if ((!this.cellClickAction || this.cellClickAction && !isNullOrUndefined(this.parent.editorTemplate)) &&
             (<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);
         }
-        this.eventData = eventObj;
         const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         const keyNames: string[] = Object.keys(eventObj);
         for (const curElement of formElements) {

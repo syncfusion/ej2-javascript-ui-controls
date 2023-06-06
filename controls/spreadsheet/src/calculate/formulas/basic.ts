@@ -409,13 +409,19 @@ export class BasicFormulas {
             const range: string = ranges[k as number];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
-                const startRow: number = this.parent.rowIndex(range.substr(0, i));
-                const endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                let startRow: number = this.parent.rowIndex(range.substr(0, i));
+                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
                 if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                const col1: number = this.parent.colIndex(range.substr(0, i));
-                const col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (startRow > endRow) {
+                    [startRow, endRow] = [endRow, startRow];
+                }
+                let col1: number = this.parent.colIndex(range.substr(0, i));
+                let col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (col1 > col2) {
+                    [col1, col2] = [col2, col1];
+                }   
                 if (mulValues === null) {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];

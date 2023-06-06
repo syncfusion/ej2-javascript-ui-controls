@@ -288,7 +288,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public fill: string;
 
     /**
-     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     * Trackball is enabled by default when the mouse moves, but it can be disabled by setting "false" to the marker's "allowHighlight" property.
      *
      * @default true
      */
@@ -2079,67 +2079,82 @@ export class Series extends SeriesBase {
         if (isStacking100) {
             frequencies = <number[]>this.findFrequencies(seriesCollection);
         }
-        const stackingSeies: Series[] = [];
-        const stackedValues: number[] = [];
+        const groupingValues: string[] = [];
         let visiblePoints: Points[] = [];
-        for (const series of seriesCollection) {
-            if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
-                (series.chart.chartAreaType === 'PolarRadar'))) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
-                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
-                if (!lastPositive[stackingGroup as string]) {
-                    lastPositive[stackingGroup as string] = [];
-                    lastNegative[stackingGroup as string] = [];
-                }
-                yValues = series.yData;
-                startValues = [];
-                endValues = [];
-                stackingSeies.push(series);
-                visiblePoints = getVisiblePoints(series);
-                for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
-                    lastValue = 0;
-                    value = +yValues[j as number]; // Fix for chart not rendering while y value is given as string issue
-                    if (lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
-                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
-                    }
-                    if (lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
-                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
-                    }
-                    if (isStacking100) {
-                        value = value / frequencies[stackingGroup as string][visiblePoints[j as number].xValue] * 100;
-                        value = !isNaN(value) ? value : 0;
-                        visiblePoints[j as number].percentage = +(value.toFixed(2));
-                    } else {
-                        stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
-                    }
-                    if (value >= 0) {
-                        lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
-                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] += value;
-                    } else {
-                        lastValue = lastNegative[stackingGroup as string][visiblePoints[j as number].xValue];
-                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] += value;
-                    }
-                    startValues.push(lastValue);
-                    endValues.push(value + lastValue);
-                    if (isStacking100 && (endValues[j as number] > 100)) {
-                        endValues[j as number] = 100;
-                    }
-                }
-                series.stackedValues = new StackValues(startValues, endValues);
-                const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
-                const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
-                series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
-                series.yMax = Math.max.apply(0, endValues);
-                if (series.yMin > Math.min.apply(0, endValues)) {
-                    series.yMin = (isStacking100) ? -100 :
-                        isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, endValues);
-                }
-                if (series.yMax < Math.max.apply(0, startValues)) {
-                    series.yMax = 0;
-                }
+        for (let i: number = 0; i < seriesCollection.length; i++) {
+            const series: Series = seriesCollection[i as number];
+            if (!groupingValues[series.stackingGroup]) {
+                groupingValues[series.stackingGroup] = [];
+                groupingValues[series.stackingGroup].push(series);
+            }
+            else if (groupingValues[series.stackingGroup] !== undefined) {
+                groupingValues[series.stackingGroup].push(series);
             }
         }
-        this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
+        const keys: string[] = Object.keys(groupingValues);
+        for (let k: number = 0; k < keys.length; k++) {
+            const stackingSeies: Series[] = [];
+            const stackedValues: number[] = [];
+            const seriesCollection: Series[] = groupingValues[keys[k as number]];
+            for (const series of seriesCollection) {
+                if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
+                    (series.chart.chartAreaType === 'PolarRadar'))) {
+                    stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                        (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
+                    if (!lastPositive[stackingGroup as string]) {
+                        lastPositive[stackingGroup as string] = [];
+                        lastNegative[stackingGroup as string] = [];
+                    }
+                    yValues = series.yData;
+                    startValues = [];
+                    endValues = [];
+                    stackingSeies.push(series);
+                    visiblePoints = getVisiblePoints(series);
+                    for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
+                        lastValue = 0;
+                        value = +yValues[j as number]; // Fix for chart not rendering while y value is given as string issue
+                        if (lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                            lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
+                        }
+                        if (lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                            lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
+                        }
+                        if (isStacking100) {
+                            value = value / frequencies[stackingGroup as string][visiblePoints[j as number].xValue] * 100;
+                            value = !isNaN(value) ? value : 0;
+                            visiblePoints[j as number].percentage = +(value.toFixed(2));
+                        } else {
+                            stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
+                        }
+                        if (value >= 0) {
+                            lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
+                            lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] += value;
+                        } else {
+                            lastValue = lastNegative[stackingGroup as string][visiblePoints[j as number].xValue];
+                            lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] += value;
+                        }
+                        startValues.push(lastValue);
+                        endValues.push(value + lastValue);
+                        if (isStacking100 && (endValues[j as number] > 100)) {
+                            endValues[j as number] = 100;
+                        }
+                    }
+                    series.stackedValues = new StackValues(startValues, endValues);
+                    const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
+                    const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
+                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
+                    series.yMax = Math.max.apply(0, endValues);
+                    if (series.yMin > Math.min.apply(0, endValues)) {
+                        series.yMin = (isStacking100) ? -100 :
+                            isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, endValues);
+                    }
+                    if (series.yMax < Math.max.apply(0, startValues)) {
+                        series.yMax = 0;
+                    }
+                }
+            }
+            this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
+        }
     }
     private findPercentageOfStacking(stackingSeies: Series[], values: number[], isStacking100: boolean): void {
         for (const item of stackingSeies) {

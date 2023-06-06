@@ -31,6 +31,7 @@ export class Edit {
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
     private isNewRecordAdded: boolean = false;
+    private isValidatedEditedRecord: boolean = false;
     /**
      * @private
      */
@@ -475,7 +476,7 @@ export class Edit {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
-                tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
+                tasks.baselineEndDate, tasks.id, tasks.segments,tasks.cssClass].indexOf(key) !== -1) {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
                 let value: any = data[key as string];
@@ -487,7 +488,9 @@ export class Edit {
                     ganttPropKey = 'taskId';
                 } else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
-                } else if ((key === tasks.segments)&&(!isNullOrUndefined(ganttData.ganttProperties.segments)) ) {
+                }else if (key === tasks.cssClass) {
+                    ganttPropKey = 'cssClass'
+                }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
                     ganttPropKey = 'segments';
                     /* eslint-disable-next-line */
                     if (data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
@@ -797,6 +800,11 @@ export class Edit {
                     newArgs.validateMode.respectLink === false) {
                     this.parent.connectorLineEditModule.openValidationDialog(validateObject);
                 } else {
+                    if (this.parent.editModule && this.parent.editModule.dialogModule &&
+                        this.parent.editModule.dialogModule['isEdit'] && this.predecessorUpdated) {
+                        this.isValidatedEditedRecord = true;
+                        this.parent.predecessorModule.validatePredecessor(args.data, [], '');
+                    }
                     this.parent.connectorLineEditModule.applyPredecessorOption();
                 }
             } else {
@@ -861,7 +869,10 @@ export class Edit {
                 if (this.taskbarMoved) {
                     this.parent.editedTaskBarItem = ganttRecord;
                 }
-                this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
+                if (!this.isValidatedEditedRecord) {
+                   this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
+                }
+                this.isValidatedEditedRecord = false;
                 this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
@@ -2899,6 +2910,7 @@ export class Edit {
             let args: ITaskAddedEventArgs = {};
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
+                this.parent.previousRecords={};
                 if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
                     this.parent.showMaskRow()
                 } else {

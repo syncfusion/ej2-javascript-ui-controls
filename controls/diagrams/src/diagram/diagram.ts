@@ -8032,7 +8032,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     (!(renderNode.processId) || this.refreshing)) {
                     //EJ2-68738 - Overview content not updated properly on zoom out the diagram
                      let  transformValue:TransformFactor
-                     if(this.scroller.currentZoom < 1){
+                    //828826 - In canvas mode diagram transform values are not updated properly while Zoom out action
+                    //Transform values updated by pagebounds only in SVG Mode for Overview Content
+                    if (this.scroller.currentZoom < 1 && this.mode == 'SVG'){
                          transformValue = {
                              tx:(-pageBounds.x)/this.scroller.currentZoom,
                              ty:(-pageBounds.y)/this.scroller.currentZoom,
@@ -9637,17 +9639,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updatePorts(updateNode, node.flip);
                     }
                 }
+                //EJ2-826617 - Flip option for BPMN node
+                else{
+                    this.updatePorts(actualObject, actualObject.flip);
+                }
             } else {
-                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
+                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
                     this.updatePorts(actualObject, node.flip);
+                }
+                //EJ2-826617 - Flip 'None' is not working properly
+                else if(actualObject.flip === 'None'){
+                    this.updatePorts(actualObject, node.flip);
+                }
             }
         }
         // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
         if (node.flipMode !== undefined) {
             update = true;
             updateConnector = true;
-            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
-            this.updatePorts(actualObject, actualObject.flip);
+            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
+                this.updatePorts(actualObject, actualObject.flip);
+            }
+            //EJ2-826617 - Flip mode 'Label' does not triggers the port
+            else if( actualObject.flipMode === 'Label'){
+                this.updatePorts(actualObject, 'None');
+            }
+            //EJ2-826617 - Flip mode 'None' is not working properly
+            else if(actualObject.flipMode === 'None'){
+                this.updatePorts(actualObject, actualObject.flipMode);
+            }
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
@@ -10970,6 +10990,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.diagramActions & DiagramAction.DragUsingMouse) {
             this.renderPageBreaks();
+            //EJ2-826378 - Scroller not updated properly when we drag node outside viewport.
+            // While dragging, we need to update the scroller.
+            this.scroller.updateScrollOffsets();
+            this.scroller.setSize();
         }
     }
 
@@ -11654,8 +11678,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (length > 1) {
-            this.commandHandler.moveSvgNode(node.id, currentLayer.objects[length - 2]);
-            this.commandHandler.moveSvgNode(currentLayer.objects[length - 2], node.id);
+            // Bug 830365: Exception raised on adding group node in layers dynamically.
+            // Added below code to check the group node and iterate its children in layer to find the last object in the layer.
+            let num = 2;
+            if((node as NodeModel).children && (node as NodeModel).children.length > 0) {
+                while((node as NodeModel).children.indexOf(currentLayer.objects[length - num]) > -1) {
+                    num++;
+                }
+            }
+            this.commandHandler.moveSvgNode(node.id, currentLayer.objects[length - num]);
+            this.commandHandler.moveSvgNode(currentLayer.objects[length - num], node.id);
         } else {
             if (targetLayer) {
                 const targetObject: string = this.commandHandler.getLayer(this.layerZIndexTable[targetLayer.zIndex]).objects[0];

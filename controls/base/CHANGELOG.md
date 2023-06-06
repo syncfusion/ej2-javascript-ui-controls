@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 21.2.9 (2023-06-06)
+
+### Common
+
+#### Bug Fixes
+
+- `#I461547` - The issue with the "popup showing on the entire page in the Chrome browser on iPad devices" has been resolved.
+
+## 21.1.35 (2023-05-9)
+
+### Common
+
+#### Bug Fixes
+
+- `#I451675` - The issue in the `template engine` when using `boolean` value has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Common

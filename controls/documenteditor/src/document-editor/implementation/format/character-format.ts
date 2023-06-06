@@ -509,6 +509,16 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('fontFamily'))) {
             this.fontFamily = format.getValue('fontFamily') as string;
+        } else {
+            if (isNullOrUndefined(this.getValue('fontFamilyAscii'))) {
+                this.fontFamilyAscii = format.getValue('fontFamily') as string;
+            }
+            if (isNullOrUndefined(this.getValue('fontFamilyFarEast'))) {
+                this.fontFamilyFarEast = format.getValue('fontFamily') as string;
+            }
+            if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast'))) {
+                this.fontFamilyNonFarEast = format.getValue('fontFamily') as string;
+            }
         }
         if (isNullOrUndefined(this.getValue('underline'))) {
             this.underline = format.getValue('underline') as Underline;

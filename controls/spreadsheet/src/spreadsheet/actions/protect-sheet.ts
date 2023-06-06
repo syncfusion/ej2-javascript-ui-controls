@@ -787,7 +787,7 @@ export class ProtectSheet {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (this.parent.allowOpen && this.parent.openModule.isImportedFile &&
+        if (sheet.isProtected && this.parent.allowOpen && this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);
         }

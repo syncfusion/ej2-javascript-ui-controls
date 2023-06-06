@@ -1164,10 +1164,17 @@ export class DiagramEventHandler {
             }
             this.diagram.scrollActions |= ScrollActions.Interaction;
             let canMouseWheel:boolean = true;
+            // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
+            // Added the below condition to check whether the mouse wheel is from trackpad or not.
+            var isTrackpadScroll:boolean = false;
+            if((Math.abs(evt.deltaY) < 100 && Math.abs(evt.deltaX) === -0) || 
+                (Math.abs(evt.deltaX) < 100 && Math.abs(evt.deltaY) === -0)){
+                isTrackpadScroll = true;
+            }
             if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
-                this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel);
-            } else {
-                this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel);
+                this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
+            } else if((evt.deltaY && evt.deltaY !== -0)) {
+                this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
             }
             this.diagram.scrollActions &= ~ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
@@ -2142,8 +2149,12 @@ export class DiagramEventHandler {
                 for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children.length; j++) {
                     const id: string = (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)].id;
                     const childNode: NodeModel = this.diagram.nameTable[`${id}`];
-                    childNode.offsetX = childNode.wrapper.offsetX;
-                    childNode.offsetY = childNode.wrapper.offsetY;
+                    //828489 - Exception occurs while dragging swimlane after adding shape then undo action is performed
+                    if(childNode)
+                    {
+                        childNode.offsetX = childNode.wrapper.offsetX;
+                        childNode.offsetY = childNode.wrapper.offsetY;
+                    }  
                 }
             }
         }

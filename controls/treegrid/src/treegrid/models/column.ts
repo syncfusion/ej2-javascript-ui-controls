@@ -1,5 +1,5 @@
 import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, CommandModel, freezeDirection } from '@syncfusion/ej2-grids';
-import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
+import { NumberFormatOptions, DateFormatOptions, merge, Property } from '@syncfusion/ej2-base';
 import { ITreeGridCellFormatter } from '../base/interface';
 import { SortComparer} from '@syncfusion/ej2-grids';
 import { TreeGrid } from '..';
@@ -818,3 +818,40 @@ export interface ColumnModel {
      */
     freeze?: freezeDirection;
 }
+
+
+/**
+ * Defines TreeGrid column
+ */
+export class TreeGridColumn extends Column {
+    /**
+     * Defines stacked columns
+     *
+     * @default null
+     */
+    @Property(null)
+    public columns: string[] | ColumnModel[];
+}
+
+/**
+ * Interface for a class TreeGridColumn
+ */
+export interface TreeGridColumnModel extends ColumnModel {
+    /**
+     * Defines stacked columns
+     *
+     * @default null
+     */
+    columns?: string[] | ColumnModel[];
+}
+
+/**
+ * Defines stacked tree grid column
+ */
+export class StackedColumn extends TreeGridColumn {}
+
+/**
+ * Interface for a class stacked tree grid column
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface StackedColumnModel extends TreeGridColumnModel {}

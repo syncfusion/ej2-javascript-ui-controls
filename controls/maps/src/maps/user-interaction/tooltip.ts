@@ -256,7 +256,7 @@ export class MapsTooltip {
                         tooltipTemplateElement.style.cssText = templateStyle;
                     }
                 } else {
-                    this.clearTooltip();
+                    this.clearTooltip(<HTMLElement>e.target);
                 }
             });
 
@@ -271,7 +271,7 @@ export class MapsTooltip {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
                 } as ITooltipRenderCompleteEventArgs);
             } else {
-                this.clearTooltip();
+                this.clearTooltip(<HTMLElement>e.target);
             }
         } else {
             tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
@@ -279,7 +279,7 @@ export class MapsTooltip {
                 && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
                 this.maps.notify(click, this);
             } else {
-                this.clearTooltip();
+                this.clearTooltip(<HTMLElement>e.target);
             }
         }
     }
@@ -339,12 +339,16 @@ export class MapsTooltip {
         return isTooltipRemoved;
     }
 
-    private clearTooltip(): void {
-        const isTooltipRemoved: boolean = this.removeTooltip();
-        if (isTooltipRemoved) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.maps as any).clearTemplate();
+    private clearTooltip(element: HTMLElement): void {
+        let tooltipElement = element.closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+        if (isNullOrUndefined(tooltipElement)) {
+            const isTooltipRemoved: boolean = this.removeTooltip();
+            if (isTooltipRemoved) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.maps as any).clearTemplate();
+            }
         }
+
     }
     // eslint-disable-next-line valid-jsdoc
     /**

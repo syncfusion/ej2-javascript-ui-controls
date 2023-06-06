@@ -1262,13 +1262,9 @@ function preventArrayDefaults(clonedObject: object, defaultObject: object, model
         }
     } else {
         let i: number;
-        if (property === 'layers') {
-            clonedObject[`${property}`].splice(0, 1);
-            if (clonedObject[`${property}`].length === 0) {
-                delete clonedObject[`${property}`];
-            }
-        }
-        if (clonedObject[`${property}`]) {
+        // Bug 826717: Unable to select swimlane child nodes after serializing the diagram when we enable preventDefault property.
+        // Removed the codition to delete the layers from clonedObject.
+        if (clonedObject[`${property}`] && property !== 'layers') {
             for (i = clonedObject[`${property}`].length - 1; i >= 0; i--) {
                 if (property === 'nodes' || property === 'connectors') {
                     clonedObject[`${property}`][parseInt(i.toString(), 10)].wrapper = null;
@@ -1551,6 +1547,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
       {
           for(j=0;j<dataObj.layers[i].objects.length;j++)
           {
+            if(dataObj.nodes){
               for(k=0;k<dataObj.nodes.length;k++)
               {
                   if(dataObj.layers[i].objects[j]===dataObj.nodes[k].id)
@@ -1559,9 +1556,11 @@ export function deserialize(model: string, diagram: Diagram): Object {
                       layers.push(dataObj.layers[i].objects[j] as LayerModel);
                   }
               }
+            }
           }
           for(j=0;j<dataObj.layers[i].objects.length;j++)
           {
+            if(dataObj.connectors){
               for(k=0;k<dataObj.connectors.length;k++)
               {
                   if(dataObj.layers[i].objects[j]===dataObj.connectors[k].id)
@@ -1570,6 +1569,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
                       layers.push(dataObj.layers[i].objects[j] as LayerModel);
                   }
               }
+            }
           }
           dataObj.layers[i].objects = layers as string[];
           layers = [];

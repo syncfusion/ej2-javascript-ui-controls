@@ -2214,7 +2214,7 @@ describe('Quick Popups', () => {
             util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
         });
-        it('Check Following Edit Button Availability for Recurrenece Edited Event', (done: DoneFn) => {
+        it('ES-827815 - Check Following Edit Button Availability for Recurrence Edited Event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(2);
                 done();
@@ -2228,7 +2228,7 @@ describe('Quick Popups', () => {
             const quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.querySelector('.e-footer-content .e-quick-dialog-following-events').classList.contains('e-disable'))
-                .toEqual(true);
+                .toEqual(false);
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             const eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;

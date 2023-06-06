@@ -88,7 +88,7 @@
           color: $agg-clr;
         }
 
-        @if $skin-name == 'material' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'bootstrap5' or $skin-name == 'material-dark' {
           & .e-btn-icon {
             color: $sheet-tab-btn-icon-color;
           }

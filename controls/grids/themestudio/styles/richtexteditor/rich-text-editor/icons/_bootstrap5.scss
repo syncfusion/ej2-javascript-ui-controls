@@ -305,6 +305,27 @@
     }
   }
 
+  .e-rtl {
+    .e-rte-toolbar,
+    .e-rte-dropdown-popup {
+      .e-unorder-list::before {
+        content: '\e8c4';
+      }
+  
+      .e-order-list::before {
+        content: '\e8c5';
+      }
+  
+      .e-indent::before {
+        content: '\e8c6';
+      }
+  
+      .e-outdent::before {
+        content: '\e8c7';
+      }
+    }
+  }
+
   .e-cell-merge::before {
     content: '\e83a';
   }

@@ -1906,6 +1906,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
         (e as KeyboardEventArgs).action !== 'format-copy' && (e as KeyboardEventArgs).action !== 'format-paste' &&
+        (!(e as KeyboardEvent).target || !((e as KeyboardEvent).target as Element).classList.contains('e-mention')) &&
         ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
         || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
             let FormatPainterEscapeAction: boolean = false;
@@ -3501,7 +3502,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setAutoHeight(element: HTMLElement): void {
         if (!isNOU(element)) {
-            element.style.height = '';
             element.style.height = this.inputElement.scrollHeight + 'px';
             element.style.overflow = 'hidden';
         }

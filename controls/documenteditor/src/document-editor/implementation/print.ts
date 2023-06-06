@@ -51,15 +51,15 @@ export class Print {
         if (browserUserAgent.indexOf('Chrome') !== -1) {
             // Chrome
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html><head><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
+            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
         }
         else if (browserUserAgent.indexOf('Firefox') !== -1) {
             // Firefox
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; } img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
+            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><title>' + documentHelper.owner.documentName + '</title><style>html, body { height: 100%; } img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
         } else {
             // Internet Explorer and Edge
-            printWindow.document.write('<html><head><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
+            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
         }
         printWindow.document.write(printElement.innerHTML + '</center><script> (function() { window.ready = true; })(); </script></body></html>');
         printElement = undefined;

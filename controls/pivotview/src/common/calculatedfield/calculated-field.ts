@@ -1064,7 +1064,7 @@ export class CalculatedField implements IAction {
             },
             animationSettings: { effect: 'Zoom' },
             width: '25%',
-            isModal: false,
+            isModal: true,
             closeOnEscape: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,

@@ -230,12 +230,12 @@ console.log('export checking without error');
     });
     it('export with Contextual spacing', () => {
 console.log('export with Contextual spacing');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
     });
     it('export without Contextual spacing', () => {
 console.log('export without Contextual spacing');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         expect(write.paragraphFormat.contextualSpacing).toBeUndefined();
     });
 });
@@ -273,7 +273,7 @@ console.log('export checking without error');
     });
     it('export with Contextual spacing', () => {
 console.log('export with Contextual spacing');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         expect(write.sections[0].blocks[0].paragraphFormat.contextualSpacing).toBeUndefined();
         expect(write.styles[1].paragraphFormat.contextualSpacing).toBe(true);
     });
@@ -311,25 +311,28 @@ console.log('export checking without error');
     });
     it('export with Contextual spacing', () => {
 console.log('export with Contextual spacing');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
         let writer: XmlWriter = new XmlWriter();
+        (editor.wordExportModule as any).keywordIndex = 0;
         (editor.wordExportModule as any).serializeParagraphFormat(writer, write.sections[0].blocks[1].paragraphFormat, write.sections[0].blocks[1]);
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing')).not.toBe(-1);
     });
     it('export with Contextual spacing as false', () => {
 console.log('export with Contextual spacing as false');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         write.sections[0].blocks[1].paragraphFormat.contextualSpacing = false;
         let writer: XmlWriter = new XmlWriter();
+        (editor.wordExportModule as any).keywordIndex = 0;
         (editor.wordExportModule as any).serializeParagraphFormat(writer, write.sections[0].blocks[1].paragraphFormat, write.sections[0].blocks[1]);
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing w:val="0"')).not.toBe(-1);
     });
     it('export with Contextual spacing as undefined', () => {
 console.log('export with Contextual spacing as undefined');
-        let write = editor.sfdtExportModule.write();
+        let write = editor.sfdtExportModule.write(0);
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
         let writer: XmlWriter = new XmlWriter();
+        (editor.wordExportModule as any).keywordIndex = 0;
         (editor.wordExportModule as any).serializeParagraphFormat(writer, write.sections[0].blocks[0].paragraphFormat, write.sections[0].blocks[1]);
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing')).toBe(-1);
     });

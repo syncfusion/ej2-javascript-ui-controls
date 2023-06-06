@@ -631,6 +631,7 @@ export class Column {
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact) {
                 if (keys[parseInt(i.toString(), 10)] === 'template') {
+                    this.templateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
                     this.parent.refreshReactColumnTemplateByUid(this.uid, true);
                 } else if (keys[parseInt(i.toString(), 10)] === 'headerTemplate') {
                     this.headerTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);

@@ -215,6 +215,29 @@ describe('Chart control checking', () => {
             chart.refresh();
 
         });
+        it(' XAxis Stripline with image', (done: Function) => {
+            loaded = () => {
+                stripLineElement = document.getElementById(stripLineId + '_Over_rect_' + 'primaryXAxis' + '_0');
+                expect(stripLineElement).not.toEqual(null);
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis' + '_0');
+                expect(stripLineElement).not.toEqual(null);
+                done();
+            };
+            chart.primaryXAxis.stripLines = [
+                {
+                    startFromAxis: false, start: 1, size: 4,imageUrl:'base/spec/img/img1.jpg',
+                    verticalAlignment: 'End', opacity: 0.5,
+                    color: 'red', zIndex: 'Behind', text: 'Behind'
+                },
+                {
+                    start: 6, end: 8, opacity: 0.3,
+                    color: 'blue', textStyle: { color: '#ffffff' },
+                    text: 'Over', zIndex: 'Over'
+                }];
+            chart.loaded = loaded;
+            chart.refresh();
+
+        });
     });
     describe('Stripline Size Type checking', () => {
         beforeAll((): void => {

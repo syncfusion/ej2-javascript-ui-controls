@@ -532,4 +532,51 @@ describe('Diagram Control', () => {
             console.log(scrollY);
         });
     });
+    describe('Scroller is not updated properly when we drag nodes outside viewport', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_scrollerViewPort' });
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 450, offsetY: 100 };
+            diagram = new Diagram({
+                width: '500px',
+                height: '600px',
+                nodes: [node],
+            });
+            diagram.appendTo('#diagram_scrollerViewPort');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Dragging node outside viewport in horizontal direction', (done: Function) => {
+            let node = diagram.nodes[0];
+            let prevPageBounds = diagram.scroller.getPageBounds();
+            let viewPortWidth = diagram.scroller.viewPortWidth;
+            let viewPortHeight = diagram.scroller.viewPortHeight;
+            diagram.drag(node,50,0);
+            let currectPageBounds = diagram.scroller.getPageBounds();
+            expect( currectPageBounds.width > prevPageBounds.width && currectPageBounds.width >= 550 
+                && currectPageBounds.width > viewPortWidth).toBe(true);
+            done();
+        });
+        it('Dragging node outside viewport in vertical direction', (done: Function) => {
+            let node = diagram.nodes[0];
+            node.offsetY = 550;
+            diagram.dataBind();
+            let prevPageBounds = diagram.scroller.getPageBounds();
+            let viewPortWidth = diagram.scroller.viewPortWidth;
+            let viewPortHeight = diagram.scroller.viewPortHeight;
+            diagram.drag(node,0,50);
+            let currectPageBounds = diagram.scroller.getPageBounds();
+            expect( currectPageBounds.height > prevPageBounds.height && currectPageBounds.height >= 650 
+                && currectPageBounds.height > viewPortHeight).toBe(true);
+            done();
+        });
+    });
 });

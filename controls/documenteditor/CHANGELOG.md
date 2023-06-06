@@ -2,6 +2,76 @@
 
 ## [Unreleased]
 
+## 21.2.8 (2023-05-30)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I454919` - ShowComment API is now working properly.
+- `#FB43366` - when track changes is enabled, chinese letters are now properly rendered.
+- `#I457517` - Resolved script error occurred when removing the content.
+- `#I454821` - Resolved the issue with document parsing in the Tika server.
+- `#I457688` - Resolved the selected content removing issue.
+- `#I457853` - Select all content is now removed properly.
+- `#I458134` - Table is now rendered properly without overlapping issue.
+- `#I459215` - Resolved Black color chart appearance while exporting as Docx.
+- `#I459220` - Resolved the component hanging issue on loading a document.
+- `#I459229` - Delete/backspace is now working for RTL last content.
+- `#I461305` - Resolved the style issue while pasting content from office 365.
+- `#I453980` - When opening the exported document with chart in Document Editor is not throwing an error.
+- `#I459906` - Header/Footer class is now added while converting docx/SFDT into HTML.
+- `#F182457` - Resolved the style issue while pasting content from office 365.
+
+## 21.2.6 (2023-05-23)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I455945` - Resolved the issue in Shape position.
+- `#I457467` - Now, getStyle() API will return the paragraph format.
+- `#I454858` - Resolved the image missing issue in footer.
+- `#I451667` - Horizontal scroll bar is not update properly based on cursor position.
+- `#I457039` - Resolved the console error while giving accept all.
+- `#I453407` - Resolved the script error when loading the document with smileys.
+
+#### New Features
+
+- `#I448978` - Added preservation support for text wrapping break.
+- `#F179297` - Added navigation support between the multiple comments in a single line while clicking the comment icon.
+- `#I433546` - Added support to show start and end markers for restricted range.
+- `#I450206` - Added support to restrict maximum number of columns when creating a table.
+
+## 21.2.5 (2023-05-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I449912` - Resolved layout issue while opening document.
+- `#I450342` - Resolved the wrong Font issue while opening a document.
+- `#I458331` - Resolved the paragraph combine issue when insert and delete comment.
+- `#I458334` - Cursor position issue is resolved when shift enter key is pressed.
+- `#I449581` - Resolved the script error when loading the track changes document with author field empty
+- `#I452303` - Layout issue is now not occurred when editing the document.
+- `#I452150` - Resolved the hanging issue when opening the attached document.
+- `#I453495` - Resolved the Overlapping issue when we do enter/page break before the shape.
+- `#I453196` - Resolved the issue in when perform undo action for Arabic content
+- `#I454659` - Resolved the issue occurred when performing track changes for Arabic content.
+- `#I449049` - A performance issue is resolved when typing inside the table.
+
+## 21.2.4 (2023-05-09)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I451421` - Resolved the issue with list indentation.
+- `#I450834` - Resolved the Script issue while opening SFDT.
+- `#I452243` - Resolved the issue with modifying the style in existing styles.
+- `#I449324` - Resolved the issue occurred while exporting the document in the .docx format.
+
 ## 21.2.3 (2023-05-03)
 
 ### Document Editor

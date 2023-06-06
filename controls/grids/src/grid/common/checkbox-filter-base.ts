@@ -186,8 +186,10 @@ export class CheckBoxFilterBase {
     private updateSearchIcon(): void {
         if (this.sInput.value.length) {
             classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
+            document.body.querySelector('.e-chkcancel-icon').setAttribute('title', this.localeObj.getConstant('Clear'));
         } else {
             classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
+            document.body.querySelector('.e-search-icon').setAttribute('title', this.localeObj.getConstant('Search'));
         }
     }
 

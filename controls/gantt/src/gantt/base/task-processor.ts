@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
     private constructResourceViewDataSource(resources: Object[], data: Object[], unassignedTasks: Object[]): void {
         for (let i: number = 0; i < data.length; i++) {
             const tempData: Object = data[i as number];
-             const child: string = this.parent.taskFields.child != null? this.parent.taskFields.child: 'Children';
+             const child: string = this.parent.taskFields.child != null? this.parent.taskFields.child: this.parent.taskFields.child = 'Children';
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
             if ((!tempData[child as string]  || tempData[child as string].length === 0) && resourceData && resourceData.length) {
@@ -335,7 +335,7 @@ export class TaskProcessor extends DateProcessor {
             (this.parent.taskMode === 'Manual') ? false :
                 data[taskSettings.manual] === true ? false : true;
         this.parent.setRecordValue('ganttProperties', ganttProperties, ganttData);
-        if (!isNullOrUndefined(data[taskSettings.id])) {
+        if (!isNullOrUndefined(data[taskSettings.id])&& (!((this.parent.viewType === "ResourceView" && level == 0))) || data[taskSettings.name]==="Unassigned Task" ) {
             id = data[taskSettings.id];
             name = data[taskSettings.name];
             this.addTaskData(ganttData, data, isLoad);
@@ -490,34 +490,61 @@ export class TaskProcessor extends DateProcessor {
                     startDate = this.checkStartDate(startDate, data.ganttProperties, false);
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
-                    } else {
-                        endDate = this.getDateFromFormat(endDate);
-                        endDate = this.checkEndDate(endDate, data.ganttProperties, false);
-                        duration = this.getDuration(
-                            startDate, endDate, data.ganttProperties.durationUnit,
-                            data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
-                    }
-                    if (taskSettings.duration) {
-                        remainingDuration = data.ganttProperties.duration - sumOfDuration;
-                        if (remainingDuration <= 0) {
-                            continue;
+                        if (taskSettings.duration) {
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration;
+                            if (remainingDuration <= 0) {
+                                continue;
+                            }
+                            duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
+                                    duration > remainingDuration ? remainingDuration : duration;
+                            endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                        } else if (!taskSettings.duration && taskSettings.endDate) {
+                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
+                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                            duration = this.getDuration(
+                                startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
+                                data.ganttProperties.isMilestone
+                            );
+                            if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
+                                && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
+                                ganttSegments[i - 1].duration = this.getDuration(
+                                    ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
+                                    data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                                continue;
+                            }
                         }
-                        duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
-                                duration > remainingDuration ? remainingDuration : duration;
-                        endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
-                    } else if (!taskSettings.duration && taskSettings.endDate) {
-                        endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
-                        data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
-                        duration = this.getDuration(
-                            startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
-                            data.ganttProperties.isMilestone
-                        );
-                        if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
-                            && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
-                            ganttSegments[i - 1].duration = this.getDuration(
-                                ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
-                                data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
-                            continue;
+                    } 
+                    else {
+                        endDate = this.getDateFromFormat(endDate);
+                        if (endDate && (isNullOrUndefined(duration) || String(duration) === '')) {
+                            if (endDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
+                                this.setTime(this.parent.defaultEndTime, endDate);
+                            }
+                        }
+                        endDate = this.checkEndDate(endDate, data.ganttProperties, false);
+                        duration = this.getDuration(startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                        if (taskSettings.duration) {
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration - 1 ;
+                            if (remainingDuration <= 0) {
+                                continue;
+                            }
+                            duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
+                                    duration > remainingDuration ? remainingDuration : duration;
+                            endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                        } else if (!taskSettings.duration && taskSettings.endDate) {
+                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
+                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                            duration = this.getDuration(
+                                startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
+                                data.ganttProperties.isMilestone
+                            );
+                            if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
+                                && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
+                                ganttSegments[i - 1].duration = this.getDuration(
+                                    ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
+                                    data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                                continue;
+                            }
                         }
                     }
                     segment = {};
@@ -760,7 +787,7 @@ export class TaskProcessor extends DateProcessor {
             startDate = this.getDateFromFormat(data[taskSettings.startDate], true);
             endDate = this.getDateFromFormat(data[taskSettings.endDate], true);
         }
-        const segments: ITaskSegment[] = taskSettings.segments ? (data[taskSettings.segments] ||
+        const segments: ITaskSegment[] = taskSettings.segments && (!isNullOrUndefined(data[taskSettings.segments]) || !isNullOrUndefined(ganttData.taskData)) ? (data[taskSettings.segments] ||
             ganttData.taskData[taskSettings.segments]) : null;
         const isMileStone: boolean = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         const durationMapping: string = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
@@ -1556,11 +1583,14 @@ export class TaskProcessor extends DateProcessor {
      */
     public setResourceInfo(data: Object): Object[] {
         // eslint-disable-next-line
-        let resourceIdCollection: object[];
+        let resourceIdCollection: object[] | any;
         if (isNullOrUndefined(data[this.parent.taskFields.resourceInfo])) {
             return resourceIdCollection;
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
+        if(resourceIdCollection != "" && typeof resourceIdCollection == "string"){
+            resourceIdCollection = resourceIdCollection.split(',');
+        }
         let resourceData: Object[];
         if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule)
             && this.parent.editModule.dialogModule.isAddNewResource) {
@@ -1569,6 +1599,7 @@ export class TaskProcessor extends DateProcessor {
             resourceData = this.parent.resources;
         }
         const resourceIDMapping: string = this.parent.resourceFields.id;
+        const resourceNameMapping = this.parent.resourceFields.name;
         const resourceUnitMapping: string = this.parent.resourceFields.unit;
         const resourceGroup: string = this.parent.resourceFields.group;
         const resources: Object[] = [];
@@ -1578,7 +1609,7 @@ export class TaskProcessor extends DateProcessor {
                     resourceIdCollection[count as number][resourceIDMapping as string] === resourceInfo[resourceIDMapping as string]) {
                     return true;
                 } else {
-                    return (resourceIdCollection[count as number] === resourceInfo[resourceIDMapping as string]);
+                    return (resourceIdCollection[count as number] === resourceInfo[resourceIDMapping as string]) || (resourceIdCollection[count as number] === resourceInfo[resourceNameMapping as string]);
                 }
             });
             const ganttDataResource: Object = extend({}, resource[0]);
@@ -2312,6 +2343,9 @@ export class TaskProcessor extends DateProcessor {
                         }
                     }
                     this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
+                    if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
+                        this.updateMappingData(parentData, 'milestone');
+                    }
                     if (parentProp.isAutoSchedule) {
                         this.calculateDuration(parentData);
                     }

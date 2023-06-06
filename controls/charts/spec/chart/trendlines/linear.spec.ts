@@ -361,6 +361,7 @@ describe('Chart', () => {
                 expect(tooltip != null).toBe(true);
                 tooltip = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;

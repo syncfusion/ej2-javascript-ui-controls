@@ -43,6 +43,7 @@ export class Clipboard implements IAction {
         this.parent.on(events.contentReady, this.initialEnd, this);
         this.parent.on(events.keyPressed, this.keyDownHandler, this);
         this.parent.on(events.click, this.clickHandler, this);
+        this.parent.on(events.onEmpty, this.initialEnd, this);
         EventHandler.add(this.parent.element, 'keydown', this.pasteHandler, this);
     }
 
@@ -55,6 +56,7 @@ export class Clipboard implements IAction {
         this.parent.off(events.keyPressed, this.keyDownHandler);
         this.parent.off(events.contentReady, this.initialEnd);
         this.parent.off(events.click, this.clickHandler);
+        this.parent.off(events.onEmpty, this.initialEnd);
         EventHandler.remove(this.parent.element, 'keydown', this.pasteHandler);
     }
 
@@ -73,7 +75,7 @@ export class Clipboard implements IAction {
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
             const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
-                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
+                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow' || !this.clipBoardTextArea) {
                 return;
             }
             this.activeElement = document.activeElement;
@@ -207,7 +209,7 @@ export class Clipboard implements IAction {
             this.clipBoardTextArea.value = this.copyContent = '';
             let mRows: Element[];
             let frRows: Element[];
-            const rows: Element[] = this.parent.getRows();
+            const rows: Element[] = this.parent.getDataRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
                 if (this.parent.getFrozenMode() === literals.leftRight || this.parent.getFrozenMode() === 'Right') {
@@ -382,7 +384,7 @@ export class Clipboard implements IAction {
                 }
             }
             rowIndexes.sort((a: number, b: number) => { return a - b; });
-            if (i === rowCellIndxes.length && rowIndexes[rowIndexes.length - 1] - rowIndexes[0] === rowIndexes.length - 1) {
+            if (i === rowCellIndxes.length) {
                 obj = { status: true, rowIndexes: rowIndexes, colIndexes: rowCellIndxes[0].cellIndexes };
             }
         }

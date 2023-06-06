@@ -631,7 +631,7 @@ export class DiagramScroller {
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean, isTrackpadScroll?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -659,9 +659,12 @@ export class DiagramScroller {
                     // EJ2-69238 - add true as an extra parameter to calcuate the horizontal and vertical offset
                     newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan, isBringIntoView);
                 }
+                // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
+                // The below condition is used to avoid the flickering of the scroll bar on scrolling the diagram using trackpad.
+                (-(pageBounds.y) >= newOffset.y && -(pageBounds.x) >= newOffset.x && isTrackpadScroll) ? isTrackpadScroll = true: isTrackpadScroll = false;
                 if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
                     !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
-                    this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
+                    this.diagram.scrollSettings.scrollLimit !== 'Diagram' || isTrackpadScroll) {
                     this.transform = {
                         tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
                         ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
@@ -836,7 +839,7 @@ export class DiagramScroller {
                 const scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
                 bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
             }
-            bounds = bounds || this.getPageBounds(true);
+            bounds = bounds || this.getPageBounds();
             bounds.x *= this.currentZoom;
             bounds.y *= this.currentZoom;
             bounds.width *= this.currentZoom;

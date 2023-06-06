@@ -2842,8 +2842,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /** @hidden */
 
-    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields,
-                     filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs): void {
+    public getEngine(
+        action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields,
+        filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs
+    ): void {
+        this.engineModule.isEmptyData = false;
         if (this.element.querySelector('.e-spin-hide')) {
             this.showWaitingPopup();
         }
@@ -2873,7 +2876,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid
+            hash: this.guid,
+            isGroupingUpdated: this.currentAction === 'onRefresh' && this.dataSourceSettings.groupSettings.length > 0
         };
         this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
             this.request = observedArgs.request;
@@ -3169,7 +3173,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
                     }
                     this.showWaitingPopup();
-                    this.initialLoad();
+                    this.notify(events.initialLoad, {});
                 } else {
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                         if (this.showGroupingBar && this.groupingBarModule) {
@@ -3209,7 +3213,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                     this.pivotValues = [];
                                 }
                             }
-                            this.initialLoad();
+                            this.notify(events.initialLoad, {});
                         }
                     }
                 }

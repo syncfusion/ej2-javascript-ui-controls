@@ -2,6 +2,76 @@
 
 ## [Unreleased]
 
+## 21.2.9 (2023-06-06)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I467744` - Provided support for virtual scroll in resource view multitask bar.
+- `#I464831` - Incorrect render of segments when we give end date while declaring segment in data source issue has been fixed.
+- `#I461924` - Bug Script Error throws while using Virtualization with Collapse All action.
+- `#I469496` - Start date not updated properly for predecessor connected record issue has been fixed.
+- `#I465752` - Timeline start date gets changed when we perform right resizing or progress resizing issue has been fixed.
+- `#I463593` - True type font style is not updated in the footer.
+- `#I463666` - Bug Milestones not rendering correctly in hierarchy issue has been fixed.
+- `#I463231` - Selection is not maintained when we scroll issue has been fixed.
+- `#I462836` - Taskbar not rendered properly when the dependency is connected to the bottom task issue has been fixed.
+- `#I464999` - Expand or Collapse All causes improper view in virtual scrolling issue has been fixed.
+- `#I462469` - Virtual scrolling breaks in deleting the last record issue has been fixed.
+- `#I464528` - Outdent action does not work properly issue has been fixed.
+- `#I464592` - Progress values are incorrect in parent task after performing drag drop issue has been fixed.
+
+## 21.2.8 (2023-05-30)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461738` - Updating custom column change the end date issue has been fixed
+- `#I461564` - Editing cell followed by context menu does not work issue has been fixed
+- `#I461800` - Console error while exporting pdf error has been fixed.
+- `#I464045` - Parent dependency renders though we set `allowParentDependency` as false issue has been fixed.
+- `#I462271` - Taskbar not rendered when we use taskbar template issue has been fixed.
+- `#I460869`- Issue in Resource view wont display resource name has been fixed
+- `#I461105` - Baseline dates rendered incorrectly in without `dayWorkingTime` issue has been fixed.
+-`#I460869`- Issue in Resource view wont display resource name has been fixed.
+
+## 21.2.6 (2023-05-23)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461435` - Adding and deleting record rapidly while displaying tooltip cause error has been fixed.
+- `#I461087` - Offset value getting modified incorrectly issue has been fixed.
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+
+## 21.2.5 (2023-05-16)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+- `#I181309` - splitter position not updating after resize issue has been fixed.
+- `#I449506` - Moving child row referencing another parent row will not move all of the descendants of that another parent row issue has been fixed.
+- `#I457803` - Offset value is not correctly updated while connecting predecessor issue has been fixed.
+- `#I449944` - Zoom out button in toolbar not enabled once after zoom in operation issue has been fixed.
+- `#I434098` - Issue while rendering resource view without child mapping has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I457032` - Task label not rendered properly when we render as template issue has been fixed.
+- `#I457212` - Timeline renders different in `Firefox` and `Chrome` issue has been fixed.
+- `#I456146` - Console error occur while changing task field after removing toolbar issue has been fixed.
+- `#F181579` - Style not reflected on the notes column when we perform dialog edit issue has been fixed.
+- `#I456453` - `CSS class` is not updated while changing it through `updateRecordbyId` method issue has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Gantt Chart
@@ -9,7 +79,7 @@
 #### Bug Fixes
 
 - `#I441205` - Two spinner appears while performing action issue has been fixed.
--`#I451257`- No proper template for manual milestone parent.
+- `#I451257` - No proper template for manual milestone parent.
 - `#I443041` - Gantt react performance rendering issue during initial load has been fixed.
 
 ## 21.1.41 (2023-04-18)

@@ -3,11 +3,11 @@ import { WTableFormat, WRowFormat, WCellFormat, WColumnFormat } from '../format/
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
-    TextWrappingStyle, TextWrappingType, CharacterRangeType, FontScriptType
+    TextWrappingStyle, TextWrappingType, CharacterRangeType, FontScriptType, BreakClearType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
-import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, L10n, classList } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo, LtrRtlTextInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader, FootnoteType } from '../../base/types';
@@ -1398,11 +1398,13 @@ export class ParagraphWidget extends BlockWidget {
         let text: string = '';
         let prevCharacterType: FontScriptType = FontScriptType.English;
         let currCharacterType: FontScriptType = FontScriptType.English;
+        // Regex for finding a string is unicode or not.
+        const surrogateRegex = /[\uD800-\uDFFF]/;
         for (let i: number = 0; i < inputText.length; i++) {
             // Gets a FontScriptType for the current character.
             // As per the Microsoft application behavior, we need to consider a space (\u0020) as previous character type.
             // So, that we can avoid a text splitting based on space character.
-            if (inputText[i] != String.fromCharCode(32)) {
+            if (inputText[i] != String.fromCharCode(32) && !surrogateRegex.test(inputText[i])) {
                 // && !(char.IsHighSurrogate(inputText.charAt(i)) || char.IsLowSurrogate(inputText.charAt(i)))) { //Skip the setting of script type for surrogate character.
                 currCharacterType = this.getFontScriptType(inputText[i]);
             }
@@ -1485,6 +1487,9 @@ export class ParagraphWidget extends BlockWidget {
                                 lineWidget.children.splice(i + j, 0, clonedtextElement);
                                 clonedtextElement.line = lineWidget;
                                 iIncrementer++;
+                                if (textElement.revisions.length > 0) {
+                                    this.updateTextElementInRevisionRange(textElement, clonedtextElement);
+                                }
                             }
                             else {
                                 //Replace the source text range with splitted text.
@@ -1607,7 +1612,7 @@ export class ParagraphWidget extends BlockWidget {
                     let currentTxtRange: TextElementBox = elementBox;
                     let nextTxtRange: TextElementBox = lineWidget.children[i + 1] as TextElementBox;
 
-                    if (currentTxtRange.characterFormat.complexScript && currentTxtRange.scriptType == nextTxtRange.scriptType &&
+                    if ((currentTxtRange.characterFormat.complexScript || currentTxtRange.characterFormat.bidi) && currentTxtRange.scriptType == nextTxtRange.scriptType &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
                         && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
@@ -2803,6 +2808,10 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
+    public editRangeID: Dictionary<number, ElementBox>;
+    /**
+     * @private
+     */
     get rowIndex(): number {
         if (this.containerWidget) {
             return this.containerWidget.childWidgets.indexOf(this);
@@ -2833,6 +2842,7 @@ export class TableRowWidget extends BlockWidget {
         this.topBorderWidth = 0;
         this.bottomBorderWidth = 0;
         this.rowFormat = new WRowFormat(this);
+        this.editRangeID = new Dictionary<number, ElementBox>();
     }
     /**
      * @private
@@ -3297,6 +3307,14 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public isRenderBookmarkEnd: boolean = false;
+    /**
+     * @private
+     */
+    public isRenderEditRangeStart: boolean = false;
+    /**
+    * @private
+     */
+    public isRenderEditRangeEnd: boolean = false;
     /**
      * @private
      */
@@ -8621,7 +8639,9 @@ export class CommentCharacterElementBox extends ElementBox {
         this.commentType = type;
     }
 
-    public renderCommentMark(): void {
+    public renderCommentMark(topPosition?: string, leftPosition?: string): void {
+        let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+        let commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = documentHelper.render.commentMarkDictionary;
         if (this.commentType === 0 && isNullOrUndefined(this.commentMark)) {
             this.commentMark = document.createElement('div');
             this.commentMark.style.display = 'none';
@@ -8632,17 +8652,106 @@ export class CommentCharacterElementBox extends ElementBox {
             this.commentMark.appendChild(span);
         }
         if (this.line && isNullOrUndefined(this.commentMark.parentElement)) {
-            let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
             documentHelper.pageContainer.appendChild(this.commentMark);
             this.commentMark.addEventListener('click', this.selectComment.bind(this));
+            let positionOverlap: boolean = false;
+            let overlapKey: HTMLElement;
+            for (let index = 0; index < commentMarkDictionary.length; index++) {
+                if (this.elementsOverlap(commentMarkDictionary.keys[index], topPosition, leftPosition)) {
+                    positionOverlap = true;
+                    overlapKey = commentMarkDictionary.keys[index];
+                    break;
+                }
+            }
+            if (positionOverlap) {
+                let ifNotPresent: boolean = true;
+                for (let index = 0; index < commentMarkDictionary.get(overlapKey).length; index++) {
+                    if (commentMarkDictionary.get(overlapKey)[index] === this) {
+                        ifNotPresent = false;
+                        break;
+                    }
+                }
+                if (ifNotPresent) {
+                    commentMarkDictionary.get(overlapKey).push(this);
+                }
+            }
+            else {
+                commentMarkDictionary.add(this.commentMark, [this]);
+            }
+
+            for (let index = 0; index < commentMarkDictionary.length; index++) {
+                let element: HTMLElement = commentMarkDictionary.keys[index];
+                if (commentMarkDictionary.get(element).length == 1) {
+                    if (commentMarkDictionary.get(element)[0].commentMark) {
+                        if (commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-multi-cmt-mark')) {
+                            classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild, ['e-de-cmt-mark-icon'], ['e-de-multi-cmt-mark']);
+                        }
+                    }
+                }
+                if (commentMarkDictionary.get(element).length > 1) {
+                    for (let z = 0; z < commentMarkDictionary.get(element).length; z++) {
+                        if (commentMarkDictionary.get(element)[z].commentMark) {
+                            if (commentMarkDictionary.get(element)[z].commentMark.firstElementChild.classList.contains('e-de-cmt-mark-icon')) {
+                                classList(commentMarkDictionary.get(element)[z].commentMark.firstElementChild, ['e-de-multi-cmt-mark'], ['e-de-cmt-mark-icon']);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
+    private elementsOverlap(elementOne: HTMLElement, top: string, left: string) {
+        const width: number = elementOne.offsetWidth;
+        const height: number = elementOne.offsetHeight;
+        const elementOneTop: number = parseFloat(elementOne.style.top);
+        const elementOneLeft: number = parseFloat(elementOne.style.left);
+        const elementOneBottom: number = elementOneTop + height;
+        const elementOneRight: number = elementOneLeft + width;
+        const elementTwoTop: number = parseFloat(top);
+        const elementTwoLeft: number = parseFloat(left);
+        const elementTwoBottom: number = elementTwoTop + height;
+        const elementTwoRight: number = elementTwoLeft + width;
+        return !(
+            elementOneTop > elementTwoBottom ||
+            elementOneRight < elementTwoLeft ||
+            elementOneBottom < elementTwoTop ||
+            elementOneLeft > elementTwoRight
+        );
+    }
     public selectComment(): void {
         let documentHelper: DocumentHelper = this.line.paragraph.bodyWidget.page.documentHelper;
+        let commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = documentHelper.render.commentMarkDictionary;
+        let topPosition: string = this.commentMark.style.top;
+        let leftPosition: string = this.commentMark.style.left;
+        let currentIndex: number = 0;
+        let navigationArray: CommentCharacterElementBox[] = [];
+        for (let index = 0; index < commentMarkDictionary.keys.length; index++) {
+            if (this.elementsOverlap(commentMarkDictionary.keys[index], topPosition, leftPosition)) {
+                navigationArray = commentMarkDictionary.get(commentMarkDictionary.keys[index]);
+                break;
+            }
+        }
+        if (!documentHelper.owner.documentHelper.currentSelectedComment) {
+            currentIndex = 0;
+        }
+        else {
+            for (let index = 0; index < navigationArray.length; index++) {
+                if (navigationArray[index].comment === documentHelper.owner.documentHelper.currentSelectedComment) {
+                    currentIndex = index;
+                    break;
+                }
+            }
+            if (currentIndex < (navigationArray.length - 1)) {
+                currentIndex += 1;
+            }
+            else {
+                currentIndex = 0;
+            }
+        }
         if (documentHelper.owner) {
             if (!documentHelper.owner.commentReviewPane.commentPane.isEditMode) {
-                documentHelper.selectComment(this.comment);
+                documentHelper.selectComment(navigationArray[currentIndex].comment);
             } else {
                 documentHelper.owner.showComments = true;
             }
@@ -9449,4 +9558,31 @@ export class ColumnSizeInfo {
      * @private
      */
     public hasMaximumWordWidth: boolean = false;
+}
+/**
+ * @private
+ */
+export class BreakElementBox extends TextElementBox {
+    /**
+     * @private
+     */
+    public breakClearType: BreakClearType;
+    public constructor() {
+        super();
+    }
+    /**
+     * @private
+     */
+    public clone(): BreakElementBox {
+        let breakElement = super.clone() as BreakElementBox;
+        breakElement.breakClearType = this.breakClearType;
+        return breakElement;
+    }
+    /*
+    * @Private
+    */
+    public destroy(): void {
+        this.breakClearType = undefined;
+        super.destroy();
+    }
 }

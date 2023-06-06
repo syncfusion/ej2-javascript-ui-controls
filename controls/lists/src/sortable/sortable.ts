@@ -1,5 +1,5 @@
 import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
+import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent, TouchEventArgs } from '@syncfusion/ej2-base';
 import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
@@ -284,7 +284,8 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                     if (placeHolderPresent) { idx -= 1; }
                     const offset: ClientRect = target.getBoundingClientRect();
                     const clientY: number = offset.bottom - ((offset.bottom - offset.top) / 2);
-                    idx = e.clientY <= clientY ? idx : idx + 1;
+                    const cltY: number = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+                    idx = cltY <= clientY ? idx : idx + 1;
                 }
                 return;
             }

@@ -26,6 +26,10 @@ import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './docum
  * @private
  */
 export class Renderer {
+    /**
+     * @private
+     */
+    public commentMarkDictionary: Dictionary<HTMLElement, CommentCharacterElementBox[]> = new Dictionary<HTMLElement, CommentCharacterElementBox[]>();
     public isPrinting: boolean = false;
     public isExporting: boolean =  false;
     private pageLeft: number = 0;
@@ -463,15 +467,21 @@ export class Renderer {
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
         
         this.pageContext.beginPath();
-        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
+        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill && shapeType !== 'StraightConnector') {
             this.pageContext.fillStyle = shape.fillFormat.color;
             this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
         }
         if (!isNullOrUndefined(shapeType)) {
-            if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None')) {
+            if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
                 this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shapeType !== 'StraightConnector') {
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                } else {
+                    this.pageContext.moveTo(shapeLeft, shapeTop);
+                    this.pageContext.lineTo(shapeLeft + this.getScaledValue(shape.width), shapeTop + this.getScaledValue(shape.height));
+                    this.pageContext.stroke();
+                }
             }
         }
         this.pageContext.closePath();
@@ -830,6 +840,30 @@ export class Renderer {
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
+        if (cellWidget.isRenderEditRangeStart) {
+            let firstPara: ParagraphWidget = this.documentHelper.selection.getFirstParagraph(cellWidget) as ParagraphWidget;
+            let firstLine: LineWidget = firstPara.firstChild as LineWidget;                
+            let xLeft = firstLine.paragraph.x;
+            let ytop = firstLine.paragraph.y;
+            if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
+                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(firstLine) : [];
+                let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(ytop, 2),this.getScaledValue(firstLine.height - firstLine.margin.bottom),0,color);
+            }
+        }
+        if (cellWidget.isRenderEditRangeEnd) {
+            let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(cellWidget) as ParagraphWidget;
+            let lastLine: LineWidget = lastPara.lastChild as LineWidget;
+            let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
+            let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
+            if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
+                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lastLine) : [];
+                let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(position.y, 2),this.getScaledValue(lastLine.height - lastLine.margin.bottom),0,color);           
+            }    
+        }
     }
     private checkHeaderFooterLineWidget(widget: IWidget, keys: IWidget[]): IWidget {
         let headerFooter: HeaderFooterWidget;
@@ -976,7 +1010,7 @@ export class Renderer {
         this.renderSearchHighlight(page, lineWidget, top);
         // EditRegion highlight 
         this.renderEditRegionHighlight(page, lineWidget, top);
-        let isCommentMark: boolean = false;
+        let commentIDList: string[]=[];
         
         let children: ElementBox[] = lineWidget.renderedElements;
         let underlineY: number = this.getUnderlineYPosition(lineWidget);
@@ -1001,6 +1035,15 @@ export class Renderer {
                 let topPosition: string = this.getScaledValue((top) + (page.boundingRectangle.y -
                     (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
                 if (elementBox instanceof EditRangeStartElementBox) {
+                    if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges && elementBox.columnFirst==-1 ){
+                        var height = elementBox.line.height - elementBox.line.margin.bottom;
+                        let xLeft = left;
+                        let yTop = top;
+                        let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                        let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
+                        let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                        this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),0,color);
+                    }
                     if (this.documentHelper.owner.enableLockAndEdit) {
                         let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
                         l10n.setLocale(this.documentHelper.owner.locale);
@@ -1023,9 +1066,7 @@ export class Renderer {
                     }
                 } else if (elementBox instanceof CommentCharacterElementBox &&
                     elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
-                    if (this.documentHelper.owner.enableComment && !isCommentMark) {
-                        isCommentMark = true;
-                        elementBox.renderCommentMark();
+                    if (this.documentHelper.owner.enableComment) {
                         let rightMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
                         let pageWidth: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
 
@@ -1035,7 +1076,11 @@ export class Renderer {
                             leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                         }
                         style = style + 'left:' + leftPosition + 'top:' + topPosition;
-                        elementBox.commentMark.setAttribute('style', style);
+                        if(commentIDList.indexOf(elementBox.commentId)===-1 && !elementBox.comment.isReply){
+                            commentIDList.push(elementBox.commentId);
+                            elementBox.renderCommentMark(topPosition,leftPosition);
+                            elementBox.commentMark.setAttribute('style', style);
+                        }
                     } else {
                         if (elementBox.commentMark) {
                             elementBox.commentMark.setAttribute('style', 'display:none');
@@ -1043,6 +1088,17 @@ export class Renderer {
                     }
                 }
 
+            }
+            if (elementBox instanceof EditRangeEndElementBox) {
+                if (elementBox.editRangeStart.columnFirst==-1 && this.documentHelper.owner.documentEditorSettings.highlightEditableRanges) {
+                    var height = elementBox.line.height - elementBox.line.margin.bottom;
+                    let xLeft = left;
+                    let yTop = top;
+                    let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                    let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
+                    let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                    this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),1,color);
+                }
             }
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
@@ -1321,7 +1377,22 @@ export class Renderer {
         }
         return false;
     }
-    private renderBookmark(x: number, y: number, height: number, type: number): void {
+    private combineHexColors(color1: string, color2: string):string{
+        const hex1 = color1.replace("#", "");
+        const hex2 = color2.replace("#", "");
+        const r1 = parseInt(hex1.substring(0, 2), 16);
+        const g1 = parseInt(hex1.substring(2, 4), 16);
+        const b1 = parseInt(hex1.substring(4, 6), 16);
+        const r2 = parseInt(hex2.substring(0, 2), 16);
+        const g2 = parseInt(hex2.substring(2, 4), 16);
+        const b2 = parseInt(hex2.substring(4, 6), 16);
+        const r = Math.round((r1 * 0.35) + (r2 * 0.65));
+        const g = Math.round((g1 * 0.35) + (g2 * 0.65));
+        const b = Math.round((b1 * 0.35) + (b2 * 0.65));
+        const mixedColor = `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;
+        return mixedColor;      
+    }
+    private renderBookmark(x: number, y: number, height: number, type: number, restrictColor?: string): void {
         if(this.isPrinting) {
             return;    
         }
@@ -1342,7 +1413,12 @@ export class Renderer {
         }
         this.pageContext.strokeStyle = "#7F7F7F";
         this.pageContext.stroke();
-        this.pageContext.closePath();
+        this.pageContext.closePath();        
+        if(!isNullOrUndefined(restrictColor)){
+            const combinedColor = this.combineHexColors(restrictColor,"#7F7F7F")
+            this.pageContext.fillStyle = combinedColor;
+            this.pageContext.fillRect(x, y, 1.5, height);
+        }
     }
     private retriveCharacterformat(character: WCharacterFormat, fontSizeFactor?: number): string {
         if(isNullOrUndefined(fontSizeFactor)){
