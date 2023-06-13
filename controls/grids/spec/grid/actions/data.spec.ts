@@ -3,7 +3,7 @@
  */
 import { createElement, remove, select } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
-import { Query, DataManager, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { Query, DataManager, ODataV4Adaptor, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { extend } from '../../../src/grid/base/util';
 import { Page, Sort, Group, Edit, Toolbar, Selection } from '../../../src/grid/actions';
@@ -496,4 +496,39 @@ describe('Data module', () => {
         });
     });
 
+    describe('EJ2-827048- PageSize "all" is not working with remoteSaveAdaptor =>', () => {
+        let gridObj: Grid;
+        let actionComplete: (args?: Object) => void;
+        let remoteSave: DataManager = new DataManager({
+            json: data.slice(0, 15),
+            adaptor: new RemoteSaveAdaptor,
+        });
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+            {
+                dataSource: remoteSave,
+                allowPaging: true,
+                pageSettings: {pageSizes: true},
+                height: 30,
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: 130,  textAlign: 'Right' },
+                    { field: 'Employees', headerText: 'Employee Name', width: 150 },
+                    { field: 'Designation', headerText: 'Designation', width: 130 }
+                ],
+                actionComplete: actionComplete,
+            }, done);
+        });
+        it('Get the row in pageSize "All"' , (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(15);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.pagerModule).pagerObj.element.querySelector('.e-dropdownlist').ej2_instances[0].value = 'All';
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

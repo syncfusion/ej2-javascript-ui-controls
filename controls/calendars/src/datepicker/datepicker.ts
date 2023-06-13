@@ -91,6 +91,7 @@ export class DatePicker extends Calendar implements IInput {
     protected isDynamicValueChanged: boolean = false;
     protected moduleName: string = this.getModuleName();
     protected isFocused: boolean = false;
+    protected isBlur: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      *
@@ -580,10 +581,10 @@ export class DatePicker extends Calendar implements IInput {
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
         addClass([this.inputWrapper.container], DATEWRAPPER);
     }
-    protected updateInput(isDynamic: boolean = false): void {
+    protected updateInput(isDynamic: boolean = false, isBlur: boolean = false): void {
         let formatOptions: DateFormatOptions;
         if (this.value && !this.isCalendar()) {
-            this.disabledDates(isDynamic);
+            this.disabledDates(isDynamic, isBlur);
         }
         if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
@@ -1064,7 +1065,9 @@ export class DatePicker extends Calendar implements IInput {
             this.invalidValueString = null;
             this.updateInputValue('');
         }
-        this.updateInput();
+        this.isBlur = true;
+        this.updateInput(false, true);
+        this.isBlur = false;
         this.popupUpdate();
         this.changeTrigger(e);
         if (this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
@@ -1446,7 +1449,7 @@ export class DatePicker extends Calendar implements IInput {
         this.trigger('navigated', this.navigatedArgs);
     }
     protected changeEvent(event?: MouseEvent | KeyboardEvent | Event): void {
-        if (!this.isIconClicked) {
+        if (!this.isIconClicked && !this.isBlur) {
             this.selectCalendar(event);
         }
         if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
@@ -1658,7 +1661,7 @@ export class DatePicker extends Calendar implements IInput {
             this.modal = null;
         }
         if (Browser.isDevice) {
-            if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+            if (!isNullOrUndefined(this.mobilePopupWrapper) && (prevent && (isNullOrUndefined(this.preventArgs) || !this.preventArgs.cancel))) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
             }
@@ -2002,7 +2005,7 @@ export class DatePicker extends Calendar implements IInput {
     protected getModuleName(): string {
         return 'datepicker';
     }
-    private disabledDates(isDynamic: boolean = false): void {
+    private disabledDates(isDynamic: boolean = false, isBlur: boolean = false): void {
         let formatOptions: DateFormatOptions;
         let globalize: string;
         const valueCopy: Date = this.checkDateValue(this.value) ? new Date(+this.value) : new Date(this.checkValue(this.value));
@@ -2054,7 +2057,7 @@ export class DatePicker extends Calendar implements IInput {
             {
                 this.updateInputValue(this.maskedDateValue);
                 this.notify('createMask', {
-                    module: 'MaskedDateTime'
+                    module: 'MaskedDateTime', isBlur: isBlur
                 });
             }
         }

@@ -1120,7 +1120,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Configures the column chooser in the Grid.
      *
-     * @default { columnChooserOperator: 'wildCard' }
+     * @default { columnChooserOperator: 'startsWith' }
      */
     columnChooserSettings?: ColumnChooserSettingsModel;
 

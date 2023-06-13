@@ -468,7 +468,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type','milestone'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -798,7 +798,7 @@ export class GanttTreeGrid {
         }
     }// eslint-disable-next-line
     private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string { 
-        const ganttProp: ITaskData = data.ganttProperties;
+        const ganttProp: ITaskData = (!isNullOrUndefined(data)) ? data.ganttProperties : null;
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }

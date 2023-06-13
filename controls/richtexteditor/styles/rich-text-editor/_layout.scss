@@ -1823,11 +1823,6 @@
     .e-richtexteditor .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn {
       line-height: 20px;
     }
-
-    .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-btn,
-    .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-btn.e-control {
-      padding: 0;
-    }
   }
 
   @if $skin-name == 'bootstrap5' {

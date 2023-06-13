@@ -1,7 +1,7 @@
 import { isNullOrUndefined, getValue, L10n, remove } from '@syncfusion/ej2-base';
 import { Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI, FilterMenuRendererArgs } from '../base/interface';
+import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI, FilterMenuRendererArgs, ICustomOptr } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -33,7 +33,7 @@ export class FilterMenuRenderer {
     private valueFormatter: IValueFormatter;
     private operator: Object[];
     private filterSettings: FilterSettings;
-    private customFilterOperators: Object;
+    public customFilterOperators: ICustomOptr;
     private dropOptr: DropDownList;
     private flMuiObj: FlMenuOptrUI;
     private col: Column;

@@ -3505,7 +3505,10 @@ export class PdfViewerBase {
         if (!event.ctrlKey || !isCommandKey) {
             switch (event.keyCode) {
                 case 46:
-                    this.DeleteKeyPressed(event);
+                    let activeElement: HTMLElement = document.activeElement as HTMLElement;
+                    if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA' && !activeElement.isContentEditable) {
+                        this.DeleteKeyPressed(event);
+                    }
                     break;
                 case 27:
                     if (this.pdfViewer.toolbar) {
@@ -3572,41 +3575,43 @@ export class PdfViewerBase {
                 case 9:
                     if (event.target && ((event.target as any).id || (event.target as any).tabIndex) && this.pdfViewer.formFieldCollections) {
                         {
-                            let nextField: any;
-                            let fieldIndex: any;
-                            let currentTarget: any = event.target;
-                            let id: any;
-                            if (((event.target as any).tabIndex && !(event.target as any).id)) {
-                                currentTarget = (event.target as any).parentElement
-                                id = currentTarget.id.split("_content_html_element")[0];
-                            } else {
-                                currentTarget = event.target;
-                                id = currentTarget.id.split("_input")[0];
-                            }
-                            if (this.pdfViewer.formDesignerModule) {
-                                if ((event.shiftKey && event.key === "Tab")) {
-                                    fieldIndex = this.pdfViewer.formFieldCollections.findIndex(function (field) { return field.id === id; });
-                                    nextField = fieldIndex > 0 ? this.pdfViewer.formFieldCollections[fieldIndex - 1] : this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
+                            if ((event.target as any).className === 'e-pv-formfield-input' || (event.target as any).id === this.pdfViewer.element.id + '_viewerContainer') {
+                                let nextField: any;
+                                let fieldIndex: any;
+                                let currentTarget: any = event.target;
+                                let id: any;
+                                if (((event.target as any).tabIndex && !(event.target as any).id)) {
+                                    currentTarget = (event.target as any).parentElement
+                                    id = currentTarget.id.split("_content_html_element")[0];
+                                } else {
+                                    currentTarget = event.target;
+                                    id = currentTarget.id.split("_input")[0];   
                                 }
-                                else {
-                                    fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === id);
-                                    nextField = fieldIndex + 1 < this.pdfViewer.formFieldCollections.length ? this.pdfViewer.formFieldCollections[fieldIndex + 1] : this.pdfViewer.formFieldCollections[0];
-                                }
-                                this.pdfViewer.focusFormField(nextField);
-                                event.preventDefault();
-                            }
-                            if (!this.pdfViewer.formDesigner) {
-                                if (!(currentTarget.className === 'e-pdfviewer-formFields')) {
+                                if (this.pdfViewer.formDesignerModule) {
                                     if ((event.shiftKey && event.key === "Tab")) {
-                                        fieldIndex = this.pdfViewer.formFieldCollections.findIndex(function (field) { return field.id === currentTarget.id; });
+                                        fieldIndex = this.pdfViewer.formFieldCollections.findIndex(function (field) { return field.id === id; });
                                         nextField = fieldIndex > 0 ? this.pdfViewer.formFieldCollections[fieldIndex - 1] : this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
                                     }
                                     else {
-                                        fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === currentTarget.id);
+                                        fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === id);
                                         nextField = fieldIndex + 1 < this.pdfViewer.formFieldCollections.length ? this.pdfViewer.formFieldCollections[fieldIndex + 1] : this.pdfViewer.formFieldCollections[0];
                                     }
                                     this.pdfViewer.focusFormField(nextField);
                                     event.preventDefault();
+                                }
+                                if (!this.pdfViewer.formDesigner) {
+                                    if (!(currentTarget.className === 'e-pdfviewer-formFields')) {
+                                        if ((event.shiftKey && event.key === "Tab")) {
+                                            fieldIndex = this.pdfViewer.formFieldCollections.findIndex(function (field) { return field.id === currentTarget.id; });
+                                            nextField = fieldIndex > 0 ? this.pdfViewer.formFieldCollections[fieldIndex - 1] : this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
+                                        }
+                                        else {
+                                            fieldIndex = this.pdfViewer.formFieldCollections.findIndex(field => field.id === currentTarget.id);
+                                            nextField = fieldIndex + 1 < this.pdfViewer.formFieldCollections.length ? this.pdfViewer.formFieldCollections[fieldIndex + 1] : this.pdfViewer.formFieldCollections[0];
+                                        }
+                                        this.pdfViewer.focusFormField(nextField);
+                                        event.preventDefault();
+                                    }
                                 }
                             }
                         }
@@ -3856,7 +3861,7 @@ export class PdfViewerBase {
                 this.annotationEvent = event;
             } else {
                 this.diagramMouseLeave(event);
-                if (this.isAnnotationDrawn) {
+                if (this.isAnnotationDrawn && !this.pdfViewer.isFormDesignerToolbarVisible) {
                     this.diagramMouseUp(event);
                     this.isAnnotationAdded = true;
                 }
@@ -4349,7 +4354,7 @@ export class PdfViewerBase {
         if (this.isDeviceiOS) {
             const obj: IElement = findActiveElement(event, this, this.pdfViewer);
             // eslint-disable-next-line
-            let isRemoveFocus: boolean = !this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot && (obj && this.pdfViewer.selectedItems.annotations[0] ? (obj as any).id !== this.pdfViewer.selectedItems.annotations[0].id : true) && document.activeElement.classList.contains('free-text-input') && this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations);
+            let isRemoveFocus: boolean = (!isNullOrUndefined(this.pdfViewer.annotation) && !isNullOrUndefined(this.pdfViewer.annotation.freeTextAnnotationModule) && !this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot) && (obj && this.pdfViewer.selectedItems.annotations[0] ? (obj as any).id !== this.pdfViewer.selectedItems.annotations[0].id : true) && document.activeElement.classList.contains('free-text-input') && this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations);
             if (!this.singleTapTimer) {
                 this.singleTapTimer = setTimeout(
                     () => {
@@ -4364,6 +4369,9 @@ export class PdfViewerBase {
             } else {
                 if (this.pdfViewer.enablePinchZoom) {
                     this.tapCount++;
+                    if (this.tapCount > 2){
+                        this.tapCount = 2;
+                    }
                     clearTimeout(this.singleTapTimer);
                     this.singleTapTimer = null;
                     this.onDoubleTap(touchPoints);
@@ -4381,6 +4389,9 @@ export class PdfViewerBase {
             } else {
                 if (this.pdfViewer.enablePinchZoom) {
                     this.tapCount++;
+                    if (this.tapCount > 2){
+                        this.tapCount = 2;
+                    }
                     clearTimeout(this.singleTapTimer);
                     this.singleTapTimer = null;
                     this.onDoubleTap(touchPoints);
@@ -6376,8 +6387,6 @@ export class PdfViewerBase {
         }
         proxy.pdfViewer.fireFormImportStarted(source);
         // eslint-disable-next-line
-        jsonObject.action = 'ImportFormFields';
-        // eslint-disable-next-line
         jsonObject['hashId'] = proxy.hashId;
         // eslint-disable-next-line
         jsonObject['elementId'] = this.pdfViewer.element.id;
@@ -6386,6 +6395,9 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             (jsonObject as any).document = proxy.jsonDocumentId;
         }
+        jsonObject = Object.assign(jsonObject, this.constructJsonDownload());
+        // eslint-disable-next-line
+        jsonObject.action = 'ImportFormFields';
         const url: string = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.importFormFields;
         proxy.importFormFieldsRequestHandler = new AjaxHandler(this.pdfViewer);
         proxy.importFormFieldsRequestHandler.url = url;
@@ -8708,7 +8720,7 @@ export class PdfViewerBase {
         if (target.parentElement && target.parentElement.className !== 'foreign-object' && !target.classList.contains('e-pv-radio-btn') && !target.classList.contains('e-pv-radiobtn-span') && !target.classList.contains('e-pv-checkbox-div') && !target.classList.contains('e-pdfviewer-formFields')
             && !target.classList.contains('e-pdfviewer-ListBox') && !target.classList.contains('e-pdfviewer-signatureformfields')
             && !((target).className === 'free-text-input' && (target).tagName === 'TEXTAREA')
-            && !isSkip && !((target).className === 'e-pv-hyperlink')) {
+            && !isSkip && !((target).className === 'e-pv-hyperlink') && target.parentElement.classList.length > 0 && !target.parentElement.classList.contains("e-editable-elements")) {
             isSkipped = true;
         }
         return isSkipped;

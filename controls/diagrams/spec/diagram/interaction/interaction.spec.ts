@@ -16,7 +16,8 @@ import { rotatePoint } from '../../../src/diagram/utility/base-util';
 import { MouseEvents } from './mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { SnapConstraints } from '../../../src/diagram/index';
-import { DiagramTools, DiagramConstraints } from '../../../src/diagram/enum/enum';
+import { DiagramTools, DiagramConstraints,PortConstraints, } from '../../../src/diagram/enum/enum';
+import { PortVisibility } from '../../../src/diagram/index';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { ICollectionChangeEventArgs, IKeyEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
@@ -4120,4 +4121,85 @@ describe('Node annotation disappear, while giving same id for annotation in two 
         diagram.destroy();
         ele.remove();
     });
+});
+describe('Drawing Tools with constraints', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramdraw' });
+        document.body.appendChild(ele);
+        let nodeport1: any = [{
+            id: 'port1',
+            shape: 'Circle',
+            width:20,
+            offset: { x: 0, y: 0.5 },
+            visibility: PortVisibility.Visible,
+            constraints:PortConstraints.Default | PortConstraints.Draw,
+          },
+          {
+            id: 'port2',
+            shape: 'Circle',
+            width:20,
+            offset: { x: 1, y: 0.5 },
+            visibility:PortVisibility.Visible,
+            constraints: PortConstraints.Default | PortConstraints.Draw,
+          },
+           {
+            id: 'port4',
+            shape: 'Circle',
+            width:20,
+            offset: { x: 0.5, y: 1 },
+            visibility: PortVisibility.Visible,
+            constraints: PortConstraints.Default |PortConstraints.Draw,
+          }]
+        
+        let shape: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
+        let node1: NodeModel = {
+            id: 'node', offsetX: 200, offsetY: 100,height:100, shape: shape,ports:nodeport1
+        };
+        let shape2: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
+        let node2: NodeModel = {
+            id: 'node2', offsetX: 500, offsetY: 100, height:100, shape: shape2,ports:nodeport1
+        };
+        
+        
+        let connectors: ConnectorModel[] = [{
+            id: 'connector1',
+            type: 'Straight',
+            sourcePoint: { x: 100, y: 100 },
+            targetPoint: { x: 200, y: 200 },
+        },
+        {
+            id: 'connector2',
+            type: 'Orthogonal',
+            sourcePoint: { x: 300, y: 100 },
+            targetPoint: { x: 400, y: 200 },
+        }];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: [node1, node2], connectors: connectors,tool:DiagramTools.SingleSelect |DiagramTools.ZoomPan
+        });
+        diagram.appendTo('#diagramdraw');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Drawing tool activated while single select and zoompan enabled', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+         mouseEvents.mouseMoveEvent(diagramCanvas, 160, 100);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 160.5, 100.5);
+        expect( diagramCanvas.style.cursor =="crosshair").toBe(true);
+        done();
+    });
+    
 });

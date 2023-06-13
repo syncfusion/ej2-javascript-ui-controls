@@ -1042,6 +1042,8 @@ export interface BeforeServiceInvokeEventArgs {
     hash?: string;
     /** Defines the internal properties. */
     internalProperties?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    /** Defines whether the pivot table's group settings are modified or not. */
+    isGroupingUpdated: boolean;
 }
 
 /**

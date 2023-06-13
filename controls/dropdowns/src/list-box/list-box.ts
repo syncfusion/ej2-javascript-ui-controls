@@ -152,6 +152,7 @@ export class ListBox extends DropDownBase {
     private toolbarAction: string;
     private isDataSourceUpdate: boolean = false;
     private dragValue: string;
+    private customDraggedItem: Object[];
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -770,13 +771,18 @@ export class ListBox extends DropDownBase {
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
+        let items: object[] = [];
         this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
         if ((this.value as string[]).indexOf(this.dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         } else {
             args.items = this.getDataByValues([this.dragValue]);
         }
+        extend(items, args.items);
         this.trigger('beforeDrop', args);
+        if (args.items !== items) {
+            this.customDraggedItem = args.items;
+        }
     }
 
     private dragEnd(args: DropEventArgs): void {
@@ -817,6 +823,12 @@ export class ListBox extends DropDownBase {
             liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
+                if (!isNullOrUndefined(this.customDraggedItem)) {
+                    selectedOptions = [];
+                    this.customDraggedItem.forEach((item: object) => {
+                        selectedOptions.push(getValue(this.fields.value, item));
+                    })
+                }
                 selectedOptions.forEach((value: string) => {
                     if (value !== dropValue) {
                         const idx: number = listData.indexOf(this.getDataByValue(value));
@@ -842,6 +854,12 @@ export class ListBox extends DropDownBase {
             jsonData = [].slice.call(listObj.jsonData); sortedData = [].slice.call(listObj.sortedData);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
                 ? this.value : [dropValue];
+            if (!isNullOrUndefined(this.customDraggedItem)) {
+                selectedOptions = [];
+                this.customDraggedItem.forEach((item: object) => {
+                    selectedOptions.push(getValue(this.fields.value, item));
+                })
+            }
             const fListData: dataType[] = [].slice.call(this.listData); const fSortData: dataType[] = [].slice.call(this.sortedData);
             selectedOptions.forEach((value: string, index: number) => {
                 droppedData = this.getDataByValue(value);
@@ -898,6 +916,9 @@ export class ListBox extends DropDownBase {
         } else {
             const dragArgs1: Object = extend(destArgs, {currentData: listData});
             dragArgs = extend(dragArgs, { destination: dragArgs1 });
+        }
+        if (!isNullOrUndefined(this.customDraggedItem)) {
+            (dragArgs as DragEventArgs).items = this.customDraggedItem;
         }
         this.trigger('drop', dragArgs);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1019,6 +1040,16 @@ export class ListBox extends DropDownBase {
         }
         this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
+        let selElems: Element[] = [];
+	for (let i: number = 0; i < items.length; i++) {
+	    const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+	    for (let j: number = 0; j < liColl.length; j++) {
+	        if (items[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+	            selElems.push(liColl[j as number])
+		}
+	    }
+	}
+	this.triggerChange(selElems, null);
     }
 
     /**
@@ -2210,8 +2241,10 @@ export class ListBox extends DropDownBase {
                 }
                 if (typeof(text) === 'string') {
                     text = text.split('\\').join('\\\\');
+                    li = this.list.querySelector('[data-value="' + text.replace(/"/g, '\\"') + '"]');
+                } else {
+                    li = this.list.querySelector('[data-value="' + text + '"]');
                 }
-                li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
@@ -2221,10 +2254,12 @@ export class ListBox extends DropDownBase {
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
+                            (li as HTMLElement).focus();
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
+                                (li as HTMLElement).focus();
                             } else {
                                 li.classList.remove(cssClass.selected);
                                 li.removeAttribute('aria-selected');
@@ -2242,9 +2277,12 @@ export class ListBox extends DropDownBase {
         ele.innerHTML = '';
         if (this.value) {
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
-                innerHTML += '<option selected value="' + this.value[i as number] + '"></option>';
+                innerHTML += '<option selected>' + this.value[i as number] + '</option>';
             }
             ele.innerHTML += innerHTML;
+            for (let i: number = 0, len: number = ele.childNodes.length; i < len; i++) {
+                (ele.childNodes[i as number] as HTMLElement).setAttribute('value', this.value[i as number].toString());
+            }
         }
         this.checkSelectAll();
     }

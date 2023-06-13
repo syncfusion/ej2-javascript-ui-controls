@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper, append } from '@syncfusion/ej2-base';
 import { formatUnit, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
@@ -190,7 +190,7 @@ export class ChartRows extends DateProcessor {
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
                 if (taskLabelTemplateNode && taskLabelTemplateNode.length > 0) {
-                    tempDiv.appendChild(taskLabelTemplateNode[0]);
+                    append(taskLabelTemplateNode, tempDiv);
                     labelString = tempDiv.innerHTML;
                 }
             } else {
@@ -244,8 +244,13 @@ export class ChartRows extends DateProcessor {
                 (isNullOrUndefined(data.ganttProperties.segments) || (!isNullOrUndefined(data.ganttProperties.segments) &&
                  data.ganttProperties.segments.length === 0))) {
                 if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
-                    let templateElement: any = this.createDivElement(template)[0];
-                    templateElement.innerText = labelString;
+                    const templateElement: any = this.createDivElement(template)[0];
+                    if (this.parent.disableHtmlEncode) {
+                       templateElement.innerText = labelString;
+                    }
+                    else {
+                       templateElement.innerHTML = labelString;
+                    }
                     let childLabel: string = this.parent.labelSettings.taskLabel;
                     if (childLabel && childLabel['elementRef'])
                         templateElement.appendChild(tempDiv);
@@ -254,7 +259,7 @@ export class ChartRows extends DateProcessor {
                         !this.isTemplate(childLabel) &&
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0])
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
-                    if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent == '' &&
+                    if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent === '' &&
                         childLabel && !childLabel['elementRef'] && tempDiv.innerHTML !== '')
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent = childLabel;
                 }
@@ -778,7 +783,7 @@ export class ChartRows extends DateProcessor {
             if (leftLabelTemplateNode[0]['data'] === 'null') {
                 leftLabelTemplateNode[0]['data'] = '';
             }
-            leftLabelNode[0].appendChild([].slice.call(leftLabelTemplateNode)[0]);
+            append(leftLabelTemplateNode, leftLabelNode[0] as Element);
         }
         if (this.parent.enableRtl) {
             (leftLabelNode[0] as HTMLElement).style.paddingLeft = '25px';
@@ -834,7 +839,7 @@ export class ChartRows extends DateProcessor {
             if (rightLabelTemplateNode[0]['data'] === 'null') {
                 rightLabelTemplateNode[0]['data'] = '';
             }
-            rightLabelNode[0].appendChild([].slice.call(rightLabelTemplateNode)[0]);
+            append(rightLabelTemplateNode, rightLabelNode[0] as Element);
         }
         if (this.parent.enableRtl) {
             (rightLabelNode[0] as HTMLElement).style.marginLeft = '0px';
@@ -952,7 +957,12 @@ export class ChartRows extends DateProcessor {
                         this.taskBarHeight + 'px;"></span>';
                 }
                 let labelElement: any = this.createDivElement(labelDiv)[0];
-                labelElement.innerText = labelString;
+                if (this.parent.disableHtmlEncode) {
+                   labelElement.innerText = labelString;
+                }
+                else {
+                   labelElement.innerHTML = labelString;
+                }
                 let parentLabel: string = this.parent.labelSettings.taskLabel;
                 if (parentLabel && parentLabel['elementRef'])
                     labelElement.appendChild(div);
@@ -961,7 +971,7 @@ export class ChartRows extends DateProcessor {
                    !this.isTemplate(parentLabel) &&
                    (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0])
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
-                if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent == '' &&
+                if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent === '' &&
                    parentLabel && !parentLabel['elementRef'] && div.innerHTML !== '')
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent = parentLabel;
             }
@@ -993,11 +1003,19 @@ export class ChartRows extends DateProcessor {
      * @returns {NodeList} .
      * @private
      */
-    private getTableTrNode(): NodeList {
+    private getTableTrNode(i?: number): NodeList {
         const table: Element = createElement('table');
         const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
-        table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + '"' +
+        const rows: any= this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+        let activecls: string;
+        if (rows && rows.isSelected) {
+            activecls = 'e-active';
+        }
+        else {
+            activecls = '';
+        }
+        table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + ' ' + (activecls) + '"' +
         'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
         this.parent.rowHeight + 'px;">' +
             '<td class="' + cls.chartRowCell + ' ' + className
@@ -1115,7 +1133,7 @@ export class ChartRows extends DateProcessor {
     }
 
     private childTaskbarProgressResizer(): NodeList {
-        let width : number = this.parent.enableRtl? (this.templateData.ganttProperties.progressWidth + 8) : (this.templateData.ganttProperties.progressWidth - 6); 
+        const width : number = this.parent.enableRtl? (this.templateData.ganttProperties.progressWidth + 8) : (this.templateData.ganttProperties.progressWidth - 6); 
         const template: string = '<div class="' + cls.childProgressResizer + '"' +
             'style="' + (this.parent.enableRtl? 'right:' : 'left:') + width + 'px;margin-top:' +
             (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
@@ -1438,7 +1456,7 @@ export class ChartRows extends DateProcessor {
         this.parent.renderTemplates();
         this.triggerQueryTaskbarInfo();
         this.parent.modifiedRecords = [];
-        if (this.parent.viewType == 'ResourceView' && this.parent.showOverAllocation) {
+        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
             this.updateOverlapped();
         }
         if (collapsedResourceRecord.length) {
@@ -1463,7 +1481,7 @@ export class ChartRows extends DateProcessor {
     public getGanttChartRow(i: number, tempTemplateData: IGanttData): Node {
         this.templateData = tempTemplateData;
         let taskBaselineTemplateNode: NodeList = null;
-        const parentTrNode: NodeList = this.getTableTrNode();
+        const parentTrNode: NodeList = this.getTableTrNode(i);
         const leftLabelNode: NodeList = this.getLeftLabelNode(i);
         const taskbarContainerNode: NodeList = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
@@ -1493,12 +1511,12 @@ export class ChartRows extends DateProcessor {
                 }
             }
             if ((this.templateData.ganttProperties.autoDuration !== 0) && !this.templateData.ganttProperties.isMilestone && parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
-                taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
+                append(parentTaskbarTemplateNode, taskbarContainerNode[0] as Element);
             }
             else if((this.templateData.ganttProperties.duration === 0 && this.templateData.ganttProperties.isMilestone && this.templateData.ganttProperties.isAutoSchedule)){
                 const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
                 if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
-                    taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
+                    append(milestoneTemplateNode, taskbarContainerNode[0] as Element);
                 }
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
@@ -1550,7 +1568,7 @@ export class ChartRows extends DateProcessor {
                             taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
                         }
                     } else {
-                        taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                        append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
                     }
                 }
                 if (childTaskbarProgressResizeNode) {
@@ -1594,7 +1612,7 @@ export class ChartRows extends DateProcessor {
                     taskIndicatorTextNode = taskIndicatorTextFunction(
                         extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
                 } else {
-                    const text: any = createElement('Text');
+                    const text: HTMLElement = createElement('Text');
                     text.innerHTML = indicators[indicatorIndex as number].name;
                     if (this.parent.enableHtmlSanitizer && typeof (indicators[indicatorIndex as number].name) === 'string') {
                         indicators[indicatorIndex as number].name = SanitizeHtmlHelper.sanitize(indicators[indicatorIndex as number].name);
@@ -1913,8 +1931,8 @@ export class ChartRows extends DateProcessor {
 
     // To update the row height when allow overallocation set to false
     public updateDragDropRecords(data: IGanttData, tr?: Node) {
-        let childRecords: IGanttData[] = data.childRecords;
-        let rowIndex = this.parent.currentViewData.indexOf(data);
+        const childRecords: IGanttData[] = data.childRecords;
+        const rowIndex = this.parent.currentViewData.indexOf(data);
         let treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                                       this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
         if (!tr) {
@@ -2024,6 +2042,20 @@ export class ChartRows extends DateProcessor {
             }
         }
     }
+    
+    private updateResourceTaskbarElement(tRow: Node, parentTr: NodeList) {
+        const cloneElement: HTMLElement = (tRow as Element).querySelector('.e-taskbar-main-container');
+        addClass([cloneElement], 'collpse-parent-border');
+        const id: string = (tRow as Element).querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
+        const ganttData: IGanttData = this.parent.getRecordByID(id);
+        let zIndex: string = "";
+        if (ganttData && !isNullOrUndefined(ganttData.ganttProperties.eOverlapIndex)) {
+           zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
+        }
+        const cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
+        cloneChildElement.style.zIndex = zIndex;
+        parentTr[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
+    }
 
     private getResourceParent(record: IGanttData): Node {
         const chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
@@ -2048,20 +2080,19 @@ export class ChartRows extends DateProcessor {
         parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
         const tasks: IGanttData[] = this.parent.dataOperation.setSortedChildTasks(record);
         this.parent.dataOperation.updateOverlappingIndex(tasks);
-        for (let i: number = 0; i < chartRows.length; i++) {
-            if ((<HTMLElement>chartRows[i as number]).classList.contains('gridrowtaskId'
-                + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
-                const cloneElement: HTMLElement = chartRows[i as number].querySelector('.e-taskbar-main-container');
-                addClass([cloneElement], 'collpse-parent-border');
-                const id: string = chartRows[i as number].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
-                const ganttData: IGanttData = this.parent.getRecordByID(id);
-                let zIndex: string = "";
-                if (ganttData && !isNullOrUndefined(ganttData.ganttProperties.eOverlapIndex)) {
-                   zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
+        let tRow: Node;
+        if (this.parent.enableVirtualization) {
+            for (let i: number = 0; i < record.childRecords.length; i++) {
+                tRow = this.getGanttChartRow(record.childRecords[i as number].index, this.parent.flatData[record.childRecords[i as number].index]);
+                this.updateResourceTaskbarElement(tRow, parentTrNode);
+            }
+        }
+        else {
+            for (let i: number = 0; i < chartRows.length; i++) {
+                if ((<HTMLElement>chartRows[i as number]).classList.contains('gridrowtaskId'
+                    + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
+                    this.updateResourceTaskbarElement(chartRows[i as number], parentTrNode);
                 }
-                const cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
-                cloneChildElement.style.zIndex = zIndex;
-                parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
             }
         }
         parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);

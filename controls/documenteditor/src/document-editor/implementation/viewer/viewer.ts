@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
-import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WColumnFormat } from '../format/index';
+import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
@@ -859,6 +859,8 @@ export class DocumentHelper {
         this.preDefinedStyles.add('TOC 7', '{"type":"Paragraph","name":"TOC 7","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :66.0,"afterSpacing":5.0}}');
         this.preDefinedStyles.add('TOC 8', '{"type":"Paragraph","name":"TOC 8","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :77.0,"afterSpacing":5.0}}');
         this.preDefinedStyles.add('TOC 9', '{"type":"Paragraph","name":"TOC 9","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :88.0,"afterSpacing":5.0}}');
+        this.preDefinedStyles.add('Header', '{"type":"Paragraph","name":"Header","basedOn":"Normal","next":"Header","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple"}}');
+        this.preDefinedStyles.add('Footer', '{"type":"Paragraph","name":"Footer","basedOn":"Normal","next":"Footer","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple"}}');
     }
     /**
      * @private
@@ -867,6 +869,9 @@ export class DocumentHelper {
     public clearDocumentItems(): void {
         if (this.owner.editor) {
             this.owner.editor.clear();
+        }
+        if(this.owner.search) {
+            this.owner.search.clearSearchHighlight();
         }
         if (this.owner.selection) {
             this.owner.selection.clear();
@@ -2200,8 +2205,8 @@ export class DocumentHelper {
                                 }
                             }
                         }
-                        startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         this.selection.selectRange(startPosition, endPosition);
                     }
                 } else {
@@ -3103,6 +3108,9 @@ export class DocumentHelper {
             this.viewerContainer.scrollLeft = x - (this.pageContainer.offsetWidth / 100) * 20;
         } else if (scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
             this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            while (this.viewerContainer.scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
+                this.viewerContainer.scrollLeft = this.viewerContainer.scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            }
         }
     }
     public getLineWidget(cursorPoint: Point): LineWidget {
@@ -5213,9 +5221,20 @@ export class PageLayoutViewer extends LayoutViewer {
         return undefined;
     }
     private createHeaderFooterWidget(type: HeaderFooterType): HeaderFooterWidget {
-        let headerFooter: HeaderFooterWidget = new HeaderFooterWidget(type);
-        let paragraph: ParagraphWidget = new ParagraphWidget();
+        const headerFooter: HeaderFooterWidget = new HeaderFooterWidget(type);
+        const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.childWidgets.push(new LineWidget(paragraph));
+        let style;
+        if(type.indexOf('Header') !== -1) {
+            style = this.documentHelper.styles.findByName('Header') as WStyle;
+        }
+        else {
+            style = this.documentHelper.styles.findByName('Footer') as WStyle;
+        }
+        paragraph.paragraphFormat.baseStyle = style;
+        paragraph.paragraphFormat.listFormat.baseStyle = style;
+        headerFooter.childWidgets.push(paragraph);
+        paragraph.containerWidget = headerFooter;
         return headerFooter;
     }
     public getHeaderFooter(type: HeaderFooterType): number {

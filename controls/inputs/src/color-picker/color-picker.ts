@@ -591,7 +591,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         hsvContainer.appendChild(this.createElement('div', { className: HSVAREA }));
         const dragHandler: HTMLElement = this.createElement('span', { className: HANDLER, attrs: { 'tabindex': '0' } });
         hsvContainer.appendChild(dragHandler);
-        if (this.value === null) {
+        if (this.value === null || this.value === '') {
             this.value = '#008000ff';
         }
         this.rgb = this.hexToRgb(this.value);
@@ -1416,12 +1416,22 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private paletteKeyDown(e: KeyboardEvent): void {
         const target: HTMLElement = e.target as HTMLElement;
-        if (!target.classList.contains(PALETTES)) {
-            return;
-        }
         let selectedEle: Element;
         let idx: number;
         const tiles: Element[] = [].slice.call(selectAll('.' + TILE, target));
+        if ((target.classList.contains('e-palette') || target.classList.contains('e-tile')) && (e.keyCode === 9 && !e.shiftKey)) {
+	    if (this.modeSwitcher || this.showButtons) {
+		(this.getPopupEle().querySelector('.e-btn') as HTMLElement).focus();
+		e.preventDefault();
+		e.stopPropagation();
+	    }
+	} else if ((target.classList.contains('e-palette') || target.classList.contains('e-tile')) && (e.keyCode === 9 && e.shiftKey)) {
+	    if (this.splitBtn) {   
+		 this.splitBtn.element.focus();
+		 e.preventDefault();
+		 e.stopPropagation();
+	    }
+	}
         const prevSelectedEle: Element = (tiles.filter((tile: Element) => tile.classList.contains('e-selected'))).pop();
         switch (!e.altKey && e.keyCode) {
         case 39:
@@ -1918,6 +1928,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 this.element.value = this.roundValue(value).slice(0, 7);
                 const preview: HTMLElement = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement;
                 if (preview) { preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value)); }
+            } else if (this.noColor && this.mode === 'Palette' && this.value === '') {
+                const preview: HTMLElement = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement;
+                preview.style.backgroundColor = '';
             } else {
                 this.value = oldProp.value;
             }

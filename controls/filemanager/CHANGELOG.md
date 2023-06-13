@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I458668` - The issue, replace dialog shows when uploading the same file to different directories in File Manager with the SQL File Provider has been resolved.
+- `#I464322` - The issue with `fileOpen` event in the File Manager component has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### File Manager
@@ -9,6 +18,7 @@
 #### Bug fixes
 
 - `#I439193` - The data disappears in the DetailsView when dynamically setting columns in the File Manager component has been resolved.
+- `#I458884` - The issue with the `fileSelect` event in the File Manager component details view has been resolved.
 
 ## 21.1.41 (2023-04-18)
 

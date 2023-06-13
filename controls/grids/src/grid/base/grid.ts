@@ -1592,7 +1592,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Configures the column chooser in the Grid.
      *
-     * @default { columnChooserOperator: 'wildCard' }
+     * @default { columnChooserOperator: 'startsWith' }
      */
     @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
     public columnChooserSettings: ColumnChooserSettingsModel;
@@ -7550,7 +7550,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getUserAgent(): boolean {
         const userAgent: string = Browser.userAgent.toLowerCase();
-        return (/iphone|ipod|ipad/ as RegExp).test(userAgent);
+        return (/iphone|ipod|ipad|macintosh/ as RegExp).test(userAgent);
     }
 
     /**

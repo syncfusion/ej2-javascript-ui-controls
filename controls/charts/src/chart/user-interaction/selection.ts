@@ -169,7 +169,7 @@ export class Selection extends BaseSelection {
      */
     public selectDataIndex(chart: Chart, indexes: Index[]): void {
         for (const index of indexes) {
-            this.performSelection(index, chart, this.getElementByIndex(chart, index)[0]);
+            this.performSelection(index, chart, this.getElementByIndex(chart, index, '', this.series[index.series].marker.visible)[0]);
         }
     }
 

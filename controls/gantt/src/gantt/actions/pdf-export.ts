@@ -123,7 +123,7 @@ export class PdfExport {
             const format: PdfTreeGridLayoutFormat = new PdfTreeGridLayoutFormat();
             format.break = PdfLayoutBreakType.FitElement;
             const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(pdfPage, 0, 0, format);
-            this.gantt.drawChart(layouter);
+            this.gantt.drawChart(layouter , pdfExportProperties);
             if (!isMultipleExport) {
                 if (!this.isBlob) {
                 // save the PDF

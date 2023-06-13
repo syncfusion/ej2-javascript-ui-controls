@@ -274,7 +274,7 @@ export class AggregateMenu {
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
         const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
         const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
-        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
+        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + ' ';
         const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
         textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid')) : buttonElement.getAttribute('data-uid');
         const inputTextDiv1: HTMLElement = createElement('div', {

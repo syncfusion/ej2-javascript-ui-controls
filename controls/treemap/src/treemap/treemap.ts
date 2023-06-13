@@ -1133,6 +1133,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         this.trigger(resize, args, (observedArgs: IResizeEventArgs) => {
                             this.render();
+							this.refreshing = false;
                         });
                     },
                     500);

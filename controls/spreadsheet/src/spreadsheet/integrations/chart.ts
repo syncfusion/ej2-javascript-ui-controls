@@ -5,7 +5,7 @@ import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
 import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition, getSheetIndexFromAddress } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
-import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
+import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
 import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
@@ -642,17 +642,23 @@ export class SpreadsheetChart {
         const id: string = chart.id + '_overlay';
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
-        element.classList.add('e-datavisualization-chart');
-        element.style.width = chart.width + 'px';
-        element.style.height = chart.height + 'px';
+        const overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
+        overlayProps.element.classList.add('e-datavisualization-chart');
+        overlayProps.element.style.width = chart.width + 'px';
+        overlayProps.element.style.height = chart.height + 'px';
         if (sheet.frozenRows || sheet.frozenColumns) {
-            overlayObj.adjustFreezePaneSize(chart, element, eleRange);
+            overlayObj.adjustFreezePaneSize(chart, overlayProps.element, eleRange);
         } else {
-            element.style.top = isNullOrUndefined(chart.top) ? element.style.top : (chart.top + 'px');
-            element.style.left = isNullOrUndefined(chart.left) ? element.style.left : (chart.left + 'px');
-            chart.top = parseInt(element.style.top.replace('px', ''), 10);
-            chart.left = parseInt(element.style.left.replace('px', ''), 10);
+            if (isNullOrUndefined(chart.top)) {
+                chart.top = overlayProps.top;
+            } else {
+                overlayProps.element.style.top = Number(addDPRValue(chart.top).toFixed(2)) + 'px';
+            }
+            if (isNullOrUndefined(chart.left)) {
+                chart.left = overlayProps.left;
+            } else {
+                overlayProps.element.style.left = Number(addDPRValue(chart.left).toFixed(2)) + 'px';
+            }
         }
         this.parent.notify(overlayEleSize, { height: chart.height, width: chart.width });
         const legendSettings: LegendSettingsModel =
@@ -684,8 +690,8 @@ export class SpreadsheetChart {
                 tooltip: {
                     enable: true
                 },
-                width: element.style.width,
-                height: element.style.height,
+                width: overlayProps.element.style.width,
+                height: overlayProps.element.style.height,
                 load: (args: ILoadedEventArgs) => {
                     args.chart.theme = chart.theme || 'Material';
                 },
@@ -706,8 +712,8 @@ export class SpreadsheetChart {
                 theme: theme,
                 background: this.getThemeBgColor(theme),
                 series: chartOptions.series as AccumulationSeriesModel[],
-                width: element.style.width,
-                height: element.style.height,
+                width: overlayProps.element.style.width,
+                height: overlayProps.element.style.height,
                 center: { x: '50%', y: '50%' },
                 enableSmartLabels: true,
                 enableAnimation: true,
@@ -720,9 +726,9 @@ export class SpreadsheetChart {
             });
             this.chart.appendTo(chartContent);
         }
-        element.appendChild(chartContent);
-        if (element.classList.contains('e-ss-overlay-active')) {
-            this.parent.notify(insertDesignChart, { id: element.id });
+        overlayProps.element.appendChild(chartContent);
+        if (overlayProps.element.classList.contains('e-ss-overlay-active')) {
+            this.parent.notify(insertDesignChart, { id: overlayProps.element.id });
         }
         if (argsOpt.triggerEvent) {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
@@ -774,8 +780,8 @@ export class SpreadsheetChart {
                     chartleft.target = this.parent.getRowHeaderTable();
                 }
             } else {
-                chartTop = { clientY: chartElements.offsetTop, isImage: true };
-                chartleft = { clientX: chartElements.offsetLeft, isImage: true };
+                chartTop = { clientY: parseFloat(chartElements.style.top), isImage: true };
+                chartleft = { clientX: parseFloat(chartElements.style.left), isImage: true };
             }
             this.parent.notify(deleteChartColl, { id: args.id });
             this.parent.notify(getRowIdxFromClientY, chartTop); this.parent.notify(getColIdxFromClientX, chartleft);

@@ -49,7 +49,7 @@ export class Render {
             if (collapsed && !isNullOrUndefined(args.row)) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
                 const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
-                if (!isNullOrUndefined(args.row.getAttribute('data-uid'))) {
+                if (!this.parent.grid.isFrozenGrid() && !isNullOrUndefined(args.row.getAttribute('data-uid'))) {
                     rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
                 }
             }
@@ -213,7 +213,8 @@ export class Render {
         }
         if (summaryRow) {
             addClass([args.cell], 'e-summarycell');
-            const summaryData: string = getObject(args.column.field, args.data);
+            let summaryData: string = getObject(args.column.field, args.data);
+            summaryData = isNullOrUndefined(summaryData) ? null : summaryData;
             if (args.cell.querySelector('.e-treecell') != null) {
                 args.cell.querySelector('.e-treecell').innerHTML = summaryData;
             } else {

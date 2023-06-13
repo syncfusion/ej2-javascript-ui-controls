@@ -2627,3 +2627,23 @@ export enum SectionBreakType {
      */
     OddPage = 'OddPage'
 }
+/**
+* Specifies the clear type of the Text Wrapping break.
+*/
+export type BreakClearType =
+    /**
+     * Specifies the text to start on next line ragrdless of any floating objects..
+     */
+    'None' |
+    /**
+     * Specifies the text to start on next text region left to right.
+     */
+    'Left' | 
+    /**
+     * Specifies the text to start on next text region right to left.
+     */
+    'Right' | 
+    /**
+     * Specifies the text to start on next full line.
+     */
+    'All';

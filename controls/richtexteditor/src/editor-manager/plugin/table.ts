@@ -340,7 +340,7 @@ export class TableCommand {
         const colIndex: number = Array.prototype.indexOf.call(selectedCell.parentNode.childNodes, selectedCell);
         this.curTable = closest(selectedCell, 'table') as HTMLTableElement;
         let currentRow: HTMLTableRowElement;
-        let allCells: HTMLElement[][] = this.getCorrespondingColumns();
+        const allCells: HTMLElement[][] = this.getCorrespondingColumns();
         const minMaxIndex: MinMax = this.getSelectedCellMinMaxIndex(allCells);
         let maxI: number;
         let j: number;
@@ -357,10 +357,13 @@ export class TableCommand {
                             /* eslint-disable */
                             if (1 === rowSpanVal) {
                                 allCells[maxI][j].removeAttribute('rowspan');
-                                const cell: Node = allCells[maxI][j].cloneNode(true);
-                                allCells = this.getCorrespondingColumns();
-                                if (allCells[rowSpanVal][j] && allCells[rowSpanVal][j].parentElement) {
-                                    allCells[rowSpanVal][j].parentElement.insertBefore(cell, allCells[rowSpanVal][j]);
+                                const cell: HTMLElement = this.getMergedRow(this.getCorrespondingColumns() as HTMLElement[][])[j];
+                                if (cell) {
+                                    const cloneNode: Node = cell.cloneNode(true);
+                                    (cloneNode as HTMLElement).innerHTML = '<br>';
+                                    if (cell.parentElement) {
+                                        cell.parentElement.insertBefore(cloneNode, cell);
+                                    }
                                 }
                             } else {
                                 allCells[maxI][j].setAttribute('rowspan', rowSpanVal.toString());
@@ -407,6 +410,16 @@ export class TableCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+
+    private getMergedRow(cells: HTMLElement[][]): HTMLElement[] {
+        let mergedRow: HTMLElement[];
+        for (let i: number = 0; i < cells.length; i++) {
+            if (cells[i as number].length !== this.curTable.rows[0].childNodes.length) {
+                mergedRow = cells[i as number];
+            }
+        }
+        return mergedRow;
     }
 
     private removeTable(e: IHtmlItem): void {

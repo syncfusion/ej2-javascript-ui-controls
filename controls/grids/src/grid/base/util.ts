@@ -1064,6 +1064,11 @@ export function getObject(field: string = '', object?: Object): any {
         const splits: string[] = field.split('.');
         for (let i: number = 0; i < splits.length && !isNullOrUndefined(value); i++) {
             value = value[splits[parseInt(i.toString(), 10)]];
+            if (isUndefined(value)) {
+                const newCase: string = splits[parseInt(i.toString(), 10)].charAt(0).toUpperCase()
+                    + splits[parseInt(i.toString(), 10)].slice(1);
+                value = object[`${newCase}`] || object[`${newCase}`.charAt(0).toLowerCase() + `${newCase}`.slice(1)];
+            }
         }
         return value as string;
     }
@@ -1349,8 +1354,17 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
     const keyField: string = gObj.getPrimaryKeyFieldNames()[0];
     let dataIndex: number;
     gObj.getCurrentViewRecords().filter((e: Object, index: number) => {
-        if (e[`${keyField}`] === data[`${keyField}`]) {
-            dataIndex = index;
+        if (keyField.includes('.')) {
+            const currentValue: number = getObject(keyField, e);
+            const originalValue: number =  getObject(keyField, data);
+            if (currentValue === originalValue) {
+                dataIndex = index;
+            }
+        }
+        else {
+            if (e[`${keyField}`] === data[`${keyField}`]) {
+                dataIndex = index;
+            }
         }
     });
     return dataIndex;

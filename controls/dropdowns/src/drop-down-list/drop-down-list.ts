@@ -143,7 +143,6 @@ export class DropDownList extends DropDownBase implements IInput {
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
     protected selectedElementID: string;
-    private isEventCancel : boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -1273,7 +1272,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.removeSelection();
         li.classList.add(dropDownBaseClasses.selected);
         this.removeHover();
-        const value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
+        const value: string | number | boolean = li.getAttribute('data-value') !== "null" ? this.getFormattedValue(li.getAttribute('data-value')) : null;
         const selectedData: string | number | boolean | {
             [key: string]: Object
         } = this.getDataByValue(value);
@@ -1394,7 +1393,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (Browser.info.name !== 'mozilla') {
             if (this.targetElement()) {
-                attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id !== '' ? this.inputElement.id : this.element.id });
+                if(this.getModuleName() !== 'combobox'){
+                    attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id !== '' ? this.inputElement.id : this.element.id });
+                }
                 this.targetElement().removeAttribute('aria-live');
             }
         }
@@ -1448,9 +1449,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const valueCompTemp: any = compiledString(
             this.itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, this.valueTempElement);
         if (valueCompTemp && valueCompTemp.length > 0) {
-            for (let i: number = 0; i < valueCompTemp.length; i++) {
-                this.valueTempElement.appendChild(valueCompTemp[i as number]);
-            }
+            append(valueCompTemp, this.valueTempElement);
         }
         this.renderReactTemplates();
     }
@@ -1493,6 +1492,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const index: number = this.isSelectCustom ? null : this.activeIndex;
         this.setProperties({ 'index': index, 'text': dataItem.text, 'value': dataItem.value }, true);
         this.detachChangeEvent(eve);
+        this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
     }
 
     private detachChanges(value: string | number | boolean | {
@@ -2171,14 +2171,12 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
-                EventHandler.remove(document, 'mousedown', this.onDocumentClick);
                 if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
                     this.isActive = true;
                     this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
                 }
             },
             open: () => {
-                EventHandler.remove(document, 'mousedown', this.onDocumentClick);
                 EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
                 this.isPopupOpen = true;
                 const actionList: HTMLElement = this.actionCompleteData && this.actionCompleteData.ulElement &&
@@ -2363,9 +2361,10 @@ export class DropDownList extends DropDownBase implements IInput {
 
     private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.isTyped = false;
-        if (!(this.popupObj && document.body.contains(this.popupObj.element) && (this.beforePopupOpen || this.isEventCancel))) {
+        if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
+        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
         this.isDropDownClick = false;
@@ -2414,7 +2413,6 @@ export class DropDownList extends DropDownBase implements IInput {
         const popupInstance: Popup = this.popupObj;
         const eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel, event: e || null };
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
-            this.isEventCancel = eventArgs.cancel;
             if (!isNullOrUndefined(this.popupObj) &&
                 !isNullOrUndefined(this.popupObj.element.querySelector('.e-fixed-head'))) {
                 const fixedHeader: HTMLElement = this.popupObj.element.querySelector('.e-fixed-head');
@@ -2591,9 +2589,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const footerCompTemp: any = compiledString(
             {}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
         if (footerCompTemp && footerCompTemp.length > 0) {
-            for (let i: number = 0; i < footerCompTemp.length; i++) {
-                this.footer.appendChild(footerCompTemp[i as number]);
-            }
+            append(footerCompTemp, this.footer);
         }
         append([this.footer], popupEle);
     }
@@ -2616,9 +2612,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const headerCompTemp: any = compiledString(
             {}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
         if (headerCompTemp && headerCompTemp.length) {
-            for (let i: number = 0; i < headerCompTemp.length; i++) {
-                this.header.appendChild(headerCompTemp[i as number]);
-            }
+            append(headerCompTemp, this.header);
         }
         const contentEle: Element = popupEle.querySelector('div.e-content');
         popupEle.insertBefore(this.header, contentEle);
@@ -3123,6 +3117,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.header = null;
         this.previousSelectedLI = null;
         this.valueTempElement = null;
+        this.actionData.ulElement = null;
         super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */

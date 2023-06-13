@@ -3871,6 +3871,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 const cropPointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
                 this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
                 this.objColl.push(this.currSelectionPoint);
+                this.currSelectionPoint = null;
                 this.zoomAction(this.cropObj.cropZoom);
                 this.currSelectionPoint = extend({}, this.objColl[0], null, true) as SelectionPoint;
                 this.objColl = cropObjColl; this.pointColl = cropPointColl; this.freehandCounter = this.pointColl.length;
@@ -6512,7 +6513,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             }
         }
         if (this.disabled) { this.element.setAttribute('class', 'e-disabled'); }
-        this.trigger('fileOpened', fileOpened);
+        if (this.isImageLoaded && this.element.style.opacity !== '0.5') {
+            this.trigger('fileOpened', fileOpened);
+        }
         if (this.zoomSettings.zoomFactor !== 1 || !isNullOrUndefined(this.zoomSettings.zoomPoint)) {
             this.zoom(this.zoomSettings.zoomFactor, this.zoomSettings.zoomPoint);
         }
@@ -6747,10 +6750,26 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
         if (!this.disabled) {
-            showSpinner(this.element);
-            this.element.style.opacity = '0.5';
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const filesData: FileList = (args.target as any).files[0];
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const fileData: any = filesData;
+            if (!isNullOrUndefined(fileData.name.split('.')) &&
+                !isNullOrUndefined(fileData.name.split('.')[1]) &&
+                fileData.name.split('.')[1].toLowerCase() !== 'jpg' &&
+                fileData.name.split('.')[1].toLowerCase() !== 'jpeg' &&
+                fileData.name.split('.')[1].toLowerCase() !== 'png' &&
+                fileData.name.split('.')[1].toLowerCase() !== 'svg') {
+                return;
+            }
+            showSpinner(this.element);
+            this.element.style.opacity = '0.5';
+            if (!isNullOrUndefined(fileData.name.split('.')) &&
+                !isNullOrUndefined(fileData.name.split('.')[1])) {
+                const fileType: string = this.toPascalCase(fileData.name.split('.')[1]);
+                if (fileType === 'JPG' || fileType === 'Jpg') {this.fileType = 'Jpeg' as FileType }
+                else {this.fileType = fileType as FileType; }
+            } else {this.fileType = null; }
             if (this.isImageLoaded) {this.isImageLoaded = false; this.reset(); }
             if (isNullOrUndefined(this.toolbarTemplate)) {this.reset(); this.update(); }
             this.fileName = inputElement.value.split('\\')[inputElement.value.split('\\').length - 1];
@@ -6984,7 +7003,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             isShape = this.findTargetObj(x, y, isCropSelection);
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (!isCropSelection) {
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            }
             if (isTextArea) {
                 this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
                 this.textArea.style.display = 'block';
@@ -7021,7 +7042,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const points: Point = this.setXYPoints(e);
             const x: number = points.x; const y: number = points.y;
             isShape = this.findTargetObj(x, y, isCropSelection);
-            this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            if (!isCropSelection) {
+                this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+            }
             if (isTextArea) {
                 this.textArea.value = this.objColl[this.objColl.length - 1].keyHistory;
                 this.textArea.style.display = 'block';
@@ -8236,16 +8259,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (this.degree === 0 || this.degree === 180) {
             if (!isNullOrUndefined(this.activeObj.shape)) {
                 this.setZoomDimension(-0.1, this.activeObj);
-                if (this.destLeft > this.activeObj.activePoint.startX || this.destTop > this.activeObj.activePoint.startY ||
-                this.destLeft + this.destWidth < this.activeObj.activePoint.endX || this.destTop + this.destHeight <
-                this.activeObj.activePoint.endY) {
-                    zoomOut.classList.add('e-disabled');
-                    zoomOut.parentElement.classList.add('e-overlay');
-                    isDisabled = true;
-                } else {
-                    zoomOut.classList.remove('e-disabled');
-                    zoomOut.parentElement.classList.remove('e-overlay');
-                    isDisabled = false;
+                if (!isNullOrUndefined(zoomOut)) {
+                    if (this.destLeft > this.activeObj.activePoint.startX || this.destTop > this.activeObj.activePoint.startY ||
+                        this.destLeft + this.destWidth < this.activeObj.activePoint.endX || this.destTop + this.destHeight <
+                        this.activeObj.activePoint.endY) {
+                        zoomOut.classList.add('e-disabled');
+                        zoomOut.parentElement.classList.add('e-overlay');
+                        isDisabled = true;
+                    } else {
+                        zoomOut.classList.remove('e-disabled');
+                        zoomOut.parentElement.classList.remove('e-overlay');
+                        isDisabled = false;
+                    }
                 }
             } else {
                 this.setZoomDimension(-0.1, null);
@@ -12954,9 +12979,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 } else {
                     this.fileName = 'ImageEditor';
                 }
+                if (!isNullOrUndefined((data as string).split('.')) &&
+                    !isNullOrUndefined((data as string).split('.')[2])) {
+                    const fileType: string = this.toPascalCase((data as string).split('.')[2]);
+                    if (fileType === 'JPG' || fileType === 'Jpg') {this.fileType = 'Jpeg' as FileType }
+                    else {this.fileType = fileType as FileType; }
+                } else {this.fileType = null; }
                 this.imageOnLoad(data as string);
             } else {
                 this.fileName = 'ImageEditor';
+                this.fileType = null;
                 this.lowerCanvas = document.querySelector('#' + this.element.id + '_lowerCanvas');
                 this.upperCanvas = document.querySelector('#' + this.element.id + '_upperCanvas');
                 this.lowerContext = this.lowerCanvas.getContext('2d'); this.upperContext = this.upperCanvas.getContext('2d');
@@ -13070,7 +13102,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (!isNullOrUndefined(document.getElementById(this.element.id + '_quickAccessToolbarArea'))) {
                 document.getElementById(this.element.id + '_quickAccessToolbarArea').style.display = 'none';
             }
-            this.updateCanvas(); this.refreshDropDownBtn(false); this.enableDisableToolbarBtn();
+            this.isImageLoaded = false; this.updateCanvas(); this.isImageLoaded = true;
+            this.refreshDropDownBtn(false); this.enableDisableToolbarBtn();
         }
     }
 

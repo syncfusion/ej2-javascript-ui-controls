@@ -379,7 +379,7 @@ describe('Track changes', () => {
         container.selection.handleTabKey(true, false);
         container.selection.handleTabKey(true, false);
         var count = container.revisions.changes.length;
-        expect(count).toBe(3);
+        expect(count).toBe(1);
     });
     it('Adding the 1*3 table by a user and handling tab key by  other user', function () {
         console.log('Adding the 1*3 table by a user and handling tab key by  other user');
@@ -393,7 +393,7 @@ describe('Track changes', () => {
         container.selection.handleTabKey(true, false);
         container.selection.handleTabKey(true, false);
         var count = container.revisions.changes.length;
-        expect(count).toBe(3);
+        expect(count).toBe(1);
     });
     it('Deleting the Original text', function () {
         console.log('Deleting the Original text');

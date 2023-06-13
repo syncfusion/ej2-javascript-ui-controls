@@ -2,7 +2,7 @@ import { TaskFieldsModel } from './../models/task-fields-model.d';
 import { PdfFontFamily } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
 import { PdfPageTemplateElement, RectangleF, PdfCompositeField, PointF } from '@syncfusion/ej2-pdf-export';
-import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont } from '@syncfusion/ej2-pdf-export';
+import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont,PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
 import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument } from '@syncfusion/ej2-pdf-export';
 import { PdfTreeGridColumn, PdfTreeGridRow, PdfTreeGridCell, PdfBorders, PdfPaddings } from './pdf-base/index';
 import { ColumnModel } from './../models/column';
@@ -490,7 +490,10 @@ export class ExportHelper {
             const footerBrush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.backgroundColor);
             footer.graphics.drawRectangle(pen, footerBrush, 0, 0, pdfDoc.pageSettings.width, 35);
             /* eslint-disable-next-line */
-            const font: PdfFont = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
+            let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(this.ganttStyle.fontFamily, this.ganttStyle.footer.fontSize, this.ganttStyle.footer.fontStyle);
+            if (this.ganttStyle.font) {
+                font = this.ganttStyle.font;
+            } 
             const brush: PdfBrush = new PdfSolidBrush(this.ganttStyle.footer.fontColor);
             const pageNumber: PdfPageNumberField = new PdfPageNumberField(font);
             const count: PdfPageCountField = new PdfPageCountField(font, brush);

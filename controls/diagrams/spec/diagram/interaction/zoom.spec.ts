@@ -121,6 +121,49 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('828826 - ZoomOut Issue in canvas mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 400 };
+            diagram = new Diagram({
+                mode:'Canvas',
+                width: '1000px', height: '500px', nodes: [node],
+                pageSettings: { width: 1000, height: 1000 }
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking ZoomOut with Zoom To method', (done: Function) => {
+            expect(diagram.scroller.horizontalOffset == 0 && diagram.scroller.verticalOffset == 0).toBe(true);
+            diagram.select(diagram.nodes);
+            diagram.zoomTo({ type: 'ZoomOut', zoomFactor: 0.5 });
+            expect(diagram.scroller.horizontalOffset == 166.67 && diagram.scroller.verticalOffset == 83.33).toBe(true);
+            done();
+        });
+        it('Checking ZoomOut with Zoom method', (done: Function) => {
+            // diagram.refresh();
+            expect(diagram.scroller.horizontalOffset == 166.67 && diagram.scroller.verticalOffset == 83.33).toBe(true);
+            diagram.select(diagram.nodes);
+            diagram.zoom(0.8);
+            expect(diagram.scroller.horizontalOffset == 233.34 && diagram.scroller.verticalOffset == 116.66).toBe(true);
+            done();
+        });
+    });
+
     describe('Scroll Limit', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

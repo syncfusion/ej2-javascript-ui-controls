@@ -958,7 +958,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         childElement.style.left = (point.labelRegion.x) + 'px';
         childElement.style.top = (point.labelRegion.y) + 'px';
         childElement.style.color = labelColor ||
-            this.getSaturatedColor(point, fill);
+            this.getSaturatedColor(point, point.labelPosition === 'Inside' ? fill : this.getLabelBackground(point));
         if (this.accumulation.isBlazor) {
             const position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
                 (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';

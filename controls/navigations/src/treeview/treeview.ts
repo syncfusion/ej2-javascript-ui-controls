@@ -3946,6 +3946,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             enableTailMode: true, enableAutoScroll: true,
             dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
+            enableTapHold: true,
+            tapHoldThreshold: 100,
             helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
                 this.dragTarget = <Element>e.sender.target;
                 let dragRoot: Element = closest(this.dragTarget, '.' + ROOT);
@@ -4355,7 +4357,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             (dropUl as HTMLElement).style.display = 'none';
         }
         if (isNOU(dropUl)) {
-            this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            let args: any = this.expandArgs as any;
+            if (isNOU(args) || args.name != 'nodeExpanding') {
+                this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            }
             if (isNOU(dropIcon)) {
             ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
             }
@@ -4717,6 +4722,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         refNode = dropUl.childNodes[index];
         if(!this.isFirstRender || this.dataType === 1){
+            let args: any = this.expandArgs as any;
             if(refNode || this.sortOrder === 'None'){
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
@@ -4724,7 +4730,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                     this.preventExpand = false;
                     let dropIcon: Element = select('div.' + ICON, dropLi);
-                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                         this.expandAction(dropLi, dropIcon, null);
                     }
                 }
@@ -4738,7 +4744,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                         this.preventExpand = false;
                         let dropIcon: Element = select('div.' + ICON, dropLi);
-                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                             this.expandAction(dropLi, dropIcon, null);
                         }
                     } 

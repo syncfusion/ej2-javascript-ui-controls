@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, scheduleModeData1,multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -1328,7 +1328,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[8];
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '3SF';
             triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[8].ganttProperties.predecessorsName).toBe('3SF');
+            expect(ganttObj.flatData[8].ganttProperties.predecessorsName).toBe('3SF-7320 days');
         });
         it('Dependency editing - parent to child', () => {
             ganttObj.actionBegin = (args: any) => {
@@ -1350,7 +1350,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[6];
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '6SS';
             triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[6].ganttProperties.predecessorsName).toBe('6SS');
+            expect(ganttObj.flatData[6].ganttProperties.predecessorsName).toBe('6SS+118 days');
         });
         it('Dependency editing - parent to parent', () => {
             ganttObj.actionBegin = (args: any) => {
@@ -2652,4 +2652,62 @@ describe('Gantt taskbar editing', () => {
         triggerMouseEvent(dragElement, 'mouseup');
   });
     });
+    describe("offset value not updating issue", () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: scheduleModeData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        dependency:'Predecessor',
+                        child: 'Children',
+                        manual: 'isManual'
+                    },
+                    projectStartDate: new Date('02/20/2017'),
+                    projectEndDate: new Date('03/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: false,
+                    editSettings: {
+                        allowEditing: true,
+                        allowTaskbarEditing: true
+                    }
+                }, done);
+        });
+        beforeEach(function (done) {
+            setTimeout(done, 500);
+        });
+        it("check offset value after connecting predecessors", () => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div.e-right-connectorpoint-outer-div > div.e-connectorpoint-right') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 10, 100);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[10];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '9FS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[10].ganttProperties.predecessorsName).toBe('9FS');
+            let dragElement1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement1, 'mousedown', dragElement1.offsetLeft, dragElement1.offsetTop);
+            dragElement1 = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-right-connectorpoint-outer-div > div.e-connectorpoint-right') as HTMLElement;
+            triggerMouseEvent(dragElement1, 'mousedown', dragElement1.offsetLeft, dragElement1.offsetTop);
+            triggerMouseEvent(dragElement1, 'mousemove', 10, 150);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[10];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '8FS+4 days';
+            triggerMouseEvent(dragElement1, 'mouseup');
+            expect(ganttObj.flatData[10].ganttProperties.predecessor[0].offset).toBe(4);
+            
+      });
+    });
 });
+

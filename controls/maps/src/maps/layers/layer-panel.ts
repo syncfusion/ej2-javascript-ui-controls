@@ -1313,6 +1313,7 @@ export class LayerPanel {
                             imgElement.setAttribute('width', '256px');
                             imgElement.setAttribute('src', tile.src);
                             imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                            imgElement.style.setProperty('user-select', 'none');
                             child.appendChild(imgElement);
                             animateElement.appendChild(child);
                         }
@@ -1322,6 +1323,7 @@ export class LayerPanel {
                         imgElement.setAttribute('width', '256px');
                         imgElement.setAttribute('src', tile.src);
                         imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                        imgElement.style.setProperty('user-select', 'none');
                         const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
                         child.style.position = 'absolute';
                         child.style.left = tile.left + 'px';

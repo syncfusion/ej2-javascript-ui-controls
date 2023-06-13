@@ -1174,8 +1174,7 @@ describe('Gantt - Base', () => {
                         { field: 'Progress', headerText: 'Progress', allowFiltering: false },
                     ],
                     durationUnit: 'Day',
-                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    toolbar: [],
                     timelineSettings: {
                         timelineUnitSize: 65,
                         topTier: {
@@ -1198,9 +1197,209 @@ describe('Gantt - Base', () => {
         });
         it('End Date greater than start date', () => {
             expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.getDate()).toBe(5);
+            expect(ganttObj.toolbarModule).toBe(undefined);
         });
         afterAll(() => {
             destroyGantt(ganttObj);
         });
     });
+describe('Milestone Baseline render', () => {
+         let ganttObj: Gantt;
+         let selfData = [
+             {
+                 taskID: 1,
+                 taskName: 'Project Schedule',
+                 startDate: new Date('02/04/2019'),
+                 endDate: new Date('03/10/2019'),
+             },
+             {
+                 taskID: 2,
+                 taskName: 'Planning',
+                 startDate: new Date('02/04/2019'),
+                 endDate: new Date('02/10/2019'),
+                 parentID: 1,
+             },
+             {
+                 taskID: 5,
+                 taskName: 'Allocate resources',
+                 startDate: new Date('02/04/2019'),
+                 endDate: new Date('02/10/2019'),
+                 duration: 6,
+                 progress: '75',
+                 parentID: 2,
+             },
+             {
+                 taskID: 6,
+                 taskName: 'Planning complete',
+                 startDate: new Date('02/06/2019 12:00:00 PM'),
+                 endDate: new Date('02/06/2019 12:00:00 PM'),
+                 baselineStart: new Date('02/06/2019 12:00:00 PM'),
+                 baselineEnd: new Date('02/06/2019 12:00:00 PM'),
+                 duration: 0,
+                 predecessor: '3FS,4FS,5FS',
+                 parentID: 2,
+             },
+         ];
+         beforeAll((done: Function) => {
+             ganttObj = createGantt(
+                 {
+                     dataSource: selfData,
+                     allowSorting: true,
+                     allowReordering: true,
+                     enableContextMenu: true,
+                     taskFields: {
+                         id: 'taskID',
+                         name: 'taskName',
+                         startDate: 'startDate',
+                         endDate: 'endDate',
+                         duration: 'duration',
+                         progress: 'progress',
+                         dependency: 'predecessor',
+                         parentID: 'parentID',
+                         baselineStartDate: 'baselineStart',
+                         baselineEndDate: 'baselineEnd',
+                     },
+                     renderBaseline: true,
+                     baselineColor: 'red',
+                     editSettings: {
+                         allowAdding: true,
+                         allowEditing: true,
+                         allowDeleting: true,
+                         allowTaskbarEditing: true,
+                         showDeleteConfirmDialog: true
+                     },
+                     columns: [
+                         { field: 'taskID', width: 80 },
+                         { field: 'taskName', width: 250 },
+                         { field: 'startDate' },
+                         { field: 'endDate' },
+                         { field: 'duration' },
+                         { field: 'predecessor' },
+                         { field: 'progress' },
+                     ],
+                     timelineSettings: {
+                         topTier: {
+                             format: 'MMM dd, yyyy',
+                             unit: 'Week',
+                         },
+                         bottomTier: {
+                             unit: 'Day',
+                         },
+                     },
+                     taskbarHeight: 20,
+                     height: '550px',
+                     allowUnscheduledTasks: true,
+                     projectStartDate: new Date('01/28/2019'),
+                     projectEndDate: new Date('03/10/201'),
+
+                 }, done);
+         });
+         it('Render baseline as milestone', () => {
+             expect(ganttObj.currentViewData[3].ganttProperties.baselineEndDate.getDate()).toBe(6);
+         });
+         afterAll(() => {
+             destroyGantt(ganttObj);
+         });
+     });
+    // describe('Dates not calculated properly', () => {
+//     let ganttObj: Gantt;
+//     let editingData = [
+//         {
+//             TaskID: 1,
+//             TaskName: 'Task 1',
+//             duration: 1000,
+//             subtasks: [
+//                 {
+//                     TaskID: 10,
+//                     TaskName: 'Step 5 - Shoudl start after Id53 is done',
+//                     Duration: 45,
+//                     Progress: 20,
+//                     Predecessor: '53FS',
+//                 },
+//             ],
+//         },
+//         {
+//             TaskID: 5,
+//             TaskName: 'Task 2',
+//             Duration: 400,
+//             subtasks: [
+//                 {
+//                     TaskID: 52,
+//                     TaskName: 'Step 2',
+//                     Duration: 34,
+//                     Progress: 50,
+//                 },
+//                 {
+//                     TaskID: 53,
+//                     TaskName: 'Step 3',
+//                     Duration: 55,
+//                     Progress: 50,
+//                     Predecessor: '52FS',
+//                 },
+
+//             ],
+//         },
+//     ];
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: editingData,
+//                 allowSorting: true,
+//                 taskFields: {
+//                     id: 'TaskID',
+//                     name: 'TaskName',
+//                     startDate: 'StartDate',
+//                     endDate: 'EndDate',
+//                     duration: 'Duration',
+//                     progress: 'Progress',
+//                     dependency: 'Predecessor',
+//                     child: 'subtasks',
+//                     parentID: 'ParentId',
+//                     segments: 'Segments',
+//                 },
+//                 editSettings: {
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: true
+//                 },
+//                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+//                     'PrevTimeSpan', 'NextTimeSpan'],
+//                 allowSelection: true,
+//                 gridLines: "Both",
+//                 showColumnMenu: false,
+//                 highlightWeekends: true,
+//                 timelineSettings: {
+//                     updateTimescaleView: false,
+//                     weekStartDay: 1,
+//                     timelineUnitSize: 99,
+//                     timelineViewMode: 'Minutes',
+//                     topTier: {
+//                         unit: 'Hour',
+//                         count: 1,
+//                         format: 'hh:mm',
+//                     },
+//                     bottomTier: {
+//                         unit: 'Minutes',
+//                         count: 15,
+//                         format: 'mm',
+//                     },
+//                 },
+//                 labelSettings: {
+//                     leftLabel: 'TaskName',
+//                     taskLabel: 'Progress'
+//                 },
+//                 height: '550px'
+//             }, done);
+//     });
+//     afterAll(() => {
+//         destroyGantt(ganttObj);
+//     });
+//     beforeEach((done: Function) => {
+//         setTimeout(done, 1000);
+//     });
+//     it('Dependency not updated properly', () => {
+//         expect(ganttObj.currentViewData[1].ganttProperties.startDate.getHours()).toBe(8);
+//     });
+// });
 });

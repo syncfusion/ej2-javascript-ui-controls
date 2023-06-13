@@ -139,7 +139,7 @@ export class CsvHelper {
             }
         }
         value = val;
-        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1) {
+        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1 || value.indexOf('\"') !== -1) {
             return value = '\"' + value + '\"';
         } else {
             return value;

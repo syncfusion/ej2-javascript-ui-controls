@@ -664,9 +664,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private validateDisable(): void {
         this.setMinMax(this.initMin, this.initMax);
-        this.popupCreation();
-        this.popupObj.destroy();
-        this.popupWrapper = this.popupObj = null;
+        if(!isNullOrUndefined(this.value)){
+            this.popupCreation();
+            this.popupObj.destroy();
+            this.popupWrapper = this.popupObj = null;
+        }
         if ((!isNaN(+this.value) && this.value !== null)) {
             if (!this.valueIsDisable(this.value)) {
                 //disable value given in value property so reset the date based on current date
@@ -954,7 +956,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.generateList();
             append([this.listWrapper], this.popupWrapper);
         }
-        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
         detach(this.popupWrapper);
@@ -1373,6 +1374,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'end':
             case 'up':
             case 'down':
+                if (!this.isPopupOpen()) {
+                    this.popupCreation();
+                    this.popupObj.destroy();
+                    this.popupObj = this.popupWrapper = null;
+                }
                 if (this.enableMask && !this.readonly && !this.isPopupOpen())
                 {
                     event.preventDefault();
@@ -1547,9 +1553,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.checkValue(li.getAttribute('data-value'));
             if (this.enableMask)
             {
-                this.notify('createMask', {
-                    module: 'MaskedDateTime', navigated: true
-                });
+                this.createMask();
             }
             this.selectedElement = li;
             this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
@@ -2744,7 +2748,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.invalidValueString = null;
                 this.checkInvalidValue(newProp.value);
                 newProp.value = this.value;
-                if (!this.invalidValueString && !this.enableMask) {
+                if (!this.invalidValueString) {
                     if (typeof newProp.value === 'string') {
                         this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
                         newProp.value = this.value;
@@ -2755,13 +2759,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     this.initValue = newProp.value;
                     newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
-                } else if (this.enableMask) {
-                    this.updateInputValue(this.maskedDateValue);
-                    this.checkErrorState(this.maskedDateValue);
                 } else {
                     this.updateInputValue(this.invalidValueString);
                     this.checkErrorState(this.invalidValueString);
                 }
+                if (this.enableMask && isNullOrUndefined(newProp.value)) {
+                        this.updateInputValue(this.maskedDateValue);
+                        this.checkErrorState(this.maskedDateValue);
+                    }
                 this.checkValueChange(null, false);
                 if (this.isPopupOpen()) {
                     this.setScrollPosition();

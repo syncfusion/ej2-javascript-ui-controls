@@ -46,6 +46,7 @@ import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
 import { ContextMenu } from '../actions/context-menu';
+import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 
 /**
  * Specifies grid interfaces.
@@ -1628,7 +1629,9 @@ export interface ExcelHeaderQueryCellInfoEventArgs {
 }
 
 export interface FilterMenuRendererArgs {
-    /** Defines the current action. */
+    /** Defines the filter model */
+    filterModel?: FilterMenuRenderer;
+    /** Defines the current action */
     requestType?: string;
     /** Defines the field name of current column */
     columnName?: string;

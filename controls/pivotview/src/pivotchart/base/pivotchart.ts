@@ -84,8 +84,8 @@ export class PivotChart {
         const isDataAvail: boolean = parent.dataType === 'olap' ?
             (parent.dataSourceSettings.url !== '' && !parent.olapEngineModule.isEmptyData && parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
-            : (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
-                (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 &&  !parent.engineModule.isEmptyData);
+            : this.parent.dataSourceSettings.mode === 'Server' ? (!isNullOrUndefined(parent.dataSourceSettings.url) && parent.dataSourceSettings.url !== '' && parent.dataSourceSettings.values.length > 0 && !parent.engineModule.isEmptyData) :
+                (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource && (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 &&  !parent.engineModule.isEmptyData);
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));

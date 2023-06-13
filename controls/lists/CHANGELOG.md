@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 21.2.10 (2023-06-13)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I466565` - The console error in the nested ListView component sample has been resolved.
+
+## 21.2.6 (2023-05-23)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I461648` - Issue with "Drag and drop on mobile browsers, it unable to drag an element to the topmost place in list box component" has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### ListBox

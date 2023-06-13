@@ -5,8 +5,8 @@ import { Spreadsheet } from '../base/index';
 import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction } from '../common/event';
 import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
-import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
-import { removeClass, L10n, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
+import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
+import { removeClass, L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
@@ -114,21 +114,26 @@ export class SpreadsheetImage {
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'beforeInsertImage' });
         }
         if (eventArgs.cancel) { return; }
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, range, sheetIndex);
-        element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
+        const overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, range, sheetIndex);
+        overlayProps.element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
         if (args.options.height || args.options.left) {
-            element.style.height = args.options.height + 'px'; element.style.width = args.options.width + 'px';
-            element.style.top = args.options.top + 'px'; element.style.left = args.options.left + 'px';
+            overlayProps.element.style.height = args.options.height + 'px'; overlayProps.element.style.width = args.options.width + 'px';
+            if (!isNullOrUndefined(args.options.top)) {
+                overlayProps.element.style.top = Number(addDPRValue(args.options.top).toFixed(2)) + 'px';
+            }
+            if (!isNullOrUndefined(args.options.left)) {
+                overlayProps.element.style.left = Number(addDPRValue(args.options.left).toFixed(2)) + 'px';
+            }
         }
         if (sheet.frozenRows || sheet.frozenColumns) {
-            overlayObj.adjustFreezePaneSize(args.options, element, range);
+            overlayObj.adjustFreezePaneSize(args.options, overlayProps.element, range);
         }
         const imgData: ImageModel = {
-            src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
-            width: parseFloat(element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
-                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : parseFloat(element.style.top.replace('px', '')),
+            src: args.options.src, id: id, height: parseFloat(overlayProps.element.style.height.replace('px', '')),
+            width: parseFloat(overlayProps.element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
+                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : (isNullOrUndefined(args.options.top) ? overlayProps.top : args.options.top),
             left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
-                parseFloat(element.style.left.replace('px', ''))
+                (isNullOrUndefined(args.options.left) ? overlayProps.left : args.options.left)
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
         if (args.isPublic || args.isUndoRedo) {
@@ -241,8 +246,8 @@ export class SpreadsheetImage {
                     imgleft.target = this.parent.getRowHeaderTable();
                 }
             } else {
-                imgTop = { clientY: pictureElements.offsetTop, isImage: true };
-                imgleft = { clientX: pictureElements.offsetLeft, isImage: true };
+                imgTop = { clientY: parseFloat(pictureElements.style.top), isImage: true };
+                imgleft = { clientX: parseFloat(pictureElements.style.left), isImage: true };
             }
             this.parent.notify(getRowIdxFromClientY, imgTop); this.parent.notify(getColIdxFromClientX, imgleft);
             rowIdx = imgTop.clientY; colIdx = imgleft.clientX;

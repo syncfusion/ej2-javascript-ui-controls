@@ -1064,3 +1064,121 @@ describe('Gantt toolbar support', () => {
         });
     });
 });
+describe('Custom Zooming levels zoomout ', () => {
+    let customZoomingLevels: ZoomTimelineSettings[] = [
+        {
+          topTier: { unit: 'Year', format: 'yyyy', count: 1 },
+          bottomTier: {
+            unit: 'Month',
+            // @ts-ignore
+            formatter: (date: Date) => {
+              //debugger;
+              const month = date.getMonth();
+              if (month >= 0 && month <= 5) {
+                return 'H1';
+              } else {
+                return 'H2';
+              }
+            },
+            count: 6,
+          },
+          timelineUnitSize: 33,
+          level: 0,
+          timelineViewMode: 'Year',
+          weekStartDay: 0,
+          updateTimescaleView: true,
+          weekendBackground: undefined,
+          showTooltip: true,
+        },
+        {
+          topTier: {
+            unit: 'Month',
+            count: 3,
+            // @ts-ignore
+            formatter: (date: Date) => {
+              const month = date.getMonth();
+              if (month >= 0 && month <= 2) {
+                return 'Q1';
+              } else if (month >= 3 && month <= 5) {
+                return 'Q2';
+              } else if (month >= 6 && month <= 8) {
+                return 'Q3';
+              } else {
+                return 'Q4';
+              }
+            },
+          },
+          bottomTier: {
+            unit: 'Month',
+            format: 'MMM',
+          },
+          timelineUnitSize: 33,
+          level: 1,
+          timelineViewMode: 'Year',
+          weekStartDay: 0,
+          updateTimescaleView: true,
+          weekendBackground: undefined,
+          showTooltip: true,
+        },
+      ];;
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            dataBound:()=>{
+                if (ganttObj!.zoomingLevels.length > 24) {
+                    ganttObj!.zoomingLevels = customZoomingLevels;
+                    ganttObj!.fitToProject();
+                    console.log('@sp: use customZoomingLevels and call fitToProject()');
+                  }
+               },
+            toolbar: [ 'ZoomIn', 'ZoomOut', 'ZoomToFit'],
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            height: '550px',
+            projectStartDate: new Date('03/24/2019'),
+            projectEndDate: new Date('04/28/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Zoom in to zoom out ', () => {
+        let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
+        triggerMouseEvent(zoomIn, 'click');
+        expect((ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement).attributes[5].value).toBe("false");
+    });
+});

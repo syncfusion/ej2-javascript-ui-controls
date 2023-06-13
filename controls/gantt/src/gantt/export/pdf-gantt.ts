@@ -50,12 +50,12 @@ export class PdfGantt extends PdfTreeGrid {
         }
         return this.taskbars;
     }
-    public drawChart(result: PdfLayoutResult): void {
+    public drawChart(result: PdfLayoutResult, pdfExportProperties:PdfExportProperties): void {
         this.result = result;
         this.totalPages = this.result.page.section.count;
         this.perColumnPages = this.totalPages / this.layouter.columnRanges.length;
         this.calculateRange();
-        this.drawGantttChart();
+        this.drawGantttChart(pdfExportProperties);
         this.drawPageBorder();
     }
 
@@ -204,7 +204,7 @@ export class PdfGantt extends PdfTreeGrid {
         }
     }
     //Draw the gantt chart side
-    private drawGantttChart(): void {
+    private drawGantttChart(pdfExportProperties:PdfExportProperties): void {
         let taskbarPoint: PointF = this.startPoint;
         const pagePoint: PointF = new PointF();
         let pageStartX: number = 0;
@@ -276,7 +276,7 @@ export class PdfGantt extends PdfTreeGrid {
         // Draw predecessor line.
         for (let i: number = 0; i < this.predecessorCollection.length; i++) {
             const predecessor: PdfGanttPredecessor = this.predecessorCollection[i as number];
-            predecessor.drawPredecessor(this);
+            predecessor.drawPredecessor(this,pdfExportProperties);
         }
     }
 }

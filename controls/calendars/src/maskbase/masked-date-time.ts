@@ -47,6 +47,7 @@ export class MaskedDateTime {
     private previousDate : Date;
     private isNavigate : boolean = false;
     private navigated : boolean = false;
+    private isBlur : boolean = false;
     private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
@@ -98,7 +99,7 @@ export class MaskedDateTime {
         this.parent.off('clearHandler', this.clearHandler);
     }
 
-    private createMask(navigated: boolean = false): void {
+    private createMask(mask: events): void {
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = false;
         this.dateformat = this.getCulturedFormat();
 
@@ -138,7 +139,8 @@ export class MaskedDateTime {
         this.mask = this.previousValue = inputValue;
         this.parent.maskedDateValue = this.mask;
         if (this.parent.value) {
-            this.navigated = navigated;
+            this.navigated = true;
+            this.isBlur = mask.isBlur;
             this.setDynamicValue();
         }
     }
@@ -170,7 +172,10 @@ export class MaskedDateTime {
         this.maskDateValue = new Date(+this.parent.value);
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true;
         this.updateValue();
-        this.validCharacterCheck();
+        if (!this.isBlur)
+        {
+            this.validCharacterCheck();
+        }
     }
     private setSelection(validChar : string): void {
         let start: number = -1;
@@ -898,5 +903,6 @@ export class MaskedDateTime {
 export interface events {
     module: string;
     e: KeyboardEventArgs;
+    isBlur: boolean;
 }
 

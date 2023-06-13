@@ -2,6 +2,73 @@
 
 ## [Unreleased]
 
+## 21.2.10 (2023-06-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I469063` - The script error that occurred while exporting a lazy load grouping Grid into Excel has been resolved.
+- `#I466214` - The issue of the pager count not being properly updated when adding a new record to the Grid, especially when there are fewer records than the page size, has been successfully resolved.
+
+## 21.2.9 (2023-06-06)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I456364` - Fixed the issue where editing was not working properly when virtual scroll was enabled and the primary key was a complex data.
+- `#I456281` - Resolved the script error that was thrown when sorting a column after adding a new record in the grid with cache mode enabled.
+- `#I459037` - Pasting issue with Grid has been resolved.
+- `#I469713` - Resolved the issue where data was duplicated in the complex field when using an empty nested object.
+
+## 21.2.8 (2023-05-30)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I466214` - Resolved the issue where the page size was not being increased when adding new records to the grid containing a pager dropdown.
+- `#I464294` - Resolved the issue where the value zero is not displayed in the grid while using complex data binding.
+
+## 21.2.6 (2023-05-23)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I458689` - Resolved the issue where the bottom border was not shown when using `virtualization` with a limited number of records.
+- `#I455549` - Fixed the problem where the column template was not being re-created after tabbing from batch edit mode in React.
+- `#I456631` - Resolved the issue where the search functionality was not working properly within brackets.
+- `#I458148` - `ResetOnRowClick` resets only the checked rows in the current page while using remote data binding has been resolved.
+- `#I453406` - Removed the deprecated attribute `cellspacing` from the grid table and added the CSS property `border-spacing` instead.
+- `I#459037` - Fixed the paste error that occurred with an empty data source and the addition of a row in Batch mode.
+
+## 21.2.5 (2023-05-16)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I459274` - The issue regarding the `All` page size is not working properly with the `RemoteSaveAdaptor` has been resolved.
+- `#I459703` - Pager component's tooltip not getting updated on locale change issue has been fixed.
+- `#F181837` - The problem related to copy-pasting when adding a new record has been resolved.
+- `#I452083` - The issue of text overlapping in the vertical row rendering mode of the adaptive grid has been resolved.
+- `#FB43372` -The Content Security Policy violation issue related to grid paging and grouping has been resolved.
+- `#I460038` - Resolved the issue where the detail template being rendered with bold and centred formatting.
+
+## 21.2.4 (2023-05-09)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F169671` - Now, the `ExcelQueryCellInfo` event is called properly in both parent and child grids.
+- `#I441999` - Ensured that the `recordDoubleClick` event is now properly triggered on iPad devices as well.
+- `#F181654` - Fixed issue where the react state value was being updated incorrectly with Grid templates.
+- `#I451314` - Provided  support for exporting to PDF with custom data sources.
+- `#I457476` - Resolved a script error that occurred when the down arrow key was long-pressed while the frozen and virtual scrolling feature was enabled in the Grid.
+
 ## 21.2.3 (2023-05-03)
 
 ### Grid

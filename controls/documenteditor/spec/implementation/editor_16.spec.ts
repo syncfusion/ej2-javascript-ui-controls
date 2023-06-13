@@ -470,3 +470,48 @@ describe('Validate the inserted form fields order', () => {
         expect(formFieldNames[1]).toEqual('CheckBox1');
     });
 });
+
+describe('remove a table cell with bookmark Element', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Remove the row', () => {
+        console.log('Remove the row with bookmark inside.');
+        container.openBlank();
+        container.editor.insertTable(2,2);
+        container.selection.select("0;0;0;0;0;0","0;0;1;1;0;0");
+        container.editor.insertBookmark("bookmark1");
+        container.selection.select("0;0;1;1;0;0","0;0;1;1;0;0");
+        container.editor.deleteRow();
+        expect(container.documentHelper.bookmarks.keys.length).toEqual(0);
+    });
+    it('Remove the column', () => {
+        console.log('Remove the column with bookmark inside.');
+        container.openBlank();
+        container.editor.insertTable(2,2);
+        container.selection.select("0;0;0;0;0;0","0;0;1;1;0;0");
+        container.editor.insertBookmark("bookmark1");
+        container.selection.select("0;0;1;1;0;0","0;0;1;1;0;0");
+        container.editor.deleteColumn();
+        expect(container.documentHelper.bookmarks.keys.length).toEqual(0);
+    });
+});

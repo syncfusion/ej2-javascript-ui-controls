@@ -863,7 +863,7 @@ export class PivotUtil {
                 isCalculatedField: report.Columns[i as number].IsCalculatedField,
                 showValueTypeIcon: report.Columns[i as number].ShowValueTypeIcon,
                 type: report.Columns[i as number].Type,
-                expandAll: report.columns[i as number].expandAll
+                expandAll: report.Columns[i as number].expandAll
             });
         }
         for (let i: number = 0; i < report.FormatSettings.length; i++) {

@@ -2,16 +2,22 @@ import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateForma
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, BreakClearType } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
-import { WBorder } from '../format';
+import { WBorder, WBorders, WParagraphFormat } from '../format';
 import {
     boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty,
     strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty,
     styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty,
     fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, complexScriptProperty, fontFamilyAsciiProperty,
-    fontFamilyFarEastProperty, fontFamilyNonFarEastProperty
+    fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty,
+    rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty,
+    afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty,
+    lineSpacingTypeProperty, outlineLevelProperty, listFormatProperty, tabsProperty, 
+    keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
+    topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
+    colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty
 } from '../../index';
 
 /**
@@ -141,43 +147,10 @@ export class HelperMethods {
             zipArchive.open(JSON.stringify(json.sfdt));
             let zipItem: ZipArchiveItem = zipArchive.items[0] as ZipArchiveItem;
             let value: Uint8Array = new Uint8Array(zipItem.data as ArrayBuffer);
-            let str: string = HelperMethods.utf8ArrayToString(value);            
+            let str: string = new TextDecoder("utf-8").decode(value);
             json = JSON.parse(str);
         }
         return json;
-    }
-    /* eslint-disable */
-    /**
-     * @private
-     * Convert the Uint8Array to string.
-     * @param array 
-     * @returns 
-     */
-    public static utf8ArrayToString(array: Uint8Array): string {
-        let out: string = '';
-        let i: number = 0;
-        let c: number = 0;
-        let c1: number = 0;
-        let c2: number = 0;
-        let c3: number = 0;
-        while (i < array.length) {
-            /*eslint-disable*/
-            c = array[i];
-            if (c < 128) {
-                out += String.fromCharCode(c);
-                i++;
-            } else if (c > 191 && c < 224) {
-                c2 = array[i + 1];
-                out += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                i += 2;
-            } else {
-                c2 = array[i + 1];
-                c3 = array[i + 2];
-                out += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                i += 3;
-            }
-        }
-        return out;
     }
     /* eslint-enable */
     /**
@@ -551,6 +524,184 @@ export class HelperMethods {
             case 'RTL':
                 return 2;
         }
+    }
+    public static getBreakClearType(breakClearType: BreakClearType): number {
+        switch (breakClearType) {
+            case 'None':
+                return 0;
+            case 'Left':
+                return 1;
+            case 'Right':
+                return 2;
+            case 'All':
+                return 3;
+        }
+    }
+
+    /* eslint-disable */
+    public static getOutlineLevelEnumValue(outlineLevel: OutlineLevel): number {
+        switch (outlineLevel) {
+            case 'BodyText':
+                return 0;
+            case 'Level1':
+                return 1;
+            case 'Level2':
+                return 2;
+            case 'Level3':
+                return 3;
+            case 'Level4':
+                return 4;
+            case 'Level5':
+                return 5;
+            case 'Level6':
+                return 6;
+            case 'Level7':
+                return 7;
+            case 'Level8':
+                return 8;
+            case 'Level9':
+                return 9;
+        }
+    }
+    
+    /* eslint-disable */
+    public static getTextAlignmentEnumValue(textAlignment: TextAlignment): number {
+        switch (textAlignment) {
+            case 'Left':
+                return 0;
+            case 'Center':
+                return 1;
+            case 'Right':
+                return 2;
+            case 'Justify':
+                return 3;
+        }
+    }
+
+    /* eslint-disable */
+    public static getLineStyleEnumValue(lineStyle: LineStyle): number {
+        switch (lineStyle) {
+            case 'Single':
+                return 0;
+            case 'None':
+                return 1;
+            case 'Dot':
+                return 2;
+            case 'DashSmallGap':
+                return 3;
+            case 'DashLargeGap':
+                return 4;
+            case 'DashDot':
+                return 5;
+            case 'DashDotDot':
+                return 6;
+            case 'Double':
+                return 7;
+            case 'Triple':
+                return 8;
+            case 'ThinThickSmallGap':
+                return 9;
+            case 'ThickThinSmallGap':
+                return 10;
+            case 'ThinThickThinSmallGap':
+                return 11;
+            case 'ThinThickMediumGap':
+                return 12;
+            case 'ThickThinMediumGap':
+                return 13;
+            case 'ThinThickThinMediumGap':
+                return 14;
+            case 'ThinThickLargeGap':
+                return 15;
+            case 'ThickThinLargeGap':
+                return 16;
+            case 'ThinThickThinLargeGap':
+                return 17;
+            case 'SingleWavy':
+                return 18;
+            case 'DoubleWavy':
+                return 19;
+            case 'DashDotStroked':
+                return 20;
+            case 'Emboss3D':
+                return 21;
+            case 'Engrave3D':
+                return 22;
+            case 'Outset':
+                return 23;
+            case 'Inset':
+                return 24;
+            case 'Thick':
+                return 25;
+            case 'Cleared':
+                return 26;
+        }
+    }
+
+    /* eslint-disable */
+    public static getLineSpacingTypeEnumValue(lineSpacing: LineSpacingType): number {
+        switch (lineSpacing) {
+            case 'Multiple':
+                return 0;
+            case 'AtLeast':
+                return 1;
+            case 'Exactly':
+                return 2;
+        }
+    }
+
+    /* eslint-disable */
+    public static writeBorder(wBorder: WBorder, keywordIndex: number): any {
+        let border: any = {};
+        border[colorProperty[keywordIndex]] = wBorder.hasValue('color') ? wBorder.color : undefined;
+        border[hasNoneStyleProperty[keywordIndex]] = wBorder.hasValue('hasNoneStyle') ? HelperMethods.getBoolInfo(wBorder.hasNoneStyle, keywordIndex) : undefined;
+        border[lineStyleProperty[keywordIndex]] = wBorder.hasValue('lineStyle') ? 
+        keywordIndex == 1 ? this.getLineStyleEnumValue(wBorder.lineStyle) : wBorder.lineStyle : undefined;
+        border[lineWidthProperty[keywordIndex]] = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
+        border[shadowProperty[keywordIndex]] = wBorder.hasValue('shadow') ? HelperMethods.getBoolInfo(wBorder.shadow, keywordIndex) : undefined;
+        border[spaceProperty[keywordIndex]] = wBorder.hasValue('space') ? wBorder.space : undefined;
+        return border;
+    }
+
+    /* eslint-disable */
+    public static writeParagraphBorders(wBorders: WBorders, keywordIndex: number): any {
+        let borders: any = {};
+        borders[topProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('top'), keywordIndex);
+        borders[leftProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('left'), keywordIndex);
+        borders[rightProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('right'), keywordIndex);
+        borders[bottomProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('bottom'), keywordIndex);
+        borders[horizontalProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('horizontal'), keywordIndex);
+        borders[verticalProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('vertical'), keywordIndex);
+        return borders;
+    }
+
+    /* eslint-disable */
+    public static writeParagraphFormat(paragraphFormat: WParagraphFormat, isInline: boolean, format: WParagraphFormat, keywordIndex?: number): void {
+        keywordIndex = isNullOrUndefined(keywordIndex) ? 0 : keywordIndex;
+        paragraphFormat[bordersProperty[keywordIndex]] = this.writeParagraphBorders(format.borders, keywordIndex);
+        paragraphFormat[leftIndentProperty[keywordIndex]] = isInline ? format.leftIndent : format.getValue('leftIndent');
+        paragraphFormat[rightIndentProperty[keywordIndex]] = isInline ? format.rightIndent : format.getValue('rightIndent');
+        paragraphFormat[firstLineIndentProperty[keywordIndex]] = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
+        paragraphFormat[textAlignmentProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.textAlignment): format.textAlignment : 
+        keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.getValue('textAlignment') as TextAlignment) : format.getValue('textAlignment') as TextAlignment;
+        paragraphFormat[beforeSpacingProperty[keywordIndex]] = isInline ? format.beforeSpacing : format.getValue('beforeSpacing');
+        paragraphFormat[afterSpacingProperty[keywordIndex]] = isInline ? format.afterSpacing : format.getValue('afterSpacing');
+        paragraphFormat[spaceBeforeAutoProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceBeforeAuto, keywordIndex) : format.getValue('spaceBeforeAuto');
+        paragraphFormat[spaceAfterAutoProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceAfterAuto, keywordIndex) : format.getValue('spaceAfterAuto');
+        paragraphFormat[lineSpacingProperty[keywordIndex]] = isInline ? format.lineSpacing : format.getValue('lineSpacing');
+        paragraphFormat[lineSpacingTypeProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.lineSpacingType): format.lineSpacingType : 
+        keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.getValue('lineSpacingType') as LineSpacingType): format.getValue('lineSpacingType') as LineSpacingType;
+        paragraphFormat[styleNameProperty[keywordIndex]] = !isNullOrUndefined(format.baseStyle) ? format.baseStyle.name : undefined;
+        paragraphFormat[outlineLevelProperty[keywordIndex]] = isInline ? 
+        keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.outlineLevel):format.outlineLevel : 
+        keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.getValue('outlineLevel') as OutlineLevel) : format.getValue('outlineLevel') as OutlineLevel;
+        paragraphFormat[bidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bidi, keywordIndex) : format.getValue('bidi');
+        paragraphFormat[keepLinesTogetherProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepLinesTogether, keywordIndex) : format.getValue('keepLinesTogether');
+        paragraphFormat[keepWithNextProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepWithNext, keywordIndex) : format.getValue('keepWithNext');
+        paragraphFormat[contextualSpacingProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.contextualSpacing, keywordIndex) : format.getValue('contextualSpacing');
+        paragraphFormat[widowControlProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.widowControl, keywordIndex) : format.getValue('widowControl');
     }
 
     /* eslint-disable */

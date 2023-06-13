@@ -216,4 +216,45 @@ describe('Gantt Selection support', () => {
             ganttObj.editModule.deleteRecord(getValue('TaskID', ganttObj.selectionModule.getSelectedRecords()[0]));
         });
     });
+    describe('Check row selection after virtual scrolling', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    enableVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('check selected row index', () => {
+            ganttObj.selectionModule.selectRow(3);
+            ganttObj.ganttChartModule.scrollObject.setScrollTop(500);
+            expect(ganttObj.selectedRowIndex).toBe(3);
+        });
+    });
 });

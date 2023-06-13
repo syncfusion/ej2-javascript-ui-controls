@@ -153,6 +153,7 @@ export class Selection implements IAction {
     private evtHandlers: { event: string, handler: Function }[];
     public isPartialSelection: boolean = false;
     private rmtHdrChkbxClicked: boolean = false;
+    private isCheckboxReset: boolean = false;
     /**
      * @hidden
      */
@@ -375,6 +376,7 @@ export class Selection implements IAction {
                 this.selectRowCallBack();
             }
             if (this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+                this.isCheckboxReset = true;
                 this.clearSelection();
             }
             if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick' ||
@@ -2674,10 +2676,12 @@ export class Selection implements IAction {
             if (state) {
                 const selectedStateKeys: string[] = Object.keys(this.selectedRowState);
                 const unSelectedRowStateKeys: string[] = Object.keys(this.unSelectedRowState);
-                for (const data of this.parent.currentViewData) {
-                    const key: string = data[this.primaryKey].toString();
-                    if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
-                        this.selectedRowState[data[this.primaryKey]] = true;
+                if (!this.isCheckboxReset) {
+                    for (const data of this.parent.currentViewData) {
+                        const key: string = data[this.primaryKey].toString();
+                        if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
+                            this.selectedRowState[data[this.primaryKey]] = true;
+                        }
                     }
                 }
             }
@@ -2910,12 +2914,16 @@ export class Selection implements IAction {
         let state: boolean = stateStr === 'Check';
         this.isHeaderCheckboxClicked = true;
         if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-         && (<{result: object[]}>this.parent.dataSource).result)) && stateStr === 'Uncheck') {
+         && (<{result: object[]}>this.parent.dataSource).result)) && (stateStr === 'Uncheck' || this.isCheckboxReset)) {
             this.rmtHdrChkbxClicked = true;
         }
         else {
             this.rmtHdrChkbxClicked = false;
         }
+        if (this.rmtHdrChkbxClicked && this.isCheckboxReset) {
+            this.unSelectedRowState = {};
+        }
+        this.isCheckboxReset = false;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                 this.getPkValue(this.primaryKey, data) in this.selectedRowState);

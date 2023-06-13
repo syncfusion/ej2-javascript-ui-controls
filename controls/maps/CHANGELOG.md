@@ -8,7 +8,32 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.10 (2023-06-13)
+
+### Maps
+
+#### Bug fixes
+
+- `#I467601` - When the zoom factor is set to its initial value, the position of the marker template will now be correct when the zoom-out button is clicked.
+- `#I467777` - Tile images of the online maps will no longer be selected.
+
+## 21.2.5 (2023-05-16)
+
+### Maps
+
+#### Bug fixes
+
+- `#I457059` - Marker template will now be properly clustered in the Maps component.
+
+## 21.2.4 (2023-05-09)
+
+### Maps
+
+#### Bug fixes
+
+- `#F181587` - The click event will now be properly triggered in the button element in the tooltip template.
+
+## 21.1.41 (2023-04-18)
 
 ### Maps
 

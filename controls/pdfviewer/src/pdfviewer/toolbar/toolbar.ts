@@ -751,8 +751,12 @@ export class Toolbar {
                     this.enableCollectionAvailableInBlazor(this.pdfViewer.annotationModule.actionCollection, 'undo');
                     this.enableCollectionAvailableInBlazor(this.pdfViewer.annotationModule.redoCollection, 'redo');
                 } else {
-                    this.enableCollectionAvailable(this.pdfViewer.annotationModule.actionCollection, this.undoItem.parentElement);
-                    this.enableCollectionAvailable(this.pdfViewer.annotationModule.redoCollection, this.redoItem.parentElement);
+                    if (!isNullOrUndefined(this.undoItem) && !isNullOrUndefined(this.undoItem.parentElement)) {
+                        this.enableCollectionAvailable(this.pdfViewer.annotationModule.actionCollection, this.undoItem.parentElement);
+                    }
+                    if (!isNullOrUndefined(this.redoItem) && !isNullOrUndefined(this.redoItem.parentElement)) {
+                        this.enableCollectionAvailable(this.pdfViewer.annotationModule.redoCollection, this.redoItem.parentElement);
+                    }
                 }
             } else {
                 if (isBlazor()) {
@@ -1827,6 +1831,12 @@ private initiateAnnotationMode(id?: string): void {
             if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
             let annotationMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_annotation_toolbar");
             annotationMainDiv.style.display = "none"; 
+            const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (!isNullOrUndefined(commentPanel) && !isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
+                if (commentPanel.style.display === 'block') {
+                        this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
+                }
+            }
             this.annotationToolbarModule.isToolbarHidden = false;
             this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
             this.formDesignerToolbarModule.adjustViewer(true);

@@ -4837,6 +4837,9 @@ export class AnnotationToolbar {
             this.isToolbarHidden = false;
             this.adjustViewer(true);
             this.primaryToolbar.selectItem(this.primaryToolbar.annotationItem);
+            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+            }
             this.pdfViewer.isAnnotationToolbarVisible = true;
         } else {
             this.toolbarElement.style.display = 'none';

@@ -143,18 +143,22 @@ export class TimelineViews extends VerticalView {
 
     private getLeftFromDateTime(currentDateIndex: number[], date: Date): number {
         const startHour: Date = this.getStartHour();
-        const endHour: Date = this.getEndHour();
         let diffInDates: number = 0;
         let diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         if (!isNullOrUndefined(currentDateIndex)) {
-            const end: number = (endHour.getHours() === 0) ? 24 : endHour.getHours();
             if (currentDateIndex[0] !== 0) {
-                diffInDates = (currentDateIndex[0]) * ((end - startHour.getHours()) * 60) + (endHour.getMinutes() - startHour.getMinutes());
+                if (this.parent.activeView.colLevels[0] && this.parent.activeView.colLevels[0][0].colSpan) {
+                    diffInDates = currentDateIndex[0] * this.parent.activeView.colLevels[0][0].colSpan * this.getWorkCellWidth();
+                }
+                else {
+                    const endHour: Date = this.getEndHour();
+                    const end: number = (endHour.getHours() === 0) ? 24 : endHour.getHours();
+                    diffInMinutes = diffInMinutes + ((currentDateIndex[0]) * (((end - startHour.getHours()) * 60) + (endHour.getMinutes() - startHour.getMinutes())));
+                }
             }
-            diffInMinutes = diffInDates + diffInMinutes;
         }
-        return (diffInMinutes * this.getWorkCellWidth() * this.parent.activeViewOptions.timeScale.slotCount) /
-            this.parent.activeViewOptions.timeScale.interval;
+        return diffInDates + ((diffInMinutes * this.getWorkCellWidth() * this.parent.activeViewOptions.timeScale.slotCount) /
+            this.parent.activeViewOptions.timeScale.interval);
     }
 
     private getWorkCellWidth(): number {

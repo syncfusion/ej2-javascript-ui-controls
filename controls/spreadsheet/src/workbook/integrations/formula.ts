@@ -1073,9 +1073,12 @@ export class WorkbookFormula {
         if (!len) { return; }
         const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
         let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let updated: boolean;
+        let checkSheetName: string;
         for (let i: number = 0; i < len; i++) {
             definedName = definedNames[i as number]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
-            if (sheetName !== args.sheet.name) { continue; }
+            checkSheetName = sheetName;
+            if (checkSheetName.match(/'/g)) { checkSheetName = checkSheetName.slice(1, -1); }
+            if (checkSheetName !== args.sheet.name) { continue; }
             range = getRangeIndexes(splitedRef[1]);
             updated = this.parent.updateRangeOnInsertDelete(args, range);
             if (args.isInsert) {

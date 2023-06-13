@@ -588,11 +588,7 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
-                  @if ($skin-name == 'tailwind') {
-                    border-top: 2px solid $field-list-drop-hover-color;
-                  }
-
-                  @if ($skin-name == 'bootstrap5') {
+                  @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5'){
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
                 }

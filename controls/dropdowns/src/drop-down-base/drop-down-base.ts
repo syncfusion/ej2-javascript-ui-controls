@@ -613,9 +613,19 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (noDataCompTemp && noDataCompTemp.length > 0) {
                 for (let i: number = 0; i < noDataCompTemp.length; i++) {
                     if (this.getModuleName() === 'listbox' && templateName === 'noRecordsTemplate') {
-                        noDataCompTemp[i as number].classList.add('e-list-nr-template');
+                        if (noDataCompTemp[i as number].nodeName === '#text') {
+                            const liElem: HTMLElement = this.createElement('li');
+                            liElem.textContent = noDataCompTemp[i as number].textContent;
+                            liElem.classList.add('e-list-nrt');
+                            liElem.setAttribute('role','option')
+                            ele.appendChild(liElem);
+                        } else {
+                            noDataCompTemp[i as number].classList.add('e-list-nr-template');
+                            ele.appendChild(noDataCompTemp[i as number]);
+                        }
+                    } else {
+                        ele.appendChild(noDataCompTemp[i as number]);
                     }
-                    ele.appendChild(noDataCompTemp[i as number]);
                 }
             }
             this.renderReactTemplates();
@@ -1577,6 +1587,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.updateDataList();
                 }
             }
+        }
+        if (this.getModuleName() === 'listbox' && (this as any).isReact) {
+            this.renderReactTemplates();
         }
         if (selectedItemValue || itemIndex === 0) {
             this.updateSelection();

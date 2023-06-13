@@ -128,89 +128,99 @@ export class Zoom {
         const scale: number = map.previousScale = map.scale;
         const maxZoom: number = map.zoomSettings.maxZoom;
         const minZoom: number = map.zoomSettings.minZoom;
-        newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
         newZoomFactor = maxZoom >= newZoomFactor ? newZoomFactor : maxZoom;
-        const prevTilePoint: Point = map.tileTranslatePoint;
-        if ((!map.isTileMap) && ((type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)
-            || map.isReset)) {
-            const availSize: Rect = map.mapAreaRect;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const minBounds: any = map.baseMapRectBounds['min'] as any;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const maxBounds: any = map.baseMapRectBounds['max'] as any;
-            let mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
-            let mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
-            let translatePointX: number;
-            let translatePointY: number;
-            if (newZoomFactor < 1.2 && map.projectionType !== 'Eckert5') {
-                if (mapTotalWidth === 0 || mapTotalHeight === 0 || mapTotalWidth === mapTotalHeight) {
-                    mapTotalWidth = availSize.width / 2;
-                    mapTotalHeight = availSize.height;
-                }
-                newZoomFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
-                newZoomFactor = newZoomFactor > 1.05 ? 1 : newZoomFactor;
-                map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);
-            } else {
-                const point: Point = map.translatePoint;
-                translatePointX = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
-                translatePointY = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
-                const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
-                translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
-                translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
-                map.translatePoint = new Point(translatePointX, translatePointY);
-            }
-            map.scale = newZoomFactor;
-            if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
-                map.translatePoint = map.previousPoint;
-                map.scale = map.mapScaleValue = map.previousScale;
-            } else {
-                this.applyTransform(map);
-            }
-        } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
-            this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
-            map.tileZoomLevel = newZoomFactor;
-            map.zoomSettings.zoomFactor = newZoomFactor;
-            map.scale = Math.pow(2, newZoomFactor - 1);
-            if (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && newZoomFactor <= map.initialZoomLevel) {
-                map.initialCheck = true;
-                map.zoomPersistence = false;
-                map.tileTranslatePoint.x = map.initialTileTranslate.x;
-                map.tileTranslatePoint.y = map.initialTileTranslate.y;
-                newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
-                map.scale = Math.pow(2, newZoomFactor - 1);
-            }
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
-            if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
-                map.translatePoint = map.tileTranslatePoint = new Point(0, 0);
-                map.scale = map.previousScale;
-                map.tileZoomLevel = prevLevel;
-                map.zoomSettings.zoomFactor = map.previousScale;
-            } else {
-                if (document.querySelector('.GroupElement')) {
-                    (document.querySelector('.GroupElement') as HTMLElement).style.display = 'none';
-                }
-                if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
-                    document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
-                }
-                this.markerLineAnimation(map);
-                map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
-                const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
-                const animationDuration: number = this.maps.layersCollection[0].animationDuration;
-                setTimeout(() => {
-                    // if (type === 'ZoomOut') {
-                    //     element1.removeChild(element1.children[element1.childElementCount - 1]);
-                    //     if (element1.childElementCount) {
-                    //         element1.removeChild(element1.children[element1.childElementCount - 1]);
-                    //     } else {
-                    //         element1 = element1;
-                    //     }
-                    // }
-                    this.applyTransform(this.maps);
-                    if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
-                        document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+        let isToolbarPerform: boolean = true;
+        switch (type.toLowerCase()) {
+            case 'zoomin':
+                isToolbarPerform = newZoomFactor <= this.maps.zoomSettings.maxZoom;
+                break;
+            case 'zoomout':
+                isToolbarPerform = newZoomFactor >= this.maps.zoomSettings.minZoom;
+                break;
+        }
+        if (isToolbarPerform) {
+            const prevTilePoint: Point = map.tileTranslatePoint;
+            if ((!map.isTileMap) && ((type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)
+                || map.isReset)) {
+                const availSize: Rect = map.mapAreaRect;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const minBounds: any = map.baseMapRectBounds['min'] as any;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const maxBounds: any = map.baseMapRectBounds['max'] as any;
+                let mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
+                let mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
+                let translatePointX: number;
+                let translatePointY: number;
+                if (newZoomFactor < 1.2 && map.projectionType !== 'Eckert5') {
+                    if (mapTotalWidth === 0 || mapTotalHeight === 0 || mapTotalWidth === mapTotalHeight) {
+                        mapTotalWidth = availSize.width / 2;
+                        mapTotalHeight = availSize.height;
                     }
-                }, animationDuration);
+                    newZoomFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
+                    newZoomFactor = newZoomFactor > 1.05 ? 1 : newZoomFactor;
+                    map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);
+                } else {
+                    const point: Point = map.translatePoint;
+                    translatePointX = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
+                    translatePointY = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
+                    const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
+                    translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
+                    translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
+                    map.translatePoint = new Point(translatePointX, translatePointY);
+                }
+                map.scale = newZoomFactor;
+                if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
+                    map.translatePoint = map.previousPoint;
+                    map.scale = map.mapScaleValue = map.previousScale;
+                } else {
+                    this.applyTransform(map);
+                }
+            } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
+                this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
+                map.tileZoomLevel = newZoomFactor;
+                map.zoomSettings.zoomFactor = newZoomFactor;
+                map.scale = Math.pow(2, newZoomFactor - 1);
+                if (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && newZoomFactor <= map.initialZoomLevel) {
+                    map.initialCheck = true;
+                    map.zoomPersistence = false;
+                    map.tileTranslatePoint.x = map.initialTileTranslate.x;
+                    map.tileTranslatePoint.y = map.initialTileTranslate.y;
+                    newZoomFactor = map.tileZoomLevel = map.mapScaleValue = map.initialZoomLevel;
+                    map.scale = Math.pow(2, newZoomFactor - 1);
+                }
+                map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
+                map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
+                if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
+                    map.translatePoint = map.tileTranslatePoint = new Point(0, 0);
+                    map.scale = map.previousScale;
+                    map.tileZoomLevel = prevLevel;
+                    map.zoomSettings.zoomFactor = map.previousScale;
+                } else {
+                    if (document.querySelector('.GroupElement')) {
+                        (document.querySelector('.GroupElement') as HTMLElement).style.display = 'none';
+                    }
+                    if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                        document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'none';
+                    }
+                    this.markerLineAnimation(map);
+                    map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
+                    const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
+                    const animationDuration: number = this.maps.layersCollection[0].animationDuration;
+                    setTimeout(() => {
+                        // if (type === 'ZoomOut') {
+                        //     element1.removeChild(element1.children[element1.childElementCount - 1]);
+                        //     if (element1.childElementCount) {
+                        //         element1.removeChild(element1.children[element1.childElementCount - 1]);
+                        //     } else {
+                        //         element1 = element1;
+                        //     }
+                        // }
+                        this.applyTransform(this.maps);
+                        if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
+                            document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
+                        }
+                    }, animationDuration);
+                }
             }
         }
         this.maps.zoomNotApplied = false;
@@ -1385,10 +1395,22 @@ export class Zoom {
         e.stopImmediatePropagation();
         const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         const toolbar: string = target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
-        if (isTouch) {
+        let isToolbarPerform: boolean = true;
+        switch (toolbar.toLowerCase()) {
+            case 'zoomin':
+                isToolbarPerform = (this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) + 1 <= this.maps.zoomSettings.maxZoom;
+                break;
+            case 'zoomout':
+                isToolbarPerform = (this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) - 1 >= this.maps.zoomSettings.minZoom;
+                break;
+            case 'reset' :
+                isToolbarPerform = Math.round(this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) != this.maps.zoomSettings.minZoom;
+                break;
+        }
+        if (isTouch && isToolbarPerform) {
             this.handled = true;
             this.performZoomingByToolBar(toolbar);
-        } else if ((e.type === 'mousedown' || e.type === 'pointerdown') && !this.handled) {
+        } else if ((e.type === 'mousedown' || e.type === 'pointerdown') && !this.handled && isToolbarPerform) {
             this.handled = false;
             this.performZoomingByToolBar(toolbar);
         } else {

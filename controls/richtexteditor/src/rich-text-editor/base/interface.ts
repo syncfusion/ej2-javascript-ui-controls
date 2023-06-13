@@ -812,6 +812,10 @@ export interface BeforeQuickToolbarOpenArgs {
     cancel: boolean
     /** Defines the target element of the quick toolbar */
     targetElement: Element
+    /** Defines the X position of the quick toolbar */
+    positionX?: number
+    /** Defines the Y position of the quick toolbar */
+    positionY?: number
 }
 
 /**
@@ -1219,6 +1223,10 @@ export interface PasteCleanupArgs {
      * Returns the content in the ClipboardEvent arguments.
      */
     value: string;
+    /**
+     * Returns the list of image files data that is pasted.
+     */
+    filesData: FileInfo[]
 }
 
 /**

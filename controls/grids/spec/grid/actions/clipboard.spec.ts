@@ -228,3 +228,45 @@ describe('Clipboard copy testing while Freezing columns => ', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-826272 - Copy-Paste problem while adding a new row in grid', () => {
+        let gridObj: Grid;
+        let inputElement: HTMLInputElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'BoxWithBorder' },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+    
+        it('Copy pasting the content in a newly added row', () => {
+            gridObj.selectionModule.selectCell({ rowIndex: 0, cellIndex: 1 }, false);
+            gridObj.copy();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+            gridObj.editModule.editCell(0, 'CustomerID');
+            gridObj.element.querySelectorAll('.e-editedbatchcell')
+            inputElement = gridObj.element.querySelector('.e-editedbatchcell').querySelector('input');
+            inputElement.value = (gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value;
+        });
+    
+        it('Ensuring the copied content', () => {
+            gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 1 }, false);
+            gridObj.copy();
+            expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value).toBe('TOMSP');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 21.2.5 (2023-05-16)
+
+### ProgressButton
+
+#### Bug Fixes
+
+- `#I463462` - Issue in ProgressButton, spinner is not loaded properly has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### DropDownButton

@@ -185,7 +185,7 @@ export class DateProcessor {
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
                     const value: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
-                    if (hour >= value.to && (this.parent.workingTimeRanges[i + 1] &&
+                    if (hour > value.to && (this.parent.workingTimeRanges[i + 1] &&
                         hour < this.parent.workingTimeRanges[i + 1].from)) {
                         this.setTime(this.parent.workingTimeRanges[i + 1].from, cloneDate);
                         break;
@@ -1309,7 +1309,15 @@ export class DateProcessor {
             const segment: ITaskSegment = segments[i as number];
             const sDate: Date = segment.startDate;
             const eDate: Date = segment.endDate;
-            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+            if (this.parent.timelineModule.bottomTier === "Hour") {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60));
+            }
+            else if (this.parent.timelineModule.bottomTier === "Minutes") {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60));
+            }
+            else {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+            }
         }
         return duration;
     }

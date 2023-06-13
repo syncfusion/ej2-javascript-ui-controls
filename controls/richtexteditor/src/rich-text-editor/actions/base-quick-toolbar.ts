@@ -197,7 +197,7 @@ export class BaseQuickToolbar {
      * @deprecated
      */
     public showPopup(x: number, y: number, target: Element): void {
-        const eventArgs: BeforeQuickToolbarOpenArgs = { popup: this.popupObj, cancel: false, targetElement: target };
+        const eventArgs: BeforeQuickToolbarOpenArgs = { popup: this.popupObj, cancel: false, targetElement: target, positionX: x, positionY: y};
         this.parent.trigger(events.beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs: BeforeQuickToolbarOpenArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop: number;
@@ -238,8 +238,8 @@ export class BaseQuickToolbar {
                     });
                     this.tooltip.appendTo(this.element);
                 }
-                this.popupObj.position.X = x + 20;
-                this.popupObj.position.Y = y + 20;
+                this.popupObj.position.X = beforeQuickToolbarArgs.positionX + 20;
+                this.popupObj.position.Y = beforeQuickToolbarArgs.positionY + 20;
                 this.popupObj.dataBind();
                 this.popupObj.element.classList.add('e-popup-open');
                 this.dropDownButtons.renderDropDowns({

@@ -255,12 +255,7 @@ export class DataLabel {
                                 const backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme === 'HighContrast') ? 'black' : 'white') : this.fontBackground;
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                if (dataLabel.position == 'Outer') {
-                                    xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
-                                }
-                                else {
-                                    xPos = ((dataLabel.angle === 90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left + textSize.width) + labelLocation.x : (dataLabel.angle === -90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left) + labelLocation.x : (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x);
-                                }
+                                xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
@@ -274,8 +269,10 @@ export class DataLabel {
                                     degree = 0;
                                     xValue = rect.x;
                                     yValue = rect.y;
+                                    xPos -= chart.chartAreaType == 'Cartesian' && xPos + (textSize.width / 2) > clip.width ? (xPos + textSize.width / 2) - clip.width : 0; 
                                 }
-                                const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? 'end' : (angle == -90 && dataLabel.position == 'Outer') ? 'start' : 'middle';
+                                const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? (dataLabel.position == 'Top' ? 'start' : (dataLabel.position == 'Middle' ? 'middle' : 'end')) :
+                                    ((angle == -90 && dataLabel.enableRotation) ? (dataLabel.position == 'Top' ? 'end' : (dataLabel.position == 'Middle' ? 'middle' : 'start')) : 'middle');
                                 textElement(
                                     chart.renderer,
                                     new TextOption(

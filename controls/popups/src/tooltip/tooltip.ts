@@ -1128,21 +1128,26 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             element: this.tooltipEle, collidedPosition: newpos
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
-        const elePosVertical: string = elePos.vertical;
-        const elePosHorizontal: string = elePos.horizontal;
-        if (elePos.position !== newpos) {
-            const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
-                                                          this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
-            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
-            const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
-            offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
-            offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
-            elePos.position = newpos;
-            const elePosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
-            elePos.left = elePosition[0];
-            elePos.top = elePosition[1];
-        } else {
-            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+        if (this.tooltipEventArgs.cancel) {
+            newpos = this.position;
+        }
+        else { 
+            const elePosVertical: string = elePos.vertical;
+            const elePosHorizontal: string = elePos.horizontal;
+            if (elePos.position !== newpos) {
+                const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
+                                                            this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
+                this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+                const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
+                offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
+                offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
+                elePos.position = newpos;
+                const elePosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
+                elePos.left = elePosition[0];
+                elePos.top = elePosition[1];
+            } else {
+                this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+            }
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
         const left: number = this.isBodyContainer ?

@@ -309,7 +309,10 @@ export class GanttChart {
     private setVirtualHeight(): void {
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
             const wrapper: HTMLElement = getValue('virtualTrack', this.parent.ganttChartModule.virtualRender);
-            wrapper.style.height = this.parent.updatedRecords.length * this.parent.rowHeight + 'px';
+            wrapper.style.height = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtrack')[0] as HTMLElement).style.height;
+            const wrapper1: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
+            const treegridVirtualHeight = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
+            wrapper1.style.transform = treegridVirtualHeight;
         }
     }
     /**
@@ -1010,7 +1013,13 @@ export class GanttChart {
      * @private
      */
     public getRecordByTaskBar(target: Element): IGanttData {
-        const item: IGanttData = this.parent.currentViewData[this.getIndexByTaskBar(target)];
+        let item: IGanttData;
+        if (this.parent.enableVirtualization && this.parent.enableMultiTaskbar) {
+            item = this.parent.flatData[this.getIndexByTaskBar(target)];
+        }
+        else {
+            item = this.parent.currentViewData[this.getIndexByTaskBar(target)];
+        }
         return item;
     }
     /**
@@ -1342,7 +1351,12 @@ export class GanttChart {
         } else {
             const id: string = row.getAttribute('rowUniqueId');
             const record: IGanttData = this.parent.getRecordByID(id);
-            recordIndex = this.parent.currentViewData.indexOf(record);
+            if (this.parent.enableVirtualization && this.parent.enableMultiTaskbar) {
+                recordIndex = this.parent.flatData.indexOf(record);
+            }
+            else {
+                recordIndex = this.parent.currentViewData.indexOf(record);
+            }
         }
         return recordIndex;
     }

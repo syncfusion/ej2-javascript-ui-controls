@@ -342,6 +342,9 @@ export class Tooltip extends BaseTooltip {
         this.removeHighlight();
         this.currentPoints = [];
         const extraPoints: PointData[] = [];
+        let closestValue: number = Number.MAX_VALUE;
+        let pointValue: number;
+        let tempData: PointData;
         //let headerContent : string = '';
         if (isFirst) {
             if (!chart.stockChart) {
@@ -384,8 +387,13 @@ export class Tooltip extends BaseTooltip {
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 argument.text.push(this.getTooltipText(data));
+                pointValue = (!chart.requireInvertedAxis) ? chart.mouseX - data.series.clipRect.x : chart.mouseY - data.series.clipRect.y
+                if (data.point.symbolLocations.length && Math.abs(pointValue - data.point.symbolLocations[0].x) < closestValue) {
+                    closestValue = Math.abs(pointValue - data.point.symbolLocations[0].x);
+                    tempData = data;
+                }
                 if (showNearest) {
-                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
+                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : tempData || data;
                 }
                 dataCollection.push(data);
             }

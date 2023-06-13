@@ -70,6 +70,9 @@ export class Splitter {
                 this.parent.trigger('splitterResizing', args);
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
+                const leftPane: HTMLElement = args.pane[0];
+                this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
+                this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
                 const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
                     if (splitterResizedArgs.cancel === true) {

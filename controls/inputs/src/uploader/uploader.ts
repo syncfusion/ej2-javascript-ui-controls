@@ -1129,7 +1129,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.updateDirectoryAttributes();
                 break;
             case 'template':
-                this.clearAll();
+                const ejInstance: any = getValue('ej2_instances', this.element);
+                if(ejInstance[0].isReact){
+                    this.reRenderFileList();
+                }else{
+                    this.clearAll();
+                }
                 break;
             case 'minFileSize':
             case 'maxFileSize':
@@ -2260,7 +2265,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                 } else {
                     this.createFileList(fileData, true);
-                    this.filesData = this.filesData.concat(fileData);
                     if (!this.isForm || this.allowUpload()) {
                         this.checkAutoUpload(fileData);
                     }
@@ -2649,6 +2653,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public createFileList(fileData: FileInfo[], isSelectedFile?: boolean): void {
     /* eslint-enable valid-jsdoc, jsdoc/require-param */
         this.createParentUL();
+        this.filesData = (isSelectedFile) ? this.filesData.concat(fileData) : fileData;
         if (this.template !== '' && !isNullOrUndefined(this.template)) {
             if (this.isFormUpload()) {
                 this.uploadWrapper.classList.add(FORM_UPLOAD);

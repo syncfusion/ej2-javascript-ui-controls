@@ -115,7 +115,7 @@ export class Render {
                 return;
             }
             if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage &&
-                args.action === 'add' && args.requestType === 'save' as Action) {
+                (args.action === 'add' && args.requestType === 'save' as Action) && gObj.pagerModule.pagerObj.checkAll) {
                 gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + 1 }}, true);
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
@@ -283,7 +283,7 @@ export class Render {
     private sendBulkRequest(args?: NotifyArgs): void {
         args.requestType = 'batchsave';
         const gObj: IGrid = this.parent;
-        if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage) {
+        if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage && gObj.pagerModule.pagerObj.checkAll) {
             const dataLength: number = args['changes'].addedRecords.length;
             if (dataLength) {
                 gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + dataLength }}, true);

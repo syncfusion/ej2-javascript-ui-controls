@@ -31,6 +31,7 @@ let arrayOfObj = [
     }
 ];
 let specialCharValue = [{'@ShipCountry': 'France'}];
+let dsJSONArrayBoolean: any=[{name: true,info:{ id:'01'} }, { name: false, info: { id:'02'} }]
 let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info: { id: '02' } }];
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
@@ -255,6 +256,14 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
+    it('JSON Array Input With IF ELSE Condition Boolean', () => {
+        let templateStr: string = '<div>${if(name===true)}${info.id}${else}${name}${/if}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: '01' }));
+        result.push(createElement('div', { innerHTML: 'false' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArrayBoolean)).toEqual(result);
+    });
+    
     it('JSON Array Input With Multiple IF Condition', () => {
         let templateStr: string = '<div>${if(name=="one" && info.id != "01")}${info.id}${/if}</div>';
         let result: Element[] = [];

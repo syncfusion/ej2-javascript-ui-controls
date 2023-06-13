@@ -1718,6 +1718,39 @@ describe('Auto fill ->', () => {
                 done();
             });
         });
+        describe('Auto fill popup displays wrong options when the component is loaded with different locale ->', () => {
+            L10n.load({
+                'zh': {
+                    'spreadsheet': {
+                        "FillSeries": "填充系列",
+                        "CopyCells": "複製單元格",
+                        "FillFormattingOnly": "僅填充格式",
+                        "FillWithoutFormatting": "無格式填充",
+                    }
+                }
+            });
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E1' }], locale: 'zh' }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('applying auto fill with different locale', (done:Function) => {
+                helper.invoke('selectRange', ['A9']);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [13, 0]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                helper.click('#spreadsheet_autofilloptionbtn');
+                const fillPopup: HTMLElement = document.getElementById('spreadsheet_autofilloptionbtn-popup');
+                expect(fillPopup.childNodes[0].childNodes.length).toBe(3);
+                done();
+            });
+        });
     });
     describe('EJ2-66414', () => {
         beforeAll((done: Function) => {

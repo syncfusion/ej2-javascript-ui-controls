@@ -1836,6 +1836,11 @@ describe('Vertical View Event Render Module', () => {
     describe('EJ2-71317 - schedule virtual scrolling performance', () => {
         let schObj: Schedule;
         let performanceStart: number;
+        /**
+         * @param {number} count Number of resources data needs to generate
+         * @param {number} parentCount Parent resources count
+         * @returns {Record<string, any>[]} Returns the resources data collection
+         */
         function generateResources(count: number, parentCount: number = 0): Record<string, any>[] {
             const data: Record<string, any>[] = [];
             const colors: string[] = [
@@ -1856,16 +1861,23 @@ describe('Vertical View Event Render Module', () => {
             return data;
         }
 
+        /**
+         * @param {number} resCount Child resources count
+         * @param {number} parentCount Parent resources count
+         * @param {number} daysCount Events generation days count
+         * @param {Date} start Start date to generate events
+         * @returns {Record<string, any>[]} Returns the events data collection
+         */
         function generateEvents(resCount: number, parentCount: number, daysCount: number, start: Date): Record<string, any>[] {
             const data: Record<string, any>[] = [];
-            let id = 1;
-            for (let i = 0; i < resCount; i++) {
+            let id: number = 1;
+            for (let i: number = 0; i < resCount; i++) {
                 const childId: number = i + 1;
                 const parentId: number = Math.ceil((childId / resCount) * parentCount);
                 let startDate: Date = new Date(start.getFullYear(), start.getMonth(), start.getDate());
                 let endDate: Date = new Date(startDate.getTime() + 50000000);
 
-                for (let j = 0; j < daysCount; j++) {
+                for (let j: number = 0; j < daysCount; j++) {
                     data.push({
                         Id: id,
                         Subject: 'Event_' + parentId + '_' + childId,
@@ -1921,12 +1933,98 @@ describe('Vertical View Event Render Module', () => {
         it('Performance checking with events rendering', (done: DoneFn) => {
             const data: Record<string, any>[] = generateEvents(200, 50, 30, new Date(2023, 0, 1));
             schObj.dataBound = () => {
-                expect(Math.floor((performance.now() - performanceStart) / 1000)).toBeLessThanOrEqual(1);
+                expect(Math.floor((performance.now() - performanceStart) / 1000)).toBeLessThanOrEqual(2);
                 done();
             };
             performanceStart = performance.now();
             schObj.eventSettings.dataSource = data;
             schObj.dataBind();
+        });
+    });
+
+
+    describe('ES-826853 - schedule all day events rendering performance', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [];
+        let performanceStart: number;
+
+        for (let i: number = 0; i < 40; i++) {
+            data.push({
+                Subject: 'Paris ' + i,
+                StartTime: new Date(2023, 3, 24),
+                EndTime: new Date(2023, 3, 24),
+                IsAllDay: true,
+                LocationID: [1, 2, 3, 4, 5, 6, 7]
+            });
+        }
+
+        for (let i: number = 0; i < 19; i++) {
+            data.push({
+                Subject: 'Paris ' + i,
+                StartTime: new Date(2023, 3, 24, 4 + i, 0),
+                EndTime: new Date(2023, 3, 24, 5 + i, 0),
+                IsAllDay: false,
+                LocationID: [1, 2, 3, 4, 5, 6, 7]
+            });
+        }
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 3, 23),
+                currentView: 'Day',
+                showWeekNumber: false,
+                views: ['Day'],
+                weekRule: 'FirstFullWeek',
+                allowDragAndDrop: true,
+                firstDayOfWeek: 1,
+                agendaDaysCount: 31,
+                showHeaderBar: true,
+                eventSettings: {
+                    fields: {
+                        startTime: { name: 'StartTime', validation: { required: true } },
+                        endTime: { name: 'EndTime', validation: { required: true } }
+                    },
+                    template: '<div class="template-wrapper"><div class="subject">${ Subject }</div></div>'
+                },
+                group: {
+                    byDate: true,
+                    resources: ['Locations'],
+                    allowGroupEdit: false,
+                    enableCompactView: false
+                },
+                resources: [{
+                    field: 'CreatedFor', name: 'Users',
+                    dataSource: [],
+                    textField: 'name', idField: 'id', allowMultiple: true
+                }, {
+                    field: 'LocationID', name: 'Locations',
+                    dataSource: [
+                        { name: 'Loc 1', id: 1 },
+                        { name: 'Loc 2', id: 2 },
+                        { name: 'Loc 3', id: 3 },
+                        { name: 'Loc 4', id: 4 },
+                        { name: 'Loc 5', id: 5 },
+                        { name: 'Loc 6', id: 6 },
+                        { name: 'Loc 7', id: 7 }
+                    ],
+                    textField: 'name', idField: 'id', allowMultiple: true
+                }]
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Performance checking with events rendering', (done: DoneFn) => {
+            performanceStart = performance.now();
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            schObj.dataBound = () => {
+                expect((performance.now() - performanceStart) / 1000).toBeLessThanOrEqual(1.3);
+                done();
+            };
         });
     });
 

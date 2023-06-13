@@ -1351,4 +1351,232 @@ describe('Render top Tier alone in Zoom to fit', () => {
             destroyGantt(ganttObj);
         });
     });
+    describe('Check timeline dates', () => {
+        let ganttObj: Gantt;
+        let data = [{ TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('03/25/2019'), Duration: 1 }]
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/24/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('Check timeline start date after right resize', () => {
+            ganttObj.actionComplete = (args) => {
+                if (args.requestType == 'save' && args.taskBarEditAction == 'RightResizing') {
+                    expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe("3/24/2019");
+                }
+            };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 60, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+    describe('Zoming in Manual TaskMode', () => {
+        let ganttObj: Gantt;
+        let manualData = [
+            {
+                taskID: '100010-ABCDEFGH??!',
+                taskName: 'Project Schedule',
+                startDate: new Date('02/04/2019'),
+                endDate: new Date('03/10/2019'),
+            },
+            {
+                taskID: 'ABCDEFGH?!200001',
+                taskName: 'Planning',
+                startDate: new Date('02/04/2019'),
+                endDate: new Date('02/10/2019'),
+                parentID: '100010-ABCDEFGH??!',
+            },
+            {
+                taskID: '3',
+                taskName: 'Plan timeline',
+                startDate: new Date('02/04/2019'),
+                endDate: new Date('02/10/2019'),
+                duration: 6,
+                progress: '60',
+                parentID: 'ABCDEFGH?!200001',
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: manualData,
+                    height: '450px',
+                    highlightWeekends: true,
+                    allowSelection: true,
+                    taskMode: 'Manual',
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        parentID: 'parentID',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true,
+                    },
+                    columns: [
+                        { field: 'taskID', width: 60 },
+                        { field: 'taskName', width: 250 },
+                        { field: 'startDate' },
+                        { field: 'endDate' },
+                        { field: 'duration' },
+                        { field: 'predecessor' },
+                        { field: 'progress' },
+                    ],
+
+                    toolbar: [
+                        'Add',
+                        'Edit',
+                        'Update',
+                        'Delete',
+                        'Cancel',
+                        'ExpandAll',
+                        'CollapseAll',
+                        'Search',
+                        'ZoomIn',
+                        'ZoomOut',
+                        'ZoomToFit',
+                        'PrevTimeSpan',
+                        'NextTimeSpan',
+                        'ExcelExport',
+                        'CsvExport',
+                        'PdfExport',
+                    ],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: '50%',
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: true,
+                    },
+                    tooltipSettings: {
+                        showTooltip: true,
+                    },
+                    filterSettings: {
+                        type: 'Menu',
+                    },
+                    allowFiltering: true,
+                    gridLines: 'Both',
+                    showColumnMenu: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1,
+                        },
+                    },
+                    eventMarkers: [
+                        {
+                            day: '02/22/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off',
+                        },
+                    ],
+                    holidays: [
+                        {
+                            from: '02/27/2019',
+                            to: '02/28/2019',
+                            label: ' Public holidays',
+                            cssClass: 'e-custom-holiday',
+                        },
+                        {
+                            from: '01/30/2019',
+                            to: '01/30/2019',
+                            label: ' Public holiday',
+                            cssClass: 'e-custom-holiday',
+                        },
+                    ],
+                    searchSettings: { fields: ['taskName', 'duration'] },
+                    labelSettings: {
+                        leftLabel: 'taskID',
+                        rightLabel: 'Task Name: ${taskData.taskName}',
+                        taskLabel: '${progress}%',
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('01/28/2019'),
+                    projectEndDate: new Date('03/10/2019'),
+
+                }, done);
+        });
+        it('Percentage renders wrong in parent taskbar', () => {
+            ganttObj.actionComplete = (args) => {
+                expect(ganttObj.currentViewData[0].ganttProperties.autoWidth).toBe(396);
+            }
+            ganttObj.dataBind();
+            ganttObj.zoomIn();
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
 });

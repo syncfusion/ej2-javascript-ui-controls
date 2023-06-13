@@ -11007,4 +11007,97 @@
   .e-float-input.e-control-container.invalid {
     outline: none;
   }
+
+  .e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append .e-input-in-wrap,
+  .e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+    }
+  }
+
+  .e-error.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append .e-input-in-wrap,
+  .e-error.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+      border-bottom-color: $error-font-color;
+    }
+  }
+
+  .e-success.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append .e-input-in-wrap,
+  .e-success.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+      border-bottom-color: $success-font-color;
+    }
+  }
+
+  .e-input-group.e-prepend:not(.e-float-icon-left),
+  .e-input-group.e-prepend.e-success:not(.e-float-icon-left),
+  .e-input-group.e-prepend.e-warning:not(.e-float-icon-left),
+  .e-input-group.e-prepend.e-error:not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper.e-prepend:not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper.e-prepend.e-success:not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper.e-prepend.e-warning:not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper.e-prepend.e-error:not(.e-float-icon-left) {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
+  }
+
+  .e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group.e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-float-input.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success).e-warning:not(.e-error),
+  .e-float-input.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning).e-error,
+  .e-float-input.e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input.e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-float-input.e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success).e-warning:not(.e-error),
+  .e-float-input.e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning).e-error,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) input,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) input,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error input,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) textarea,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) textarea,
+  .e-float-input.e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error textarea,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) input,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) input,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error input,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) textarea,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) textarea,
+  .e-float-input.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error textarea,
+  .e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-warning:not(.e-success):not(.e-error),
+  .e-input-group.e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-input-group.e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left).e-warning:not(.e-success):not(.e-error),
+  .e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-error:not(.e-success):not(.e-warning),
+  .e-input-group.e-float-icon-left.e-prepend.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input-in-wrap,
+  .e-input-group.e-float-icon-left.e-prepend.e-input-focus.e-success:not(.e-warning):not(.e-error) .e-input-in-wrap,
+  .e-input-group.e-float-icon-left.e-prepend.e-input-focus.e-warning:not(.e-success):not(.e-error) .e-input-in-wrap,
+  .e-input-group.e-float-icon-left.e-prepend.e-input-focus.e-error:not(.e-success):not(.e-warning) .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
+  }
+
+  .e-input-group.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input.e-control-wrapper.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input.e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input.e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input.e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input.e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]) {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
+  }
 }

@@ -171,7 +171,7 @@ export class FormFields {
                             this.selectedIndex = [];
  
                             var elementValue = "";
-                            if (currentData.Name === 'RadioButton') {
+                            if (currentData.Name === 'RadioButton' || currentData.Name === 'CheckBox') {
                                 elementValue = currentData['Text'] ? currentData['Text'] : currentData['Value'];
                             }
                             else {
