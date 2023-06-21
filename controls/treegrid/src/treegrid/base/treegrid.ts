@@ -118,6 +118,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private addedRecords: string = 'addedRecords';
     private targetElement: HTMLElement;
     private isGantt: boolean;
+    private isAddedFromGantt: boolean;
     private isIndentEnabled: boolean;
     private indentOutdentAction: string = 'indentOutdentAction';
     /**
@@ -428,7 +429,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @default null
      */
     @Property()
-    public pagerTemplate: string;
+    public pagerTemplate: string | Function;
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      *
@@ -501,7 +502,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      */
     @Property()
-    public detailTemplate: string;
+    public detailTemplate: string | Function;
     /**
      * Configures the filter settings of the TreeGrid.
      *
@@ -542,7 +543,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @default null
      */
     @Property()
-    public toolbarTemplate: string;
+    public toolbarTemplate: string | Function;
     /**
      * Defines the mode of TreeGrid lines. The available modes are,
      * ```props
@@ -606,7 +607,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * > Check the [`Row Template`](../../treegrid/row) customization.
      */
     @Property()
-    public rowTemplate: string;
+    public rowTemplate: string | Function;
     /**
      * `copyHierarchyMode` Defines the copy clipboard types.
      * <br><br>
@@ -1533,7 +1534,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'downArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findnextRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -1549,7 +1555,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'upArrow':
                 if (!this.enableVirtualization) {
-                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    target = <HTMLTableCellElement>e.target;
+                    parentTarget = target.parentElement;
+                    const cellIndex: number = (<HTMLTableCellElement>parentTarget).cellIndex;
+                    if (this.grid.getColumnByIndex(cellIndex).editType === 'dropdownedit' && isNullOrUndefined(this.grid.getColumnByIndex(cellIndex).edit['obj'])) {
+                        parentTarget = target;
+                    }
                     summaryElement = this.findPreviousRowElement(parentTarget);
                     if (summaryElement !== null) {
                         const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
@@ -1931,8 +1942,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.query = this.query;
         this.grid.columnQueryMode = this.columnQueryMode;
         this.grid.allowPaging = this.allowPaging;
-        this.grid.pageSettings = getActualProperties(this.pageSettings);
-        this.grid.pagerTemplate = this.pagerTemplate;
+        this.grid.pageSettings = getActualProperties(this.pageSettings) as any;
+        this.grid.pagerTemplate = this.pagerTemplate as any;
         this.grid.showColumnMenu = this.showColumnMenu;
         this.grid.allowSorting = this.allowSorting;
         this.grid.allowFiltering = this.allowFiltering;
@@ -1958,13 +1969,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.gridLines = this.gridLines;
         this.grid.allowSelection = this.allowSelection;
         this.grid.toolbar = getActualProperties(this.getGridToolbar());
-        this.grid.toolbarTemplate = this.toolbarTemplate;
+        this.grid.toolbarTemplate = this.toolbarTemplate as any;
         this.grid.showColumnChooser = this.showColumnChooser;
         this.grid.filterSettings = getActualProperties(this.filterSettings);
         this.grid.selectionSettings = getActualProperties(this.selectionSettings);
         this.grid.sortSettings = getActualProperties(this.sortSettings);
         this.grid.searchSettings = getActualProperties(this.searchSettings);
-        this.grid.aggregates = getActualProperties(this.aggregates);
+        this.grid.aggregates = getActualProperties(this.aggregates) as any;
         this.grid.textWrapSettings = getActualProperties(this.textWrapSettings);
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
@@ -1972,8 +1983,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
         this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
-        this.grid.rowTemplate = getActualProperties(this.rowTemplate);
-        this.grid.detailTemplate = getActualProperties(this.detailTemplate);
+        this.grid.rowTemplate = getActualProperties(this.rowTemplate) as any;
+        this.grid.detailTemplate = getActualProperties(this.detailTemplate) as any;
         this.grid.frozenRows = this.frozenRows;
         this.grid.frozenColumns = this.frozenColumns;
         this.grid.clipMode = getActualProperties(this.clipMode);
@@ -2309,19 +2320,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.rowTemplate) {
             if ((<{ isReact?: boolean }>this).isReact && (this.getContentTable() as HTMLTableElement).rows.length === 0) {
                 setTimeout(() => {
-                   this.treeColumnRowTemplate();
-                   if (this.enableCollapseAll) {
-                       const currentData: ITreeData[] = this.getCurrentViewRecords();
-                       const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
-                       for (let i: number = 0; i < rows.length; i++) {
-                           let args: RowDataBoundEventArgs = { data: currentData[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)] };
-                           this.renderModule.RowModifier(args);
-                       }
-                   }
-               }, 0);
-           } else {
-               this.treeColumnRowTemplate();
-           }
+                    this.treeColumnRowTemplate();
+                    if (this.enableCollapseAll) {
+                        const currentData: ITreeData[] = this.getCurrentViewRecords();
+                        const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+                        for (let i: number = 0; i < rows.length; i++) {
+                            const args: RowDataBoundEventArgs = { data: currentData[parseInt(i.toString(), 10)],
+                                row: rows[parseInt(i.toString(), 10)] };
+                            this.renderModule.RowModifier(args);
+                        }
+                    }
+                }, 0);
+            } else {
+                this.treeColumnRowTemplate();
+            }
         }
     }
 
@@ -2758,7 +2770,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'allowPaging':
                 this.grid.allowPaging = this.allowPaging; break;
             case 'pageSettings':
-                this.grid.pageSettings = getActualProperties(this.pageSettings);
+                this.grid.pageSettings = getActualProperties(this.pageSettings) as any;
                 requireRefresh = true;
                 break;
             case 'enableVirtualization':
@@ -2793,7 +2805,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'allowRowDragAndDrop':
                 this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop; break;
             case 'aggregates':
-                this.grid.aggregates = getActualProperties(this.aggregates); break;
+                this.grid.aggregates = getActualProperties(this.aggregates) as any; break;
             case 'enableInfiniteScrolling':
                 this.grid.enableInfiniteScrolling = this.enableInfiniteScrolling; break;
             case 'dataSource':
@@ -2836,7 +2848,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'gridLines':
                 this.grid.gridLines = this.gridLines; break;
             case 'rowTemplate':
-                this.grid.rowTemplate = getActualProperties(this.rowTemplate);
+                this.grid.rowTemplate = getActualProperties(this.rowTemplate) as any;
                 break;
             case 'frozenRows':
                 this.grid.frozenRows = this.frozenRows; break;
@@ -2895,7 +2907,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'showColumnChooser':
                 this.grid.showColumnChooser = this.showColumnChooser; break;
             case 'detailTemplate':
-                this.grid.detailTemplate = getActualProperties(this.detailTemplate); break;
+                this.grid.detailTemplate = getActualProperties(this.detailTemplate) as any; break;
             case 'columnMenuItems':
                 this.grid.columnMenuItems = getActualProperties(this.columnMenuItems); break;
             case 'editSettings':
@@ -3475,7 +3487,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private updateColumnModel(column?: GridColumn[]): ColumnModel[] {
-        let temp: string;
+        let temp: string | Function;
         let field: string;
         const gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
         if (this.treeColumnIndex !== -1 && this.columnModel[this.treeColumnIndex] &&
@@ -3513,8 +3525,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
                 else if (!isNullOrUndefined((this.columns[parseInt(i.toString(), 10)] as ColumnModel).field)) {
-                    const fieldName: string = (this.columns[parseInt(i.toString(), 10)] as ColumnModel).field;
-                    const currentColumn: GridColumn = this.grid.getColumnByField(fieldName);
+                    const currentColumn: GridColumn = this.grid.getColumnByField((this.columns[parseInt(i.toString(), 10)] as ColumnModel)
+                        .field);
                     (this.columns[parseInt(i.toString(), 10)] as ColumnModel).width = (currentColumn as ColumnModel).width;
                 }
             }
@@ -3874,7 +3886,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
-                record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                if (this.enableVirtualization && this.isCollapseAll) {
+                    if (this.isExpandAll && row.rowIndex === -1) {
+                        record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                    }
+                    else {
+                        record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+                    }
+                }
+                else {
+                    record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                }
             }
         }
         return record;
@@ -4102,10 +4124,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (rows.length) {
                 for (let i: number = 0; i < rows.length; i++) {
                     if (action === 'collapse') {
-                        this.collapseRow(rows[parseInt(i.toString(), 10)]);
+                        if (!isNullOrUndefined(this.getCurrentViewRecords()[rows[parseInt(i.toString(), 10)].rowIndex])) {
+                            this.collapseRow(rows[parseInt(i.toString(), 10)]);
+                        }
                     }
                     else {
-                        this.expandRow(rows[parseInt(i.toString(), 10)]);
+                        if (!this.enableVirtualization) {
+                            this.expandRow(rows[parseInt(i.toString(), 10)]);
+                        }
+                        else if (rows[0].getAttribute('aria-expanded') !== 'true') {
+                            this.expandRow(rows[0]);
+                        }
                     }
                 }
             } else if (this.allowPaging) {
@@ -4565,7 +4594,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
                 if (cRow.length && childRecord.expanded) {
-                    this.collapseRemoteChild({ record: childRecord, rows: cRow }, true);
+                    this.collapseRemoteChild({ record: childRecord, rows: cRow }, false);
                 }
             }
         }

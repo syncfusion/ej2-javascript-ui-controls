@@ -70,7 +70,7 @@ export class BaseSelection {
                 seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
                 if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight) {
-                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (parseFloat(series.width.toString()) + 1) + ';} ';
                 }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
                 style.innerText += series.selectionStyle ? '' : '.' + seriesclass + pattern;
@@ -459,7 +459,7 @@ export class BaseSelection {
                 }
             }
             else {
-                if (this.control.series[index as number].visible) {
+                if (this.control.visibleSeries[index as number].visible) {
                     visible = true;
                     break;
                 }

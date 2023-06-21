@@ -388,17 +388,23 @@ describe('Schedule header bar', () => {
         it('dates on same month and year', () => {
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
                 toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range').firstElementChild.getAttribute('aria-label')).
+                toEqual('October 01 - 07, 2017');
         });
         it('dates on different month', () => {
             schObj.selectedDate = new Date(2017, 10, 1);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
                 toEqual('Oct 29 - Nov 04, 2017');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range').firstElementChild.getAttribute('aria-label')).
+                toEqual('Oct 29 - Nov 04, 2017');
         });
         it('dates on different year', () => {
             schObj.selectedDate = new Date(2019, 0, 1);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Dec 30, 2018 - Jan 05, 2019');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range').firstElementChild.getAttribute('aria-label')).
                 toEqual('Dec 30, 2018 - Jan 05, 2019');
         });
     });

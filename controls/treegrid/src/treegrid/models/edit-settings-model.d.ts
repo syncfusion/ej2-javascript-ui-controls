@@ -81,7 +81,7 @@ export interface EditSettingsModel {
      *
      * @default ''
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the dialog params to edit.

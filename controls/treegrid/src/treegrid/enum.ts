@@ -8,10 +8,10 @@
  * ```
  */
 export type FilterHierarchyMode =
- 'Parent' |
- 'Child' |
- 'Both' |
- 'None';
+      'Parent' |
+      'Child' |
+      'Both' |
+      'None';
 
 /**
  * Defines Predefined toolbar items.
@@ -32,18 +32,18 @@ export type FilterHierarchyMode =
  * @hidden
  */
 export type ToolbarItems =
-'Add' |
-'Delete' |
-'Update' |
-'Cancel' |
-'Edit' |
-'Search' |
-'ExpandAll' |
-'CollapseAll' |
-'ExcelExport' |
-'PdfExport' |
-'CsvExport' |
-'Print';
+    'Add' |
+    'Delete' |
+    'Update' |
+    'Cancel' |
+    'Edit' |
+    'Search' |
+    'ExpandAll' |
+    'CollapseAll' |
+    'ExcelExport' |
+    'PdfExport' |
+    'CsvExport' |
+    'Print';
 /**
  * Defines Predefined toolbar items.
  *
@@ -74,8 +74,8 @@ export enum ToolbarItem {
  * ```
  */
 export type PageSizeMode =
-'All' |
-'Root';
+    'All' |
+    'Root';
 
 /**
  * Defines predefined contextmenu items.
@@ -99,24 +99,24 @@ export type PageSizeMode =
  * @hidden
  */
 export type ContextMenuItem =
-'AutoFitAll' |
-'AutoFit' |
-'SortAscending' |
-'SortDescending' |
-'Edit' |
-'Delete' |
-'Save' |
-'Cancel' |
-'PdfExport' |
-'ExcelExport' |
-'CsvExport' |
-'FirstPage' |
-'PrevPage' |
-'LastPage' |
-'NextPage' |
-'AddRow'|
-'Indent'|
-'Outdent';
+    'AutoFitAll' |
+    'AutoFit' |
+    'SortAscending' |
+    'SortDescending' |
+    'Edit' |
+    'Delete' |
+    'Save' |
+    'Cancel' |
+    'PdfExport' |
+    'ExcelExport' |
+    'CsvExport' |
+    'FirstPage' |
+    'PrevPage' |
+    'LastPage' |
+    'NextPage' |
+    'AddRow'|
+    'Indent'|
+    'Outdent';
 
 
 /**
@@ -185,9 +185,9 @@ export type RowPosition =
  * ```
  */
 export type FilterType =
-'FilterBar' |
-'Excel' |
-'Menu' ;
+    'FilterBar' |
+    'Excel' |
+    'Menu' ;
 
 /**
  * Defines the wrap mode.
@@ -197,9 +197,9 @@ export type FilterType =
  * * Content :- Wraps content alone.
  */
 export type WrapMode =
-'Both' |
-'Header' |
-'Content';
+    'Both' |
+    'Header' |
+    'Content';
 
 /**
  * Defines types of CopyHierarchyMode. They are

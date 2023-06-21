@@ -2,7 +2,10 @@
  * Gantt connector line spec
  */
 import { Gantt, Edit } from '../../src/index';
-import { createGantt, destroyGantt } from '../base/gantt-util.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 describe('Gantt connector line support', () => {
          let connectorLineFSDatasource: Object[] = [
             {
@@ -327,8 +330,8 @@ describe('Gantt connector line support', () => {
             ganttObj.dataSource = connectorLineSSDatasource;
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[1].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[3].ganttProperties.left).toBe(297);
-                expect(ganttObj.flatData[5].ganttProperties.left).toBe(132);
+                expect(ganttObj.flatData[3].ganttProperties.left).toBe(264);
+                expect(ganttObj.flatData[5].ganttProperties.left).toBe(99);
                 expect(ganttObj.flatData[7].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[9].ganttProperties.left).toBe(363);
                 done();
@@ -339,7 +342,7 @@ describe('Gantt connector line support', () => {
             ganttObj.dataSource = connectorLineFFDatasource;
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[2].ganttProperties.left).toBe(363);
-                expect(ganttObj.flatData[4].ganttProperties.left).toBe(396);
+                expect(ganttObj.flatData[4].ganttProperties.left).toBe(363);
                 expect(ganttObj.flatData[6].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[8].ganttProperties.left).toBe(99);
                 expect(ganttObj.flatData[10].ganttProperties.left).toBe(264);
@@ -351,8 +354,8 @@ describe('Gantt connector line support', () => {
             ganttObj.dataSource = connectorLineSFDatasource;
             ganttObj.dataBound = () => {
                 expect(ganttObj.flatData[1].ganttProperties.left).toBe(99);
-                expect(ganttObj.flatData[3].ganttProperties.left).toBe(264);
-                expect(ganttObj.flatData[5].ganttProperties.left).toBe(99);
+                expect(ganttObj.flatData[3].ganttProperties.left).toBe(132);
+                expect(ganttObj.flatData[5].ganttProperties.left).toBe(33);
                 expect(ganttObj.flatData[7].ganttProperties.left).toBe(264);
                 expect(ganttObj.flatData[9].ganttProperties.left).toBe(363);
                 done();
@@ -468,15 +471,19 @@ describe('Gantt connector line support', () => {
         it('Aria-label testing - SS', (done: Function) => {
             ganttObj.dataSource = connectorLineSSDatasource;
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#ConnectorLineparent2child7 > div').getAttribute('aria-label').indexOf('SS Start to SS Start')> -1).toBeTruthy();
-                done();
-            }
-            ganttObj.refresh();            
-        });
+              const connectorLine : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent2child7').childNodes[0] as HTMLElement;
+              const ariaLabel = connectorLine.getAttribute('aria-label');
+              expect(ariaLabel && ariaLabel.indexOf('SS Start to SS Start') > -1).toBeTruthy();
+              done();
+            };
+            ganttObj.refresh();
+          });   
         it('Aria-label testing - FF', (done: Function) => {
             ganttObj.dataSource = connectorLineFFDatasource;
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#ConnectorLineparent9child7 > div').getAttribute('aria-label').indexOf('FF Finish to FF Finish')> -1).toBeTruthy();
+                const connectorLine : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent9child7').childNodes[0] as HTMLElement;
+                const ariaLabel = connectorLine.getAttribute('aria-label');
+                expect(ariaLabel && ariaLabel.indexOf('FF Finish to FF Finish')> -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();            
@@ -484,7 +491,9 @@ describe('Gantt connector line support', () => {
         it('Aria-label testing - SF', (done: Function) => {
             ganttObj.dataSource = connectorLineSFDatasource;
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#ConnectorLineparent7child13 > div').getAttribute('aria-label').indexOf('SF Start to SF Finish')> -1).toBeTruthy();
+                const connectorLine : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent7child13').childNodes[0] as HTMLElement;
+                const ariaLabel = connectorLine.getAttribute('aria-label');
+                expect(ariaLabel && ariaLabel.indexOf('SF Start to SF Finish')> -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();            
@@ -492,7 +501,9 @@ describe('Gantt connector line support', () => {
         it('Aria-label testing - FS', (done: Function) => {
             ganttObj.dataSource = connectorLineFSDatasource;
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#ConnectorLineparent7child6 > div').getAttribute('aria-label').indexOf('FS Finish to FS Start')> -1).toBeTruthy();
+                const connectorLine : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent7child6').childNodes[0] as HTMLElement;
+                const ariaLabel = connectorLine.getAttribute('aria-label');
+                expect(ariaLabel && ariaLabel.indexOf('FS Finish to FS Start')> -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();            
@@ -639,5 +650,78 @@ describe('Gantt connector line support', () => {
          beforeEach((done: Function) => {
              setTimeout(done, 2000);
          });
+     });
+     describe('offset not updating properly issue', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj= createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'TaskId',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor'
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                    allowSelection: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    allowUnscheduledTasks: true,
+                    editSettings: {
+                        allowTaskbarEditing: true,
+                        allowEditing: true,
+                        allowAdding:true
+                    }
+            }, done);
+        });
+
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+
+        it('check offset value after adding dependency', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(0);
+                }
+            };
+            ganttObj.openAddDialog(); 
+            let taskName: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            taskName.value="New Task 2";
+            taskName.dataBind();
+            let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration.value="2 days";
+            duration.dataBind();
+            ganttObj.dataBind();
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save, 'click');
+            ganttObj.openAddDialog();
+            let taskName1: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            taskName1.value="New Task 1";
+            taskName1.dataBind();
+            let duration1: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration1.value="3 days";
+            duration1.dataBind();
+            let save1: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save1, 'click');
+            ganttObj.openEditDialog(1);
+            let duration2: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration2.value="3 days";
+            duration2.dataBind();
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "2-New Task 1";
+            input.dataBind();
+            ganttObj.dataBind();
+            triggerMouseEvent(save, 'click');  
+        });
      });
 });

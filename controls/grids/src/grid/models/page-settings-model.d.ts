@@ -58,7 +58,8 @@ export interface PageSettingsModel {
      * It accepts either [template string](../../common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
 }

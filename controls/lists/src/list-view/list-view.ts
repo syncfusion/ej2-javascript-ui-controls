@@ -1316,7 +1316,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
-                if (!this.showCheckBox) {
+                if (!this.showCheckBox && !isNullOrUndefined(this.selectedLI)) {
                    this.selectedLI.classList.add(classNames.selected);
                 }
             }

@@ -24,8 +24,9 @@ export class HeaderRows extends ChildProperty<HeaderRows> {
      *  can be accessed via this template is `date`.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
 }

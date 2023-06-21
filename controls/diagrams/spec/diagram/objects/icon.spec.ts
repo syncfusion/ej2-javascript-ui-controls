@@ -10,8 +10,8 @@ import { getDiagramElement } from '../../../src/diagram/utility/dom-util';
 import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-element';
 import { Canvas, PathElement, HierarchicalTree, DataBinding, LayoutAnimation } from '../../../src/index';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { DiagramModel } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { ConnectorModel, DiagramModel } from '../../../src/diagram/index';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree, LayoutAnimation);
 
 /**
@@ -24,11 +24,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram_expandicon' });
             document.body.appendChild(ele);
 
@@ -291,11 +291,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram_expandicon' });
             document.body.appendChild(ele);
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
@@ -368,7 +368,7 @@ describe('Diagram Control', () => {
             expect((rect.getAttribute('aria-label') === 'Click here to expand or collapse'));
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -379,4 +379,453 @@ describe('Diagram Control', () => {
         })
     });
 
+});
+
+describe('Icon Apperance - EJ2-70586',()=>{
+    //test the path colour and path width applies for expand & Collapse icon
+    describe('Expand and Collapse Icon Appearance', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let data: object[] = [
+            { id: 1, Label: 'StackPanel' },
+            { id: 2, Label: 'Label', parentId: 1 },
+            { id: 3, Label: 'ListBox', parentId: 1 },
+            { id: 4, Label: 'StackPanel', parentId: 1 },
+        ];
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_expandicon' });
+            document.body.appendChild(ele);
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                layout: {
+                    enableAnimation: true,
+                    orientation: 'RightToLeft',
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                },
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items },
+                getNodeDefaults: (node: Node, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.expandIcon = {
+                        height: 15, width: 15,
+                        shape: "Minus",
+                        fill: 'lightgray',
+                    };
+                    obj.collapseIcon = {
+                        height: 15, width: 15, shape: "Plus",
+                        fill: 'lightgray',
+                    };
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: function (connector: Connector, diagram: Diagram) {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram_expandicon');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+
+        it('Checking expand icon', (done: Function) => {
+            var icon_content_shape = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
+            expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
+            diagram.nodes[0].expandIcon.iconColor = 'red';
+            diagram.dataBind();
+            var icon_content_shape2 = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
+            expect(diagram.nodes[0].expandIcon.iconColor).toBe('red');
+            expect(icon_content_shape2.getAttribute('stroke')).toBe('red');
+            done();
+        });
+        it('Checking collapse icon', (done: Function) => {
+            diagram.nodes[0].isExpanded = false;
+            diagram.dataBind();
+            var icon_content_shape = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
+            expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
+        
+            diagram.nodes[0].collapseIcon.iconColor = 'yellow';
+            
+            diagram.dataBind();
+            var icon_content_shape2 = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
+            expect(diagram.nodes[0].collapseIcon.iconColor).toBe('yellow');
+            
+            expect(icon_content_shape2.getAttribute('stroke')).toBe('yellow');
+        
+            done();
+        });
+        it('Checking collapse icon content corner radius', (done: Function) => {
+            var icon_content = document.getElementById(diagram.nodes[0].id + "_icon_content");
+            expect(icon_content.getAttribute('rx')).toBe('0');
+            expect(icon_content.getAttribute('ry')).toBe('0');
+            expect(diagram.nodes[0].collapseIcon.cornerRadius).toBe(0);
+            diagram.nodes[0].collapseIcon.cornerRadius = 10;
+            diagram.dataBind();
+            var icon_content2 = document.getElementById(diagram.nodes[0].id + "_icon_content");
+            expect(icon_content2.getAttribute('rx')).toBe('10');
+            expect(icon_content2.getAttribute('ry')).toBe('10');
+            expect(diagram.nodes[0].collapseIcon.cornerRadius).toBe(10);
+            done();
+        });
+    });
+
+    //Add new node at runtime and check whether path colour and path width get applied properly.
+    describe('Expand and Collapse Icon for run time node check', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_expandicon' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                { id: 'sample1', annotations: [{ content: 'node1' }] },
+                { id: 'sample2', annotations: [{ content: 'node2' }] }
+            ]
+            let connector: ConnectorModel[] = [{ id: 'c1', targetID: 'sample1', sourceID: "sample2" }]
+            let runtimeNode: NodeModel = { id: 'r_node', annotations: [{ content: 'r_node' }] };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                layout: {
+                    enableAnimation: true,
+                    orientation: 'RightToLeft',
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                },
+                nodes: nodes, connectors: connector,
+                getNodeDefaults: (node: Node, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.expandIcon = {
+                        height: 15, width: 15,
+                        shape: "Minus",
+                        fill: 'lightgray',
+                    };
+                    obj.collapseIcon = {
+                        height: 15, width: 15, shape: "Plus",
+                        fill: 'lightgray',
+                    };
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: function (connector: Connector, diagram: Diagram) {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram_expandicon');
+            diagram.add(runtimeNode);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+
+        it('Checking expand icon', (done: Function) => {
+            debugger
+            diagram.nodes[2].isExpanded;
+            var icon_content_shape = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
+            expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
+        
+            diagram.nodes[2].expandIcon.iconColor = 'red';
+        
+            diagram.dataBind();
+            var icon_content_shape2 = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
+            expect(diagram.nodes[2].expandIcon.iconColor).toBe('red');
+        
+            expect(icon_content_shape2.getAttribute('stroke')).toBe('red');
+            
+            done();
+        });
+        it('Checking collapse icon', (done: Function) => {
+            debugger
+            diagram.nodes[2].isExpanded = false;
+            diagram.dataBind();
+            var icon_content_shape = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
+            expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
+        
+            diagram.nodes[2].collapseIcon.iconColor = 'blue';
+        
+            diagram.dataBind();
+            var icon_content_shape2 = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
+            expect(diagram.nodes[2].collapseIcon.iconColor).toBe('blue');
+        
+            expect(icon_content_shape2.getAttribute('stroke')).toBe('blue');
+        
+            done();
+        });
+        it('Checking collapse icon content corner radius', (done: Function) => {
+            debugger
+            var icon_content = document.getElementById(diagram.nodes[2].id + "_icon_content");
+            expect(icon_content.getAttribute('rx')).toBe('0');
+            expect(icon_content.getAttribute('ry')).toBe('0');
+            expect(diagram.nodes[2].collapseIcon.cornerRadius).toBe(0);
+            diagram.nodes[2].collapseIcon.cornerRadius = 10;
+            diagram.dataBind();
+            var icon_content2 = document.getElementById(diagram.nodes[2].id + "_icon_content");
+            expect(icon_content2.getAttribute('rx')).toBe('10');
+            expect(icon_content2.getAttribute('ry')).toBe('10');
+            expect(diagram.nodes[2].collapseIcon.cornerRadius).toBe(10);
+            done();
+        });
+    });
+
+    //After save and load the diagram, check whether path colour and path width applied properly
+    describe('Expand and Collapse Icon save & load data', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_expandicon' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                { id: 'sample1', annotations: [{ content: 'node1' }] },
+                { id: 'sample2', annotations: [{ content: 'node2' }] }
+            ]
+            let connector: ConnectorModel[] = [{ id: 'c1', targetID: 'sample1', sourceID: "sample2" }]
+            let runtimeNode: NodeModel = { id: 'r_node', annotations: [{ content: 'r_node' }] };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                layout: {
+                    enableAnimation: true,
+                    orientation: 'RightToLeft',
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                },
+                nodes: nodes, connectors: connector,
+                getNodeDefaults: (node: Node, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.expandIcon = {
+                        height: 15, width: 15,
+                        shape: "Minus",
+                        fill: 'lightgray',
+                    };
+                    obj.collapseIcon = {
+                        height: 15, width: 15, shape: "Plus",
+                        fill: 'lightgray',
+                    };
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: function (connector: Connector, diagram: Diagram) {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram_expandicon');
+            // diagram.add(runtimeNode);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking before, after, customProperties', (done: Function) => {
+            debugger
+            var icon_content_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
+            expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
+        
+            diagram.nodes[1].expandIcon.iconColor = 'red';
+            
+            diagram.dataBind();
+            let savedata: string = diagram.saveDiagram();
+            diagram.clear();
+            diagram.loadDiagram(savedata);
+            expect(savedata != null).toBe(true);
+            var icon_content_shape2 = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
+            expect(icon_content_shape2.getAttribute('stroke')).toBe('red');
+        
+            diagram.clear();
+            done();
+        });
+
+    });
+
+    //Test whether border colour and border width apply only for icon border colour and border width.
+    describe('Expand and Collapse Icon check only applies to icon', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_expandicon' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                { id: 'sample1', annotations: [{ content: 'node1' }] },
+                { id: 'sample2', annotations: [{ content: 'node2' }] }
+            ]
+            let connector: ConnectorModel[] = [{ id: 'c1', targetID: 'sample1', sourceID: "sample2" }]
+            let runtimeNode: NodeModel = { id: 'r_node', annotations: [{ content: 'r_node' }] };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                layout: {
+                    enableAnimation: true,
+                    orientation: 'RightToLeft',
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                },
+                nodes: nodes, connectors: connector,
+                getNodeDefaults: (node: Node, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.expandIcon = {
+                        height: 15, width: 15,
+                        shape: "Minus",
+                        fill: 'lightgray',
+                    };
+                    obj.collapseIcon = {
+                        height: 15, width: 15, shape: "Plus",
+                        fill: 'lightgray',
+                    };
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: function (connector: Connector, diagram: Diagram) {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram_expandicon');
+            // diagram.add(runtimeNode);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking only applies to icon', (done: Function) => {
+            debugger
+            var icon_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
+            expect(icon_shape.getAttribute('stroke')).toBe('#1a1a1a');
+            
+            diagram.nodes[1].expandIcon.iconColor = 'red';
+        
+            diagram.dataBind();
+
+            var rect = document.getElementById(diagram.nodes[1].id + "_icon_content_rect");
+            expect(rect.getAttribute('stroke')).toBe('#1a1a1a');
+        
+            diagram.nodes[1].expandIcon.borderColor = 'cyan';
+        
+            diagram.dataBind();
+
+
+            var icon_shape2 = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
+            var rect2 = document.getElementById(diagram.nodes[1].id + "_icon_content_rect");
+            expect(icon_shape2.getAttribute('stroke') == rect2.getAttribute('stroke')).toBe(false);
+            
+
+            done();
+        });
+
+    });
+
+    //After export the diagram, the path colour and path width also export along with nodes. 
+    describe('Export data with Nodes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_expandicon' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                { id: 'sample1', annotations: [{ content: 'node1' }] },
+                { id: 'sample2', annotations: [{ content: 'node2' }] }
+            ]
+            let connector: ConnectorModel[] = [{ id: 'c1', targetID: 'sample1', sourceID: "sample2" }]
+            let runtimeNode: NodeModel = { id: 'r_node', annotations: [{ content: 'r_node' }] };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                layout: {
+                    enableAnimation: true,
+                    orientation: 'RightToLeft',
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                },
+                nodes: nodes, connectors: connector,
+                getNodeDefaults: (node: Node, diagram: Diagram) => {
+                    let obj: NodeModel = {};
+                    obj.expandIcon = {
+                        height: 15, width: 15,
+                        shape: "Minus",
+                        fill: 'lightgray',
+                    };
+                    obj.collapseIcon = {
+                        height: 15, width: 15, shape: "Plus",
+                        fill: 'lightgray',
+                    };
+                    obj.height = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                },
+                getConnectorDefaults: function (connector: Connector, diagram: Diagram) {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram_expandicon');
+            // diagram.add(runtimeNode);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('export data along with nodes', (done: Function) => {
+            debugger
+            var icon_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
+            expect(icon_shape.getAttribute('stroke')).toBe('#1a1a1a');
+            
+            diagram.nodes[1].expandIcon.iconColor = 'red';
+            
+            diagram.dataBind();
+            download(diagram.saveDiagram());
+            //save the diagram object in json data.
+            function download(data: string): void {
+                if (window.navigator.msSaveBlob) {
+                    let blob: any = new Blob([data], { type: 'data:text/json;charset=utf-8,' });
+                    window.navigator.msSaveOrOpenBlob(blob, 'Diagram_icon.json');
+                } else {
+                    let dataStr: string = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
+                    let a: HTMLAnchorElement = document.createElement('a');
+                    a.href = dataStr;
+                    a.download = 'Diagram_icon.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+            }
+            diagram.clear();
+            done();
+        });
+
+    });
 });

@@ -36,6 +36,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      *
      * @default Auto
      * @isEnumeration true
+     * @asptype EditMode
      */
     @Property('Auto')
     public mode: EditMode;

@@ -167,6 +167,17 @@
           margin-right: 0;
         }
       }
+      @if ($skin-name == 'Material3') {
+        & .e-list-icon {
+          margin-left: $listview-touch-icon-margin-right;
+          margin-right: $listview-rtl-icon-back-margin;
+        }
+
+        & .e-icon-back {
+          margin-left: $listview-icon-back-margin-right;
+          margin-right: $listview-rtl-icon-back-margin;
+        }
+      }
 
       .e-listview-checkbox {
         &.e-checkbox-right {
@@ -521,7 +532,7 @@
         }
       }
 
-      & .e-content {
+      & .e-list-container {
         overflow: hidden;
         position: relative;
       }

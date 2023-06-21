@@ -129,7 +129,7 @@ export class StampAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean): void {
+    public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean,  isAnnotOrderAction?: boolean): void {
         let isStampAdded: boolean = false;
         for (let p: number = 0; p < this.stampPageNumber.length; p++) {
             if (this.stampPageNumber[p] === pageNumber) {
@@ -140,7 +140,7 @@ export class StampAnnotation {
         if (isImport) {
             isStampAdded = false;
         }
-        if (stampAnnotations && !isStampAdded) {
+        if (stampAnnotations && (!isStampAdded || isAnnotOrderAction)) {
             this.stampPageNumber.push(pageNumber);
             for (let s: number = 0; s < stampAnnotations.length; s++) {
                 // eslint-disable-next-line

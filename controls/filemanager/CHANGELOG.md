@@ -2,31 +2,7 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I439193` - The data disappears in the DetailsView when dynamically setting columns in the File Manager component has been resolved.
-
-## 21.1.41 (2023-04-18)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I445512` - The issue with the `fileSelection` and `fileSelect` events argument in the File Manager component large icon view has been resolved.
-
-## 21.1.37 (2023-03-29)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I442564` - The issue with `fileOpen` event in File Manager component has been resolved.
-
-## 21.1.35 (2023-03-23)
+## 22.1.34 (2023-06-21)
 
 ### File Manager
 

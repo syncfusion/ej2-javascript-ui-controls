@@ -212,7 +212,9 @@ describe('Rating', () => {
             rating.disabled = false;
             rating.dataBind();
             expect(ratingElement.parentElement.classList.contains('e-disabled')).toEqual(false);
-
+            rating.disabled = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.classList.contains('e-disabled')).toEqual(true);
         });
 
         it('Visible', () => {
@@ -224,7 +226,9 @@ describe('Rating', () => {
             rating.visible = true;
             rating.dataBind();
             expect(ratingElement.parentElement.classList.contains('e-rating-hidden')).toEqual(false);
-
+            rating.visible = false;
+            rating.dataBind();
+            expect(ratingElement.parentElement.classList.contains('e-rating-hidden')).toEqual(true);
         });
 
         it('Read Only', () => {
@@ -236,7 +240,9 @@ describe('Rating', () => {
             rating.readOnly = false;
             rating.dataBind();
             expect(ratingElement.parentElement.classList.contains('e-rating-readonly')).toEqual(false);
-
+            rating.readOnly = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.classList.contains('e-rating-readonly')).toEqual(true);
         });
 
         it('RTL', () => {
@@ -248,7 +254,9 @@ describe('Rating', () => {
             rating.enableRtl = false;
             rating.dataBind();
             expect(ratingElement.parentElement.classList.contains('e-rtl')).toEqual(false);
-
+            rating.enableRtl = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.classList.contains('e-rtl')).toEqual(true);
         });
 
         it('Reset ', () => {
@@ -356,6 +364,9 @@ describe('Rating', () => {
             rating.enableAnimation = true;
             rating.dataBind();
             expect(ratingElement.parentElement.classList).toContain('e-rating-animation');
+            rating.enableAnimation = false;
+            rating.dataBind();
+            expect(ratingElement.parentElement.classList.contains('e-rating-animation')).toBe(false);
         });
 
         it('Custom Label template', () => {
@@ -390,6 +401,22 @@ describe('Rating', () => {
             remove(renderer);
         });
 
+        it('Label Template as HTMLElement ', () => {
+            let template = '<span class="tempContent">Hello World!</span>';
+            let tempContent = createElement("div", { id: "labelTemp", className: "tempContent", innerHTML: template });
+            document.body.appendChild(tempContent);
+            rating = new Rating({
+                showLabel: true,
+                labelTemplate: '#labelTemp'
+            });
+            rating.appendTo('#rating');
+            expect(document.querySelector(".tempContent") === null).toEqual(false);
+            rating.labelTemplate = "#labelTemp1";
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelector('.e-rating-label').innerHTML).toEqual('#labelTemp1');
+            remove(tempContent);
+        });
+
         it('Item list Aria', () => {
             rating = new Rating();
             rating.appendTo('#rating');
@@ -408,24 +435,6 @@ describe('Rating', () => {
             expect(itemList.getAttribute('aria-valuenow')).toBe('3');
         });
 
-        it('Spec coverage for isReact', () => {
-            rating = new Rating({
-                showLabel: true,
-                labelTemplate: '<span>testTemplate</span>',
-                emptyTemplate: '<span class="emptyTemplate"></span>',
-                value: 1,
-                fullTemplate: '<span class="fullTemplate"></span>'
-            });
-            rating.appendTo('#rating');
-            (rating as any).isReact = true;
-            expect(ratingElement.parentElement.querySelector('.e-rating-label') != null).toEqual(true);
-            expect(ratingElement.parentElement.querySelector('.e-rating-label').innerHTML).toEqual('<span>testTemplate</span>');
-            expect(ratingElement.parentElement.querySelectorAll('.emptyTemplate').length).toBe(4);
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-empty').length).toBe(4);
-            expect(ratingElement.parentElement.querySelectorAll('.fullTemplate').length).toBe(1);
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-full').length).toBe(1);
-
-        });
     });
 
     describe('Rating Precision', () => {
@@ -837,7 +846,6 @@ describe('Rating', () => {
         let rating: Rating;
         let ratingElement: HTMLElement;
         let mouseEventArs: any;
-        // let originalTimeout: any;
 
         beforeEach(() => {
             ratingElement = createElement('input', { id: 'rating', styles: 'display: none' });
@@ -852,8 +860,6 @@ describe('Rating', () => {
                 ctrlKey: false,
                 offset: Number
             };
-            // originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            // jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
 
         afterEach(() => {
@@ -862,7 +868,6 @@ describe('Rating', () => {
                 rating = undefined;
             }
             remove(ratingElement);
-            // jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
 
         it('Click event rating testing', () => {
@@ -1018,7 +1023,8 @@ describe('Rating', () => {
             mouseEventArs.target = liElementArray[1];
             EventHandler.trigger(liElementArray[1], "mousemove");
             (rating as any).tooltipObj.open(liElementArray[1]);
-            expect(document.body.querySelector('.e-tip-content').innerHTML).toEqual('<span>testTemplate</span>');
+            expect(document.body.querySelector('.e-rating-tooltip-content') != null).toEqual(true);
+            expect(document.body.querySelector('.e-rating-tooltip-content').innerHTML).toEqual('<span>testTemplate</span>');
         });
 
         it('Custom tooltip using cssClass', () => {
@@ -1041,6 +1047,12 @@ describe('Rating', () => {
             (rating as any).tooltipObj.open(liElementArray[1]);
             expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass")).toEqual(false);
             expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass1")).toEqual(true);
+            (rating as any).tooltipObj.close(liElementArray[1]);
+            rating.cssClass = '';
+            rating.dataBind();
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass1")).toEqual(false);
             (rating as any).tooltipObj.close(liElementArray[1]);
         });
 
@@ -1116,25 +1128,66 @@ describe('Rating', () => {
             expect(ratingElement.parentElement.querySelectorAll('.emptyTemplate').length).toBe(4);
         });
 
+        it('Spec coverage for isReact', () => {
+            rating = new Rating({
+                showLabel: true,
+                labelTemplate: '<span class="labelTemplate">testTemplate</span>',
+                emptyTemplate: '<span class="emptyTemplate"></span>',
+                value: 1,
+                fullTemplate: '<span class="fullTemplate"></span>',
+                tooltipTemplate: '<span class="tooltipTemplate">tooltipTemplate</span>'
+            });
+            rating.appendTo('#rating');
+            (rating as any).isReact = true;
+            expect(ratingElement.parentElement.querySelector('.e-rating-label') != null).toEqual(true);
+            expect(ratingElement.parentElement.querySelector('.e-rating-label').innerHTML).toEqual('<span class="labelTemplate">testTemplate</span>');
+            expect(ratingElement.parentElement.querySelectorAll('.emptyTemplate').length).toBe(4);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-empty').length).toBe(4);
+            expect(ratingElement.parentElement.querySelectorAll('.labelTemplate').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.fullTemplate').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-full').length).toBe(1);
+            (rating as any).tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'None' } };
+            let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
+            mouseEventArs.target = liElementArray[1];
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip-content') != null).toEqual(true);
+            expect(document.body.querySelector('.e-rating-tooltip-content').innerHTML).toEqual('<span class="tooltipTemplate">tooltipTemplate</span>');
+            expect(document.body.querySelectorAll('.tooltipTemplate').length).toBe(1);
+            rating.emptyTemplate = '';
+            rating.labelTemplate = '';
+            rating.tooltipTemplate = '';
+            rating.fullTemplate = '';
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.emptyTemplate').length).toBe(0);
+            expect(ratingElement.parentElement.querySelectorAll('.fullTemplate').length).toBe(0);
+            expect(ratingElement.parentElement.querySelectorAll('.labelTemplate').length).toBe(0);
+            mouseEventArs.target = liElementArray[1];
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip-content') != null).toEqual(true);
+            expect(document.body.querySelectorAll('.tooltipTemplate').length).toBe(1);
+        });
+
         describe('Rating Precision', () => {
             it('Half Precision', () => {
-            // it('Half Precision', (done) => {
                 rating = new Rating({
                     precision: PrecisionType.Half
                 });
                 rating.appendTo('#rating');
                 let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
-                // setTimeout(() => {
-                    mouseEventArs.offsetX = 10;
-                    EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                    // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                    // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
-                    mouseEventArs.offsetX = 21;
-                    EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                    expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
-                    expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
-                    // done();
-                // }, 500);
+                liElementArray[0].style.display = 'inline-flex';
+                liElementArray[0].style.width = '25px';
+                mouseEventArs.offsetX = 10;
+                EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.5');
+                mouseEventArs.offsetX = 21;
+                EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('1');
+                expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+                expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
             });
 
             it('Quarter Precision', () => {
@@ -1143,38 +1196,48 @@ describe('Rating', () => {
                 });
                 rating.appendTo('#rating');
                 let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
+                liElementArray[0].style.display = 'inline-flex';
+                liElementArray[0].style.width = '25px';
                 mouseEventArs.offsetX = 4;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.25');
                 mouseEventArs.offsetX = 9;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.5');
                 mouseEventArs.offsetX = 17;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.75');
                 mouseEventArs.offsetX = 22;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('1');
                 expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
                 expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
             });
 
-            it('Exact PrecisionType', () => {
+            it('Exact Precision', () => {
                 rating = new Rating({
                     precision: PrecisionType.Exact
                 });
                 rating.appendTo('#rating');
                 let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
+                liElementArray[0].style.display = 'inline-flex';
+                liElementArray[0].style.width = '25px';
                 mouseEventArs.offsetX = 2;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.1');
+                mouseEventArs.offsetX = 6;
+                EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.2');
                 mouseEventArs.offsetX = 8;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.3');
             });
 
             it('Exact Precision with RTL', () => {
@@ -1185,14 +1248,18 @@ describe('Rating', () => {
                 rating.appendTo('#rating');
                 expect(ratingElement.parentElement.classList).toContain('e-rtl');
                 let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
-                mouseEventArs.offsetX = 2;
+                liElementArray[0].style.display = 'inline-flex';
+                liElementArray[0].style.width = '25px';
+                mouseEventArs.offsetX = 23;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
-                mouseEventArs.offsetX = 8;
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.1');
+                liElementArray[1].style.display = 'inline-flex';
+                liElementArray[1].style.width = '25px';
+                mouseEventArs.offsetX = 19;
                 EventHandler.trigger(liElementArray[0], "mousemove", mouseEventArs);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(0);
-                // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+                EventHandler.trigger(liElementArray[0], "click", mouseEventArs);
+                expect(ratingElement.getAttribute('value')).toEqual('0.2');
             });
 
         });
@@ -1303,14 +1370,26 @@ describe('Rating', () => {
             rating = new Rating();
             rating.appendTo('#rating');
             let ulElement: any = ratingElement.parentElement.querySelector('.e-rating-item-list');
+            ulElement.style.width = '150px';
+            expect(ratingElement.getAttribute('value')).toBe('0');
             touchEvent.touches[0].clientX = 30;
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(ratingElement.getAttribute('value')).toBe('1');
+            touchEvent.touches[0].clientX = 60;
+            EventHandler.trigger(ulElement, "touchmove", touchEvent);
+            expect(ratingElement.getAttribute('value')).toBe('2');
+            touchEvent.touches[0].clientX = 90;
+            EventHandler.trigger(ulElement, "touchmove", touchEvent);
+            expect(ratingElement.getAttribute('value')).toBe('3');
+            touchEvent.touches[0].clientX = 120;
+            EventHandler.trigger(ulElement, "touchmove", touchEvent);
+            expect(ratingElement.getAttribute('value')).toBe('4');
+            touchEvent.touches[0].clientX = 150;
+            EventHandler.trigger(ulElement, "touchmove", touchEvent);
+            expect(ratingElement.getAttribute('value')).toBe('5');
             touchEvent.touches[0].clientX = 180;
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(5);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(ratingElement.getAttribute('value')).toBe('5');
         });
 
         it('Tooltip with default template', () => {
@@ -1341,12 +1420,11 @@ describe('Rating', () => {
             });
             rating.appendTo('#rating');
             let ulElement: any = ratingElement.parentElement.querySelector('.e-rating-item-list');
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(2);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
-            touchEvent.touches[0].clientX = 30;
+            ulElement.style.width = '250px';
+            expect(ratingElement.getAttribute('value')).toBe('2');
+            touchEvent.touches[0].clientX = 40;
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(ratingElement.getAttribute('value')).toBe('1');
         });
 
         it('Full Precision with minimum value', () => {
@@ -1355,12 +1433,11 @@ describe('Rating', () => {
             });
             rating.appendTo('#rating');
             let ulElement: any = ratingElement.parentElement.querySelector('.e-rating-item-list');
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(2);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            ulElement.style.width = '250px';
+            expect(ratingElement.getAttribute('value')).toBe('2');
             touchEvent.touches[0].clientX = 30;
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(2);
-            // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(ratingElement.getAttribute('value')).toBe('2');
         });
 
         it('Full Precision with RTL', () => {
@@ -1373,6 +1450,10 @@ describe('Rating', () => {
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
             // expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
             // expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            rating.enableRtl = false;
+            rating.dataBind();
+            touchEvent.touches[0].clientX = 30;
+            EventHandler.trigger(ulElement, "touchmove", touchEvent);
         });
     });
 

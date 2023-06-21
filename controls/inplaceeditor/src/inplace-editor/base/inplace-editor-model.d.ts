@@ -35,7 +35,7 @@ export interface InPlaceEditorModel extends ComponentModel{
      * @default ''
      * @blazorType string
      */
-    template?: string | HTMLElement;
+    template?: string | HTMLElement | Function;
 
     /**
      * Defines whether to allow the cross-scripting site or not.

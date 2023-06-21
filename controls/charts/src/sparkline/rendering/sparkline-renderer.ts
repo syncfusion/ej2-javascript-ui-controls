@@ -4,7 +4,7 @@
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle } from '../utils/helper';
+import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle, getSeriesColor } from '../utils/helper';
 import { measureText, renderTextElement, TextOption, Size } from '../utils/helper';
 import { PaddingModel, AxisSettingsModel, SparklineMarkerSettingsModel, SparklineFontModel } from '../model/base-model';
 import { SparklineDataLabelSettingsModel, SparklineBorderModel } from '../model/base-model';
@@ -249,8 +249,7 @@ export class SparklineRenderer {
         const stroke: string = args.border.color;
         const opacity: number = spark.opacity;
         const strokeWidth: number = args.border.width;
-        const colors: string[] = (spark.palette.length) ? spark.palette : ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
-            '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
+        const colors: string[] = (spark.palette.length) ? spark.palette : getSeriesColor(this.sparkline.theme);
         const group: Element = this.sparkline.renderer.createGroup({ id: spark.element.id + '_sparkline_g' });
         let low: number;
         let high: number;
@@ -380,14 +379,14 @@ export class SparklineRenderer {
         }
         const id: string = spark.element.id + '_sparkline_column_';
         const rectOptions: RectOption = new RectOption(id, '', args.border, spark.opacity, null);
-        const paletteLength: number = spark.palette.length;
         let temp: SparkValues;
         const len: number = points.length;
         this.negativePointIndexes = [];
+        const colors: string[] = (spark.palette.length) ? spark.palette : getSeriesColor(this.sparkline.theme);
         for (let i: number = 0; i < len; i++) {
             temp = points[i as number];
             rectOptions.id = id + i;
-            rectOptions.fill = (paletteLength) ? spark.palette[i % paletteLength] : args.fill;
+            rectOptions.fill = colors[0];
             rectOptions.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
             this.getSpecialPoint(true, temp, spark, rectOptions, i, highPos, lowPos, len);
             temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
@@ -431,11 +430,12 @@ export class SparklineRenderer {
         let temp: SparkValues;
         const len: number = points.length;
         const paletteLength: number = spark.palette.length;
+        const colors: string[] = (spark.palette.length) ? spark.palette : getSeriesColor(this.sparkline.theme);
         for (let i: number = 0; i < len; i++) {
             temp = points[i as number];
             options.id = id + i;
             options.fill = (paletteLength) ? spark.palette[i % paletteLength] : ((temp.yVal === this.axisValue) ?
-                (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill :
+            (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill || colors[i % colors.length] :
                     (spark.negativePointColor || '#e20f07')));
             options.stroke = (args.border.color) ? (args.border.color) : options.fill;
             options.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
@@ -573,10 +573,9 @@ export class SparklineRenderer {
         const lowPos: number = Math.max.apply(null, pointsYPos);
         const space: number = 1;
         const padding: number = (dataLabel.fill !== 'transparent' || dataLabel.border.width) ? 2 : 0;
-        let size: Size = measureText('sparkline_measure_text', labelStyle);
+        let size: Size = measureText('sparkline_measure_text', labelStyle, this.sparkline.sparkTheme.dataLabelFont);
         const rectOptions: RectOption = new RectOption('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
         let edgeLabelOption: { x: number, render: boolean };
-        labelStyle.fontFamily = spark.sparkTheme.labelFontFamily || labelStyle.fontFamily;
         for (let i: number = 0, length: number = points.length; i < length; i++) {
             temp = points[i as number];
             option.id = textId + i;
@@ -592,7 +591,7 @@ export class SparklineRenderer {
                 x: option.x, y: option.y, text: option.text, color: color
             };
             this.sparkline.trigger('dataLabelRendering', labelArgs, () => {
-                size = measureText(labelArgs.text, labelStyle);
+                size = measureText(labelArgs.text, labelStyle, this.sparkline.sparkTheme.dataLabelFont);
                 option.text = labelArgs.text;
                 let renderLabel: boolean = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
                 renderLabel = this.getLabelVisible(renderLabel, temp, i, dataLabel, length, highPos, lowPos);
@@ -609,7 +608,7 @@ export class SparklineRenderer {
                         size.height + (padding * 2));
                     g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
                     drawRectangle(spark, rectOptions, g);
-                    renderTextElement(option, labelStyle, labelArgs.color, g);
+                    renderTextElement(option, labelStyle, labelArgs.color, g, this.sparkline.sparkTheme.dataLabelFont);
                     group.appendChild(g);
                 }
             });

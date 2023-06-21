@@ -478,9 +478,9 @@ describe('Chart Control', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('d').split(' ')[2] == '593.5' || svg.getAttribute('d').split(' ')[2] == '593.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '593.5'|| svg.getAttribute('d').split(' ')[2] == '593.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '339.125' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '339.625' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1182,7 +1182,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 126);
                 let yValue: number = chartObj.visibleSeries[0].points[3].yValue;
-                expect(yValue == 75.49 || yValue == 74.96).toBe(true);
+                expect(yValue == 75.18 || yValue == 74.96).toBe(true);
                 chartObj.loaded = null;
                 done();
             };

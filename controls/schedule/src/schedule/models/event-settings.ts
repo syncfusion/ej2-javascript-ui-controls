@@ -16,9 +16,10 @@ export class EventSettings extends ChildProperty<EventSettings> {
      * {% codeBlock src="schedule/event-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * With this property, the event data will be bound to Schedule.
@@ -85,9 +86,10 @@ export class EventSettings extends ChildProperty<EventSettings> {
      * {% codeBlock src="schedule/tooltip-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public tooltipTemplate: string;
+    public tooltipTemplate: string | Function;
 
     /**
      * Defines the resource name, to decides the color of which particular resource level is to be applied on appointments, when

@@ -450,10 +450,10 @@ export class Scroll implements IAction {
             () => {
                 const args: NotifyArgs = { cancel: false };
                 this.parent.notify(checkScrollReset, args);
+                if (sHeight < clientHeight) {
+                    this.setLastRowCell();
+                }
                 if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
-                    if (sHeight < clientHeight) {
-                        this.setLastRowCell();
-                    }
                     if (!args.cancel) {
                         if ((this.parent.frozenRows > 0 || this.parent.isFrozenGrid()) && this.header.querySelector('.' + literals.movableHeader)) {
                             this.header.querySelector('.' + literals.movableHeader).scrollLeft = this.previousValues.left;

@@ -169,7 +169,7 @@ export class Selection extends BaseSelection {
      */
     public selectDataIndex(chart: Chart, indexes: Index[]): void {
         for (const index of indexes) {
-            this.performSelection(index, chart, this.getElementByIndex(chart, index)[0]);
+            this.performSelection(index, chart, this.getElementByIndex(chart, index, '', this.series[index.series].marker.visible)[0]);
         }
     }
 
@@ -351,11 +351,11 @@ export class Selection extends BaseSelection {
      */
     public performSelection(index: Index, chart: Chart, element?: Element): void {
         this.isSeriesMode = this.currentMode === 'Series';
-        if (chart.series[index.series].type === 'BoxAndWhisker' && element &&
+        if (chart.visibleSeries[index.series].type === 'BoxAndWhisker' && element &&
             element.id === chart.element.id + '_Series_' + index.series + '_Point_' + index.point + '_BoxPath') {
             element = <Element>element.parentNode;
         }
-        if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') && element &&
+        if (chart.visibleSeries[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') && element &&
             (element.id === this.chart.element.id + '_Series_' + index.series)) {
             const className: string = this.generateStyle(chart.series[index.series]);
             const selectionEle: NodeListOf<HTMLElement> = document.querySelectorAll('.' + className);
@@ -493,7 +493,7 @@ export class Selection extends BaseSelection {
         }
         const indexValue : number = (this.rangeColorMappingEnabled()) ? 0 : index.series;
         if (!isNullOrUndefined(selectedElements[0])) {
-            if ((<Series>chart.series[indexValue as number]).isRectSeries) {
+            if ((<Series>chart.visibleSeries[indexValue as number]).isRectSeries) {
                 if (selectedElements[0].id) {
                     if (document.getElementById(selectedElements[0].id + '_Symbol')) {
                         selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
@@ -602,7 +602,7 @@ export class Selection extends BaseSelection {
      * @private
      */
     public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
-        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? element.childNodes || [element] : element.childNodes || element);
+        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? element.childNodes ||  [element] : element.childNodes || element);
         if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             children = (element.childNodes as any || element);
@@ -749,7 +749,7 @@ export class Selection extends BaseSelection {
      * @private
      */
     public getSelectionClass(id: string): string {
-        return this.generateStyle((this.control as Chart).series[this.indexFinder(id).series]);
+        return this.generateStyle((this.control as Chart).visibleSeries[this.indexFinder(id).series]);
     }
     /**
      *  Method to remove styles
@@ -1586,10 +1586,10 @@ export class Selection extends BaseSelection {
     public removeLegendHighlightStyles(): void {
         this.chart.highlightModule.highlightDataIndexes = [];
         let elementCollection: HTMLCollection;
-        for (let i: number = 0; i < this.chart.series.length; i++) {
-            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
+        for (let i: number = 0; i < this.chart.visibleSeries.length; i++) {
+            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.visibleSeries[i as number]));
             if (this.selectedDataIndexes.length === 0) {
-                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.visibleSeries[i as number]));
                 while (elementCollection.length > 0) {
                     const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
@@ -1604,7 +1604,7 @@ export class Selection extends BaseSelection {
                     }
                 }
             } else {
-                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.visibleSeries[i as number]));
                 while (elementCollection.length > 0) {
                     const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {

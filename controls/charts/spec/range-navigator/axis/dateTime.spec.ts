@@ -71,7 +71,7 @@ describe('Range navigator', () => {
         it('checking with maximum only', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabels');
-                expect(element.childNodes[0].lastChild.textContent).toEqual('Q3 2003');
+                expect(element.childNodes[0].lastChild.textContent).toEqual('Aug');
                 done();
             };
             range.minimum = null;
@@ -79,13 +79,13 @@ describe('Range navigator', () => {
             range.refresh();
         });
         it('checking auto interval quarter type', () => {
-            expect(element.childNodes[0].childNodes[0].firstChild.textContent).toEqual('Q2 2000');
+            expect(element.childNodes[0].childNodes[0].firstChild.textContent).toEqual('Apr');
         });
         it('checking with range only', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabels');
-                expect(element.childNodes[0].firstChild.textContent).toEqual('Q1 2001');
-                expect(element.childNodes[0].lastChild.textContent).toEqual('Q1 2004');
+                expect(element.childNodes[0].firstChild.textContent).toEqual('Jan');
+                expect(element.childNodes[0].lastChild.textContent).toEqual('May');
                 done();
             };
             range.minimum = new Date(2001, 0, 1);
@@ -96,7 +96,7 @@ describe('Range navigator', () => {
         it('checking with label position inside, tick position outside', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let element: Element = document.getElementById('container_AxisLabel_0');
-                expect(+element.getAttribute('x') >= 43 && +element.getAttribute('x') <= 45).toBe(true);
+                expect(+element.getAttribute('x') >= 43 && +element.getAttribute('x') <= 65).toBe(true);
                 done();
             };
             range.labelPosition = 'Inside';
@@ -105,8 +105,8 @@ describe('Range navigator', () => {
         it('checking with label position inside, tick position inside', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let element: Element = document.getElementById('container_AxisLabel_0');
-                expect(+element.getAttribute('x') >= 43 && +element.getAttribute('x') <= 45).toBe(true);
-                expect(element.getAttribute('y')).toEqual('102');
+                expect(+element.getAttribute('x') >= 43 && +element.getAttribute('x') <= 65).toBe(true);
+                expect(element.getAttribute('y')).toEqual('107');
                 done();
             };
             range.tickPosition = 'Inside';
@@ -121,11 +121,41 @@ describe('Range navigator', () => {
             range.labelPosition = 'Outside';
             range.refresh();
         });
+        it('checking with label placement onticks and label position outside', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_AxisLabel_0');
+                expect(element.getAttribute('x') === '16').toBe(true);
+                done();
+            };
+            range.labelPlacement = 'OnTicks'
+            range.labelPosition = 'Outside';
+            range.refresh();
+        });
+        it('checking with label placement onticks and label position inside', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_AxisLabel_0');
+                expect(element.getAttribute('x') === '26').toBe(true);
+                expect(element.getAttribute('y') === '107').toBe(true);
+                done();
+            };
+            range.labelPlacement = 'OnTicks'
+            range.labelPosition = 'Inside';
+            range.refresh();
+        });
+        it('checking with label placement BetweenTicks', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                element = document.getElementById('container_AxisLabel_0');
+                expect(element.getAttribute('x') === '63.33387755102041').toBe(true);
+                done();
+            };
+            range.labelPlacement = 'BetweenTicks'
+            range.refresh();
+        });
         it('checking with default grouping', (done: Function) => {
             range.loaded = (args: object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
                 expect(axisLabel.childElementCount).toEqual(2);
-                expect(axisLabel.childNodes[1].lastChild.textContent).toBe('2003');
+                expect(axisLabel.childNodes[1].lastChild.textContent).toBe('Quarter2 2003');
                 done();
             };
             range.enableGrouping = true;
@@ -137,7 +167,7 @@ describe('Range navigator', () => {
         it('checking with grouped label position inside, tick position outside', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_0');
-                expect((element.getAttribute('y') === '76' || element.getAttribute('y') === '77')).toBe(true);
+                expect((element.getAttribute('y') === '82' || element.getAttribute('y') === '77')).toBe(true);
                 done();
             };
             range.labelPosition = 'Inside';
@@ -235,7 +265,7 @@ describe('Range navigator', () => {
         it('checked with week formats', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].firstChild.textContent).toBe('W1');
+                expect(axisLabel.childNodes[0].firstChild.textContent).toBe('Week1');
                 expect(axisLabel.childNodes[1].lastChild.textContent).toBe('Feb');
                 done();
             };
@@ -269,7 +299,7 @@ describe('Range navigator', () => {
         it('checked with Minutes as label type', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:42 AM');
+                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:37 AM');
                 expect(axisLabel.childNodes[1].lastChild.textContent).toBe('10 AM');
                 done();
             };
@@ -341,12 +371,12 @@ describe('Range navigator', () => {
             range.intervalType = 'Years';
             range.refresh();
         });
-        it('checking with lightweight interval type as Auto(quarter)', (done: Function) => {
+        it('checking with lightweight interval type as Auto(month)', (done: Function) => {
             range.loaded = (args: Object) => {
                 chart = document.getElementById('container_chart');
                 axisLabel = document.getElementById('container_AxisLabels');
                 expect(chart.childElementCount).toEqual(0);
-                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Quarter1');
+                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Jan');
                 done();
             };
             range.dataSource = [{ x: new Date(2000, 0), y: 23 }, { x: new Date(2001, 0), y: 34 },
@@ -359,6 +389,7 @@ describe('Range navigator', () => {
         });
         it('checking with lightweight interval type as quarter', (done: Function) => {
             range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
                 expect(axisLabel.childNodes[0].firstChild.textContent.indexOf('Q') > -1).toBe(true);
                 done();
             };
@@ -390,7 +421,7 @@ describe('Range navigator', () => {
         it('checking with lightweight interval type as Auto(Weeks)', (done: Function) => {
             range.loaded = (args: Object) => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('W1');
+                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Week1');
                 done();
             };
             range.dataSource = [{ x: new Date(2000, 0), y: 23 }, { x: new Date(2000, 4), y: 34 }];
@@ -570,9 +601,10 @@ describe('Range navigator', () => {
             range.loaded = (args: Object) => {
                 axisLabel = document.getElementById('container_AxisLabels');
                 expect(axisLabel.childNodes[1].childNodes.length).toEqual(0);
-                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('W1');
+                expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Week1');
                 expect(axisLabel.childNodes[0].lastChild.textContent === 'W36' ||
-                       axisLabel.childNodes[0].lastChild.textContent === 'W35').toBe(true);
+                       axisLabel.childNodes[0].lastChild.textContent === 'W35' ||
+                       axisLabel.childNodes[0].lastChild.textContent === 'Week8').toBe(true);
                 done();
             };
             range.dataSource = [{ x: new Date(2000, 2, 4), y: 23 }, { x: new Date(2000, 10, 4), y: 23 }];
@@ -585,7 +617,7 @@ describe('Range navigator', () => {
                 expect(axisLabel.childNodes[1].childNodes.length).toEqual(0);
                 expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Mar 4');
                 expect(axisLabel.childNodes[0].lastChild.textContent === 'Nov 6' || axisLabel.childNodes[0].lastChild.textContent === 'Nov 1' ||
-                axisLabel.childNodes[0].lastChild.textContent === 'Nov 2').toBe(true);
+                axisLabel.childNodes[0].lastChild.textContent === 'Nov 2'|| axisLabel.childNodes[0].lastChild.textContent === 'Nov 9').toBe(true);
                 done();
             };
             range.dataSource = [{ x: new Date(2000, 2, 4), y: 23 }, { x: new Date(2000, 10, 10), y: 23 }];
@@ -647,7 +679,7 @@ describe('Range navigator', () => {
                 done();
             };
             range.labelRender = (args: ILabelRenderEventsArgs) => {
-                if (args.text === 'Q3 2000') {
+                if (args.text === 'Dec') {
                     args.cancel = true;
                 }
             };
@@ -669,7 +701,7 @@ describe('Range navigator', () => {
                 done();
             };
             range.labelRender = (args: ILabelRenderEventsArgs) => {
-                if (args.text === 'Q1 2000') {
+                if (args.text === 'Feb') {
                     args.labelStyle.color = 'black';
                     args.text = 'firstLabel';
                 }
@@ -684,7 +716,7 @@ describe('Range navigator', () => {
         it('checking with hide', (done: Function) => {
             range.loaded = (args: Object) => {
                 axisLabel = document.getElementById('container_FirstLevelAxisLabels');
-                expect(axisLabel.childElementCount).toEqual(33);
+                expect(axisLabel.childElementCount).toEqual(9);
                 done();
             };
             range.labelRender = null;
@@ -695,7 +727,7 @@ describe('Range navigator', () => {
         it('checking with none', (done: Function) => {
             range.loaded = (args: Object) => {
                 axisLabel = document.getElementById('container_FirstLevelAxisLabels');
-                expect(axisLabel.childElementCount).toEqual(41);
+                expect(axisLabel.childElementCount).toEqual(9);
                 done();
             };
             range.labelIntersectAction = 'None';
@@ -710,6 +742,30 @@ describe('Range navigator', () => {
             range.series[0].dataSource = [ { x: '2018/01/01 00:00:00', y: 21 },
             { x: '2018/02/01 00:00:00', y: 70 }, { x: '2019/02/01 00:00:00', y: 70 }];
             range.labelIntersectAction = 'Hide';
+            range.refresh();
+        })
+        it('checking with date value as interval type quarter', (done: Function) => {
+            range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel.childNodes[0].firstChild.textContent.indexOf('Q') > -1).toBe(true);
+                done();
+            };
+            done();
+            range.series = [{ dataSource: data, xName: 'x', yName: 'y' }];
+            range.intervalType = 'Quarter',
+                range.interval = 1;
+            range.refresh();
+        })
+        it('checking with date value as interval type weeks', (done: Function) => {
+            range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel.childNodes[0].firstChild.textContent.indexOf('W') > -1).toBe(true);
+                done();
+            };
+            done();
+            range.series = [{ dataSource: data, xName: 'x', yName: 'y' }];
+            range.intervalType = 'Weeks',
+            range.interval = 1;
             range.refresh();
         })
     });

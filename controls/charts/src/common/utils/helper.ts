@@ -114,7 +114,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     // for line break label
     if (typeof textCollection !== 'string' && textCollection.length > 1) {
         for (let i: number = 1, len: number = textCollection.length; i < len; i++) {
-            height = (measureText(textCollection[i as number], font).height);
+            height = (measureText(textCollection[i as number], font, chart.themeStyle.axisLabelFont).height);
             dy = (options.y) + ((i * height));
             label = textCollection[i as number];
             tspanElement = (renderer as SvgRenderer).createTSpan(
@@ -132,6 +132,14 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     remove(htmlObject);
     if (!chart.delayRedraw && !chart.redraw) {
         remove(chart.svgObject);
+    }
+    if (chart.enableCanvas) {
+        const textWidth = measureText(text, font).width;
+        const textHeight = measureText(text, font).height;
+        const angleInRadians = (angle * Math.PI) / 180;// Convert the rotation angle to radians
+        const rotatedTextWidth = Math.abs(Math.cos(angleInRadians) * textWidth) + Math.abs(Math.sin(angleInRadians) * textHeight);
+        const rotatedTextHeight = Math.abs(Math.sin(angleInRadians) * textWidth) + Math.abs(Math.cos(angleInRadians) * textHeight);
+        return new Size(rotatedTextWidth, rotatedTextHeight);
     }
     return new Size((box.right - box.left), (box.bottom - box.top));
 }
@@ -171,7 +179,7 @@ export function showTooltip(
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
-        tooltip.innerText = text;
+        tooltip.innerText = text; 
         element.appendChild(tooltip);
         const left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
         if (left < 0) {
@@ -510,7 +518,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     const scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
         ? axis.scrollBarHeight : 0;
     for (let i: number = 0; i < 2; i++) {
-        size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle);
+        size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle, chart.themeStyle.axisLabelFont);
         if (isVertical) {
             arrowLocation = i ? new ChartLocation(rect.x - scrollBarHeight, rect.y + rx) :
                 new ChartLocation(axis.rect.x - scrollBarHeight, (rect.y + rect.height - rx));
@@ -558,8 +566,8 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
             chart.renderer,
             new TextOption(
                 chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel),
-            { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' },
-            chart.themeStyle.crosshairLabel, parent
+            { color: chart.themeStyle.crosshairLabelFont.color, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' },
+            chart.themeStyle.crosshairLabelFont.color, parent, null, null, null, null, null, null, null, null, null, null, chart.themeStyle.crosshairLabelFont
         );
     }
 
@@ -874,6 +882,8 @@ export function pathAnimation(
                 endPath = endDirections[index as number] ? endDirections[index as number].split(' ') : startPath;
                 if (startPath[0] === 'Z') {
                     currentDireciton += 'Z' + ' ';
+                } else if (startPath[0] === '') {
+                    currentDireciton = '';
                 } else {
                     currentDireciton += startPath[0] + ' ' +
                         linear(args.timeStamp, +startPath[1], (+endPath[1] - +startPath[1]), args.duration) + ' ' +
@@ -943,8 +953,8 @@ export function triggerLabelRender(
     if (!argsData.cancel) {
         const isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
         const text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
-            lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) :
-            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle)) : argsData.text;
+            lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.themeStyle.axisLabelFont) :
+            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.themeStyle.axisLabelFont)) : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
     }
 }
@@ -1045,11 +1055,16 @@ export function calculateShapes(
         functionName = 'Ellipse';
         merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': lx, 'cy': ly });
         break;
-    case 'Cross':
+    case 'Plus':
         dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
                 (ly + (-height / 2));
-        merge(options, { 'd': dir, stroke: options.fill });
+        merge(options, { 'd': dir });
+        break;
+    case 'Cross':
+        dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2))
+        merge(options, { 'd': dir });
         break;
     case 'Multiply':
         dir = 'M ' + (lx - sizeBullet) + ' ' + (ly - sizeBullet) + ' L ' +
@@ -1163,10 +1178,10 @@ export function getElement(id: string): Element {
     return document.getElementById(id);
 }
 /** @private */
-export function getTemplateFunction(template: string): Function {
+export function getTemplateFunction(template: string | Function): Function {
     let templateFn: Function = null;
     try {
-        if (document.querySelectorAll(template).length) {
+        if (typeof template !== 'function' && document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
         } else {
             templateFn = templateComplier(template);
@@ -1208,7 +1223,7 @@ export function chartReactTemplate(
 }
 /** @private */
 export function createTemplate(
-    childElement: HTMLElement, pointIndex: number, content: string, chart: Chart | AccumulationChart | RangeNavigator,
+    childElement: HTMLElement, pointIndex: number, content: string | Function, chart: Chart | AccumulationChart | RangeNavigator,
     point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
     argsData?: IAccTextRenderEventArgs, isTemplate?: boolean, points?: AccPoints[], datalabelGroup?: Element, id?: string,
     dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
@@ -1687,14 +1702,14 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
     return { renderOption: options };
 }
 /** @private */
-export function textTrim(maxWidth: number, text: string, font: FontModel): string {
+export function textTrim(maxWidth: number, text: string, font: FontModel, themeFontStyle?: FontModel): string {
     let label: string = text;
-    let size: number = measureText(text, font).width;
+    let size: number = measureText(text, font, themeFontStyle).width;
     if (size > maxWidth) {
         const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
-            size = measureText(label, font).width;
+            size = measureText(label, font, themeFontStyle).width;
             if (size <= maxWidth) {
                 return label;
             }
@@ -1703,17 +1718,17 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     return label;
 }
 /** @private */
-export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel): string[] {
+export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel, themeFontStyle?: FontModel): string[] {
     const labelCollection: string[] = [];
     const breakLabels: string[] = text.split('<br>');
     for (let i: number = 0; i < breakLabels.length; i++) {
         text = breakLabels[i as number];
-        let size: number = measureText(text, font).width;
+        let size: number = measureText(text, font, themeFontStyle).width;
         if (size > maxWidth) {
             const textLength: number = text.length;
             for (let i: number = textLength - 1; i >= 0; --i) {
                 text = text.substring(0, i) + '...';
-                size = measureText(text, font).width;
+                size = measureText(text, font, themeFontStyle).width;
                 if (size <= maxWidth) {
                     labelCollection.push(text);
                     break;
@@ -1783,7 +1798,7 @@ export function textElement(
     renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
     forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
-    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean
+    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean, isDataLabelWrap?: boolean, themeFontStyle?: FontModel
 ): Element {
     let renderOptions: Object = {};
     let tspanElement: Element;
@@ -1796,9 +1811,9 @@ export function textElement(
     let maxWidth: number = 0;
     if (option.text.length > 1 && isDataLabelWrap) {
         for (let i: number = 0, len: number = option.text.length; i < len; i++) {
-            maxWidth = Math.max(maxWidth, measureText(option.text[i as number], font).width);
+            maxWidth = Math.max(maxWidth, measureText(option.text[i as number], font, themeFontStyle).width);
         }
-        width = measureText(option.text[0], font).width;
+        width = measureText(option.text[0], font, themeFontStyle).width;
     }
     dx = (option.text.length > 1 && isDataLabelWrap) ? (option.x + maxWidth / 2 - width / 2) : option.x;
     renderOptions = {
@@ -1808,7 +1823,7 @@ export function textElement(
         'fill': color ? color : 'black',
         'font-size': font.size,
         'font-style': font.fontStyle,
-        'font-family': font.fontFamily,
+        'font-family': font.fontFamily || themeFontStyle.fontFamily,
         'font-weight': font.fontWeight,
         'text-anchor': option.anchor,
         'labelRotation': option.labelRotation,
@@ -1820,16 +1835,10 @@ export function textElement(
     const transX: number = seriesClipRect ? seriesClipRect.x : 0;
     const transY: number = seriesClipRect ? seriesClipRect.y : 0;
     const htmlObject: HTMLElement = renderer.createText(renderOptions, text, transX, transY) as HTMLElement;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.color = font.color;
-    htmlObject.style.textAnchor = option.anchor;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
-            height = (measureText(option.text[i as number], font).height);
-            width = measureText(option.text[i as number], font).width;
+            height = (measureText(option.text[i as number], font, themeFontStyle).height);
+            width = measureText(option.text[i as number], font, themeFontStyle).width;
             dy = (option.y) + ((isMinus) ? -(i * height) : (i * height));
             dx = isDataLabelWrap ? (option.x + maxWidth / 2 - width / 2) : option.x;
             label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i as number];
@@ -1875,7 +1884,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         const periodHeight: number = range.periodSelectorSettings.periods.length ?
             range.periodSelectorSettings.height : 0;
         marginHeight = range.margin.top + range.margin.bottom + tooltipSpace;
-        const labelSize: number = measureText('tempString', range.labelStyle).height;
+        const labelSize: number = measureText('tempString', range.labelStyle, range.themeStyle.axisLabelFont).height;
         const labelPadding: number = 15;
         height = (chart.series.length ? (Browser.isDevice ? 80 : 120) : ((range.enableGrouping ? (40 + labelPadding + labelSize) : 40)
             + marginHeight)) + periodHeight;
@@ -1941,14 +1950,14 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): vo
  * @param {FontModel} style style of the title
  * @param {number} width width of the title
  */
-export function getTitle(title: string, style: FontModel, width: number): string[] {
+export function getTitle(title: string, style: FontModel, width: number, themeFontStyle?: FontModel): string[] {
     let titleCollection: string[] = [];
     switch (style.textOverflow) {
     case 'Wrap':
-        titleCollection = textWrap(title, width, style);
+        titleCollection = textWrap(title, width, style, null, null, themeFontStyle);
         break;
     case 'Trim':
-        titleCollection.push(textTrim(width, title, style));
+        titleCollection.push(textTrim(width, title, style, themeFontStyle));
         break;
     default:
         titleCollection.push(title);
@@ -1975,9 +1984,9 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
 /**
  * Method to find new text and element size based on textOverflow.
  */
-export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, wrapAnyWhere ?: boolean, clip ?: boolean): string[] {
+export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, wrapAnyWhere ?: boolean, clip ?: boolean, themeFontStyle?: FontModel): string[] {
     if (wrapAnyWhere) {
-        return (textWrapAnyWhere(currentLabel, maximumWidth, font));
+        return (textWrapAnyWhere(currentLabel, maximumWidth, font, themeFontStyle));
     }
     else {
         const textCollection: string[] = currentLabel.split(' ');
@@ -1986,19 +1995,19 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
         let text: string;
         for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
             text = textCollection[i as number];
-            if (measureText(label.concat(label === '' ? '' : ' ' + text), font).width < maximumWidth) {
+            if (measureText(label.concat(label === '' ? '' : ' ' + text), font, themeFontStyle).width < maximumWidth) {
                 label = label.concat((label === '' ? '' : ' ') + text);
             } else {
                 if (label !== '') {
-                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font));
+                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, themeFontStyle));
                     label = text;
                 } else {
-                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font));
+                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font, themeFontStyle));
                     text = '';
                 }
             }
             if (label && i === len - 1) {
-                labelCollection.push(clip ? label : textTrim(maximumWidth, label, font));
+                labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, themeFontStyle));
             }
         }
         return labelCollection;
@@ -2007,8 +2016,8 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
 /**
  * Method to find new text and element size based on textWrap.
  */
-export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel) : string[] {
-    let size : number = measureText(currentLabel, font).width;
+export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel, themeFontStyle?: FontModel) : string[] {
+    let size : number = measureText(currentLabel, font,  themeFontStyle).width;
     const labelCollection: string[] = [];
     if (size > maximumWidth) {
         let label : string = '';
@@ -2016,7 +2025,7 @@ export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, fon
         let labelIndex : number = 1;
         while (labelIndex < currentLabel.length) {
             label = currentLabel.substring(startIndex, labelIndex);
-            size = measureText(label, font).width;
+            size = measureText(label, font, themeFontStyle).width;
             if (size < maximumWidth) {
                 labelIndex ++;
             }

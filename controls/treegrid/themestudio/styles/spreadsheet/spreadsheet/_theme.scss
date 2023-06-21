@@ -8,7 +8,7 @@
       border-left-color: $find-popup-border-color;
       border-right-color: $find-popup-border-color;
       border-top-color: $find-popup-border-top-color;
-      box-shadow: none;
+      box-shadow: $find-popup-box-shadow;
     }
 
     & .e-find-dlg .e-header {
@@ -17,6 +17,133 @@
 
     & .e-scrollbar {
       background-color: inherit;
+    }
+
+    & .e-filter-icon {
+      @if $sheet-skin == 'Material3' {
+        color: $cell-color;
+      }
+    }
+
+    & .e-spreadsheet-function-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-category-content {
+          @if $sheet-skin == 'Material3' {
+            color: $spreadsheet-label-font-color;
+          }
+        }
+        & .e-description-content {
+          @if $sheet-skin == 'Material3' {
+            color: $spreadsheet-label-font-color;
+          }
+        }
+      }
+    }
+
+    & .e-protect-dlg.e-dialog {
+      & .e-sheet-password-content,
+      & .e-protect-content {
+        @if $sheet-skin == 'Material3' {
+          color: $spreadsheet-label-font-color;
+        }
+      }
+    }
+
+    & .e-reenterpwd-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-reenterpwd-alert-span {
+          color: $dlg-error-color;
+        }
+
+        & .e-reenterpwd-content {
+          & .e-header {
+            @if $sheet-skin == 'Material3' {
+              color: $spreadsheet-label-font-color;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-unprotectworksheet-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-unprotectsheetpwd-alert-span {
+          color: $dlg-error-color;
+        }
+
+        & .e-unprotectsheetpwd-content {
+          & .e-header {
+            @if $sheet-skin == 'Material3' {
+              color: $spreadsheet-label-font-color;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-protectworkbook-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-pwd-alert-span {
+          color: $dlg-error-color;
+        }
+
+        & .e-password-content {
+          & .e-header {
+            @if $sheet-skin == 'Material3' {
+              color: $spreadsheet-label-font-color;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-unprotectworkbook-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-unprotectpwd-alert-span {
+          color: $dlg-error-color;
+        }
+
+        & .e-unprotectpwd-content {
+          & .e-header {
+            @if $sheet-skin == 'Material3' {
+              color: $spreadsheet-label-font-color;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-datavalidation-dlg {
+      & .e-validation-dlg {
+        @if $skin-name == 'Material3' {
+          & .e-header {
+            color: $spreadsheet-label-font-color;
+          }
+        }
+      }
+    }
+
+    & .e-dlg-content .e-custom-dialog .e-custom-sample,
+    & .e-conditionalformatting-dlg .e-dlg-content .e-header {
+      @if $skin-name == 'Material3' {
+        color: $spreadsheet-label-font-color;
+      }
+    }
+
+    & .e-sort-dialog {
+      & .e-sort-listwrapper .text {
+        @if $skin-name == 'Material3' {
+          color: $spreadsheet-label-font-color;
+        }
+      }
+    }
+
+    & .e-find-dlg.e-dialog {
+      & p.e-header {
+        @if $skin-name == 'Material3' {
+          color: $spreadsheet-label-font-color;
+        }
+      }
     }
 
     & .e-sheet-tab-panel {
@@ -56,7 +183,9 @@
           }
 
           & .e-indicator {
-            background: $sheet-tab-indicator-color;
+            @if $sheet-skin != 'material-dark' {
+              background: $sheet-tab-indicator-color;
+            }
           }
         }
 
@@ -88,7 +217,7 @@
           color: $agg-clr;
         }
 
-        @if $skin-name == 'material' or $skin-name == 'bootstrap5' {
+        @if $skin-name == 'material' or $skin-name == 'bootstrap5' or $skin-name == 'material-dark' {
           & .e-btn-icon {
             color: $sheet-tab-btn-icon-color;
           }
@@ -100,14 +229,27 @@
               color: $btn-color;
             }
           }
+          @if $skin-name == 'Material3' {
+            & .e-btn-icon {
+              color: $btn-color;
+              border-radius: 8px;
+            }
+          }
         }
 
         &:disabled {
-          @if $skin-name == 'bootstrap5' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
             & .e-btn-icon {
               color: $btn-disabled-color;
             }
           }
+        }
+      }
+
+      & .e-btn.e-flat.e-active {
+        @if $skin-name == 'Material3' {
+          border-radius: 8px;
+          background: $sheet-tab-button-active-bg-color;
         }
       }
 
@@ -126,17 +268,24 @@
     }
 
     & .e-dragfill-ddb {
-      box-shadow: none;
-
-      @if $skin-name != 'highcontrast' and $skin-name != 'bootstrap5' {
-        &:focus {
-          background: $hdr-hover-bg-color;
-        }
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+        background: $hdr-hover-bg-color;
+        border-radius: 4px;
+        padding: 8px 12px;
       }
-
-      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        &:focus {
-          background: $tbar-focus-bg;
+      @else {
+        box-shadow: none;
+        @if $skin-name != 'highcontrast' and $skin-name != 'bootstrap5' {
+          &:focus {
+            background: $hdr-hover-bg-color;
+          }
+        }
+  
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
+          &:focus {
+            background: $tbar-focus-bg;
+          }
         }
       }
     }
@@ -156,6 +305,10 @@
       &:hover:not(.e-active) {
         background: $tbar-hover-bg;
         border-color: $spreadsheet-ribbon-item-hover-border-color;
+
+        @if $skin-name == 'Material3' {
+          border-radius: 4px;
+        }
 
         @if $skin-name == 'bootstrap4' {
           color: $tbar-hover-font;
@@ -180,6 +333,9 @@
         @if $skin-name != 'highcontrast' {
           background: $tbar-focus-bg;
           border-color: $spreadsheet-ribbon-item-active-border-color;
+          @if $skin-name == 'Material3' {
+            border-radius: 4px;
+          }
         }
       }
 
@@ -212,15 +368,43 @@
     }
 
     & .e-ribbon .e-toolbar .e-btn {
+      &:not(.e-tbar-btn) {
+        &:focus.e-active {
+          @if $skin-name == 'Material3' {
+            background: $spreadsheet-ribbon-item-active-background-color;
+            border-color: $spreadsheet-ribbon-item-active-border-color;
+            border-radius: 4px;
+          }
+        }
+        &:focus-visible.e-active {
+          @if $skin-name == 'Material3' {
+            box-shadow: $spreadsheet-ribbon-item-focus-shadow;
+          }
+        }
+        &:focus:not(.e-active) {
+          @if $skin-name == 'Material3' {
+            border-radius: 4px;
+          }
+        }
+      }
       &:not(:focus):not(.e-tbar-btn) {
-        background-color: transparent;
+        @if $skin-name == 'Material3' {
+          background: transparent;
+        }
         border-color: transparent;
         box-shadow: $tbar-btn-box-shadow;
-        color: $tbar-default-font;
+        @if $skin-name != 'Material3' {
+          background-color: transparent;
+          color: $tbar-default-font;
+        }
 
         &:hover:not(.e-active) {
           background: $tbar-hover-bg;
           border-color: $spreadsheet-ribbon-item-hover-border-color;
+
+          @if $skin-name == 'Material3' {
+            border-radius: 4px;
+          }
 
           @if $skin-name == 'bootstrap5' {
             color: $tbar-active-icon-color;
@@ -243,8 +427,11 @@
 
         &.e-active {
           @if $skin-name != 'highcontrast' {
-            background: $tbar-focus-bg;
+            background: $spreadsheet-ribbon-item-active-background-color;
             border-color: $spreadsheet-ribbon-item-active-border-color;
+            @if $skin-name == 'Material3' {
+              border-radius: 4px;
+            }
           }
 
           @if $skin-name == 'bootstrap5' {
@@ -253,6 +440,14 @@
 
           @if $skin-name == 'bootstrap4' {
             color: $tbar-hover-font;
+          }
+        }
+
+        &:hover.e-active {
+          @if $skin-name == 'Material3' {
+            background: $spreadsheet-ribbon-item-active-background-color;
+            border-color: $spreadsheet-ribbon-item-active-border-color;
+            border-radius: 4px;
           }
         }
       }
@@ -335,7 +530,20 @@
     & .e-row-header .e-header-cell,
     & .e-column-header .e-header-cell,
     & .e-selectall-container .e-header-cell {
-      background-color: $header-cell-bg-color;
+      @if $skin-name == 'Material3' {
+        background: $header-cell-bg-color;
+      }
+      @else {
+        background-color: $header-cell-bg-color;
+      }
+    }
+
+    & .e-sheet .e-spreadsheet-edit::selection,
+    & .e-formula-bar::selection {
+      @if $skin-name == 'Material3' {
+        background: $select-all-active-bg-color;
+        color: $spreadsheet-edit-selection-font-color;
+      }
     }
 
     & .e-sheet .e-spreadsheet-edit {
@@ -365,6 +573,9 @@
     & .e-header-panel thead .e-header-cell,
     & .e-select-all-cell {
       border-bottom-color: $spreadsheet-border-color;
+      @if $skin-name == 'Material3' {
+        border-bottom-color: $hdr-cell-border-color;
+      }
     }
 
     & .e-row-header .e-header-cell,
@@ -412,6 +623,9 @@
         & .e-select-all-cell,
         & .e-selectall-container tbody .e-header-cell {
           border-right-color: $spreadsheet-border-color;
+          @if $skin-name == 'Material3' {
+            border-right-color: $hdr-cell-border-color;
+          }
         }
 
         & .e-hide-gridlines .e-cell {
@@ -466,6 +680,9 @@
         & .e-select-all-cell,
         & .e-selectall-container .e-header-cell {
           border-left-color: $spreadsheet-border-color;
+          @if $skin-name == 'Material3' {
+            border-left-color: $hdr-cell-border-color;
+          }
         }
 
         & .e-hide-gridlines .e-cell {
@@ -555,13 +772,23 @@
     .e-row-header .e-header-cell:hover,
     .e-column-header .e-header-cell:hover,
     .e-selectall-container .e-header-cell:hover {
-      background-color: $hdr-hover-bg-color;
+      @if $skin-name == 'Material3' {
+        background: $hdr-hover-bg-color;
+      }
+      @else {
+        background-color: $hdr-hover-bg-color;
+      }
     }
 
     .e-row-header .e-header-cell.e-highlight,
     .e-column-header .e-header-cell.e-highlight,
     .e-selectall-container .e-header-cell.e-highlight {
-      background-color: $hdr-selection-bg-color;
+      @if $skin-name == 'Material3' {
+        background: $hdr-selection-bg-color;
+      }
+      @else {
+        background-color: $hdr-selection-bg-color;
+      }
       color: $hdr-selection-color;
     }
 
@@ -631,14 +858,14 @@
 
     & .e-frozen-column {
       background-color: $freezepane-color;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'Material3' {
         border-right: 3px solid $freezepane-color;
       }
     }
 
     & .e-frozen-row {
       border-bottom: 1px solid $freezepane-color;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'Material3' {
         border-bottom: 3px solid $freezepane-color;
       }
     }
@@ -650,6 +877,20 @@
       }
       @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
         background-color: $dark-ele-color;
+      }
+
+      & .e-input-group.e-ddl.e-control-wrapper:not(.e-disabled) {
+        & .e-input-group-icon.e-ddl-icon:hover {
+          @if $sheet-skin == 'Material3' {
+            color: $cell-color;
+          }
+        }
+      }
+
+      & .e-ddl-icon {
+        @if $sheet-skin == 'Material3' {
+          color: $cell-color;
+        }
       }
     }
 
@@ -833,7 +1074,9 @@
     & .e-is4,
     & .e-is6,
     & .e-is8 {
-      background-color: $cell-background;
+      @if $skin-name != 'Material3' {
+        background-color: $cell-background;
+      }
       @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' {
         background-color: $dark-ele-color;
       }
@@ -1258,7 +1501,9 @@
     & .e-radar-cont,
     & .e-area-cont,
     & .e-scatter-cont {
-      background-color: $cell-background;
+      @if $sheet-skin != 'Material3' {
+        background-color: $cell-background;
+      }
       @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' {
         background-color: $dark-ele-color;
       }
@@ -1279,8 +1524,11 @@
       & .e-stackedbar3d,
       & .e-stackedbar1003d,
       & .e-line,
+      & .e-line-marker,
       & .e-stackedline,
+      & .e-stackedline-marker,
       & .e-stackedline100,
+      & .e-stackedline100-marker,
       & .e-pie,
       & .e-doughnut,
       & .e-radar,
@@ -1307,8 +1555,11 @@
       & .e-stackedbar3d:hover,
       & .e-stackedbar1003d:hover,
       & .e-line:hover,
+      & .e-line-marker:hover,
       & .e-stackedline:hover,
+      & .e-stackedline-marker:hover,
       & .e-stackedline100:hover,
+      & .e-stackedline100-marker:hover,
       & .e-pie:hover,
       & .e-doughnut:hover,
       & .e-radar:hover,
@@ -1364,7 +1615,9 @@
 
   .e-sort-dialog {
     & .e-sort-listwrapper {
-      border-bottom: 1px dashed $spreadsheet-border-color;
+      @if $skin-name != 'Material3' {
+        border-bottom: 1px dashed $spreadsheet-border-color;
+      }
     }
 
     & .e-sort-error {

@@ -88,6 +88,10 @@ export class Edit {
     }
     private gridDblClick(e: MouseEvent): void {
         this.doubleClickTarget = e.target as HTMLElement;
+        if ((e.target as HTMLElement).classList.contains('e-frame') && this.parent.getCurrentViewRecords().length === 0)
+        {
+            this.doubleClickTarget = null;
+        }
     }
     private getRowPosition(addArgs: { newRowPosition: RowPosition, addRowIndex: number, dataRowIndex: number }): void {
         addArgs.newRowPosition = this.parent.editSettings.newRowPosition;
@@ -95,7 +99,9 @@ export class Edit {
         addArgs.dataRowIndex = +this.prevAriaRowIndex;
     }
     private beforeStartEdit(args: Object) : void {
-        this.parent.trigger(events.actionBegin, args);
+        if (this.parent.editSettings.mode === 'Cell') {
+            this.parent.trigger(events.actionBegin, args);
+        }
     }
     private beforeBatchCancel(args: Object) : void {
         if (this.parent.editSettings.mode === 'Cell') {
@@ -436,17 +442,23 @@ export class Edit {
                 } else if (isRemoteData(this.parent) ||
                        (this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
                     const query: Query = this.parent.grid.query;
-                    let crud: Promise<Object> = null;
-                    crud = <Promise<Object>>(this.parent.grid.dataSource as DataManager).update(primaryKeys[0], args.rowData,
-                                                                                                query.fromTable,
-                                                                                                query, args.previousValue);
-                    crud.then((e: Object) => {
-                        if (!isNullOrUndefined(e)) {
-                            args.rowData[args.columnName] = e[args.columnName];
-                        }
+                    if (this.parent['isGantt'] && !this.parent.loadChildOnDemand) {
                         this.updateCell(args, rowIndex);
                         this.afterCellSave(args, row, rowIndex);
-                    });
+                    }
+                    else {
+                        let crud: Promise<Object> = null;
+                        crud = <Promise<Object>>(this.parent.grid.dataSource as DataManager).update(primaryKeys[0], args.rowData,
+                                                                                                    query.fromTable,
+                                                                                                    query, args.previousValue);
+                        crud.then((e: Object) => {
+                            if (!isNullOrUndefined(e)) {
+                                args.rowData[args.columnName] = e[args.columnName];
+                            }
+                            this.updateCell(args, rowIndex);
+                            this.afterCellSave(args, row, rowIndex);
+                        });
+                    }
                 }
             } else {
                 this.parent.grid.isEdit = true;
@@ -652,7 +664,7 @@ export class Edit {
                             const batchChildCount: number = this.batchEditModule.getBatchChildCount();
                             index = index + batchChildCount;
                         }
-                    } else {
+                    } else if (!this.parent.enableVirtualization) {
                         index += findChildrenRecords(records[parseInt(index.toString(), 10)]).length;
                     }
                 }

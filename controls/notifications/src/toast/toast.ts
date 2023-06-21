@@ -370,9 +370,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * Accepts selectors, string values and HTML elements.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public title: string;
+    public title: string | Function;
 
     /**
      * Specifies the content to be displayed on the Toast.
@@ -380,9 +381,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      *
      * @default null
      * @blazorType string
+     * @aspType string
      */
     @Property(null)
-    public content: string | HTMLElement;
+    public content: string | HTMLElement | Function;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
@@ -415,9 +417,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * {% codeBlock src='toast/template/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Specifies the newly created Toast message display order while multiple toast's are added to page one after another.
@@ -839,7 +842,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         this.destroyToast(element as HTEle, interactionType);
     }
 
-    private fetchEle(ele: HTEle, value: string, prob: string): HTEle {
+    private fetchEle(ele: HTEle, value: string | Function, prob: string): HTEle {
         value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
         // eslint-disable-next-line
     let templateFn: Function;
@@ -860,7 +863,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
             return ele;
         }
         try {
-            if (document.querySelectorAll(value).length > 0) {
+            if (typeof value !== 'function' && document.querySelectorAll(value).length > 0) {
                 let elem: HTEle = null;
                 if (prob !== 'title') {
                     elem = <HTEle>document.querySelector(value);
@@ -876,7 +879,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         } catch (e) {
             templateFn = templateCompiler(value);
             // eslint-disable-next-line
-      let templateValue: string = value;
+        let templateValue: string | Function = value;
         }
         if (!isNOU(templateFn)) {
             if (!this.isBlazorServer()) {
@@ -893,7 +896,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
                 }
                 ele.appendChild(el);
             });
-        } else if (ele.childElementCount === 0) {
+        } else if (typeof value !== 'function' && ele.childElementCount === 0) {
             ele.innerHTML = value;
         }
         return ele;

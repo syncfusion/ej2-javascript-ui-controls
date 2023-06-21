@@ -8,6 +8,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { Toolbar } from '../tool-bar/tool-bar';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
+import { HeaderFooterWidget } from '../../document-editor/implementation/viewer';
 /**
  * @private
  */
@@ -16,6 +17,7 @@ export class HeaderFooterProperties {
     private container: DocumentEditorContainer;
     private firstPage: CheckBox;
     private oddOrEven: CheckBox;
+    private linkToPrevious: CheckBox;
     private pageNumber: CheckBox;
     private pageCount: CheckBox;
     private headerFromTop: NumericTextBox;
@@ -111,11 +113,18 @@ export class HeaderFooterProperties {
         this.firstPage.appendTo(firstPage);
         firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page'));
         const oddOrEvenDiv: HTMLElement = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
+        classList(oddOrEvenDiv, ['e-de-hdr-ftr-frst-div'], []);
         const oddOrEven: HTMLInputElement = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
         oddOrEvenDiv.appendChild(oddOrEven);
         this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.oddOrEven.appendTo(oddOrEven);
         oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages'));
+        const linkToPreviousDiv: HTMLElement = this.createDivTemplate(elementId + '_linkToPreviousDiv', optionsDiv);
+        const linkToPrevious: HTMLInputElement = createElement('input', { id: 'linkToPrevious', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
+        linkToPreviousDiv.appendChild(linkToPrevious);
+        this.linkToPrevious = new CheckBox({ label: localObj.getConstant('Link to Previous'), change: this.changeLinkToPreviousOptions.bind(this) ,cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl, checked: true });
+        this.linkToPrevious.appendTo(linkToPrevious);
+        linkToPreviousDiv.children[0].setAttribute('title', localObj.getConstant('Link to the previous Title'));
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
         // autoFieldLabel.innerHTML = 'Insert Autofield';
@@ -222,6 +231,36 @@ export class HeaderFooterProperties {
             }, 10);
         }
     }
+    private changeLinkToPreviousOptions(): void {
+        if (!this.documentEditor.isReadOnly) {
+            let headerFooterType: any = ((this.documentEditor.selection.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            let value: boolean = this.linkToPrevious.checked;
+            switch (headerFooterType) {
+                case 'OddHeader':
+                this.documentEditor.selection.sectionFormat.oddPageHeader.linkToPrevious = value;
+                break;
+                case 'OddFooter':
+                this.documentEditor.selection.sectionFormat.oddPageFooter.linkToPrevious = value;
+                break;
+                case 'EvenHeader':
+                this.documentEditor.selection.sectionFormat.evenPageHeader.linkToPrevious = value;
+                break;
+                case 'EvenFooter':
+                this.documentEditor.selection.sectionFormat.evenPageFooter.linkToPrevious = value;
+                break;
+                case 'FirstPageHeader':
+                this.documentEditor.selection.sectionFormat.firstPageHeader.linkToPrevious = value;
+                break;
+                case 'FirstPageFooter':
+                this.documentEditor.selection.sectionFormat.firstPageFooter.linkToPrevious = value;
+                break;
+
+            }
+            setTimeout((): void => {
+                this.documentEditor.focusIn();
+            }, 10);
+        }
+    }
     private changeHeaderValue(): void {
         if (!this.isHeaderTopApply) {
             return;
@@ -273,6 +312,32 @@ export class HeaderFooterProperties {
         } else {
             this.oddOrEven.checked = false;
         }
+        if (this.documentEditor.selection.start.paragraph.bodyWidget.sectionIndex == 0) {
+            this.linkToPrevious.disabled = true;
+        } else {
+            this.linkToPrevious.disabled = false;
+            let headerFooterType: any = ((this.documentEditor.selection.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            switch (headerFooterType) {
+                case 'OddHeader':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.oddPageHeader.linkToPrevious;
+                break;
+                case 'OddFooter':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.oddPageFooter.linkToPrevious;
+                break;
+                case 'EvenHeader':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.evenPageHeader.linkToPrevious;
+                break;
+                case 'EvenFooter':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.evenPageFooter.linkToPrevious;
+                break;
+                case 'FirstPageHeader':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.firstPageHeader.linkToPrevious;
+                break;
+                case 'FirstPageFooter':
+                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.firstPageFooter.linkToPrevious;
+                break;
+            }
+        }
     }
     public destroy(): void {
         if (this.element) {
@@ -290,6 +355,10 @@ export class HeaderFooterProperties {
             this.oddOrEven.destroy();
         }
         this.oddOrEven = undefined;
+        if (this.linkToPrevious) {
+            this.linkToPrevious.destroy();
+        }
+        this.linkToPrevious = undefined;
         if (this.headerFromTop) {
             this.headerFromTop.destroy();
             this.headerFromTop = undefined;

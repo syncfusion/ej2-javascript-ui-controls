@@ -1,9 +1,9 @@
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
-import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel } from './class-model';
+import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel, MarkerSettingsModel, BorderModel } from './class-model';
 import { CellModel } from '../base';
-import { LabelPosition, LegendPosition } from './enum';
+import { LabelPosition, LegendPosition, ChartShape } from './enum';
 import { MajorGridLinesModel, MinorGridLinesModel } from './class-model';
 
 /**
@@ -554,6 +554,90 @@ export class DataLabelSettings extends ChildProperty<ChartModel> {
 }
 
 /**
+ * Represents the Border.
+ *
+ */
+export class Border extends ChildProperty<ChartModel>{
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+}
+
+/**
+ * Represents the MarkerSettings.
+ *
+ */
+export class MarkerSettings extends ChildProperty<ChartModel> {
+    /**
+     * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
+
+    /**
+     * The different shape of a marker:
+     * * Circle
+     * * Triangle
+     * * Diamond
+     * * Plus
+     * * None
+     *
+     * @default 'Circle'
+     */
+    @Property('Circle')
+    public shape: ChartShape;
+
+    /**
+     * The size of the marker in pixels.
+     *
+     * @default 5
+     */
+    @Property(5)
+    public size: number;
+
+    /**
+     * The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series color.
+     * This property will work only if the `isFilled` property is set to true.
+     *
+     * @default null
+     */
+    @Property(null)
+    public fill: string;
+
+    /**
+     * By default, the marker gets filled with the fill color. If set to false, the marker background will be transparent.
+     *
+     * @default true
+     */
+    @Property(true)
+    public isFilled: boolean;
+
+    /**
+     * Options for customizing the border of a marker.
+     * 
+     * @default {}
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+}
+
+/**
  * Specifies the major grid lines in the `axis`.
  *
  */
@@ -653,6 +737,14 @@ export class Chart extends ChildProperty<CellModel> {
      */
     @Property(false)
     public isSeriesInRows: boolean;
+
+    /**
+     * Options to configure the marker
+     *
+     * @default {}
+     */
+    @Complex<MarkerSettingsModel>({}, MarkerSettings)
+    public markerSettings: MarkerSettingsModel;
 
     /**
      * Specifies the selected range or specified range.

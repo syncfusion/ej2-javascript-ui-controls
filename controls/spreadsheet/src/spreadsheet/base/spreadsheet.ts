@@ -49,6 +49,7 @@ import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
 import { updateScroll, SelectionMode, clearCopy, isImported } from '../common/index';
+import { clearUndoRedoCollection } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -1095,14 +1096,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public goTo(address: string): void {
         if (address.includes('!')) {
-            const addrArr: string[] = address.split('!');
-            const idx: number = getSheetIndex(this as Workbook, addrArr[0]);
+            const idx: number = getSheetIndex(this, getSheetNameFromAddress(address));
             if (idx === undefined) { return; }
             if (idx !== this.activeSheetIndex) {
-                const activeCell: string = addrArr[1].split(':')[0];
+                const selectRange: string = address.split('!')[1];
+                const activeCell: string = selectRange.split(':')[0];
                 const sheet: SheetModel = this.sheets[idx as number];
                 this.setSheetPropertyOnMute(sheet, 'activeCell', activeCell);
-                this.setSheetPropertyOnMute(sheet, 'selectedRange', addrArr[1]);
+                this.setSheetPropertyOnMute(sheet, 'selectedRange', selectRange);
                 const cellIndex: number[] = getCellIndexes(activeCell);
                 if (sheet.frozenColumns || sheet.frozenRows) {
                     const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
@@ -1902,6 +1903,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.sheets.length = 0;
             this.sheetNameCount = 1;
             this.notify(sheetsDestroyed, {});
+            this.notify(clearUndoRedoCollection, null);
             this.createSheet();
             this.activeSheetIndex = this.sheets.length - 1;
             this.notify(refreshSheetTabs, null);
@@ -2112,9 +2114,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} rowIndex - Specify the row index.
      * @param {number} colIndex - Specify the col index.
      * @param {string} formula - Specify the col index.
+     * @param {boolean} isRandomFormula - Specify the random formula.
      * @returns {void} - To set value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string, isRandomFormula?: boolean): void {
         if (value === 'circular reference: ') {
             const circularArgs: { action: string, argValue: string } = {
                 action: 'isCircularReference', argValue: value
@@ -2122,7 +2125,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(formulaOperation, circularArgs);
             value = circularArgs.argValue;
         }
-        super.setValueRowCol(sheetId, value, rowIndex, colIndex, formula);
+        super.setValueRowCol(sheetId, value, rowIndex, colIndex, formula, isRandomFormula);
         if (this.allowEditing) {
             this.notify(
                 editOperation, {
@@ -2396,6 +2399,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     private keyDownHandler(e: KeyboardEvent): void {
         if (!closest(e.target as Element, '.e-findtool-dlg')) {
             this.notify(keyDown, e);
+            if (!this.enableKeyboardNavigation && document.activeElement.classList.contains('e-cell')) {
+                if ([38, 40, 33, 34, 35, 36].indexOf(e.keyCode) > -1) {
+                    e.preventDefault();
+                }
+            }
         }
     }
 

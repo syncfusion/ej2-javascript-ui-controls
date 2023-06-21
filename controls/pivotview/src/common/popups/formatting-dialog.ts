@@ -67,7 +67,7 @@ export class NumberFormatting implements IAction {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-            width: 'auto',
+            width: '320px',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
             buttons: [

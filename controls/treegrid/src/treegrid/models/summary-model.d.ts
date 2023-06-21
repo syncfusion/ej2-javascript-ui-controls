@@ -32,7 +32,7 @@ export interface AggregateColumnModel {
      *
      * @default null
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Defines the column name to perform aggregation.

@@ -214,7 +214,7 @@ describe('Find & Replace ->', () => {
         });
         it('Active Cell from below Used Range Row', (done: Function) => {
             helper.invoke('selectRange', ['H12']);
-            helper.click('#' + helper.id + '_findbtn');
+            helper.triggerKeyNativeEvent(116, false, true);
             setTimeout(() => {
                 const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
                 findTxtBox.value = '10';
@@ -786,11 +786,8 @@ describe('Find & Replace ->', () => {
                 goToText.value = 'H10';
                 helper.click('.e-goto-dlg .e-btn-goto-ok');
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
-                helper.click('.e-goto-dlg .e-dlg-closeicon-btn');
-                setTimeout(() => {
-                    expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); // Need to check this
-                     done();
-                });
+                expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); // Need to check this
+                done();
             });
         });
     });

@@ -7,7 +7,6 @@ import { SeriesTooltipBorderModel, SeriesTooltipModel } from '../series/series-m
 
 import { SmithchartFont } from '../utils/utils';
 import { SmithchartFontModel } from '../utils/utils-model';
-import { Theme } from '../model/theme';
 import { ISmithChartPoint } from '../model/interface';
 
 export class SeriesTooltipBorder extends ChildProperty<SeriesTooltipBorder> {
@@ -51,18 +50,19 @@ export class SeriesTooltip extends ChildProperty<SeriesTooltip> {
     /**
      * opacity for tooltip.
      *
-     * @default 0.95
+     * @default 0.75
      */
-    @Property(0.95)
+    @Property(0.75)
     public opacity: number;
 
     /**
      * template for tooltip.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
 
     /**
      *  options for customizing tooltip border.
@@ -140,9 +140,10 @@ export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> 
      * showing template for data label template.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
     /**
      * color for data label.
      *
@@ -171,7 +172,7 @@ export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> 
     /**
      * options for customizing font.
      */
-    @Complex<SmithchartFontModel>(Theme.dataLabelFont, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
     public textStyle: SmithchartFontModel;
 
 }

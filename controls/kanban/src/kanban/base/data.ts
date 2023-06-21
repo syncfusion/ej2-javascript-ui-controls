@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, formatUnit, Ajax } from '@syncfusion/ej2-base';
 import { DataManager, Query, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Kanban } from './kanban';
 import { ActionEventArgs, SaveChanges, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from './interface';
@@ -47,13 +47,57 @@ export class Data {
     }
 
     /**
+     * @returns {boolean} returns whether its remote data
+     * @hidden
+     */
+    public isRemote(): boolean {
+        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
+            this.dataManager.dataSource.url !== '';
+    }
+
+    /**
+     * @returns {boolean} returns the column key fields
+     * @hidden
+     */
+    private columnKeyFields(): string[] {
+        const columns: string[] = [];
+        for (const column of this.parent.columns) {
+            if (column.keyField.toString().split(',').length > 1) {
+                for (const innerColumns of column.keyField.toString().split(',')) {
+                    columns.push(innerColumns.trim());
+                }
+            } else {
+                columns.push(column.keyField.toString());
+            }
+        }
+        return columns;
+    }
+
+    /**
      * The function used to generate updated Query from schedule model
      *
+     * @param {string} parameter Accepts the parameter that needs to be sent to the service end.
      * @returns {void}
      * @private
      */
-    public getQuery(): Query {
-        return this.query.clone();
+    public getQuery(parameter?: string): Query {
+        const query: Query = this.query.clone();
+        if (this.isRemote() && this.parent.enableVirtualization) {
+            const cardHeight: number = this.parent.cardHeight === 'auto' ? 100 :
+                parseInt(formatUnit(this.parent.cardHeight).split('px')[0], 10);
+            const take: number = this.parent.height === 'auto' ? (Math.ceil(window.innerHeight / cardHeight) * 2) :
+                (Math.ceil(parseInt(formatUnit(this.parent.height).split('px')[0], 10) / cardHeight) * 2);
+            const columns: string[] = this.columnKeyFields();
+            for (let i: number = 0; i < columns.length; i++) {
+                query.where(this.parent.keyField, 'equal', columns[i as number]);
+            }
+            query.take(take);
+            if (isNullOrUndefined(parameter)) {
+                parameter = 'KanbanVirtualization';
+            }
+            query.addParams('KanbanVirtualization', parameter);
+        }
+        return query;
     }
 
     /**
@@ -63,7 +107,7 @@ export class Data {
      * @returns {void}
      * @private
      */
-    private getData(query?: Query): Promise<any> {
+    private getData(query?: Query): Promise<Ajax> | Promise<Object> {
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
             const def: Deferred = this.eventPromise({ requestType: '' }, query);
             this.isObservable = true;
@@ -151,8 +195,10 @@ export class Data {
      * @private
      */
     private refreshDataManager(): void {
-        const dataManager: Promise<any> = this.getData(this.getQuery());
-        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e)).catch((e: ReturnType) => this.dataManagerFailure(e));
+        const dataManager: Promise<Object> = this.getData(this.getQuery());
+        dataManager.then((e: ReturnType) =>
+            this.dataManagerSuccess(e)
+        ).catch((e: ReturnType) => this.dataManagerFailure(e));
     }
 
     /**
@@ -167,18 +213,43 @@ export class Data {
     private dataManagerSuccess(e: ReturnType, type?: string, offlineArgs?: ActionEventArgs, index?: number): void {
         if (this.parent.isDestroyed) { return; }
         if (type) {
-            const resultData: Record<string, any>[] = extend([], e.result, null, true) as Record<string, any>[];
-            this.parent.kanbanData = resultData;
+            this.updateKanbanData(e);
+            if (this.parent.enableVirtualization && this.isRemote()) {
+                this.parent.virtualLayoutModule.refresh();
+            }
         }
         else{
             this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
-                const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
-                this.parent.kanbanData = resultData;
-                this.parent.notify(events.dataReady, { processedData: resultData });
+                this.updateKanbanData(args);
+                this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
                 this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
             });
         }
     }
+
+    /**
+     * The function is used to handle the update the column data count for remote, and update kanbanData while perform the CRUD action
+     *
+     * @param {ReturnType} args Accepts the dataManager success result
+     * @returns {void}
+     * @private
+     */
+
+    private updateKanbanData(args: ReturnType): void {
+        const resultData: Record<string, any>[] = extend([], !isNullOrUndefined((args.result as any).result) ?
+            (args.result as any).result : args.result, null, true) as Record<string, any>[];
+        if (this.isRemote() && this.parent.enableVirtualization && resultData.length > 0
+            && !isNullOrUndefined((args.result as any).count)) {
+            const columnsKeyFields: string[] = this.columnKeyFields();
+            for (let i: number = 0; i < columnsKeyFields.length; i++) {
+                if ((args.result as any).count[i as number].Key === columnsKeyFields[i as number]) {
+                    this.parent.columnDataCount[columnsKeyFields[i as number]] = (args.result as any).count[i as number].Value;
+                }
+            }
+        }
+        this.parent.kanbanData = resultData;
+    }
+
 
     /**
      * The function is used to handle the failure response from dataManager
@@ -200,12 +271,20 @@ export class Data {
      * @param {string} type Accepts the requestType as string
      * @param {Object} data Accepts the data to perform crud action
      * @param {number} index Accepts the index to refresh the data into UI
+     * @param {boolean} isDropped Accepts the boolean value based on based if it is dragged and dropped
+     * @param {string} dataDropIndexKeyFieldValue Accepts the dropped index key field value card
+     * @param {number} draggedKey Accepts the dragged keyfield of the column
+     * @param {number} droppedKey Accepts the dropped keyfield of the column
+     * @param {number} isMultipleDrag Accepts boolean value based on the multiple drag of the cards
      * @returns {void}
      * @private
      */
-    public updateDataManager(updateType: string, params: SaveChanges, type: string, data: Record<string, any>, index?: number): void {
+    public updateDataManager(
+        updateType: string, params: SaveChanges, type: string,
+        data: Record<string, any>, index?: number, isDropped?: boolean, dataDropIndexKeyFieldValue?: string,
+        draggedKey?: string, droppedKey?: string, isMultipleDrag?: boolean): void {
         this.parent.showSpinner();
-        let promise: Promise<any>;
+        let promise: Promise<Object> | Object;
         const actionArgs: ActionEventArgs = {
             requestType: type, cancel: false, addedRecords: params.addedRecords,
             changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
@@ -216,28 +295,56 @@ export class Data {
             if (!offlineArgs.cancel) {
                 switch (updateType) {
                 case 'insert':
-                    promise = this.dataManager.insert(data, this.getTable(), this.getQuery()) as Promise<any>;
+                    promise = this.dataManager.insert(data, this.getTable(), this.getQuery());
                     break;
                 case 'update':
-                    promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery()) as Promise<any>;
+                    if (this.parent.enableVirtualization && !this.parent.dataModule.isRemote() && isDropped) {
+                        promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
+                        promise = this.dataManager.insert(
+                            data, this.getTable(), this.getQuery(),
+                            this.dataManager.dataSource.json.findIndex((data: Record<string, any>) =>
+                                data[this.parent.cardSettings.headerField] === dataDropIndexKeyFieldValue));
+                    } else {
+                        promise = this.dataManager.update(this.keyField, data, this.getTable(), this.getQuery());
+                    }
                     break;
                 case 'delete':
-                    promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery()) as Promise<any>;
+                    promise = this.dataManager.remove(this.keyField, data, this.getTable(), this.getQuery());
                     break;
                 case 'batch':
-                    promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery()) as Promise<any>;
+                    if (!this.parent.dataModule.isRemote() && isDropped && this.parent.enableVirtualization && data ) {
+                        for (let i: number = 0; i < data.length; i++) {
+                            promise = this.dataManager.remove(
+                                this.keyField, data[i as number], this.getTable(), this.getQuery()
+                            ) as Promise<any>;
+                        }
+                        let currentIndex: number = this.dataManager.dataSource.json.findIndex((data: Record<string, any>) =>
+                            data[this.parent.cardSettings.headerField] === dataDropIndexKeyFieldValue);
+                        for (let i: number = 0; i < data.length; i++, currentIndex++) {
+                            promise = this.dataManager.insert(
+                                data[i as number], this.getTable(), this.getQuery(), currentIndex);
+                        }
+                    } else {
+                        promise = this.dataManager.saveChanges(params, this.keyField, this.getTable(), this.getQuery());
+                    }
                     break;
                 }
                 if (this.dataManager.dataSource.offline) {
                     if (!this.isObservable) {
                         this.kanbanData = this.dataManager;
                         this.parent.kanbanData = this.dataManager.dataSource.json as Record<string, any>[];
-                        this.refreshUI(offlineArgs, index);
+                        index = draggedKey === droppedKey && isMultipleDrag ? index - 1 : index;
+                        this.refreshUI(offlineArgs, index, isDropped);
+                        if (this.parent.enableVirtualization) {
+                            this.parent.virtualLayoutModule.refreshColumnData(
+                                draggedKey, droppedKey, offlineArgs.requestType, data[this.parent.keyField]
+                            );
+                        }
                     }
                 } else {
-                    promise.then((args: ReturnType) => {
+                    (promise as Promise<Ajax>).then((args: Ajax) => {
                         if (this.parent.isDestroyed) { return; }
-                        const dataManager: Promise<any> = this.getData(this.getQuery());
+                        const dataManager: Promise<Object> = this.getData(this.getQuery());
                         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange', offlineArgs, index)).catch((e: ReturnType) => this.dataManagerFailure(e));
                         if (offlineArgs.requestType === 'cardCreated') {
                             if (!Array.isArray(args)) {
@@ -258,7 +365,13 @@ export class Data {
                                 this.modifyArrayData(offlineArgs.deletedRecords, args);
                             }
                         }
-                        this.refreshUI(offlineArgs, index);
+                        index = draggedKey === droppedKey && isMultipleDrag ? index - 1 : index;
+                        this.refreshUI(offlineArgs, index, isDropped);
+                        if (this.parent.enableVirtualization) {
+                            this.parent.virtualLayoutModule.refreshColumnData(
+                                draggedKey, droppedKey, offlineArgs.requestType, data[this.parent.keyField]
+                            );
+                        }
                     }).catch((e: ReturnType) => {
                         this.dataManagerFailure(e);
                     });
@@ -282,38 +395,65 @@ export class Data {
      *
      * @param {ActionEventArgs} args Accepts the ActionEventArgs to refresh UI.
      * @param {number} position Accepts the index to refresh UI.
+     * @param {boolean} isDropped Accepts the boolean value based on based if it is dragged and dropped
      * @returns {void}
      */
-    public refreshUI(args: ActionEventArgs, position: number): void {
-        this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
-        if (this.parent.swimlaneSettings.keyField) {
-            this.parent.layoutModule.kanbanRows = this.parent.layoutModule.getRows();
-            this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
+    public refreshUI(args: ActionEventArgs, position: number, isDropped?: boolean): void {
+        if (this.parent.enableVirtualization) {
+            this.parent.virtualLayoutModule.columnData = this.parent.virtualLayoutModule.getColumnCards();
+            args.addedRecords.forEach((data: Record<string, any>, index: number) => {
+                this.parent.virtualLayoutModule.renderCardBasedOnIndex(data, position + index, isDropped, args.requestType);
+            });
+            args.changedRecords.forEach((data: Record<string, any>) => {
+                this.parent.virtualLayoutModule.removeCard(data);
+                this.parent.virtualLayoutModule.renderCardBasedOnIndex(data, position, isDropped, args.requestType);
+                if (this.parent.virtualLayoutModule.isSelectedCard) {
+                    this.parent.actionModule.SingleCardSelection(data);
+                }
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
+                    && this.parent.sortSettings.direction === 'Descending' && position > 0) {
+                    --position;
+                } else {
+                    position++;
+                }
+            });
+            args.deletedRecords.forEach((data: Record<string, any>) => {
+                this.parent.virtualLayoutModule.removeCard(data);
+            });
+            this.parent.virtualLayoutModule.refresh();
+        } else {
+            this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
+            if (this.parent.swimlaneSettings.keyField) {
+                this.parent.layoutModule.kanbanRows = this.parent.layoutModule.getRows();
+                this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
+            }
+            args.addedRecords.forEach((data: Record<string, any>, index: number) => {
+                if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
+                    data[this.parent.swimlaneSettings.keyField] = '';
+                }
+                this.parent.layoutModule.renderCardBasedOnIndex(data, position + index);
+            });
+            args.changedRecords.forEach((data: Record<string, any>) => {
+                if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
+                    data[this.parent.swimlaneSettings.keyField] = '';
+                }
+                this.parent.layoutModule.removeCard(data);
+                this.parent.layoutModule.renderCardBasedOnIndex(data, position);
+                if (this.parent.layoutModule.isSelectedCard) {
+                    this.parent.actionModule.SingleCardSelection(data);
+                }
+                if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
+                    && this.parent.sortSettings.direction === 'Descending' && position > 0) {
+                    --position;
+                } else {
+                    position++;
+                }
+            });
+            args.deletedRecords.forEach((data: Record<string, any>) => {
+                this.parent.layoutModule.removeCard(data);
+            });
+            this.parent.layoutModule.refresh();
         }
-        args.addedRecords.forEach((data: Record<string, any>, index: number) => {
-            if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
-                data[this.parent.swimlaneSettings.keyField] = '';
-            }
-            this.parent.layoutModule.renderCardBasedOnIndex(data, position + index);
-        });
-        args.changedRecords.forEach((data: Record<string, any>) => {
-            if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
-                data[this.parent.swimlaneSettings.keyField] = '';
-            }
-            this.parent.layoutModule.removeCard(data);
-            this.parent.layoutModule.renderCardBasedOnIndex(data, position);
-            if (this.parent.layoutModule.isSelectedCard) {
-                this.parent.actionModule.SingleCardSelection(data);
-            }
-            if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
-                && this.parent.sortSettings.direction === 'Descending' && position > 0) {
-                --position;
-            }
-        });
-        args.deletedRecords.forEach((data: Record<string, any>) => {
-            this.parent.layoutModule.removeCard(data);
-        });
-        this.parent.layoutModule.refresh();
         this.parent.renderTemplates();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.dataBound, args, () => this.parent.hideSpinner());

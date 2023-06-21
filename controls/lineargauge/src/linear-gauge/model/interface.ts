@@ -117,7 +117,7 @@ export interface IAnnotationRenderEventArgs extends ILinearGaugeEventArgs {
     /**
      * Specifies the content for the annotation.
      */
-    content?: string;
+    content?: string | Function;
     /**
      * Specifies the options to customize the text in annotation.
      */
@@ -284,6 +284,10 @@ export interface IThemeStyle {
      */
     titleFontWeight: string;
     /**
+     * Specifies the font size for the title in  the linear gauge.
+     */
+    titleFontSize: string;
+    /**
      * Specifies the fill color for the tooltip in the linear gauge.
      */
     tooltipFillColor: string;
@@ -291,6 +295,10 @@ export interface IThemeStyle {
      * Specifies the font color for the tooltip in the linear gauge.
      */
     tooltipFontColor: string;
+    /**
+     * Specifies the font size for the tooltip in the linear gauge.
+     */
+    tooltipFontSize: string;
     /**
      * Specifies the color of the axis line in the linear gauge.
      */

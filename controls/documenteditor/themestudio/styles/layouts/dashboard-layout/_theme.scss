@@ -12,7 +12,7 @@
       & .e-panel-container {
         & .e-panel-header {
           color: $panel-header-color;
-          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'Material3-dark') {
             background: $panel-header-bg-color;
             box-sizing: $panel-box-sizing;
           }

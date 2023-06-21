@@ -97,6 +97,13 @@ export class DataUtil {
     public static wildCard(input: string, pattern: string): boolean {
         let asteriskSplit: string[];
         let optionalSplit: string[];
+        // special character allowed search
+        if (pattern.indexOf('(') !== -1) {
+            pattern = pattern.split('(').join('[(]');
+        }
+        if (pattern.indexOf(')') !== -1) {
+            pattern = pattern.split(')').join('[)]');
+        }
         if (pattern.indexOf('*') !== -1) {
             if (pattern.charAt(0) !== '*') {
                 pattern = '^' + pattern;
@@ -529,17 +536,40 @@ export class DataUtil {
      * @param  {Object} from - Defines the source object.
      */
     public static getObject(nameSpace: string, from: Object): Object {
-        if (!nameSpace) { return from; }
-        if (!from) { return undefined; }
+        if (!nameSpace) {
+            return from;
+        }
+        if (!from) {
+            return undefined;
+        }
         if (nameSpace.indexOf('.') === -1) {
-            return from[nameSpace];
+            const lowerCaseNameSpace: string = nameSpace.charAt(0).toLowerCase() + nameSpace.slice(1);
+            const upperCaseNameSpace: string = nameSpace.charAt(0).toUpperCase() + nameSpace.slice(1);
+            if (!isNullOrUndefined(from[nameSpace])) {
+                return from[nameSpace];
+            }
+            else {
+                if (!isNullOrUndefined(from[lowerCaseNameSpace])) {
+                    return from[lowerCaseNameSpace];
+                } else if (!isNullOrUndefined(from[upperCaseNameSpace])) {
+                    return from[upperCaseNameSpace];
+                } else {
+                    return null;
+                }
+            }
         }
         let value: Object = from;
         const splits: string[] = nameSpace.split('.');
-
         for (let i: number = 0; i < splits.length; i++) {
-            if (value == null) { break; }
+            if (value == null) {
+                break;
+            }
             value = value[splits[i]];
+            if (value === undefined) {
+                const casing: string = splits[i].charAt(0).toUpperCase() + splits[i].slice(1);
+                value = from[casing] || from[casing.charAt(0).toLowerCase() + casing.slice(1)] || null;
+            }
+            from = value;
         }
         return value;
     }
@@ -1780,10 +1810,10 @@ export class DataUtil {
                 expected = <string>DataUtil.ignoreDiacritics(expected);
             }
             if (ignoreCase) {
-                return actual && expected && typeof actual !== 'object' &&
+                return (actual || typeof actual === 'boolean') && expected && typeof actual !== 'object' &&
                     DataUtil.wildCard(DataUtil.toLowerCase(actual), DataUtil.toLowerCase(expected));
             }
-            return actual && expected && DataUtil.wildCard(actual, expected);
+            return (actual || typeof actual === 'boolean') && expected && DataUtil.wildCard(actual, expected);
         },
         /**
          * Returns true when the actual input ends with the given string.

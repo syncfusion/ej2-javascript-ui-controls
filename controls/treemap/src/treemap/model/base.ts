@@ -101,9 +101,9 @@ export class Font extends ChildProperty<Font> {
     /**
      * Sets and gets the font weight for the text in the treemap.
      *
-     * @default 'Normal'
+     * @default null
      */
-    @Property('Normal')
+    @Property('')
     public fontWeight: string;
 
     /**
@@ -150,7 +150,7 @@ export class SubTitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options to customize the text style for the subtitle in the treemap.
      */
-    @Complex<FontModel>({ fontFamily: null }, Font)
+    @Complex<FontModel>({ fontFamily: null , fontWeight: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment of the subtitle text in the treemap.
@@ -167,7 +167,7 @@ export class TitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options to customize the text style of the title of the treemap.
      */
-    @Complex<FontModel>({ fontFamily: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, fontWeight: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the text position of the title text in the treemap.
@@ -293,7 +293,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options to customize the text style of legend in the treemap.
      */
-    @Complex<FontModel>({ fontFamily: null }, Font)
+    @Complex<FontModel>({ size: '12px', fontFamily: null , fontWeight: null}, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the shape color of legend in the treemap.
@@ -530,7 +530,7 @@ export class LeafItemSettings extends ChildProperty<LeafItemSettings> {
      * @default null
      */
     @Property(null)
-    public labelTemplate: string;
+    public labelTemplate: string | Function;
     /**
      * Sets and gets the position of the label template of treemap leaf item.
      *
@@ -568,7 +568,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * @default ''
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
     /**
      * Sets and gets the string to format the tooltip in the treemap.
      *
@@ -606,7 +606,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the options for customizing the text style of tooltip of the treemap.
      */
-    @Complex<FontModel>({fontFamily: defaultFont, size: '13px' }, Font)
+    @Complex<FontModel>({fontFamily: defaultFont, size: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 }
 /**
@@ -760,7 +760,7 @@ export class LevelSettings extends ChildProperty<LevelSettings> {
      * @default null
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Sets and gets the string to format the header label of the level leaf items in the treemap.
      *

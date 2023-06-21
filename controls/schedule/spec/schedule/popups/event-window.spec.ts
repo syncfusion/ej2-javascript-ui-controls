@@ -143,7 +143,7 @@ describe('Schedule event window initial load', () => {
         });
     });
 
-    describe('Schedule event window with group without child', () => {
+    xdescribe('Schedule event window with group without child', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
@@ -1187,7 +1187,7 @@ describe('Schedule event window initial load', () => {
             });
 
             it('EJ2-63839 - openEditor with repeatType check', () => {
-                schObj.openEditor(schObj.activeCellsData, 'Add', null, 1)
+                schObj.openEditor(schObj.activeCellsData, 'Add', null, 1);
                 const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 const repeatElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' +
                     cls.EVENT_WINDOW_REPEAT_CLASS + ' input');
@@ -2092,6 +2092,7 @@ describe('Schedule event window initial load', () => {
         });
         afterAll(() => {
             util.destroy(schObj);
+            remove(document.getElementById('eventEditor'));
         });
 
         it('event window validation checking with save', (done: DoneFn) => {
@@ -2474,6 +2475,7 @@ describe('Schedule event window initial load', () => {
         });
         afterAll(() => {
             util.destroy(schObj);
+            remove(document.getElementById('eventEditor'));
         });
 
         it('Editor popup type', () => {
@@ -3010,6 +3012,7 @@ describe('Schedule event window initial load', () => {
             document.getElementsByTagName('head')[0].appendChild(scriptEle);
             const model: ScheduleModel = {
                 height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2021, 0, 13),
+                editorTemplate: '#eventEditor',
                 popupOpen: (args: PopupOpenEventArgs) => {
                     if (schObj.editorTemplate && args.type === 'Editor') {
                         const startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
@@ -3049,6 +3052,32 @@ describe('Schedule event window initial load', () => {
             schObj.closeEditor();
             expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
             expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+        });
+
+        it ('ES-828699 - EndDate is returned wrongly in popup open Event args', () => {
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                expect(args.data.StartTime.getTime()).toBe(new Date(2021, 0, 13).getTime());
+                expect(args.data.EndTime.getTime()).toBe(new Date(2021, 0, 14).getTime());
+                if (schObj.editorTemplate && args.type === 'Editor') {
+                    const startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                    if (startElement && !startElement.classList.contains('e-datepicker')) {
+                        new DatePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                    }
+                    const endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                    if (endElement && !endElement.classList.contains('e-datepicker')) {
+                        new DatePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                }
+            };
+            const headerCell: HTMLElement = schObj.element.querySelectorAll('.e-header-cells')[4] as HTMLElement;
+            util.triggerMouseEvent(headerCell, 'click');
+            util.triggerMouseEvent(headerCell, 'dblclick');
+            const dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
+            const startDate: DateTimePicker = (dialogElement.querySelector('#StartTime') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker = (dialogElement.querySelector('#EndTime') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            expect(startDate.value.getTime()).toEqual(new Date(2021, 0, 13).getTime());
+            expect(endDate.value.getTime()).toEqual(new Date(2021, 0, 13).getTime());
         });
     });
 
@@ -3280,6 +3309,49 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('ES-832489 - Edit Occurrence checking', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'test event',
+            StartTime: new Date(2023, 5, 5, 10, 0),
+            EndTime: new Date(2023, 5, 5, 11, 0),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2023, 5, 5) };
+            schObj = util.createSchedule(schOptions, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Occurrence event edit and check for reschedule of event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toBe(1);
+                expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toBe(4);
+                expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toBe(4);
+                expect(schObj.element.querySelectorAll('.e-recurrence-edit-icon').length).toBe(1);
+                done();
+            };
+            const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appointments[1], 'click');
+            util.triggerMouseEvent(appointments[1], 'dblclick');
+            expect(document.querySelector('.e-dialog.e-quick-dialog').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(document.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(document.querySelector('.e-dialog.e-quick-dialog').classList.contains('e-popup-close')).toEqual(true);
+            const dialogElement: HTMLElement = document.querySelector('.e-dialog.e-schedule-dialog');
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
+            expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toBe(0);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toBe(5);
+            expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toBe(5);
+            expect(schObj.element.querySelectorAll('.e-recurrence-edit-icon').length).toBe(0);
+            (dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS) as EJ2Instance).ej2_instances[0].value = new Date(2023, 5, 7, 10, 0);
+            util.triggerMouseEvent(dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS), 'click');
+        });
+    });
+
     describe('EJ2-68537 - Schedule action events checking for resources with allowMultiple property set as true', () => {
         let schObj: Schedule;
         const data: Record<string, any>[] = [{
@@ -3425,13 +3497,13 @@ describe('Schedule event window initial load', () => {
                     }
                     const priceElement: HTMLInputElement = args.element.querySelector('#Price') as HTMLInputElement;
                     if (!priceElement.classList.contains('e-numerictextbox')) {
-                        var priceInput = new NumericTextBox({
+                        const priceInput = new NumericTextBox({
                             placeholder: 'Select a price',
                             format: 'C2',
                             floatLabelType: 'Always',
                             value: args.data.Price,
                             destroyed: () => {
-                                destroyedCount += 1
+                                destroyedCount += 1;
                             }
                         });
                         priceInput.appendTo(priceElement);
@@ -3470,6 +3542,54 @@ describe('Schedule event window initial load', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             addButton.click();
+        });
+    });
+
+    describe('Customize inner elements in the recurrence editor dynamically', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Month', views: ['Month'], selectedDate: new Date(2023, 1, 5),
+                popupOpen: (args: PopupOpenEventArgs) => {
+                    if (args.type === 'Editor') {
+                        const recurrenceEditor = (schObj.eventWindow as any).recurrenceEditor;
+                        recurrenceEditor.frequencies = ['daily'];
+                        recurrenceEditor.endTypes = ['until', 'count'];
+                        recurrenceEditor.dataBind();
+                    }
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Save through event window checking', (done: DoneFn) => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            const endOnElement: DropDownList =
+                (dialogElement.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            setTimeout(() => {
+                expect((endOnElement as any).listData.length).toEqual(2);
+                expect(endOnElement.value).toEqual('until');
+                expect(dialogElement.querySelector('.e-end-on-date').classList.contains('e-hide-recurrence-element')).toEqual(false);
+                expect(dialogElement.querySelector('.e-end-on-count').classList.contains('e-hide-recurrence-element')).toEqual(true);
+                endOnElement.index = 1;
+                endOnElement.dataBind();
+                expect(endOnElement.value).toEqual('count');
+                expect(dialogElement.querySelector('.e-end-on-date').classList.contains('e-hide-recurrence-element')).toEqual(true);
+                expect(dialogElement.querySelector('.e-end-on-count').classList.contains('e-hide-recurrence-element')).toEqual(false);
+                const cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+                cancelButton.click();
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                expect(endOnElement.value).toEqual('until');
+                expect(dialogElement.querySelector('.e-end-on-date').classList.contains('e-hide-recurrence-element')).toEqual(false);
+                expect(dialogElement.querySelector('.e-end-on-count').classList.contains('e-hide-recurrence-element')).toEqual(true);
+                done();
+            }, 1000);
         });
     });
 

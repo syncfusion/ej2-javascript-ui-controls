@@ -488,9 +488,10 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets and gets the content of the annotation. This property accepts the HTML string or id of the custom element.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public content: string;
+    public content: string | Function;
 
     /**
      * Sets and gets the angle for annotation with respect to axis in circular gauge.

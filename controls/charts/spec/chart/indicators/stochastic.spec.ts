@@ -376,10 +376,10 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
 
                 let svg: HTMLElement = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '760.5' || svg.getAttribute('d').split(' ')[1] == '761.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '45.25' || svg.getAttribute('d').split(' ')[2] == '42.25').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '760.5' || svg.getAttribute('d').split(' ')[4] == '761.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[5] == '355.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '761.5' || svg.getAttribute('d').split(' ')[1] == '761.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '43.25' || svg.getAttribute('d').split(' ')[2] == '42.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '761.5' || svg.getAttribute('d').split(' ')[4] == '761.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '360.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
 
                 //define check condition
                 expect(chartObj.visibleSeries[1].yAxis.name).toBe('secondary');
@@ -399,10 +399,10 @@ describe('Chart', () => {
                 let signalLine: HTMLElement = document.getElementById('container_Indicator_0_Stochastic');
                 expect((signalLine).getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('d').split(' ')[1] == '63.5' || svg.getAttribute('d').split(' ')[1] == '59.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '88.75' || svg.getAttribute('d').split(' ')[2] == '95.75').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '760.5' || svg.getAttribute('d').split(' ')[4] == '761.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[5] == '88.75' || svg.getAttribute('d').split(' ')[5] == '95.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '59.5' || svg.getAttribute('d').split(' ')[1] == '59.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '89.75' || svg.getAttribute('d').split(' ')[2] == '95.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '761.5' || svg.getAttribute('d').split(' ')[4] == '761.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '89.75' || svg.getAttribute('d').split(' ')[5] == '95.75').toBe(true);
                 done();
                 
             };

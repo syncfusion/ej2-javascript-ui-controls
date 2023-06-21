@@ -53,6 +53,9 @@ export class Freeze {
             if (this.parent.enableVirtualization) {
                 getValue('addRenderer', renderer)
                     .apply(renderer, [RenderType.Content, new VirtualTreeFreezeRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            } else {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Content, new FreezeContentRender(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
             }
         }
         if (this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenRightColumnsCount()) {

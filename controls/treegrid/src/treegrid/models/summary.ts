@@ -40,7 +40,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * @default null
      */
     @Property()
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
     /**
      * Defines the column name to perform aggregation.
      *

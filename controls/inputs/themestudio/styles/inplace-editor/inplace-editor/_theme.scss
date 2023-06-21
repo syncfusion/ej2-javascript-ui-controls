@@ -204,13 +204,16 @@
     &.e-tooltip-wrap.e-popup {
       background: $editor-tip-bg;
       box-shadow: $editor-tip-box-shadow;
-      @if $skin-name == 'FluentUI' {
+      @if $skin-name == 'FluentUI' or $skin-name == 'Material3' {
         border-radius: $editor-popup-tip-wrapper-bdr-radius;
       }
 
       .e-tip-content {
         border-radius: $editor-popup-tip-content-bdr-radius;
         color: $editor-value-text-color;
+        @if $skin-name == 'Material3' {
+          background: $editor-tip-title-bg;
+        }
       }
 
       .e-arrow-tip-inner {
@@ -230,6 +233,9 @@
 
       &.e-popup {
         border: $editor-tip-border;
+        @if $skin-name == 'Material3' {
+          border-radius: 8px;
+        }
       }
 
       .e-editable-title {

@@ -23,7 +23,8 @@ export interface HeaderRowsModel {
      *  can be accessed via this template is `date`.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
 }

@@ -7,7 +7,12 @@
   .e-css.e-btn {
     -webkit-tap-highlight-color: transparent;
     background: $btn-bgcolor;
-    border-color: $btn-border-color;
+    @if $skin-name == 'Material3' {
+      border-image: $btn-border-color;
+    }
+    @else {
+      border-color: $btn-border-color;
+    }
     @if $skin-name != 'bootstrap5' {
       box-shadow: $btn-box-shadow;
     }
@@ -16,7 +21,12 @@
     @at-root {
       &:hover {
         background: $btn-hover-bgcolor;
-        border-color: $btn-hover-border-color;
+        @if $skin-name == 'Material3' {
+          border-image: $btn-hover-border-color;
+        }
+        @else {
+          border-color: $btn-hover-border-color;
+        }
         box-shadow: $btn-hover-focus-box-shadow;
         color: $btn-hover-color;
       }
@@ -36,6 +46,7 @@
           background: $btn-bgcolor;
         }
         @if $skin-name == 'Material3' {
+          background: $btn-active-bgcolor;
           box-shadow: $btn-keyboard-focus-box-shadow;
         }
       }
@@ -46,14 +57,20 @@
 
       &.e-active {
         background: $btn-active-bgcolor;
-        border-color: $btn-active-border-color;
+        @if $skin-name == 'Material3' {
+          border-image: $btn-active-border-color;
+        }
+        @else {
+          border-color: $btn-active-border-color;
+        }
         @if $skin-name != 'bootstrap5' {
           box-shadow: $btn-active-box-shadow;
         }
         color: $btn-active-color;
       }
 
-      &:disabled {
+      &:disabled,
+      &.e-disabled {
         background: $btn-disabled-bgcolor;
         border-color: $btn-disabled-border-color;
         box-shadow: $btn-flat-box-shadow;
@@ -81,7 +98,12 @@
 
         &:focus {
           background: $btn-focus-bgcolor;
-          border-color: $btn-focus-border-color;
+          @if $skin-name == 'Material3' {
+            border-image: $btn-focus-border-color;
+          }
+          @else {
+            border-color: $btn-focus-border-color;
+          }
           @if ($skin-name == 'tailwind') {
             box-shadow: $btn-focus-box-shadow;
           }
@@ -104,13 +126,19 @@
             background: $btn-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
 
         &:active {
           background: $btn-active-bgcolor;
-          border-color: $btn-active-border-color;
+          @if $skin-name == 'Material3' {
+            border-image: $btn-active-border-color;
+          }
+          @else {
+            border-color: $btn-active-border-color;
+          }
           @if ($skin-name == 'tailwind') {
             box-shadow: $btn-focus-box-shadow;
           }
@@ -122,7 +150,8 @@
           outline-offset: $btn-active-outline-offset;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           background: $btn-disabled-bgcolor;
           border-color: $btn-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
@@ -130,6 +159,10 @@
         }
 
         &.e-primary {
+          &:hover {
+            border-color: $btn-primary-bgcolor;
+          }
+
           &:focus {
             outline: $btn-focus-outline-round;
           }
@@ -145,12 +178,17 @@
               background: $btn-primary-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
 
         &.e-success {
+          &:hover {
+            border-color: $btn-success-bgcolor;
+          }
+
           &:focus {
             outline: $btn-focus-outline-round;
           }
@@ -166,12 +204,17 @@
               background: $btn-success-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
 
         &.e-info {
+          &:hover {
+            border-color: $btn-info-bgcolor;
+          }
+
           &:focus {
             outline: $btn-focus-outline-round;
           }
@@ -187,12 +230,17 @@
               background: $btn-info-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
 
         &.e-warning {
+          &:hover {
+            border-color: $btn-warning-bgcolor;
+          }
+
           &:focus {
             outline: $btn-focus-outline-round;
           }
@@ -208,12 +256,17 @@
               background: $btn-warning-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
         }
 
         &.e-danger {
+          &:hover {
+            border-color: $btn-danger-bgcolor;
+          }
+
           &:focus {
             outline: $btn-focus-outline-round;
           }
@@ -229,6 +282,7 @@
               background: $btn-danger-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
             }
           }
@@ -245,7 +299,9 @@
 
         &:hover {
           background: $btn-primary-hover-bgcolor;
-          border-color: $btn-primary-hover-border-color;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-primary-hover-border-color;
+          }
           @if $skin-name == 'Material3' {
             box-shadow: $btn-primary-focus-box-shadow;
           }
@@ -270,6 +326,7 @@
             background: $btn-primary-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-primary-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -291,7 +348,8 @@
           color: $btn-primary-active-color;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           @include primary-disabled;
         }
 
@@ -310,7 +368,9 @@
 
         &:hover {
           background: $btn-success-hover-bgcolor;
-          border-color: $btn-success-hover-border-color;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-success-hover-border-color;
+          }
           @if $skin-name == 'Material3' {
             box-shadow: $btn-primary-focus-box-shadow;
           }
@@ -335,6 +395,7 @@
             background: $btn-success-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-success-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -344,7 +405,8 @@
           @include success-active;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           @include success-disabled;
         }
 
@@ -363,7 +425,9 @@
 
         &:hover {
           background: $btn-info-hover-bgcolor;
-          border-color: $btn-info-hover-border-color;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-info-hover-border-color;
+          }
           @if $skin-name == 'Material3' {
             box-shadow: $btn-primary-focus-box-shadow;
           }
@@ -388,6 +452,7 @@
             background: $btn-info-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-info-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -397,7 +462,8 @@
           @include info-active;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           @include info-disabled;
         }
 
@@ -416,7 +482,9 @@
 
         &:hover {
           background: $btn-warning-hover-bgcolor;
-          border-color: $btn-warning-hover-border-color;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-warning-hover-border-color;
+          }
           @if $skin-name == 'Material3' {
             box-shadow: $btn-primary-focus-box-shadow;
           }
@@ -441,6 +509,7 @@
             background: $btn-warning-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-warning-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -450,7 +519,8 @@
           @include warning-active;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           @include warning-disabled;
         }
 
@@ -469,7 +539,9 @@
 
         &:hover {
           background: $btn-danger-hover-bgcolor;
-          border-color: $btn-danger-hover-border-color;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-danger-hover-border-color;
+          }
           @if $skin-name == 'Material3' {
             box-shadow: $btn-primary-focus-box-shadow;
           }
@@ -494,6 +566,7 @@
             background: $btn-danger-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-danger-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -515,7 +588,8 @@
           color: $btn-danger-active-color;
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           @include danger-disabled;
         }
 
@@ -561,6 +635,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -579,7 +654,8 @@
           }
         }
 
-        &:disabled {
+        &:disabled,
+        &.e-disabled {
           background: $btn-flat-disabled-bgcolor;
           border-color: $btn-flat-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
@@ -625,7 +701,9 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-primary-color;
             }
           }
 
@@ -640,7 +718,8 @@
             }
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             background: $btn-flat-primary-disabled-bgcolor;
             border-color: $btn-flat-primary-disabled-border-color;
             box-shadow: $btn-flat-box-shadow;
@@ -691,7 +770,9 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-success-color;
             }
           }
 
@@ -709,7 +790,8 @@
             }
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             background: $btn-flat-success-disabled-bgcolor;
             border-color: $btn-flat-success-disabled-border-color;
             color: $btn-flat-success-disabled-color;
@@ -759,7 +841,9 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-info-color;
             }
           }
 
@@ -777,7 +861,8 @@
             }
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             background: $btn-flat-info-disabled-bgcolor;
             border-color: $btn-flat-info-disabled-border-color;
             color: $btn-flat-info-disabled-color;
@@ -827,7 +912,9 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-warning-color;
             }
           }
 
@@ -845,7 +932,8 @@
             }
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             background: $btn-flat-warning-disabled-bgcolor;
             border-color: $btn-flat-warning-disabled-border-color;
             color: $btn-flat-warning-disabled-color;
@@ -895,7 +983,9 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-danger-color;
             }
           }
 
@@ -913,7 +1003,8 @@
             }
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             background: $btn-flat-danger-disabled-bgcolor;
             border-color: $btn-flat-danger-disabled-border-color;
             color: $btn-flat-danger-disabled-color;
@@ -961,6 +1052,7 @@
             background: $btn-outline-bgcolor;
           }
           @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
           }
         }
@@ -978,7 +1070,7 @@
           background: $btn-outline-bgcolor;
           @if $skin-name == 'Material3' {
             border: 1px solid $btn-outline-border-color;
-            color: $btn-outline-primary-color;
+            color: rgba($btn-outline-primary-color);
           }
           @else {
             border-color: $btn-outline-primary-color;
@@ -992,7 +1084,7 @@
             @if $skin-name == 'Material3' {
               background: $btn-outline-primary-hover-bgcolor;
               border: 1px solid $btn-outline-border-color;
-              color: $btn-outline-primary-color;
+              color: rgba($btn-outline-primary-color);
             }
             @else {
               background: $btn-primary-hover-bgcolor;
@@ -1016,7 +1108,9 @@
               background: $btn-outline-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-primary-color;
             }
           }
 
@@ -1025,7 +1119,8 @@
             @include outline-primary-active;
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             @include outline-primary-disabled;
           }
         }
@@ -1038,7 +1133,7 @@
           }
           @if $skin-name == 'Material3' {
             border: 1px solid $btn-outline-border-color;
-            color: $btn-outline-success-color;
+            color: rgba($btn-outline-success-color);
           }
           @else {
             border-color: $btn-success-bgcolor;
@@ -1052,7 +1147,7 @@
             @if $skin-name == 'Material3' {
               background: $btn-outline-success-hover-bgcolor;
               border: 1px solid $btn-outline-border-color;
-              color: $btn-outline-success-color;
+              color: rgba($btn-outline-success-color);
             }
             @else {
               background: $btn-success-hover-bgcolor;
@@ -1076,7 +1171,9 @@
               background: $btn-outline-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-success-color;
             }
           }
 
@@ -1085,7 +1182,8 @@
             @include outline-success-active;
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             @include outline-success-disabled;
           }
         }
@@ -1098,7 +1196,7 @@
           }
           @if $skin-name == 'Material3' {
             border: 1px solid $btn-outline-border-color;
-            color: $btn-outline-info-color;
+            color: rgba($btn-outline-info-color);
           }
           @else {
             border-color: $btn-info-bgcolor;
@@ -1112,7 +1210,7 @@
             @if $skin-name == 'Material3' {
               background: $btn-outline-info-hover-bgcolor;
               border: 1px solid $btn-outline-border-color;
-              color: $btn-outline-info-color;
+              color: rgba($btn-outline-info-color);
             }
             @else {
               background: $btn-info-hover-bgcolor;
@@ -1136,7 +1234,9 @@
               background: $btn-outline-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-info-color;
             }
           }
 
@@ -1145,7 +1245,8 @@
             @include outline-info-active;
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             @include outline-info-disabled;
           }
         }
@@ -1158,7 +1259,7 @@
           }
           @if $skin-name == 'Material3' {
             border: 1px solid $btn-outline-border-color;
-            color: $btn-outline-warning-color;
+            color: rgba($btn-outline-warning-color);
           }
           @else {
             border-color: $btn-warning-bgcolor;
@@ -1172,7 +1273,7 @@
             @if $skin-name == 'Material3' {
               background: $btn-outline-warning-hover-bgcolor;
               border: 1px solid $btn-outline-border-color;
-              color: $btn-outline-warning-color;
+              color: rgba($btn-outline-warning-color);
             }
             @else {
               background: $btn-warning-hover-bgcolor;
@@ -1196,7 +1297,9 @@
               background: $btn-outline-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-warning-color;
             }
           }
 
@@ -1205,7 +1308,8 @@
             @include outline-warning-active;
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             @include outline-warning-disabled;
           }
         }
@@ -1218,7 +1322,7 @@
           }
           @if $skin-name == 'Material3' {
             border: 1px solid $btn-outline-border-color;
-            color: $btn-outline-danger-color;
+            color: rgba($btn-outline-danger-color);
           }
           @else {
             border-color: $btn-danger-bgcolor;
@@ -1232,7 +1336,7 @@
             @if $skin-name == 'Material3' {
               background: $btn-outline-danger-hover-bgcolor;
               border: 1px solid $btn-outline-border-color;
-              color: $btn-outline-danger-color;
+              color: rgba($btn-outline-danger-color);
             }
             @else {
               background: $btn-danger-hover-bgcolor;
@@ -1256,7 +1360,9 @@
               background: $btn-outline-bgcolor;
             }
             @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-danger-color;
             }
           }
 
@@ -1265,7 +1371,8 @@
             @include outline-danger-active;
           }
 
-          &:disabled {
+          &:disabled,
+          &.e-disabled {
             @include outline-danger-disabled;
           }
         }
@@ -1288,6 +1395,12 @@
 
         &:focus:not(:focus-visible) {
           outline: none !important; /* stylelint-disable-line declaration-no-important */
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
         }
 
         &:disabled {

@@ -140,8 +140,9 @@ export interface DropDownTreeModel extends ComponentModel{
      * Dropdown Tree component when the data fetch request from the remote server fails.
      *
      * @default 'The Request Failed'
+     * @aspType string
      */
-    actionFailureTemplate?: string;
+    actionFailureTemplate?: string | Function;
 
     /**
      * When allowFiltering is set to true, it shows the filter bar (search text box) of the component.
@@ -182,8 +183,9 @@ export interface DropDownTreeModel extends ComponentModel{
      * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      *
      * @default "${value.length} item(s) selected"
+     * @aspType string
      */
-    customTemplate?: string;
+    customTemplate?: string | Function;
 
     /**
      * Defines the value separator character in the input element when multi-selection or checkbox is enabled in the Dropdown Tree.
@@ -267,8 +269,12 @@ export interface DropDownTreeModel extends ComponentModel{
      * By default, the footerTemplate will be null and there will be no footer container for the pop-up list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * When **ignoreAccent** is set to true, then it ignores the diacritic characters or accents when filtering.
@@ -287,8 +293,12 @@ export interface DropDownTreeModel extends ComponentModel{
      * By default, the headerTemplate will be null and there will be no header container for the pop-up list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Allows additional HTML attributes such as title, name, etc., and accepts n number of attributes in a key-value pair format.
@@ -304,8 +314,12 @@ export interface DropDownTreeModel extends ComponentModel{
      * or HTML element ID holding the content.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Configures visibility mode for component interaction when allowMultiSelection or checkbox is enabled.
@@ -323,8 +337,9 @@ export interface DropDownTreeModel extends ComponentModel{
      * to be displayed within the pop-up.
      *
      * @default 'No Records Found'
+     * @aspType string
      */
-    noRecordsTemplate?: string;
+    noRecordsTemplate?: string | Function;
 
     /**
      * Specifies a short hint that describes the expected value of the Dropdown Tree component.

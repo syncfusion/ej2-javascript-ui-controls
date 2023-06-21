@@ -39,7 +39,7 @@ export class SmithchartLegend {
             + (smithchart.border.width * 2));
         let rowCount: number = legend.rowCount;
         let columnCount: number = legend.columnCount;
-        const titleSize: SmithchartSize = measureText(smithchart.legendSettings['title']['text'], font);
+        const titleSize: SmithchartSize = measureText(smithchart.legendSettings['title']['text'], font, smithchart.themeStyle.legendTitleFont);
         let maxRowWidth: number = 0;
         let totalRowHeight: number = 0;
         let curRowWidth: number = 0;
@@ -122,7 +122,7 @@ export class SmithchartLegend {
         const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
         const symbolWidth: number = legend.itemStyle.width;
         const symbolHeight: number = legend.itemStyle.height;
-        const textSize: SmithchartSize = measureText(series.text, legend.textStyle);
+        const textSize: SmithchartSize = measureText(series.text, legend.textStyle, smithchart.themeStyle.legendLabelFont);
         const width: number = symbolWidth + textSize.width + legend.shapePadding;
         const height: number = Math.max(symbolHeight, textSize.height);
 
@@ -138,8 +138,8 @@ export class SmithchartLegend {
         let startX: number;
         let startY: number;
         let titleFont: SmithchartFontModel = smithchart.title.font ? smithchart.title.font : smithchart.title.textStyle;
-        let smithchartTitleHeight: number = measureText(smithchart.title.text, titleFont).height;
-        let smithchartSubtitleHeight: number = measureText(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle).height;
+        let smithchartTitleHeight: number = measureText(smithchart.title.text, titleFont, smithchart.themeStyle.legendLabelFont).height;
+        let smithchartSubtitleHeight: number = measureText(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle, smithchart.themeStyle.legendLabelFont).height;
         let elementSpacing: number = smithchart.elementSpacing;
         let offset: number = smithchartTitleHeight + smithchartSubtitleHeight + elementSpacing + smithchart.margin.top;
         let itemPadding: number = legend.itemPadding > 0 ? legend.itemPadding : 0;
@@ -147,7 +147,7 @@ export class SmithchartLegend {
         let svgObjectHeight: number = smithchart.availableSize.height;
         let legendBorder: number = legend.border.width;
         let legendWidth: number = 0;
-        let titleSize: SmithchartSize = measureText(legend['title']['text'], legend.title.textStyle);
+        let titleSize: SmithchartSize = measureText(legend['title']['text'], legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
         let legendTitleHeight: number = titleSize.height;
         let borderSize: number = smithchart.border.width;
         let svgWidth: number = svgObjectWidth - ((borderSize * 2));
@@ -253,7 +253,7 @@ export class SmithchartLegend {
         smithchart: Smithchart, legend: SmithchartLegendSettingsModel, legendBounds: SmithchartRect,
         gLegendEle: Element): Element {
         let elementSpacing: number = smithchart.elementSpacing;
-        let titleSize: SmithchartSize = measureText(legend.title.text, legend.title.textStyle);
+        let titleSize: SmithchartSize = measureText(legend.title.text, legend.title.textStyle, smithchart.themeStyle.legendLabelFont);
         let titleWidth: number = titleSize.width;
         let titleHeight: number = titleSize.height;
         let textAlignment: string = legend.title.textAlignment;
@@ -278,7 +278,7 @@ export class SmithchartLegend {
         let options: TextOption = new TextOption(
             smithchart.element.id + '_LegendTitleText', startX, startY, 'start', legend.title.text
         );
-        let element: Element = renderTextElement(options, legend.title.textStyle, smithchart.themeStyle.legendLabel, gLegendEle);
+        let element: Element = renderTextElement(options, legend.title.textStyle, legend.title.textStyle.color || smithchart.themeStyle.legendTitleFont.color, gLegendEle, smithchart.themeStyle.legendTitleFont);
         element.setAttribute('aria-label', legend.title.description || legend.title.text);
         return element;
     }
@@ -292,7 +292,7 @@ export class SmithchartLegend {
         let itemPadding: number = legend.itemPadding;
         let textHeight: number;
         radius = Math.sqrt(symbol['width'] * symbol['width'] + symbol['height'] * symbol['height']) / 2;
-        textHeight = measureText(legendSeries['text'], legend.textStyle).height;
+        textHeight = measureText(legendSeries['text'], legend.textStyle, smithchart.themeStyle.legendLabelFont).height;
         location = {
             x: x + symbol['width'] / 2,
             y: (y + (textHeight > symbol['height'] ? textHeight : symbol['height']) / 2)
@@ -315,9 +315,9 @@ export class SmithchartLegend {
                     smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding,
                     location.y + textHeight / 4, 'start', args.text
                 );
-                legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
-                let element: Element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
+                legend.textStyle.fontFamily = legend.textStyle.fontFamily || smithchart.themeStyle.legendLabelFont.fontFamily;
+                legend.textStyle.size = legend.textStyle.size || smithchart.themeStyle.legendLabelFont.size;
+                let element: Element = renderTextElement(options, legend.textStyle, legend.textStyle.color || smithchart.themeStyle.legendLabelFont.color, legendGroup, smithchart.themeStyle.legendLabelFont);
                 legendGroup.setAttribute('aria-label', legend.description || ('Show ' + options.text));
                 legendGroup.appendChild(element);
                 this.legendItemGroup.appendChild(legendGroup);

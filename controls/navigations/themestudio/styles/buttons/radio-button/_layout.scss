@@ -127,6 +127,12 @@
         top: $radio-btn-ripple-position;
         width: $radio-btn-ripple-size;
         z-index: 1;
+
+        & .e-ripple-element {
+          @if $skin-name == 'Material3' {
+            border-radius: 50%;
+          }
+        }
       }
 
       &.e-right,

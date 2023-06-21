@@ -49,7 +49,7 @@ export class Render {
             if (collapsed && !isNullOrUndefined(args.row)) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
                 const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
-                if (!isNullOrUndefined(args.row.getAttribute('data-uid'))) {
+                if (!this.parent.grid.isFrozenGrid() && !isNullOrUndefined(args.row.getAttribute('data-uid'))) {
                     rowsObj.filter((e : Row<gridColumn>) => e.uid === args.row.getAttribute('data-uid'))[0].visible = false;
                 }
             }
@@ -132,7 +132,12 @@ export class Render {
             let iconRequired: boolean = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired && !isNullOrUndefined(data.childRecords)) {
-                iconRequired = !((<ITreeData>data).childRecords.length === 0 );
+                if (this.parent['isFromGantt'] && !this.parent.loadChildOnDemand) {
+                    iconRequired = data.hasChildRecords;
+                }
+                else {
+                   iconRequired = !((<ITreeData>data).childRecords.length === 0 );
+                }
             }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
@@ -213,7 +218,8 @@ export class Render {
         }
         if (summaryRow) {
             addClass([args.cell], 'e-summarycell');
-            const summaryData: string = getObject(args.column.field, args.data);
+            let summaryData: string = getObject(args.column.field, args.data);
+            summaryData = isNullOrUndefined(summaryData) ? null : summaryData;
             if (args.cell.querySelector('.e-treecell') != null) {
                 args.cell.querySelector('.e-treecell').innerHTML = summaryData;
             } else {
@@ -238,7 +244,7 @@ export class Render {
             args.cell.setAttribute('data-colindex', colindex + '');
         }
         if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
-            args.column.template = treeColumn.template;
+            args.column.template = treeColumn.template as any;
             args.column[`${templateFn}`] = templateCompiler(args.column.template);
             args.cell.classList.add('e-templatecell');
         }

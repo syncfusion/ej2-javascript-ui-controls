@@ -2,6 +2,62 @@
 
 ## [Unreleased]
 
+## 22.1.34 (2023-06-21)
+
+### Diagram
+
+#### New Features
+
+- `#F152758` - Added tooltip support for ports.
+- `#I420267` - Added tooltip support for symbols in the symbol palette.
+- `#I32153` - Provided vertical orientation for mind maps.
+- `#I392082` - Added functionality to load diagrams from EJ1 to EJ2.
+- `#I327078` - Provided support to customize the expand and collapse icons.
+
+## 21.2.9 (2023-06-06)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I463138` - Now, Scroll bar is updated properly without flickering while scrolling the diagram using touchpad.
+- `#I464508` - The DOM Exception will no longer thrown while adding group node dynamically with multiple layers.
+
+## 21.2.8 (2023-05-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I461020` - The undefined Exception will No longer thrown while dragging Swimlane after performing undo/redo on swimlane child nodes.
+- `#I462780` - Now, Nodes are updated properly while zoom out diagram in canvas mode.
+
+## 21.2.6 (2023-05-23)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I464229` -  Now, Complex hierarchical tree layout is working fine while injecting line distribution.
+
+## 21.2.5 (2023-05-16)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I456104` -  Now, swimlane child nodes are selectable after save and load.
+
+## 21.2.4 (2023-05-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I456288` - Now, scroller updated properly when we move nodes outside viewport.
+- `#I458205` - Now, bezier connector annotation alignment is working properly.
+- `#I456037` - Now, while hovering the port with single select and ZoomPan constraints drawing tool enabled.
+
 ## 21.2.3 (2023-05-03)
 
 ### Diagram

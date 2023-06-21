@@ -40,6 +40,9 @@
             background: $tbar-default-bg;
             color: $tbar-default-icon-color;
           }
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
 
           & .e-caret-hide {
             display: none !important; /* stylelint-disable-line declaration-no-important */
@@ -97,7 +100,9 @@
 
 .e-dropdown-popup {
   & .e-selected-btn {
-    background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
+    @if $skin-name != 'highcontrast' {
+      background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
+    }
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
       color: $secondary-text-color-focus !important; /* stylelint-disable-line declaration-no-important */
     }

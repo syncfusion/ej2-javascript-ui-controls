@@ -413,8 +413,9 @@ export interface AnnotationModel {
      * Sets and gets the content of the annotation. This property accepts the HTML string or id of the custom element.
      *
      * @default null
+     * @aspType string
      */
-    content?: string;
+    content?: string | Function;
 
     /**
      * Sets and gets the angle for annotation with respect to axis in circular gauge.

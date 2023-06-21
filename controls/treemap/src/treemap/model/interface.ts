@@ -389,7 +389,7 @@ export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     /**
      * Defines the template for rendering the tooltip.
      */
-    template: string;
+    template: string | Function;
 }
 
 /**
@@ -492,6 +492,10 @@ export interface IThemeStyle {
      */
     titleFontColor: string;
     /**
+     * Defines the title font weight of the treemap, supporting the theme.
+     */
+    titleFontWeight: string;
+    /**
      * Defines the subtitle text color of the treemap, supporting the theme.
      */
     subTitleFontColor: string;
@@ -504,13 +508,17 @@ export interface IThemeStyle {
      */
     tooltipFontColor: string;
     /**
+     * Defines the tooltip text size of the treemap supporting the theme.
+     */
+    tooltipFontSize: string;
+    /**
      * Defines the opacity of tooltip in the treemap, supporting the theme.
      */
     tooltipFillOpacity?: number;
     /**
      * Defines the opacity of tooltip text in the treemap, supporting the theme.
      */
-    tooltipTextOpacity?: number;
+    tooltipTextOpacity?: number;    
     /**
      * Defines the color of the legend title in the treemap, supporting the theme.
      */
@@ -519,6 +527,10 @@ export interface IThemeStyle {
      * Defines the color of the legend text in the treemap, supporting the theme.
      */
     legendTextColor: string;
+    /**
+     * Defines the font weight of texts in the treemap, supporting the theme.
+     */
+    fontWeight?: string;
     /**
      * Defines the font family of texts in the treemap, supporting the theme.
      */

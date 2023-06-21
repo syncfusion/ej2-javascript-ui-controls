@@ -1,5 +1,5 @@
 import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, CommandModel, freezeDirection } from '@syncfusion/ej2-grids';
-import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
+import { NumberFormatOptions, DateFormatOptions, merge, Property } from '@syncfusion/ej2-base';
 import { ITreeGridCellFormatter } from '../base/interface';
 import { SortComparer} from '@syncfusion/ej2-grids';
 import { TreeGrid } from '..';
@@ -73,7 +73,7 @@ export class Column {
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
      */
-    public commandsTemplate: string;
+    public commandsTemplate: string | Function;
 
     /**
      * `commands` provides an option to display command buttons in every cell.
@@ -126,7 +126,7 @@ export class Column {
      * @default null
      * @aspIgnore
      */
-    public editTemplate: string;
+    public editTemplate: string | Function;
     /**
      * Defines the filter template/UI that used as filter for a particular column.
      * It accepts either template string or HTML element ID.
@@ -134,7 +134,7 @@ export class Column {
      * @default null
      * @aspIgnore
      */
-    public filterTemplate: string;
+    public filterTemplate: string | Function;
     /**
      * If `isIdentity` is set to true, then this column is considered as identity column.
      *
@@ -225,7 +225,7 @@ export class Column {
      * @default null
      */
 
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
@@ -233,7 +233,7 @@ export class Column {
      * @default null
      */
 
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * You can use this property to freeze selected columns in treegrid
@@ -584,7 +584,7 @@ export interface ColumnModel {
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
      */
-    commandsTemplate?: string;
+    commandsTemplate?: string | Function;
 
     /**
      * `commands` provides an option to display command buttons in every cell.
@@ -625,7 +625,7 @@ export interface ColumnModel {
      * @default null
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
@@ -633,7 +633,7 @@ export interface ColumnModel {
      * @default null
      */
 
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * You can use this property to freeze selected columns in grid.
@@ -771,7 +771,7 @@ export interface ColumnModel {
      *
      * @aspIgnore
      */
-    editTemplate?: string;
+    editTemplate?: string | Function;
 
     /**
      * Defines the filter template/UI that is used as filter for a particular column.
@@ -779,7 +779,7 @@ export interface ColumnModel {
      *
      * @aspIgnore
      */
-    filterTemplate?: string;
+    filterTemplate?: string | Function;
 
     /**
      * If `isIdentity` is set to true, then this column is considered as identity column.
@@ -818,3 +818,39 @@ export interface ColumnModel {
      */
     freeze?: freezeDirection;
 }
+
+/**
+ * Defines TreeGrid column
+ */
+export class TreeGridColumn extends Column {
+    /**
+     * Defines stacked columns
+     *
+     * @default null
+     */
+    @Property(null)
+    public columns: string[] | ColumnModel[];
+}
+
+/**
+ * Interface for a class TreeGridColumn
+ */
+export interface TreeGridColumnModel extends ColumnModel {
+    /**
+     * Defines stacked columns
+     *
+     * @default null
+     */
+    columns?: string[] | ColumnModel[];
+}
+
+/**
+ * Defines stacked tree grid column
+ */
+export class StackedColumn extends TreeGridColumn {}
+
+/**
+ * Interface for a class stacked tree grid column
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface StackedColumnModel extends TreeGridColumnModel {}

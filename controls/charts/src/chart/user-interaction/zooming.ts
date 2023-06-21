@@ -80,7 +80,7 @@ export class Zoom {
         this.elementId = chart.element.id;
         this.zoomingRect = new Rect(0, 0, 0, 0);
         this.zoomAxes = [];
-        this.zoomkitOpacity = 0.3;
+        this.zoomkitOpacity = 1;
         this.isIOS = Browser.isIos || Browser.isIos7;
         this.isZoomed = this.performedUI = this.zooming.enablePan && this.zooming.enableSelectionZooming;
         if (zooming.enableScrollbar) {
@@ -583,11 +583,11 @@ export class Zoom {
     private showZoomingToolkit(chart: Chart): boolean {
         let toolboxItems: ToolbarItems[] = this.zooming.toolbarItems;
         const areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
-        const spacing: number = 5;
+        const spacing: number = 10;
         const render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
         const length: number = this.isDevice ? 1 : toolboxItems.length;
-        const iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).width : 16;
-        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).height : 22;
+        const iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).width : 16;
+        const height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }, { size: '12px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height : 22;
         const width: number = (length * iconSize) + ((length + 1) * spacing) + ((length - 1) * spacing);
         const transX: number = areaBounds.x + areaBounds.width - width - spacing;
         const transY: number = (areaBounds.y + spacing);
@@ -608,18 +608,26 @@ export class Zoom {
         });
         this.toolkitElements.appendChild(defElement);
         const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            (this.chart.theme === 'FluentDark' ? '#252423' : '#fafafa');
+            (this.chart.theme === 'FluentDark' ? '#252423' : this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
-            1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
+            1, new Rect(0, 0, width, (height + (spacing * 2))), 4, 4
         )) as HTMLElement);
         const outerElement: Element = render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
-            0.1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
+            0.1, new Rect(0, 0, width, (height + (spacing * 2))), 4, 4
         ));
         if (this.chart.theme === 'Tailwind' || this.chart.theme === 'TailwindDark') {
             outerElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
-        } else {
+        }
+        else if (this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark') {
+            outerElement.setAttribute('filter', 'drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.15)) drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))');
+            outerElement.setAttribute('fill', this.chart.theme === 'Material3' ? '#FFFFFF' : '#1C1B1F');
+            outerElement.setAttribute('rx', '4px');
+            outerElement.setAttribute('ry', '4px');
+            outerElement.setAttribute('opacity', '1');
+        }
+        else {
             outerElement.setAttribute('filter', 'url(#chart_shadow)');
         }
         this.toolkitElements.appendChild(outerElement);
@@ -717,7 +725,7 @@ export class Zoom {
 
     private zoomToolkitLeave(): boolean {
         const element: HTMLElement = <HTMLElement>this.toolkitElements;
-        this.zoomkitOpacity = 0.3;
+        this.zoomkitOpacity = 1;
         element.setAttribute('opacity', '' + this.zoomkitOpacity);
         return false;
     }

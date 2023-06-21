@@ -357,8 +357,8 @@ export class LineDistribution {
             /* tslint:enable */
             //EJ2-70198 - The layout ConnectionPointOrigin DifferentPoint property is not working for bezier connector
             if(connectorObstacle.wrapper === "Orthogonal"){
-               this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
-           }
+                this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
+            }
         }
     }
 
@@ -611,9 +611,9 @@ export class LineDistribution {
             const portWrapper: DiagramElement = (node as Node).initPortWrapper((node as NodeModel).ports[node.ports.length - 1] as Port);
             node.wrapper.children.push(portWrapper);
             // EJ2-66867 -  Exception occurs on calling doLayout while injecting Linerouting module
-            // nodes portWrapper bouds is updated below 
+            // nodes portWrapper bouds is updated below
             node.wrapper.measure(new Size(node.width, node.height), node.id);
-            node.wrapper.arrange(node.wrapper.desiredSize); 
+            node.wrapper.arrange(node.wrapper.desiredSize);
             diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } as Connector : { sourcePortID: '' } as Connector,
                                             // eslint-disable-next-line
                                             inConnectors ? { targetPortID: newPort.id } as Connector : { sourcePortID: newPort.id } as Connector);
@@ -1384,10 +1384,10 @@ export class LineDistribution {
                 for (let i: number = 0; i < newList2.length; i++) {
                     const o: string = newList2[parseInt(i.toString(), 10)];
                     // EJ2-63944 - Nodes overlapping in Complex hierarchical tree layout in linear arrangement.
-                    if(newList1.indexOf(o)===-1)
+                    if (newList1.indexOf(o) === -1)
                     {
-                       isSame = false;
-                       break;
+                        isSame = false;
+                        break;
                     }
                 }
 

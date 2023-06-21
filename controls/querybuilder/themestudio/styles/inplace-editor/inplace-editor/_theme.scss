@@ -136,12 +136,24 @@
             background-color: darken($gray-600, 7.5%);
             border: 1px solid darken($gray-600, 10%);
           }
+
+          &:disabled {
+            background-color: $content-bg;
+            border: 1px solid $gray-400;
+            box-shadow: 0 1px 4px 0 $black-color;
+          }
         }
         @else if $skin-name == 'bootstrap5' {
 
           &:hover {
             background-color: darken($gray-600, 7.5%);
             border: 1px solid darken($gray-600, 10%);
+          }
+
+          &:disabled{
+            background-color: $content-bg-color;
+            border: 1px solid $border-light;
+            border-radius: 4px;
           }
         }
 
@@ -192,13 +204,16 @@
     &.e-tooltip-wrap.e-popup {
       background: $editor-tip-bg;
       box-shadow: $editor-tip-box-shadow;
-      @if $skin-name == 'FluentUI' {
+      @if $skin-name == 'FluentUI' or $skin-name == 'Material3' {
         border-radius: $editor-popup-tip-wrapper-bdr-radius;
       }
 
       .e-tip-content {
         border-radius: $editor-popup-tip-content-bdr-radius;
         color: $editor-value-text-color;
+        @if $skin-name == 'Material3' {
+          background: $editor-tip-title-bg;
+        }
       }
 
       .e-arrow-tip-inner {
@@ -218,6 +233,9 @@
 
       &.e-popup {
         border: $editor-tip-border;
+        @if $skin-name == 'Material3' {
+          border-radius: 8px;
+        }
       }
 
       .e-editable-title {

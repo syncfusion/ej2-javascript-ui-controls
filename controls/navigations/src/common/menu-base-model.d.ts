@@ -251,9 +251,10 @@ export interface MenuBaseModel extends ComponentModel{
      * Not applicable to ContextMenu component.
      *
      * @default null
+     * @aspType string
      * @private
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.

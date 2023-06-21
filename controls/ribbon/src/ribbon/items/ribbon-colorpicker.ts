@@ -77,7 +77,7 @@ export class RibbonColorPicker {
             wrapper.classList.add(RIBBON_HOVER);
         } else {
             wrapper.classList.remove(RIBBON_HOVER);
-        }        
+        }
     }
 
     /**
@@ -91,6 +91,7 @@ export class RibbonColorPicker {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const colorPickerEle: HTMLElement = itemEle.querySelector('#' + item.id);
+        colorPickerEle.setAttribute('data-control', item.type.toString());
         const colorPickerObj: ColorPicker = getComponent(colorPickerEle, ColorPicker);
         colorPickerObj.setProperties({ cssClass: colorPickerObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.

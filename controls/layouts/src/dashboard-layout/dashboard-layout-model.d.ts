@@ -23,16 +23,18 @@ export interface PanelModel {
 
     /**
      * Defines the template value that should be displayed as the panel's header.
-     *
+     * 
+     * @aspType string
      */
-    header?: string | HTMLElement;
+    header?: string | HTMLElement | Function;
 
     /**
      * Defines the template value that should be displayed as the panel's content.
      *
+     * @aspType string
      */
 
-    content?: string | HTMLElement;
+    content?: string | HTMLElement | Function;
 
     /**
      * Defines whether to the panel should be enabled or not.

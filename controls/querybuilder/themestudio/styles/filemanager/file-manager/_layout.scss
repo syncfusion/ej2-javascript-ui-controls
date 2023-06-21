@@ -90,7 +90,7 @@
           .e-tbar-btn {
             .e-tbar-btn-text {
               line-height: 18px;
-              padding: 7px 8px;
+              padding: 7px 8px 7px 0;
             }
 
             .e-icons.e-btn-icon {
@@ -461,6 +461,7 @@
 
           @if $fm-skin-name == 'Material3' {
             padding: 8px 12px;
+            line-height: 20px;
 
             .e-fe-text {
               font-size: $fe-grid-content-name-font-size;
@@ -506,6 +507,12 @@
 
       .e-empty {
         min-width: $fe-grid-empty-min-width;
+        @if $fm-skin-name == 'Material3' {
+          border: 1px dashed $primary;
+          border-radius: 2px;
+          margin: 36px;
+          height: calc(100% - 72px);
+        }
       }
 
       .e-empty-content {
@@ -516,12 +523,18 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
+        @if $fm-skin-name == 'Material3' {
+          font-weight: 500;
+        }
       }
 
       .e-empty-icon {
         height: $fe-grid-empty-icon-height;
         margin: $fe-grid-empty-icon-margin;
         width: $fe-grid-empty-icon-width;
+        @if $fm-skin-name == 'Material3' {
+          margin-top: 5%;
+        }
       }
 
       .e-empty-inner-content {
@@ -552,6 +565,7 @@
           overflow: inherit;
           padding-left: $fe-grid-header-cb-padding-left;
           padding-right: 0;
+          box-shadow: none;
         }
 
         .e-fe-grid-icon {
@@ -650,6 +664,12 @@
 
       .e-empty {
         min-width: $fe-lg-icon-empty-min-width;
+        @if $fm-skin-name == 'Material3' {
+          border: 1px dashed $primary;
+          border-radius: 2px;
+          margin: 36px;
+          height: calc(100% - 72px);
+        }
       }
 
       .e-empty-content {
@@ -660,12 +680,18 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           line-height: 24px;
         }
+        @if $fm-skin-name == 'Material3' {
+          font-weight: 500;
+        }
       }
 
       .e-empty-icon {
         height: $fe-lg-icon-empty-icon-height;
         margin: $fe-lg-icon-empty-icon-margin;
         width: $fe-lg-icon-empty-icon-width;
+        @if $fm-skin-name == 'Material3' {
+          margin-top: 10%;
+        }
       }
 
       .e-empty-inner-content {
@@ -697,6 +723,9 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           margin: 2px;
         }
+        @if $fm-skin-name == 'Material3' {
+          margin: 4px;
+        }
       }
 
       .e-list-item {
@@ -707,7 +736,7 @@
         overflow: hidden;
         padding: $fe-lg-item-padding;
         width: $fe-lg-item-width;
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'Material3' {
           &.e-fe-drop-folder {
             border: 1px dashed $fe-drop-folder-bg-color;
           }
@@ -741,10 +770,15 @@
         padding: $fe-lg-text-padding;
         text-align: center;
         width: $fe-lg-item-inner-width;
+        @if $fm-skin-name == 'Material3' {
+          line-height: $fe-lg-text-line-height;
+        }
       }
 
       .e-list-img {
-        border: 2px solid;
+        @if $fm-skin-name != 'Material3' and $fm-skin-name != 'Material3-dark' {
+          border: 2px solid;
+        }
         @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'Material3' {
           box-shadow: $fe-img-box-shadow;
         }
@@ -760,6 +794,9 @@
         height: $fe-lg-icon-height;
         margin: $fe-lg-icon-margin;
         width: $fe-lg-icon-width;
+        @if $fm-skin-name == 'Material3' {
+          background-position: center;
+        }
       }
     }
 
@@ -773,6 +810,9 @@
         display: inline-flex;
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           height: 38px;
+        }
+        @else if $fm-skin-name == 'Material3' {
+          height: 40px;
         }
         @else {
           height: 36px;
@@ -877,11 +917,18 @@
             padding-left: 12px;
           }
 
+          @if $fm-skin-name == 'Material3' {
+            padding: $fe-rtl-search-padding;
+          }
+
           .e-input-group {
 
             .e-input {
               @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
                 margin: 0 29px 0 0;
+              }
+              @else if $fm-skin-name == 'Material3' {
+                margin: $fe-rtl-search-input-margin;
               }
               @else {
                 margin: 0 24px 0 0;
@@ -1150,6 +1197,13 @@
   .e-filemanager.e-bigger {
 
     &.e-fe-mobile {
+      
+      .e-toolbar {
+        @if ($fm-skin-name == 'Material3') {
+          height: $fe-mobile-tb-height;
+          min-height: $fe-mobile-tb-height;
+        }
+      }
 
       .e-toolbar-items .e-toolbar-item .e-btn-icon.e-icons {
         font-size: $fe-mobile-icon-font-size;
@@ -1157,58 +1211,65 @@
 
       .e-toolbar .e-toolbar-items .e-toolbar-item.e-popup-text .e-tbar-btn.e-btn.e-tbtn-txt .e-icons.e-btn-icon {
 
-        &.e-fe-newfolder {
-          padding-top: $fe-mobile-newfolder-padding-top;
+        @if $fm-skin-name == 'Material3' {
+          padding: $fe-mobile-tb-icon-padding;
+          font-size: $fe-mobile-tb-icon-font-size;
+          line-height: $fe-mobile-tb-icon-font-size;
         }
+        @else {
+          &.e-fe-newfolder {
+            padding-top: $fe-mobile-newfolder-padding-top;
+          }
 
-        &.e-fe-upload {
-          padding-left: $fe-mobile-upload-padding-left;
-        }
+          &.e-fe-upload {
+            padding-left: $fe-mobile-upload-padding-left;
+          }
 
-        &.e-fe-sort {
-          padding-top: $fe-mobile-sort-padding-top;
-        }
+          &.e-fe-sort {
+            padding-top: $fe-mobile-sort-padding-top;
+          }
 
-        &.e-fe-refresh {
-          padding-top: $fe-mobile-refresh-padding-top;
-        }
+          &.e-fe-refresh {
+            padding-top: $fe-mobile-refresh-padding-top;
+          }
 
-        &.e-fe-select  {
-          padding-top: $fe-mobile-select-padding-top;
-        }
+          &.e-fe-select  {
+            padding-top: $fe-mobile-select-padding-top;
+          }
 
-        &.e-fe-large {
-          padding: $fe-mobile-large-padding;
-        }
+          &.e-fe-large {
+            padding: $fe-mobile-large-padding;
+          }
 
-        &.e-fe-grid {
-          padding: $fe-mobile-grid-padding;
-        }
+          &.e-fe-grid {
+            padding: $fe-mobile-grid-padding;
+          }
 
-        &.e-fe-details {
-          padding-top: $fe-mobile-details-padding-top;
-        }
+          &.e-fe-details {
+            padding-top: $fe-mobile-details-padding-top;
+          }
 
-        &.e-fe-delete {
-          padding-left: $fe-mobile-delete-padding-left;
-        }
+          &.e-fe-delete {
+            padding-left: $fe-mobile-delete-padding-left;
+          }
 
-        &.e-fe-rename {
-          padding-left: $fe-mobile-rename-padding-left;
-          padding-top: $fe-mobile-rename-padding-top;
-        }
+          &.e-fe-rename {
+            padding-left: $fe-mobile-rename-padding-left;
+            padding-top: $fe-mobile-rename-padding-top;
+          }
 
-        &.e-fe-download {
-          padding-left: $fe-mobile-download-padding-left;
-        }
+          &.e-fe-download {
+            padding-left: $fe-mobile-download-padding-left;
+          }
 
-        &.e-fe-cut {
-          padding-left: $fe-mobile-cut-padding-left;
-          padding-top: $fe-mobile-cut-padding-top;
-        }
+          &.e-fe-cut {
+            padding-left: $fe-mobile-cut-padding-left;
+            padding-top: $fe-mobile-cut-padding-top;
+          }
 
-        &.e-fe-copy {
-          padding-left: $fe-mobile-copy-padding-left;
+          &.e-fe-copy {
+            padding-left: $fe-mobile-copy-padding-left;
+          }
         }
       }
 
@@ -1345,12 +1406,15 @@
           }
 
           .e-checkbox-wrapper {
-            z-index: 1000;
+            z-index: 999;
           }
 
           .e-list-text {
             margin: 0 auto;
             width: $fe-mobile-lg-item-inner-width;
+            @if $fm-skin-name == 'Material3' {
+              font-size: $fe-big-lg-text-font-size;
+            }
           }
 
           .e-list-img {
@@ -1492,6 +1556,7 @@
 
         .e-toolbar-item:not(.e-separator) {
           min-height: $fe-big-tb-height;
+          padding: 4px;
         }
       }
 
@@ -1613,6 +1678,9 @@
         font-size: $fe-big-bc-font-size;
         line-height: $fe-big-bc-text-size;
         padding: $fe-big-bc-text-padding;
+        @if $fm-skin-name == 'Material3' {
+          line-height: $fe-big-lg-text-line-height;
+        }
       }
 
       .e-search-wrap {
@@ -1697,6 +1765,15 @@
         .e-rowcell {
           font-size: $fe-big-grid-content-font-size;
 
+          @if $fm-skin-name == 'Material3' {
+            padding: 14px 12px;
+            line-height: 20px;
+  
+            .e-fe-text {
+              font-size: $fe-grid-content-name-font-size;
+              line-height: 20px;
+            }
+          }
           .e-fe-text {
             font-size: $fe-big-grid-content-name-font-size;
           }
@@ -1760,6 +1837,14 @@
         }
         padding: $fe-big-grid-empty-inner-content-padding;
         text-align: $fe-big-grid-empty-inner-content-text-align;
+      }
+      &.e-rtl .e-checkbox-wrapper .e-frame {
+        @if $fm-skin-name == 'FluentUI' {
+          margin-right: -16px;
+        }
+        @else{
+          margin-right: -10px;
+        }
       }
     }
 
@@ -1832,6 +1917,22 @@
         & > .e-ul {
           @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
             padding: 0 12px 0 0;
+          }
+        }
+      }
+
+      @if $fm-skin-name =='Material3' {
+        .e-address {
+          .e-search-wrap {
+            .e-input-group {
+              .e-input {
+                margin: $fe-big-rtl-search-input-margin;
+              }
+            }
+          }
+
+          .e-fe-search {
+            padding: $fe-big-rtl-search-input-padding;
           }
         }
       }

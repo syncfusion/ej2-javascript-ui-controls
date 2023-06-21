@@ -2,6 +2,79 @@
 
 ## [Unreleased]
 
+## 22.1.34 (2023-06-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464829` - Now, we can select text in the comment panel using the mouse cursor.
+- `#I464868` - Now, the default placeholder text is automatically selected when the comment text box for free text annotation is in focus.
+- `#I430769` - Now, when the document is reloaded, exported, or imported into the PDF viewer, the order of the annotations is preserved.
+- `#I472757`- Now, the custom Stamp is not removed when downloading the document after undo and redo.
+
+#### New Features
+
+- `#I426363`, `F180068` – Provided the support for value property in the radio button and checkbox field.
+- `#I448261` – Exposed the API to load the number of pages on the initial loading.
+
+## 21.2.9 (2023-06-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464832` - Now, we can able to edit the first comment of the text markup annotation.
+- `#I464832` - Now, the words within the comments are split for readability.
+- `#I464992` - Now, enabling the form designer toolbar programmatically activates the form designer mode.
+- `#I466770` - Now, able to edit the free text annotation content programmatically and the content does not change while exporting.
+- `#I465319` - Now, adding a free text annotation shows its content once in the comment panel.
+- `#I464819` - Now, web service not listening does not occur when loading the provided PDF file.
+
+## 21.2.8 (2023-05-30)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464823` - Now, able to edit the annotation comments when cursor is placed in the textbox.
+- `#I464868` - Now, when double-clicking the free text annotation comment, the comment is focused.
+- `#I438900` - Now, double tap zooming is working after signing the signature field.
+- `#I438900` - Now, double tap zooming is working on iOS devices even if annotation module is not injected.
+- `#I467181` - Now, the tab key is working when we add PDF Viewer and input elements in the same page.
+- `#I467222` - Now, the `triggerAnnotationPropChange` event is not triggered multiple times when adding the free text annotation programmatically.
+- `#I464511` - Now, the content of the free text annotation does not changes when we click outside of it.
+- `#I463293` - Now, the form fields are placed properly while zoom in or zoom out in mobile device.
+
+## 21.2.5 (2023-05-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I460490` - Now, the signature style is saved when we save the typed signature option.
+- `#I460513` - Now, the exception does not occur when downloading the provided PDF file.
+- `#I459487` - Now, the script error does not occur when importing the values programmatically.
+- `#I461544` - Now, scrolling the multiline textbox field works when we set it to read-only.
+- `#I462652` - Now, the form field validation works properly for non-rendered pages.
+- `#I460704` - Now, the script error does not occur when pressing the delete key.
+
+## 21.2.4 (2023-05-09)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I426363`, `F180068` – Provided support for value property in the radio button and checkbox field.
+
+#### Bug Fixes
+
+- `#I456051` - Now, the stamp annotations are displayed correctly in the provided document.
+- `#I452436` - Now, the radio button and checkbox are added properly.
+- `#I403367` - Now, underlining and text selection are working properly in the provided document.
+- `#I456864` - Now, the download performance has been enhanced when downloading the provided document.
+- `#I458313` - Now, the add annotation API working fine when the annotation object is given as input.
+
 ## 21.2.3 (2023-05-03)
 
 ### PDF Viewer

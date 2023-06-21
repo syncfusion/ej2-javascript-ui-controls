@@ -617,7 +617,7 @@ export class BordersAndShadingDialog {
             if (this.ulelementShading.value === 'Cell') {
                 editorModule.onCellFormat(this.cellFormat);
             } else if (this.ulelementShading.value === 'Table') {
-                editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
+                editorModule.onTableFormat(this.tableFormat, true);
             }
             if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
                 this.documentHelper.owner.editorHistory.updateComplexHistory();

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 21.2.9 (2023-06-06)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F182339` - Resolved the panel overlapping issue, when resize it after continuously performing drag and drop actions in Dashboard Layout component.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I463883` -  The issue of "updating the pane setting dynamically with the same value despite manually resizing the pane" has been resolved.
+
+## 21.2.6 (2023-05-23)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I451526` -  The issue with the "Pane resizing would not works properly" has been resolved.
+
 ## 20.4.48 (2023-02-01)
 
 ### Splitter

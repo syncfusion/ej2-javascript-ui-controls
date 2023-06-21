@@ -361,7 +361,7 @@ export class ResourceBase {
                 text: 'resourceName',
                 child: 'resourceChild'
             },
-            nodeTemplate: this.parent.resourceHeaderTemplate,
+            nodeTemplate: this.parent.resourceHeaderTemplate as any,
             nodeClicked: this.resourceClick.bind(this),
             created: this.resourceTreeCreated.bind(this)
         });

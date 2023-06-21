@@ -216,7 +216,7 @@
             background-color: $range-presets-bg-color;
           }
           @if $skin-name == 'Material3' {
-            background: $range-presets-bg-color;
+            background: $range-presets-bg-active-color;
           }
           color: $range-presets-font-color;
         }
@@ -254,6 +254,8 @@
         }
         @if $skin-name == 'Material3' {
           background: $range-footer-background;
+          border-bottom-left-radius: $range-popup-border-radius;
+          border-bottom-right-radius: $range-popup-border-radius;
         }
 
         #{if(&, '&', '*')} .e-cancel.e-flat:not(:hover) {
@@ -288,6 +290,9 @@
     }
     @else if $skin-name == 'Material3' {
       background: initial;
+    }
+    @else if $skin-name == 'bootstrap-dark' {
+      background-color: $range-background;
     }
     @else {
       background-color: $range-bg-color;
@@ -431,5 +436,20 @@
 .e-bigger .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
   @if $skin-name == 'FluentUI' {
     line-height: $range-bigger-other-hover-line-height;
+  }
+}
+
+.e-daterangepick-mob-popup-wrap {
+
+  #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
+
+    #{if(&, '&', '*')} .e-model-header {
+      background-color: $modal-range-header-bg-color;
+      color: $modal-range-header-text-color;
+
+      #{if(&, '&', '*')} .e-popup-close {
+        color: $modal-range-header-text-color;
+      }
+    }
   }
 }

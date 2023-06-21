@@ -181,9 +181,10 @@ export interface AccumulationDataLabelSettingsModel {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.

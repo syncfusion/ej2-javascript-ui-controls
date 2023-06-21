@@ -1,4 +1,4 @@
-import { print as printFunction, createElement } from '@syncfusion/ej2-base';
+import { print as printFunction, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeMap} from '../../index';
 import { getElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
@@ -63,7 +63,18 @@ export class Print {
                 div.appendChild(getElement(elements).cloneNode(true) as Element);
             }
         } else {
-            div.appendChild(treeMap.element.cloneNode(true) as Element);
+            const exportElement: HTMLElement = treeMap.element.cloneNode(true)  as HTMLElement;
+            let backgroundElement: HTMLElement = exportElement.childNodes[1] as HTMLElement;
+            if (!isNullOrUndefined(backgroundElement)) {
+                backgroundElement = backgroundElement.childNodes[0] as HTMLElement;
+                const backgroundColor: string = backgroundElement.getAttribute('fill');
+                if ((treeMap.theme === 'Tailwind' || treeMap.theme === 'Bootstrap5' || treeMap.theme === 'Fluent' || treeMap.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (exportElement.childNodes[1].childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+                } else if ((treeMap.theme === 'TailwindDark' || treeMap.theme === 'Bootstrap5Dark' || treeMap.theme === 'FluentDark' || treeMap.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (exportElement.childNodes[1].childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
+                }
+            }
+            div.appendChild(exportElement as Element);
         }
         return div;
     }

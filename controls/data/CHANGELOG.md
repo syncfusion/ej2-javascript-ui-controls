@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.2.9 (2023-06-06)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I469713` - Resolved the issue where data was duplicated in the complex field when using an empty nested object.
+
+## 21.2.8 (2023-05-30)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I464294` - Resolved the issue where the value zero is not displayed in the grid while using complex data binding.
+
+## 21.2.6 (2023-05-23)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I456631` - Resolved the issue where the search functionality was not working properly within brackets.
+
+## 21.2.4 (2023-05-09)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#F180240` - Provided support to render and perform Grid data actions without using `ContractResolver` in `ASP.NET Core`.
+
+## 21.1.38 (2023-04-04)
 
 ### DataManager
 

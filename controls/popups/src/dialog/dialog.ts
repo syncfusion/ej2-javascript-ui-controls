@@ -1781,8 +1781,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'position':
                 this.checkPositionData();
                 if (this.isModal) {
-                    const positionX: string | number = isNullOrUndefined(oldProp.position.X) ? this.position.X : oldProp.position.X;
-                    const positionY: string | number = isNullOrUndefined(oldProp.position.Y) ? this.position.Y : oldProp.position.Y;
+                    const positionX: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.X) ? oldProp.position.X: this.position.X;
+                    const positionY: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.Y) ? oldProp.position.Y :this.position.Y;
                     if (this.dlgContainer.classList.contains('e-dlg-' + positionX + '-' + positionY )) {
                         this.dlgContainer.classList.remove('e-dlg-' + positionX + '-' + positionY );
                     }

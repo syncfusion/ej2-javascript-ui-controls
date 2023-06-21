@@ -1,4 +1,4 @@
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeMap} from '../../index';
 import { ExportType } from '../utils/enum';
 import { triggerDownload } from '../utils/helper';
@@ -37,15 +37,24 @@ export class ImageExport {
                     'height': treeMap.availableSize.height.toString(),
                     'width': treeMap.availableSize.width.toString()
                 } });
-
+            const exportElement: HTMLElement = treeMap.svgObject.cloneNode(true) as HTMLElement;
+            const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
+            if (!isNullOrUndefined(backgroundElement)) {
+                const backgroundColor: string = backgroundElement.getAttribute('fill');
+                if ((treeMap.theme === 'Tailwind' || treeMap.theme === 'Bootstrap5' || treeMap.theme === 'Fluent' || treeMap.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+                } else if ((treeMap.theme === 'TailwindDark' ||  treeMap.theme === 'Bootstrap5Dark' || treeMap.theme === 'FluentDark' || treeMap.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
+                }
+            }
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            treeMap.svgObject.outerHTML +
+            exportElement.outerHTML +
             '</svg>';
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
-                        [(new XMLSerializer()).serializeToString(treeMap.svgObject)],
+                        [(new XMLSerializer()).serializeToString(exportElement)],
                     { type: 'image/svg+xml' }
                 )
             );

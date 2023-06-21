@@ -372,6 +372,52 @@ describe('AutoComplete', () => {
             });
         });
 
+        describe('SF-460080 - external searching with grouping', () => {
+            let searchData = [
+                {
+                    text: 'Scheduler',
+                    autocompleteValue: 'schedule',
+                    category: 'schedule'
+                }
+            ];
+            let secondData = [...searchData, {
+                text: 'Grid items',
+                    autocompleteValue: 'Grid',
+                    category: 'Grid'
+            }];                
+            let atcObj: any;
+            let activeElement: HTMLElement[];
+            let e: any = { preventDefault: function () { }, target: null };
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+            beforeAll(() => {
+                document.body.appendChild(element);
+                atcObj = new AutoComplete({
+                    dataSource: secondData,
+                    fields: { text: 'text', value: 'autocompleteValue', groupBy: 'category' },
+                    filtering: (e: FilteringEventArgs) => {
+                        let query = new Query();
+                        e.updateData(secondData, query);
+                    }
+                });
+                atcObj.appendTo(element);
+            });
+            afterAll(() => {
+                atcObj.destroy();
+                element.remove();
+            });
+
+            it('SF-460080 - Searching a value with grouping category same as searching text ', (done) => {
+                atcObj.inputElement.value = 'Grid';
+                e.keyCode = 72;
+                atcObj.onInput(e);
+                atcObj.onFilterUp(e);
+                setTimeout(() => {
+                    activeElement = atcObj.list.querySelectorAll('li');
+                    done();
+                }, 450)
+            });
+        });
+
         describe('external searching', () => {
             let atcObj: any;
             let activeElement: HTMLElement[];

@@ -8,6 +8,10 @@
     -webkit-flex-direction: row;
     flex-direction: row;
     position: relative;
+    @if $skin-name == 'Material3' {
+      border-radius: $btn-border-radius;
+      box-shadow: $btn-active-box-shadow;
+    }
 
     input:focus+label.e-btn,
     .e-btn:focus,

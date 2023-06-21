@@ -110,6 +110,18 @@ export class RowDD {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         const gObj: IGrid = this.parent;
+        if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
+            !isNullOrUndefined(e.target.closest('tr'))) {
+            const dragTrs: NodeListOf<Element> = e.dragElement.querySelectorAll('tr');
+            const indentCells: NodeListOf<Element> = e.target.closest('tr').querySelectorAll('.e-indentcell');
+            for (let i: number = 0; i < dragTrs.length; i++) {
+                for (let j: number = 0; j < indentCells.length; j++) {
+                    const cloneIndentCell: Node = indentCells[parseInt(j.toString(), 10)].cloneNode(true);
+                    dragTrs[parseInt(i.toString(), 10)].insertBefore(cloneIndentCell,
+                                                                     dragTrs[parseInt(i.toString(), 10)].firstElementChild);
+                }
+            }
+        }
         if (gObj.element.classList.contains('e-childgrid')) {
             const parentGrid: Element = this.getParentGrid(gObj.element);
             parentGrid.appendChild(e.dragElement);
@@ -210,8 +222,8 @@ export class RowDD {
         }
 
         if (parentsUntil(this.isDropGrid.element, 'e-grid')) {
-            if ((!this.isDropGrid.groupSettings.columns.length || e.target.classList.contains('e-selectionbackground')) &&
-                !this.isDropGrid.element.querySelector('.e-emptyrow')) {
+            if ((!this.isDropGrid.groupSettings.columns.length || this.isDropGrid.groupSettings.columns.length ||
+                e.target.classList.contains('e-selectionbackground')) && !this.isDropGrid.element.querySelector('.e-emptyrow')) {
                 if (parentsUntil(target, 'e-grid') && parentsUntil(target, 'e-grid').id === this.isDropGrid.element.id) {
                     this.updateScrollPostion(e.event);
                 }
@@ -238,7 +250,8 @@ export class RowDD {
                         if (this.parent.enableVirtualization) {
                             bottomborder.style.zIndex = '1';
                         }
-                        if (!gridcontentEle.getElementsByClassName('e-lastrow-dragborder').length) {
+                        if (!gridcontentEle.getElementsByClassName('e-lastrow-dragborder').length &&
+                            (isNullOrUndefined(trElement.nextSibling) || !gObj.allowGrouping || !gObj.groupSettings.columns.length)) {
                             gridcontentEle.classList.add('e-grid-relative');
                             gridcontentEle.appendChild(bottomborder);
                             bottomborder.style.bottom = this.getScrollWidth() + 'px';
@@ -326,7 +339,7 @@ export class RowDD {
                     if (e.helper.classList.contains('e-cloneproperties') && document.querySelector('.' + e.helper.classList[0])) {
                         remove(e.helper);
                     }
-                    if (gObj.enableVirtualization) {
+                    if (gObj.enableVirtualization && (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
                         gObj.refresh();
                     } else {
                         this.rowOrder(args);
@@ -369,7 +382,23 @@ export class RowDD {
                     frTbody.insertBefore(args.rows[parseInt(i.toString(), 10)], frTarget);
                 }
             } else {
+                if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
+                    args.rows.length === 1) {
+                    const removeElem: Element = gObj.getRowElementByUID(args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+                    if (!isNullOrUndefined(removeElem)) {
+                        remove(removeElem);
+                    }
+                }
                 tbody.insertBefore(args.rows[parseInt(i.toString(), 10)], target);
+                if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
+                    const dragRowUid: string = args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid');
+                    const dropRowUid: string = args.target.parentElement.getAttribute('data-uid');
+                    const dragRowObject: Row<Column> = gObj.getRowObjectFromUID(dragRowUid);
+                    const dropRowObject: Row<Column> = gObj.getRowObjectFromUID(dropRowUid);
+                    if (dragRowObject.parentUid !== dropRowObject.parentUid) {
+                        gObj['groupModule'].groupReorderHandler(dragRowObject, dropRowObject);
+                    }
+                }
             }
         }
         const tr: HTMLTableRowElement[] = [].slice.call(tbody.getElementsByClassName(literals.row));
@@ -380,7 +409,17 @@ export class RowDD {
                 frTr = [].slice.call(frTbody.getElementsByClassName(literals.row));
             }
         }
-        this.refreshData(tr, mtr, frTr);
+        if (!gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            gObj['groupModule'].groupReorderRowObject(args, tr);
+            resetRowIndex(this.parent, gObj.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr);
+        }
+        else if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            gObj['groupModule'].groupReorderRowObject(args, tr);
+            gObj['groupModule'].vGroupResetRowIndex();
+        }
+        else {
+            this.refreshData(tr, mtr, frTr);
+        }
         if (this.parent.frozenRows) {
             for (let i: number = 0, len: number = tr.length; i < len; i++) {
                 if (i < this.parent.frozenRows) {
@@ -399,6 +438,7 @@ export class RowDD {
             }
         }
     }
+
     private updateFrozenRowreOrder(args: RowDropEventArgs): void {
         const gObj: IGrid = this.parent;
         let tbodyMovH: Element;
@@ -448,10 +488,15 @@ export class RowDD {
         const gObj: IGrid = this.parent;
         let mTr: Element; let frTr: Element;
         let targetIdx: number = parseInt(args.target.parentElement.getAttribute(literals.dataRowIndex), 10);
-        if (args.fromIndex < args.dropIndex || args.fromIndex === args.dropIndex) {
+        if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            targetIdx = this.parent.getDataRows().indexOf(args.target.parentElement);
+        }
+        if ((args.fromIndex < args.dropIndex || args.fromIndex === args.dropIndex) && (!gObj.allowGrouping ||
+            !gObj.groupSettings.columns.length)) {
             targetIdx = targetIdx + 1;
         }
-        const tr: Element = gObj.getRowByIndex(targetIdx);
+        const tr: Element = gObj.allowGrouping && gObj.groupSettings.columns.length && targetIdx !== -1 &&
+            args.fromIndex < args.dropIndex ? (gObj.getRowByIndex(targetIdx).nextSibling as Element) : gObj.getRowByIndex(targetIdx);
         if (gObj.isFrozenGrid()) {
             mTr = gObj.getMovableRowByIndex(targetIdx);
             if (gObj.getFrozenMode() === literals.leftRight) {
@@ -564,7 +609,7 @@ export class RowDD {
         } else {
             this.updateFrozenColumnreOrder(args);
         }
-        if (this.selectedRowColls.length > 0) {
+        if (this.selectedRowColls.length > 0 && (!this.parent.allowGrouping || !this.parent.groupSettings.columns.length)) {
             this.parent.selectRows(this.selectedRowColls);
             const indexes: number[] = [];
             if (this.parent.filterSettings.columns.length || this.parent.sortSettings.columns.length) {
@@ -763,28 +808,51 @@ export class RowDD {
             node = this.isDropGrid.element as Element;
         }
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
-        this.removeFirstRowBorder(element);
-        this.removeLastRowBorder(element);
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            this.removeBorder(element);
+        }
+        else {
+            this.removeFirstRowBorder(element);
+            this.removeLastRowBorder(element);
+        }
         if (parentsUntil(element, 'e-grid') && element.classList.contains(literals.row) && ((!this.parent.rowDropSettings.targetID &&
             parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) || this.istargetGrid)) {
             removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             let rowElement: HTMLElement[] = [];
-            const targetRowIndex: number = parseInt(targetRow.getAttribute(literals.dataRowIndex), 10);
+            let targetRowIndex: number = parseInt(targetRow.getAttribute(literals.dataRowIndex), 10);
             if (targetRow && targetRowIndex === 0) {
-                const div: HTMLElement = this.parent.createElement('div', { className: 'e-firstrow-dragborder' });
-                const gridheaderEle: Element = this.isDropGrid.getHeaderContent();
-                gridheaderEle.classList.add('e-grid-relative');
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    element = <Element>targetRow.previousSibling;
+                    rowElement = [].slice.call(element
+                        .querySelectorAll('.e-groupcaption,.e-summarycell,.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                }
+                else {
+                    const div: HTMLElement = this.parent.createElement('div', { className: 'e-firstrow-dragborder' });
+                    const gridheaderEle: Element = this.isDropGrid.getHeaderContent();
+                    gridheaderEle.classList.add('e-grid-relative');
 
-                div.style.width = (node as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
-                if (!gridheaderEle.getElementsByClassName('e-firstrow-dragborder').length) {
-                    gridheaderEle.appendChild(div);
+                    div.style.width = (node as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
+                    if (!gridheaderEle.getElementsByClassName('e-firstrow-dragborder').length) {
+                        gridheaderEle.appendChild(div);
+                    }
                 }
             } else if (this.parent.rowDropSettings.targetID && targetRow) {
                 element = this.isDropGrid.getRowByIndex(targetRowIndex - 1);
                 rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             } else if (targetRow && parseInt(startedRow.getAttribute(literals.dataRowIndex), 10) > targetRowIndex) {
-                element = this.parent.getRowByIndex(targetRowIndex - 1);
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    targetRowIndex = this.parent.getDataRows().indexOf(targetRow);
+                }
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length &&
+                    (targetRow.previousSibling as Element).classList.contains('e-groupcaptionrow')) {
+                    element = <Element>targetRow.previousSibling;
+                    rowElement = [].slice.call(element
+                        .querySelectorAll('.e-groupcaption,.e-summarycell,.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                }
+                else {
+                    element = this.parent.getRowByIndex(targetRowIndex - 1);
+                    rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                }
             } else { rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')); }
             const frzCols: boolean = this.parent.isFrozenGrid();
             if (targetRow && targetRowIndex !== 0 && frzCols) {
@@ -841,8 +909,14 @@ export class RowDD {
         if (!this.parent.rowDropSettings.targetID) {
             this.removeLastRowBorder(element);
         }
-        element = (this.isDropGrid.isFrozenGrid() ? this.isDropGrid.getMovableRows() : this.isDropGrid.getRows()).filter((row: Element) =>
-            row.querySelector('td.e-dragborder'))[0];
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            element = ([].slice.call(this.isDropGrid.getContentTable().querySelectorAll('tr'))).filter((row: Element) =>
+                row.querySelector('td.e-dragborder'))[0];
+        }
+        else {
+            element = (this.isDropGrid.isFrozenGrid() ? this.isDropGrid.getMovableRows() : this.isDropGrid.getRows())
+                .filter((row: Element) => row.querySelector('td.e-dragborder'))[0];
+        }
         if (element) {
             let rowElement: HTMLElement[] = [].slice.call(element.getElementsByClassName('e-dragborder'));
             if (this.parent.isFrozenGrid()) {
@@ -1010,6 +1084,11 @@ export class RowDD {
                 }
             }
             this.rowData = [this.parent.getRowInfo((this.startedRow).querySelector('.' + literals.rowCell)).rowData];
+            if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
+                gObj.getSelectedRows().length) {
+                this.rows = gObj.getSelectedRows();
+                this.rowData = gObj.getSelectedRecords();
+            }
         } else {
             this.rows = gObj.getSelectedRows();
             this.rowData = gObj.getSelectedRecords();

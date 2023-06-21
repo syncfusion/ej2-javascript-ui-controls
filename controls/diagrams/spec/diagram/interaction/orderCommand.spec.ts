@@ -954,3 +954,76 @@ describe('Order commands for Multiple selection', () => {
         done();
     });
 });
+
+describe('Bug 830365: Exception raised on adding group node in layers dynamically and order commands for group node not working properly', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramLayersGroup' });
+        document.body.appendChild(ele);
+
+        let connector: ConnectorModel = {
+            id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }, annotations: [ {content: 'Connector'}]
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [ { content: 'Node2'}]
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [ { content: 'Node3'}]
+        };
+        var node4 = {
+            id: 'node4', width: 50, height: 50, offsetX: 500, offsetY: 350, annotations: [{ content: 'Node4' }]
+        };
+        var node5 = {
+            id: 'node5', width: 50, height: 50, offsetX: 600, offsetY: 350, annotations: [{ content: 'Node5' }]
+        };
+        var group = {
+            id: 'iGroup', children: ['node4', 'node5']
+        }
+
+        diagram = new Diagram({
+            width: '1000px', height: '500px',nodes: [node, node2, node3,node4,node5,group], connectors: [connector],
+            layers: [{ id: 'layer1', visible: true, objects:['node1','node2','node4','node5','iGroup']},
+            { id: 'layer2', visible: true, objects:['node3','connector1']}],
+
+        });
+        diagram.appendTo('#diagramLayersGroup');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Adding group node at runtime', (done: Function) => {
+        let nodeCount = diagram.nodes.length;
+        let nodes:NodeModel[] = [
+            {id:'c1',width:70,height:50,offsetX:300,offsetY:100,annotations:[{content:'c1'}]},
+            {id:'c2',width:70,height:50,offsetX:400,offsetY:100,annotations:[{content:'c2'}]},
+            { id: 'c3', width: 70, height: 50, offsetX: 360, offsetY: 100, annotations: [{ content: 'c3' }] },
+            { id: 'c4', width: 70, height: 50, offsetX: 390, offsetY: 100, annotations: [{ content: 'c4' }] },
+            { id: 'c5', width: 70, height: 50, offsetX: 420, offsetY: 100, annotations: [{ content: 'c5' }] },
+            { id: 'g1', children: ['c1', 'c2','c3','c4','c5'] }
+        ];
+        diagram.add(nodes[0]);
+        diagram.add(nodes[1]);
+        diagram.add(nodes[2]);
+        diagram.add(nodes[3]);
+        diagram.add(nodes[4]);
+        diagram.add(nodes[5]);
+        let curNodeCount = diagram.nodes.length;
+        expect(nodeCount === 6 && diagram.layers.length === 2 && diagram.activeLayer.id === 'layer2'
+        && curNodeCount === 12).toBe(true);
+        done();
+    });
+});

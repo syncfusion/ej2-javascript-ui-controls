@@ -181,7 +181,7 @@ export class Command extends ChildProperty<Command> {
 
     /**
      * Defines any additional parameters that are required at runtime
-     * 
+     *
      * @default ''
      */
     @Property('')

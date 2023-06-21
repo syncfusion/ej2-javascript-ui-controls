@@ -1,4 +1,4 @@
-import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import {MaskPlaceholderModel} from '../common/maskplaceholder-model';
+import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import {MaskPlaceholderModel} from '../common/maskplaceholder-model';
 import {DatePickerModel} from "../datepicker/datepicker-model";
 
 /**
@@ -253,6 +253,13 @@ export interface DateTimePickerModel extends DatePickerModel{
      * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
     strictMode?: boolean;
+
+    /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    fullScreenMode?: boolean;
 
     /**
      * By default, the date value will be processed based on system time zone.

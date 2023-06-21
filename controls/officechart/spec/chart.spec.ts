@@ -301,3 +301,207 @@ describe('office chart to EJ2-chart-conversion', () => {
     return json;
   }
 });
+describe('office chart to EJ2-chart-conversion', () => {
+  let chartObj: ChartComponent;
+
+  beforeAll(() => {
+    let elem: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(elem);
+    chartObj = new ChartComponent();
+    chartObj.chartRender(getJson(), 1);
+    chartObj.chart.appendTo('#container');
+
+  });
+
+  afterAll((): void => {
+    chartObj.destroy();
+    document.body.removeChild(document.getElementById('container'));
+  });
+  it('Rendering Bar charts', () => {
+    let chartData: any = getJson();
+    chartObj.chartRender(chartData, 1);
+  });
+  function getJson(): any {
+    let json: any = {
+      "c": [
+        {
+          "chd": [
+            {
+              "y": 286.0
+            },
+            {
+              "y": 1300.0
+            }
+          ],
+          "cx": "Gravad lax "
+        },
+        {
+          "chd": [
+            {
+              "y": 680.0
+            },
+            {
+              "y": 700.0
+            }
+          ],
+          "cx": "Louisiana Hot spiced Okara  "
+        },
+        {
+          "chd": [
+            {
+              "y": 288.0
+            },
+            {
+              "y": 1280.0
+            }
+          ],
+          "cx": "Mascarpone Fabioli    "
+        },
+        {
+          "chd": [
+            {
+              "y": 200.0
+            },
+            {
+              "y": 1200.0
+            }
+          ],
+          "cx": "Wimmers gute SemmelKnodel        "
+        },
+        {
+          "chd": [
+            {
+              "y": 731.0
+            },
+            {
+              "y": 2660.0
+            }
+          ],
+          "cx": "Maxilaku                "
+        }
+      ],
+      "cs": [
+        {
+          "sn": "Sum of Purchases",
+          "sf": {
+            "f": {
+              "fc": "#000000FF",
+              "rgb": "#000000FF"
+            },
+            "msz": 0.0
+          },
+          "dp": [
+            {
+              "i": 0,
+              "f": {
+                "fc": "4f81be",
+                "rgb": "#4f81be"
+              },
+              "l": {
+                "c": "4f81be",
+                "rgb": "#4f81be"
+              }
+            }
+          ]
+        },
+        {
+          "sn": "Sum of Future Expenses",
+          "sf": {
+            "f": {
+              "fc": "#000000FF",
+              "rgb": "#000000FF"
+            },
+            "msz": 0.0
+          },
+          "dp": [
+            {
+              "i": 0,
+              "f": {
+                "fc": "c0504e",
+                "rgb": "#c0504e"
+              },
+              "l": {
+                "c": "c0504e",
+                "rgb": "#c0504e"
+              }
+            }
+          ]
+        }
+      ],
+      "ca": {
+        "fc": "#D0CECE00"
+      },
+      "cta": {
+        "l": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "fn": "Calibri (Body)",
+        "fsz": 14.0,
+        "df": {
+          "i": 0,
+          "f": {
+            "fc": "000000",
+            "rgb": "#000000"
+          },
+          "l": {
+            "c": "000000",
+            "rgb": "#000000"
+          }
+        }
+      },
+      "pa": {
+        "fc": "#D0CECE00"
+      },
+      "cl": {
+        "p": null,
+        "cta": {
+          "l": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "fn": null,
+          "fsz": 0.0,
+          "df": {
+            "i": 0,
+            "f": {},
+            "l": {}
+          }
+        }
+      },
+      "cpca": {
+        "ctt": null,
+        "fsz": 10.0,
+        "fn": "Calibri",
+        "ct": "Automatic",
+        "nf": "General",
+        "minv": 0.0,
+        "maxv": 0.0,
+        "maju": 0.0,
+        "hmajgl": 0,
+        "hmingl": 0,
+        "majtm": "TickMark_Outside",
+        "mintm": "TickMark_None",
+        "tlp": "TickLabelPosition_NextToAxis"
+      },
+      "cpva": {
+        "ctt": null,
+        "fsz": 10.0,
+        "fn": "Calibri",
+        "minv": 0.0,
+        "maxv": 0.0,
+        "maju": 1.0,
+        "hmajgl": 1,
+        "hmingl": 0,
+        "majtm": "TickMark_Outside",
+        "mintm": "TickMark_None",
+        "tlp": "TickLabelPosition_Low"
+      },
+      "ctt": "Purchase Details",
+      "ct": "Bar_Clustered",
+      "h": 300.0,
+      "w": 470.0
+    };
+    return json;
+  }
+});

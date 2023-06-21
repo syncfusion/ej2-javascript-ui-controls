@@ -105,8 +105,6 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                console.log(svg.getAttribute('x'));
-                console.log(svg.getAttribute('y'));
                 expect(svg.getAttribute('x') === '296.8571428571429' || svg.getAttribute('x') === '154.2857142857143').toBe(true);
                 expect(svg.getAttribute('y') === '405.5' || svg.getAttribute('y') === '406.5' || svg.getAttribute('y') === '405' ||
                 svg.getAttribute('y') === '409').toBe(true);
@@ -248,7 +246,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '145.65625' || svg.getAttribute('y') === '135.890625' ||
                     svg.getAttribute('y') === '123.81668090820312' || svg.getAttribute('y') === '114.390625' ||
-                    svg.getAttribute('y') === '135.90625').toBe(true);
+                    svg.getAttribute('y') === '136.90625').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -259,10 +257,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '232.90625' ||
+                expect(svg.getAttribute('x') === '185.78125' || svg.getAttribute('x') === '232.90625' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '115.75' || svg.getAttribute('y') === '114.75' ||
-                    svg.getAttribute('y') === '118.25' || svg.getAttribute('y') === '108.25').toBe(true);
+                    svg.getAttribute('y') === '118.25' || svg.getAttribute('y') === '109.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -277,7 +275,7 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('x') === '310.9375' || svg.getAttribute('x') === '402.8125' ||
                     svg.getAttribute('x') === '494.3125' || svg.getAttribute('x') === '312.5625').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -302,11 +300,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-               
                 expect(svg.getAttribute('x') === '310.9375' || svg.getAttribute('x') === '402.8125' ||
                     svg.getAttribute('x') === '494.3125' || svg.getAttribute('x') === '312.5625').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -317,11 +314,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-    
                 expect(svg.getAttribute('x') === '63' || svg.getAttribute('x') === '62' ||
                     svg.getAttribute('x') === '63' || svg.getAttribute('x') === '59').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -333,11 +329,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-
-                expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '232.90625' ||
+                expect(svg.getAttribute('x') === '185.78125' || svg.getAttribute('x') === '232.90625' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '188' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -361,11 +356,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-             
-                expect(svg.getAttribute('x') === '310.9375' || svg.getAttribute('x') === '402.8125' ||
+                expect(svg.getAttribute('x') === '312.5625' || svg.getAttribute('x') === '402.8125' ||
                     svg.getAttribute('x') === '494.3125' || svg.getAttribute('x') === '188' || svg.getAttribute('x') === '312.5625').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -376,11 +370,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                
-                expect(svg.getAttribute('x') === '63' || svg.getAttribute('x') === '62' ||
+                expect(svg.getAttribute('x') === '63' || svg.getAttribute('x') === '59' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '188' || svg.getAttribute('x') === '59').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -423,7 +416,7 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '232.90625' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
@@ -439,7 +432,7 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '232.90625' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
-                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
+                    svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '82.25').toBe(true);
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
                 done();
@@ -527,11 +520,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-            
                 expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '232.90625' ||
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
-                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
+                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '77.25').toBe(true);
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
@@ -544,11 +536,10 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-              
                 expect(svg.getAttribute('x') === '310.9375' || svg.getAttribute('x') === '402.8125' ||
                     svg.getAttribute('x') === '494.3125' || svg.getAttribute('x') === '312.5625').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
-                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
+                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '77.25').toBe(true);
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
@@ -564,7 +555,7 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('x') === '63' || svg.getAttribute('x') === '62' ||
                     svg.getAttribute('x') === '63' || svg.getAttribute('x') === '59').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
-                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
+                    svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '77.25').toBe(true);
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
@@ -593,10 +584,8 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                console.log(svg.getAttribute('y'));
-                console.log(svg.getAttribute('x'));
                 expect(svg.getAttribute('x') === '1707.7142857142856'|| svg.getAttribute('x') === '425.1428571428572').toBe(true);
-                expect(svg.getAttribute('y') === '405.5' || svg.getAttribute('y') === '376' || svg.getAttribute('y') === '405' ||
+                expect(svg.getAttribute('y') === '425.1428571428572' || svg.getAttribute('y') === '376' || svg.getAttribute('y') === '405' ||
                 svg.getAttribute('y') === '409').toBe(true);
                 done();
             };

@@ -114,12 +114,13 @@ export interface IHtmlItemArgs {
     insertElement?: Element
     captionClass?: string
     action?: string
+    formatPainterAction?: IFormatPainterActionValue
 }
 /**
  * @deprecated
  */
 export interface IHtmlUndoRedoData {
-    text?: string
+    text?: DocumentFragment
     range?: NodeSelection
 }
 
@@ -170,18 +171,57 @@ export interface IFormatPainterSettings {
  * @hidden
  *
  */
-export interface IFormatPainterActionArgs {
-    name: string
-    event: MouseEvent | KeyboardEvent
-    item: IFormatPainterAction
-    subCommand: string
+export interface IFormatPainterAction {
+    formatPainterAction: IFormatPainterActionValue
 }
+
+
 /**
- *
- * @deprecated
+ * @private
  * @hidden
  *
  */
-export interface IFormatPainterAction {
-    formatPainterAction: IFormatPainterActionValue
+export interface IFormatPainterEditor {
+    destroy: Function;
+}
+
+/**
+ * @private
+ * @hidden
+ */
+export interface FormatPainterCollection {
+    attrs: Attr[];
+    className: string;
+    styles: CSSPropCollection[];
+    tagName: string;
+}
+/**
+ * @private
+ * @hidden
+ *
+ */
+export interface FormatPainterValue {
+    element: HTMLElement;
+    lastChild: HTMLElement;
+}
+
+/**
+ * @private
+ * @hidden
+ */
+export interface DeniedFormatsCollection {
+    tag: string;
+    styles: string[];
+    attributes: string[];
+    classes: string[];
+}
+
+/**
+ * @private
+ * @hidden
+ */
+export interface CSSPropCollection {
+    property: string;
+    value: string;
+    priority: string;
 }

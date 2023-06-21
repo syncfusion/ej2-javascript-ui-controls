@@ -598,6 +598,7 @@ export class KeyboardInteraction {
                         return;
                     }
                 }
+                e.preventDefault();
                 this.selectCells(isMultiple, targetCell);
             }
         } else if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
@@ -641,6 +642,7 @@ export class KeyboardInteraction {
                         return;
                     }
                 }
+                e.preventDefault();
                 this.selectCells(isMultiple, targetCell);
             }
         } else if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {

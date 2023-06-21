@@ -42,37 +42,40 @@
     .e-toolbar {
       border-bottom-color: $fe-border-color;
 
-      .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
-        //Based on toolbar active background modify the dropdowns background
-        &.e-active {
-          @include hover-icon-border-color;
-          @include active-icon-color;
-          background: $fe-tb-focus-bg;
-          border-color: $fe-tb-focus-border-color;
-          @if $fm-skin-name == 'highcontrast' {
-            background: $fe-active-bg-color;
-          }
+      @if $fm-skin-name != 'Material3' {
 
-          &:hover {
+        .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
+          //Based on toolbar active background modify the dropdowns background
+          &.e-active {
+            @include hover-icon-border-color;
+            @include active-icon-color;
+            background: $fe-tb-focus-bg;
+            border-color: $fe-tb-focus-border-color;
             @if $fm-skin-name == 'highcontrast' {
               background: $fe-active-bg-color;
             }
+
+            &:hover {
+              @if $fm-skin-name == 'highcontrast' {
+                background: $fe-active-bg-color;
+              }
+            }
           }
-        }
 
-        &:hover {
-          @include hover-icon-border-color;
-          background: $fe-tb-focus-bg;
-          border-color: $fe-tb-hover-border-color;
-        }
+          &:hover {
+            @include hover-icon-border-color;
+            background: $fe-tb-focus-bg;
+            border-color: $fe-tb-hover-border-color;
+          }
 
-        &:focus {
-          @include hover-icon-border-color;
-          @include active-icon-color;
-          background: $fe-tb-focus-bg;
-          border-color: $fe-tb-hover-border-color;
-          @if $fm-skin-name == 'highcontrast' {
-            background: $fe-active-bg-color;
+          &:focus {
+            @include hover-icon-border-color;
+            @include active-icon-color;
+            background: $fe-tb-focus-bg;
+            border-color: $fe-tb-hover-border-color;
+            @if $fm-skin-name == 'highcontrast' {
+              background: $fe-active-bg-color;
+            }
           }
         }
       }

@@ -33,7 +33,11 @@ export type SmithchartTheme =
     /**  Render a smithchart with Fluent theme. */
     'Fluent' |
     /**  Render a smithchart with FluentDark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /**  Render a smithchart with Material 3 theme. */
+    'Material3' |
+    /**  Render a smithchart with Material 3 dark theme. */
+    'Material3Dark';
 
 /**
  * Defines render type of smithchart. They are

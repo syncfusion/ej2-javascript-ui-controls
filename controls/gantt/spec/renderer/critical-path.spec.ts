@@ -5,6 +5,7 @@
  import * as cls from '../../src/gantt/base/css-constants';
  import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection } from '../base/data-source.spec';
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
  describe('Gantt spec for critical path', () => {
      describe('critical path rendering', () => {
          Gantt.Inject(CriticalPath, RowDD);
@@ -1646,3 +1647,76 @@
         });
     });
  });
+
+ describe('clone taskbar Right resizing taskbar', () => {
+    Gantt.Inject(CriticalPath, Edit, ContextMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectData1,
+            allowSelection: true,
+            allowResizing: true,
+            allowSorting: true,
+            enableContextMenu: true,
+            enableCriticalPath: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                { text: 'update', id: 'update' }],
+            projectStartDate: new Date('02/01/2017'),
+            projectEndDate: new Date('12/30/2017'),
+            rowHeight: 40,
+        }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    it('Right Resizing', () => {
+        ganttObj.actionComplete = (args) => {
+            if (args.requestType == 'save' && args.taskBarEditAction == 'RightResizing') {
+                expect(args.data.isCritical).toBe(true);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(41) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 1244, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Progress Resizing', () => {
+        ganttObj.actionComplete = (args) => {
+            if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
+                expect(args.data.isCritical).toBe(false);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -10, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(false);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    
+});

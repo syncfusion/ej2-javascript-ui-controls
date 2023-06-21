@@ -22,33 +22,23 @@ export const classNames: ClassNames = {
     rtl: 'e-rtl'
 };
 
-export type selectionType = 
-   /**
-     * Refers to the position of the selected chip in the list of chips
-     */
-    'index' | 
-   /**
-     * Refers to the underlying data value associated with the selected chip.
-     */
-    'value' | 
-   /**
-     * Refers to the displayed text on the selected chip.
-     */
-    'text';
+/**
+ * ```props
+ * index :- Refers to the position of the selected chip in the list of chips
+ * value :- Refers to the underlying data value associated with the selected chip.
+ * text :-Refers to the displayed text on the selected chip.
+ * ```
+ */
+export type selectionType = 'index' | 'value' | 'text';
 
-export type Selection = 
-   /**
-     * Allows the user to select single chip at the same time.
-     */
-    'Single' | 
-   /**
-     * Allows the user to select multiple chips at the same time.
-     */
-    'Multiple' | 
-   /**
-     * Chips are displayed as read-only.
-     */
-    'None';
+/**
+ * ```props
+ * Single :- Allows the user to select single chip at the same time.
+ * Multiple :- Allows the user to select multiple chips at the same time.
+ * None :- Chips are displayed as read-only.
+ * ```
+ */
+export type Selection = 'Single' | 'Multiple' | 'None';
 
 export interface ClassNames {
     chipSet: string;

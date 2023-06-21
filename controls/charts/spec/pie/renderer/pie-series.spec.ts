@@ -97,7 +97,7 @@ describe('Pie Series checking', () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
             expect(slicepath.center.x).toBe(310);
-            expect(slicepath.center.y == 52 || slicepath.center.y == 55).toBe(true);
+            expect(slicepath.center.y == 53 || slicepath.center.y == 55).toBe(true);
             done();
         };
 
@@ -111,7 +111,7 @@ describe('Pie Series checking', () => {
             slice = getElement(sliceid + 0);
             slicepath = getLocations(slice.getAttribute('d'));
             expect(slicepath.center.x).toBe(310);
-            expect(slicepath.center.y == 91 || slicepath.center.y == 85).toBe(true);
+            expect(slicepath.center.y == 90 || slicepath.center.y == 85).toBe(true);
             done();
         };
         pie.subTitle = 'sub title';

@@ -395,8 +395,11 @@ export interface TreeViewModel extends ComponentModel{
      * [Template](../../treeview/template/).
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      */
-    nodeTemplate?: string;
+    nodeTemplate?: string | Function;
 
     /**
      * Represents the selected nodes in the TreeView component. We can set the nodes that need to be

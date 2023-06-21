@@ -149,6 +149,14 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     public frequencies: RepeatType[];
 
     /**
+     * Sets the type of recurrence end for the recurrence pattern on the editor.
+     *
+     * @default ['never', 'until', 'count']
+     */
+    @Property(['never', 'until', 'count'])
+    public endTypes: EndType[];
+
+    /**
      * Sets the first day of the week.
      *
      * @default 0
@@ -324,7 +332,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             this.setRecurrenceRule(this.value as string);
         } else {
             if (!isNullOrUndefined(this.repeatType.value)) {
-                this.startState(this.repeatType.value.toString().toUpperCase(), NEVER, this.startDate);
+                this.startState(this.repeatType.value.toString().toUpperCase(), this.endTypes[0], this.startDate);
                 this.updateForm(this.repeatType.value.toString());
             }
             if (this.selectedType > 0) {
@@ -703,11 +711,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private getEndData(): { [key: string]: string }[] {
-        const endData: string[] = [NEVER, UNTIL, COUNT];
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self: RecurrenceEditor = this;
         const dataSource: { [key: string]: string }[] = [];
-        endData.forEach((data: string) => {
+        this.endTypes.forEach((data: string) => {
             dataSource.push({ text: self.localeObj.getConstant(data), value: data });
         });
         return dataSource;
@@ -1003,7 +1010,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.monthButtons = [];
     }
     public resetFields(): void {
-        this.startState(NONE, NEVER, this.startDate);
+        this.startState(NONE, this.endTypes[0], this.startDate);
         this.setDefaultValue();
     }
     public updateRuleUntilDate(startDate: Date): void {
@@ -1188,6 +1195,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             case 'locale':
             case 'frequencies':
             case 'firstDayOfWeek':
+            case 'endTypes' :
                 this.refresh();
                 break;
             case 'dateFormat':
@@ -1218,3 +1226,15 @@ type DayFormateType = 'wide' | 'narrow' | 'short';
  * ```
  */
 export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+/**
+* Defines the available types of recurrence end for the recurrence editor.
+* ```props
+* The following options are available:
+*
+* never :- Denotes that the recurrence has no end date and continues indefinitely.
+* until :- Denotes that the recurrence ends on a specified date.
+* count :- Denotes that the recurrence ends after a specified number of occurrences.
+* ```
+*/
+export type EndType = 'never' | 'until' | 'count';

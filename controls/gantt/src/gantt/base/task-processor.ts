@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
     private constructResourceViewDataSource(resources: Object[], data: Object[], unassignedTasks: Object[]): void {
         for (let i: number = 0; i < data.length; i++) {
             const tempData: Object = data[i as number];
-             const child: string = this.parent.taskFields.child != null? this.parent.taskFields.child: 'Children';
+             const child: string = this.parent.taskFields.child != null? this.parent.taskFields.child: this.parent.taskFields.child = 'Children';
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
             if ((!tempData[child as string]  || tempData[child as string].length === 0) && resourceData && resourceData.length) {
@@ -490,34 +490,61 @@ export class TaskProcessor extends DateProcessor {
                     startDate = this.checkStartDate(startDate, data.ganttProperties, false);
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
-                    } else {
-                        endDate = this.getDateFromFormat(endDate);
-                        endDate = this.checkEndDate(endDate, data.ganttProperties, false);
-                        duration = this.getDuration(
-                            startDate, endDate, data.ganttProperties.durationUnit,
-                            data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
-                    }
-                    if (taskSettings.duration) {
-                        remainingDuration = data.ganttProperties.duration - sumOfDuration;
-                        if (remainingDuration <= 0) {
-                            continue;
+                        if (taskSettings.duration) {
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration;
+                            if (remainingDuration <= 0) {
+                                continue;
+                            }
+                            duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
+                                    duration > remainingDuration ? remainingDuration : duration;
+                            endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                        } else if (!taskSettings.duration && taskSettings.endDate) {
+                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
+                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                            duration = this.getDuration(
+                                startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
+                                data.ganttProperties.isMilestone
+                            );
+                            if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
+                                && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
+                                ganttSegments[i - 1].duration = this.getDuration(
+                                    ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
+                                    data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                                continue;
+                            }
                         }
-                        duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
-                                duration > remainingDuration ? remainingDuration : duration;
-                        endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
-                    } else if (!taskSettings.duration && taskSettings.endDate) {
-                        endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
-                        data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
-                        duration = this.getDuration(
-                            startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
-                            data.ganttProperties.isMilestone
-                        );
-                        if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
-                            && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
-                            ganttSegments[i - 1].duration = this.getDuration(
-                                ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
-                                data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
-                            continue;
+                    } 
+                    else {
+                        endDate = this.getDateFromFormat(endDate);
+                        if (endDate && (isNullOrUndefined(duration) || String(duration) === '')) {
+                            if (endDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
+                                this.setTime(this.parent.defaultEndTime, endDate);
+                            }
+                        }
+                        endDate = this.checkEndDate(endDate, data.ganttProperties, false);
+                        duration = this.getDuration(startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                        if (taskSettings.duration) {
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration - 1 ;
+                            if (remainingDuration <= 0) {
+                                continue;
+                            }
+                            duration = i === segments.length - 1 ? remainingDuration : remainingDuration > 0 &&
+                                    duration > remainingDuration ? remainingDuration : duration;
+                            endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
+                        } else if (!taskSettings.duration && taskSettings.endDate) {
+                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
+                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                            duration = this.getDuration(
+                                startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
+                                data.ganttProperties.isMilestone
+                            );
+                            if (ganttSegments.length > 0 && endDate.getTime() < startDate.getTime()
+                                && endDate.getTime() <= data.ganttProperties.endDate.getTime()) {
+                                ganttSegments[i - 1].duration = this.getDuration(
+                                    ganttSegments[i - 1].startDate, data.ganttProperties.endDate, data.ganttProperties.durationUnit,
+                                    data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                                continue;
+                            }
                         }
                     }
                     segment = {};
@@ -1362,7 +1389,7 @@ export class TaskProcessor extends DateProcessor {
             const data: IGanttData[] = [];
             for (let k: number = 0; k < preTaskResources.length; k++) {
                 resourceData.filter((resourceInfo: Object) => {
-                    if (resourceInfo[resourceSettings.id] === preTaskResources[k as number][resourceSettings.id]) {
+                    if (resourceInfo[resourceSettings.id] === preTaskResources[k as number][resourceSettings.id] && data.indexOf(preTaskResources[k as number]) === -1) {
                         data.push(preTaskResources[k as number]);
                     }
                 });
@@ -1425,7 +1452,7 @@ export class TaskProcessor extends DateProcessor {
     public setDataSource(data: any): any {
         let createData: any = [];
         let length = data.length;
-        for (var i = 0; i < length; i++) {
+        for (let i: number = 0; i < length; i++) {
             let record = data[i as number];
             createData.push(record);
             if (!(isNullOrUndefined(data[i as number][this.parent.taskFields.child as string]))) {
@@ -1433,7 +1460,6 @@ export class TaskProcessor extends DateProcessor {
 
             }
         }
-
         return createData;
     }
     private setStartDate(task: IGanttData) {
@@ -1443,15 +1469,17 @@ export class TaskProcessor extends DateProcessor {
         } else {
             hierarchicalData = this.parent.dataSource;
         }
-        hierarchicalData.map((record: any) => {
-            if (task.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
-                  if(!isNullOrUndefined( this.parent.taskFields.startDate)){
-                    task[this.parent.taskFields.startDate as string] = record[this.parent.taskFields.startDate as string];
-                  }
-                  if(!isNullOrUndefined(this.parent.taskFields.endDate)){
-                    task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
-                  }                    
-            }
+        this.parent.flatData.map((data) => {
+            hierarchicalData.map((record: any) => {
+                if (data.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
+                      if(!isNullOrUndefined( this.parent.taskFields.startDate)){
+                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
+                      }
+                      if(!isNullOrUndefined(this.parent.taskFields.endDate)){
+                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
+                      }
+                }
+            })
         })
     }
     private getWorkInHour(work: number, workUnit: string): number {
@@ -1633,7 +1661,9 @@ export class TaskProcessor extends DateProcessor {
                 if (resourceUnit !== 100) {
                     resName += '[' + resourceUnit + '%' + ']';
                 }
-                resourceName.push(resName);
+                if (!isNullOrUndefined(resName)) {
+                   resourceName.push(resName);
+                }
                 if (data.taskData) {
                     const mapping: string = taskMapping.resourceInfo;
                     // eslint-disable-next-line
@@ -2119,7 +2149,7 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             const segments: ITaskSegment[] = ganttRecord.segments;
             let fixedWidth: boolean = true;
-            const totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
+            const totalTaskWidth: number = this.splitTasksDuration(segments) * ((this.parent.timelineModule.bottomTier === "Hour" || this.parent.timelineModule.bottomTier === "Minutes") ? this.parent.timelineSettings.timelineUnitSize : this.parent.perDayWidth);;
             let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (let i: number = 0; i < segments.length; i++) {
                 const segment: ITaskSegment = segments[i as number];
@@ -2175,6 +2205,8 @@ export class TaskProcessor extends DateProcessor {
         const ganttRecord: ITaskData = data.ganttProperties;
         this.parent.setRecordValue('autoWidth', this.calculateWidth(data, true), ganttRecord, true);
         this.parent.setRecordValue('autoLeft', this.calculateLeft(ganttRecord, true), ganttRecord, true);
+        this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth((ganttRecord.isAutoSchedule ||
+                                   !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth), ganttRecord.progress), ganttRecord, true);
     }
     /**
      * To calculate parent progress value
@@ -2312,6 +2344,9 @@ export class TaskProcessor extends DateProcessor {
                         }
                     }
                     this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
+                    if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
+                        this.updateMappingData(parentData, 'milestone');
+                    }
                     if (parentProp.isAutoSchedule) {
                         this.calculateDuration(parentData);
                     }

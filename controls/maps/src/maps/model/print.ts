@@ -1,4 +1,4 @@
-import { print as printFunction, createElement } from '@syncfusion/ej2-base';
+import { print as printFunction, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { getElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
@@ -52,6 +52,18 @@ export class Print {
     private getHTMLContent(maps: Maps, elements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
         const divElement: Element = maps.element.cloneNode(true) as Element;
+        let backgroundElement: HTMLElement = (!maps.isTileMap ? divElement.getElementsByTagName('svg')[0] as any : divElement.getElementsByTagName('svg')[1] as any) as HTMLElement;
+        if (!isNullOrUndefined(backgroundElement)) {
+            backgroundElement = backgroundElement.childNodes[0] as HTMLElement;
+            if (!isNullOrUndefined(backgroundElement)) {
+                const backgroundColor: string = backgroundElement.getAttribute('fill');
+                if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (backgroundElement as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+                } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (backgroundElement as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
+                }
+            }
+        }
         if (maps.isTileMap) {
             for (let i: number = 0; i < divElement.childElementCount; i++) {
                 if (divElement.children[i as number].id === maps.element.id + '_tile_parent') {

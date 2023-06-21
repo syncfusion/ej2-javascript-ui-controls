@@ -832,7 +832,7 @@ describe('Insert & Delete ->', () => {
         describe('fb16095, I284821, I309406, F161227, I282799, I282799 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
-                    { showSheetTabs: false, definedNames: [{ name: 'definedRange', refersTo: 'Sheet1!A1:C3' }], sheets: [{ rows: [{ cells:
+                    { showSheetTabs: false, definedNames: [{ name: 'definedRange', refersTo: "='Sheet1'!A1:C3" }], sheets: [{ rows: [{ cells:
                     [{ value: '10' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A2)' }] }] }] }, done);
             });
             afterEach(() => {
@@ -840,11 +840,11 @@ describe('Insert & Delete ->', () => {
             });
             it('After insert new row cell edit is not working and update formula while insert/delete the rows/columns in calculate library', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
-                expect(spreadsheet.definedNames[0].refersTo).toBe('=Sheet1!A1:C3');
+                expect(spreadsheet.definedNames[0].refersTo).toBe("='Sheet1'!A1:C3");
                 expect(spreadsheet.sheets[0].rows[2].cells[0].formula).toBe('=SUM(A1:A2)');
                 spreadsheet.insertRow(1);
                 setTimeout((): void => {
-                    expect(spreadsheet.definedNames[0].refersTo).toBe('=Sheet1!A1:C4');
+                    expect(spreadsheet.definedNames[0].refersTo).toBe("='Sheet1'!A1:C4");
                     expect(spreadsheet.sheets[0].rows[3].cells[0].formula).toBe('=SUM(A1:A3)');
                     helper.edit('A2', '20');
                     setTimeout((): void => {

@@ -12,7 +12,7 @@ import {
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
     CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox,
-    ContentControlProperties, FootnoteElementBox, ShapeBase
+    ContentControlProperties, FootnoteElementBox, ShapeBase, BreakElementBox
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -27,7 +27,7 @@ import { Themes } from '../themes/themes';
 import { MajorMinorFontScheme } from '../themes/major-minor-font-scheme';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { AutoShapeType, CellVerticalAlignment, CheckBoxSizeType, CompatibilityMode, ContentControlType, FollowCharacterType, FootEndNoteNumberFormat, FootnoteRestartIndex, FootnoteType, HeightType, HorizontalAlignment, HorizontalOrigin, LineDashing, LineFormatType, LineSpacingType, LineStyle, ListLevelPattern, OutlineLevel, ProtectionType, RevisionType, StyleType, TabJustification, TabLeader, TableAlignment, TextAlignment, TextFormFieldType, TextureStyle, TextWrappingStyle, TextWrappingType, VerticalAlignment, VerticalOrigin, WidthType } from '../../base/types';
-import { sectionsProperty, imagesProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, columnCountProperty, gridProperty , isAfterParagraphMarkProperty, isAfterCellMarkProperty, isAfterRowMarkProperty, isAfterTableMarkProperty, belowTextProperty } from '../../index';
+import { sectionsProperty, imagesProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, columnCountProperty, gridProperty , isAfterParagraphMarkProperty, isAfterCellMarkProperty, isAfterRowMarkProperty, isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty } from '../../index';
 /**
  * Exports the document to Sfdt format.
  */
@@ -367,18 +367,55 @@ export class SfdtExport {
                 next = bodyWidget.page.nextPage.bodyWidgets[0];
             }
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
+        // While importing, If the last paragraph is empty and the section break is present, then the empty paragraph is removed. So, added the empty paragraph at the end of the section while exporting.
+        if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex) {
+            var paragraph = {};
+            paragraph[inlinesProperty[this.keywordIndex]] = [];
+            section[blocksProperty[this.keywordIndex]].push(paragraph);
+        }
         return next;
     }
     private writeHeaderFooters(hfs: HeaderFooters, section: any): void {
         if (isNullOrUndefined(hfs)) {
             return;
         }
-        section[headersFootersProperty[this.keywordIndex]][headerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[0]);
-        section[headersFootersProperty[this.keywordIndex]][footerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[1]);
-        section[headersFootersProperty[this.keywordIndex]][evenHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[2]);
-        section[headersFootersProperty[this.keywordIndex]][evenFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[3]);
-        section[headersFootersProperty[this.keywordIndex]][firstPageHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[4]);
-        section[headersFootersProperty[this.keywordIndex]][firstPageFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[5]);
+        let headersFooters: any = section[headersFootersProperty[this.keywordIndex]];
+        if (!(isNullOrUndefined(hfs[0]) || hfs[0].isEmpty)) {
+            headersFooters[headerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[0]);
+            if (JSON.stringify(headersFooters[headerProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[headerProperty[this.keywordIndex]];
+            }
+        }
+        if (!(isNullOrUndefined(hfs[1]) || hfs[1].isEmpty)) {
+            headersFooters[footerProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[1]);
+            if (JSON.stringify(headersFooters[footerProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[footerProperty[this.keywordIndex]];
+            }
+        }
+        if (!(isNullOrUndefined(hfs[2]) || hfs[2].isEmpty)) {
+            headersFooters[evenHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[2]);
+            if (JSON.stringify(headersFooters[evenHeaderProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[evenHeaderProperty[this.keywordIndex]];
+            }
+        }
+        if (!(isNullOrUndefined(hfs[3]) || hfs[3].isEmpty)) {
+            headersFooters[evenFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[3]);
+            if (JSON.stringify(headersFooters[evenFooterProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[evenFooterProperty[this.keywordIndex]];
+            }
+        }
+        if (!(isNullOrUndefined(hfs[4]) || hfs[4].isEmpty)) {
+            headersFooters[firstPageHeaderProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[4]);
+            if (JSON.stringify(headersFooters[firstPageHeaderProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[firstPageHeaderProperty[this.keywordIndex]];
+            }
+        }
+        if (!(isNullOrUndefined(hfs[5]) || hfs[5].isEmpty)) {
+            headersFooters[firstPageFooterProperty[this.keywordIndex]] = this.writeHeaderFooter(hfs[5]);
+            if (JSON.stringify(headersFooters[firstPageFooterProperty[this.keywordIndex]]) == "{}") {
+                delete headersFooters[firstPageFooterProperty[this.keywordIndex]];
+            }
+        }
     }
     private writeHeaderFooter(widget: HeaderFooterWidget): any {
         if (isNullOrUndefined(widget) || widget.isEmpty) {
@@ -612,7 +649,9 @@ export class SfdtExport {
             } else {
                 this.isBlockClosed = true;
             }
-        }        
+        } else {
+            this.isBlockClosed = true;
+        }
         if (!isNullOrUndefined(block[blocksProperty[this.keywordIndex]])) {
             let child: LineWidget = widget.childWidgets[0] as LineWidget;
             let firstChild: ElementBox = child.children[0];
@@ -678,7 +717,7 @@ export class SfdtExport {
             next = paragraphWidget.nextSplitWidget as ParagraphWidget;
         }
         next = paragraphWidget.nextRenderedWidget as BlockWidget;
-        if (isNullOrUndefined(next) && paragraphWidget.containerWidget instanceof BodyWidget &&
+        if (this.documentHelper.owner.layoutType !== 'Continuous' && isNullOrUndefined(next) && paragraphWidget.containerWidget instanceof BodyWidget &&
             !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage) &&
             !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets)) {
             next = (paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets[0].childWidgets[0] as BlockWidget;
@@ -800,7 +839,7 @@ export class SfdtExport {
         if (element instanceof FieldElementBox) {
             inline[fieldTypeProperty[this.keywordIndex]] = element.fieldType;
             if (element.fieldType === 0) {
-                inline[hasFieldEndProperty[this.keywordIndex]] = true;
+                inline[hasFieldEndProperty[this.keywordIndex]] = element.hasFieldEnd;
                 if (element.formFieldData) {
                     inline[formFieldDataProperty[this.keywordIndex]] = {};
                     inline[formFieldDataProperty[this.keywordIndex]][nameProperty[this.keywordIndex]] = element.formFieldData.name;
@@ -850,7 +889,7 @@ export class SfdtExport {
                 inline[getImageHeightProperty[this.keywordIndex]] = element.cropHeightScale;
             }
             inline[nameProperty[this.keywordIndex]] = element.name;
-            inline[alternativeTextProperty[this.keywordIndex]] = element.alternativeText;
+            inline[alternativeTextProperty[this.keywordIndex]] = element.alternateText;
             inline[titleProperty[this.keywordIndex]] = element.title;
             inline[visibleProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.visible, this.keywordIndex);
             inline[widthScaleProperty[this.keywordIndex]] = element.widthScale;
@@ -904,6 +943,8 @@ export class SfdtExport {
                 }
                 inline[propertiesProperty[this.keywordIndex]] = properties;
             }
+        } else if (element instanceof BreakElementBox) {
+            inline[breakClearTypeProperty[this.keywordIndex]] = this.keywordIndex == 1? HelperMethods.getBreakClearType(element.breakClearType): element.breakClearType;
         } else if (element instanceof TextElementBox) {
             // replacing the no break hyphen character by '-'
             if (element.text.indexOf(String.fromCharCode(30)) !== -1) {
@@ -979,11 +1020,16 @@ export class SfdtExport {
     private writeShape(element: ShapeElementBox, inline: any): void {
         inline[shapeIdProperty[this.keywordIndex]] = element.shapeId;
         inline[nameProperty[this.keywordIndex]] = element.name;
-        inline[alternativeTextProperty[this.keywordIndex]] = element.alternativeText;
+        inline[alternativeTextProperty[this.keywordIndex]] = element.alternateText;
         inline[titleProperty[this.keywordIndex]] = element.title;
         inline[visibleProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.visible, this.keywordIndex);
         inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
         inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+        if (element.isZeroHeight) {
+            inline[heightProperty[this.keywordIndex]] = 0;
+        } else {
+            inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+        }
         inline[widthScaleProperty[this.keywordIndex]] = element.widthScale;
         inline[heightScaleProperty[this.keywordIndex]] = element.heightScale;
         inline[verticalPositionProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.verticalPosition);
@@ -1037,6 +1083,9 @@ export class SfdtExport {
             inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]] = [];
             for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
                 let textFrameBlock: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
+                if (textFrameBlock.hasOwnProperty('contentControlProperties') && !isNullOrUndefined(element.paragraph) && (element.paragraph.hasOwnProperty('contentControlProperties'))) {
+                    this.blocks = [];
+                }
                 this.writeBlock(textFrameBlock, 0, inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]]);
             }
         }
@@ -1085,7 +1134,7 @@ export class SfdtExport {
                 chartDataFormat[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]] = format.fill.color.substring(2);
             }
             else {
-                chartDataFormat[fillProperty[this.keywordIndex]][fontColorProperty[this.keywordIndex]] = format.fill.color;
+                chartDataFormat[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]] = format.fill.color;
             }
         }
         chartDataFormat[fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]] = format.fill.rgb;
@@ -1451,32 +1500,9 @@ export class SfdtExport {
     }
     private writeParagraphFormat(format: WParagraphFormat, isInline?: boolean): any {
         let paragraphFormat: any = {};
-        paragraphFormat[bordersProperty[this.keywordIndex]] = this.writeParagraphBorders(format.borders);
-        paragraphFormat[leftIndentProperty[this.keywordIndex]] = isInline ? format.leftIndent : format.getValue('leftIndent');
-        paragraphFormat[rightIndentProperty[this.keywordIndex]] = isInline ? format.rightIndent : format.getValue('rightIndent');
-        paragraphFormat[firstLineIndentProperty[this.keywordIndex]] = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
-        paragraphFormat[textAlignmentProperty[this.keywordIndex]] = isInline ? 
-        this.keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.textAlignment): format.textAlignment : 
-        this.keywordIndex == 1 ? this.getTextAlignmentEnumValue(format.getValue('textAlignment') as TextAlignment) : format.getValue('textAlignment') as TextAlignment;
-        paragraphFormat[beforeSpacingProperty[this.keywordIndex]] = isInline ? format.beforeSpacing : format.getValue('beforeSpacing');
-        paragraphFormat[afterSpacingProperty[this.keywordIndex]] = isInline ? format.afterSpacing : format.getValue('afterSpacing');
-        paragraphFormat[spaceBeforeAutoProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceBeforeAuto, this.keywordIndex) : format.getValue('spaceBeforeAuto');
-        paragraphFormat[spaceAfterAutoProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.spaceAfterAuto, this.keywordIndex) : format.getValue('spaceAfterAuto');
-        paragraphFormat[lineSpacingProperty[this.keywordIndex]] = isInline ? format.lineSpacing : format.getValue('lineSpacing');
-        paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] = isInline ? 
-        this.keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.lineSpacingType): format.lineSpacingType : 
-        this.keywordIndex == 1 ? this.getLineSpacingTypeEnumValue(format.getValue('lineSpacingType') as LineSpacingType): format.getValue('lineSpacingType') as LineSpacingType;
-        paragraphFormat[styleNameProperty[this.keywordIndex]] = !isNullOrUndefined(format.baseStyle) ? format.baseStyle.name : undefined;
-        paragraphFormat[outlineLevelProperty[this.keywordIndex]] = isInline ? 
-        this.keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.outlineLevel):format.outlineLevel : 
-        this.keywordIndex == 1 ? this.getOutlineLevelEnumValue(format.getValue('outlineLevel') as OutlineLevel) : format.getValue('outlineLevel') as OutlineLevel;
+        HelperMethods.writeParagraphFormat(paragraphFormat, isInline, format, this.keywordIndex);
         paragraphFormat[listFormatProperty[this.keywordIndex]] = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat[tabsProperty[this.keywordIndex]] = this.writeTabs(format.tabs);
-        paragraphFormat[bidiProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bidi, this.keywordIndex) : format.getValue('bidi');
-        paragraphFormat[keepLinesTogetherProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepLinesTogether, this.keywordIndex) : format.getValue('keepLinesTogether');
-        paragraphFormat[keepWithNextProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.keepWithNext, this.keywordIndex) : format.getValue('keepWithNext');
-        paragraphFormat[contextualSpacingProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.contextualSpacing, this.keywordIndex) : format.getValue('contextualSpacing');
-        paragraphFormat[widowControlProperty[this.keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.widowControl, this.keywordIndex) : format.getValue('widowControl');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat[inlineFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(format, true);
         }
@@ -1689,39 +1715,17 @@ export class SfdtExport {
         this.keywordIndex == 1 ? this.getTextureStyleEnumValue(wShading.textureStyle) : wShading.textureStyle : undefined;
         return shading;
     }
-    private writeBorder(wBorder: WBorder): any {
-        let border: any = {};
-        border[colorProperty[this.keywordIndex]] = wBorder.hasValue('color') ? wBorder.color : undefined;
-        border[hasNoneStyleProperty[this.keywordIndex]] = wBorder.hasValue('hasNoneStyle') ? HelperMethods.getBoolInfo(wBorder.hasNoneStyle, this.keywordIndex) : undefined;
-        border[lineStyleProperty[this.keywordIndex]] = wBorder.hasValue('lineStyle') ? 
-        this.keywordIndex == 1 ? this.getLineStyleEnumValue(wBorder.lineStyle) : wBorder.lineStyle : undefined;
-        border[lineWidthProperty[this.keywordIndex]] = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
-        border[shadowProperty[this.keywordIndex]] = wBorder.hasValue('shadow') ? HelperMethods.getBoolInfo(wBorder.shadow, this.keywordIndex) : undefined;
-        border[spaceProperty[this.keywordIndex]] = wBorder.hasValue('space') ? wBorder.space : undefined;
-        return border;
-    }
-
-    private writeParagraphBorders(wBorders: WBorders): any {
-        let borders: any = {};
-        borders[topProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('top'));
-        borders[leftProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('left'));
-        borders[rightProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('right'));
-        borders[bottomProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('bottom'));
-        borders[horizontalProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('horizontal'));
-        borders[verticalProperty[this.keywordIndex]] = this.writeBorder(wBorders.getBorder('vertical'));
-        return borders;
-    }
 
     private writeBorders(wBorders: WBorders): any {
         let borders: any = {};
-        borders[topProperty[this.keywordIndex]] = this.writeBorder(wBorders.top);
-        borders[leftProperty[this.keywordIndex]] = this.writeBorder(wBorders.left);
-        borders[rightProperty[this.keywordIndex]] = this.writeBorder(wBorders.right);
-        borders[bottomProperty[this.keywordIndex]] = this.writeBorder(wBorders.bottom);
-        borders[diagonalDownProperty[this.keywordIndex]] = this.writeBorder(wBorders.diagonalDown);
-        borders[diagonalUpProperty[this.keywordIndex]] = this.writeBorder(wBorders.diagonalUp);
-        borders[horizontalProperty[this.keywordIndex]] = this.writeBorder(wBorders.horizontal);
-        borders[verticalProperty[this.keywordIndex]] = this.writeBorder(wBorders.vertical);
+        borders[topProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.top, this.keywordIndex);
+        borders[leftProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.left, this.keywordIndex);
+        borders[rightProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.right, this.keywordIndex);
+        borders[bottomProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.bottom, this.keywordIndex);
+        borders[diagonalDownProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.diagonalDown, this.keywordIndex);
+        borders[diagonalUpProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.diagonalUp, this.keywordIndex);
+        borders[horizontalProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.horizontal, this.keywordIndex);
+        borders[verticalProperty[this.keywordIndex]] = HelperMethods.writeBorder(wBorders.vertical, this.keywordIndex);
         return borders;
     }
     private writeCellFormat(wCellFormat: WCellFormat): any {
@@ -2013,52 +2017,7 @@ export class SfdtExport {
         }
         return cell;
     }
-    private getLineSpacingTypeEnumValue(lineSpacing: LineSpacingType): number {
-        switch (lineSpacing) {
-            case 'Multiple':
-                return 0;
-            case 'AtLeast':
-                return 1;
-            case 'Exactly':
-                return 2;
-        }
-    }
-    private getOutlineLevelEnumValue(outlineLevel: OutlineLevel): number {
-        switch (outlineLevel) {
-            case 'BodyText':
-                return 0;
-            case 'Level1':
-                return 1;
-            case 'Level2':
-                return 2;
-            case 'Level3':
-                return 3;
-            case 'Level4':
-                return 4;
-            case 'Level5':
-                return 5;
-            case 'Level6':
-                return 6;
-            case 'Level7':
-                return 7;
-            case 'Level8':
-                return 8;
-            case 'Level9':
-                return 9;
-        }
-    }
-    private getTextAlignmentEnumValue(textAlignment: TextAlignment): number {
-        switch (textAlignment) {
-            case 'Left':
-                return 0;
-            case 'Center':
-                return 1;
-            case 'Right':
-                return 2;
-            case 'Justify':
-                return 3;
-        }
-    }
+
     private getWidthTypeEnumValue(widthType: WidthType): number {
         switch (widthType) {
             case 'Auto':
@@ -2079,64 +2038,7 @@ export class SfdtExport {
                 return 2;
         }
     }
-    private getLineStyleEnumValue(lineStyle: LineStyle): number {
-        switch (lineStyle) {
-            case 'Single':
-                return 0;
-            case 'None':
-                return 1;
-            case 'Dot':
-                return 2;
-            case 'DashSmallGap':
-                return 3;
-            case 'DashLargeGap':
-                return 4;
-            case 'DashDot':
-                return 5;
-            case 'DashDotDot':
-                return 6;
-            case 'Double':
-                return 7;
-            case 'Triple':
-                return 8;
-            case 'ThinThickSmallGap':
-                return 9;
-            case 'ThickThinSmallGap':
-                return 10;
-            case 'ThinThickThinSmallGap':
-                return 11;
-            case 'ThinThickMediumGap':
-                return 12;
-            case 'ThickThinMediumGap':
-                return 13;
-            case 'ThinThickThinMediumGap':
-                return 14;
-            case 'ThinThickLargeGap':
-                return 15;
-            case 'ThickThinLargeGap':
-                return 16;
-            case 'ThinThickThinLargeGap':
-                return 17;
-            case 'SingleWavy':
-                return 18;
-            case 'DoubleWavy':
-                return 19;
-            case 'DashDotStroked':
-                return 20;
-            case 'Emboss3D':
-                return 21;
-            case 'Engrave3D':
-                return 22;
-            case 'Outset':
-                return 23;
-            case 'Inset':
-                return 24;
-            case 'Thick':
-                return 25;
-            case 'Cleared':
-                return 26;
-        }
-    }
+
     private getTextureStyleEnumValue(textureStyle: TextureStyle): number {
         switch (textureStyle) {
             case 'TextureNone':

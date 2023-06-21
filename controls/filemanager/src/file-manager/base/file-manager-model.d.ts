@@ -33,6 +33,13 @@ export interface FileManagerModel extends ComponentModel{
     allowMultiSelection?: boolean;
 
     /**
+     * Gets or sets a boolean value that determines whether to display checkboxes in the file manager. If enabled, checkboxes are shown for files or folders on hover.
+     *
+     * @default true
+     */
+    showItemCheckBoxes?: boolean;
+
+    /**
      * Specifies the context menu settings of the file manager.
      *
      * @default {

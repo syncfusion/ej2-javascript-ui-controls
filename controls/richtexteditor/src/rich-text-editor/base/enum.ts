@@ -83,8 +83,3 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
 | 'styles' | 'removeLink'| 'merge';
-
-/**
- * Defines the context or contexts in which styles will be copied
- */
-export type FormatPainterContext = 'Text'| 'List' | 'Table';

@@ -1,7 +1,7 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
 import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
+import { Internationalization, closest, DragEventArgs, Draggable, initializeCSPTemplate, extend } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -211,12 +211,14 @@ export class DetailsView {
             columns = [
                 {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
-                    template: '<div class="e-fe-text">${name}</div><div class="e-fe-date">${_fm_modified}</div>' +
-                        '<span class="e-fe-size">${size}</span>'
+                    template: initializeCSPTemplate(function(data: any) {
+                        return `<div class="e-fe-text">${data.name}</div><div class="e-fe-date">${data._fm_modified}</div>' +
+                        '<span class="e-fe-size">${data.size}</span>`;
+                    }) as any
                 }
             ];
         } else {
-            columns = JSON.parse(JSON.stringify(this.parent.detailsViewSettings.columns));
+            columns = extend([], this.parent.detailsViewSettings.columns, null, true) as ColumnModel[];
             this.adjustWidth(columns, 'name');
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 columns[i as number].headerText = getLocaleText(this.parent, columns[i as number].headerText);
@@ -224,12 +226,16 @@ export class DetailsView {
         }
         const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         const icon: ColumnModel = {
-            field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${_fm_iconClass}"></span>',
-            allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
-            headerTemplate: '<span class="e-fe-icon e-fe-folder"></span>'
+            field: 'type', width: iWidth, minWidth: iWidth,
+            template: initializeCSPTemplate(function(data: any) {
+                return `<span class="e-fe-icon ${data._fm_iconClass}"></span>`;
+            }) as any, allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
+            headerTemplate: initializeCSPTemplate(function() {
+                return `<span class="e-fe-icon e-fe-folder"></span>`;
+            }) as any,
         };
         columns.unshift(icon);
-        if (this.parent.allowMultiSelection) {
+        if (this.parent.showItemCheckBoxes) {
             const cWidth: string = (this.parent.isBigger ? '36' : '26');
             const cBox: ColumnModel = {
                 type: 'checkbox', width: cWidth, minWidth: cWidth, customAttributes: { class: 'e-fe-checkbox' },
@@ -308,8 +314,6 @@ export class DetailsView {
                     }
                 }
                 let value: string = intl.formatNumber((sizeValue / 1024), { format: sizeFormat });
-                let num = Number(value.replace(/,/g, ''));
-                value = num.toLocaleString(intl.culture);
                 modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;
@@ -1388,6 +1392,7 @@ export class DetailsView {
         let lastItem: string[];
         switch (action) {
         case 'altEnter':
+            this.parent.notify(events.detailsInit, {});
             GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
             break;
         case 'esc':

@@ -100,9 +100,10 @@
 
     & .e-toolbar {
       border: none;
-      height: $image-editor-tbar-height !important; /* stylelint-disable-line declaration-no-important */
-      min-height: $image-editor-tbar-height !important; /* stylelint-disable-line declaration-no-important */
-
+      @if $skin-name != 'Material3' {
+        height: $image-editor-tbar-height !important; /* stylelint-disable-line declaration-no-important */
+        min-height: $image-editor-tbar-height !important; /* stylelint-disable-line declaration-no-important */
+      }
       & .e-toolbar-items {
         & .e-toolbar-item {
           & .e-tbar-btn.e-btn.e-tbtn-txt {
@@ -224,14 +225,17 @@
       & .e-toolbar-item {
         height: auto !important; /* stylelint-disable-line declaration-no-important */
 
-        & .filterwrapper {
+        & .filterwrapper,
+        & .filter-wrapper {
           border: 2px solid transparent;
           height: 100px;
         }
       }
 
       & .e-toolbar-item:hover .filterwrapper,
-      & .e-toolbar-item.e-selected .filterwrapper{
+      & .e-toolbar-item:hover .filter-wrapper,
+      & .e-toolbar-item.e-selected .filterwrapper,
+      & .e-toolbar-item.e-selected .filter-wrapper {
         border-top: 2px solid;
       }
 

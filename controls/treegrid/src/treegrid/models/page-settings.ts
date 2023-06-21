@@ -61,7 +61,7 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * @default null
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
     /**
      * Specifies the mode of record count in a page. The options are,
      * * `All`: Count all the records.

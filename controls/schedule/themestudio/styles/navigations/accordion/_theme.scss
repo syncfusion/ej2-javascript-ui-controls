@@ -169,6 +169,7 @@
           color: $acrdn-content-color;
           background: $acrdn-item-panel-content-select-bg;
           border-top: $acrdn-item-panel-content-select-border-top;
+          border-bottom: $acrdn-item-panel-content-select-border-bottom;
         }
       }
 
@@ -327,6 +328,8 @@
 
           &:focus {
             box-shadow: $acrdn-item-header-focus-box-shadow;
+            position: relative;
+            z-index: 2;
           }
         }
 

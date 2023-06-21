@@ -1972,7 +1972,7 @@ describe('EJ2-72231- Cannot edit newly added row when infiniteScrolling enabled 
          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],    
          height: 300,    
          columns: [    
-          {field: 'EmployeeID', headerText:'EmployeeID', width:120},    
+          {field: 'EmployeeID', headerText:'EmployeeID', width:120, isPrimaryKey:true},    
           {field:'City', headerText:'City', width:130}    
          ],    
        }, done );    
@@ -2002,4 +2002,4 @@ describe('EJ2-72231- Cannot edit newly added row when infiniteScrolling enabled 
        destroy(gridObj);
        gridObj = null;
    });
-});   
+}); 

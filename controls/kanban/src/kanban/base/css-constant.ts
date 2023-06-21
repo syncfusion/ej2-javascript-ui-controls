@@ -58,6 +58,8 @@ export const CARD_ITEM_COUNT_CLASS: string = 'e-item-count';
 /** @private */
 export const CARD_WRAPPER_CLASS: string = 'e-card-wrapper';
 /** @private */
+export const CARD_VIRTUAL_WRAPPER_CLASS: string = 'e-card-virtual-wrapper';
+/** @private */
 export const CARD_CLASS: string = 'e-card';
 /** @private */
 export const DRAGGABLE_CLASS: string = 'e-draggable';

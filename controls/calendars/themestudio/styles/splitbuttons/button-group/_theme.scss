@@ -5,7 +5,7 @@
   .e-btn-group,
   .e-css.e-btn-group {
     &:not(.e-outline) {
-      @if $theme-name != 'Material3' {
+      @if $skin-name != 'Material3' {
         box-shadow: $btn-box-shadow;
       }
     }
@@ -19,6 +19,36 @@
     .e-btn:hover {
       box-shadow: none;
     }
+
+    @if $skin-name == 'Material3' {
+      .e-btn:focus-visible,
+      input:focus-visible+label.e-btn { // only for keybord
+        box-shadow: $btn-keyboard-focus-box-shadow !important;
+        z-index: 1;
+
+        &.e-primary,
+        &.e-success,
+        &.e-info,
+        &.e-warning,
+        &.e-danger {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+        }
+
+        &.e-outline {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+          &.e-primary,
+          &.e-success,
+          &.e-info,
+          &.e-warning,
+          &.e-danger {
+            box-shadow: $btn-keyboard-focus-box-shadow !important;
+            z-index: 1;
+          }
+        }
+    }
+  }
 
     //Focus state for Normal and Outline GroupButton
     .e-btn:focus,

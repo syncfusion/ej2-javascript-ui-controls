@@ -122,7 +122,7 @@ export class RibbonFileMenu {
             animationSettings: menuOptions.animationSettings,
             items: this.cloneMenuItem(menuOptions.menuItems),
             showItemOnClick: menuOptions.showItemOnClick,
-            template: menuOptions.itemTemplate,
+            template: menuOptions.itemTemplate as any,
             beforeClose: this.menuBeforeEvent.bind(this, false),
             beforeOpen: this.menuBeforeEvent.bind(this, true),
             beforeItemRender: this.beforeItemRender.bind(this),

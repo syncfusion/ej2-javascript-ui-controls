@@ -15,7 +15,7 @@ import { TooltipTheme } from '@syncfusion/ej2-svg-base/src/tooltip/enum';
 
 /**
  * Represent the tooltip rendering for gauge
- * 
+ *
  * @hidden
  */
 export class GaugeTooltip {
@@ -82,7 +82,9 @@ export class GaugeTooltip {
                 opacity: this.tooltip.textStyle.opacity
             };
             tooltipStyle.color = tooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
+            tooltipStyle.size = tooltipStyle.size || this.gauge.themeStyle.tooltipFontSize;
             tooltipStyle.fontFamily = tooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
+            tooltipStyle.fontWeight = tooltipStyle.fontWeight || this.gauge.themeStyle.labelWeight;
             tooltipStyle.opacity = tooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
             tooltipContent = customTooltipFormat ? textFormatter(
                 this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
@@ -113,7 +115,9 @@ export class GaugeTooltip {
                 opacity: this.tooltip.rangeSettings.textStyle.opacity
             };
             rangeTooltipStyle.color = rangeTooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
+            rangeTooltipStyle.size = rangeTooltipStyle.size || this.gauge.themeStyle.tooltipFontSize;
             rangeTooltipStyle.fontFamily = rangeTooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
+            rangeTooltipStyle.fontWeight = rangeTooltipStyle.fontWeight || this.gauge.themeStyle.labelWeight;
             rangeTooltipStyle.opacity = rangeTooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
             tooltipContent = customTooltipFormat ? rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
                 'Start : ' + startData + '<br>' + 'End : ' + endData;
@@ -152,8 +156,8 @@ export class GaugeTooltip {
         location.x += ((this.tooltip.rangeSettings.template && tooltipPos === 'Right') ||
         (this.tooltip.template && tooltipPos === 'Right')) ? 20 : 0;
         this.gauge.trigger(tooltipRender, args, () => {
-            let template: string = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.template : args.tooltip.template;
-            if (template !== null && Object.keys(template).length === 1) {
+            let template: string | Function = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.template : args.tooltip.template;
+            if (template !== null && Object.keys(template).length === 1 && typeof template !== 'function') {
                 template = template[Object.keys(template)[0]];
             }
             if (!args.cancel) {
@@ -180,7 +184,7 @@ export class GaugeTooltip {
     }
 
     private svgCreate(svgTooltip: Tooltip, args: ITooltipRenderEventArgs, gauge: LinearGauge, areaRect: ClientRect, fill: string,
-                      template: string, tooltipPos: string, location: GaugeLocation, target: Element, textStyle: FontModel): Tooltip {
+                      template: string | Function, tooltipPos: string, location: GaugeLocation, target: Element, textStyle: FontModel): Tooltip {
         const tooltipBorder : BorderModel = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.border : args.tooltip.border;
         textStyle = {
             color: args.tooltip.textStyle.color || textStyle.color,
@@ -194,7 +198,7 @@ export class GaugeTooltip {
             enable: true,
             header: '',
             data: { value: args.content },
-            template: template,
+            template: template as any,
             content: [SanitizeHtmlHelper.sanitize(args.content)],
             shapes: [],
             location: args.location,
@@ -289,7 +293,7 @@ export class GaugeTooltip {
 
     /**
      * To bind events for tooltip module
-     * 
+     *
      * @private
      */
     public addEventListener(): void {
@@ -301,7 +305,7 @@ export class GaugeTooltip {
     }
     /**
      * To unbind events for tooltip module
-     * 
+     *
      * @private
      */
     public removeEventListener(): void {

@@ -225,9 +225,10 @@ export class Item extends ChildProperty<Item>  {
      * ```
      *
      * @default ""
+     * @aspType string
      */
     @Property('')
-    public template: string | Object;
+    public template: string | Object | Function;
     /**
      * Specifies the types of command to be rendered in the Toolbar.
      * Supported types are:
@@ -288,6 +289,7 @@ export class Item extends ChildProperty<Item>  {
      * ```
      *
      * @default "Left"
+     * @aspPopulateDefaultValue
      */
     @Property('Left')
     public align: ItemAlign;
@@ -702,17 +704,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     if (isVisible(this.popObj.element)) {
                         nodes = [].slice.call(popupCheck.children);
                         if (e.action === 'home') {
-                            ele = <HTEle>nodes[0];
+                            ele = this.focusFirstVisibleEle(nodes);
                         } else {
-                            ele = <HTEle>nodes[nodes.length - 1];
+                            ele = this.focusLastVisibleEle(nodes);
                         }
                     }
                 } else {
                     nodes = this.element.querySelectorAll('.' + CLS_ITEMS + ' .' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + ')');
                     if (e.action === 'home') {
-                        ele = <HTEle>nodes[0];
+                        ele = this.focusFirstVisibleEle(nodes);
                     } else {
-                        ele = <HTEle>nodes[nodes.length - 1];
+                        ele = this.focusLastVisibleEle(nodes);
                     }
                 }
                 if (ele) {
@@ -817,6 +819,30 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private eleContains(el: HTEle): string | boolean {
         return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el) || !el.classList.contains(CLS_ITEM);
+    }
+    private focusFirstVisibleEle(nodes: NodeList): HTMLElement {
+        let element: HTMLElement;
+        let index: number = 0;
+        while (index < nodes.length) {
+            const ele: HTMLElement = nodes[parseInt(index.toString(), 10)] as HTMLElement;
+            if (!ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
+                return ele;
+            }
+            index++;
+        }
+        return element;
+    }
+    private focusLastVisibleEle(nodes: NodeList): HTMLElement {
+        let element: HTMLElement;
+        let index: number = nodes.length - 1;
+        while (index >= 0) {
+            const ele: HTMLElement = nodes[parseInt(index.toString(), 10)] as HTMLElement;
+            if (!ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
+                return ele;
+            }
+            index--;
+        }
+        return element;
     }
     private eleFocus(closest: HTEle, pos: Str): void {
         const sib: HTEle = Object(closest)[pos + 'ElementSibling'];
@@ -1431,12 +1457,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (checkoffset) {
                 if (inEle[parseInt(i.toString(), 10)].classList.contains(CLS_SEPARATOR)) {
                     if (this.overflowMode === 'Extended') {
-                        if (itemCount === itemPopCount) {
-                            const sepEle: HTEle = (inEle[parseInt(i.toString(), 10)] as HTEle);
-                            if (checkClass(sepEle, [CLS_SEPARATOR, CLS_TBARIGNORE])) {
-                                inEle[parseInt(i.toString(), 10)].classList.add(CLS_POPUP);
-                                itemPopCount++;
-                            }
+                        const sepEle: HTEle = (inEle[parseInt(i.toString(), 10)] as HTEle);
+                        if (checkClass(sepEle, [CLS_SEPARATOR, CLS_TBARIGNORE])) {
+                            inEle[parseInt(i.toString(), 10)].classList.add(CLS_POPUP);
+                            itemPopCount++;
                         }
                         itemCount++;
                     } else if (this.overflowMode === 'Popup') {
@@ -2342,10 +2366,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 break;
             case 'width':
                 setStyle(tEle, { 'width': formatUnit(newProp.width) });
-                this.renderOverflowMode();
-                if (this.popObj && wid < tEle.offsetWidth) {
-                    this.popupRefresh(this.popObj.element, false);
-                }
+                this.refreshOverflow();
                 break;
             case 'height':
                 setStyle(this.element, { 'height': formatUnit(newProp.height) });

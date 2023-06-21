@@ -67,6 +67,7 @@ export interface SearchSettingsModel {
      *
      * @default Parent
      * @isEnumeration true
+     * @asptype SearchHierarchyMode
      */
     hierarchyMode?: SearchHierarchyMode;
 

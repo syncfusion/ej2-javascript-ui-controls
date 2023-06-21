@@ -49,12 +49,12 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 
     /**
      *Allows the user to open the hyperlink in the new tab, current tab or new window
-     * 
+     *
      * @default 'NewTab'
      */
-     @Property('NewTab')
-     public hyperlinkOpenState: LinkTarget;
-}    
+    @Property('NewTab')
+    public hyperlinkOpenState: LinkTarget;
+}
 /**
  * Defines the textual description of nodes/connectors
  */

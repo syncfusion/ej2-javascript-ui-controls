@@ -943,6 +943,10 @@
         opacity: $kanban-dialog-form-table-td-opacity;
         padding: $kanban-dialog-form-table-td-padding;
         text-align: left;
+
+        textarea.e-field {
+          resize: vertical;
+        }
       }
 
       .e-label {
@@ -977,5 +981,17 @@
     .e-dialog-delete {
       float: right;
     }
+  }
+
+  .e-card-virtual-skeleton-wrapper {
+    .e-skeleton.e-skeleton-text.e-shimmer-wave {
+      border-radius: $kanban-card-border-radius;
+    }
+  }
+
+  .e-card-virtual-skeleton-wrapper {
+    height: inherit;
+    overflow: hidden;
+    padding: $kanban-card-container-padding;
   }
 }

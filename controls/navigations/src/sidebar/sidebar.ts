@@ -26,36 +26,23 @@ const SIDEBARABSOLUTE: string = 'e-sidebar-absolute';
 
 /**
  * Specifies the Sidebar types.
+ * ```props
+ * Slide :- Specifies the animation sliding while opening the sidebar.
+ * Over :- Specifies the sidebar appearing over the main content.
+ * Push :- Specifies the sidebar pushing the main content.
+ * Auto :- Specifies that the sidebar opens automatically.
+ * ```
  */
-export type SidebarType =
- /**
- * Specifies the animation sliding while opening the sidebar.
- */
- 'Slide' |
- /**
- * Specifies the sidebar appearing over the main content.
- */
- 'Over' |
- /**
- * Specifies the sidebar pushing the main content.
- */
- 'Push' |
- /**
- * Specifies that the sidebar opens automatically.
- */
- 'Auto';
+export type SidebarType = 'Slide' | 'Over' | 'Push' | 'Auto';
+
 /**
  * Specifies the Sidebar positions.
+ * ```props
+ * Left :- Sidebar positions to the Left in relation to the main content.
+ * Right :- Sidebar positions to the Right in relation to the main content.
+ * ```
  */
-export type SidebarPosition =
- /**
- * Sidebar positions to the Left in relation to the main content.
- */
- 'Left' |
- /**
- * Sidebar positions to the Right in relation to the main content.
- */
- 'Right';
+export type SidebarPosition = 'Left' | 'Right';
 
 /**
  * Sidebar is an expandable or collapsible

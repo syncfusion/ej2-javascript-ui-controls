@@ -1021,7 +1021,7 @@ export function getContent(
                 cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
         } else if ((diagram as any).isVue || (diagram as any).isVue3) {
             // EJ2-57563 - Added the below code to provide slot template support for Vue and Vue 3
-            let templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
+            const templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
             if (templateFn) {
                 // If other than slot template, this if block gets execute and template get returned.
                 compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
@@ -1030,10 +1030,10 @@ export function getContent(
                     cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
             } else {
                 // If we provide slot template means then it enters in this block and returns a template
-                if (propertyName === "nodeTemplate") {
-                    compiledString = compile((diagram as any).nodeTemplate)
+                if (propertyName === 'nodeTemplate') {
+                    compiledString = compile((diagram as any).nodeTemplate);
                 } else {
-                    compiledString = compile((diagram as any).annotationTemplate)
+                    compiledString = compile((diagram as any).annotationTemplate);
                 }
                 compiledString = compiledString(
                     /* eslint-enable */
@@ -1207,7 +1207,7 @@ export function getTemplateContent(
 
 /* eslint-disable */
 /** @private */
-export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
+export function createUserHandleTemplates(userHandleTemplate: string | Function, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
     let userHandleFn: Function;
     let handle: UserHandleModel;
     let compiledString: Function;

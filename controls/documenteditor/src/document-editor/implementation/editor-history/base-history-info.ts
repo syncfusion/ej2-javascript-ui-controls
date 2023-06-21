@@ -710,6 +710,7 @@ export class BaseHistoryInfo {
                             item.revisions.splice(revisionIndex, 1);
                             let rangeIndex: number = currentRevision.range.indexOf(item);
                             currentRevision.range.splice(rangeIndex, 1);
+                            this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                         }
                         if (currentRevision.range.length === 0) {
                             this.owner.revisions.remove(currentRevision);
@@ -751,6 +752,7 @@ export class BaseHistoryInfo {
                     item.revisions.splice(revisionIndex, 1);
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     currentRevision.range.splice(rangeIndex, 1);
+                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);
@@ -1034,6 +1036,9 @@ export class BaseHistoryInfo {
             }
             this.owner.editor.setPreviousBlockToLayout();
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
+        } else if (this.action === 'LinkToPrevious' && this.modifiedProperties[0] instanceof WSectionFormat) {
+            let sectionIndex: number = parseInt(this.selectionStart.split(';')[0]);
+            this.owner.editorModule.updateHeaderFooters(property, undefined, sectionIndex, (this.modifiedProperties[0] as WSectionFormat).removedHeaderFooters[0]);
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
         } else if (this.action === 'RestartNumbering') {
@@ -1209,6 +1214,8 @@ export class BaseHistoryInfo {
                 return 'bidi';
             case 'ContextualSpacing':
                 return 'contextualSpacing';
+            case 'LinkToPrevious':
+                return 'linkToPrevious';
             case 'LeftBorder':
             case 'TopBorder':
             case 'RightBorder':

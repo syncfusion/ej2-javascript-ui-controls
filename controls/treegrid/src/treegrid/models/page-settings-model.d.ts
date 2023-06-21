@@ -54,7 +54,7 @@ export interface PageSettingsModel {
      *
      * @default null
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies the mode of record count in a page. The options are,

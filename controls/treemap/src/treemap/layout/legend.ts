@@ -120,12 +120,14 @@ export class TreeMapLegend {
             let legendHeight: number = (legend.height.length > 1) ? (legend.height.indexOf('%') > -1) ?
                 (treemap.availableSize.height / 100) * parseFloat(legend.height) : parseFloat(legend.height) : null;
             titleTextStyle.fontFamily = treemap.themeStyle.fontFamily || titleTextStyle.fontFamily;
+            titleTextStyle.fontWeight = titleTextStyle.fontWeight || treemap.themeStyle.titleFontWeight;
             titleTextStyle.size = treemap.themeStyle.legendFontSize || titleTextStyle.size;
             const legendTitleSize: Size = measureText(legendTitle, titleTextStyle);
             let startX: number = 0; let startY: number = 0; const shapePadding: number = legend.shapePadding;
             const itemTextStyle: FontModel = legend.textStyle;
             itemTextStyle.size = itemTextStyle.size || treemap.themeStyle.legendFontSize;
             itemTextStyle.fontFamily = itemTextStyle.fontFamily || treemap.themeStyle.fontFamily;
+            itemTextStyle.fontWeight = itemTextStyle.fontWeight || treemap.themeStyle.fontWeight;
             if (legendMode === 'Default') {
                 legendWidth = (isNullOrUndefined(legendWidth)) ? treemap.areaRect.width : legendWidth;
                 legendHeight = (isNullOrUndefined(legendHeight)) ? treemap.areaRect.height : legendHeight;

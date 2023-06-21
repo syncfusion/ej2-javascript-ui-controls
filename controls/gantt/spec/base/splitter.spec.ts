@@ -186,3 +186,51 @@ describe('Schedule mode', () => {
         expect((document.querySelector("#"+ganttObj.element.id+" > div.e-gantt-splitter.e-control.e-splitter.e-lib.e-splitter-horizontal > div.e-gantt-tree-grid-pane.e-pane.e-pane-horizontal.e-scrollable.e-static-pane.e-resizable") as HTMLElement).offsetWidth).toBe(399);
     });
 });
+describe('Splitter position issue after resizing', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: baselineData,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'Children'
+            },
+            splitterSettings:{
+                columnIndex:2
+            },
+            projectStartDate: new Date('10/15/2017'),
+            projectEndDate: new Date('12/30/2017'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('checking position of splitter after splitter resize', () => {
+        ganttObj.setSplitterPosition('50%', 'position');
+        let splitterIcon: HTMLElement = ganttObj.element.querySelector('.e-split-bar') as HTMLElement;
+        triggerMouseEvent(splitterIcon, 'mousedown');
+        triggerMouseEvent(splitterIcon, 'mousemove',60);
+        triggerMouseEvent(splitterIcon, 'mouseup');
+        ganttObj.setSplitterPosition('50%', 'position');
+        expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
+        
+    });
+    it('checking column index of splitter after splitter resize', () => {
+        ganttObj.setSplitterPosition(2, 'columnIndex');
+        let splitterIcon: HTMLElement = ganttObj.element.querySelector('.e-split-bar') as HTMLElement;
+        triggerMouseEvent(splitterIcon, 'mousedown');
+        triggerMouseEvent(splitterIcon, 'mousemove',60);
+        triggerMouseEvent(splitterIcon, 'mouseup');
+        ganttObj.setSplitterPosition(2, 'columnIndex');
+        expect(ganttObj.splitterSettings.columnIndex).toBe(2);
+        
+    });
+});

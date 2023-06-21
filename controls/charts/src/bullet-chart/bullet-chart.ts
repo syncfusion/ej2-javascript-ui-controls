@@ -14,7 +14,6 @@ import { MarginModel } from '../common/model/base-model';
 import { BulletChartModel } from './bullet-chart-model';
 import { Data } from '../common/model/data';
 import { BulletChartAxis } from './renderer/bullet-axis';
-import { BulletChartTheme } from './utils/theme';
 import { ScaleGroup } from './renderer/scale-render';
 import { redrawElement, textElement, getElement, appendChildElement, RectOption, stringToNumber } from '../common/utils/helper';
 import { BulletTooltip } from './user-interaction/tooltip';
@@ -143,14 +142,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Options for customizing labels
      */
 
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public labelStyle: BulletLabelStyleModel;
 
     /**
      * Options for customizing values labels.
      */
 
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public categoryLabelStyle: BulletLabelStyleModel;
 
 
@@ -176,7 +175,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Options for customizing the title styles of the bullet chart.
      */
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.titleFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '500', color: null}, BulletLabelStyle)
     public titleStyle: BulletLabelStyleModel;
 
     /**
@@ -192,7 +191,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /**
      * Options for customizing the sub title styles of the bullet chart.
      */
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.subTitleFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public subtitleStyle: BulletLabelStyleModel;
 
 
@@ -630,6 +629,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
             this.valueFill = this.targetColor =  this.theme === 'FluentDark' ? '#797775' : '#A19F9D';
         }
+        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
+            this.valueFill = this.targetColor = this.theme === 'Material3Dark' ? '#938F99' : '#79747E';
+        }
     }
 
     private findRange(): void {
@@ -862,10 +864,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let maxTitlteHeight: number = 0;
         let maxVerticalTitlteHeight: number = padding;
         if (this.title) {
-            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth);
-            titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollections.length) + padding;
+            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth, this.themeStyle.titleFont);
+            titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.titleFont).height * this.titleCollections.length) + padding;
             for (const titleText of this.titleCollections) {
-                titleSize = measureText(titleText, this.titleStyle);
+                titleSize = measureText(titleText, this.titleStyle, this.themeStyle.titleFont);
                 maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
                 maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
             }
@@ -873,11 +875,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             this.subTitleCollections = getTitle(this.subtitle, this.subtitleStyle, this.titleStyle.maximumTitleWidth);
             if (this.subtitle) {
                 for (const subText of this.subTitleCollections) {
-                    titleSize = measureText(subText, this.subtitleStyle);
+                    titleSize = measureText(subText, this.subtitleStyle, this.themeStyle.subTitleFont);
                     maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
                     maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
                 }
-                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle).height * this.subTitleCollections.length) +
+                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle, this.themeStyle.subTitleFont).height * this.subTitleCollections.length) +
                     padding;
                 maxVerticalTitlteHeight += maxTitlteHeight;
             }
@@ -910,7 +912,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const labelSpace: number = (this.labelPosition === this.tickPosition) ? padding : 0;
         const tickSize: number = ((this.tickPosition === 'Inside') ? 0 : (this.majorTickLines.height));
         const labelSize: number = ((this.labelPosition === 'Inside') ? 0 : padding +
-            ((this.tickPosition === 'Outside') ? 0 : (measureText(this.maximum.toString(), this.labelStyle).height)));
+            ((this.tickPosition === 'Outside') ? 0 : (measureText(this.maximum.toString(), this.labelStyle, this.themeStyle.dataLabelFont).height)));
         let topAxisLabel: number = 0;
         let bottomAxisLabel: number = 0;
         let leftAxisLabel: number = 0;
@@ -926,7 +928,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
         });
         const formatted: number = measureText(
-            this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, this.maximum), this.labelStyle).width;
+            this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, this.maximum), this.labelStyle, this.themeStyle.axisLabelFont).width;
         let categoryLabelSize: number;
         if (this.orientation === 'Horizontal') {
             categoryLabelSize = this.maxLabelSize.width;
@@ -991,7 +993,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
         let label: Size;
         for (let i: number = 0, len: number = Object.keys(this.dataSource).length; i < len; i++) {
-            label = measureText((this.dataSource[i as number][this.categoryField] || ''), this.categoryLabelStyle);
+            label = measureText((this.dataSource[i as number][this.categoryField] || ''), this.categoryLabelStyle, this.themeStyle.axisLabelFont);
             if (label.width > this.maxLabelSize.width) {
                 this.maxLabelSize.width = label.width;
             }
@@ -1027,8 +1029,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let anchor: string = 'middle';
         let transform: string = '';
         const alignment: string = this.titleStyle.textAlignment;
-        const elementSize: Size = measureText(this.title, this.titleStyle);
-        const subTitleSize: Size = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle) : new Size(0, 0);
+        const elementSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.titleFont);
+        const subTitleSize: Size = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle, this.themeStyle.subTitleFont) : new Size(0, 0);
         if (this.title) {
             if (this.orientation === 'Horizontal') {
                 switch (this.titlePosition) {
@@ -1084,7 +1086,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             const options: TextOption = new TextOption(
                 this.element.id + '_BulletChartTitle', x, y, anchor, this.titleCollections, transform, 'auto');
             const element: Element = textElement(
-                this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
+                this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.titleFont);
             if (element) {
                 element.setAttribute('aria-label', this.title);
                 element.setAttribute('tabindex', this.tabIndex.toString());
@@ -1118,7 +1120,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
                 });
                 labelText = isCustomFormat ? format.replace('{value}', this.format(labelText)) : labelText;
-                const labelSize: Object = measureText(labelText, this.dataLabel.labelStyle);
+                const labelSize: Object = measureText(labelText, this.dataLabel.labelStyle, this.themeStyle.axisLabelFont);
                 // tslint:disable-next-line:no-string-literal
                 const textWidth: number = labelSize['width'];
                 // tslint:disable-next-line:no-string-literal
@@ -1148,7 +1150,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     x, y, anchor, labelText, transform, 'middle');
                 textElement(
                     this.renderer, labelOptions, this.dataLabel.labelStyle,
-                    this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFontColor, this.svgObject);
+                    this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.dataLabelFont);
             }
         }
     }
@@ -1191,7 +1193,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const margin: MarginModel = this.margin;
         const padding: number = 5;
         let transform: string = '';
-        const elementSize: Size = measureText(this.subtitle, this.subtitleStyle);
+        const elementSize: Size = measureText(this.subtitle, this.subtitleStyle, this.themeStyle.subTitleFont);
         if (this.orientation === 'Horizontal') {
             switch (this.titlePosition) {
             case 'Top':
@@ -1229,7 +1231,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             this.element.id + '_BulletChartSubTitle', x, y, anchor, this.subTitleCollections, transform, 'auto');
         const element: Element = textElement(
             this.renderer, subTitleOptions, this.subtitleStyle,
-            this.subtitleStyle.color || this.themeStyle.subTitleFontColor, this.svgObject
+            this.subtitleStyle.color || this.themeStyle.subTitleFont.color, this.svgObject, null, null, null, null, null, null, null, null,null, null, this.themeStyle.subTitleFont
         );
         if (element) {
             element.setAttribute('aria-label', this.title);
@@ -1390,6 +1392,20 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * @private
      */
     private bulletMouseDown(e: PointerEvent): void {
+        let pageX: number;
+        let pageY: number;
+        let touchArg: TouchEvent;
+        if (e.type === 'touchstart') {
+            this.isTouch = true;
+            touchArg = <TouchEvent & PointerEvent>e;
+            pageX = touchArg.changedTouches[0].clientX;
+            pageY = touchArg.changedTouches[0].clientY;
+        } else {
+            this.isTouch = e.pointerType === 'touch';
+            pageX = e.clientX;
+            pageY = e.clientY;
+        }
+        this.setPointMouseXY(pageX, pageY);
         if (this.isTouchEvent(e)) {
             // tslint:disable-next-line:no-any
             if ((this as any).isReact) { this.clearTemplate(); }

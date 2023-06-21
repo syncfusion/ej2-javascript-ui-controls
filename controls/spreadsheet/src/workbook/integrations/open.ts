@@ -134,6 +134,9 @@ export class WorkbookOpen {
         workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || 0;
         this.parent.setProperties(
             {
+                'isProtected': workbookModel.isProtected || false,
+                'password': workbookModel.password || '',
+                'showSheetTabs': workbookModel.showSheetTabs || true,
                 'sheets': workbookModel.sheets,
                 'activeSheetIndex': workbookModel.activeSheetIndex,
                 'definedNames': workbookModel.definedNames || [],

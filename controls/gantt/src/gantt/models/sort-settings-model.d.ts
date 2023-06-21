@@ -17,6 +17,7 @@ export interface SortDescriptorModel {
      *
      * @default null
      * @isEnumeration true
+     * @asptype SortDirection
      *
      */
     direction?: SortDirection;

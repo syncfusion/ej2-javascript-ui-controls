@@ -88,14 +88,14 @@ describe('Sparkline ', () => {
                 ele = getIdElement(id + '_sparkline_label_text_1');
                 options = getLabelOptions(ele);
                 expect(options.text).toBe('312');
-                expect(options.fill).toBe('#424242');
+                expect(options.fill).toBe('rgba(97, 97, 97, 1)');
                 expect(options.x).toBe(89);
                 // first test case local and second for server value
                 expect(options.y === 157 || options.y === 159).toBe(true);
-                expect(options['font-size']).toBe(14);
-                expect(options['font-family']).toBe('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(options['font-size']).toBe(12);
+                expect(options['font-family']).toBe('Roboto');
                 expect(options['font-style']).toBe('Medium');
-                expect(options['font-weight']).toBe('Medium');
+                expect(options['font-weight']).toBe('400');
                 expect(options['text-anchor']).toBe('middle');
                 expect(options['dominant-baseline']).toBe('middle');
             };
@@ -138,7 +138,7 @@ describe('Sparkline ', () => {
             expect(options.text).toBe('785');
             expect(options.x).toBe(426);
             // first test case local and second for server value
-            expect(options.y === -5 || options.y === -4).toBe(true);
+            expect(options.y === -3 || options.y === 43).toBe(true);
         });
         it('Sparkline datalabel index 6 checking', () => {
             ele = getIdElement(id + '_sparkline_label_text_6');
@@ -285,19 +285,19 @@ describe('Sparkline ', () => {
             expect(options.text).toBe('-313');
             expect(options.x).toBe(174);
             // first test case local and second for server value
-            expect(options.y === 143 || options.y === 142).toBe(true);
+            expect(options.y === 143 || options.y === 141).toBe(true);
             ele = getIdElement(id + '_sparkline_label_text_4');
             options = getLabelOptions(ele);
             expect(options.text).toBe('-648');
             expect(options.x).toBe(342);
             // first test case local and second for server value
-            expect(options.y === 187 || options.y === 186).toBe(true);
+            expect(options.y === 187 || options.y === 185).toBe(true);
             ele = getIdElement(id + '_sparkline_label_text_6');
             options = getLabelOptions(ele);
             expect(options.text).toBe('-423');
             expect(options.x).toBe(511);
             // first test case local and second for server value
-            expect(options.y === 157 || options.y === 156).toBe(true);
+            expect(options.y === 157 || options.y === 155).toBe(true);
         });
         it('Sparkline datalabel visible mode Negative other points not visible checking', () => {
             ele = getIdElement(id + '_sparkline_label_text_0');
@@ -373,7 +373,7 @@ describe('Sparkline ', () => {
             expect(options.text).toBe('June : 785');
             expect(options.x).toBe(426);
             expect(options.y === 56 || options.y === 57).toBe(true);
-            expect(options.fill).toBe('#424242');
+            expect(options.fill).toBe('rgba(97, 97, 97, 1)');
             expect(options['font-size']).toBe(10);
             expect(options['font-family']).toBe('fantasy');
             expect(options['font-style']).toBe('Bold');
@@ -437,12 +437,12 @@ describe('Sparkline ', () => {
             ele = getIdElement(id + '_sparkline_label_text_0');
             options = getLabelOptions(ele);
             expect(options.text).toBe('527 pts');
-            expect(options.x === 28 || options.x === 30).toBe(true);
+            expect(options.x === 24 || options.x === 30).toBe(true);
             expect(options.y === 81 || options.y === 83).toBe(true);
             ele = getIdElement(id + '_sparkline_label_text_7');
             options = getLabelOptions(ele);
             expect(options.text).toBe('234 pts');
-            expect(options.x === 571 || options.x === 570).toBe(true);
+            expect(options.x === 575 || options.x === 570).toBe(true);
             expect(options.y === 182 || options.y === 184).toBe(true);
         });
         it('Sparkline edge datalabel checking for Hide', () => {

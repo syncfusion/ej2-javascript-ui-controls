@@ -206,7 +206,7 @@ export interface TreeGridModel extends ComponentModel{
      * It used to render pager template
      * @default null
      */
-    pagerTemplate?: string;
+    pagerTemplate?: string | Function;
 
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
@@ -278,7 +278,7 @@ export interface TreeGridModel extends ComponentModel{
      * or the HTML element ID.
      *
      */
-    detailTemplate?: string;
+    detailTemplate?: string | Function;
 
     /**
      * Configures the filter settings of the TreeGrid.
@@ -318,7 +318,7 @@ export interface TreeGridModel extends ComponentModel{
      * It used to render toolbar template
      * @default null
      */
-    toolbarTemplate?: string;
+    toolbarTemplate?: string | Function;
 
     /**
      * Defines the mode of TreeGrid lines. The available modes are,
@@ -382,7 +382,7 @@ export interface TreeGridModel extends ComponentModel{
      *
      * > Check the [`Row Template`](../../treegrid/row) customization.
      */
-    rowTemplate?: string;
+    rowTemplate?: string | Function;
 
     /**
      * `copyHierarchyMode` Defines the copy clipboard types.

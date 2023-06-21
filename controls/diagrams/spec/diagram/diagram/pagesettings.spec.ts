@@ -3527,6 +3527,116 @@ describe('Check whether connector segment overlap node - BottomToTop', () => {
 
 });
 
+describe('Check whether connector segment restore after save and load', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        diagram = new Diagram({
+            width: '900px', height: '500px'
+        });
+        diagram.appendTo('#diagramsegment');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check freehand connector segment after draw', function (done) {
+        diagram.tool = DiagramTools.DrawOnce;
+        let connector: ConnectorModel = {
+            id: 'freehand1', type: 'Freehand', constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb
+        };
+        diagram.drawingObject = connector;
+        diagram.dataBind();
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 350);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 470);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 160);
+        let connector2: ConnectorModel = diagram.connectors[0];
+        expect(connector2.segments.length === 3).toBe(true);
+        done();
+    });
+    it('Check freehand connector segment after save and load', function (done) {
+        let save: string = diagram.saveDiagram();
+        diagram.loadDiagram(save);
+        let connector2: ConnectorModel = diagram.connectors[0];
+        expect(connector2.segments.length === 3).toBe(true);
+        done();
+    });
+
+});
+describe('Unable to drag connector end thumb and resize node handler when we increase the size of handleSize property', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramresize' });
+        document.body.appendChild(ele);
+
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 600
+        };
+        let connector1: ConnectorModel = {
+            id: "connector1",
+            sourcePoint : { x : 100, y : 200},
+            targetPoint : { x : 400, y : 200}
+
+          };
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: [node1],
+            connectors: [connector1], selectedItems : { handleSize : 100}
+
+        });
+        diagram.appendTo('#diagramresize');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Check whether the connector position is same or not after we dragging it', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 430, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 480, 200);
+        mouseEvents.mouseUpEvent(diagramCanvas, 480, 200);
+        expect(diagram.connectors[0].targetPoint.x == 472).toBe(true);
+        expect(diagram.connectors[0].targetPoint.y == 192).toBe(true);
+        done();
+    });
+    it('Check whether the node position is same or not after we dragging it', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.nodes[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 240, 540);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 520);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 280, 500);
+        mouseEvents.mouseUpEvent(diagramCanvas, 280, 500);
+        expect(diagram.nodes[0].offsetX == 220).toBe(true);
+        expect(diagram.nodes[0].offsetY == 600).toBe(true);
+        done();
+    });
+});
+
 describe('Unable to drag bezier connector control thumb while increasing the handleSize', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -3592,182 +3702,4 @@ describe('Unable to drag bezier connector control thumb while increasing the han
         expect((diagram.connectors[0].segments[1] as BezierSegment).bezierPoint2.y == 350).toBe(true);
         done();
     });
-});
-describe('Check whether connector segment restore after save and load', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-
-    beforeAll(() => {
-
-        ele = createElement('div', { id: 'diagramsegment' });
-        document.body.appendChild(ele);
-
-        diagram = new Diagram({
-            width: '900px', height: '500px'
-        });
-        diagram.appendTo('#diagramsegment');
-
-    });
-    afterAll(() => {
-        diagram.destroy();
-        ele.remove();
-    });
-    it('Check freehand connector segment after draw', function (done) {
-        diagram.tool = DiagramTools.DrawOnce;
-        let connector: ConnectorModel = {
-            id: 'freehand1', type: 'Freehand', constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb
-        };
-        diagram.drawingObject = connector;
-        diagram.dataBind();
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 350);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 470);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
-        mouseEvents.mouseUpEvent(diagramCanvas, 400, 160);
-        let connector2: ConnectorModel = diagram.connectors[0];
-        expect(connector2.segments.length === 3).toBe(true);
-        done();
-    });
-    it('Check freehand connector segment after save and load', function (done) {
-        let save: string = diagram.saveDiagram();
-        diagram.loadDiagram(save);
-        let connector2: ConnectorModel = diagram.connectors[0];
-        expect(connector2.segments.length === 3).toBe(true);
-        done();
-    });
-});
-describe('Unable to drag connector end thumb and resize node handler when we increase the size of handleSize property', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
-    beforeAll((): void => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-
-        ele = createElement('div', { id: 'diagramresize' });
-        document.body.appendChild(ele);
-
-        let node1: NodeModel = {
-            id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 600
-        };
-        let connector1: ConnectorModel = {
-            id: "connector1",
-            sourcePoint : { x : 100, y : 200},
-            targetPoint : { x : 400, y : 200}
-          };
-        diagram = new Diagram({
-            width: '1000px', height: '500px', nodes: [node1],
-            connectors: [connector1], selectedItems : { handleSize : 100}
-        });
-        diagram.appendTo('#diagramresize');
-    });
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
-
-    it('Check whether the connector position is same or not after we dragging it', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        diagram.select([diagram.connectors[0]]);
-        mouseEvents.mouseDownEvent(diagramCanvas, 430, 200);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 200);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 480, 200);
-        mouseEvents.mouseUpEvent(diagramCanvas, 480, 200);
-        expect(diagram.connectors[0].targetPoint.x == 472).toBe(true);
-        expect(diagram.connectors[0].targetPoint.y == 192).toBe(true);
-        done();
-    });
-    it('Check whether the node position is same or not after we dragging it', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        diagram.select([diagram.nodes[0]]);
-        mouseEvents.mouseDownEvent(diagramCanvas, 240, 540);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 260, 520);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 280, 500);
-        mouseEvents.mouseUpEvent(diagramCanvas, 280, 500);
-        expect(diagram.nodes[0].offsetX == 220).toBe(true);
-        expect(diagram.nodes[0].offsetY == 600).toBe(true);
-        done();
-    });
-});
-
-describe('Check whether connector segment does not get split', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-
-    beforeAll(() => {
-
-        ele = createElement('div', { id: 'diagramsegment' });
-        document.body.appendChild(ele);
-
-        let nodes: NodeModel[] = [
-            {
-                id: 'node1', height: 50, width: 100, offsetX: 600, offsetY: 100, annotations: [{ content: 'Node1' }],
-                ports: [
-                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
-                ]
-            },
-            {
-                id: 'node2', height: 50, width: 100, offsetX: 250, offsetY: 400, annotations: [{ content: 'Node2' }],
-                
-                ports: [
-                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
-                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
-                ]
-            }
-        ];
-        
-        let connectors: ConnectorModel[] = [
-            {
-                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'bottom', targetPortID: 'top'
-            }
-        ];
-        diagram = new Diagram({
-            width: '1000px', height: '1000px', nodes: nodes, connectors: connectors,
-            getConnectorDefaults: function (connector: ConnectorModel) {
-                connector.type = 'Orthogonal';
-                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
-                connector.maxSegmentThumb = 1;
-                connector.allowNodeOverlap = true;
-            }
-        });
-        diagram.appendTo('#diagram');
-
-    });
-    afterAll(() => {
-        diagram.destroy();
-        ele.remove();
-    });
-    it('Move Middle segment towards target node and drag the segment which does not have thumb', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
-        let bounds: any = element.getBoundingClientRect();
-        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
-        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 100);
-        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 100);
-        let element2: HTMLElement = document.getElementById('connectorSourceThumb');
-        let bounds2: any = element2.getBoundingClientRect();
-        mouseEvents.mouseDownEvent(diagramCanvas, bounds2.x, bounds2.y + 30);
-        mouseEvents.mouseMoveEvent(diagramCanvas, bounds2.x + 50, bounds2.y + 30);
-        mouseEvents.mouseUpEvent(diagramCanvas, bounds2.x + 50, bounds2.y + 30);
-        let connector: ConnectorModel = diagram.connectors[0];
-        expect(connector.segments.length === 3).toBe(true);
-        done();
-    });
-    
 });

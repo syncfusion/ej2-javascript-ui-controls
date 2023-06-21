@@ -193,6 +193,17 @@ describe('Internationalization', () => {
             setCurrencyCode('USD');
         });
     });
+    describe('Number Fromatting with local culture set', () => {
+        let numIntl: Internationalization = new Internationalization('ja');
+        it('numberfromatting using the formatNumber with option', () => {
+            let result: string = numIntl.formatNumber(0.45,{format:'###.00'});
+            expect(result).toBe('.45');
+        });
+        it('numberfromatting using the formatNumber with option', () => {
+            let result: string = numIntl.formatNumber(-0.45,{format:'0'});
+            expect(result).toBe('0');
+        });
+    });
     describe('Date Parser', () => {
         let dParseIntl: Internationalization = new Internationalization();
         let parseDate: Date = new Date();

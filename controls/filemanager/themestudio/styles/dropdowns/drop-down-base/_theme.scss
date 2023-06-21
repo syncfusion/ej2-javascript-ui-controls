@@ -164,6 +164,12 @@
         color: $ddl-list-hover-font-color;
       }
 
+      #{if(&, '&', '*')} .e-list-item:active {
+        @if $skin-name == 'Material3' {
+          background: $ddl-list-pressed-bg-color;
+        }
+      }
+
       #{if(&, '&', '*')} .e-list-item:last-child {
         border-bottom: $ddl-last-child-bottom-border;
       }

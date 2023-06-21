@@ -494,7 +494,7 @@ export class Legend {
                 const color: string = heatMap.legendOnLoad ? this.heatMap.isColorRange ? colorCollection[i as number].minColor :
                     colorCollection[i as number].color : this.legendRange[i as number].visible ?
                     this.heatMap.isColorRange ? colorCollection[i as number].minColor :
-                        colorCollection[i as number].color : '#D3D3D3';
+                        colorCollection[i as number].color : this.heatMap.themeStyle.toggledColor || '#D3D3D3';
                 const rectItem: RectOption = new RectOption(
                     heatMap.element.id + '_Smart_Legend' + i, color, tempBorder, 1, smartLegendRect
                 );
@@ -719,7 +719,7 @@ export class Legend {
                 }
             }
             heatMap.canvasRenderer.ctx.fillStyle = heatMap.themeStyle.background;
-            heatMap.canvasRenderer.ctx.fillRect(this.fillRect.x, this.fillRect.y, this.fillRect.width, this.fillRect.height);
+            heatMap.canvasRenderer.ctx.clearRect(this.fillRect.x, this.fillRect.y, this.fillRect.width, this.fillRect.height);
         }
     }
     /**
@@ -1235,10 +1235,7 @@ export class Legend {
                 getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
             document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip').style.visibility = 'visible';
         } else {
-            const element: HTMLElement = document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip');
-            if (element) {
-                element.style.visibility = 'hidden';
-            }
+            removeElement(this.heatMap.element.id + '_legendTitle_Tooltip');
         }
     }
     /**
@@ -1263,10 +1260,7 @@ export class Legend {
 
             }
         } else {
-            const element: HTMLElement = document.getElementById(this.heatMap.element.id + '_LegendLabel_Tooltip');
-            if (element) {
-                element.style.visibility = 'hidden';
-            }
+            removeElement(this.heatMap.element.id + '_LegendLabel_Tooltip');
         }
     }
 

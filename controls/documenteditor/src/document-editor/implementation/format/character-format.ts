@@ -42,6 +42,18 @@ export class WCharacterFormat {
     public set fontSize(value: number) {
         this.setPropertyValue('fontSize', value);
     }
+    public get characterSpacing(): number {
+        return this.getPropertyValue('characterSpacing') as number;
+    }
+    public set characterSpacing(value: number) {
+        this.setPropertyValue('characterSpacing', value);
+    }
+    public get scaling(): number {
+        return this.getPropertyValue('scaling') as number;
+    }
+    public set scaling(value: number) {
+        this.setPropertyValue('scaling', value);
+    }
     public get fontFamily(): string {
         return this.getPropertyValue('fontFamily') as string;
     }
@@ -319,6 +331,8 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('fontFamilyAscii', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('fontFamilyNonFarEast', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('complexScript', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('characterSpacing', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('scaling', property, propValue, uniqueCharFormatTemp);
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
 
@@ -395,6 +409,12 @@ export class WCharacterFormat {
         case 'fontFamilyNonFarEast':
             value = undefined;
             break;
+        case 'characterSpacing':
+            value = 0;
+            break;
+        case 'scaling':
+            value = 100;
+            break;
         }
         return value;
     }
@@ -417,6 +437,8 @@ export class WCharacterFormat {
             && this.fontFamilyAscii === format.fontFamilyAscii
             && this.fontFamilyBidi === format.fontFamilyBidi
             && this.fontFamilyFarEast === format.fontFamilyFarEast
+            && this.characterSpacing === format.characterSpacing
+            && this.scaling === format.scaling
             && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast);
     }
     public isSameFormat(format: WCharacterFormat): boolean {
@@ -507,8 +529,24 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.getValue('fontSize'))) {
             this.fontSize = format.getValue('fontSize') as number;
         }
+        if (isNullOrUndefined(this.getValue('characterSpacing'))) {
+            this.characterSpacing = format.getValue('characterSpacing') as number;
+        }
+        if (isNullOrUndefined(this.getValue('scaling'))) {
+            this.scaling = format.getValue('scaling') as number;
+        }
         if (isNullOrUndefined(this.getValue('fontFamily'))) {
             this.fontFamily = format.getValue('fontFamily') as string;
+        } else {
+            if (isNullOrUndefined(this.getValue('fontFamilyAscii'))) {
+                this.fontFamilyAscii = format.getValue('fontFamily') as string;
+            }
+            if (isNullOrUndefined(this.getValue('fontFamilyFarEast'))) {
+                this.fontFamilyFarEast = format.getValue('fontFamily') as string;
+            }
+            if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast'))) {
+                this.fontFamilyNonFarEast = format.getValue('fontFamily') as string;
+            }
         }
         if (isNullOrUndefined(this.getValue('underline'))) {
             this.underline = format.getValue('underline') as Underline;

@@ -1,5 +1,5 @@
-import { EventHandler, getComponent, merge } from '@syncfusion/ej2-base';
-import { BeforeOpenCloseMenuEventArgs, ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { EventHandler, KeyboardEventArgs, getComponent, merge } from '@syncfusion/ej2-base';
+import {  BeforeOpenCloseMenuEventArgs, ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE, VERTICAL_DDB } from '../base/constant';
@@ -70,6 +70,10 @@ export class RibbonSplitButton {
                 if (splitButtonSettings.click) { splitButtonSettings.click.call(this, e); }
             }
         }, buttonEle);
+        const dropdownEle: HTMLElement = buttonEle.parentElement.querySelector('.e-dropdown-btn');
+        dropdownEle.onkeydown = (e: KeyboardEventArgs) => {
+            if (e.key === 'Enter') { e.stopImmediatePropagation(); (dropdownEle as HTMLElement).click(); }
+        };
         this.setContent(item, splitbutton);
         const wrapper: HTMLElement = splitbutton['wrapper'] as HTMLElement;
         EventHandler.add(wrapper, 'mouseenter', () => { wrapper.classList.add(RIBBON_HOVER); }, this);
@@ -87,9 +91,23 @@ export class RibbonSplitButton {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const splitButtonEle: HTMLElement = itemEle.querySelector('#' + item.id);
+        splitButtonEle.setAttribute('data-control', item.type.toString());
         const splitbutton: SplitButton = getComponent(splitButtonEle, SplitButton);
         splitbutton.cssClass = splitbutton.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         splitbutton.dataBind();
+        const dropdownEle: HTMLElement = splitButtonEle.parentElement.querySelector('.e-dropdown-btn');
+        const ddbId: string = dropdownEle.getAttribute('id');
+        const popupEle: HTMLElement = document.querySelector('#' + ddbId + '-popup');
+        dropdownEle.onkeydown = (e: KeyboardEventArgs) => {
+            if (e.key === 'Enter') { e.stopImmediatePropagation(); (dropdownEle as HTMLElement).click(); }
+        };
+        popupEle.onkeydown = (e: KeyboardEventArgs) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                splitbutton['wrapper'].classList.remove('e-ribbon-open');
+                (popupEle.querySelector('.e-focused') as HTMLElement).click();
+            }
+        };
         let target: HTMLElement;
         splitbutton.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.beforeClose) { item.splitButtonSettings.beforeClose.call(this, e); }

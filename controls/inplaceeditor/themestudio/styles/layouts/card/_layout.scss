@@ -52,7 +52,7 @@
       min-height: $card-header-bigger-minheight;
       padding: $card-header-bigger-padding;
 
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' {
         padding-bottom: $card-header-bigger-padding-bottom;
       }
 

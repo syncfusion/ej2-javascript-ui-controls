@@ -85,7 +85,7 @@ export interface FontModel {
     /**
      * Sets and gets the font weight for the text in the treemap.
      *
-     * @default 'Normal'
+     * @default null
      */
     fontWeight?: string;
 
@@ -520,7 +520,7 @@ export interface LeafItemSettingsModel {
      *
      * @default null
      */
-    labelTemplate?: string;
+    labelTemplate?: string | Function;
 
     /**
      * Sets and gets the position of the label template of treemap leaf item.
@@ -560,7 +560,7 @@ export interface TooltipSettingsModel {
      *
      * @default ''
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Sets and gets the string to format the tooltip in the treemap.
@@ -756,7 +756,7 @@ export interface LevelSettingsModel {
      *
      * @default null
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Sets and gets the string to format the header label of the level leaf items in the treemap.

@@ -106,9 +106,10 @@ export interface ComboBoxModel extends DropDownListModel{
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      */
-    valueTemplate?: string;
+    valueTemplate?: string | Function;
 
     /**
      * Specifies whether to display the floating label above the input element.
@@ -150,18 +151,20 @@ export interface ComboBoxModel extends DropDownListModel{
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Specifies a short hint that describes the expected value of the DropDownList component.

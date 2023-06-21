@@ -89,7 +89,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * @default ''
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the dialog params to edit.

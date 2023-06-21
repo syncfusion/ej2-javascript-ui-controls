@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, L10n, EmitType, Browser, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, L10n, EmitType, Browser, addClass, removeClass, KeyboardEventArgs, classList } from '@syncfusion/ej2-base';
 import { createElement, compile as templateCompiler, EventHandler, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
@@ -7,7 +7,7 @@ import { PagerDropDown } from './pager-dropdown';
 import { NumericContainer } from './numeric-container';
 import { PagerMessage } from './pager-message';
 import { ExternalMessage } from './external-message';
-import { appendChildren } from '../grid/base/util';
+import { appendChildren, parentsUntil } from '../grid/base/util';
 import * as events from '../grid/base/constant';
 
 /** @hidden */
@@ -48,6 +48,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public previousPageNo: number;
     /** @hidden */
     public isAllPage: boolean;
+    public checkAll: boolean = true;
+    /** @hidden */
+    public isPagerResized: boolean;
+    /** @hidden */
+    public keyAction: string;
+    /** @hidden */
+    public avgNumItems: number;
+    private averageDetailWidth: number;
     private defaultConstants: Object;
     private pageRefresh: string = 'pager-refresh';
     private parent: object;
@@ -153,9 +161,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      *  Defines the template as string or HTML element ID which renders customized elements in pager instead of default elements.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the customized text to append with numeric items.
@@ -466,6 +475,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 break;
             }
         }
+        this.resizePager();
     }
 
     private wireEvents(): void {
@@ -475,6 +485,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
         EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
         EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.add(window as any, 'resize', this.resizePager, this);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.add(window as any, 'load', this.resizePager, this);
     }
 
     private unwireEvents(): void {
@@ -484,6 +498,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
         EventHandler.remove(this.element, 'focusin', this.onFocusIn);
         EventHandler.remove(this.element, 'focusout', this.onFocusOut);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.remove(window as any, 'resize', this.resizePager);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        EventHandler.remove(window as any, 'load', this.resizePager);
     }
 
     private onFocusIn(e: FocusEvent): void {
@@ -618,6 +636,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {void}
      * @hidden */
     public changePagerFocus(e: KeyboardEventArgs): void {
+        this.keyAction = e.key;
         if (e.shiftKey && e.keyCode === 9) {
             this.changeFocusByShiftTab(e);
         } else if (e.keyCode === 9) {
@@ -627,6 +646,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         } else if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 35 || e.keyCode === 36) {
             this.navigateToPageByKey(e);
         }
+        this.keyAction = '';
     }
 
     private getFocusedTabindexElement(): Element {
@@ -958,15 +978,19 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * @param {string} template - specifies the template
+     * @param {string | Function} template - specifies the template
      * @returns {Function} returns the function
      * @hidden
      */
-    public compile(template: string): Function {
+    public compile(template: string | Function): Function {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
-                    this.templateFn = templateCompiler(document.querySelector(template).innerHTML.trim());
+                if (typeof template === 'function') {
+                    this.templateFn = templateCompiler(template);
+                } else {
+                    if (document.querySelectorAll(template).length) {
+                        this.templateFn = templateCompiler(document.querySelector(template).innerHTML.trim());
+                    }
                 }
             } catch (e) {
                 this.templateFn = templateCompiler(template);
@@ -1012,6 +1036,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 this.externalMessageModule.refresh();
             }
             this.setTabIndexForFocusLastElement();
+            this.resizePager();
         }
     }
 
@@ -1085,5 +1110,151 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
 
     private isReactTemplate(): boolean {
         return (this.isReact || this.isVue) && this.template && typeof (this.template) !== 'string';
+    }
+
+    /**
+     * Resize pager component by hiding pager component's numeric items based on total width available for pager.
+     *
+     * @returns {void}
+     */
+    private resizePager(): void {
+        const isStyleApplied: boolean = this.element.classList.contains('e-pager') ? getComputedStyle(this.element).getPropertyValue('border-style').includes('solid') : null;
+        if (!(this.template) && isStyleApplied) {
+            const pagerElements: NodeListOf<HTMLElement> = this.element.querySelectorAll(
+            /* tslint:disable-next-line:max-line-length */
+                '.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-numericitem:not(.e-hide), .e-numericitem.e-active.e-hide, .e-np:not(.e-disable), .e-icon-next, .e-icon-last, .e-parentmsgbar, .e-mnext, .e-mlast, .e-pagerdropdown, .e-pagerconstant');
+            let actualWidth: number = 0;
+            /**
+             * Loop through all the inner elements of pager to calculate the required width for pager child elements.
+             */
+            for (let i: number = 0; i < pagerElements.length; i++) {
+                if (getComputedStyle(pagerElements[parseInt(i.toString(), 10)]).display !== 'none') {
+                    actualWidth += pagerElements[parseInt(i.toString(), 10)].offsetWidth
+                    + parseFloat(getComputedStyle(pagerElements[parseInt(i.toString(), 10)]).marginLeft)
+                    + parseFloat(getComputedStyle(pagerElements[parseInt(i.toString(), 10)]).marginRight);
+                }
+            }
+            const pagerContainer: HTMLElement = this.element.querySelector('.e-pagercontainer');
+            actualWidth += parseFloat(getComputedStyle(pagerContainer).marginLeft)
+             + parseFloat(getComputedStyle(pagerContainer).marginRight);
+            const pagerWidth: number = this.element.clientWidth
+             - parseFloat(getComputedStyle(this.element).paddingLeft)
+            - parseFloat(getComputedStyle(this.element).paddingRight)
+             - parseFloat(getComputedStyle(this.element).marginLeft)
+              - parseFloat(getComputedStyle(this.element).marginRight);
+            let numItems: NodeListOf<HTMLElement> = pagerContainer.querySelectorAll(
+                '.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
+            const hiddenNumItems: NodeListOf<HTMLElement> = pagerContainer.querySelectorAll(
+                '.e-numericitem.e-hide:not([style*="display: none"])');
+            const hideFrom: number = numItems.length;
+            const showFrom: number = 1;
+            const bufferWidth: number = (!isNullOrUndefined(parentsUntil(this.element, 'e-bigger'))) ? 10 : 5;
+            const NP: HTMLElement = pagerContainer.querySelector('.e-np');
+            const PP: HTMLElement = pagerContainer.querySelector('.e-pp');
+            const detailItems: NodeListOf<HTMLElement> = this.element.querySelectorAll('.e-parentmsgbar:not([style*="display: none"]), .e-pagesizes:not([style*="display: none"])');
+            if (detailItems.length) {
+                let totDetailWidth: number = 0;
+                detailItems.forEach((item: HTMLElement) => {
+                    totDetailWidth += item.offsetWidth;
+                });
+                this.averageDetailWidth = totDetailWidth / detailItems.length;
+            }
+            let totalWidth: number = 0;
+            /**
+             * Loop to calculate average width of numeric item.
+             */
+            for (let i: number = 0; i < numItems.length; i++) {
+                totalWidth += numItems[parseInt(i.toString(), 10)].offsetWidth
+                + parseFloat(getComputedStyle(numItems[parseInt(i.toString(), 10)]).marginLeft)
+                + parseFloat(getComputedStyle(numItems[parseInt(i.toString(), 10)]).marginRight);
+            }
+            const numericItemWidth: number = totalWidth / numItems.length ;
+            /**
+             * Condition to hide numeric items when calculated actual width exceeds available pager space.
+             */
+            if (actualWidth >= (pagerWidth - (numericItemWidth ? numericItemWidth : 0))) {
+                this.isPagerResized = true;
+                const diff: number = Math.abs((actualWidth) - pagerWidth);
+                // To hide Pager message elements when no more numeric items available to hide.
+                if (numItems.length <= 1 && detailItems.length && window.innerWidth >= 768) {
+                    let pagerDetailItemsWidth: number = 0;
+                    const pagerDetailItems: NodeListOf<HTMLElement> = this.element.querySelectorAll('.e-pagercontainer , .e-parentmsgbar, .e-pagesizes');
+                    pagerDetailItems.forEach((element: HTMLElement) => {
+                        pagerDetailItemsWidth += element.offsetWidth + parseFloat(getComputedStyle(element).marginLeft)
+                         + parseFloat(getComputedStyle(element).marginRight);
+                    });
+                    if ((pagerDetailItemsWidth) > (pagerWidth - bufferWidth)) {
+                        detailItems[0].style.display = 'none';
+                    }
+                }
+                // To calculate number of numeric items need to be hidden.
+                let numToHide: number = Math.ceil(diff / (numericItemWidth));
+                numToHide = (numToHide === 0) ? 1 : (numToHide > numItems.length) ? (numItems.length - 1) : numToHide;
+                if (this.currentPage !== this.totalPages) {
+                    classList(NP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);
+                }
+                for (let i: number = 1; i <= numToHide; i++) {
+                    let hideIndex: number = hideFrom - parseInt(i.toString(), 10);
+                    numItems = pagerContainer.querySelectorAll('.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
+                    if (this.currentPage !== 1 && ((parseInt(numItems[Math.abs(hideIndex)].getAttribute('index'), 10) === this.currentPage)
+                    || parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) === this.currentPage)) {
+                        hideIndex = 0;
+                        classList(PP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);
+                    }
+                    if (!numItems[Math.abs(hideIndex)].classList.contains('e-currentitem')) {
+                        numItems[Math.abs(hideIndex)].classList.add('e-hide');
+                    }
+                }
+            }
+            /**
+             * Condition to show numeric items when space availble in pager at dom.
+             */
+            else if (actualWidth < (pagerWidth) && hiddenNumItems.length) {
+                const diff: number = Math.abs(pagerWidth - (actualWidth));
+                const hiddenDetailItems: NodeListOf<HTMLElement> = this.element.querySelectorAll('.e-parentmsgbar[style*="display: none"], .e-pagesizes[style*="display: none"]');
+                // To show Pager message elements.
+                if (hiddenDetailItems.length && (diff > (this.averageDetailWidth + (this.averageDetailWidth / 4)))) {
+                    hiddenDetailItems[(hiddenDetailItems.length - 1)].style.display = 'inline-block';
+                }
+                if ((diff > (numericItemWidth * 2) && !hiddenDetailItems.length  && window.innerWidth >= 768)) {
+                    // To calculate number of numeric items need to be shown.
+                    let numToShow: number = Math.floor((diff) / (numericItemWidth + bufferWidth));
+                    numToShow = (numToShow > hiddenNumItems.length) ? hiddenNumItems.length : (numToShow - 1);
+                    //Seggregating hidden num items as less index and greater index values than current page value.
+                    const lesserIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) < this.currentPage).sort((a: HTMLElement, b: HTMLElement) => parseInt(b.getAttribute('index'), 10) - parseInt(a.getAttribute('index'), 10));
+                    const greaterIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) > this.currentPage);
+
+                    let showItems: HTMLElement[] = (lesserIndexItems.length && lesserIndexItems)
+                        || (greaterIndexItems.length && greaterIndexItems);
+
+                    for (let i: number = 1; i <= numToShow; i++) {
+                        const showItem: HTMLElement = showItems && showItems[Math.abs(showFrom - i)];
+
+                        if (showItem) {
+                            showItem.classList.remove('e-hide');
+
+                            if (showItem === showItems[showItems.length - 1]) {
+                                showItems = null;
+                            }
+                        }
+                    }
+                }
+            }
+            numItems = pagerContainer.querySelectorAll(
+                '.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
+            if (numItems.length) {
+                if (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) === this.totalPages) {
+                    classList(NP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
+                }
+                if (parseInt(numItems[0].getAttribute('index'), 10) === 1) {
+                    classList(PP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
+                }
+                const isLastSet: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) === this.totalPages);
+                const ppIndex: number = (parseInt(numItems[0].getAttribute('index'), 10) - (isLastSet ? this.avgNumItems : numItems.length));
+                PP.setAttribute('index', (ppIndex < 1) ? '1' : ppIndex.toString());
+                NP.setAttribute('index', (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) + 1).toString());
+                this.avgNumItems = isLastSet ? this.avgNumItems : numItems.length;
+            }
+        }
     }
 }

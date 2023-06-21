@@ -1329,5 +1329,157 @@ describe('TreeGrid Virtual Scroll', () => {
     });
   });
 
+  describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in self reference data ', () => {
+    let TreeGridObj: TreeGrid;
+    var data: any = [];
+    var x = 0;
+    for (var i = 0; i < 500; i++) {
+      var parent = {};
+      parent['TaskId'] = ++x;
+      parent['TaskName'] = 'Task ' + x;
+      parent['StartDate'] = new Date('01/09/2017');
+      parent['EndDate'] = new Date('01/13/2017');
+      parent['Duration'] = 5;
+      parent['Status'] = Math.round(Math.random() * 100);
+      data.push(parent);
+      for (var j = 1; j < 3; j++) {
+        var child = {};
+        child['TaskId'] = ++x;
+        child['TaskName'] = 'Task ' + x;
+        child['StartDate'] = new Date('01/09/2017');
+        child['EndDate'] = new Date('01/13/2017');
+        child['Duration'] = 5;
+        child['Status'] = Math.round(Math.random() * 100);
+        child['parentID'] = parent['TaskId'];
+        data.push(child);
+        for (var k = 1; k < 4; k++) {
+          var c = {};
+          c['TaskId'] = ++x;
+          c['TaskName'] = 'Task ' + x;
+          c['StartDate'] = new Date('01/09/2017');
+          c['EndDate'] = new Date('01/13/2017');
+          c['Duration'] = 5;
+          c['Status'] = Math.round(Math.random() * 100);
+          c['parentID'] = child['TaskId'];
+          data.push(c);
+        }
+      }
+    };
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: data.slice(0, 4),
+            enableVirtualization: true,
+            height: 400,
+            idMapping: 'TaskId',
+            parentIdMapping: 'parentID',
+            treeColumnIndex: 1,
+            enableVirtualMaskRow: true,
+            editSettings: {
+              allowEditing: true,
+              allowAdding: true,
+              allowDeleting: true,
+              mode: 'Row',
+              newRowPosition: 'Below',
+            },
+            columns: [
+              {
+                field: 'TaskId',
+                headerText: 'Player Jersey',
+                validationRules: { required: true, number: true },
+                width: 140,
+                textAlign: 'Right',
+                isPrimaryKey: true,
+              },
+              {
+                field: 'TaskName',
+                headerText: 'Player Name',
+                validationRules: { required: true },
+                width: 140,
+              },
+              { field: 'StartDate', headerText: 'Year', width: 120, textAlign: 'Right' },
+              { field: 'EndDate', headerText: 'Stint', width: 120, textAlign: 'Right' },
+              { field: 'Duration', headerText: 'TMID', width: 120, textAlign: 'Right' },
+            ],
+            toolbar: ['ExpandAll', 'CollapseAll'],
+        },done);
+    });
+  
+    it('Collapsing all the records', (done: Function) => {
+      TreeGridObj.collapseAll();
+      expect(TreeGridObj.getCurrentViewRecords().length === 1).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
+  describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in Hierarchy data ', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: editVirtualData,
+          enableVirtualization: true,
+          height: 400,
+          treeColumnIndex: 1,
+          enableVirtualMaskRow: true,
+          childMapping: 'Crew',
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
+          columns: [
+            { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
+            { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
+            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+        ]
+        },done);
+    });
+  
+    it('Collapsing all the records', (done: Function) => {
+      TreeGridObj.collapseAll();
+      expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
+  describe('EJ2-831337 - Script Error throws while using Virtualization with ExpandAll action ', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: editVirtualData,
+          enableVirtualization: true,
+          height: 400,
+          treeColumnIndex: 1,
+          childMapping: 'Crew',
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
+          columns: [
+            { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
+            { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
+            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+        ]
+        },done);
+    });
+  
+    it('Collapsing and expanding all the records', (done: Function) => {
+      TreeGridObj.collapseAll();
+      TreeGridObj.expandAll();
+      expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
 
 });

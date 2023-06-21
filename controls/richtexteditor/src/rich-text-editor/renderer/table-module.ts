@@ -961,7 +961,9 @@ export class Table {
                             const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
                                 tableWidth + mouseX, widthCompare);
                             for (let i: number = 0; i < lastColumnsCell.length; i++) {
-                                (this.curTable.rows[i as number].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                                if (this.curTable.rows[i as number].cells[this.colIndex]){
+                                    (this.curTable.rows[i as number].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                                }
                             }
                         }
                     } else {
@@ -970,7 +972,7 @@ export class Table {
                         const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
                             parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
                         for (let i: number = 0; i < this.curTable.rows.length; i++) {
-                            if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                            if ((totalwid - actualwid) > 20 && actualwid > 20 && this.curTable.rows[i as number].cells[i as number]) {
                                 const leftColumnWidth: number = totalwid - actualwid;
                                 const rightColWidth: number = actualwid;
                                 const index: number = this.curTable.rows[i as number].cells[i as number].hasAttribute('colspan') ?

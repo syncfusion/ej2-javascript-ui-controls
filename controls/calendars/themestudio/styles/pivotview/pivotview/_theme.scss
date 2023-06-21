@@ -42,7 +42,7 @@
     .e-grid .e-content,
     .e-grid .e-gridheader,
     .e-headercell {
-      background-color: $pivotgrid-gtot-background-color;
+      background: $pivotgrid-gtot-background-color;
     }
 
     .e-grid .e-gridheader {
@@ -63,21 +63,16 @@
 
     .e-rowsheader,
     .e-columnsheader {
-      background-color: $pivotgrid-header-background-color;
+      background: $pivotgrid-header-background-color;
     }
 
     .e-rowsheader {
       .e-cellvalue {
-        margin-left: 8px;
-        margin-top: 5px;
+        margin-left: $pivotgrid-rowsheader-cellvalue-margin-left;
+        margin-top: $pivotgrid-rowsheader-cellvalue-margin-top;
 
-        @if ($pivotgrid-skin == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast') {
-          margin-top: 0;
-        }
-
-        @if ($skin-name == 'tailwind') {
+        @if ($skin-name == 'tailwind') or ($skin-name == 'Material3') {
           vertical-align: middle;
-          margin-left: 4px
         }
       }
     }
@@ -90,8 +85,11 @@
     .e-olap-editor-dialog {
       // sass-lint:disable-all
       min-height: 350px !important;
-      min-width: 350px !important;
+      min-width: 320px !important;
       visibility: hidden;
+      &.e-node-limit {
+        max-height: 450px !important;
+      }
       // sass-lint:enable-all
     }
 
@@ -124,7 +122,6 @@
       }
     }
 
-
     .e-grid .e-rowsheader.e-active,
     .e-grid .e-rowsheader.e-cellselectionbackground,
     .e-grid .e-columnsheader.e-active,
@@ -151,23 +148,30 @@
       display: block;
     }
 
-    div.e-cellvalue {
-      margin-top: 5px;
-
-      @if ($pivotgrid-skin == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast') {
-        margin-top: 0;
+    div {
+      &.e-cellvalue {
+        margin-top: 5px;
+  
+        @if ($pivotgrid-skin == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast') or ($skin-name == 'Material3') {
+          margin-top: 0;
+        }
+  
+        @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
+          margin-top: 2px;
+        }
+  
+        @if ($skin-name == 'FluentUI') {
+          margin-top: 1px;
+        }
       }
 
-      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
-        margin-top: 2px;
-      }
-
-      @if ($skin-name == 'FluentUI') {
-        margin-top: 1px;
+      div span.e-value-sort-icon {
+        @if ($skin-name == 'Material3') {
+        /* stylelint-disable */
+          padding: 0 !important;
+        }
       }
     }
-
-    /* stylelint-disable */
 
     .e-sortfilterdiv {
       .e-value-sort-icon {
@@ -278,11 +282,9 @@
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
-        padding-left: 12px !important;
-
       }
 
-      @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'tailwind') {
+      @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'tailwind') or ($skin-name == 'Material3') {
         padding-top: 0px !important;
         padding-bottom: 0px !important;
       }
@@ -511,19 +513,6 @@
           font-weight: normal;
         }
       }
-
-      .e-pivot-button {
-        .e-sort,
-        .e-dropdown-icon,
-        .e-pv-filter,
-        .e-pv-filtered,
-        .e-remove,
-        .e-edit {
-          @if ($pivotgrid-skin == 'bootstrap5') {
-            margin-top: 1px;
-          }
-        }
-      }
     }
 
     .e-grouping-bar,
@@ -559,7 +548,8 @@
       }
 
       .e-pivot-button {
-        background-color: $pivotgrid-button-background-color;
+        align-items: center;
+        background: $pivotgrid-button-background-color;
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-button-border-color;
         border-radius: $pivotgrid-button-border-radius;
         box-shadow: none;
@@ -570,14 +560,10 @@
         display: flex;
         font-weight: normal;
         height: 24px;
-        line-height: .9em;
-        padding: $pivotgrid-button-inner-padding 8px;
+        padding: 0 8px;
         text-transform: none;
         vertical-align: bottom;
         z-index: 1;
-        @if ($pivotgrid-skin == 'bootstrap4') {
-          font-weight: normal;
-        }
 
         &.e-list-selected {
           opacity: .5;
@@ -587,8 +573,10 @@
         }
 
         &:hover {
-          background-color: $pivotgrid-hover-color;
-          border-color: $pivotgrid-hover-color;
+          background: $pivotgrid-hover-color;
+          @if ($skin-name != 'Material3') {
+            border-color: $pivotgrid-hover-color;
+          }
           @if ($pivotgrid-skin == 'bootstrap4') {
             background-color: $pivotgrid-bg-color;
             border-color: $pivotgrid-border-color;
@@ -643,8 +631,8 @@
           }
         }
 
-        .e-content {
-          background-color: transparent;
+        .e-pvt-btn-content {
+          background: transparent;
           cursor: move;
           flex: auto;
           font-size: $pivotgrid-button-font-size;
@@ -666,10 +654,6 @@
         }
 
         /* stylelint-disable */
-        .e-draggable {
-          height: initial !important;
-        }
-
         .e-drag {
           display: none;
         }
@@ -684,10 +668,8 @@
           cursor: pointer;
           display: inline-block;
           font-size: $pivotgrid-button-icon-size;
-          height: $pivotgrid-button-icon-wrapper-size;
           margin-left: 4px;
           width: $pivotgrid-button-icon-wrapper-size;
-          padding-top: $pivotgrid-group-button-icon-wrapper-padding-top;
 
           &:hover {
             color: $pivotgrid-icon-hover-color;
@@ -705,7 +687,6 @@
           transition: transform 200ms ease-in-out;
 
           &.e-descend {
-            margin-top: $pivotgrid-group-button-icon-wrapper-marigin-top;
             transform: rotateX(180deg);
           }
         }
@@ -753,7 +734,6 @@
       .e-group-rows {
         .e-pvt-btn-div {
           .e-pivot-button {
-            padding: $pivotgrid-button-inner-padding 8px;
             width: 180px;
             @if ($pivotgrid-skin == 'bootstrap4') {
               font-weight: 400;
@@ -824,7 +804,6 @@
             .e-edit {
               color: $pivotgrid-button-icon-color !important;
               font-size: $pivotgrid-button-icon-size;
-              height: $pivotgrid-button-icon-wrapper-size;
               margin-left: 4px !important;
               width: $pivotgrid-button-icon-wrapper-size;
     
@@ -914,7 +893,7 @@
     }
     /* stylelint-enable */  
 
-    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit):not(.e-drag) {
+    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit):not(.e-drag):not(.e-selected-option-icon):not(.e-nav-arrow) {
       height: auto;
       width: auto;
     }
@@ -928,25 +907,11 @@
       cursor: pointer;
       display: inline-block;
       height: 18px;
-      margin-top: 5px;
+      margin-top: $pivotgrid-expand-collapse-margin-top;
+      margin-bottom: $pivotgrid-expand-collapse-margin-bottom;
       text-align: center;
       width: 18px;
-
-      @if ($pivotgrid-skin == 'highcontrast') {
-        margin-top: 0;
-      }
-
-      @if ($pivotgrid-skin == 'highcontrast-light') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
-        margin-top: 0;
-      }
-
-      @if ($skin-name == 'tailwind') {
-        margin-top: 0;
-        vertical-align: middle;
-      }
-
-      @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
-        margin-bottom: 2px;
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'Material3') or ($skin-name == 'tailwind') {
         vertical-align: middle;
       }
     }
@@ -957,6 +922,7 @@
       font-size: $pivotgrid-expcoldiv-fontsize !important;
       margin-left: 0px;
       margin-top: $pivotgrid-drill-margintop;
+      margin-bottom: $pivotgrid-expand-collapse-margin-bottom;
     }
 
     /* stylelint-enable */
@@ -1006,12 +972,16 @@
           .e-icon-last {
             font-size: $pivotpager-page-icon-size;
             padding: $pivotpager-page-icon-padding;
-           
-          /* stylelint-disable */
-          @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
-            margin: 0 !important;
+
+            /* stylelint-disable */
+            @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+              margin: 0 !important;
+            }
+
+            @if ($skin-name == 'Material3') {
+              border: $pivotgrid-sort-select-border-color;
+            }
           }
-        }
 
         /* stylelint-enable */
 
@@ -1051,10 +1021,20 @@
                 margin: $pivotpager-page-container-marging-top 0 0 0;
               }
 
+              @if ($skin-name == 'Material3') {
+                border: $pivotgrid-sort-select-border-color;
+              }
+
               &.e-pivot-pager-info-container,
               &.e-pager-dropdown {
                 border-style: none;
                 vertical-align: top;
+              }
+              &.e-pager-dropdown .e-input-group .e-input-group-icon {
+                @if ($skin-name == 'Material3') {
+                  margin-top: 0;
+                  margin-bottom: 0;
+                }
               }
             }
             
@@ -1066,6 +1046,11 @@
           .e-pivot-row-of-string-maindiv,
           .e-pivot-column-of-string-maindiv {
             line-height: $pivotpager-single-title-line-height;
+            @if ($skin-name == 'Material3') {
+              /* stylelint-disable */
+              color: $pivotpager-string-maindiv-font-color !important;
+              /* stylelint-enable */
+            }
 
             .e-pivotview-row-pagerNumber,
             .e-pivotview-column-pagerNumber {
@@ -1084,6 +1069,13 @@
             .e-numeric {
               margin: $pivotpager-numeric-box-margin;
               vertical-align: top;
+
+              .e-pivot-pager-row-dropdown,
+              .e-pivot-pager-column-dropdown {
+                @if ($skin-name == 'Material3') {
+                  font-size: $pivotpager-numeric-font-size;
+                }
+              }
             }
           }
         }
@@ -1100,6 +1092,12 @@
               &.e-pivot-pager-info-container,
               &.e-pager-dropdown {
                 border-style: none;
+              }
+            }
+
+            .e-pivot-pager-nav-container {
+              @if ($skin-name == 'Material3') {
+                border: $pivotgrid-sort-select-border-color;
               }
             }
 
@@ -1137,6 +1135,7 @@
 
             .e-pivotview-text-div,
             .e-pivotview-text-div-1 {
+              align-items: center;
               display: flex;
               flex-direction: row;
               width: 50%;
@@ -1146,6 +1145,10 @@
 
                 @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
                   margin-top: $pivotpager-touch-page-container-marging-top;
+                }
+
+                @if ($skin-name == 'Material3') {
+                  border: $pivotgrid-sort-select-border-color;
                 }
               }
 
@@ -1167,6 +1170,16 @@
                 text-align: initial;
                 width: inherit;
               }
+
+              .e-pivot-row-pager-settings,
+              .e-pivot-column-pager-settings {
+                align-items: center;
+                display: flex;
+              }
+            }
+
+            .e-pivotview-text-div-1 .e-pagercontainer{
+              margin-bottom: 0;
             }
           }
 
@@ -1177,6 +1190,10 @@
 
               .e-pagercontainer {
                 margin-top: 0;
+
+                @if ($skin-name == 'Material3') {
+                  border: $pivotgrid-sort-select-border-color;
+                }
               }
 
               .e-pivotview-row-pagerString,
@@ -1359,7 +1376,7 @@
           padding-right: 0;
 
           .e-pivot-button {
-            .e-content {
+            .e-pvt-btn-content {
               margin-left: 4px;
               text-align: right;
             }
@@ -1399,7 +1416,7 @@
             padding-right: 0;
 
             .e-pivot-button {
-              .e-content {
+              .e-pvt-btn-content {
                 margin-left: 4px;
                 margin-right: 0;
                 text-align: right;
@@ -1443,22 +1460,12 @@
         /* stylelint-disable */
         .e-pivot-button {
           line-height: 1em !important;
-
-          .e-dropdown-icon,
-          .e-pv-filtered,
-          .e-remove,
-          .e-sort {
-            margin-top: 2px !important;
-          }
         }
 
         .e-group-all-fields {
           .e-pvt-btn-div {
             .e-pivot-button {
               max-width: 155px;
-              @if ($pivotgrid-skin == 'bootstrap4') {
-                padding: 3px 10px;
-              }
             }
           }
         }
@@ -1468,20 +1475,6 @@
           .e-pvt-btn-div {
             .e-pivot-button {
               max-width: 155px;
-              @if ($pivotgrid-skin == 'bootstrap4') {
-                padding: 3px 10px;
-              }
-
-              .e-sort,
-              .e-dropdown-icon,
-              .e-pv-filter,
-              .e-pv-filtered,
-              .e-remove,
-              .e-edit {
-                @if ($pivotgrid-skin == 'bootstrap4') {
-                  margin-top: 2px;
-                }
-              }
             }
           }
         }
@@ -1490,20 +1483,6 @@
           .e-pvt-btn-div {
             .e-pivot-button {
               max-width: 200px;
-              @if ($pivotgrid-skin == 'bootstrap4') {
-                padding: 3px 10px;
-              }
-
-              .e-sort,
-              .e-dropdown-icon,
-              .e-pv-filter,
-              .e-pv-filtered,
-              .e-remove,
-              .e-edit {
-                @if ($pivotgrid-skin == 'bootstrap4') {
-                  margin-top: 2px;
-                }
-              }
             }
           }
         }
@@ -1522,20 +1501,6 @@
 
             .e-pivot-button {
               width: 155px;
-              @if ($pivotgrid-skin == 'bootstrap4') {
-                padding: 4px 8px;
-              }
-
-              .e-sort,
-              .e-dropdown-icon,
-              .e-pv-filter,
-              .e-pv-filtered,
-              .e-remove,
-              .e-edit {
-                @if ($pivotgrid-skin == 'bootstrap4') {
-                  margin-top: 1px;
-                }
-              }
             }
           }
         }
@@ -1658,6 +1623,17 @@
       height: 100% !important;
     }
 
+    &.e-device {
+      .e-grid.e-grid-min-height {
+        .e-rowcell,
+        .e-rowcell:first-child,
+        .e-rowcell:last-child {
+          padding-top: 0px !important;
+          padding-bottom: 0px !important;
+        }
+      }
+    }
+
     .e-stackedheadercelldiv,
     .e-stackedheadertext,
     .e-headertext,
@@ -1694,10 +1670,9 @@
 
         .e-pivot-button {
           height: 30px;
-          line-height: $pivotgrid-bigger-button-line-height;
-          padding: $pivotgrid-bigger-button-inner-padding 12px;
+          padding: 0 12px;
 
-          .e-content {
+          .e-pvt-btn-content {
             font-size: $pivotgrid-bigger-button-font-size;
             margin-right: 8px;
             @if ($pivotgrid-skin == 'bootstrap4') {
@@ -1713,14 +1688,11 @@
           .e-edit {
             /* stylelint-disable */
             font-size: $pivotgrid-bigger-button-icon-size !important;
-            height: $pivotgrid-bigger-button-icon-wrapper-size;
-            margin-top: $pivotgrid-bigger-button-icon-touch-margin-size;
+            height: $pivotgrid-bigger-button-icon-size !important;
+            /* stylelint-enable */
             width: $pivotgrid-bigger-button-icon-wrapper-size;
             @if ($pivotgrid-skin == 'bootstrap4') {
               padding-left: 12px;
-            }
-            @if ($skin-name == "bootstrap") or ($skin-name == "bootstrap4") or ($skin-name == "FluentUI") {
-              padding-top: 0;
             }
           }
 
@@ -1742,12 +1714,6 @@
         height: 36px;
         min-height: 36px;
         padding-left: $pivotview-axis-bigger-indent-padding;
-
-        .e-pvt-btn-div .e-pivot-button.e-btn {
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            padding: 7px 10px;
-          }
-        }
 
         .e-draggable-prompt {
           @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') {
@@ -1785,12 +1751,9 @@
         .e-pivot-button {
           height: 30px;
           line-height: $pivotgrid-bigger-button-line-height;
-          padding: $pivotgrid-bigger-button-inner-padding 12px;
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            padding: 7px 10px;
-          }
+          padding: $pivotgrid-group-bigger-pivot-button-padding;
 
-          .e-content {
+          .e-pvt-btn-content {
             font-size: $pivotgrid-bigger-button-font-size;
             margin-right: 8px;
             @if ($pivotgrid-skin == 'bootstrap4') {
@@ -1804,8 +1767,10 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
+            /* stylelint-disable */
             font-size: $pivotgrid-bigger-button-icon-size !important;
-            height: $pivotgrid-bigger-button-icon-wrapper-size;
+            height: $pivotgrid-bigger-button-icon-size !important;
+            /* stylelint-enable */
             width: $pivotgrid-bigger-button-icon-wrapper-size;
             @if ($pivotgrid-skin == 'bootstrap4') {
               padding-left: 12px;
@@ -1823,24 +1788,18 @@
       }
     }
 
+    /* stylelint-disable */
     .e-sortfilterdiv {
       @if ($pivotgrid-skin == 'bootstrap4') or ($skin-name == 'bootstrap5') {
         font-size: 12px !important;
       }
-
       @if ($pivotgrid-skin == 'tailwind') {
         font-size: 16px !important;
       }
+      @if ($skin-name == 'Material3') {
+        font-size: 14px !important;
+      }
     }
-
-    /* stylelint-enable */
-
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container {
-      height: $pivotgrid-member-filter-list-bigger-height;
-    }
-
-    /* stylelint-disable */
-
     
     .e-stackedheadercelldiv,
     .e-stackedheadertext,
@@ -1854,10 +1813,8 @@
     .e-grid .e-columnsheader {
       padding-right: 16px !important;
     }
-    /* stylelint-enable */
 
     .e-rowcell {
-      /* stylelint-disable */
       font-size: $pivotgrid-bigger-content-font-size !important;
       @if($skin-name == 'tailwind') {
         padding: 0 12px;
@@ -1865,7 +1822,6 @@
     }
 
     &.e-rtl {
-
       .e-grid .e-rowsheader {
         padding-right: 10px !important;
       }
@@ -1878,8 +1834,6 @@
       .e-grid .e-columnsheader {
         padding-right: 8px !important;
       }
-
-      /* stylelint-enable */
 
       .e-grouping-bar {
 
@@ -1900,12 +1854,10 @@
         }
       }
 
-      /* stylelint-disable */
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 16px !important;
       }
-
       /* stylelint-enable */
     }
 

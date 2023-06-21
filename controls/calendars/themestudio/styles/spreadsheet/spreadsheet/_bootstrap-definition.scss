@@ -16,6 +16,7 @@ $hdr-cell-border-color: $cell-border-color !default;
 $dlg-error-color: #dd2c2c !default;
 $agg-clr: #333;
 $header-cell-font-size: 12px !default;
+$content-cell-padding: 0 2px !default;
 $open-dlg-file-alert-span-font-size: 12px !default;
 $goto-dlg-btn-font-size: 12px !default;
 $numformat-ddb-preview-font-size: 12px !default;
@@ -26,6 +27,8 @@ $spreadsheet-cpicker-font-color-font-size: 13px !default;
 $spreadsheet-cpicker-fill-color-font-size: 14px !default;
 $aggregate-list-font-size: 16px !default;
 $bigger-spreadsheet-tbar-btn-icon-font-size: 18px !default;
+$define-name-input-height: 23px !default;
+$define-name-input-padding: 0 0 0 8px !default;
 
 //enddefault
 //selection
@@ -75,6 +78,7 @@ $bigger-formula-bar-drop-icon-font-size: 18px !default;
 $dlg-list-border: 1px solid $grey-dd !default;
 $dlg-description-font-weight: 500 !default;
 $dlg-content-padding: 15px !default;
+$dlg-content-padding-bottom: 0 !default;
 $dlg-category-margin-bottom: 5px !default;
 $dlg-min-height: 510px !default;
 $function-dlg-header-content-font-size: 16px !default;
@@ -101,6 +105,7 @@ $bigger-cpicker-btn-width: 36px !default;
 $menu-extension-padding: 12px !default;
 $spreadsheet-ribbon-item-hover-border-color: $tbar-hover-border-color !default;
 $spreadsheet-ribbon-item-active-border-color: $tbar-focus-border-color !default;
+$spreadsheet-ribbon-item-active-background-color: $tbar-focus-bg !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 
@@ -127,11 +132,13 @@ $filter-icon-bigger-margin-bottom: 22px !default;
 $filter-selectall-padding: 22px !default;
 $filter-selectall-bigger-padding: 27px !default;
 $filter-icon-before-font-size: 20px !default;
+$cfmain-header-font-size: 14px !default;
 
 //End Filtering
 //Find And Replace
 $find-popup-border-top-color: #fafafa !default;
 $find-popup-border-color: #e0e0e0 !default;
+$find-popup-box-shadow: none !default;
 $find-tool-dlg-width: 346px !default;
 $find-tool-dlg-height: 46px !default;
 $find-dlg-width: 442px !default;

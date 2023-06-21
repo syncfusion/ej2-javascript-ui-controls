@@ -41,7 +41,6 @@ describe('Ribbon Items', () => {
                         id: 'largepaste',
                         type: RibbonItemType.SplitButton,
                         allowedSizes: RibbonItemSize.Large ,
-                        displayOptions: DisplayMode.Simplified,
                         splitButtonSettings: {
                             select: (args: MenuEventArgs)=>{
                                 outputEle.innerText = ("Large " + args.item.text);
@@ -58,7 +57,6 @@ describe('Ribbon Items', () => {
                     },{
                         type: RibbonItemType.DropDown,
                         allowedSizes: RibbonItemSize.Large ,
-                        displayOptions: DisplayMode.Simplified,
                         id: 'largetable',
                         dropDownSettings: {
                             select: (args: MenuEventArgs)=>{
@@ -77,7 +75,6 @@ describe('Ribbon Items', () => {
                         type: RibbonItemType.Button,
                         id: 'largecut',
                         allowedSizes: RibbonItemSize.Large ,
-                        displayOptions: DisplayMode.Simplified,
                         cssClass: 'test-css',
                         buttonSettings: {
                             clicked: ()=>{
@@ -98,7 +95,6 @@ describe('Ribbon Items', () => {
                     items: [{
                         type: RibbonItemType.SplitButton,
                         id: 'mediumpaste',
-                        displayOptions: DisplayMode.Simplified,
                         allowedSizes: RibbonItemSize.Medium ,
                         splitButtonSettings: {
                             select: (args: MenuEventArgs)=>{
@@ -111,7 +107,6 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.DropDown,
-                        displayOptions: DisplayMode.Simplified,
                         allowedSizes: RibbonItemSize.Medium ,
                         id: 'mediumtable',
                         dropDownSettings: {
@@ -128,7 +123,6 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.Button,
-                        displayOptions: DisplayMode.Simplified,
                         id: 'mediumcut',
                         allowedSizes: RibbonItemSize.Medium ,
                         buttonSettings: {
@@ -150,7 +144,6 @@ describe('Ribbon Items', () => {
                     items: [{
                         type: RibbonItemType.SplitButton,
                         id: 'smallpaste',
-                        displayOptions: DisplayMode.Simplified,
                         allowedSizes: RibbonItemSize.Small ,
                         splitButtonSettings: {
                             select: (args: MenuEventArgs)=>{
@@ -163,7 +156,6 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.DropDown,
-                        displayOptions: DisplayMode.Simplified,
                         id: 'smalltable',
                         allowedSizes: RibbonItemSize.Small ,
                         dropDownSettings: {
@@ -180,9 +172,8 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.Button,
-                        displayOptions: DisplayMode.Simplified,
                         id: 'smallcut',
-                        allowedSizes: RibbonItemSize.Small ,
+                        allowedSizes: RibbonItemSize.Small,
                         buttonSettings: {
                             clicked: ()=>{
                                 outputEle.innerText = ("Small " + "Cut Clicked");
@@ -202,7 +193,6 @@ describe('Ribbon Items', () => {
                     items: [{
                         type: RibbonItemType.ComboBox,
                         id: 'fontfamily',
-                        displayOptions: DisplayMode.Simplified,
                         comboBoxSettings: {
                             select: (args: SelectEventArgs)=>{
                                 outputEle.innerText = ("Font " + args.itemData.text);
@@ -218,7 +208,6 @@ describe('Ribbon Items', () => {
                     items: [{
                         type: RibbonItemType.CheckBox,
                         id: 'fontbold',
-                        displayOptions: DisplayMode.Simplified,
                         checkBoxSettings: {
                             cssClass: 'test-css',
                             change: (args: CheckChange)=>{
@@ -229,7 +218,6 @@ describe('Ribbon Items', () => {
                         }
                     }, {
                         type: RibbonItemType.ColorPicker,
-                        displayOptions: DisplayMode.Simplified,
                         id: 'fontcolor',
                         colorPickerSettings: {
                             cssClass: 'test-css',
@@ -254,7 +242,6 @@ describe('Ribbon Items', () => {
                     items: [{
                         type: RibbonItemType.SplitButton,
                         id: 'groupoverflowpaste',
-                        displayOptions: DisplayMode.Overflow,
                         allowedSizes: RibbonItemSize.Large ,
                         splitButtonSettings: {
                             select: (args: MenuEventArgs)=>{
@@ -284,7 +271,6 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.Button,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'groupoverflowcut',
                         allowedSizes: RibbonItemSize.Large ,
                         buttonSettings: {
@@ -322,7 +308,6 @@ describe('Ribbon Items', () => {
                 }, {
                     items: [{
                         type: RibbonItemType.CheckBox,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'groupoverflowfontbold',
                         checkBoxSettings: {
                             change: (args: CheckChange)=>{
@@ -333,7 +318,6 @@ describe('Ribbon Items', () => {
                         }
                     }, {
                         type: RibbonItemType.ColorPicker,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'groupoverflowfontcolor',
                         colorPickerSettings: {
                             change: (args: ChangeEventArgs)=>{
@@ -352,7 +336,6 @@ describe('Ribbon Items', () => {
                 collections: [{
                     items: [{
                         type: RibbonItemType.SplitButton,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'commonoverflowpaste',
                         allowedSizes: RibbonItemSize.Large ,
                         splitButtonSettings: {
@@ -386,7 +369,6 @@ describe('Ribbon Items', () => {
                         }
                     },{
                         type: RibbonItemType.Button,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'commonoverflowcut',
                         allowedSizes: RibbonItemSize.Large ,
                         buttonSettings: {
@@ -407,7 +389,6 @@ describe('Ribbon Items', () => {
                 collections: [{
                     items: [{
                         type: RibbonItemType.ComboBox,
-                        displayOptions: DisplayMode.Overflow,
                         id: 'commonoverflowfontfamily',
                         comboBoxSettings: {
                             select: (args: SelectEventArgs)=>{
@@ -567,10 +548,112 @@ describe('Ribbon Items', () => {
             expect(outputEle.innerText.toLowerCase()).toBe('groupoverflow keep source format');
             expect(isCloseCalled).toBe(false);
         });
-        it('OverAll Overflow Splitbutton', () => { 
+        it('OverAll Overflow Splitbutton', () => {
                 ribbon = new Ribbon({
-                tabs: tabs,
-                activeLayout: RibbonLayout.Simplified
+                    activeLayout: RibbonLayout.Simplified,
+                    tabs: [{
+                        groups: [{                            
+                        header: "CmnOverflow btn",
+                        groupIconCss:'e-icons e-paste',
+                        id: 'CmnOverflow1',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow | DisplayMode.Classic,
+                                id: 'commonoverflowpaste',
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    select: (args: MenuEventArgs)=>{
+                                        outputEle.innerText = ("commonOverflow " + args.item.text);
+                                    },
+                                    click: (args: ClickEventArgs)=>{
+                                        outputEle.innerText = ("commonOverflow " + "Paste Clicked");
+                                    },
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    close: ()=>{ isCloseCalled = true; }
+                                }
+                            },{
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowtable',
+                                allowedSizes: RibbonItemSize.Large ,
+                                dropDownSettings: {
+                                    select: (args: MenuEventArgs)=>{
+                                        outputEle.innerText = ("commonOverflow " + args.item.text);
+                                    },
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ],
+                                    close: ()=>{ isCloseCalled = true; }
+                                }
+                            },{
+                                type: RibbonItemType.Button,
+                                // displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowcut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                buttonSettings: {
+                                    clicked: ()=>{
+                                        outputEle.innerText = ("commonOverflow " + "Cut Clicked");
+                                    },
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        },]
+                    }, {
+                        header: "CmnOverflow",
+                        id: 'CmnOverflow2',
+                        orientation: 'Row',
+                        groupIconCss:'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                id: 'commonoverflowfontfamily',
+                                comboBoxSettings: {
+                                    select: (args: SelectEventArgs)=>{
+                                        outputEle.innerText = ("commonOverflow " + args.itemData.text);
+                                    },
+                                    dataSource: fontStyle,
+                                    index: 2,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                    close: ()=>{ isCloseCalled = true; }
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowfontbold',
+                                checkBoxSettings: {
+                                    change: (args: CheckChange)=>{
+                                        outputEle.innerText = ("commonOverflow " + args.checked);
+                                    },
+                                    label: 'Ruler',
+                                    checked: false
+                                }
+                            }, {
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowfontcolor',
+                                colorPickerSettings: {
+                                    change: (args: ChangeEventArgs)=>{
+                                        outputEle.innerText = ("commonOverflow " + args.value);
+                                    },
+                                    value: '#123456',
+                                }
+                            }]
+                        }]
+                    }]
+                }]                
             });
             ribbon.appendTo("#ribbon");
             ribbon.overflowDDB.toggle();
@@ -830,8 +913,55 @@ describe('Ribbon Items', () => {
         });
         it('Group Overflow ComboBox', () => { 
                 ribbon = new Ribbon({
-                tabs: tabs,
-                activeLayout: RibbonLayout.Simplified
+                activeLayout: RibbonLayout.Simplified,
+                tabs: [{
+                    groups: [{
+                        header: "GroupOverflow",
+                        orientation: 'Row',
+                        groupIconCss:'e-icons e-bold',
+                        enableGroupOverflow: true,
+                        cssClass: 'font-group',
+                        id: 'groupoverflow2',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                id: 'groupoverflowfontfamily',
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    select: (args: SelectEventArgs)=>{
+                                        outputEle.innerText = ("GroupOverflow " + args.itemData.text);
+                                    },
+                                    dataSource: fontStyle,
+                                    index: 2,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                    close: ()=>{ isCloseCalled = true; }
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.CheckBox,
+                                id: 'groupoverflowfontbold',
+                                checkBoxSettings: {
+                                    change: (args: CheckChange)=>{
+                                        outputEle.innerText = ("GroupOverflow " + args.checked);
+                                    },
+                                    label: 'Ruler',
+                                    checked: false
+                                }
+                            }, {
+                                type: RibbonItemType.ColorPicker,
+                                id: 'groupoverflowfontcolor',
+                                colorPickerSettings: {
+                                    change: (args: ChangeEventArgs)=>{
+                                        outputEle.innerText = ("GroupOverflow " + args.value);
+                                    },
+                                    value: '#123456',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
             });
             ribbon.appendTo("#ribbon");
             getComponent<DropDownButton>( 'groupoverflow2_sim_grp_overflow', DropDownButton).toggle();
@@ -1084,7 +1214,7 @@ describe('Ribbon Items', () => {
         });
     });
     describe('Overflow items interaction', () => {   
-        
+
         let dropDownButtonItems: ItemModel[] = [
             { text: 'New tab' },
             { text: 'New window' },
@@ -1472,7 +1602,7 @@ describe('Ribbon Items', () => {
             expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
             expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-open')).toBe(true);
             expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-open')).toBe(true);
-            
+
             //Clicking on colorpicker
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
@@ -1606,4 +1736,3 @@ describe('Ribbon Items', () => {
         });
     });
 });
-

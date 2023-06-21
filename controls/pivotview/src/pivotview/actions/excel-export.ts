@@ -2,7 +2,7 @@ import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ExcelRow, ExcelCell, ExcelColumn, BeforeExportEventArgs, ExportCompleteEventArgs } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotView } from '../base/pivotview';
-import { IAxisSet, IPivotValues, PivotEngine } from '../../base/engine';
+import { IAxisSet, PivotEngine } from '../../base/engine';
 import { IPageSettings, IMatrix2D } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -50,15 +50,16 @@ export class ExcelExport {
             for (let i: number = 0; i < row.length; i++) {
                 let spanCount: number = 0;
                 cells = [];
-                let currentRow: ExcelRow = row[i];
+                const currentRow: ExcelRow = row[i as number];
                 for (let j: number = 0; j < currentRow.cells.length; j++) {
                     cells.push({
-                        index: spanCount + 1, value: currentRow.cells[j].value,
-                        colSpan: currentRow.cells[j].colSpan, rowSpan: currentRow.cells[j].rowSpan,
-                        style: currentRow.cells[j].style
+                        index: spanCount + 1, value: currentRow.cells[j as number].value,
+                        colSpan: currentRow.cells[j as number].colSpan, rowSpan: currentRow.cells[j as number].rowSpan,
+                        style: currentRow.cells[j as number].style
                     });
-                    spanCount = spanCount + cells[j].colSpan;
+                    spanCount = spanCount + cells[j as number].colSpan;
                 }
+                /* eslint-enable @typescript-eslint/no-explicit-any */
                 this.actualrCnt++;
                 this.rows.push({ index: this.actualrCnt, cells: cells });
             }

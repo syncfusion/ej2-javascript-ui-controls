@@ -155,5 +155,14 @@ export class IconShape extends ChildProperty<IconShape> {
      */
     @Complex<MarginModel>({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
     public padding: MarginModel;
+
+    /**
+     * Sets the Path color of an icon.
+     *
+     * @default ''
+     */
+    @Property('#1a1a1a')
+    public iconColor: string;
+
 }
 

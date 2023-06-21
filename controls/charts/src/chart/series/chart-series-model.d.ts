@@ -130,9 +130,10 @@ export interface DataLabelSettingsModel {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Show Datalabel Even two Data Labels Are Overflow.
@@ -169,7 +170,7 @@ export interface MarkerSettingsModel {
      * * InvertedTriangle
      * * Image
      *
-     * @default 'Circle'
+     * @default null
      */
 
     shape?: ChartShape;
@@ -227,7 +228,7 @@ export interface MarkerSettingsModel {
     fill?: string;
 
     /**
-     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     * Trackball is enabled by default when the mouse moves, but it can be disabled by setting "false" to the marker's "allowHighlight" property.
      *
      * @default true
      */
@@ -247,6 +248,51 @@ export interface MarkerSettingsModel {
      */
 
     dataLabel?: DataLabelSettingsModel;
+
+}
+
+/**
+ * Interface for a class ParetoOptions
+ */
+export interface ParetoOptionsModel {
+
+    /**
+     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme. 
+     * 
+     * @default null
+     */ 
+    
+    fill?: string;
+
+    /**
+     * Defines the width of the pareto line series.
+     * 
+     * @default 1
+     */ 
+
+    width?: number;
+
+    /**
+     * Defines the pattern of dashes and gaps to stroke. 
+     * 
+     * @default '0' 
+     */ 
+
+    dashArray?: string;
+
+    /**
+     * Options for displaying and customizing markers for individual points in a pareto line. 
+     */
+
+    marker?: MarkerSettingsModel;
+
+    /**
+     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property. 
+     * 
+     * @default true 
+     */ 
+
+    showAxis?: boolean;
 
 }
 
@@ -847,7 +893,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
      *
-     * @default '#2ecd71'
+     * @default null
      */
 
     bearFillColor?: string;
@@ -856,7 +902,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
      *
-     * @default '#e74c3d'
+     * @default null
      */
 
     bullFillColor?: string;
@@ -977,6 +1023,11 @@ export interface SeriesModel extends SeriesBaseModel{
      * Options for displaying and customizing markers for individual points in a series.
      */
     marker?: MarkerSettingsModel;
+
+    /**
+     * Options for customizing the pareto line series. 
+     */ 
+    paretoOptions?: ParetoOptionsModel;
 
     /**
      * Options to customize the drag settings for series

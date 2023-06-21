@@ -106,7 +106,9 @@ export const PIVOT_BUTTON_WRAPPER_CLASS: string = 'e-pvt-btn-div';
 /** @hidden */
 export const PIVOT_BUTTON_CLASS: string = 'e-pivot-button';
 /** @hidden */
-export const PIVOT_BUTTON_CONTENT_CLASS: string = 'e-content';
+export const CONTENT_CLASS: string = 'e-content';
+/** @hidden */
+export const PIVOT_BUTTON_CONTENT_CLASS: string = 'e-pvt-btn-content';
 /** @hidden */
 export const DRAG_CLONE_CLASS: string = 'e-button-drag-clone';
 /** @hidden */

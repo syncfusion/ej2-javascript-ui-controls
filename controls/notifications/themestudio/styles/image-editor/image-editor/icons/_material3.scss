@@ -99,7 +99,7 @@
     & .e-stroke.e-template,
     & .e-pen-stroke-color.e-template {
       & .e-caret::before {
-        content: '\739';
+        content: '\e739';
       }
     }
 
@@ -108,6 +108,126 @@
         &::before {
           content: '\e783';
         }
+      }
+    }
+
+    & .e-custom {
+      &::before {
+        content: '\e8a9';
+      }
+    }
+    
+    & .e-circle {
+      &::before {
+        content: '\e7ca';
+      }
+    }
+    
+    & .e-square{
+      &::before {
+        content: '\e8aa';
+      }
+    }
+    
+    & .e-custom-a {
+      &::before {
+        content: '\e8ab';
+      }
+    }
+    
+    & .e-custom-b {
+      &::before {
+        content: '\e8ac';
+      }
+    }
+    
+    & .e-custom-c {
+      &::before {
+        content: '\e8ad';
+      }
+    }
+    
+    & .e-custom-d {
+      &::before {
+        content: '\e8ae';
+      }
+    }
+    
+    & .e-custom-e {
+      &::before {
+        content: '\e8af';
+      }
+    }
+  
+    & .e-horizontal-flip {
+      &::before {
+        content: '\e8a3';
+      }
+    }
+    
+    & .e-vertical-flip {
+      &::before {
+        content: '\e8a4';
+      }
+    }
+  
+    & .e-clock-wise {
+      &::before {
+        content: '\e8a6';
+      }
+    }
+  
+    & .e-anti-clock-wise {
+      &::before {
+        content: '\e8a5';
+      }
+    }
+  
+    & .e-rectangle {
+      &::before {
+        content: '\e723';
+      }
+    }
+    
+    & .e-circle {
+      &::before {
+        content: '\e7ca';
+      }
+    }
+    
+    & .e-triangle {
+      &::before {
+        content: '\e89c';
+      }
+    }
+    
+    & .e-line {
+      &::before {
+        content: '\e819';
+      }
+    }
+  
+    & .e-add-text {
+      &::before {
+        content: '\e82e';
+      }
+    }
+    
+    & .e-free-pen {
+      &::before {
+        content: '\e7db';
+      }
+    }
+
+    & .e-arrow {
+      &::before {
+        content: '\e669';
+      }
+    }
+    
+    & .e-path {
+      &::before {
+        content: '\e931';
       }
     }
   }
@@ -225,6 +345,18 @@
   & .e-add-text {
     &::before {
       content: '\e82e';
+    }
+  }
+
+  & .e-arrow {
+    &::before {
+      content: '\e669';
+    }
+  }
+  
+  & .e-path {
+    &::before {
+      content: '\e931';
     }
   }
 }

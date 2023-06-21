@@ -17,148 +17,62 @@ import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
 /**
  * Defines the view type of the FileManager.
+ * ```props
+ * LargeIcons :- Displays the files and folders as large icons.
+ * Details :- Displays the files and folders in a list format.
+ * ```
  */
-export type ViewType = 
-    /**
-    * Displays the files and folders as large icons.
-    */
-    'LargeIcons' |
-    /**
-    * Displays the files and folders in a list format.
-    */
-    'Details';
+export type ViewType = 'LargeIcons' | 'Details';
 
 /**
  * Defines the files sorting order in FileManager.
+ * ```props
+ * Ascending :- Indicates that the folders and files are sorted in the descending order.
+ * Descending :- Indicates that the folders and files are sorted in the ascending order.
+ * None :- Indicates that the folders and files are not sorted.
+ * ```
  */
-export type SortOrder =
-    /**
-    * Indicates that the folders and files are sorted in the descending order.
-    */
-    'Ascending' |
-    /**
-    *  Indicates that the folders and files are sorted in the ascending order
-    */
-     'Descending' |
-    /**
-    * Indicates that the folders and files are not sorted.
-    */
-     'None';
+export type SortOrder = 'Ascending' | 'Descending' | 'None';
 
 /**
  * Defines the Toolbar items of the FileManager.
+ * ```props
+ * NewFolder :- Allows you to quickly create a new folder.
+ * Upload :- Allows you to quickly and easily upload files from your local computer.
+ * Cut :- Allows you to remove a file or folder from its current location and move it to a different location.
+ * Copy :- Allows you to create a duplicate of a file or folder and place it in a different location.
+ * Paste :- Allows you to place a previously cut or copied file or folder in a new location.
+ * Delete :- Allows you to remove a file or folder permanently.
+ * Download :- Allows you to quickly and easily download files to your local computer.
+ * Rename :- Allows you to change the name of a file or folder.
+ * SortBy :- Allows you to sort files and folder by different criteria such as name, date, size, etc.
+ * Refresh :- Allows you to refresh the current folder's content, showing the changes made on the folder.
+ * Selection :- Allows you to select one or more files or folders.
+ * View :- Allows you to change the way files and folders are displayed.
+ * Details :- Allows you to see additional information about the files and folders, such as the size and date modified.
+ * ```
  */
-export type ToolBarItems = 
-    /**
-     * Allows you to quickly create a new folder
-     */
-    'NewFolder' | 
-    /**
-     * Allows you to quickly and easily upload files from your local computer.
-     */
-    'Upload' | 
-    /**
-     * Allows you to remove a file or folder from its current location and move it to a different location.
-     */
-    'Cut' | 
-    /**
-     * Allows you to create a duplicate of a file or folder and place it in a different location.
-     */
-    'Copy' |
-    /**
-     * Allows you to place a previously cut or copied file or folder in a new location.
-     */ 
-    'Paste' | 
-    /**
-     * Allows you to remove a file or folder permanently.
-     */
-    'Delete' | 
-    /**
-     * Allows you to quickly and easily download files to your local computer.
-     */
-    'Download'| 
-    /**
-     * Allows you to change the name of a file or folder.
-     */
-    'Rename' | 
-    /**
-     * Allows you to sort files and folder by different criteria such as name, date, size, etc.
-     */
-    'SortBy' | 
-    /**
-     * Allows you to refresh the current folder's content, showing the changes made on the folder.
-     */
-    'Refresh' | 
-    /**
-     * Allows you to select one or more files or folders.
-     */
-    'Selection' | 
-    /**
-     * Allows you to change the way files and folders are displayed.
-     */
-    'View' | 
-    /**
-     * Allows you to see additional information about the files and folders, such as the size and date modified.
-     */
-    'Details';
+export type ToolBarItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download' | 'Rename' | 'SortBy' | 'Refresh' | 'Selection' | 'View' | 'Details';
 
-export type MenuItems = 
-    /**
-     * Allows you to quickly create a new folder
-     */
-    'NewFolder' | 
-    /**
-     * Allows you to quickly and easily upload files from your local computer.
-     */
-    'Upload' | 
-    /**
-     * Allows you to remove a file or folder from its current location and move it to a different location.
-     */
-    'Cut' | 
-    /**
-     * Allows you to create a duplicate of a file or folder and place it in a different location.
-     */
-    'Copy' | 
-    /**
-     * Allows you to place a previously cut or copied file or folder in a new location.
-     */ 
-    'Paste' | 
-    /**
-     * Allows you to remove a file or folder permanently.
-     */
-    'Delete' | 
-    /**
-     * Allows you to quickly and easily download files to your local computer.
-     */
-    'Download' | 
-    /**
-     * Allows you to change the name of a file or folder.
-     */
-    'Rename' | 
-    /**
-     * Allows you to sort files and folder by different criteria such as name, date, size, etc.
-     */
-    'SortBy' | 
-    /**
-     * Allows you to refresh the current folder's content, showing the changes made on the folder.
-     */
-    'Refresh' | 
-    /**
-     * Allows you to select all the files and folders in the current folder.
-     */
-    'SelectAll' | 
-    /**
-     * Allows you to change the way files and folders are displayed.
-     */
-    'View' | 
-    /**
-     * Allows you to see additional information about the files and folders, such as the size and date modified.
-     */
-    'Details' | 
-    /**
-     * Allows you to open the selected file or folder.
-     */
-    'Open';
+/**
+ * ```props
+ * NewFolder :- Allows you to quickly create a new folder
+ * Upload :- Allows you to quickly and easily upload files from your local computer.
+ * Cut :- Allows you to remove a file or folder from its current location and move it to a different location.
+ * Copy :- Allows you to create a duplicate of a file or folder and place it in a different location.
+ * Paste :- Allows you to place a previously cut or copied file or folder in a new location.
+ * Delete :- Allows you to remove a file or folder permanently.
+ * Download :- Allows you to quickly and easily download files to your local computer.
+ * Rename :- Allows you to change the name of a file or folder.
+ * SortBy :- Allows you to sort files and folder by different criteria such as name, date, size, etc.
+ * Refresh :- Allows you to refresh the current folder's content, showing the changes made on the folder.
+ * SelectAll :- Allows you to select all the files and folders in the current folder.
+ * View :- Allows you to change the way files and folders are displayed.
+ * Details :- Allows you to see additional information about the files and folders, such as the size and date modified.
+ * Open :- Allows you to open the selected file or folder.
+ * ```
+ */
+export type MenuItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download' | 'Rename' | 'SortBy' | 'Refresh' | 'SelectAll' | 'View' | 'Details' | 'Open';
 
 /**
  * Interfaces for File Manager Toolbar items.
@@ -648,6 +562,7 @@ export interface IFileManager extends Component<HTMLElement> {
     feFiles: Object[];
     ajaxSettings: AjaxSettingsModel;
     toolbarSettings: ToolbarSettingsModel;
+    detailsViewSettings: DetailsViewSettingsModel;
     dialogObj: Dialog;
     viewerObj: Dialog;
     extDialogObj: Dialog;
@@ -668,7 +583,6 @@ export interface IFileManager extends Component<HTMLElement> {
     breadcrumbbarModule: BreadCrumbBar;
     virtualizationModule: Virtualization;
     toolbarSelection: boolean;
-    detailsViewSettings: DetailsViewSettingsModel;
     duplicateItems: string[];
     // eslint-disable-next-line
     duplicateRecords: Object[];
@@ -689,6 +603,7 @@ export interface IFileManager extends Component<HTMLElement> {
     isBigger: boolean;
     isFile: boolean;
     allowMultiSelection: boolean;
+    showItemCheckBoxes: boolean;
     selectedItems: string[];
     layoutSelectedItems: string[];
     sortOrder: SortOrder;

@@ -19,9 +19,12 @@
       }
 
       .e-btn:hover.e-primary.e-flat:not([DISABLED]) {
-        background: $dialog-footer-hover-btn-color;
         @if $skin-name == 'Material3' {
-          color: $dialog-footer-btn-bg-color;
+          background: $dialog-footer-flat-hover-btn-bg-color;
+          color: rgba($primary);
+        }
+        @else {
+          background: $dialog-footer-hover-btn-color;
         }
       }
     }

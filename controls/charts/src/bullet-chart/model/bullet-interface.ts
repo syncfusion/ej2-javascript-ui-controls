@@ -3,6 +3,7 @@ import { BulletChart } from '../bullet-chart';
 import { ScaleGroup } from '../renderer/scale-render';
 import { RangeModel } from '../model/bullet-base-model';
 import { LegendShape, ChartTheme } from '../../chart/utils/enum';
+import { FontModel } from '../../chart';
 
 /**
  * Interface for Bullet chart Theme Style
@@ -28,6 +29,13 @@ export interface IBulletStyle {
     secondRangeColor: string;
     thirdRangeColor: string;
     rangeStrokes: Object[];
+    titleFont: FontModel;
+    subTitleFont: FontModel;
+    legendLabelFont: FontModel;
+    axisLabelFont: FontModel;
+    dataLabelFont:FontModel;
+    tooltipLabelFont: FontModel;
+    legendTitleFont?: FontModel;
 }
 export interface IBulletChartEventArgs {
     /** Defines the name of the event. */

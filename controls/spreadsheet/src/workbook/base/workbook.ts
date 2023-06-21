@@ -560,8 +560,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public formulaRefCell: string;
 
-     /** @hidden */
-     public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
+    /** @hidden */
+    public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
 
     /**
      * Constructor for initializing the library.
@@ -1138,12 +1138,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} formula - Specifies the colIndex.
      * @returns {void} - To set the value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string, isRandomFormula?: boolean): void {
         this.notify(
             workbookEditOperation,
             {
                 action: 'updateCellValue', address: [rowIndex - 1, colIndex - 1], value: value,
-                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula
+                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula, isRandomFormula: isRandomFormula
             });
     }
 

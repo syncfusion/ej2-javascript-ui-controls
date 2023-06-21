@@ -192,7 +192,13 @@ export let defaultLocale: { [key: string]: string } = {
     'bulletFormatListSquare': 'Square',
     'numberFormatListNone': 'None',
     'bulletFormatListNone':'None',
-    'formatPainter': 'Format Painter'
+    'formatPainter': 'Format Painter',
+    'emojiPicker': 'Emoji Picker',
+    'embeddedCode': 'Embedded Code',
+    'pasteEmbeddedCodeHere': 'Paste Embedded Code here',
+    'emojiPickerTypeToFind': 'Type to find',
+    'emojiPickerNoResultFound': 'No results found',
+    'emojiPickerTrySomethingElse': 'Try something else',
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -281,7 +287,13 @@ export let toolsLocale: { [key: string]: string } = {
     'insertrowbefore': 'insertRowBefore',
     'insertrowafter': 'insertRowAfter',
     'deleterow': 'deleteRow',
-    'formatpainter': 'formatPainter'
+    'formatpainter': 'formatPainter',
+    'emojipicker': 'emojiPicker',
+    'embeddedCode': 'Embedded Code',
+    'pasteEmbeddedCodeHere': 'Paste Embedded Code here',
+    'emojiPickerTypeToFind': 'Type to find',
+    'emojiPickerNoResultFound': 'No results found',
+    'emojiPickerTrySomethingElse': 'Try something else',
 };
 
 export let fontNameLocale : { [ket: string]: string }[] = [

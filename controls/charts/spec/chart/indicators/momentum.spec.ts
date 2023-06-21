@@ -190,10 +190,10 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 //define check condition
                 let svg: HTMLElement = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '766.5' || svg.getAttribute('d').split(' ')[1] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '42.25' || svg.getAttribute('d').split(' ')[2] == '45.25').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '766.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[5] == '355.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '767.5' || svg.getAttribute('d').split(' ')[1] == '767.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '43.25' || svg.getAttribute('d').split(' ')[2] == '45.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '767.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '360.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
                 expect(chartObj.visibleSeries[1].yAxis.name).toBe('secondary');
                 done();
             };
@@ -234,10 +234,10 @@ describe('Chart', () => {
                 let signalLine: HTMLElement = document.getElementById('container_Indicator_0_Momentum');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '62.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '95.75' || svg.getAttribute('d').split(' ')[2] == '88.75').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '766.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[5] == '95.75' || svg.getAttribute('d').split(' ')[5] == '88.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '53.5' || svg.getAttribute('d').split(' ')[1] == '62.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '89.75' || svg.getAttribute('d').split(' ')[2] == '88.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '767.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '89.75' || svg.getAttribute('d').split(' ')[5] == '88.75').toBe(true);
                 done();
 
                 
@@ -438,7 +438,7 @@ describe('Chart', () => {
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == '#000816').toBe(true);
-                expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
+                expect((<Element>text1.childNodes[0]).getAttribute('fill') == 'rgba(249, 250, 251, 1)').toBe(true);
                 expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5UpperLine : 100').toBe(true);
                 // - solve this- expect(text2.textContent == 'UpperLine : 100').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));

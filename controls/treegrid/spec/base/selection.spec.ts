@@ -1006,7 +1006,7 @@ describe('Selection module', () => {
     });
   });
   
-  describe('EJ2-70486 - Checkbox selection check on expand/collapse action when checkboxOnly mode enabled ', () => {
+    describe('EJ2-70486 - Checkbox selection check on expand/collapse action when checkboxOnly mode enabled ', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -1120,8 +1120,8 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
-  
-      describe('EJ2-71468 - getSelectedRowCellIndexes method returned the cellIndex while on row collapse', () => {
+
+    describe('EJ2-71468 - getSelectedRowCellIndexes method returned the cellIndex while on row collapse', () => {
     let gridObj: TreeGrid;
     let collapsed: () => void;
     beforeAll((done: Function) => {
@@ -1164,7 +1164,6 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
-  
   
   it('memory leak', () => {
     profile.sample();

@@ -97,7 +97,7 @@ export class FilterDialog {
             showCloseIcon: this.allowExcelLikeFilter ? true : false,
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-            width: 'auto',
+            width: '320px',
             height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
                 (this.allowExcelLikeFilter ? '400px' : '350px'),
             position: { X: 'center', Y: 'center' },

@@ -85,6 +85,8 @@ export class FormDesignerToolbar {
      */
     public resetFormDesignerToolbar(): void {
         if (this.pdfViewer.isFormDesignerToolbarVisible) {
+            this.pdfViewer.designerMode = true;
+            this.pdfViewer.formDesignerModule.setMode("designer");
             this.adjustViewer(false);
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
@@ -95,6 +97,10 @@ export class FormDesignerToolbar {
         else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
+            if(!this.pdfViewer.isAnnotationToolbarVisible) {
+                this.adjustViewer(true);
+            }
+            this.primaryToolbar.deSelectItem(this.primaryToolbar.formDesignerItem);
             this.pdfViewer.isFormDesignerToolbarVisible = false;
         }
     }

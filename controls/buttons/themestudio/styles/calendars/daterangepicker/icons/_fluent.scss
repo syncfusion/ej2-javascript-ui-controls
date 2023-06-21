@@ -69,4 +69,24 @@
   #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
     font-size: $range-bigger-small-icon-font-size;
   }
+
+  .e-daterangepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-daterangepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-range-header,
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e7e7';
+          font-family: 'e-icons';
+        }
+
+        #{if(&, '&', '*')} .e-apply::before {
+          content: '\e774';
+          font-family: 'e-icons';
+        }
+      }
+    }
+  }
 }

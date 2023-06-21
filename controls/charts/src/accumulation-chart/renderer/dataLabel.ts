@@ -43,14 +43,6 @@ export class AccumulationDataLabel extends AccumulationBase {
     constructor(accumulation: AccumulationChart) {
         super(accumulation);
         this.id = accumulation.element.id + '_datalabel_Series_';
-        if (accumulation.title) {
-            const titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
-            this.titleRect = new Rect(
-                accumulation.availableSize.width / 2 - titleSize.width / 2,
-                accumulation.margin.top,
-                titleSize.width, titleSize.height
-            );
-        }
     }
     /**
      * Method to get datalabel text location.
@@ -65,7 +57,14 @@ export class AccumulationDataLabel extends AccumulationBase {
             this.getLabelDistance(point, dataLabel);
 
         //let radius: number = this.isCircular() ? this.labelRadius : this.getLabelDistance(point, dataLabel);
-
+        if (this.accumulation.title) {
+            const titleSize: Size = measureText(this.accumulation.title, this.accumulation.titleStyle, this.accumulation.themeStyle.datalabelFont);
+            this.titleRect = new Rect(
+                this.accumulation.availableSize.width / 2 - titleSize.width / 2,
+                this.accumulation.margin.top,
+                titleSize.width, titleSize.height
+            );
+        }
         this.getLabelRegion(point, dataLabel.position, textSize, radius, this.marginValue);
         point.labelAngle = point.midAngle;
         point.labelPosition = dataLabel.position;
@@ -133,10 +132,10 @@ export class AccumulationDataLabel extends AccumulationBase {
             point.labelCollection = point.label.split('<br>');
         }
         else if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font);
+            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font, this.accumulation.themeStyle.datalabelFont);
         }
         else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
-            point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip');
+            point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
         }
         else {
             point.labelCollection[0] = point.label;
@@ -153,7 +152,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         let textSize : Size;
         for (let i: number = 0 ; i < labelCollection.length ; i++)
         {
-            textSize = measureText(labelCollection[i as number], font);
+            textSize = measureText(labelCollection[i as number], font, this.accumulation.themeStyle.datalabelFont);
             width = Math.max(textSize.width, width);
             height += textSize.height;
         }
@@ -319,10 +318,10 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
                 else if (size < point.labelRegion.width) {
                     if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font);
+                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font, this.accumulation.themeStyle.datalabelFont);
                     }
                     else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
-                        point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip');
+                        point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
                     }
                     point.labelRegion.width = size;
                 }
@@ -814,7 +813,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                                 this.accumulation.enableRtl ? 'end' : 'start', point.labelCollection, rotate, 'auto', degree
                             ),
                             point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
-                            datalabelGroup, false, redraw, true, false, this.accumulation.duration, null, null, null, null, true
+                            datalabelGroup, false, redraw, true, false, this.accumulation.duration, null, null, null, null, true, this.accumulation.themeStyle.datalabelFont
                         );
                         element = null;
                     }
@@ -957,8 +956,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     ): void {
         childElement.style.left = (point.labelRegion.x) + 'px';
         childElement.style.top = (point.labelRegion.y) + 'px';
-        childElement.style.color = labelColor ||
-            this.getSaturatedColor(point, fill);
+        childElement.style.color = labelColor || this.getSaturatedColor(point, point.labelPosition === 'Inside' ? fill : this.getLabelBackground(point));
         if (this.accumulation.isBlazor) {
             const position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
                 (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';

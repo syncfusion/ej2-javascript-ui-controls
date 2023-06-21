@@ -30,7 +30,7 @@
       margin-top: -38px;
       right: 18px;
       top: 100%;
-      width: 16px;
+      width: 32px;
     }
   }
 
@@ -40,20 +40,20 @@
       margin-top: -35px;
       right: 18px;
       top: 100%;
-      width: 16px;
+      width: 32px;
     }
   }
 
   .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
   .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
-      right: 52px;
+      right: 30px;
     }
   }
 
   .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
-      right: 52px;
+      right: 30px;
     }
   }
 

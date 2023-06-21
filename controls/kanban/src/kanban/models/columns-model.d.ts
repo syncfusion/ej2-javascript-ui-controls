@@ -25,8 +25,9 @@ export interface ColumnsModel {
      * Defines the column template
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enable or disable toggle column

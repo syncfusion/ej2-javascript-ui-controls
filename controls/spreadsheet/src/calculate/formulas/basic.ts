@@ -2,6 +2,7 @@ import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } fr
 import { Calculate, getAlphalabel, CalcSheetFamilyItem } from '../base/index';
 import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { isNumber } from '../../workbook/index';
 
 /**
  * Represents the basic formulas module.
@@ -409,13 +410,19 @@ export class BasicFormulas {
             const range: string = ranges[k as number];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
-                const startRow: number = this.parent.rowIndex(range.substr(0, i));
-                const endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                let startRow: number = this.parent.rowIndex(range.substr(0, i));
+                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
                 if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
-                const col1: number = this.parent.colIndex(range.substr(0, i));
-                const col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (startRow > endRow) {
+                    [startRow, endRow] = [endRow, startRow];
+                }
+                let col1: number = this.parent.colIndex(range.substr(0, i));
+                let col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (col1 > col2) {
+                    [col1, col2] = [col2, col1];
+                }   
                 if (mulValues === null) {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];
@@ -1869,14 +1876,14 @@ export class BasicFormulas {
         val = val === '' ? '0' : val;
         val2 = val2 === '' ? '0' : val2;
         if (val === '#NAME?') { return this.parent.getErrorStrings()[CommonErrors.name]; }
-        if (val.toUpperCase().match(/^[0-9.]+$/) && val2.toUpperCase().match(/^[0-9.]+$/)) {
+        if (val.toUpperCase().match(/^[-]?[0-9.]+$/) && val2.toUpperCase().match(/^[0-9.]+$/)) {
             const intl: Internationalization = new Internationalization();
             const decimalCount: number = parseInt(val2, 10);
             let decimalValue: string = "";
             for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
                 decimalValue += "0";
             }
-            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##.' + decimalValue });
+            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##0.' + decimalValue + ';($#,##0.' + decimalValue + ');$0.' + decimalValue });
         } else {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
@@ -2256,6 +2263,11 @@ export class BasicFormulas {
      */
     public ComputeINDEX(...range: string[]): string | number {
         const argArr: string[] = range;
+        let nestedFormula: boolean;
+        if (argArr.length && argArr[argArr.length -1] === 'nestedFormulaTrue') {
+            nestedFormula = true;
+            argArr.pop();
+        }
         const argCount: number = argArr.length;
         if (isNullOrUndefined(range) || (argArr.length === 1 && argArr[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
@@ -2317,6 +2329,10 @@ export class BasicFormulas {
         const result: string = this.parent.getValueFromArg(cellRef);
         if (result === '') {
             return 0;
+        }
+        if (nestedFormula && !isNumber(result) && result !== this.parent.trueValue && result !== this.parent.falseValue &&
+            this.parent.getErrorStrings().indexOf(result) === -1) {
+            return '"' + result + '"';
         }
         return result;
     }

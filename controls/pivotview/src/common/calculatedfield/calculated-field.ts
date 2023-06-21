@@ -119,7 +119,7 @@ export class CalculatedField implements IAction {
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
-        const node: HTMLElement = (e.currentTarget as HTMLElement).querySelector('.e-hover.e-node-focus') as HTMLElement;
+        const node: HTMLElement = (e.currentTarget as HTMLElement).querySelector('.e-node-focus') as HTMLElement;
         if (node) {
             switch (e.action) {
             case 'moveRight':
@@ -509,7 +509,7 @@ export class CalculatedField implements IAction {
                 this.createMenu(items, node);
                 const pos: OffsetPosition = node.getBoundingClientRect();
                 const offset: number = window.scrollY || document.documentElement.scrollTop;
-                if (this.parent.enableRtl) { /* eslint-disable security/detect-non-literal-fs-filename */
+                if (this.parent.enableRtl) {
                     this.menuObj.open(pos.top + offset, pos.left - 100);
                 } else {
                     this.menuObj.open(pos.top + offset, pos.left + 150);
@@ -920,7 +920,7 @@ export class CalculatedField implements IAction {
             for (const key of (parent.engineModule.fieldList ? Object.keys(parent.engineModule.fieldList) : [])) {
                 let type: string = null;
                 let typeVal: string = null;
-                let field: IField = parent.engineModule.fieldList[key as string];
+                const field: IField = parent.engineModule.fieldList[key as string];
                 if ((field.type !== 'number' || parent.engineModule.fieldList[key as string].type === 'include' || parent.engineModule.fieldList[key as string].type === 'exclude') && field.aggregateType !== 'DistinctCount') {
                     typeVal = COUNT;
                 } else {
@@ -1064,7 +1064,7 @@ export class CalculatedField implements IAction {
             },
             animationSettings: { effect: 'Zoom' },
             width: '25%',
-            isModal: false,
+            isModal: true,
             closeOnEscape: true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -1938,7 +1938,8 @@ export class CalculatedField implements IAction {
                             name: AGRTYPE + key,
                             checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i as number],
                             change: this.onChange.bind(this),
-                            locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                            locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                            enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                             cssClass: this.parent.cssClass
                         });
                         radiobutton.isStringTemplate = true;

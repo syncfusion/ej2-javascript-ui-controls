@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I446416` - The performance issue in ListView while integrating Tooltip has been resolved.
-
-## 21.1.41 (2023-04-18)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I448669` - The issue in Tooltip component while hovering the previous selected item has been resolved.
-
-### Spinner
-
-#### Bug Fixes
-
-- `#I448112` - Now, able to change the Spinner template dynamically.
-
-- `I449008` - Now, Spinner actions on parent element not affecting the child element spinner.
-
-## 21.1.37 (2023-03-29)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I446985` - Now, while using the NVDA screen reader, the entire dialog elements will not be read twice.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

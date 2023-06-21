@@ -3,12 +3,12 @@ import { createElement, closest, remove, classList, addClass, removeClass, Blazo
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
-import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, isComplexField, findCellIndex } from '../base/util';
+import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, isComplexField, findCellIndex, resetRowIndex } from '../base/util';
 import { generateExpandPredicates, getPredicates, capitalizeFirstLetter } from '../base/util';
 import { ReturnType } from '../base/type';
 import { AggregateType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
-import { IGrid, IAction, NotifyArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, RowDropEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
@@ -22,6 +22,7 @@ import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import * as literals from '../base/string-literals';
 import { AggregateColumnModel } from '../models/aggregate-model';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import { RowRenderer } from '../renderer/row-renderer';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -457,6 +458,9 @@ export class Group implements IAction {
         }
         if ((e.target as Element).classList.contains('e-ungroupbutton')) {
             this.groupCancelFocus = true;
+        }
+        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')) {
+            e.preventDefault();
         }
         const trgtEle: HTMLTableCellElement = parentsUntil((e.target as Element), 'e-recordplusexpand') as HTMLTableCellElement ||
             parentsUntil((e.target as Element), 'e-recordpluscollapse') as HTMLTableCellElement;
@@ -1403,16 +1407,407 @@ export class Group implements IAction {
         return aggregates;
     }
 
+    /**
+     * @param { Row<Column> } fromRowObj - Defines group key changed Data row object.
+     * @param { Row<Column> } toRowObj - Defines group key setting reference Data row object.
+     * @returns { void }
+     * @hidden
+     */
+    public groupedRowReorder(fromRowObj: Row<Column>, toRowObj: Row<Column>): void {
+        const dragRow: Element = this.parent.getRowElementByUID(fromRowObj.uid);
+        const dropRow: Element = this.parent.getRowElementByUID(toRowObj.uid);
+        const dropArgs: RowDropEventArgs = {
+            rows: [dragRow], target: dropRow, fromIndex: fromRowObj.index, dropIndex: toRowObj.index
+        };
+        if (!isNullOrUndefined(fromRowObj) && !isNullOrUndefined(toRowObj) &&
+            fromRowObj.parentUid !== toRowObj.parentUid) {
+            if (dropRow) {
+                if (dropRow['style'].display === 'none') {
+                    dragRow['style'].display = 'none';
+                }
+                if (dropArgs.fromIndex > dropArgs.dropIndex) {
+                    this.parent.getContentTable().querySelector(literals.tbody).insertBefore(dragRow, dropRow);
+                }
+                else {
+                    this.parent.getContentTable().querySelector(literals.tbody).insertBefore(dragRow, dropRow.nextSibling);
+                }
+            }
+            else {
+                remove(dragRow);
+            }
+            this.groupReorderHandler(fromRowObj, toRowObj);
+            const tr: HTMLTableRowElement[] = [].slice.call(this.parent.getContentTable().getElementsByClassName(literals.row));
+            this.groupReorderRowObject(dropArgs, tr, toRowObj);
+            if (this.parent.enableVirtualization) {
+                this.vGroupResetRowIndex();
+            }
+            else {
+                resetRowIndex(this.parent, this.parent.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr);
+            }
+        }
+    }
+
+    private vGroupResetRowIndex(): void {
+        const gObj: IGrid = this.parent;
+        const rowObjects: Row<Column>[] = gObj.vRows;
+        const rowElements: Element[] = this.parent.getRows();
+        for (let i: number = 0, startIdx: number = 0, k: number = 0; i < rowObjects.length; i++) {
+            if (rowObjects[parseInt(i.toString(), 10)].isDataRow){
+                rowObjects[parseInt(i.toString(), 10)].index = startIdx;
+                rowObjects[parseInt(i.toString(), 10)].isAltRow = gObj.enableAltRow ? startIdx % 2 !== 0 : false;
+                const rowElement: HTMLTableRowElement | Element = gObj.getRowElementByUID(rowObjects[parseInt(i.toString(), 10)].uid);
+                if (!isNullOrUndefined(rowElement)) {
+                    rowElements[parseInt(k.toString(), 10)] = rowElement;
+                    rowElement.setAttribute(literals.dataRowIndex, startIdx.toString());
+                    rowElement.setAttribute(literals.ariaRowIndex, (startIdx + 1).toString());
+                    if (rowObjects[parseInt(i.toString(), 10)].isAltRow) {
+                        rowElement.classList.add('e-altrow');
+                    } else {
+                        rowElement.classList.remove('e-altrow');
+                    }
+                    for (let j: number = 0; j < (rowElement as HTMLTableRowElement).cells.length; j++) {
+                        (rowElement as HTMLTableRowElement).cells[parseInt(j.toString(), 10)].setAttribute('index', startIdx.toString());
+                    }
+                    k++;
+                }
+                startIdx++;
+            }
+        }
+    }
+
+    private groupReorderHandler(dragRowObject: Row<Column>, dropRowObject: Row<Column>): void {
+        const gObj: IGrid = this.parent;
+        const dragRowObjectData: Object = dragRowObject.data;
+        const dropRowObjectData: Object = dropRowObject.data;
+        const groupAggregateTemplate: Object[] = gObj['groupModule'].getGroupAggregateTemplates(false);
+        const dropParentRowObject: Row<Column> = gObj.getRowObjectFromUID(dropRowObject.parentUid);
+        const dragParentRowObject: Row<Column> = gObj.getRowObjectFromUID(dragRowObject.parentUid);
+        const dropRootParentRowObjects: Row<Column>[] = [dropParentRowObject];
+        const dragRootParentRowObjects: Row<Column>[] = [dragParentRowObject];
+        const groupColumns: string[] = gObj.groupSettings.columns;
+        for (let j: number = 0; j < groupColumns.length; j++) {
+            dragRowObjectData[groupColumns[parseInt(j.toString(), 10)]] = dropRowObjectData[groupColumns[parseInt(j.toString(), 10)]];
+            if (j > 0) {
+                dropRootParentRowObjects.push(gObj.getRowObjectFromUID(dropRootParentRowObjects[j - 1].parentUid));
+                dragRootParentRowObjects.push(gObj.getRowObjectFromUID(dragRootParentRowObjects[j - 1].parentUid));
+            }
+        }
+        dragRowObject.parentUid = dropRowObject.parentUid;
+        dragRowObject.visible = dropRowObject.visible;
+        dragRowObject['parentGid'] = dropRowObject['parentGid'];
+        if (dragRowObject.changes !== dragRowObjectData) {
+            dragRowObject.changes = dragRowObjectData;
+        }
+        let updatedCurrentViewData: Object[] = this.iterateGroupAggregates([{dragRowObjects: dragRootParentRowObjects,
+            dropRowObjects: dropRootParentRowObjects}]);
+        const updatedDragCurrentViewData: Object = updatedCurrentViewData.filter((object: Object) =>
+            (object['key'] === dragRootParentRowObjects[dragRootParentRowObjects.length - 1].data['key'] ||
+            (object['key'] instanceof Date && object['key'].toString() ===
+            dragRootParentRowObjects[dragRootParentRowObjects.length - 1].data['key'].toString())));
+        const updatedDropCurrentViewData: Object = updatedCurrentViewData.filter((object: Object) =>
+            (object['key'] === dropRootParentRowObjects[dropRootParentRowObjects.length - 1].data['key'] ||
+            (object['key'] instanceof Date && object['key'].toString() ===
+            dropRootParentRowObjects[dropRootParentRowObjects.length - 1].data['key'].toString())));
+        updatedCurrentViewData = [];
+        if (!isNullOrUndefined(updatedDragCurrentViewData[0])) {
+            updatedCurrentViewData.push(updatedDragCurrentViewData[0]);
+        }
+        if (!isNullOrUndefined(updatedDropCurrentViewData[0])) {
+            updatedCurrentViewData.push(updatedDropCurrentViewData[0]);
+        }
+        const currentViewData: Object[] = gObj.currentViewData;
+        for (let i: number = 0; i < currentViewData.length; i++) {
+            if (isNullOrUndefined(updatedDragCurrentViewData[0]) &&
+                currentViewData[parseInt(i.toString(), 10)]['key'] ===
+                dragRootParentRowObjects[dragRootParentRowObjects.length - 1].data['key']) {
+                currentViewData.splice(i, 1);
+                i--;
+            }
+            else if (isNullOrUndefined(updatedDropCurrentViewData[0]) &&
+                currentViewData[parseInt(i.toString(), 10)]['key'] ===
+                dropRootParentRowObjects[dropRootParentRowObjects.length - 1].data['key']) {
+                currentViewData.splice(i, 1);
+                i--;
+            }
+            else if (!isNullOrUndefined(updatedDragCurrentViewData[0]) &&
+                currentViewData[parseInt(i.toString(), 10)]['key'] === updatedDragCurrentViewData[0]['key']) {
+                currentViewData[parseInt(i.toString(), 10)] = updatedDragCurrentViewData[0];
+            }
+            else if (!isNullOrUndefined(updatedDropCurrentViewData[0]) &&
+                currentViewData[parseInt(i.toString(), 10)]['key'] === updatedDropCurrentViewData[0]['key']) {
+                currentViewData[parseInt(i.toString(), 10)] = updatedDropCurrentViewData[0];
+            }
+        }
+        const updatedRowObject: Row<Column>[] = this.groupGenerator.generateRows(updatedCurrentViewData, {});
+        const dragRootParentAggregateRowObject: Row<Column>[] = [];
+        const dropRootParentAggregateRowObject: Row<Column>[] = [];
+        for (let i: number = 0; i < dragRootParentRowObjects.length; i++) {
+            dragRootParentAggregateRowObject
+                .push(...this.getGroupParentFooterAggregateRowObject(dragRootParentRowObjects[parseInt(i.toString(), 10)].uid));
+        }
+        for (let i: number = 0; i < dropRootParentRowObjects.length; i++) {
+            dropRootParentAggregateRowObject
+                .push(...this.getGroupParentFooterAggregateRowObject(dropRootParentRowObjects[parseInt(i.toString(), 10)].uid));
+        }
+        dragRootParentRowObjects.push(...dragRootParentAggregateRowObject);
+        dropRootParentRowObjects.push(...dropRootParentAggregateRowObject);
+        this.updatedRowObjChange(dragRootParentRowObjects, updatedRowObject, groupAggregateTemplate);
+        this.updatedRowObjChange(dropRootParentRowObjects, updatedRowObject, groupAggregateTemplate);
+        this.groupReorderRefreshHandler(dragRowObject, dragParentRowObject, dropParentRowObject, groupAggregateTemplate);
+    }
+
+    private updatedRowObjChange(rootParentRowObjects: Row<Column>[], updatedRowObj: Row<Column>[],
+                                groupAggregateTemplate: Object[]): void {
+        const gObj: IGrid = this.parent;
+        const rowObjects: Row<Column>[] = gObj.getRowsObject();
+        let cache: Object = {};
+        let virtualCacheRowObjects: Row<Column>[] = [];
+        if (gObj.enableVirtualization) {
+            cache = gObj.contentModule['vgenerator'].cache;
+            virtualCacheRowObjects = gObj.vcRows;
+        }
+        for (let i: number = 0; i < rootParentRowObjects.length; i++) {
+            let keyPresent: boolean = false;
+            for (let j: number = 0; j < updatedRowObj.length; j++) {
+                if (!isNullOrUndefined(updatedRowObj[parseInt(j.toString(), 10)]) &&
+                    !isNullOrUndefined(rootParentRowObjects[parseInt(i.toString(), 10)].data['key']) &&
+                    !isNullOrUndefined(updatedRowObj[parseInt(j.toString(), 10)].data['key']) &&
+                    ((rootParentRowObjects[parseInt(i.toString(), 10)].data['key'] ===
+                    updatedRowObj[parseInt(j.toString(), 10)].data['key'] ||
+                    (rootParentRowObjects[parseInt(i.toString(), 10)].data['key'] instanceof Date &&
+                    rootParentRowObjects[parseInt(i.toString(), 10)].data['key'].toString() ===
+                    updatedRowObj[parseInt(j.toString(), 10)].data['key'].toString())))) {
+                    const index: number = rowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]);
+                    if (index !== -1) {
+                        rowObjects[parseInt(index.toString(), 10)].data = updatedRowObj[parseInt(j.toString(), 10)].data;
+                        rowObjects[parseInt(index.toString(), 10)]['gSummary'] = updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                    }
+                    if (gObj.enableVirtualization) {
+                        const vIndex: number = virtualCacheRowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]);
+                        if (vIndex !== -1) {
+                            virtualCacheRowObjects[parseInt(vIndex.toString(), 10)].data =
+                                updatedRowObj[parseInt(j.toString(), 10)].data;
+                            virtualCacheRowObjects[parseInt(vIndex.toString(), 10)]['gSummary'] =
+                                updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                        }
+                    }
+                    rootParentRowObjects[parseInt(i.toString(), 10)].data = updatedRowObj[parseInt(j.toString(), 10)].data;
+                    rootParentRowObjects[parseInt(i.toString(), 10)]['gSummary'] =
+                        updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                    updatedRowObj.splice(j, 1);
+                    j--;
+                    keyPresent = true;
+                    break;
+                }
+                else if (rootParentRowObjects[parseInt(i.toString(), 10)].isAggregateRow &&
+                    updatedRowObj[parseInt(j.toString(), 10)].isAggregateRow) {
+                    for (let l: number = 0; l < groupAggregateTemplate.length; l++) {
+                        if (this.evaluateGroupAggregateValueChange(rootParentRowObjects[parseInt(i.toString(), 10)],
+                                                                   updatedRowObj[parseInt(j.toString(), 10)],
+                                                                   groupAggregateTemplate[parseInt(l.toString(), 10)])) {
+                            const index: number = rowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]);
+                            if (index !== -1) {
+                                rowObjects[parseInt(index.toString(), 10)].data = updatedRowObj[parseInt(j.toString(), 10)].data;
+                                rowObjects[parseInt(index.toString(), 10)]['gSummary'] =
+                                    updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                            }
+                            if (gObj.enableVirtualization) {
+                                const vIndex: number = virtualCacheRowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]);
+                                if (vIndex !== -1) {
+                                    virtualCacheRowObjects[parseInt(vIndex.toString(), 10)].data =
+                                        updatedRowObj[parseInt(j.toString(), 10)].data;
+                                    virtualCacheRowObjects[parseInt(vIndex.toString(), 10)]['gSummary'] =
+                                        updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                                }
+                            }
+                            rootParentRowObjects[parseInt(i.toString(), 10)].data = updatedRowObj[parseInt(j.toString(), 10)].data;
+                            rootParentRowObjects[parseInt(i.toString(), 10)]['gSummary'] =
+                                updatedRowObj[parseInt(j.toString(), 10)]['gSummary'];
+                            keyPresent = true;
+                            break;
+                        }
+                    }
+                    if (keyPresent) {
+                        break;
+                    }
+                }
+            }
+            if (!keyPresent) {
+                const removeElem: Element = gObj.getRowElementByUID(rootParentRowObjects[parseInt(i.toString(), 10)].uid);
+                if (!isNullOrUndefined(removeElem)) {
+                    remove(removeElem);
+                }
+                rowObjects.splice(rowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]), 1);
+                if (gObj.enableVirtualization) {
+                    virtualCacheRowObjects.splice(virtualCacheRowObjects.indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]), 1);
+                    for (let k: number = 1; k <= Object.keys(cache).length; k++) {
+                        const vcIndex: number =
+                            cache[parseInt(k.toString(), 10)].indexOf(rootParentRowObjects[parseInt(i.toString(), 10)]);
+                        if (vcIndex !== -1) {
+                            cache[parseInt(k.toString(), 10)].splice([parseInt(vcIndex.toString(), 10)], 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private groupReorderRefreshHandler(dragRowObject: Row<Column>,
+                                       dragParentRowObject: Row<Column>, dropParentRowObject: Row<Column>,
+                                       groupAggregateTemplate: Object[]): void {
+        const gObj: IGrid = this.parent;
+        const row: RowRenderer<Column> = new RowRenderer<Column>(gObj['serviceLocator'], null, gObj);
+        if (!isNullOrUndefined(dragRowObject) && !isNullOrUndefined(gObj.getRowElementByUID(dragRowObject.uid))) {
+            row.refresh(dragRowObject, gObj.getColumns(), false);
+        }
+        for (let j: number = 0; j < gObj.groupSettings.columns.length; j++) {
+            if (!isNullOrUndefined(dragParentRowObject) &&
+                !isNullOrUndefined(gObj.getRowElementByUID(dragParentRowObject.uid))) {
+                row.refresh(dragParentRowObject, gObj.getColumns(), false);
+            }
+            if (!isNullOrUndefined(dropParentRowObject) &&
+                !isNullOrUndefined(gObj.getRowElementByUID(dropParentRowObject.uid))) {
+                row.refresh(dropParentRowObject, gObj.getColumns(), false);
+            }
+            if (groupAggregateTemplate.length) {
+                const dragParentFooterAggregateRowObjects: Row<Column>[] = !isNullOrUndefined(dragParentRowObject) ?
+                    this.getGroupParentFooterAggregateRowObject(dragParentRowObject.uid) : [];
+                const dropParentFooterAggregateRowObjects: Row<Column>[] = !isNullOrUndefined(dropParentRowObject) ?
+                    this.getGroupParentFooterAggregateRowObject(dropParentRowObject.uid) : [];
+                for (let k: number = 0; k < dropParentFooterAggregateRowObjects.length; k++) {
+                    if (!isNullOrUndefined(dropParentFooterAggregateRowObjects[parseInt(k.toString(), 10)]) && !isNullOrUndefined(gObj
+                        .getRowElementByUID(dropParentFooterAggregateRowObjects[parseInt(k.toString(), 10)].uid))) {
+                        row.refresh(dropParentFooterAggregateRowObjects[parseInt(k.toString(), 10)], gObj.getColumns(), false);
+                    }
+                }
+                for (let k: number = 0; k < dragParentFooterAggregateRowObjects.length; k++) {
+                    if (!isNullOrUndefined(dragParentFooterAggregateRowObjects[parseInt(k.toString(), 10)]) && !isNullOrUndefined(gObj
+                        .getRowElementByUID(dragParentFooterAggregateRowObjects[parseInt(k.toString(), 10)].uid))) {
+                        row.refresh(dragParentFooterAggregateRowObjects[parseInt(k.toString(), 10)], gObj.getColumns(), false);
+                    }
+                }
+            }
+            if (!isNullOrUndefined(dragParentRowObject)) {
+                dragParentRowObject = gObj.getRowObjectFromUID(dragParentRowObject.parentUid);
+            }
+            if (!isNullOrUndefined(dropParentRowObject)) {
+                dropParentRowObject = gObj.getRowObjectFromUID(dropParentRowObject.parentUid);
+            }
+        }
+    }
+
+    private getGroupParentFooterAggregateRowObject(parentUid: string): Row<Column>[] {
+        const rowObjects: Row<Column>[] = this.parent.getRowsObject();
+        const parentFooterAggregates: Row<Column>[] = [];
+        for (let i: number = 0; i < rowObjects.length; i++) {
+            if (rowObjects[parseInt(i.toString(), 10)].parentUid === parentUid && rowObjects[parseInt(i.toString(), 10)].isAggregateRow) {
+                parentFooterAggregates.push(rowObjects[parseInt(i.toString(), 10)]);
+            }
+        }
+        return parentFooterAggregates;
+    }
+
+    private evaluateGroupAggregateValueChange(rowObjects: Row<Column>, updatedRowObject: Row<Column>,
+                                              groupAggregateTemplate: Object): boolean {
+        let change: boolean = false;
+        if (rowObjects.data[groupAggregateTemplate['field']]['field'] === updatedRowObject.data[groupAggregateTemplate['field']]['field']
+            && rowObjects.data[groupAggregateTemplate['field']]['key'] === updatedRowObject.data[groupAggregateTemplate['field']]['key'] &&
+            (rowObjects.data[groupAggregateTemplate['field']] as Object)
+                // eslint-disable-next-line no-prototype-builtins
+                .hasOwnProperty(groupAggregateTemplate['field'] + ' - ' + groupAggregateTemplate['type']) &&
+            (updatedRowObject.data[groupAggregateTemplate['field']] as Object)
+                // eslint-disable-next-line no-prototype-builtins
+                .hasOwnProperty(groupAggregateTemplate['field'] + ' - ' + groupAggregateTemplate['type'])) {
+            change = true;
+        }
+        return change;
+    }
+
+    private groupReorderRowObject(args: RowDropEventArgs, tr: HTMLTableRowElement[], dropRObj?: Row<Column>): void {
+        const gObj: IGrid = this.parent;
+        const rowObjects: Row<Column>[] = gObj.enableVirtualization ? gObj.vRows : gObj.getRowsObject();
+        const orderChangeRowObjects: Row<Column>[] = [];
+        const dropRowObject: Row<Column> = dropRObj ? dropRObj :
+            gObj.getRowObjectFromUID(args.target.closest('tr').getAttribute('data-uid'));
+        let rowObjDropindex: number;
+        for (let i: number = 0; i < args.rows.length; i++) {
+            const orderChangeRowObject: Row<Column> =
+                gObj.getRowObjectFromUID(args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+            if (dropRowObject === orderChangeRowObject) {
+                rowObjDropindex = rowObjects.indexOf(dropRowObject);
+            }
+            orderChangeRowObjects.push(rowObjects.splice(rowObjects.indexOf(orderChangeRowObject), 1)[0]);
+        }
+        if (isNullOrUndefined(rowObjDropindex)) {
+            rowObjDropindex = rowObjects.indexOf(dropRowObject);
+            if (args.fromIndex > args.dropIndex) {
+                rowObjects.splice(rowObjDropindex, 0, ...orderChangeRowObjects);
+            }
+            else {
+                rowObjects.splice(rowObjDropindex + 1, 0, ...orderChangeRowObjects);
+            }
+        }
+        else {
+            rowObjects.splice(rowObjDropindex, 0, ...orderChangeRowObjects);
+        }
+        if (!gObj.enableVirtualization) {
+            const recordobj: object = {};
+            const currentViewData: Object[] = this.parent.getCurrentViewRecords();
+            for (let i: number = 0, len: number = tr.length; i < len; i++) {
+                const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10);
+                recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
+            }
+            const rows: Element[] = this.parent.getRows();
+            for (let i: number = 0, len: number = tr.length; i < len; i++) {
+                rows[parseInt(i.toString(), 10)] = tr[parseInt(i.toString(), 10)];
+                currentViewData[parseInt(i.toString(), 10)] = recordobj[parseInt(i.toString(), 10)];
+            }
+        }
+    }
+
+    private gettingVirtualData(parentRowObjs: Row<Column>[], curViewRec: Object[], pK: string): Object[] {
+        const datas: Object[] = [];
+        for (let i: number = 0; i < parentRowObjs.length; i++) {
+            if (curViewRec.indexOf(parentRowObjs[parseInt(i.toString(), 10)].data) === -1) {
+                datas.push(parentRowObjs[parseInt(i.toString(), 10)].data);
+            }
+            if (parentRowObjs[parseInt(i.toString(), 10)].data['field'] === this.parent.groupSettings.columns[0]) {
+                let draggedData: Object[] = parentRowObjs[parseInt(i.toString(), 10)].data['items'];
+                if (!isNullOrUndefined(draggedData['records'])) {
+                    draggedData = draggedData['records'];
+                }
+                for (let j: number = 0; j < draggedData.length; j++) {
+                    if (pK && curViewRec.findIndex((data: Object) => data[pK.toString()] ===
+                        draggedData[parseInt(j.toString(), 10)][pK.toString()]) === -1) {
+                        datas.push(draggedData[parseInt(j.toString(), 10)]);
+                    }
+                }
+            }
+        }
+        return datas;
+    }
+
     private iterateGroupAggregates(editedData: Object[]): Object[] {
         const updatedData: Object[] = editedData instanceof Array ? editedData : [];
         const rows: Object[] = this.parent.getRowsObject();
         const initData: Object[] = this.parent.getCurrentViewRecords();
+        const field: string = this.parent.getPrimaryKeyFieldNames()[0];
+        if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length &&
+            (!isNullOrUndefined(editedData[0]['dragRowObjects']) || !isNullOrUndefined(editedData[0]['dropRowObjects']))) {
+            const dragParentRowObjects: Row<Column>[] = (editedData[0]['dragRowObjects'] as Row<Column>[]);
+            const dropParentRowObjects: Row<Column>[] = (editedData[0]['dropRowObjects'] as Row<Column>[]);
+            if (dragParentRowObjects) {
+                initData.push(...this.gettingVirtualData(dragParentRowObjects, initData, field));
+            }
+            if (dropParentRowObjects) {
+                initData.push(...this.gettingVirtualData(dropParentRowObjects, initData, field));
+            }
+        }
         const deletedCols: Object[] = [];
         let changeds: Object[] = rows.map((row: Row<AggregateColumn> | Row<Column>) => {
             if (row.edit === 'delete') { deletedCols.push(row.data); }
             return row.changes instanceof Object ? row.changes : row.data;
         });
-        const field: string = this.parent.getPrimaryKeyFieldNames()[0];
         changeds = updatedData.length === 0 ? changeds : updatedData;
         const mergeData: Object[] = initData.map((item: Object) => {
             const pKeyVal: Object = DataUtil.getObject(field, item);

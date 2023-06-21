@@ -4,7 +4,13 @@
 
     & .e-tab {
       & .e-tab-header {
-        background-color: inherit;
+        @if $skin-name == 'Material3' {
+          background: $ribbon-tab-bg-color;
+        }
+        @else {
+          background-color: inherit;
+        }
+        
 
         @if $skin-name == 'bootstrap' {
           &::before {
@@ -20,7 +26,9 @@
         }
 
         .e-tab-wrap:focus {
-          background: $spreadsheet-ribbon-focus-bg-color;
+          @if $skin-name != 'Material3' {
+            background: $spreadsheet-ribbon-focus-bg-color;
+          }
 
           @if $spreadsheet-ribbon-skin == 'fabric' or $spreadsheet-ribbon-skin == 'highcontrast' {
             border-color: $spreadsheet-ribbon-focused-wrap-focus-border-color;
@@ -43,7 +51,9 @@
 
         .e-tab-wrap:focus .e-tab-icon,
         .e-tab-wrap:focus .e-tab-text {
-          color: $spreadsheet-ribbon-focus-text-color;
+          @if $skin-name != 'Material3' {
+            color: $spreadsheet-ribbon-focus-text-color;
+          }
         }
       }
 
@@ -108,6 +118,15 @@
       @if $skin-name == 'bootstrap4' {
         & ul {
           background-color: transparent;
+        }
+      }
+    }
+
+    & .e-tab,
+    & .e-tab.e-focused {
+      & .e-tab-header .e-toolbar-item.e-menu-tab:hover {
+        @if $skin-name == 'Material3' {
+          background: transparent;
         }
       }
     }

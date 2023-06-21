@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, HeadersSortEventArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../model/datasourcesettings-model';import { DataSourceSettings } from '../../model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';import { Sorting } from '../../base';
+import { Property, Event, Component, EmitType, Internationalization, extend, Fetch } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, HeadersSortEventArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../model/datasourcesettings-model';import { DataSourceSettings } from '../../model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';import { Sorting } from '../../base';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -13,7 +13,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * * `providerType`: Allows to set the provider type to identify the given connection is either Relational or SSAS to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
      * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
      * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization.
-     * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicale only for OLAP data source.**
+     * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicable only for OLAP data source.**
      * * `dataSource`: Allows you to set the data source to the pivot report either as JSON data collection or from remote data server using DataManager to the render the pivot that and field list. **Note: It is applicable only for relational data source.**
      * * `rows`: Allows specific fields associated with field information that needs to be displayed in row axis of pivot table.
      * * `columns`: Allows specific fields associated with field information that needs to be displayed in column axis of pivot table.
@@ -57,7 +57,7 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * Allows to show field list either in static or popup mode. The available modes are:
      * * `Popup`: To display the field list icon in pivot table UI to invoke the built-in dialog.
-     * It hepls to display over the pivot table UI without affecting any form of UI shrink within a web page.
+     * It helps to display over the pivot table UI without affecting any form of UI shrink within a web page.
      * * `Fixed`: To display the field list in a static position within a web page.
      *
      * @default 'Popup'
@@ -67,7 +67,7 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * Allows you to set the specific target element to the fieldlist dialog.
      * This helps the field list dialog to display the appropriate position on its target element.
-     * > To use thsi option, set the property `renderMode` to be **Popup**.
+     * > To use this option, set the property `renderMode` to be **Popup**.
      *
      * @default null
      */
@@ -101,7 +101,7 @@ export interface PivotFieldListModel extends ComponentModel{
 
     /**
      * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
-     * 
+     *
      * @default false
      */
     enableFieldSearching?: boolean;
@@ -156,8 +156,9 @@ export interface PivotFieldListModel extends ComponentModel{
      * that can be used to displayed with custom formats in the field list UI.
      *
      * @default null
+     * @aspType string
      */
-    spinnerTemplate?: string;
+    spinnerTemplate?: string | Function;
 
     /**
      * Allows you to show a menu with built-in aggregate options displayed in the pivot button's dropdown icon of fieldList UI.
@@ -186,7 +187,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * * `PercentageOfParentColumnTotal`: Allows to display the pivot table values with percentage of its parent total in each column.
      * * `PercentageOfParentRowTotal`: Allows to display the pivot table values with percentage of its parent total in each row.
      *
-     * > It is applicable ony for Relational data.
+     * > It is applicable only for Relational data.
      *
      * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar',
      * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
@@ -208,7 +209,7 @@ export interface PivotFieldListModel extends ComponentModel{
 
     /**
      * It allows any customization of Pivot Field List properties on initial rendering.
-     * Based on the changes, the pivot field list will be redered.
+     * Based on the changes, the pivot field list will be rendered.
      *
      * @event load
      */
