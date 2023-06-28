@@ -717,3 +717,60 @@ describe('EJ2-64738: Searching with checkbox column(select all) behavior not wor
     destroy(gridObj);
   });
 });
+
+describe('EJ2-830206: Searching with checkbox column shows "No records to display"', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowFiltering: true,
+        allowSelection: true,
+        filterSettings: { type: 'Menu', ignoreAccent: true, hierarchyMode: 'Both' },
+        selectionSettings: { type: 'Multiple', mode: 'Both', enableToggle: false },
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: 'Row',
+        },
+        toolbar: ['Search'],
+        childMapping: 'subtasks',
+        height: 350,
+        autoCheckHierarchy: true,
+        treeColumnIndex: 1,
+        columns: [
+          { field: '', showCheckbox: true, width: 50 },
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 120, },
+          { field: 'taskName', headerText: 'Task Name', width: 220 },
+          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 140, format: { skeleton: 'yMd', type: 'date' }, },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+        ],
+      },
+      done
+    );
+  });
+  it('Check the search records length', (done: Function) => {
+    actionComplete = (args?: object): void => {
+      expect(gridObj.getRows().length == 0).toBe(true);
+      done();
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.search("q");
+  });
+  it('Checked records was verified  while searching', () => {
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+  });
+  it('clearsearching then checking checked records', () => {
+    gridObj.search('');
+    expect(gridObj.getCheckedRecords().length != 0).toBe(true);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

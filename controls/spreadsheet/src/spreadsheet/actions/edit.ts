@@ -293,7 +293,7 @@ export class Edit {
                     }
                     const key: string = String.fromCharCode(keyCode);
                     const isAlphabet: boolean = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
-                        key.toLowerCase() !== key.toUpperCase();
+                        (key.toLowerCase() !== key.toUpperCase() && !(keyCode >= 112 && keyCode <= 123));
                     const isNumeric: boolean = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
                     const isNumpadKeys: boolean = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
                     let isSymbolkeys: boolean = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
@@ -313,7 +313,7 @@ export class Edit {
                         if (isF2Edit) { this.isNewValueEdit = false; }
                         const overlayElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
                         if (overlayElements.length) {
-                            if (isBackSpace) {
+                            if (isBackSpace && !isMacDelete) {
                                 this.editingHandler('delete');
                             }
                         } else {

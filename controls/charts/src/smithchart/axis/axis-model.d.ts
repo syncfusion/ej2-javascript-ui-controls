@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartFont} from '../utils/utils';import { AxisLabelPosition, SmithchartLabelIntersectAction} from '../utils/enum';import { SmithchartFontModel} from '../utils/utils-model';import { Theme} from '../model/theme';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartFont} from '../utils/utils';import { AxisLabelPosition, SmithchartLabelIntersectAction} from '../utils/enum';import { SmithchartFontModel} from '../utils/utils-model';
 
 /**
  * Interface for a class SmithchartMajorGridLines

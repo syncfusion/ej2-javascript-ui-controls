@@ -226,7 +226,7 @@ export interface FilterModel {
     type?: FilterType;
 
     /**
-     * Allows yoy to specify the field members that used to be displayed based on the filter type provided in the pivot table.
+     * Allows you to specify the field members that used to be displayed based on the filter type provided in the pivot table.
      */
     items?: string[];
 
@@ -311,7 +311,7 @@ export interface ConditionalFormatSettingsModel {
 
     /**
      * Allows to apply conditional formatting to the grand totals of row and column axis in the pivot table.
-     * 
+     *
      * @default true
      */
     applyGrandTotals?: boolean;
@@ -359,28 +359,28 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify minimum fraction digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     minimumFractionDigits?: number;
 
     /**
      * It allows to specify maximum fraction digits to the  formatted value.
-     * 
+     *
      * @aspType int
      */
     maximumFractionDigits?: number;
 
     /**
      * It allows to specify minimum significant digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     minimumSignificantDigits?: number;
 
     /**
      * It allows to specify maximum significant digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     maximumSignificantDigits?: number;
@@ -394,7 +394,7 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify the skeleton such as full, medium, long, short, etc. to perform date formatting.
-     * > It is applicable only fot date type formatting.
+     * > It is applicable only for date type formatting.
      */
     skeleton?: string;
 
@@ -410,7 +410,7 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify minimum integer digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     minimumIntegerDigits?: number;
@@ -635,7 +635,7 @@ export interface DataSourceSettingsModel {
     cube?: string;
 
     /**
-     * Allows you to assign multiple roles to the OLAP cube, separated by commas, each of which can access only restricted OLAP cube information such as measures, dimensions, and more that can be rendered in the pivot table. 
+     * Allows you to assign multiple roles to the OLAP cube, separated by commas, each of which can access only restricted OLAP cube information such as measures, dimensions, and more that can be rendered in the pivot table.
      * > It is applicable only for OLAP data source.
      */
     roles?: string;
@@ -658,7 +658,7 @@ export interface DataSourceSettingsModel {
     /**
      * Allows you to set the specific culture code as number type to render pivot table with desired localization.
      * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale.
-     * > It is applicale only for OLAP data source.
+     * > It is applicable only for OLAP data source.
      *
      * @default 1033
      * @aspType int
@@ -830,7 +830,7 @@ export interface DataSourceSettingsModel {
     /**
      * Allows you to display the value headers based on the index position in row or column axis in the pivot table.
      * By default, the value headers are displayed at last index position based on the `valueAxis` property.
-     * > It is applicale only for relational data source.
+     * > It is applicable only for relational data source.
      *
      * @default '-1'
      * @aspType int

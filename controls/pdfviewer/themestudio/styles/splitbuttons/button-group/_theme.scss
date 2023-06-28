@@ -5,7 +5,7 @@
   .e-btn-group,
   .e-css.e-btn-group {
     &:not(.e-outline) {
-      @if $theme-name != 'Material3' {
+      @if $skin-name != 'Material3' {
         box-shadow: $btn-box-shadow;
       }
     }
@@ -19,6 +19,36 @@
     .e-btn:hover {
       box-shadow: none;
     }
+
+    @if $skin-name == 'Material3' {
+      .e-btn:focus-visible,
+      input:focus-visible+label.e-btn { // only for keybord
+        box-shadow: $btn-keyboard-focus-box-shadow !important;
+        z-index: 1;
+
+        &.e-primary,
+        &.e-success,
+        &.e-info,
+        &.e-warning,
+        &.e-danger {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+        }
+
+        &.e-outline {
+          box-shadow: $btn-keyboard-focus-box-shadow !important;
+          z-index: 1;
+          &.e-primary,
+          &.e-success,
+          &.e-info,
+          &.e-warning,
+          &.e-danger {
+            box-shadow: $btn-keyboard-focus-box-shadow !important;
+            z-index: 1;
+          }
+        }
+    }
+  }
 
     //Focus state for Normal and Outline GroupButton
     .e-btn:focus,
@@ -183,48 +213,84 @@
     input:active+label.e-btn,
     input:checked+label.e-btn {
       @include button-active;
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+      }
 
       &.e-primary {
         @include primary-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
       }
 
       &.e-success {
         @include success-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
       }
 
       &.e-info {
         @include info-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
       }
 
       &.e-warning {
         @include warning-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
       }
 
       &.e-danger {
         @include danger-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
       }
 
       &.e-outline {
         @include outline-active;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
 
         &.e-primary {
           @include outline-primary-active;
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
         }
 
         &.e-success {
           @include outline-success-active;
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
         }
 
         &.e-info {
           @include outline-info-active;
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
         }
 
         &.e-warning {
           @include outline-warning-active;
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
         }
 
         &.e-danger {
           @include outline-danger-active;
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
+          }
         }
       }
     }

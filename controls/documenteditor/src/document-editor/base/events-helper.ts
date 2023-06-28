@@ -111,6 +111,10 @@ export interface SelectionChangeEventArgs {
      * @deprecated
      */
     source: DocumentEditor
+    /**
+     * Indicates whether the selection has been completed or not.
+     */
+    isCompleted: boolean
 }
 /**
  * This event arguments provides the necessary information about requestNavigate event.
@@ -306,6 +310,10 @@ export interface ContainerSelectionChangeEventArgs {
      * @deprecated
      */
     source: DocumentEditorContainer
+    /**
+     * Indicates whether the selection has been completed or not.
+     */
+    isCompleted: boolean
 }
 /**
  * This event arguments provides the necessary information about DocumentEditorContainer's documentChange event.

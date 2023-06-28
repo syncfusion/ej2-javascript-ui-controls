@@ -51,9 +51,10 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
      * Defines the swimlane row template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * Sort the swimlane resources. The possible values are:

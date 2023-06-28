@@ -1426,4 +1426,141 @@ describe('Context-', () => {
             done();
         });    
     });
+    describe('Convert task to milestone', () => {
+        let data = [{
+            TaskID: 1,
+            TaskName: 'New Task 1',
+            StartDate: new Date('05/22/2023'),
+            EndDate: new Date('05/22/2023'),
+            BaselineStartDate: new Date('05/22/2023'),
+            BaselineEndDate: new Date('05/22/2023'),
+            Progress: 59,
+            Duration: 1,
+        }];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        parentID: 'parentID',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Multiple',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/10/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    },
+                    {
+                        from: "04/12/2019",
+                        to: "04/12/2019",
+                        label: " Public holiday",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    searchSettings: {
+                        fields: ['TaskName', 'Duration']
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskID',
+                        rightLabel: 'Task Name: ${taskData.TaskName}',
+                        taskLabel: '${Progress}%'
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Baseline should remain same', (done: Function) => {
+            ganttObj.actionComplete = (args?: any): void => {
+                if (args.requestType == 'save') {
+                    expect(ganttObj.currentViewData[0].ganttProperties.baselineWidth).toBe(33);
+                }
+            }
+            ganttObj.dataBind();
+            ganttObj.convertToMilestone('1');
+            done();
+        });
+    });
 });

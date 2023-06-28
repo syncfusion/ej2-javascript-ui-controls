@@ -17,7 +17,7 @@
 
         &.e-contextmenu {
           box-shadow: $cmenu-parent-ul-box-shadow;
-          @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+          @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'Material3' {
             padding: 4px 0;
           }
         }
@@ -125,7 +125,7 @@
     box-shadow: $cmenu-parent-ul-box-shadow;
     max-width: $cmenu-bigger-max-width;
     min-width: $cmenu-bigger-min-width;
-    @if $skin-name == 'bootstrap5' {
+    @if $skin-name == 'bootstrap5' or  $skin-name == 'Material3' {
       padding: 8px 0;
     }
 

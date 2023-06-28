@@ -160,7 +160,9 @@
         .e-toolbar-item .e-tbar-btn:hover .e-icons {
           color: $rte-hover-icons-color;
         }
-
+        .e-toolbar-item .e-tbar-btn:focus .e-icons {
+          color: $rte-hover-icons-color;
+        }
         .e-toolbar-item.e-active .e-tbar-btn .e-icons {
           color: $rte-tb-active-font-color;
         }
@@ -191,7 +193,13 @@
         border-bottom: 1px solid $rte-border-color;
       }
     }
-
+    .e-rte-tb-expand .e-rte-content:not(e-toolbar-wrapper) {
+      border-top: 0 solid $rte-border-color;
+    }
+  
+    .e-toolbar-wrapper .e-rte-toolbar:not(.e-rte-tb-float) {
+      border-bottom: 1px solid $rte-border-color;
+    }
     .e-toolbar-wrapper + .e-rte-toolbar:not(.e-rte-tb-float) {
       border: 0;
     }
@@ -208,8 +216,8 @@
     }
     @if $skin-name == 'Material3' {
       ::selection {
-        color: $white;
-        background: $primary;
+        color: $rte-selection-color;
+        background: $rte-selection-bg;
       }
     }
     .e-rte-content,
@@ -288,7 +296,7 @@
           border-bottom: 0;
 
           &.e-popup-open {
-            border-bottom: 0;
+            border-bottom: 1px solid $rte-border-color;
           }
         }
 
@@ -298,7 +306,7 @@
 
         &.e-rte-tb-float {
           border-bottom: 1px solid $rte-border-color;
-          border-right: 1px solid $rte-border-color;
+          border-right: 0 solid $rte-border-color;
           border-top: 1px solid $rte-border-color;
 
           &.e-expand-open {
@@ -306,7 +314,7 @@
 
             .e-toolbar-extended {
               border-bottom: 1px solid $rte-border-color;
-              border-right: 1px solid $rte-border-color;
+              border-right: 0 solid $rte-border-color;
             }
           }
         }
@@ -317,6 +325,10 @@
         border: 0;
         border-bottom: 1px solid $rte-border-color;
         border-top: 1px solid $rte-border-color;
+      }
+
+      .e-toolbar-wrapper + .e-rte-content{
+        border-top: 0 solid $rte-border-color;
       }
 
       .e-toolbar-extended.e-popup-open {
@@ -480,7 +492,7 @@
     height: $rte-drop-text-height;
     margin: 0 auto;
     text-align: center;
-    width: $rte-drop-text-width;
+    width: auto;
   }
 
   .e-dialog .e-vid-uploadwrap .e-droptext {
@@ -585,6 +597,7 @@
   .e-richtexteditor .e-rte-toolbar .e-hor-nav:hover{
     border: solid rgba(0, 0, 0, .12);
     border-width: $rte-toolbar-hor-nav-border-width;
+    padding-left: $rte-tb-expended-hover-padding-left;
   }
 
   @if $skin-name == 'bootstrap5' {
@@ -600,12 +613,6 @@
     display: block;
     margin-bottom: 8px;
     margin-top: 12px;
-  }
-
-  @if $skin-name == 'FluentUI' {
-    .e-rte-table-popup .e-span-border {
-      display: none;
-    }
   }
 
   .e-rte-table-popup .e-rte-popup-header {
@@ -632,7 +639,7 @@
   }
 
   .e-rte-table th {
-    background-color: $rte-table-header-bg;
+    background: $rte-table-header-bg;
   }
 
   .e-rte-table-popup.e-popup.e-popup-open {
@@ -668,6 +675,82 @@
   }
   .e-richtexteditor .e-rte-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-active .e-icons {
     color: $rte-tlbar-expand-active;
+  }
+
+  .e-rte-emojipicker-popup.e-popup.e-popup-open {
+    background: $rte-emoji-pop-background;
+    box-shadow: $rte-emoji-pop-box-shadow;
+    border: $rte-emoji-pop-border;
+
+    @if $skin-name =='bootstrap5' or $skin-name =='botstrap5-dark' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' or $skin-name =='bootstrap4' {
+      filter: drop-shadow(0 0 6px rgba(0, 0, 0, .25));
+    }
+    
+    @if $skin-name =='bootstrap5' or $skin-name =='botstrap5-dark' or $skin-name =='bootstrap4' {
+      .e-toolbar .e-toolbar-item .e-tbar-btn.e-selected .e-icons {
+        color: $rte-emoji-tbar-btn-selected-font-color;
+      }
+    }
+
+    .e-toolbar .e-toolbar-item .e-tbar-btn {
+      background: $rte-emoji-tbar-btn-bg;
+
+      @if $skin-name =='bootstrap5' {
+        &:focus{
+          background: $rte-tbar-default-bg;
+        }
+      }
+      &.e-selected {
+        background: $rte-emoji-tbar-btn-select-bg;
+      }
+    }
+
+    .e-toolbar .e-toolbar-item .e-tbar-btn:hover {
+      background: $rte-emoji-tbar-btn-hover;
+    }
+
+    .e-rte-emojipicker-toolbar {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+
+      & .e-toolbar-items {
+        background: transparent;
+
+        & .e-scroll-nav {
+          border: none;
+        }
+      }
+    }
+
+    .e-rte-emojipicker-btn {
+      .e-rte-emojipicker-group .e-rte-emojipickerbtn-group {
+        .e-btn.e-control {
+          @if $skin-name =='bootstrap4' {
+            color: inherit;
+          }
+
+          &:not(:hover):not(:focus):not(:active) {
+            background: transparent;
+          }
+        }
+      }
+
+      .e-rte-emojisearch-btn {
+        .e-btn.e-control {
+          @if $skin-name =='bootstrap4' {
+            color: inherit;
+          }
+
+          &:not(:hover):not(:focus):not(:active) {
+            background: transparent;
+          }
+        }
+      }
+      .e-rte-emojipicker-group .e-rte-emojipicker-name {
+        color: $rte-emoji-headname-color;
+      }
+    }
   }
   @if $skin-name == 'tailwind' {
     .e-richtexteditor .e-rte-toolbar .e-toolbar-extended {
@@ -722,17 +805,17 @@
       border-top-left-radius: $rte-border-top-left-radius;
       border-top-right-radius: $rte-border-top-right-radius;
     }
-    .e-bigger .e-toolbar .e-toolbar-items {
+    .e-bigger .e-rte-toolbar .e-toolbar-items {
       border-top-left-radius: $rte-border-top-left-radius;
     }
-    .e-bigger .e-toolbar .e-hor-nav {
+    .e-bigger .e-rte-toolbar .e-hor-nav {
       border-top-right-radius: $rte-border-top-right-radius;
     }
-    .e-bigger .e-rtl .e-toolbar .e-hor-nav {
+    .e-bigger .e-rtl .e-rte-toolbar .e-hor-nav {
       border-top-left-radius: $rte-border-top-left-radius;
       border-top-right-radius: 0;
     }
-    .e-bigger .e-rtl .e-toolbar .e-toolbar-items {
+    .e-bigger .e-rtl .e-rte-toolbar .e-toolbar-items {
       border-top-right-radius: $rte-border-top-right-radius;
     }
   }
@@ -749,5 +832,6 @@
       color: $rte-quick-item-active-font-color;
     }
   }
+
   // Blazor styles end
 }

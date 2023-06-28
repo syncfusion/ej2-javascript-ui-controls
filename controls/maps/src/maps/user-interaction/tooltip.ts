@@ -133,7 +133,7 @@ export class MapsTooltip {
                     if (marker.tooltipSettings.format) {
                         currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex as number]);
                     } else {
-                        if (marker.template && !marker.tooltipSettings.valuePath) {
+                        if (typeof marker.template !== 'function' && marker.template && !marker.tooltipSettings.valuePath) {
                             currentData =  marker.template.split('>')[1].split('<')[0];
                         } else {
                             currentData =
@@ -176,7 +176,7 @@ export class MapsTooltip {
                 tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
-            if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
+            if (typeof option.template !== 'function' && option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
@@ -201,10 +201,14 @@ export class MapsTooltip {
                 if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
                     this.maps['isProtectedOnChange'] = true;
+                    tooltipArgs.options['textStyle']['size'] = tooltipArgs.options['textStyle']['size']
+                    || this.maps.themeStyle.fontSize;
                     tooltipArgs.options['textStyle']['color'] = tooltipArgs.options['textStyle']['color']
                         || this.maps.themeStyle.tooltipFontColor;
                     tooltipArgs.options['textStyle']['fontFamily'] = tooltipArgs.options['textStyle']['fontFamily']
                         || this.maps.themeStyle.fontFamily;
+                    tooltipArgs.options['textStyle']['fontWeight'] = tooltipArgs.options['textStyle']['fontWeight']
+                        || this.maps.themeStyle.fontWeight;
                     tooltipArgs.options['textStyle']['opacity'] = tooltipArgs.options['textStyle']['opacity']
                         || this.maps.themeStyle.tooltipTextOpacity;
                     if (tooltipArgs.cancel) {
@@ -256,7 +260,7 @@ export class MapsTooltip {
                         tooltipTemplateElement.style.cssText = templateStyle;
                     }
                 } else {
-                    this.clearTooltip();
+                    this.clearTooltip(<HTMLElement>e.target);
                 }
             });
 
@@ -271,7 +275,7 @@ export class MapsTooltip {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
                 } as ITooltipRenderCompleteEventArgs);
             } else {
-                this.clearTooltip();
+                this.clearTooltip(<HTMLElement>e.target);
             }
         } else {
             tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
@@ -279,7 +283,7 @@ export class MapsTooltip {
                 && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
                 this.maps.notify(click, this);
             } else {
-                this.clearTooltip();
+                this.clearTooltip(<HTMLElement>e.target);
             }
         }
     }
@@ -339,12 +343,16 @@ export class MapsTooltip {
         return isTooltipRemoved;
     }
 
-    private clearTooltip(): void {
-        const isTooltipRemoved: boolean = this.removeTooltip();
-        if (isTooltipRemoved) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.maps as any).clearTemplate();
+    private clearTooltip(element: HTMLElement): void {
+        let tooltipElement = element.closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+        if (isNullOrUndefined(tooltipElement)) {
+            const isTooltipRemoved: boolean = this.removeTooltip();
+            if (isTooltipRemoved) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.maps as any).clearTemplate();
+            }
         }
+
     }
     // eslint-disable-next-line valid-jsdoc
     /**

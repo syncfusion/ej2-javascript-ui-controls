@@ -50,11 +50,28 @@
 
     .e-xlfl-dlgfields {
       font-size: $grid-xlfl-dlgfields-font-size;
+      @if $grid-xlfl-skin == 'material3' {
+        padding-top: 12px;
+      }
     }
 
     .e-xlfl-fieldset {
       font-size: $grid-xlfl-fieldset-font-size;
       padding-top: $grid-xlfl-fieldset-padding;
+    }
+
+    .e-responsive-dialog & table.e-xlfl-table tr.e-xlfl-fields:nth-child(2) td.e-xlfl-optr,
+    .e-responsive-dialog & table.e-xlfl-table tr.e-xlfl-fields:nth-child(2) td.e-xlfl-value {
+      @if $grid-xlfl-skin == 'material3' {
+        padding-top: 16px;
+      }
+    }
+
+    table.e-xlfl-table tr.e-xlfl-fields:nth-child(2) td.e-xlfl-optr,
+    table.e-xlfl-table tr.e-xlfl-fields:nth-child(2) td.e-xlfl-value {
+      @if $grid-xlfl-skin == 'material3' {
+        padding-top: 0;
+      }
     }
 
     .e-xlfl-optr,
@@ -81,6 +98,14 @@
       margin-top: $grid-xl-radio-margin-top;
       padding-left: $grid-xl-radio-padding-left;
       padding-right: $grid-xl-radio-padding-right;
+    }
+
+    .e-xlfl-matchcasediv .e-checkbox-wrapper {
+      .e-frame + .e-label {
+        @if $grid-xlfl-skin == 'material3' {
+          max-width: none;
+        }
+      }
     }
 
     .e-checkbox-wrapper {
@@ -138,6 +163,37 @@
     .e-radio + label .e-label {
       padding-left: $grid-xl-rtl-radio-padding-left;
       padding-right: $grid-xl-rtl-radio-padding-right;
+    }
+  }
+
+  .e-bigger.e-responsive-dialog #{&}.e-xlflmenu {
+
+    .e-xlfl-dlgfields,
+    .e-xlfl-fieldset {
+      @if $grid-xlfl-skin == 'material3' {
+        font-weight: 500;
+        padding-top: 8px;
+      }
+    }
+
+    .e-xlfl-optr:first-child {
+      @if $grid-xlfl-skin == 'material3' {
+        width: 70%;
+      }
+    }
+
+    .e-xlfl-radio,
+    .e-xlfl-mtcase {
+      @if $grid-xlfl-skin == 'material3' {
+        padding-top: 24px;
+      }
+    }
+
+    .e-xlfl-optr,
+    .e-xlfl-value {
+      @if $grid-xlfl-skin == 'material3' {
+        padding-top: 24px;
+      }
     }
   }
 
@@ -222,7 +278,13 @@
     .e-contextmenu-wrapper ul .e-menu-item .e-caret {
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
-      margin-right: $grid-bigger-xlfl-li-icon-margin-arrow-icon;
+      @if $grid-xlfl-skin == 'material3' {
+        font-size: $text-xl;
+        margin-right: 19px;
+      }
+      @else {
+        margin-right: $grid-bigger-xlfl-li-icon-margin-arrow-icon;
+      }
     }
 
     &.e-rtl .e-contextmenu-wrapper ul .e-menu-item .e-caret {
@@ -263,6 +325,12 @@
     .e-checkboxfiltertext {
       width: $grid-checkboxfiltertext-width;
       word-break: normal;
+    }
+
+    .e-responsive-dialog & .e-checkboxfiltertext {
+      @if $grid-xlfl-skin == 'material3' {
+        width: 180px;
+      }
     }
 
     .e-chk-hidden {
@@ -361,7 +429,12 @@
     }
 
     &.e-rtl .e-contextmenu-wrapper ul .e-menu-item .e-caret {
-      margin-left: $grid-xlfl-li-icon-margin-arrow-icon;
+      @if $grid-xlfl-skin == 'material3' {
+        margin-left: 14px;
+      }
+      @else {
+        margin-left: $grid-xlfl-li-icon-margin-arrow-icon;
+      }
     }
 
     .e-footer-content {
@@ -385,6 +458,9 @@
 
     &.e-dialog .e-dlg-content {
       padding-left: $grid-checkbox-content-padding-left;
+      @if $grid-xlfl-skin == 'material3' {
+        padding-right: 16px;
+      }
     }
 
     .e-ftrchk,

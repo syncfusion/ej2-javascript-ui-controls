@@ -24,6 +24,7 @@ export class PdfGanttPredecessor {
     public connectorLineColor?: PdfColor;
     public pdfGantt?: PdfGantt;
     public parent?: Gantt;
+    public parentEndPoint: number;
     public ganttStyle: IGanttStyle;
     /**
      * @returns {PdfGanttPredecessor} .

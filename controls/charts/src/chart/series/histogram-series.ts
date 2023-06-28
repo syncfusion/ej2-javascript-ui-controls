@@ -144,7 +144,7 @@ export class HistogramSeries extends ColumnSeries {
         const distributionLine: Element = series.chart.renderer.drawPath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent',
-                2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction
+                2, series.chart.themeStyle.histogram || series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction
             ),
             new Int32Array([series.clipRect.x, series.clipRect.y])
         );

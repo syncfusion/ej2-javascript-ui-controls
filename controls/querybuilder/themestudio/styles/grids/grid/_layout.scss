@@ -60,6 +60,11 @@
     }
 
     .e-toolbar .e-toolbar-item.e-search-wrapper {
+      @if $grid-skin == 'material3' {
+        & .e-search {
+          width: $grid-bigger-toolbar-search-width;
+        }
+      }
       & .e-sicon.e-clear-icon {
         margin: $grid-bigger-toolbar-search-clear-icon-margin;
         min-width: $grid-bigger-toolbar-search-clear-icon-min-width;
@@ -152,6 +157,13 @@
       padding: $grid-bigger-content-padding $grid-bigger-content-right-padding;
     }
 
+    .e-rowcell .e-checkbox-wrapper,
+    .e-rowcell .e-css.e-checkbox-wrapper {
+      @if $grid-skin == 'material3' {
+        height: 18px;
+      }
+    }
+
     .e-rowcell:first-child,
     .e-summarycell:first-child {
       padding-left: $grid-bigger-first-last-rowcell-padding;
@@ -165,7 +177,12 @@
     .e-filterbarcell,
     .e-filterbarcelldisabled {
       height: $grid-bigger-headercell-line-height;
-      padding: 0 $grid-bigger-headercell-padding;
+      @if $grid-skin == 'material3' {
+        padding: 0 $grid-bigger-headercell-padding 5px;
+      }
+      @else {
+        padding: 0 $grid-bigger-headercell-padding;
+      }
     }
 
     .e-filterbarcell input {
@@ -175,6 +192,9 @@
     .e-ftrchk {
       padding-bottom: $grid-bigger-checkbox-padding-topbottom;
       padding-top: $grid-bigger-checkbox-padding-topbottom;
+      @if $grid-skin == 'material3' {
+        margin-left: -4px;
+      }
     }
 
     .e-columnmenu {
@@ -193,6 +213,12 @@
 
     .e-dialog.e-checkboxfilter {
       min-height: $grid-bigger-checkbox-filter-min-height;
+      @if $grid-skin =='material3' {
+        & .e-dlg-content {
+          padding-top: 16px;
+          padding-right: 16px;
+        }
+      }
     }
 
     .e-checkboxfilter {
@@ -271,6 +297,13 @@
       margin: $grid-bigger-sortdiv-rightalign-margin;
     }
 
+    .e-gridheader .e-sortfilter .e-rightalign .e-headercelldiv,
+    .e-gridheader .e-rightalign .e-stackedheadercelldiv {
+      @if $grid-skin == 'material3' {
+        margin-left: 12px;
+      }
+    }
+
     .e-gridheader .e-rightalign.e-fltr-icon .e-sortnumber {
       float: left;
       margin: $grid-bigger-fltr-sortnumber-rightalign-margin;
@@ -305,6 +338,12 @@
       margin: $grid-bigger-fltricon-sortdiv-rightalign-margin;
     }
 
+    &.e-rtl .e-headercell.e-leftalign .e-sortfilterdiv{
+      @if $grid-skin == 'material3' {
+        margin: -16px 2px;
+      }
+    }
+  
     &.e-rtl .e-headercell .e-sortfilterdiv,
     &.e-rtl .e-detailheadercell .e-sortfilterdiv {
       margin: $grid-rtl-bigger-sortcelldiv-margin;
@@ -325,7 +364,7 @@
       }
       @else if $grid-skin == 'bootstrap5' {
         margin-bottom: -12px;
-        margin-top: -12px;
+        margin-top: -14px;
       }
     }
 
@@ -365,15 +404,9 @@
     }
 
     &.e-rtl .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
-      margin: $grid-rtl-bigger-sortnumber-margin;
-      @if $grid-skin == 'bootstrap5' {
-        margin-left: 4px;
-      }
+      margin: $grid-rtl-bigger-sortnumber-withfilter-margin;
       @if $grid-skin == 'tailwind' {
-        margin-left: 32px;
-      }
-      @if $grid-skin == 'fluent' {
-        margin: 2px 0 0 12px;
+        margin-left: 0;
       }
     }
 
@@ -389,6 +422,12 @@
 
     .e-filterbarcell input {
       font-size: $grid-bigger-font-size;
+    }
+
+    .e-groupdroparea .e-icons {
+      @if $grid-skin == 'material3' {
+        border-radius: 8px;
+      }
     }
 
     .e-groupdroparea {
@@ -423,6 +462,18 @@
     }
 
     .e-cloneproperties.e-draganddrop {
+      & .e-rowcell {
+        @if $grid-skin == 'material3' {
+          padding-top: 10px;
+          padding-bottom: 10px;
+        }
+      }
+      & table,
+      table .e-selectionbackground {
+        @if $grid-skin == 'material3' {
+          height: 40px;
+        }
+      }
       padding: $grid-bigger-draganddrop-clone-padding;
     }
 
@@ -482,6 +533,10 @@
       margin: $grid-bigger-column-menu-margin;
     }
 
+    &.e-device .e-columnmenu {
+        margin: $grid-bigger-device-column-menu-margin;
+    }
+
     .e-columnmenu {
       right: $grid-column-menu-right-touch;
     }
@@ -491,8 +546,14 @@
       border-radius: $grid-bigger-grouped-headercell-border-radius;
       height: $grid-bigger-group-headercell-height;
       margin: $grid-bigger-group-headercell-margin;
-      padding: $grid-bigger-group-headercell-padding;
+      @if $grid-skin != 'material3' {
+        padding: $grid-bigger-group-headercell-padding;
+      }
       font-size: $grouped-bigger-text-font-size;
+    }
+
+    &.e-device .e-groupheadercell {
+      padding: $grid-device-group-headercell-padding;
     }
 
     .e-groupheadercell:hover {
@@ -505,7 +566,7 @@
     }
 
     .e-groupheadercell span {
-      height: $grid-bigger-groupcell-span-line-height;
+      height: $grid-bigger-groupcell-span-height;
       line-height: $grid-bigger-groupcell-span-line-height;
       padding: $grid-bigger-groupcell-span-padding;
     }
@@ -516,6 +577,9 @@
 
     .e-groupheadercell .e-grouptext {
       line-height: $grid-bigger-group-text-line-height;
+      @if $grid-skin == 'material3' {
+        padding-left: 12px;
+      }
     }
 
     .e-row .e-input-group .e-input.e-field,
@@ -533,6 +597,10 @@
     }
 
     .e-row .e-input-group {
+      @if $grid-skin == 'material3' {
+        margin-top: 2px;
+        line-height: 39.5px;
+      }
       margin-bottom: $grid-edit-input-bigger-margin;
       vertical-align: middle;
     }
@@ -551,6 +619,7 @@
 
     &.e-device .e-groupheadercell span {
       line-height: $grid-device-groupheadercell-span-line-height;
+      padding: $grid-device-grouped-headercell-span-padding;
     }
 
     &.e-device .e-rowcell,
@@ -621,13 +690,20 @@
     span.e-ungroupbutton.e-icons {
       font-size: $grid-bigger-ungroupbutton-icons-font-size;
       margin-left: $grid-bigger-ungroupbutton-icon-margin-left;
-      margin-top: $grid-bigger-ungroupbutton-icon-margin-top;
+      padding-top: $grid-bigger-ungroupbutton-icon-padding-top;
+      @if $grid-skin != 'material3' {
+        margin-top: $grid-bigger-ungroupbutton-icon-margin-top;
+      }
       margin-right: $grid-bigger-ungroupbutton-icon-margin-right;
       @if $grid-skin == 'fluent' {
         padding: 0 4px;
       }
-      @else if $grid-skin == 'bootstrap4' {
-        padding-top: 8px;
+    }
+
+    &.e-device span.e-ungroupbutton.e-icons {
+      margin-top: $grid-device-ungroupbutton-icon-margin-top;
+      @if $grid-skin == 'bootstrap4' {
+        padding-top: 0;
       }
     }
 
@@ -639,7 +715,13 @@
 
     span.e-groupsort.e-icons {
       margin-right: $group-bigger-sorticon-margin-right;
-      margin-top: $grid-bigger-sorticon-margin-top;
+      @if $grid-skin == 'material3' {
+        font-size: 16px;
+        padding-top: 7.5px;
+      }
+      @else {
+        margin-top: $grid-bigger-sorticon-margin-top;
+      }
       @if $grid-skin == 'fluent' {
         margin-left: 0;
         padding: 0 4px;
@@ -649,6 +731,10 @@
       }
     }
 
+    &.e-device span.e-groupsort.e-icons {
+      margin-top: $grid-device-group-sorticon-margin-top;
+    }
+    
     &.e-rtl span.e-groupsort.e-icons {
       @if $grid-skin == 'fluent' {
           margin-top: 0;
@@ -656,6 +742,9 @@
       }
       @else if $grid-skin == 'bootstrap4' {
         margin-left: 7px;
+      }
+      @else if $grid-skin == 'material3' {
+        padding-top: 7.5px;
       }
   }
 
@@ -668,9 +757,15 @@
     &.e-rtl span.e-ungroupbutton.e-icons {
       margin-left: $grid-bigger-rtl-ungroup-icon-margin-left;
       margin-right: $grid-bigger-rtl-ungroup-icon-margin-right;
-      margin-top: $grid-bigger-rtl-ungroup-icon-margin-top;
-      padding-top: $grid-ungroup-rtl-padding-top;
+      margin-top: $grid-bigger-sorticon-margin-top;
       padding-left: $grid-ungroup-rtl-padding-left;
+      @if $grid-skin == 'fluent' {
+        margin-top: 0;
+        padding: 0 4px;
+      }
+      @else if $grid-skin == 'material3' {
+        padding-top: 7.5px;
+      }
     }
 
     .e-groupcaption {
@@ -766,6 +861,57 @@
 
     .e-content.e-freezeline-moving {
       user-select: none
+    }
+
+    .e-groupdroparea.e-group-animate .e-drag.e-icon-drag {
+      @if $grid-skin == 'material3' {
+        font-size: 16px;
+        height: 30px;
+        line-height: 31px;
+        margin-right: -12px;
+      }
+    }
+
+    &.e-rtl .e-groupdroparea.e-group-animate .e-drag.e-icon-drag {
+      @if $grid-skin == 'material3' {
+        line-height: 31px;
+        margin-right: 0;
+        margin-left: -12px;
+      }
+    }
+
+    .e-gridheader .e-headercontent .e-reorderuparrow,
+    .e-gridheader .e-headercontent .e-reorderdownarrow,
+    .e-gridheader .e-headercontent .e-reorderuparrow-virtual,
+    .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+      @if $grid-skin == 'material3' {
+        margin-left: -4px;
+      }
+    }
+
+    .e-gridheader .e-headercontent .e-reorderuparrow,
+    .e-gridheader .e-headercontent .e-reorderuparrow-virtual {
+      @if $grid-skin == 'material3' {
+        margin-top: -9px;
+      }
+    }
+
+    .e-gridheader .e-headercontent .e-reorderdownarrow,
+    .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+      @if $grid-skin == 'material3' {
+        margin-top: 2px;
+      }
+    }
+
+    &.e-rtl {
+      .e-gridheader .e-headercontent .e-reorderuparrow,
+      .e-gridheader .e-headercontent .e-reorderdownarrow,
+      .e-gridheader .e-headercontent .e-reorderuparrow-virtual,
+      .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+        @if $grid-skin == 'material3' {
+          margin-left: -3px;
+        }
+      }
     }
   }
 
@@ -1002,10 +1148,7 @@
               padding-right: $grid-responsive-search-padding-right;
 
               & .e-search-icon {
-                font-size: 18px;
-                @if $grid-skin == 'tailwind' or $grid-skin == 'bootstrap5' {
-                  font-size: 16px;
-                }
+                font-size: $grid-res-toolbar-search-icon-font-size;
                 margin-top: $grid-responsive-header-search;
               }
 
@@ -1103,6 +1246,12 @@
         margin-top: $grid-animator-bigger-area-margin;
     }
 
+    .e-bigger &.e-rtl .e-group-animate.e-groupdroparea .e-nextgroup {
+      @if $grid-skin == 'material3' {
+        margin-top: 18px;
+      }
+    }
+
     & .e-group-animator .e-groupheadercell,
     & .e-group-animator .e-groupheadercell:hover {
         margin: $grid-group-animator-cell-margin;
@@ -1155,9 +1304,24 @@
         vertical-align: $grid-columnchooser-toolbar-icon-vertical-align;
     }
 
+    .e-groupdroparea.e-group-animate .e-drag.e-icon-drag:hover {
+      @if $grid-skin == 'material3' {
+        background: none;
+      }
+    }
     
     .e-group-animator .e-icon-drag.e-icons {
         margin-left: $grid-animator-drag-margin-left;
+        @if $grid-skin == 'material3' {
+          margin-right: -8px;
+        }
+    }
+
+    &.e-rtl .e-group-animator .e-icon-drag.e-icons {
+      @if $grid-skin == 'material3' {
+        margin-right: $grid-animator-drag-margin-left;
+        margin-left: -8px;
+      }
     }
 
     .e-groupdroparea.e-group-animate span.e-drag.e-icons.e-icon-drag {
@@ -1175,6 +1339,12 @@
         line-height: $grid-animator-line-height-next;
         padding: $grid-animator-area-border;
         vertical-align: $grid-columnchooser-toolbar-icon-vertical-align;
+    }
+
+    .e-group-animate span.e-nextgroup.e-icons.e-icon-next:hover {
+      @if $grid-skin == 'material3' {
+        background-color: $transparent;
+      }
     }
 
     .e-groupdroparea.e-grouped {
@@ -1344,6 +1514,7 @@
       border-collapse: separate;
       table-layout: fixed;
       width: 100%;
+      border-spacing: 0.25px;
     }
 
     .e-tableborder {
@@ -1537,6 +1708,9 @@
 
     .e-unboundcelldiv > button {
       margin: $grid-unboundcelldiv-margin;
+      @if $grid-skin == 'material3' {
+        border-radius: 8px;
+      }
     }
 
     .e-unboundcelldiv {
@@ -1764,6 +1938,9 @@
     .e-gridheader .e-sortfilter .e-rightalign .e-headercelldiv,
     .e-gridheader .e-rightalign .e-stackedheadercelldiv {
       padding: $grid-headercelldiv-right-align-padding;
+      @if $grid-skin == 'material3' {
+        margin-left: 8px;
+      }
     }
 
     .e-gridheader .e-sortfilter .e-rightalign.e-fltr-icon .e-headercelldiv {
@@ -1941,6 +2118,9 @@
       border-style: $grid-border-type;
       border-width: $grid-rowcell-broder-width;
       cursor: pointer;
+      @if $grid-skin == 'material3' {
+        padding-top: 6px;
+      }
     }
 
     .e-detailindentcell {
@@ -1952,6 +2132,8 @@
       border-top-style: $grid-border-type;
       border-top-width: $grid-border-size;
       padding: .3em;
+      font-weight: normal;
+      text-align: left;
     }
 
     th.e-detailcell .e-rowcell,
@@ -2152,6 +2334,10 @@
     .e-checkboxfilter {
       & .e-dlg-content {
         padding-left: $grid-checkbox-content-padding-left;
+        @if $grid-skin == 'material3' {
+          padding-top: 16px;
+          padding-right: 16px;
+        }
       }
 
       & .e-ftrchk,
@@ -2163,6 +2349,9 @@
     .e-ftrchk {
       padding-bottom: $grid-checkbox-padding-topbottom;
       padding-top: $grid-checkbox-padding-topbottom;
+      @if $grid-skin == 'material3' {
+        margin-left: -4px;
+      }
     }
 
     .e-filterdiv,
@@ -2194,12 +2383,26 @@
       padding: 4px;
     }
 
-    .e-lastsummarycell {
+    .e-footerpadding .e-lastsummarycell {
+      border-left: none;
       border-right: 1px solid;
     }
 
+    &.e-rtl .e-footerpadding tr.e-summaryrow {
+      & td.e-lastsummarycell:last-child {
+        border-right: none;
+        border-left: 1px solid $grid-cell-border-color;
+      }
+    }
+
     .e-footerpadding {
+      padding-left: 0;
       padding-right: 14px; //need to consider from javascript
+    }
+
+    &.e-rtl .e-footerpadding {
+      padding-left: 14px; //need to consider from javascript
+      padding-right: 0;
     }
 
     .e-gridpopup span {
@@ -2216,7 +2419,12 @@
       border: 10px solid transparent;
       content: '';
       height: 0;
-      left: 8px;
+      @if $grid-skin == 'material3' {
+        left: 12px;
+      }
+      @else {
+        left: 8px;
+      }
       position: absolute;
       width: 0;
     }
@@ -2235,7 +2443,15 @@
 
     .e-gridpopup .e-sortdirect,
     .e-gridpopup .e-rowselect {
-      line-height: 18px;
+      @if $grid-skin == 'material3' {
+        font-size: 20px;
+        padding: 2px 6px;
+        line-height: 20px;
+        width: 34px;
+      }
+      @else {
+        line-height: 18px;
+      }
       text-indent: $grid-rowselect-text-indent;
     }
 
@@ -2251,6 +2467,9 @@
       text-align: $grid-group-clone-text-align;
       @if $grid-skin == 'tailwind' {
         text-transform: uppercase;
+      }
+      @else if $grid-skin == 'material3' {
+        border-radius: 4px;
       }
       user-select: none;
       vertical-align: middle;
@@ -2330,6 +2549,17 @@
       z-index: 10;
     }
 
+    &.e-rtl {
+      .e-gridheader .e-headercontent .e-reorderuparrow,
+      .e-gridheader .e-headercontent .e-reorderdownarrow,
+      .e-gridheader .e-headercontent .e-reorderuparrow-virtual,
+      .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+        @if $grid-skin == 'material3' {
+          margin-left: -1.3px;
+        }
+      }
+    }
+
     .e-gridheader .e-headercontent .e-reorderuparrow {
       margin-top: $grid-reorderarrow-margin-top;
     }
@@ -2342,8 +2572,57 @@
       font-weight: $grid-selection-font-weight;
     }
 
+    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
     td.e-cellselectionbackground {
       font-weight: $grid-selection-font-weight;
+      @if $grid-skin == 'material3' {
+        border: 1px solid rgba($content-text-color);
+        padding-bottom: 7px;
+        padding-left: 7.5px;
+        padding-right: 7.5px;
+      }
+    }
+
+    &.e-grid-min-height td.e-cellselectionbackground {
+      @if $grid-skin == 'material3' {
+        padding-bottom: 0;
+      }
+    }
+
+    &.e-bothlines td.e-rowcell.e-cellselectionbackground,
+    &.e-bothlines.e-rtl td.e-rowcell.e-cellselectionbackground,
+    .e-bigger &.e-bothlines.e-rtl td.e-rowcell.e-cellselectionbackground,
+    &.e-bothlines.e-bigger.e-rtl td.e-rowcell.e-cellselectionbackground,
+    &.e-rtl td.e-rowcell.e-cellselectionbackground,
+    .e-bigger &.e-rtl td.e-rowcell.e-cellselectionbackground,
+    &.e-bigger.e-rtl td.e-rowcell.e-cellselectionbackground {
+      @if $grid-skin == 'material3' {
+        border: 1px solid rgba($content-text-color);
+      }
+    }
+
+    &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground {
+      @if $grid-skin == 'material3' {
+        padding-top: 7px;
+      }
+    }
+
+    .e-bigger &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
+    .e-bigger & td.e-cellselectionbackground,
+    &.e-bigger:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
+    &.e-bigger td.e-cellselectionbackground {
+      @if $grid-skin == 'material3' {
+        padding-bottom: 13px;
+        padding-left: 11.5px;
+        padding-right: 11.5px;
+      }
+    }
+
+    .e-bigger &:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground,
+    &.e-bigger:not(.e-row-responsive) .e-gridcontent tr.e-row:first-child td.e-cellselectionbackground {
+      @if $grid-skin == 'material3' {
+        padding-top: 13px;
+      }
     }
 
     .e-groupdroparea {
@@ -2353,7 +2632,7 @@
     }
 
     .e-griddragarea {
-      border: 1px solid;
+      border: $grid-drag-area-border;
       opacity: .6;
       position: absolute;
     }
@@ -2407,6 +2686,9 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       width: $grid-group-text-width;
+      @if $grid-skin == 'material3' {
+        font-weight: 500;
+      }
     }
 
     .e-grid-icon {
@@ -2424,13 +2706,17 @@
       height: $grid-headecell-height;
       margin: $grid-grouparea-margin;
       overflow: hidden;
-      padding: $grid-grouped-headercell-padding;
+      @if $grid-skin != 'material3' {
+        padding: $grid-grouped-headercell-padding;
+      }
       vertical-align: middle;
     }
 
     .e-groupheadercell:hover {
       border: $group-hover-border;
-      padding: $grid-grouped-headercell-hover-padding;
+      @if $grid-skin != 'material3' {
+        padding: $grid-grouped-headercell-hover-padding;
+      }
     }
 
     .e-groupdroparea.e-grouped.e-hover .e-groupheadercell {
@@ -2464,11 +2750,15 @@
     }
 
     &.e-device .e-groupheadercell span {
-      line-height: 26px;
+      line-height: $grid-touch-device-hdrcell-span-line-height;
     }
 
     &.e-device .e-groupheadercell .e-ungroupbutton {
-      line-height: 28px;
+      line-height: $grid-touch-device-hdrcell-ungroup-line-height;
+    }
+
+    &.e-device .e-groupheadercell .e-groupsort {
+      margin-top: $grid-device-groupsort-margin-top;
     }
 
     .e-groupheadercell .e-cancel {
@@ -2489,18 +2779,16 @@
     .e-groupsort {
       margin-right: $group-sorticon-margin-right;
       margin-top: $group-sorticon-margin-top;
+      @if $grid-skin == 'material3' {
+        padding-top: 6px;
+      }
     }
 
     span.e-ungroupbutton.e-icons {
       margin-left: $group-unpgrouicon-margin-left;
-      margin-top: $grid-group-unpgroupicon-margin-top;
+      margin-top: $group-sorticon-margin-top;
+      padding-top: $grid-group-unpgroupicon-padding-top;
       padding-right: $grid-group-unpgroupicon-padding-right;
-      @if $grid-skin == 'bootstrap4' {
-        padding-top: 4px;
-      }
-      @else if $grid-skin == 'tailwind' {
-        padding-top: 1px;
-      }
     }
 
     span.e-ungroupbutton.e-icons:hover {
@@ -2544,6 +2832,9 @@
       border-style: $grid-border-type;
       border-width: $grid-border-size 0 0;
       cursor: pointer;
+      @if $grid-skin == 'material3' {
+        padding-top: 6px;
+      }
     }
 
     .e-disablepointer {
@@ -2555,6 +2846,9 @@
       border-width: $grid-border-size 0 0;
       display: table-cell;
       font-size: $grid-group-caption-font-size;
+      @if $grid-skin == 'material3' {
+        font-weight: 500;
+      }
       line-height: $grid-group-captioncell-line-height;
       overflow: hidden;
       padding: $grid-group-caption-header-padding;
@@ -2692,6 +2986,9 @@
       margin-bottom: $grid-edit-input-margin;
       margin-top: $grid-edit-input-margin-top;
       vertical-align: middle;
+      @if $grid-skin == 'material3' {
+        line-height: 28.5px;
+      }
     }
 
     .e-defaultcell.e-ralign,
@@ -3029,6 +3326,9 @@
 
             & .e-sortnumber {
               margin: $grid-rtl-sort-num-left-align-margin;
+              @if $grid-skin == 'bootstrap4' {
+                margin: 4px -2px 0 0;
+              }
             }
           }
 
@@ -3142,6 +3442,13 @@
         margin-right: $grid-rtl-group-text-margin-right;
         @if $grid-skin == 'bootstrap4' {
           padding-top: 3px;
+        }
+      }
+
+      .e-bigger & .e-groupheadercell span.e-grouptext {
+        @if $grid-skin == 'material3' {
+          padding-right: 12px;
+          margin-left: -8px;
         }
       }
 
@@ -3286,6 +3593,7 @@
       &.e-default.e-bothlines .e-detailcell {
         border-right-style: solid;
         border-right-width: 1px;
+        text-align: right;
       }
 
       & .e-cc-searchdiv span.e-ccsearch-icon.e-icons {
@@ -3397,7 +3705,9 @@
       & .e-groupheadercell:hover {
         margin-left: $grid-rtl-group-headercell-margin-left;
         margin-right: $grid-rtl-group-headercell-margin-right;
-        padding: $grid-rtl-grouped-headercell-padding;
+        @if $grid-skin != 'material3' {
+          padding: $grid-rtl-grouped-headercell-padding;
+        }
       }
 
       & .e-groupheadercell,
@@ -3602,13 +3912,11 @@
     }
 
     &.sf-grid {
-
-      .e-table {
-        border-spacing: .25px;
-      }
-
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-group-ungroupicon-margin-left;
+        @if $grid-skin == 'material3' {
+          margin-left: $group-unpgrouicon-margin-left;
+        }
       }
 
       .e-rowcell.e-frozen-right-border,
@@ -3781,17 +4089,31 @@
     }
   }
 
+  .e-columnmenu {
+    margin: $grid-bigger-column-menu-margin;
+  }
+
   &.e-rtl .e-columnmenu {
     margin: $grid-bigger-rtl-cm-margin;
+  }
+
+  &.e-rtl.e-device .e-columnmenu {
+    margin: $grid-bigger-device-rtl-cm-margin;
   }
 
   &.e-rtl .e-groupheadercell span {
     padding: $grid-bigger-rtl-group-span-padding;
   }
+
+  &.e-device.e-rtl .e-groupheadercell span {
+    padding: $grid-device-rtl-grouped-headercell-span-padding;
+  }
 }
 
 #{&}.e-grid-min-height {
-  .e-rowcell {
+  .e-rowcell,
+  .e-icon-grightarrow,
+  .e-icon-gdownarrow {
     line-height: 0;
     padding-bottom: 0;
     padding-top: 0;
@@ -4000,15 +4322,28 @@
       left: 13px;
       padding-right: 10px;
       position: absolute;
-      top: 6px;
+      top: $grid-bigger-adaptive-cell-position-top;
       white-space: nowrap;
+      text-overflow: ellipsis;
+      @if $grid-skin == 'fluent' {
+        overflow: visible;
+      }
+      @else {
+        overflow: hidden;
+      }
       width: 45%;
     }
 
+    & .e-verticalwrap td::before {
+      line-height: $grid-rowcell-wrap-height;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
     & td[data-cell] {
-      padding-bottom: 5px;
+      padding-bottom: $grid-adaptive-cell-padding-bottom;
       padding-left: 55%;
-      padding-top: 5px;
+      padding-top: $grid-adaptive-cell-padding-top;
       position: relative;
     }
 
@@ -4096,11 +4431,17 @@
     overflow: initial;
   }
 
+  &.e-dialog .e-dlg-header-content {
+    @if $grid-skin == 'material3' {
+      padding: $grid-bigger-res-dlg-hdr-padding;
+    }
+  }
+
   & .e-dlg-header-content {
     background: $grid-responsive-header-background;
     border-bottom: 1px solid;
     border-bottom-color: $grid-header-border-color;
-    padding: 16px;
+    padding: $grid-bigger-res-dlg-hdr-padding;
     width: 100%;
 
     & .e-btn {
@@ -4108,6 +4449,10 @@
       box-shadow: none;
       outline: none;
       position: initial;
+      @if $grid-skin == 'material3' {
+        padding-bottom: 0;
+        line-height: 40px;
+      }
 
       &.e-dlg-closeicon-btn {
         background-color: transparent;
@@ -4144,6 +4489,10 @@
       @if $grid-skin == 'fluent' {
         padding-top: 6px;
       }
+      @else if $grid-skin == 'material3' {
+        line-height: 35px;
+        padding-top: 6px;
+      }
       padding-left: 0;
       padding-right: 40px;
     }
@@ -4155,15 +4504,24 @@
         display: flex;
 
         & .e-dlg-custom-header {
-          font-weight: 500;
           padding-top: $grid-responsive-header-padding-top;
           width: 100%;
+          @if $grid-skin == 'material3' {
+            font-weight: $font-weight-normal;
+            line-height: 20px;
+          }
+          @else {
+            font-weight: 500;
+          }
         }
 
         & .e-res-filter-clear-btn {
           color: $grid-responsive-filter-reset-color;
           margin-top: $grid-responsive-filter-clear-margin;
           padding: 0;
+          @if $grid-skin == 'material3' {
+            line-height: 32px;
+          }
 
           & .e-icon-filter-clear {
             font-size: $grid-responsive-icon-filter-clear;
@@ -4184,7 +4542,12 @@
           font-size: $grid-responsive-res-apply-btn-font-size;
           font-weight: 500;
           padding: 0;
-          padding-left: 20px;
+          @if $grid-skin == 'material3' {
+            padding-left: 11px;
+          }
+          @else {
+            padding-left: 20px;
+          }
           padding-right: 0;
           padding-top: $grid-responsive-apply-btn-top;
 
@@ -4222,6 +4585,11 @@
       @else if $grid-skin == 'tailwind' {
         padding-top: 1.5px;
       }
+      @else if $grid-skin == 'material3' {
+        padding-top: 8.5px;
+        padding-bottom: .5px;
+        line-height: 31px;
+      }
     }
   }
 
@@ -4241,7 +4609,13 @@
     & .e-filtersetdiv {
       float: right;
       margin-right: 1%;
-      margin-top: 1%;
+      @if $grid-skin == 'material3' {
+        margin: -1px;
+        font-size: 20px;
+      }
+      @else {
+        margin-top: 1%;
+      }
 
       & .e-filterset {
         color: $grid-responsive-filter-reset-color;
@@ -4321,7 +4695,12 @@
 
               & .e-caret {
                 padding: 0;
-                padding-right: 8px;
+                @if $grid-skin == 'material3' {
+                  padding-right: 1px;
+                }
+                @else {
+                  padding-right: 8px;
+                }
               }
             }
           }

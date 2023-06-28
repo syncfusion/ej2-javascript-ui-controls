@@ -28,6 +28,7 @@ import { PdfLayoutParams, PdfLayoutResult, PdfLayoutFormat } from '../../../impl
  */
 export class PdfGridCell {
     //Fields
+    _rowHeight: number;
     /**
      * The `row span`.
      * @private
@@ -506,6 +507,9 @@ export class PdfGridCell {
             if (this.row.grid.allowRowBreakAcrossPages)
             {
                 innerLayoutArea.height -= innerLayoutArea.y;
+                if (typeof this._rowHeight !== 'undefined' && this._rowHeight !== null && innerLayoutArea.height > this._rowHeight) {
+                    innerLayoutArea.height = this._rowHeight;
+                }
                 //bounds.height -= bounds.y;
                 // if(this.row.grid.isChildGrid)
                 // {

@@ -137,4 +137,11 @@ export interface IconShapeModel {
      */
     padding?: MarginModel;
 
+    /**
+     * Sets the Path color of an icon.
+     *
+     * @default ''
+     */
+    iconColor?: string;
+
 }

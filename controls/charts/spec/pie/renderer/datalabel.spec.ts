@@ -903,7 +903,7 @@ describe('Checking RTL Behaviour for datalabel', () => {
     it('DataLabel Wrap with MaxWidth value(Datalabel outside)', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
-            expect(textEle.childNodes.length == 4).toBe(true); 
+            expect(textEle.childNodes.length == 5).toBe(true); 
             textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
             expect(textEle.childNodes.length == 2).toBe(true);              
             done();

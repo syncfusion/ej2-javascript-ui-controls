@@ -14,8 +14,15 @@
 
       & .e-btn-group.e-rtl .e-btn.e-btngroup-and-lbl.e-small {
         &.e-not {
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          @if $skin-name == 'Material3' {
+            border: 1px solid $secondary-outline-border;
+            border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
+            border-top-left-radius: $qrybldr-btngrp-brdr-radius;
+          }
+          @else {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
         }
 
         &.e-readonly-and {
@@ -37,8 +44,15 @@
       }
 
       & .e-btn-group.e-rtl .e-qb-toggle.e-btn.e-small {
-        border-bottom-left-radius: 0;
-        border-top-left-radius: 0;
+        @if $skin-name == 'Material3' {
+          border: 1px solid $secondary-outline-border;
+          border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
+          border-top-left-radius: $qrybldr-btngrp-brdr-radius;
+        }
+        @else {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
         border-top-right-radius: $qrybldr-btngrp-brdr-radius;
 
         &.e-not-readonly {
@@ -180,13 +194,29 @@
       }
 
       & .e-qb-toggle.e-btn.e-small {
-        border-bottom-right-radius: 0;
-        border-radius: $qrybldr-btngrp-brdr-radius;
-        border-top-right-radius: 0;
+        @if $skin-name == 'Material3' {
+          border: 1px solid $secondary-outline-border;
+          border-bottom-right-radius: $qrybldr-btngrp-brdr-radius;
+          border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
+          border-top-left-radius: $qrybldr-btngrp-brdr-radius;
+          border-top-right-radius: $qrybldr-btngrp-brdr-radius;
+        }
+        @else {
+          border-bottom-right-radius: 0;
+          border-radius: $qrybldr-btngrp-brdr-radius;
+          border-top-right-radius: 0;
+        }
 
         &.e-not-readonly {
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          @if $skin-name == 'Material3' {
+            border: 1px solid $secondary-outline-border;
+            border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
+            border-top-left-radius: $qrybldr-btngrp-brdr-radius;
+          }
+          @else {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
           pointer-events: none;
         }
 
@@ -202,7 +232,16 @@
       }
 
       & .e-btn.e-btngroup-and-lbl.e-small {
+        @if $skin-name == 'Material3' {
+          border: 1px solid $secondary-outline-border;
+        }
+      }
+
+      & .e-btn.e-btngroup-and-lbl.e-small {
         &.e-not {
+          @if $skin-name == 'Material3' {
+            border: 1px solid $secondary-outline-border;
+          }
           border-bottom-left-radius: 0;
           border-top-left-radius: 0;
         }
@@ -218,6 +257,11 @@
       }
 
       & .e-btn.e-btngroup-or-lbl.e-small {
+        @if $skin-name == 'Material3' {
+          border: 1px solid $secondary-outline-border;
+          border-bottom-right-radius: 20px;
+          border-top-right-radius: 20px;
+        }
         border-bottom-left-radius: 0;
         border-top-left-radius: 0;
 
@@ -227,8 +271,15 @@
         }
 
         &.e-readonly-or {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          @if $skin-name == 'Material3' {
+            border: 1px solid $secondary-outline-border;
+            border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
+            border-top-left-radius: $qrybldr-btngrp-brdr-radius;
+          }
+          @else {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
         }
 
         &.e-readonly {
@@ -244,6 +295,9 @@
       & .e-dropdown-btn.e-add-btn,
       .e-deletegroup {
         margin-bottom: $qrybldr-add-mrgn-btm;
+        @if $skin-name == 'Material3' {
+          box-shadow: none;
+        }
 
         &.e-readonly {
           display: none;
@@ -396,7 +450,9 @@
 
       & .e-rule-container.e-vertical-mode .e-rule-delete {
         margin-bottom: $grpcon-padding;
-        padding-right: $device-rulecon-right-padding;
+        @if $skin-name != 'Material3' {
+          padding-right: $device-rulecon-right-padding;
+        }
         right: 0;
       }
 
@@ -596,7 +652,9 @@
       & .e-rule-delete,
       & .e-rule-container.e-vertical-mode .e-rule-delete {
         margin-bottom: $device-rulecon-padding;
-        padding-right: $device-rulecon-right-padding;
+        @if $skin-name != 'Material3' {
+          padding-right: $device-rulecon-right-padding;
+        }
         right: 0;
       }
 

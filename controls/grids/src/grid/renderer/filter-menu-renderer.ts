@@ -1,7 +1,7 @@
 import { isNullOrUndefined, getValue, L10n, remove } from '@syncfusion/ej2-base';
 import { Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI, FilterMenuRendererArgs } from '../base/interface';
+import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI, FilterMenuRendererArgs, ICustomOptr } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -33,7 +33,7 @@ export class FilterMenuRenderer {
     private valueFormatter: IValueFormatter;
     private operator: Object[];
     private filterSettings: FilterSettings;
-    private customFilterOperators: Object;
+    public customFilterOperators: ICustomOptr;
     private dropOptr: DropDownList;
     private flMuiObj: FlMenuOptrUI;
     private col: Column;
@@ -46,7 +46,7 @@ export class FilterMenuRenderer {
     private currentDialogCreatedColumn: Column;
 
     private colTypes: Object = {
-        'string': StringFilterUI, 'number': NumberFilterUI, 'date': DateFilterUI, 'boolean': BooleanFilterUI, 'datetime': DateFilterUI
+        'string': StringFilterUI, 'number': NumberFilterUI, 'date': DateFilterUI, 'dateonly': DateFilterUI, 'boolean': BooleanFilterUI, 'datetime': DateFilterUI
     };
     constructor(
         parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator, customFltrOperators?: Object,
@@ -195,10 +195,10 @@ export class FilterMenuRenderer {
         const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
         if (optrInput.value === 'Empty' || optrInput.value === 'Not Empty' ||
             optrInput.value === 'Null' || optrInput.value === 'Not Null') {
-            valInput.setAttribute('disabled', '');
+            valInput['ej2_instances'][0]['enabled'] = false;
         }
         else if (!isNullOrUndefined(valInput && valInput.getAttribute('disabled'))) {
-            valInput.removeAttribute('disabled');
+            valInput['ej2_instances'][0]['enabled'] = true;
         }
         if (!column.filterTemplate) {
             this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));

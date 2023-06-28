@@ -367,7 +367,7 @@ export class PointerRenderer {
                 color: pointer.textStyle.color || this.gauge.themeStyle.pointerColor,
                 fontFamily: pointer.textStyle.fontFamily,
                 fontStyle: pointer.textStyle.fontStyle,
-                fontWeight: pointer.textStyle.fontWeight,
+                fontWeight: pointer.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
                 opacity: pointer.textStyle.opacity
             };
             const textOption: TextOption =

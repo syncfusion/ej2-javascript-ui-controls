@@ -286,7 +286,8 @@ describe('Numerictextbox Control', () => {
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('0.5');
             expect(numerictextbox.hiddenInput.getAttribute('name')).toEqual('tsNumeric');
             expect(numerictextbox.element.classList.contains('e-numerictextbox')).toEqual(true);
-            expect(document.getElementById('tsNumeric').getAttribute('aria-valuenow')).toBe('0.5');
+            const value = document.getElementById('tsNumeric').getAttribute('aria-valuenow');
+            expect(value === '.5' || value === '0.5').toBe(true);
             expect(document.getElementById('tsNumeric').getAttribute('role')).toBe('spinbutton');
         });
 

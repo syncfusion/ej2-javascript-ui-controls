@@ -65,6 +65,7 @@ export class RibbonButton {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const buttonEle: HTMLElement = itemEle.querySelector('#' + item.id);
+        buttonEle.setAttribute('data-control', item.type.toString());
         const buttonObj: Button = getComponent(buttonEle, Button);
         buttonObj.setProperties({ cssClass: buttonObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         buttonEle.onclick = (e: Event) => {

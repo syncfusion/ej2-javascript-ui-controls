@@ -384,10 +384,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * Not applicable to ContextMenu component.
      *
      * @default null
+     * @aspType string
      * @private
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
@@ -763,7 +764,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getUlByNavIdx(navIdxLen: number = this.navIdx.length): HTMLElement {
         if (this.isMenu) {
-            const popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen as number];
+            let popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen as number];
+            const popups: Element[] = [];
+            const allPopup: Element[] = selectAll('.' + POPUP);
+            allPopup.forEach((elem: Element) => {
+                if (this.element.id === elem.id.split('-')[2]) {
+                    popups.push(elem);
+                }
+            });
+            popup = [this.getWrapper()].concat([].slice.call(popups))[navIdxLen as number];
             return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup) as HTMLElement;
         } else {
             return this.getWrapper().children[navIdxLen as number] as HTMLElement;
@@ -1072,8 +1081,27 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else {
             this.uList = this.element;
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
-            this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+            if (isNullOrUndefined(e)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const ev: any = document.createEvent('MouseEvents');
+                ev.initEvent("click", true, false);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let targetEvent: any = this.copyObject(ev, {});
+                targetEvent.target = targetEvent.srcElement = target;
+                targetEvent.currentTarget = target;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.triggerBeforeOpen(li, this.uList, item, targetEvent as any, top, left, 'none');
+            } else {
+                this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+            }
         }
+    }
+
+    private copyObject(source: any, destination: any): any {
+        for (const prop in source) {
+            destination[`${prop}`] = source[`${prop}`];
+        }
+        return destination;
     }
 
     private calculateIndentSize(ul: HTMLElement, li: Element): void {
@@ -1159,10 +1187,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private triggerBeforeOpen(
         li: Element, ul: HTMLElement, item: MenuItemModel, e: MouseEvent | KeyboardEvent,
-        top: number, left: number, type: string): void {
+        top: number, left: number, type: string ): void {
         const items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
         const eventArgs: BeforeOpenCloseMenuEventArgs = {
-            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto'};
+            element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto' };
         const menuType: string = type;
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
             switch (menuType) {
@@ -1381,7 +1409,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             showIcon: showIcon,
             moduleName: 'menu',
             fields: fields,
-            template: this.template,
+            template: this.template as any,
             itemNavigable: true,
             itemCreating: (args: { curData: obj, fields: obj }): void => {
                 if (!args.curData[(<obj>args.fields)[fields.id] as string]) {
@@ -2171,7 +2199,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             idx = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
-            if (ul) {
+            if (ul && !isNullOrUndefined(idx)) {
                 if (enable) {
                     if (this.isMenu) {
                         ul.children[idx as number].classList.remove(disabled);
@@ -2230,7 +2258,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             index = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
-                if (ishide) {
+                let validUl: string = isUniqueId ? ul.children[index as number].id : ul.children[index as number].textContent;
+                if (ishide && validUl === items[i as number]) {
                         ul.children[index as number].classList.add(HIDE);
                 } else {
                     ul.children[index as number].classList.remove(HIDE);

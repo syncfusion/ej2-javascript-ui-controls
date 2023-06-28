@@ -511,6 +511,9 @@
 
         & .e-menu-item {
           text-indent: $menu-li-text-indent;
+          @if $skin-name == 'Material3' {
+            border-radius: 0;
+          }
 
           &.e-blankicon {
             text-indent: $menu-li-text-indent + $menu-icon-font-size + $menu-icon-margin-right;
@@ -706,5 +709,9 @@
         }
       }
     }
+  }
+
+  .e-menu-container .e-vscroll ul {
+    position: relative;
   }
 }

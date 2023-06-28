@@ -75,7 +75,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);            
+            expect(groupElement.childElementCount).toBe(4);            
         };
         tooltip.shapes = ['Pentagon'],
         tooltip.refresh();
@@ -85,7 +85,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(3);
+            expect(groupElement.childElementCount).toBe(2);
            
         };
        tooltip.header = '';
@@ -106,11 +106,11 @@ describe('SVG Tooltip', () => {
 
     it('Checking Tooltip with shared', () => {
         tooltip.loaded = (args: Object) => {
-            svgObject = getElement('tooltipcontainer_svg');        
+            svgObject = getElement('tooltipcontainer_svg');
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(4);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(125);
+            expect(groupElement.childElementCount).toBe(3);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(95);
            
         };
        tooltip.content = ['TooltipText'];
@@ -124,7 +124,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(3);
             expect((<HTMLElement>textElement.children[0]).style.fontWeight).toBe('bold');
@@ -143,7 +143,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(3);
             expect((<HTMLElement>textElement.children[0]).style.fontWeight).toBe('bold');
@@ -158,10 +158,10 @@ describe('SVG Tooltip', () => {
     });
     it('Left Position', () => {
         tooltip.loaded = (args: Object) => {
-            svgObject = getElement('tooltipcontainer_svg');        
+            svgObject = getElement('tooltipcontainer_svg'); 
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(3);
             expect((<HTMLElement>textElement.children[0]).style.fontWeight).toBe('bold');
@@ -182,7 +182,7 @@ describe('SVG Tooltip', () => {
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('#ffffff');
             let textElement: Element = document.getElementById('tooltipcontainer_text');
-            expect(textElement.children[0].getAttribute('fill')).toBe('#ffffff');            
+            expect(textElement.children[0].getAttribute('fill')).toBe('rgba(249, 250, 251, 1)');            
            
              
         };
@@ -210,7 +210,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(3);
             expect((<HTMLElement>textElement.children[0]).style.fontWeight).toBe('bold');
@@ -270,12 +270,12 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let trackball: Element = document.getElementById('tooltipcontainer_trackball_group');
             expect(trackball.childElementCount).toBe(2);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(4);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(104);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(74);
            
         };
        tooltip.content = ['TooltipText <br/> <b>Multiple Text<b>', 'Second line'];
@@ -361,11 +361,11 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let path: Element = document.getElementById('tooltipcontainer_path');
-            expect(path.getAttribute('fill')).toBe('#F4F4F4');
+            expect(path.getAttribute('fill')).toBe('#A19F9D');
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('#9A9A9A');
             let textElement: Element = document.getElementById('tooltipcontainer_text');
-            expect(textElement.children[0].getAttribute('fill')).toBe('#282727');
+            expect(textElement.children[0].getAttribute('fill')).toBe('#DADADA');
         };
        tooltip.tooltipRender = null;
        tooltip.template = null;
@@ -386,7 +386,7 @@ describe('SVG Tooltip', () => {
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('#9A9A9A');
             let textElement: Element = document.getElementById('tooltipcontainer_text');
-            expect(textElement.children[0].getAttribute('fill')).toBe('#282727');
+            expect(textElement.children[0].getAttribute('fill')).toBe('rgba(18, 18, 18, 1)');
         };
        tooltip.tooltipRender = null;
        tooltip.template = null;
@@ -456,11 +456,11 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let path: Element = document.getElementById('tooltipcontainer_path');
-            expect(path.getAttribute('fill')).toBe('#020202');
+            expect(path.getAttribute('fill')).toBe('#212529');
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('rgba(255, 255, 255, 0.2)');
             let textElement: Element = document.getElementById('tooltipcontainer_text');
-            expect(textElement.children[0].getAttribute('fill')).toBe('rgba(255, 255, 255, 0.9)');
+            expect(textElement.children[0].getAttribute('fill')).toBe('#F9FAFB');
         };
        tooltip.tooltipRender = null;
        tooltip.template = null;
@@ -477,7 +477,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
-            expect(groupElement.childElementCount).toBe(5);
+            expect(groupElement.childElementCount).toBe(4);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(3);
 
@@ -509,8 +509,8 @@ describe('SVG Tooltip', () => {
         tooltip.loaded = () => {
             let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x");
             let trackballCenterX: string = document.getElementById('tooltipcontainer_Trackball_0').getAttribute('cx');
-            expect(textPosX === '124' || textPosX === '120').toBe(true);
-            expect(trackballCenterX === '196' || trackballCenterX === '190').toBe(true);
+            expect(textPosX === '124' || textPosX === '111').toBe(true);
+            expect(trackballCenterX === '190' || trackballCenterX === '177').toBe(true);
         };
        tooltip.header = "RTL For Marker & Text Content";
        tooltip.content = ['TooltipText'];
@@ -521,11 +521,71 @@ describe('SVG Tooltip', () => {
     it('Checking RTL with arabic text', () => {
         tooltip.loaded = () => {
             let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[5])).getAttribute("x");
-            expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("39");
-            expect(textPosX === '33' || textPosX === '30').toBe(true);
+            expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("44");
+            expect(textPosX === '35' || textPosX === '28').toBe(true);
         };
        tooltip.header = "RTL For Arabic";
        tooltip.content = ['يناير : <b>3M</b>','فبراير : <b>3M</b>'];
+       tooltip.refresh();
+    });
+    it('Material3 Theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let path: Element = document.getElementById('tooltipcontainer_path');
+            expect(path.getAttribute('fill')).toBe('#313033');
+            let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
+            expect(headerpath.getAttribute('stroke')).toBe('#F4EFF4');
+            let textElement: Element = document.getElementById('tooltipcontainer_text');
+            expect(textElement.children[0].getAttribute('fill')).toBe('#F4EFF4');
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};       
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Material3';
+       tooltip.refresh();
+    });
+    it('Material3 dark Theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let path: Element = document.getElementById('tooltipcontainer_path');
+            expect(path.getAttribute('fill')).toBe('#E6E1E5');
+            let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
+            expect(headerpath.getAttribute('stroke')).toBe('#313033');
+            let textElement: Element = document.getElementById('tooltipcontainer_text');
+            expect(textElement.children[0].getAttribute('fill')).toBe('#313033');
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};       
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Material3Dark';
+       tooltip.refresh();
+    });
+    it('tooltip checking Fabric Theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let path: Element = document.getElementById('tooltipcontainer_path');
+            expect(path.getAttribute('stroke-width')).toBe("1");
+            expect(path.getAttribute('stroke')).toBe("#D2D0CE");
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};       
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Fabric';
        tooltip.refresh();
     });
 });

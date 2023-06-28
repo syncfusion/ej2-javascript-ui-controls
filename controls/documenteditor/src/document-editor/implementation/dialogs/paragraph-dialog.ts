@@ -803,6 +803,7 @@ export class ParagraphDialog {
             paraFormat.firstLineIndent = Math.abs(this.firstLineIndent);
             if (this.special.index === 2) {
                 paraFormat.firstLineIndent = -paraFormat.firstLineIndent;
+                paraFormat.leftIndent = this.leftIndentIn.value + this.byIn.value;
             }
         }
         if (!isNullOrUndefined(this.bidi)) {

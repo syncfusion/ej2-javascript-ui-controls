@@ -203,10 +203,10 @@ export class ToolbarStatus {
             formatCollection.createlink = this.isLink(node);
         }
         if (!formatCollection.numberFormatList) {
-            formatCollection.numberFormatList = this.isNumberFormatList(node);
+            formatCollection.numberFormatList = this.isNumberFormatList(node) as string;
         }
         if (!formatCollection.bulletFormatList) {
-            formatCollection.bulletFormatList = this.isBulletFormatList(node);
+            formatCollection.bulletFormatList = this.isBulletFormatList(node) as string;
         }
         return formatCollection;
     }
@@ -321,7 +321,7 @@ export class ToolbarStatus {
     private static getComputedStyle(docElement: Document, node: HTMLElement, prop: string): string {
         return docElement.defaultView.getComputedStyle(node, null).getPropertyValue(prop);
     }
-    private static isNumberFormatList(node: Node): string {
+    private static isNumberFormatList(node: Node): string | boolean {
         const list: string = (node as HTMLElement).style && (node as HTMLElement).style.listStyleType;
         if (list === 'lower-alpha') {
             return 'Lower Alpha';
@@ -337,12 +337,14 @@ export class ToolbarStatus {
             return 'Lower Greek';
         }else if (list === 'none') {
             return 'None';
+        } else if (this.isOrderedList(node)) {
+            return true;
         } else {
             return null;
         }
     }
 
-    private static isBulletFormatList(node: Node): string {
+    private static isBulletFormatList(node: Node): string | boolean {
         const list: string = (node as HTMLElement).style && (node as HTMLElement).style.listStyleType;
         if (list === 'circle') {
             return 'Circle';
@@ -352,6 +354,8 @@ export class ToolbarStatus {
             return 'None';
         } else if (list === 'disc') {
             return 'Disc';
+        } else if (this.isUnorderedList(node)) {
+            return true;
         } else {
             return null;
         }

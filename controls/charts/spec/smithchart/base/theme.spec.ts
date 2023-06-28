@@ -76,7 +76,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
-                expect(element.getAttribute('fill')).toEqual('#686868');
+                expect(element.getAttribute('fill')).toEqual('rgba(97, 97, 97, 1)');
             };
             smithchart.refresh();
         });
@@ -104,14 +104,14 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with chartTitle', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Smithchart_title');
-                expect(element.getAttribute('fill')).toEqual('#424242');
+                expect(element.getAttribute('fill')).toEqual('rgba(0, 0, 0, 1)');
             };
             smithchart.refresh();
         });
         it('Checking with legend label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
-                expect(element.getAttribute('fill')).toEqual('#353535');
+                expect(element.getAttribute('fill')).toEqual('rgba(97, 97, 97, 1)');
             };
             smithchart.refresh();
         });
@@ -132,7 +132,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Roboto');
             };
             smithchart.refresh();
         });
@@ -217,7 +217,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
-                expect(element.getAttribute('fill')).toEqual('#DADADA');
+                expect(element.getAttribute('fill')).toEqual('rgba(255, 255, 255, 0.6)');
             };
             smithchart.refresh();
         });
@@ -245,14 +245,14 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with chartTitle', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Smithchart_title');
-                expect(element.getAttribute('fill')).toEqual('#ffffff');
+                expect(element.getAttribute('fill')).toEqual('rgba(255, 255, 255, 0.87)');
             };
             smithchart.refresh();
         });
         it('Checking with legend label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
-                expect(element.getAttribute('fill')).toEqual('#DADADA');
+                expect(element.getAttribute('fill')).toEqual('rgba(255, 255, 255, 0.6)');
             };
             smithchart.refresh();
         });
@@ -273,7 +273,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Roboto');
             };
             smithchart.refresh();
         });
@@ -358,7 +358,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
-                expect(element.getAttribute('fill')).toEqual('#ffffff');
+                expect(element.getAttribute('fill')).toEqual('#969696');
             };
             smithchart.refresh();
         });
@@ -386,14 +386,14 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with chartTitle', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Smithchart_title');
-                expect(element.getAttribute('fill')).toEqual('#ffffff');
+                expect(element.getAttribute('fill')).toEqual('#FFFFFF');
             };
             smithchart.refresh();
         });
         it('Checking with legend label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
-                expect(element.getAttribute('fill')).toEqual('#ffffff');
+                expect(element.getAttribute('fill')).toEqual('#969696');
             };
             smithchart.refresh();
         });
@@ -414,7 +414,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Segoe UI');
             };
             smithchart.refresh();
         });
@@ -499,7 +499,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with axis Label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
-                expect(element.getAttribute('fill')).toEqual('#212529');
+                expect(element.getAttribute('fill')).toEqual('#495057');
             };
             smithchart.refresh();
         });
@@ -534,7 +534,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with legend label', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
-                expect(element.getAttribute('fill')).toEqual('#212529');
+                expect(element.getAttribute('fill')).toEqual('#666666');
             };
             smithchart.refresh();
         });
@@ -555,7 +555,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Helvetica');
             };
             smithchart.refresh();
         });
@@ -689,7 +689,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Inter');
             };
             smithchart.refresh();
         });
@@ -812,7 +812,7 @@ describe('Smithchart legend properties tesing', () => {
         it('Checking with data label font family', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
-                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+                expect(element.getAttribute('font-family')).toEqual('Inter');
             };
             smithchart.refresh();
         });

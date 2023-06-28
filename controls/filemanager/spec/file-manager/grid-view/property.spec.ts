@@ -647,9 +647,7 @@ describe('FileManager control Grid view', () => {
                             template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
                         },
                         {
-                            field: '_fm_modified', headerText: 'DateModified',
-                            format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-                            minWidth: 120, width: '190'
+                            field: '_fm_modified', headerText: 'DateModified', format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190'
                         },
                         {
                             field: 'isFile', headerText: 'Is File', minWidth: 90, width: '110', headerTextAlign: "Center", allowResizing: false, allowSorting: false

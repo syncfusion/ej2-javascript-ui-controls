@@ -18,6 +18,8 @@ export interface FilterSettingsModel {
      * * `Menu` - Enables menu filters in Grid.
      *
      * @default Menu
+     * @isenumeration true
+     * @asptype FilterType
      */
     type?: FilterType;
 
@@ -45,6 +47,7 @@ export interface FilterSettingsModel {
      *
      * @default Parent
      * @isEnumeration true
+     * @asptype FilterHierarchyMode
      */
     hierarchyMode?: FilterHierarchyMode;
 

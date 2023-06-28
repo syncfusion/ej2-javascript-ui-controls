@@ -143,15 +143,8 @@ export class ProtectSheet {
                 }
                 focus(this.parent.element);
             },
-            open: (): void => {
-                this.okBtnFocus();
-            },
             beforeClose: (): void => {
-                const checkboxElement: HTMLInputElement = document.getElementById(
-                    this.parent.element.id + '_protect_check') as HTMLInputElement;
-                EventHandler.remove(checkboxElement, 'focus', this.okBtnFocus);
                 EventHandler.remove(checkbox.element, 'click', this.checkBoxClickHandler);
-                focus(this.parent.element);
             },
             buttons: [{
                 click: this.selectOption.bind(this, this.dialog, this),
@@ -168,19 +161,12 @@ export class ProtectSheet {
         this.optionList.selectMultipleItems([{ id: '1' }, { id: '6'}]);
         EventHandler.add(checkbox.element, 'click', this.checkBoxClickHandler, this);
     }
-    private okBtnFocus(): void {
-        const checkboxElement: HTMLInputElement = document.getElementById(this.parent.element.id + '_protect_check') as HTMLInputElement;
-        checkboxElement.addEventListener('focus', (): void => {
-            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
-        });
-    }
     private checkBoxClickHandler(): void {
         const ch: HTMLInputElement = document.getElementById(this.parent.element.id + '_protect_check') as HTMLInputElement;
         if (ch.checked === false) {
             this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = true;
         } else {
             this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled = false;
-            this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
         }
     }
     private dialogOpen(args: SelectEventArgs): void {
@@ -191,7 +177,6 @@ export class ProtectSheet {
         if (args.text === l10n.getConstant('SelectUnlockedCells') && !args.isChecked && args.isInteracted) {
             this.optionList.uncheckItem( { id: '1' } );
         }
-        this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
     }
 
     private selectOption(): void {
@@ -229,6 +214,9 @@ export class ProtectSheet {
             this.parent.setSheetPropertyOnMute(actSheet, 'password', (pwd as CellModel).value);
             this.updateProtectSheet((pwd as CellModel).value);
             this.dialog.hide();
+            if (this.protectSheetDialog) {
+                this.protectSheetDialog = null;
+            }
             const sheetDlgPopup: HTMLElement = document.querySelector('.e-protect-dlg.e-dialog');
             const sheetDlg: Dialog = getComponent(sheetDlgPopup, 'dialog');
             sheetDlg.destroy();
@@ -604,9 +592,11 @@ export class ProtectSheet {
                     args.cancel = true;
                 }
                 dialogInst.dialogInstance.content = this.reEnterSheetPasswordContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
+                const focusEle: HTMLElement = this.parent.element.querySelector('.e-protect-dlg.e-dialog .e-footer-content .e-btn') ||
+                    this.parent.element;
+                focus(focusEle);
             },
-            close: (): void =>{
+            close: (): void => {
                 this.dialog.dialogInstance = this.protectSheetDialog;
             },
             buttons: [{
@@ -616,7 +606,6 @@ export class ProtectSheet {
                 click: (): void => {
                     this.alertMessage();
                     this.selectSheetPassword();
-                    
                 }
             }]
         });
@@ -787,7 +776,7 @@ export class ProtectSheet {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (this.parent.allowOpen && this.parent.openModule.isImportedFile &&
+        if (sheet.isProtected && this.parent.allowOpen && this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);
         }

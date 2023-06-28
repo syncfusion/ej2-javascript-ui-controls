@@ -125,6 +125,10 @@ export class CartesianChart {
         stockChart.chart.stockChart = stockChart;
         stockChart.chart.appendTo(stockChart.chartObject as HTMLElement);
         stockChart[isProtect as string] = false;
+        if (stockChart.onPanning) {
+            getElement(this.stockChart.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            stockChart.chart.mouseMove(stockChart.mouseMoveEvent);
+        }
     }
 
     private findMargin(stockChart: StockChart): MarginModel {
@@ -161,8 +165,8 @@ export class CartesianChart {
         return (
             new Size(
                 stockChart.availableSize.width, (stockChart.enablePeriodSelector && stockChart.enableSelector) ?
-                    ((stockChart.availableSize.height - stockChart.toolbarHeight - 80)) :
-                    (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 80) :
+                    ((stockChart.availableSize.height - stockChart.toolbarHeight - 51)) :
+                    (stockChart.enableSelector && !stockChart.enablePeriodSelector) ? (stockChart.availableSize.height - 51) :
                         (stockChart.enablePeriodSelector && !stockChart.enableSelector) ?
                             stockChart.availableSize.height - stockChart.toolbarHeight : stockChart.availableSize.height)
         );

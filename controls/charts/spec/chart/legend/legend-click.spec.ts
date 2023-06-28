@@ -83,7 +83,7 @@ describe('Chart Control Legend Checking', () => {
     });
     it('checking with datalabel before legend click', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(parseFloat(dataLabel.getAttribute('y')) == 175.79999999999998 || parseFloat(dataLabel.getAttribute('y')) == 213.75).toBe(true);
+        expect(parseFloat(dataLabel.getAttribute('y')) == 216 || parseFloat(dataLabel.getAttribute('y')) == 213.75).toBe(true);
     });
     it('checking with line series legend deselect', (done: Function) => {
         legendElement = getElement('cartesianChart_chart_legend_text_4');
@@ -114,7 +114,7 @@ describe('Chart Control Legend Checking', () => {
 
     it('checking with datalabel before legend selected', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(+(dataLabel.getAttribute('y'))).toBeLessThanOrEqual(213.75);
+        expect(+(dataLabel.getAttribute('y'))).toBeLessThanOrEqual(216);
     });
 
     it('checking with column series legend deselect', (done: Function) => {

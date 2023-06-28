@@ -169,7 +169,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * To enable shadow for the tooltip.
      *
-     * @default true.
+     * @default false.
      * @private
      */
 
@@ -211,10 +211,11 @@ export interface TooltipModel extends ComponentModel{
      * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      * @private
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * If set to true, ToolTip will animate while moving from one point to another.

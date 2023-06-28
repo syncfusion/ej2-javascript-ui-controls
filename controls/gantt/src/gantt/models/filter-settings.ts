@@ -19,6 +19,8 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * * `Menu` - Enables menu filters in Grid.
      *
      * @default Menu
+     * @isenumeration true
+     * @asptype FilterType
      */
     @Property('Menu')
     public type: FilterType;
@@ -47,6 +49,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      *
      * @default Parent
      * @isEnumeration true
+     * @asptype FilterHierarchyMode
      */
     @Property('Parent')
     public hierarchyMode: FilterHierarchyMode;

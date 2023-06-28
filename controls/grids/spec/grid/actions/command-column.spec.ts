@@ -684,4 +684,61 @@ describe('Command Column ', () => {
             gridObj = null;
         });
     });
+
+    describe('CommandClickEventArgs receives an incorrect command column title => ', function () {
+        let gridObj: Grid;
+        let commandClick: () => void;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                height: 300,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                allowPaging: true,
+                commandClick: commandClick,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    { headerText: 'CommandsMap', width: 160,
+                        commands: [
+                            {
+                                title: 'Map',
+                                buttonOption: {
+                                    content: 'Map btn',
+                                    cssClass: 'e-flat',
+                                    iconCss: 'e-custom-common-grid-map e-icons'
+                                }
+                            }
+                        ]
+                    },
+                    { headerText: 'CommandsContacts', width: 160,
+                        commands: [
+                            {
+                                title: 'Contacts',
+                                buttonOption: {
+                                    content: 'Contacts btn',
+                                    cssClass: 'e-flat',
+                                    iconCss: 'e-custom-common-contacts e-icons'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }, done);
+        });
+
+        it('Map Command Column Button Click Action and check title', (done: Function) => {
+            const mapBtn: HTMLElement = gridObj.getRowByIndex(0).querySelector('button.e-flat');
+            commandClick = (args?: any): void => {
+                expect(args.commandColumn.title).toBe('Map');
+                done();
+            };
+            gridObj.commandClick = commandClick;
+            (gridObj as any).commandColumnModule.commandClickHandler({ target: mapBtn });
+        });
+
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = commandClick = null;
+        });
+    });
 });

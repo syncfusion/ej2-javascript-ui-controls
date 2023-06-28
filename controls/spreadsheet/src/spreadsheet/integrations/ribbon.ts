@@ -11,7 +11,7 @@ import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hi
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
-import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { ColorPicker, ColorPickerEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
 import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
@@ -450,7 +450,8 @@ export class Ribbon {
 
     private getChartThemeDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme', attrs: { 'type': 'button' } });
+        const chartThemeBtn: HTMLElement = this.parent.createElement(
+            'button', { id: id + '_chart_theme', attrs: { 'type': 'button' }, className: 'e-ss-ddb' });
         chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
         let theme: ChartTheme = 'Material';
         const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
@@ -478,7 +479,6 @@ export class Ribbon {
                     chartThemeDDB.setProperties({ items: this.getChartThemeDdbItems(args.item.id) }, true);
                 }
             },
-            close: (): void => this.parent.element.focus(),
             cssClass: 'e-flat e-charttheme-ddb',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.tBarDdbBeforeOpen(
@@ -491,7 +491,8 @@ export class Ribbon {
     }
 
     private getNumFormatDDB(id: string, l10n: L10n): Element {
-        const numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format', attrs: { 'type': 'button' } });
+        const numFormatBtn: HTMLElement = this.parent.createElement(
+            'button', { id: id + '_number_format', attrs: { 'type': 'button' }, className: 'e-ss-ddb' });
         const numFormatText: HTMLElement = this.parent.createElement('span', { className: 'e-tbar-btn-text' });
         numFormatText.innerText = l10n.getConstant('General');
         numFormatBtn.appendChild(numFormatText);
@@ -551,7 +552,8 @@ export class Ribbon {
             },
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
-        this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size', attrs: { 'type': 'button' } }));
+        this.fontSizeDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_font_size', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.fontSizeDdb.element;
     }
 
@@ -574,6 +576,16 @@ export class Ribbon {
         return chartBtn;
     }
 
+    private closeDropdownPopup(e: KeyboardEvent): void {
+        if ((e.altKey && e.keyCode === 38) || e.keyCode === 27) {
+            const dropdownObj: DropDownButton = this[1];
+            if (dropdownObj) {
+                dropdownObj.toggle();
+                focus(dropdownObj.element);
+            }
+        }
+    }
+
     private createChartDdb(chartBtn: HTMLElement, isChart: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const menuClass: string = isChart ? 'e-chart-menu' : 'e-chart-type-menu';
@@ -589,15 +601,17 @@ export class Ribbon {
                 chartMenu = this.createChartMenu(ul, menuClass, l10n, chartDdb);
                 this.tBarDdbBeforeOpen(
                     args.element, chartMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
+                EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, chartDdb]);
             },
             open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.' + menuClass)) {
                     args.cancel = true;
                 } else {
+                    EventHandler.remove(ul, 'keydown', this.closeDropdownPopup);
                     chartMenu.destroy();
                 }
-            },
+            }
         });
         chartDdb.createElement = this.parent.createElement;
         chartDdb.appendTo(chartBtn);
@@ -745,18 +759,26 @@ export class Ribbon {
         const lineText: HTMLElement = this.parent.createElement('div', { id: 'line_text', className: 'e-line-text' });
         lineText.innerText = l10n.getConstant('Line');
         const lineCont: HTMLElement = this.parent.createElement('div', { id: 'line_cont', className: 'e-line-cont' });
+        const lineContMarker: HTMLElement = this.parent.createElement('div', { id: 'line_cont_marker', className: 'e-line-cont' });
         line.appendChild(lineText);
         line.appendChild(lineCont);
+        line.appendChild(lineContMarker);
         const defLine: HTMLElement = this.parent.createElement('span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons' });
         const stackedLine: HTMLElement =
             this.parent.createElement('span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons' });
         const stackedLine100: HTMLElement = this.parent.createElement('span', {
-            id: 'stackedline100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons'
+            id: 'stackedLine100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons'
         });
+        const defLineMarker: HTMLElement = this.parent.createElement('span', { id: 'lineMarker', className: 'e-line-marker e-line-icon e-menu-icon e-icons' });
+        const stackedLineMarker: HTMLElement = this.parent.createElement('span', { id: 'stackedLineMarker', className: 'e-stackedline-marker e-line-icon e-menu-icon e-icons' });
+        const stackedLine100Marker: HTMLElement = this.parent.createElement('span', { id: 'stackedLine100Marker', className: 'e-stackedline100-marker e-line-icon e-menu-icon e-icons'});
         defLine.title = l10n.getConstant('Line'); stackedLine.title = l10n.getConstant('StackedLine');
         stackedLine100.title = l10n.getConstant('StackedLine100');
+        defLineMarker.title = l10n.getConstant('LineMarker');
+        stackedLineMarker.title = l10n.getConstant('StackedLineMarker');
+        stackedLine100Marker.title = l10n.getConstant('StackedLine100Marker');
         lineCont.appendChild(defLine); lineCont.appendChild(stackedLine); lineCont.appendChild(stackedLine100);
-
+        lineContMarker.appendChild(defLineMarker); lineContMarker.appendChild(stackedLineMarker); lineContMarker.appendChild(stackedLine100Marker);
         const pie: HTMLElement = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
         const pieText: HTMLElement = this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text' });
         pieText.innerText = l10n.getConstant('Pie');
@@ -811,11 +833,14 @@ export class Ribbon {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 addChartMenu = this.createAddChartMenu(ul, l10n);
                 this.tBarDdbBeforeOpen(args.element, addChartMenu.items);
+                EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, this.addChartDdb]);
             },
+            open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-addchart-menu')) {
                     args.cancel = true;
                 } else {
+                    EventHandler.remove(ul, 'keydown', this.closeDropdownPopup);
                     addChartMenu.destroy();
                 }
             }
@@ -863,7 +888,7 @@ export class Ribbon {
                 ]
             },
             {
-                iconCss: 'e-icons e-data-labels', text: l10n.getConstant('DataLabels'),
+                iconCss: 'e-icons e-data-labels', id: this.parent.element.id + 'data-labels', text: l10n.getConstant('DataLabels'),
                 items: [{ iconCss: 'e-icons e-dl-none', id: 'DLNone', text: l10n.getConstant('None') },
                     { iconCss: 'e-icons e-dl-center', id: 'DLCenter', text: l10n.getConstant('Center') },
                     { iconCss: 'e-icons e-dl-insideend', id: 'DLInsideend', text: l10n.getConstant('InsideEnd') },
@@ -898,7 +923,34 @@ export class Ribbon {
                     { iconCss: 'e-icons e-legends-top', id: 'LegendsTop', text: l10n.getConstant('Top') }]
             }],
             orientation: 'Vertical',
-            select: this.addChartEleSelected.bind(this)
+            select: this.addChartEleSelected.bind(this),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.parentItem.id === this.parent.element.id + 'data-labels') {
+                    const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
+                    if (overlay) {
+                        const chart: HTMLElement = overlay.querySelector('.e-chart');
+                        if (chart) {
+                            const chartObj: { series: { type: string }[] } = getComponent(chart, 'chart');
+                            if (chartObj.series[0].type.includes('Line')) {
+                                const updateTextNode: Function = (listIcon: HTMLElement, key: string): void => {
+                                    if (listIcon) {
+                                        const dlList: HTMLElement = listIcon.parentElement;
+                                        dlList.innerHTML = '';
+                                        dlList.appendChild(listIcon);
+                                        dlList.appendChild(document.createTextNode(l10n.getConstant(key)));
+                                    }
+                                };
+                                updateTextNode(args.element.querySelector('.e-dl-insideend'), 'Above');
+                                updateTextNode(args.element.querySelector('.e-dl-insidebase'), 'Below');
+                                const outsideIcon: HTMLElement = args.element.querySelector('.e-dl-outsideend');
+                                if (outsideIcon) {
+                                    outsideIcon.parentElement.style.display = 'none';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         });
         addChartMenu.createElement = this.parent.createElement;
         addChartMenu.appendTo(ul);
@@ -919,6 +971,7 @@ export class Ribbon {
                 cfMenu = this.createCFMenu(ul);
                 this.tBarDdbBeforeOpen(
                     args.element, cfMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('ConditionalFormatting'));
+                EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, this.cfDdb]);
             },
             open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
@@ -926,6 +979,7 @@ export class Ribbon {
                     args.cancel = true;
                 } else {
                     cfMenu.destroy();
+                    EventHandler.remove(ul, 'keydown', this.closeDropdownPopup);
                 }
             }
         });
@@ -1156,6 +1210,9 @@ export class Ribbon {
             cssClass: 'e-border-colorpicker',
             mode: 'Palette',
             inline: true,
+            beforeTileRender: (args: PaletteTileEventArgs): void => {
+                args.element.tabIndex = -1;
+            },
             change: (args: ColorPickerEventArgs): void => {
                 const border: string[] = this.border.split(' '); border[2] = args.currentValue.hex;
                 this.border = border.join(' ');
@@ -1173,12 +1230,14 @@ export class Ribbon {
                 bordersMenu = this.createBorderMenu(ul);
                 this.tBarDdbBeforeOpen(
                     args.element, bordersMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Borders'), 1);
+                EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, this.bordersDdb]);
             },
             open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-borders-menu')) {
                     args.cancel = true;
                 } else {
+                    EventHandler.remove(ul, 'keydown', this.closeDropdownPopup);
                     bordersMenu.destroy();
                 }
             },
@@ -1225,6 +1284,7 @@ export class Ribbon {
                     args.element.firstElementChild.appendChild(cPickerWrapper);
                     cPickerWrapper.style.display = 'inline-block';
                     args.element.parentElement.classList.add('e-border-color');
+                    args.element.firstElementChild.removeAttribute('tabindex');
                 } else {
                     args.element.classList.add('e-border-style');
                 }
@@ -1244,8 +1304,15 @@ export class Ribbon {
                 }
             },
             onOpen: (args: OpenCloseMenuEventArgs): void => {
-                if (args.parentItem.id === `${id}_border_bordercolor`) { args.element.parentElement.style.overflow = 'visible'; }
+                if (args.parentItem.id === `${id}_border_bordercolor`) {
+                    args.element.parentElement.style.overflow = 'visible';
+                    const colorPalatte: HTMLElement = args.element.querySelector('.e-color-palette .e-palette');
+                    if (colorPalatte) {
+                        focus(colorPalatte);
+                    }
+                }
             },
+            onClose: (): void => focus(bordersMenu.element),
             select: (args: MenuEventArgs): void => {
                 this.borderSelected(args, bordersMenu);
             },
@@ -1352,7 +1419,8 @@ export class Ribbon {
     }
 
     private getFontNameDDB(id: string): Element {
-        const fontNameBtn: HTMLElement = this.parent.createElement('button', { id: id + '_font_name', attrs: { 'type': 'button' } });
+        const fontNameBtn: HTMLElement = this.parent.createElement(
+            'button', { id: id + '_font_name', attrs: { 'type': 'button' }, className: 'e-ss-ddb' });
         const fontBtnText: HTMLElement = this.parent.createElement('span', { className: 'e-tbar-btn-text' });
         fontBtnText.innerText = 'Calibri';
         fontNameBtn.appendChild(fontBtnText);
@@ -1369,7 +1437,7 @@ export class Ribbon {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>{
                 this.tBarDdbBeforeOpen(
                     args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant(('Font')));
-            },
+            }
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
@@ -1425,7 +1493,8 @@ export class Ribbon {
             },
         });
         this.datavalidationDdb.createElement = this.parent.createElement;
-        this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation', attrs: { 'type': 'button' } }));
+        this.datavalidationDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_datavalidation', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.datavalidationDdb.element;
     }
 
@@ -1454,7 +1523,8 @@ export class Ribbon {
             }
         });
         this.textAlignDdb.createElement = this.parent.createElement;
-        this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align', attrs: { 'type': 'button' } }));
+        this.textAlignDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_text_align', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.textAlignDdb.element;
     }
 
@@ -1483,7 +1553,8 @@ export class Ribbon {
             }
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
-        this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align', attrs: { 'type': 'button' } }));
+        this.verticalAlignDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_vertical_align', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.verticalAlignDdb.element;
     }
 
@@ -1501,9 +1572,9 @@ export class Ribbon {
             click: (args: BtnClickEventArgs): void => {
                 args.element.setAttribute('aria-label', l10n.getConstant('MergeCells'));
                 if (args.element.classList.contains('e-active')) {
-                    this.toggleActiveState(false); this.unMerge();
+                    this.unMerge();
                 } else {
-                    this.toggleActiveState(true); this.merge(`${this.parent.element.id}_merge_all`);
+                    this.merge(`${this.parent.element.id}_merge_all`);
                 }
             },
             created: (): void => {
@@ -1531,6 +1602,7 @@ export class Ribbon {
         const selectedRange: string = this.parent.getActiveSheet().selectedRange;
         this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: args ? (args.range || selectedRange) : selectedRange,
             isAction: true, refreshRibbon: true, type: 'All' });
+        this.toggleActiveState(false);
         this.parent.hideSpinner();
     }
 
@@ -1538,16 +1610,23 @@ export class Ribbon {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getRangeIndexes(sheet.selectedRange); let cell: CellModel;
         let isDataPresent: boolean;
+        const isMergeAll: boolean = itemId.includes('merge_all');
         for (let i: number = indexes[0]; i <= indexes[2]; i++) {
             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                if (i === indexes[0] && j === indexes[1] && itemId.includes('merge_all')) { continue; }
+                if (i === indexes[0] && j === indexes[1] && isMergeAll) { continue; }
                 if (i === indexes[0] && itemId.includes('merge_vertically')) { continue; }
                 if (j === indexes[1] && itemId.includes('_merge_horizontally')) { continue; }
                 cell = getCell(i, j, sheet) || {};
                 if (cell.value || cell.formula) { isDataPresent = true; }
             }
         }
-        if (!isDataPresent) { this.performMerge(itemId); return; }
+        if (!isDataPresent) {
+            this.performMerge(itemId);
+            if (isMergeAll) {
+                this.toggleActiveState(true);
+            }
+            return;
+        }
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
             height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-merge-alert-dlg',
@@ -1560,11 +1639,19 @@ export class Ribbon {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    focus(this.parent.element);
                 }
             },
             buttons: [{
                 buttonModel: { content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true },
-                click: (): void => { dialogInst.hide(); this.performMerge(itemId); }
+                click: (): void => {
+                    dialogInst.hide();
+                    this.performMerge(itemId);
+                    if (isMergeAll) {
+                        this.toggleActiveState(true);
+                    }
+                }
             }]
         });
     }
@@ -1650,7 +1737,8 @@ export class Ribbon {
             },
         });
         this.sortingDdb.createElement = this.parent.createElement;
-        this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting', attrs: { 'type': 'button' } }));
+        this.sortingDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_sorting', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.sortingDdb.element;
     }
 
@@ -1697,7 +1785,8 @@ export class Ribbon {
             const largeData: boolean = (sheet.usedRange.rowIndex * sheet.usedRange.colIndex) > 100;
             findTextInput.onkeyup = (e: KeyboardEvent): void => {
                 const mainHandlerFn: Function = (): void => {
-                    if (!findTextInput) {
+                    if (!findTextInput || (sheet.isProtected && !sheet.protectSettings.selectCells &&
+                        !sheet.protectSettings.selectUnLockedCells)) {
                         return;
                     }
                     const inputValue: string = findTextInput.value;
@@ -1758,7 +1847,11 @@ export class Ribbon {
                         this.parent.notify(findDlg, null);
                         this.findDialog.hide();
                     }
-                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
+                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj',
+                created: (): void => {
+                    const tbarBtns: NodeList = toolbarObj.element.querySelectorAll('.e-toolbar-item .e-tbar-btn');
+                    tbarBtns.forEach((tbarBtn: HTMLElement): void => tbarBtn.removeAttribute('tabindex'));
+                }
             });
             const tbarEle: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
             toolbarObj.createElement = this.parent.createElement;
@@ -1769,7 +1862,8 @@ export class Ribbon {
                 target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
                 open: (): void => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
-                    if (this.findValue) {
+                    if (this.findValue && (!sheet.isProtected || sheet.protectSettings.selectCells ||
+                        sheet.protectSettings.selectUnLockedCells)) {
                         const countArgs: { [key: string]: string | number | boolean } = { value: this.findValue, mode: 'Sheet',
                             isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
                         this.parent.notify(count, countArgs);
@@ -1785,6 +1879,7 @@ export class Ribbon {
                         (textInput).setSelectionRange(0, textInput.value.length);
                     });
                 },
+                beforeOpen: (): void => focus(this.parent.element),
                 beforeClose: (): void => {
                     this.findValue = findTextInput.value || null;
                     toolbarObj.destroy();
@@ -1854,7 +1949,8 @@ export class Ribbon {
             },
         });
         this.clearDdb.createElement = this.parent.createElement;
-        this.clearDdb.appendTo(this.parent.createElement('button', { id: id + '_clear', attrs: { 'type': 'button' } }));
+        this.clearDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_clear', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
         return this.clearDdb.element;
     }
 
@@ -1862,6 +1958,10 @@ export class Ribbon {
         const text: string = this.parent.serviceLocator.getService<L10n>(locale).getConstant('CollapseToolbar');
         attributes(
             this.ribbon.element.querySelector('.e-drop-icon'), { 'role': 'button', 'tabindex': '-1', 'title': text, 'aria-label': text });
+        if (this.ribbon.toolbarObj) {
+            this.ribbon.toolbarObj.allowKeyboard = this.parent.enableKeyboardNavigation;
+            this.ribbon.toolbarObj.dataBind();
+        }
     }
 
     private alignItemRender(args: MenuEventArgs): void {
@@ -1940,7 +2040,7 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const items: ItemModel[] = [];
         const themes: string[] = ['Material', 'Fabric', 'Bootstrap', 'HighContrastLight', 'MaterialDark', 'FabricDark', 'HighContrast',
-            'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent'];
+            'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent', 'Material3','Material3Dark'];
         themes.forEach((id: string): void => {
             items.push({ id: id, text: l10n.getConstant(id), iconCss: id === theme ? 'e-icons e-selected-icon' : '' });
         });
@@ -2005,6 +2105,9 @@ export class Ribbon {
             dataSource: formatData,
             select: (args: SelectEventArgs) => {
                 (inputElem as HTMLInputElement).value = args.text;
+                if (args.event && args.event.type === 'keydown' && args.item) {
+                    (args.item as HTMLElement).focus();
+                }
             }
         });
         dialogCont.appendChild(inputElem);
@@ -2033,7 +2136,8 @@ export class Ribbon {
             isModal: true,
             showCloseIcon: true,
             content: dialogCont,
-            footerTemplate: dummyDiv
+            footerTemplate: dummyDiv,
+            beforeOpen: (): void => focus(this.parent.element)
         });
         const sheet: SheetModel = this.parent.getActiveSheet();
         const actCell: number[] = getCellIndexes(sheet.activeCell);
@@ -2302,8 +2406,9 @@ export class Ribbon {
                         this.parent.trigger('dialogBeforeOpen', dlgArgs);
                         if (dlgArgs.cancel) {
                             args.cancel = true;
+                        } else {
+                            focus(this.parent.element);
                         }
-                        focus(this.parent.element);
                     },
                     buttons: [{
                         buttonModel: {
@@ -2764,6 +2869,19 @@ export class Ribbon {
     }
     private fileMenuBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
         this.parent.trigger('fileMenuBeforeClose', args);
+        if (args.parentItem && args.event && (args.event as KeyboardEvent).keyCode === 37 &&
+            args.parentItem.id === `${this.parent.element.id}_File`) {
+            getUpdateUsingRaf((): void => {
+                const tabItem: HTMLElement = this.ribbon.element.querySelector('.e-tab-header .e-toolbar-item .e-tab-wrap');
+                if (tabItem) {
+                    focus(tabItem);
+                    const menuItem: HTMLElement = tabItem.querySelector('.e-menu-item.e-focused')
+                    if (menuItem) {
+                        menuItem.classList.remove('e-focused');
+                    }
+                }
+            });
+        }
     }
     private hideFileMenuItems(args: { items: string[], hide: boolean, isUniqueId: boolean }): void {
         this.ribbon.hideMenuItems(args.items, args.hide, args.isUniqueId);
@@ -2807,11 +2925,9 @@ export class Ribbon {
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: false }]);
         }
-        if ((sheet.isProtected && sheet.protectSettings.selectCells || sheet.protectSettings.selectUnLockedCells) || !sheet.isProtected) {
-            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: true }]);
-        } else {
-            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: false }]);
-        }
+        this.enableToolbarItems(
+            [{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: !sheet.isProtected || sheet.protectSettings.selectCells ||
+            sheet.protectSettings.selectUnLockedCells }]);
         const len: number = this.ribbon.items[this.ribbon.selectedTab].content.length; let i: number;
         for (i = 0; i < len; i++) {
             if (this.ribbon.items[this.ribbon.selectedTab].content[i as number].id === this.parent.element.id + '_protectworkbook') {

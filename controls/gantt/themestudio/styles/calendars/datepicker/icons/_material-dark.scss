@@ -83,4 +83,17 @@
     min-height: $zero-value;
     min-width: 20px;
   }
+  .e-datepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e932';
+          font-family: 'e-icons';
+        }
+      }
+    }
+  }
 }

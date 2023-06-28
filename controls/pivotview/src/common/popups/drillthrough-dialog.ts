@@ -154,7 +154,7 @@ export class DrillThroughDialog {
                                 this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
                             } else {
                                 let items: IDataSet[] = [];
-                                const data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization)
+                                const data: IDataSet[] | string[][] = this.parent.allowDataCompression
                                     ? this.parent.engineModule.actualData : this.parent.engineModule.data;
                                 for (const item of data as IDataSet[]) {
                                     delete item['__index'];
@@ -276,7 +276,7 @@ export class DrillThroughDialog {
 
     private updateData(dataSource: IDataSet[]): void {
         let dataPos: number = 0;
-        const data: string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+        const data: string[][] = this.parent.allowDataCompression ?
             this.parent.engineModule.actualData as string[][] : this.parent.engineModule.data as string[][];
         while (dataPos < dataSource.length) {   /* eslint-disable , @typescript-eslint/no-explicit-any */
             const fields: string[] = Object.keys((dataSource as any)[dataPos as number]);
@@ -292,7 +292,7 @@ export class DrillThroughDialog {
             data[(dataSource as any)[dataPos as number]['__index']] = framedSet;
             dataPos++;
         }   /* eslint-enable , @typescript-eslint/no-explicit-any */
-        if (this.parent.allowDataCompression && this.parent.enableVirtualization) {
+        if (this.parent.allowDataCompression) {
             this.parent.engineModule.actualData = data;
         } else {
             this.parent.engineModule.data = data;
@@ -504,7 +504,7 @@ export class DrillThroughDialog {
                     } else {
                         editType = 'defaultedit';
                     }
-                    let caption: string = this.parent.enableHtmlSanitizer ?
+                    const caption: string = this.parent.enableHtmlSanitizer ?
                         SanitizeHtmlHelper.sanitize(this.engine.fieldList[key as string].caption)
                         : this.engine.fieldList[key as string].caption;
                     columns.push({

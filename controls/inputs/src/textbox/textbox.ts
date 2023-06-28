@@ -295,7 +295,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.updateHTMLAttrToElement();
                 this.updateHTMLAttrToWrapper();
                 this.checkAttributes(true);
-                Input.validateInputType(this.textboxWrapper.container, this.element);
+                this.multiline && !isNullOrUndefined(this.textarea) ? Input.validateInputType(this.textboxWrapper.container, this.textarea) : Input.validateInputType(this.textboxWrapper.container, this.element);
             }
                 break;
             case 'readonly':
@@ -309,10 +309,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 }
                 break;
             case 'showClearButton':
-                if (this.respectiveElement.tagName !== 'TEXTAREA') {
                     Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
                     this.bindClearEvent();
-                }
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
@@ -559,7 +557,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) < 0 ) {
-                    this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea.setAttribute(key, this.htmlAttributes[`${key}`]) : this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -704,7 +702,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private bindClearEvent(): void {
-        if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
+        if (this.showClearButton) {
             if (this.enabled) {
                 EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
             } else {

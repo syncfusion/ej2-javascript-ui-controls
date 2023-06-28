@@ -157,6 +157,26 @@ describe('Chart control checking', () => {
 
 
         });
+        it('YAxis Size', (done: Function) => {
+            loaded = () => {
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
+                let height: number = parseInt(stripLineElement.getAttribute('height'), 10);
+                expect(height == 84 || height == 85).toBe(true);
+                let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
+                expect(y == 157 || y == 160).toBe(true);
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '1');
+                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toEqual(21 || 25);
+                y = parseInt(stripLineElement.getAttribute('y'), 10);
+                expect(y == 117 || y == 115).toBe(true);
+                done();
+            };
+            chart.primaryXAxis.stripLines = [];
+            chart.primaryYAxis.stripLines = [{ start: 10, end: 50, color: '#663AB6', size: 60 },
+            { start: 60, end: 70, color: '#EB3F79', size: 40 }];
+            chart.loaded = loaded;
+            chart.refresh();
+
+        });
         it('Stripline Dash Array Present', (done: Function) => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
@@ -215,6 +235,59 @@ describe('Chart control checking', () => {
             chart.refresh();
 
         });
+        it('Inversed axis stripline', (done: Function) => {
+            loaded = () => {
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
+                let temp: number = parseInt(stripLineElement.getAttribute('x'), 10);
+                expect(temp === 239 || temp === 236).toBe(true);
+                expect(parseInt(stripLineElement.getAttribute('y'), 10)).toBe(10);
+                temp = parseInt(stripLineElement.getAttribute('height'), 10);
+                expect(temp === 295 || temp === 300).toBe(true);
+                temp = parseInt(stripLineElement.getAttribute('width'), 10);
+                expect(temp === 294 || temp === 292).toBe(true);
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
+                temp = parseInt(stripLineElement.getAttribute('x'), 10);
+                expect(temp === 63 || temp === 59).toBe(true);
+                temp = parseInt(stripLineElement.getAttribute('y'), 10);
+                expect(temp === 115 || temp === 117).toBe(true);
+                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toBe(42 || 50);
+                temp = parseInt(stripLineElement.getAttribute('width'), 10);
+                expect(temp === 526 || temp === 530).toBe(true);
+                done();
+            };
+            chart.primaryYAxis.isInversed = true;
+            chart.primaryXAxis.isInversed = true;
+            chart.primaryYAxis.stripLines = [{
+                start: 30,
+                end: 50
+            }];
+
+            chart.loaded = loaded;
+            chart.refresh();
+
+        });
+        it(' XAxis Stripline with image', (done: Function) => {
+            loaded = () => {
+                stripLineElement = document.getElementById(stripLineId + '_Over_rect_' + 'primaryXAxis' + '_0');
+                expect(stripLineElement).not.toEqual(null);
+                stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis' + '_0');
+                expect(stripLineElement).not.toEqual(null);
+                done();
+            };
+            chart.primaryXAxis.stripLines = [
+                {
+                    startFromAxis: false, start: 1, size: 4, imageUrl: 'base/spec/img/img1.jpg',
+                    verticalAlignment: 'End', opacity: 0.5,
+                    color: 'red', zIndex: 'Behind', text: 'Behind'
+                },
+                {
+                    start: 6, end: 8, opacity: 0.3,
+                    color: 'blue', textStyle: { color: '#ffffff' },
+                    text: 'Over', zIndex: 'Over'
+                }];
+            chart.loaded = loaded;
+            chart.refresh();
+        });
     });
     describe('Stripline Size Type checking', () => {
         beforeAll((): void => {
@@ -262,7 +335,7 @@ describe('Chart control checking', () => {
                 expect(stripLineElement.getAttribute("stroke-width")).toEqual('1');
                 expect(stripLineElement.getAttribute("d")).not.toEqual(null);
                 let height: number = stripLineElement.getBoundingClientRect().height;
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -311,7 +384,7 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_path_' + 'primaryXAxis_' + '0');
                 let height: number = stripLineElement.getBoundingClientRect().height;
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -342,11 +415,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
                 expect(x == 33 || x == 32).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 118 || width == 120).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -368,11 +441,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
                 expect(x == 33 || x == 32).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 10).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -391,12 +464,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
                 expect(x == 33 || x == 32).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 9).toBe(true);
-
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -416,13 +488,13 @@ describe('Chart control checking', () => {
                 expect(x == 33 || x == 32).toBe(true);
 
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
 
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 9).toBe(true);
 
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
 
                 done();
             };
@@ -442,11 +514,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
                 expect(x == 33 || x == 32).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 9).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -465,11 +537,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
                 expect(x == 33 || x == 32).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute("y"), 10);
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
                 expect(width == 9).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -486,14 +558,11 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute("x"), 10);
-
                 expect(x == 33 || x == 32).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute("width"), 10);
-
                 expect(width == 197 || width == 201).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute("height"), 10);
-
-                expect(height == 333 || height == 338).toBe(true);
+                expect(height == 333 || height == 337).toBe(true);
                 done();
             };
             chart.primaryXAxis.valueType = 'DateTime';
@@ -842,13 +911,13 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 55 || y == 52).toBe(true);
+                expect(y == 55 || y == 53).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 let y1: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y1 == 55 || y1 == 52).toBe(true);
+                expect(y1 == 53 || y1 == 553).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 let y2: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y2 == 55 || y1 == 52).toBe(true);
+                expect(y2 == 55 || y1 == 53).toBe(true);
                 done();
             };
             chart.primaryXAxis = {};
@@ -876,13 +945,13 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 55 || y == 52).toBe(true);
+                expect(y == 55 || y == 53).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 let y1: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y1 == 55 || y == 52).toBe(true);
+                expect(y1 == 55 || y == 53).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 let y2: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y2 == 55 || y == 52).toBe(true);
+                expect(y2 == 55 || y == 53).toBe(true);
                 done();
             };
             chart.series = [{
@@ -969,7 +1038,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 450 || x == 456).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 331).toBe(true);
+                expect(y == 332).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 119 || width == 121).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1014,11 +1083,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 212 || x == 214).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 119 || width == 121).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
-                expect(height == 368 || height == 372).toBe(true);
+                expect(height == 368 || height == 371).toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1054,7 +1123,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 271 || x == 274).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 137 || y == 135).toBe(true);
+                expect(y == 137 || y == 136).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 357 || width == 363).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1102,7 +1171,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 390 || x == 395).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 130 || y == 124).toBe(true);
+                expect(y == 130 || y == 125).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 5).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1140,7 +1209,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 406 || x == 410).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 122 || y == 116).toBe(true);
+                expect(y == 122 || y == 117).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 1).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1174,7 +1243,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 382 || x == 387).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 216 || y == 207).toBe(true);
+                expect(y == 216 || y == 208).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 6).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1224,7 +1293,7 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 583 || x == 593).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 45 || y == 42).toBe(true);
+                expect(y == 45 || y == 43).toBe(true);
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 137 || width == 140).toBe(true);
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
@@ -1259,11 +1328,11 @@ describe('Chart control checking', () => {
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
                 expect(x == 68 || x == 67).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
-                expect(y == 45 || y == 42).toBe(true)
+                expect(y == 45 || y == 43).toBe(true)
                 let width: number = parseInt(stripLineElement.getAttribute('width'));
                 expect(width == 68 || width == 70).toBe(true)
                 let height: number = parseInt(stripLineElement.getAttribute('height'));
-                expect(height == 368 || height == 372).toBe(true)
+                expect(height == 368 || height == 371).toBe(true)
                 done();
             };
             chart.primaryXAxis = {
@@ -1357,9 +1426,9 @@ describe('Chart control checking', () => {
         it('Location x and Width', (done: Function) => {
             stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'xAxis1_' + '0');
             let width: number = parseInt(stripLineElement.getAttribute('width'), 10);
-            expect(width == 103 || width == 105).toBe(true);
+            expect(width == 103 || width == 97).toBe(true);
             let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-            expect(x == 382 || x == 379).toBe(true);
+            expect(x == 382 || x == 395).toBe(true);
             done();
         });
         it('text content', (done: Function) => {
@@ -1372,12 +1441,12 @@ describe('Chart control checking', () => {
         it('Middle horizontalAlignment and Middle verticalAlignment', (done: Function) => {
             stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
             let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-            expect(x == 326 || x == 324).toBe(true);
+            expect(x == 326 || x == 335).toBe(true);
             let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
             expect(y == 74 || y == 77).toBe(true);
             stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
             x = parseInt(stripLineElement.getAttribute('x'), 10);
-            expect(x == 434 || x == 432).toBe(true);
+            expect(x == 434 || x == 444).toBe(true);
             y = parseInt(stripLineElement.getAttribute('y'), 10);
             expect(y == 157 || y == 160).toBe(true);
             done();
@@ -1387,13 +1456,13 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
                 expect(stripLineElement.getAttribute('text-anchor') === 'Start').toBe(true);
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 68 || x == 64).toBe(true);
+                expect(x == 68 || x == 85).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 68 || y == 69).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 expect(stripLineElement.getAttribute('text-anchor') === 'End').toBe(true);
                 x = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 393 || x == 390).toBe(true);
+                expect(x == 393 || x == 406).toBe(true);
                 expect(parseInt(stripLineElement.getAttribute('y'), 10)).toEqual(15);
                 done();
             };
@@ -1409,12 +1478,12 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 68 || x == 64).toBe(true);
+                expect(x == 68 || x == 85).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 74 || y == 77).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 x = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 393 || x == 390).toBe(true);
+                expect(x == 393 || x == 406).toBe(true);
                 y = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 157 || y == 160).toBe(true);
                 done();
@@ -1429,12 +1498,12 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 68 || x == 64).toBe(true);
+                expect(x == 68 || x == 85).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 80 || y == 84).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 x = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 393 || x == 390).toBe(true);
+                expect(x == 393 || x == 406).toBe(true);
                 y = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 300 || y == 305).toBe(true);
                 done();
@@ -1449,12 +1518,12 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 326 || x == 324).toBe(true);
+                expect(x == 326 || x == 335).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 80 || y == 84).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 x = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 434 || x == 432).toBe(true);
+                expect(x == 434 || x == 444).toBe(true);
                 y = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 300 || y == 305).toBe(true);
                 done();
@@ -1469,12 +1538,12 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'yAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 326 || x == 324).toBe(true);
+                expect(x == 326 || x == 335).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 68 || y == 69).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 x = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 434 || x == 432).toBe(true);
+                expect(x == 444 || x == 432).toBe(true);
                 expect(parseInt(stripLineElement.getAttribute('y'), 10)).toEqual(15);
                 done();
             };
@@ -1492,7 +1561,7 @@ describe('Chart control checking', () => {
                 expect(y == 68 || y == 69).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'), 10);
-                expect(x == 475 || x == 474).toBe(true);
+                expect(x == 475 || x == 482).toBe(true);
                 expect(parseInt(stripLineElement.getAttribute('y'), 10)).toEqual(15);
                 done();
             };
@@ -1510,7 +1579,7 @@ describe('Chart control checking', () => {
                 expect(x == 585).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 x = parseInt(stripLineElement.getAttribute('x'));
-                expect(x == 475 || x == 474).toBe(true);
+                expect(x == 475 || x == 482).toBe(true);
                 let y: number = parseInt(stripLineElement.getAttribute('y'));
                 expect(y == 157 || y == 160).toBe(true);
                 done();
@@ -1529,7 +1598,7 @@ describe('Chart control checking', () => {
                 expect(y == 80 || y == 84).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_text_' + 'xAxis1_' + '0');
                 let x: number = parseInt(stripLineElement.getAttribute('x'));
-                expect(x == 475 || x == 474).toBe(true);
+                expect(x == 475 || x == 482).toBe(true);
                 y = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 300 || y == 305).toBe(true);
                 done();

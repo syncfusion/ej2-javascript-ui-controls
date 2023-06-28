@@ -4,9 +4,9 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
-import { DiagramConstraints } from '../../../src/diagram/enum/enum';
+import { DiagramConstraints, PortConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { NodeConstraints, ConnectorModel, ConnectorConstraints } from '../../../src/diagram/index';
+import { NodeConstraints, ConnectorModel, ConnectorConstraints, PointPortModel } from '../../../src/diagram/index';
 import { Position } from '@syncfusion/ej2-popups';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -1446,3 +1446,227 @@ describe('Tooltip support for the group node', () => {
         done();  
     });
 })
+describe('EJ2-62160-Feature Tool Tip For Ports', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_tooltip_1' });
+        document.body.appendChild(ele);
+        let port1: PointPortModel[] = [{
+            offset:{x:0,y:0},
+            height:40,
+            width:40, 
+            id: 'Port1',
+            tooltip: {
+                content: 'port tootip', relativeMode: 'Object', height: 50, width: 50, position: 'TopRight',
+            },
+            visibility: PortVisibility.Visible,
+            constraints:PortConstraints.Default | PortConstraints.ToolTip,
+        }];
+        let port2: PointPortModel[] = [{
+            offset:{x:0,y:0},
+            height:40,
+            width:40, 
+            id: 'Port2',
+            visibility: PortVisibility.Visible, 
+        }];
+        let port3: PointPortModel[] = [{
+            offset: { x: 0, y: 0 }, height: 40, width: 40, id: 'Port3',
+            tooltip: {
+                content: 'port tootip', relativeMode: 'Object', position: 'TopRight',
+            },
+            visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.ToolTip,
+        }, {
+            offset: { x: 1, y: 1 }, height: 40, width: 40, id: 'Port4',
+            tooltip: {
+                content: 'port tootip', relativeMode: 'Object', position: 'TopRight',
+            },
+            visibility: PortVisibility.Visible,
+            constraints: PortConstraints.Default | PortConstraints.ToolTip,
+        }];
+        let port4: PointPortModel[] = [{
+            offset:{x:0.5,y:0.5},
+            height:20,
+            width:20, 
+            id: 'Port4',
+            visibility: PortVisibility.Visible,
+            constraints: PortConstraints.Default | PortConstraints.ToolTip,
+            tooltip:{relativeMode:'Object',content:'Port Tooltip', position:"TopCenter"}
+        }];
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,ports:port1
+
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,ports:port2,
+            tooltip: {
+                content: 'a',
+                position: 'TopCenter',
+                height: 50, width: 50,
+                relativeMode: 'Object',
+            },
+            constraints: NodeConstraints.Default | NodeConstraints.Tooltip,
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100,ports:port1,
+            tooltip: {
+                content: 'b',
+                position: 'TopRight',
+                relativeMode: 'Object'
+            },
+            constraints: NodeConstraints.Default | NodeConstraints.Tooltip,
+        };
+        let node4: NodeModel = {
+            id: 'node4', width: 100, height: 100, offsetX: 700, offsetY: 100,ports:port3
+        };
+        let node5: NodeModel = {
+            id: 'node5', width: 100, height: 100, offsetX: 700, offsetY: 500,ports:port1,
+            tooltip: {
+                content: 'd',
+                position: 'RightCenter',
+                relativeMode: 'Object'
+            },
+            constraints: NodeConstraints.Default | NodeConstraints.Tooltip,
+        };
+        let node6: NodeModel = {
+            id: 'node6', width: 100, height: 100, offsetX: 900, offsetY: 100,ports:port4
+        };
+        let connectors: ConnectorModel[] = [{
+            id: 'connector1',
+            type: 'Straight',
+            sourcePoint: { x: 220, y: 100 },
+            targetPoint: { x: 220, y: 200 },
+            tooltip: {
+                content: 'm', position: 'BottomRight', relativeMode: 'Object',
+                animation: { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } },
+            },
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.Tooltip,
+        },
+        {
+            id: 'connector2',
+            type: 'Straight',
+            sourcePoint: { x: 420, y: 100 },
+            targetPoint: { x: 420, y: 200 },
+            tooltip: {
+                content: 'm', position: 'BottomRight', relativeMode: 'Object',
+                animation: { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } },
+            },
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.Tooltip,
+            // constraints: ConnectorConstraints.Default & ~ConnectorConstraints.InheritTooltip,
+        },
+        {
+            id: 'connector3',
+            type: 'Straight',
+            sourcePoint: { x: 620, y: 100 },
+            targetPoint: { x: 620, y: 200 },
+            tooltip: {
+                content: 'n', position: 'BottomRight', relativeMode: 'Object',
+                animation: { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } },
+            }
+        }];
+        diagram = new Diagram({
+            width: '1200px', height: '1000px',
+            nodes: [node1, node2, node3, node4,node5,node6],
+            connectors: connectors,
+            tooltip: {
+                content: 'o', position: 'TopLeft', height: 'auto', width: 'auto',
+                showTipPointer: true, relativeMode: 'Object',
+                animation: {
+                    open: {
+                        effect: 'None',
+                    },
+                    close: {
+                        effect: 'None'
+                    }
+                }
+            },
+            constraints: DiagramConstraints.Default | DiagramConstraints.Tooltip
+        });
+        diagram.appendTo('#diagram_tooltip_1');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+
+    it('checking port tooltip with relative mode Object position', (done: Function) => {
+        debugger
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let node: HTMLElement = document.getElementById('node1_Port1');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 50, 50, false, false);
+        setTimeout(() => {
+            let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 500, 300, false, false);
+            setTimeout(() => {
+                expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+                setTimeout(() => {
+                    done();
+                }, 1);
+            }, 1);
+        }, 1);
+        done();
+    });
+    it('checking tooltip with Ports Tooltip enabled for Node', (done: Function) => {
+        
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 50, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip when mouse moved between two Ports', (done: Function) => {
+        
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 650, 50, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 750, 150, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip when mouse moved inside the Port in node', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 500, 100, false, false);
+        let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 450, 40, false, false);
+        let tooltipElement2: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        expect(tooltipElement!==tooltipElement2).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip when port is inside the node', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 900, 100, false, false);
+        let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+});

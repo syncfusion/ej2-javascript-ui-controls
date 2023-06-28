@@ -250,6 +250,9 @@ export interface ListViewModel extends ComponentModel{
      * {% codeBlock src='listview/template/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     template?: string;
@@ -260,6 +263,9 @@ export interface ListViewModel extends ComponentModel{
      * {% codeBlock src="listview/headerTemplate/index.md" %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     headerTemplate?: string;
@@ -270,6 +276,9 @@ export interface ListViewModel extends ComponentModel{
      * {% codeBlock src="listview/groupTemplate/index.md" %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     groupTemplate?: string;

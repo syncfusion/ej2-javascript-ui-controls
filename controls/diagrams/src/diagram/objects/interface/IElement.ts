@@ -644,19 +644,19 @@ export interface IBlazorMouseEventArgs {
 
 /**
  * elementDraw triggered when node or connector are drawn with drawing tool
- * 
+ *
  */
- export interface  IElementDrawEventArgs{
+export interface  IElementDrawEventArgs{
     /**returns the node or connector which we draw with drawing tool */
-    source:NodeModel|ConnectorModel;
+    source: NodeModel|ConnectorModel;
     /**returns the state of drawing tool event */
-    state:State;
+    state: State;
     /**returns the node or connector about to be drawn */
-    objectType:string;
+    objectType: string;
     /**returns the node shape name or connector type */
-    elementType:string;
-   /**returns whether to cancel the drawing shape or connector in the start state */
-    cancel:Boolean; 
+    elementType: string;
+    /**returns whether to cancel the drawing shape or connector in the start state */
+    cancel: boolean;
 }
 
 /**
@@ -709,11 +709,11 @@ export interface IScrollChangeEventArgs {
  * Event triggers whenever the user rotate the mouse wheel either upwards or downwards
  *
  */
- export interface IMouseWheelEventArgs {
+export interface IMouseWheelEventArgs {
     /** returns the DOM Object*/
-    event:WheelEvent ;
+    event: WheelEvent ;
     /**specifies whether to cancel the mouse wheel interaction in the diagram*/
-    cancel:Boolean; 
+    cancel: boolean;
 }
 
 /**
@@ -1039,13 +1039,13 @@ export interface ISegmentChangeEventArgs {
     /** Returns the current state of segment change event (Start, Progress, Completed)  */
     state: State;
     /** Returns the segment with the newly changed values  */
-    newValue:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+    newValue: OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
     /** Returns the segment with the values before the event triggered.  */
-    oldValue:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+    oldValue: OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
     /** Returns whether to cancel the change or not when the event state is Start.  */
-    cancel:boolean;
+    cancel: boolean;
     /** Returns the segment which is being dragged  */
-    segment:OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
+    segment: OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
 }
 
 /**

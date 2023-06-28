@@ -343,13 +343,13 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             expect(inputObj.textboxWrapper.container.classList.contains('e-input-group-icon')).toBe(false);
         });
-        it('showClearButton api not to set -', () => {
+        it('Check showClearButton api is set -', () => {
             inputObj = new TextBox({ showClearButton: true});
             inputObj.appendTo('#textbox');
-            expect(isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
             inputObj.showClearButton = true;
             inputObj.dataBind();
-            expect(isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
         });
         it('Check other attributes -',() =>{
             inputObj = new TextBox();
@@ -1061,13 +1061,13 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             expect(inputObj.textboxWrapper.container.classList.contains('e-input-group-icon')).toBe(false);
         });
-        it('showClearButton api not to set -', () => {
+        it('Check showClearButton api is set -', () => {
             inputObj = new TextBox({ multiline: true, showClearButton: true});
             inputObj.appendTo('#textbox');
-            expect(isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
             inputObj.showClearButton = true;
             inputObj.dataBind();
-            expect(isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
         });
         it('Check the attributes with initially enabled multiline -',() =>{
             inputObj = new TextBox({ multiline: true });

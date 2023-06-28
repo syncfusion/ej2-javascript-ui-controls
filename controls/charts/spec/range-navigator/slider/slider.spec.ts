@@ -385,7 +385,8 @@ describe('Range navigator', () => {
         it('checking with date time axis', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_3');
-                expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001').toBe(true);
+                expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001' || 
+                element.firstChild.textContent === 'Jul').toBe(true);
                 // eslint-disable-next-line 
                 expect(element.getAttribute('opacity') === '1').toBe(true);
                 done();
@@ -406,6 +407,8 @@ describe('Range navigator', () => {
             range.valueType = 'DateTime';
             range.series[0].dataSource = dateTime;
             range.navigatorStyleSettings.selectedRegionColor = 'blue';
+            range.interval = 1;
+            range.intervalType = 'Quarter';
             range.enableGrouping = true;
             range.allowSnapping = true;
             range.refresh();
@@ -458,6 +461,8 @@ describe('Range navigator', () => {
             range.valueType = 'DateTime';
             range.series[0].dataSource = dateTime;
             range.navigatorStyleSettings.selectedRegionColor = 'blue';
+            range.intervalType = 'Auto';
+            range.interval = null;
             range.labelPosition = 'Inside';
             range.enableGrouping = true;
             range.refresh();

@@ -475,6 +475,16 @@ describe('Selection ->', () => {
                     done();
                 });
             });
+            it('Cell selection issue while loading the spreadsheet with freeze pane and border ', (done: Function) => {
+                helper.invoke('selectRange', ['C2']);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.freezePanes(2, 2);
+                    helper.invoke('cellFormat', [{ border: '3px solid #000' }, 'C2']);
+                    expect(spreadsheet.sheets[0].rows[2].height).toBe(74);
+                    done();
+                }, 10);
+            });
         });
         describe('I300950 ->', () => {
             beforeEach((done: Function) => {

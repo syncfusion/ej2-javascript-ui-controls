@@ -325,15 +325,17 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/dateHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    dateHeaderTemplate?: string;
+    dateHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
      *
      * @default null
+     * @aspType string
      */
-    dateRangeTemplate?: string;
+    dateRangeTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -342,8 +344,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/cellHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    cellHeaderTemplate?: string;
+    cellHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -352,8 +355,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    dayHeaderTemplate?: string;
+    dayHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -362,8 +366,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    monthHeaderTemplate?: string;
+    monthHeaderTemplate?: string | Function;
 
     /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
@@ -378,8 +383,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    cellTemplate?: string;
+    cellTemplate?: string | Function;
 
     /**
      * When set to `true`, makes the Schedule to render in a read only mode. No CRUD actions will be allowed at this time.
@@ -480,8 +486,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/editorTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    editorTemplate?: string;
+    editorTemplate?: string | Function;
 
     /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
@@ -566,8 +573,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    resourceHeaderTemplate?: string;
+    resourceHeaderTemplate?: string | Function;
 
     /**
      * Template option to customize the header indent bar. Here, the template accepts either
@@ -578,8 +586,9 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/headerIndentTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    headerIndentTemplate?: string;
+    headerIndentTemplate?: string | Function;
 
     /**
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means

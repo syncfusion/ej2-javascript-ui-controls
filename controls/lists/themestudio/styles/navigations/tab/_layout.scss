@@ -244,7 +244,7 @@
           }
 
           .e-close-icon {
-            margin: 0;
+            margin: 0 0 0 8px;
           }
 
           .e-close-icon::before {
@@ -1473,7 +1473,7 @@
           height: $tab-nrml-icon-top-bottom-item-height;
 
           @media screen and (max-width: 480px) {
-            height: $tab-big-icon-top-bottom-item-height;
+            height: $tab-nrml-icon-top-bottom-item-height;
           }
 
           .e-tab-wrap {
@@ -1483,7 +1483,7 @@
             position: relative;
 
             @media screen and (max-width: 480px) {
-              height: $tab-big-icon-top-bottom-item-height;
+              height: $tab-nrml-icon-top-bottom-item-height;
             }
 
             &:focus {
@@ -1910,6 +1910,10 @@
             .e-text-wrap {
               height: $tab-nrml-item-text-wrap-height;
               padding: 0;
+
+              @media screen and (max-width: 480px) {
+                height: $tab-big-active-text-container-height;
+              }
             }
 
             .e-text-wrap::before,
@@ -1976,7 +1980,7 @@
         .e-indicator {
           display: $tab-indicator-display;
           transition: $tab-nrml-vertical-indicator-transition;
-          width: 2px;
+          width: $tab-border-width;
         }
 
         .e-toolbar-items {
@@ -2059,6 +2063,9 @@
           .e-indicator {
             left: auto;
             right: 0;
+            @if ($skin-name == 'Material3') {
+              border-radius: 3px 0 0 3px;
+            }
           }
 
           .e-toolbar-items .e-toolbar-item.e-active {
@@ -2102,6 +2109,9 @@
           .e-indicator {
             left: 0;
             right: auto;
+            @if ($skin-name == 'Material3') {
+              border-radius: 0 3px 3px 0;
+            }
           }
 
           .e-tab-wrap {
@@ -2483,14 +2493,28 @@
       }
     }
 
-    &.e-template .e-content {
+    &.e-template {
 
-      > .e-item {
-        display: none;
+      .e-tab-header {
 
-        &.e-active {
-          background: inherit;
-          display: block;
+        .e-toolbar-items,
+        .e-toolbar-pop {
+
+          .e-toolbar-item .e-tab-wrap .e-text-wrap .e-tab-text > div {
+            display: inherit;
+          }
+        }
+      }
+
+      .e-content {
+
+        > .e-item {
+          display: none;
+  
+          &.e-active {
+            background: inherit;
+            display: block;
+          }
         }
       }
     }
@@ -2883,7 +2907,7 @@
             padding: $tab-bg-nrml-wrap-padding;
 
             @media screen and (max-width: 480px) {
-              padding: $tab-bg-big-wrap-padding;
+              padding: $tab-mob-fill-wrap-padding;
             }
           }
 
@@ -3201,7 +3225,7 @@
       height: $tab-nrml-icon-top-bottom-item-height;
 
       @media screen and (max-width: 480px) {
-        height: $tab-big-icon-top-bottom-item-height;
+        height: $tab-nrml-icon-top-bottom-item-height;
       }
 
       .e-tab-wrap {
@@ -3211,7 +3235,7 @@
         position: relative;
 
         @media screen and (max-width: 480px) {
-          height: $tab-big-icon-top-bottom-item-height;
+          height: $tab-nrml-icon-top-bottom-item-height;
         }
 
         &:focus {

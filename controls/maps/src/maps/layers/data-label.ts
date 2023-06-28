@@ -7,6 +7,7 @@ import {
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { FontModel, DataLabelSettingsModel, ILabelRenderingEventArgs, LayerSettings } from '../index';
 import { dataLabelRendering } from '../model/constants';
+import { Theme } from '../model/theme';
 
 /**
  * DataLabel Module used to render the maps datalabel
@@ -91,6 +92,7 @@ export class DataLabel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapes: any = layerData[index as number]; let locationX: any; let locationY: any;
         style.fontFamily = this.maps.theme.toLowerCase() !== 'material' ? this.maps.themeStyle.labelFontFamily : style.fontFamily;
+        style.fontWeight =   style.fontWeight || this.maps.themeStyle.fontWeight || Theme.dataLabelFont.fontWeight;
         shape = shapes['property'];
         const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
@@ -252,7 +254,7 @@ export class DataLabel {
                     templateFn = getTemplateFunction(eventargs.template, this.maps);
                     const templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
                         datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
-                    templateElement.innerHTML =  !templateFn ? eventargs.template : '';
+                    templateElement.innerHTML =  !templateFn ? eventargs.template as any : '';
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
                     if (this.maps.isTileMap) {

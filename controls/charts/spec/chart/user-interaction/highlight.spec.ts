@@ -502,6 +502,7 @@ describe('Chart Control Highlight ', () => {
         chartObj.loaded = loaded;
         chartObj.highlightMode = 'Point';
         chartObj.highlightPattern = 'Bubble';
+        chartObj.series[1].marker.shape = 'Circle';
         chartObj.refresh();
     });
 

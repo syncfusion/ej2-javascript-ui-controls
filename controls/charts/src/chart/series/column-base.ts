@@ -42,7 +42,7 @@ export class ColumnBase {
         const visibleSeries: Series[] = series.chart.visibleSeries;
         const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
         const pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
-            series.columnWidth; // Column width
+            Math.min(series.columnWidth, 1); // Column width
         const minimumPointDelta: number = getMinPointsDelta(series.xAxis, visibleSeries);
         const width: number = minimumPointDelta * pointSpacing;
         let radius: number;

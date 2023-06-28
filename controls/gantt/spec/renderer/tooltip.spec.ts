@@ -146,38 +146,38 @@ describe('Gantt spec for tooltip', () => {
         it('Taskbar Tooltip', () => {
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 4 days</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td>:</td><td>80</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 4 days</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>80</td></tr></tbody></table>');
         });
         
         it('Marker Tooltip', () => {
             let marker: HTMLElement = ganttObj.element.querySelector('#stripline0 > div') as HTMLElement;
             triggerMouseEvent(marker, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>10/18/2017</td></tr><tr><td>Event Marker 1</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>10/18/2017</td></tr><tr><td>Event Marker 1</td></tr></tbody></table>');
         });
         it('Predecessor Tooltip', () => {
-            let predecessor: HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3 > div > div.e-connector-line-right-arrow') as HTMLElement;
+            const predecessor : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3').childNodes[0] as HTMLElement;
             triggerMouseEvent(predecessor, 'mouseover', 10);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">From</td><td>:</td><td class = "e-gantt-tooltip-value">Start-Duration (1)</td></tr><tr><td class = "e-gantt-tooltip-label">To</td><td>:</td><td class = "e-gantt-tooltip-value">Duration-End (3)</td></tr><tr><td class = "e-gantt-tooltip-label">Task Link</td><td>:</td><td class = "e-gantt-tooltip-value"> Start-Start</td></tr><tr><td class = "e-gantt-tooltip-label">Lag</td><td>:</td><td class = "e-gantt-tooltip-value">0 days</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">From</td><td>:</td><td class = "e-gantt-tooltip-value">Start-Duration (1)</td></tr><tr><td class = "e-gantt-tooltip-label">To</td><td>:</td><td class = "e-gantt-tooltip-value">Duration-End (3)</td></tr><tr><td class = "e-gantt-tooltip-label">Task Link</td><td>:</td><td class = "e-gantt-tooltip-value"> Start-Start</td></tr><tr><td class = "e-gantt-tooltip-label">Lag</td><td>:</td><td class = "e-gantt-tooltip-value">0 days</td></tr></tbody></table>');
         });
         it('Timeline Tooltip', () => {
             let timeline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(7) > div') as HTMLElement;
             triggerMouseEvent(timeline, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>10/21/2017</tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>10/21/2017</tr></tbody></table>');
         });
         it('Baseline Tooltip', () => {
             let baseline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-baseline-bar') as HTMLElement;
             triggerMouseEvent(baseline, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline Start Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline End Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline Start Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline End Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr></tbody></table>');
         });
         it('Indicator Tooltip', () => {
             let indicator: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > label:nth-child(3)') as HTMLElement;
             triggerMouseEvent(indicator, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>Follow up</tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>Follow up</tr></tbody></table>');
         });
         it('Milestone Tooltip', () => {
             let milestone: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(7) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
             triggerMouseEvent(milestone, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Milestone</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Milestone</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr></tbody></table>');
         });
         it('Taskbar Tooltip Template', () => {
             ganttObj.tooltipSettings.taskbar = '#tooltip';
@@ -189,7 +189,7 @@ describe('Gantt spec for tooltip', () => {
         it('DependencyLine Tooltip Template', () => {
             ganttObj.tooltipSettings.connectorLine = '#dLTooltip';
             ganttObj.dataBind();
-            let predecessor: HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3 > div > div.e-connector-line-right-arrow') as HTMLElement;
+            const predecessor : HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3').childNodes[0] as HTMLElement;
             triggerMouseEvent(predecessor, 'mouseover', 10);
             expect((ganttObj.tooltipModule.toolTipObj.content as HTMLElement).textContent).toBe('Offset : 0 days');
         });
@@ -229,17 +229,17 @@ describe('Gantt spec for tooltip', () => {
             ganttObj.dataBind();
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-gantt-child-progressbar-inner-div.e-gantt-child-taskbar.e-gantt-unscheduled-taskbar-right') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 0);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">EndDate-alone</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td>:</td><td>65</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">EndDate-alone</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>65</td></tr></tbody></table>');
         });
         it('Tooltip for unscheduled task', () => {
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-progressbar-inner-div.e-gantt-child-taskbar.e-gantt-unscheduled-taskbar') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Duration-alone</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 32 hours</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td>:</td><td>65</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Duration-alone</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 32 hours</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>65</td></tr></tbody></table>');
         });
         it('Marker tooltip without label', () => {
             let marker: HTMLElement = ganttObj.element.querySelector('#stripline1') as HTMLElement;
             triggerMouseEvent(marker, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>10/23/2017</td></tr><tr><td></td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>10/23/2017</td></tr><tr><td></td></tr></tbody></table>');
         });
         afterAll(() => {
             destroyGantt(ganttObj);
@@ -280,7 +280,7 @@ describe('Gantt spec for tooltip', () => {
        it('Manual parent taskbar tooltip', () => {
             let marker: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-gantt-manualparenttaskbar') as HTMLElement;
             triggerMouseEvent(marker, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Parent Task 1</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Parent Task 1</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
         }); 
     })
 });
@@ -319,7 +319,7 @@ describe('Toottip with html tag', () => {
   
        let marker: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-gantt-manualparenttaskbar') as HTMLElement;
         triggerMouseEvent(marker, 'mouseover', 50);
-        expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">&lt;i&gt;Parent Task 1&lt;/i&gt;</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
+        expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">&lt;i&gt;Parent Task 1&lt;/i&gt;</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
     }); 
 afterAll(() => {
         if (ganttObj) {

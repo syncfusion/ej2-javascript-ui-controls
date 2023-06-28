@@ -128,9 +128,10 @@ export class Annotation extends ChildProperty<Annotation> {
     /**
      * Sets and gets the content for the annotation.
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public content: string;
+    public content: string | Function;
 
     /**
      * Sets and gets the x position for the annotation in linear gauge.
@@ -276,7 +277,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * Sets and gets the options to customize the tooltip text of range in axis.
      */
 
-    @Complex<FontModel>({ size: '13px', opacity: null, fontFamily: null }, Font)
+    @Complex<FontModel>({ size: null, opacity: null, fontFamily: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -293,10 +294,11 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enables or disables the animation for the range tooltip when moved from one place to another.
@@ -352,7 +354,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Sets and gets the options to customize the text in tooltip.
      */
 
-    @Complex<FontModel>({ color: '', size: '13px', opacity: null, fontFamily: null }, Font)
+    @Complex<FontModel>({ color: '', size: null, opacity: null, fontFamily: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -389,10 +391,11 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enables or disables the animation for the tooltip while moving from one place to another.

@@ -17,6 +17,10 @@
       width: 100%;
     }
 
+    .e-carousel-items.e-swipe-start {
+      cursor: pointer;
+    }
+
     &.e-partial {
       .e-carousel-slide-container {
         padding: 0 100px;
@@ -29,15 +33,15 @@
           padding: 0 50px;
         }
       }
+    }
 
-      .e-carousel-items {
-        width: calc(var(--carousel-items-count) * 100%);
-        display: flex;
-        flex-direction: row;
-        transition-property: transform;
-        transition-duration: $carousel-animation-duration;
-        transition-timing-function: $carousel-animation-timing-function;
-      }
+    .e-carousel-items {
+      width: calc(var(--carousel-items-count) * 100%);
+      display: flex;
+      flex-direction: row;
+      transition-property: transform;
+      transition-duration: $carousel-animation-duration;
+      transition-timing-function: $carousel-animation-timing-function;
 
       .e-carousel-item {
         height: 100%;
@@ -48,77 +52,43 @@
       }
     }
 
-    &.e-blazor-carousel.e-partial {
+    &.e-blazor-carousel {
       .e-carousel-items {
-        transform: translateX(calc(-100% / var(--carousel-items-count) * (var(--carousel-items-current))));
-        transition: transform $carousel-animation-duration $carousel-animation-timing-function;
+        transform: translateX(calc((-100%/var(--carousel-items-count)) * var(--carousel-items-current)));
+        transition: transform;
       }
     }
 
-    &.e-blazor-carousel.e-partial.e-rtl {
+    &.e-blazor-carousel.e-rtl {
       .e-carousel-items {
-        transform: translateX(calc(100% / var(--carousel-items-count) * (var(--carousel-items-current))));
-        transition: transform $carousel-animation-duration $carousel-animation-timing-function;
+        transform: translateX(calc((100%/var(--carousel-items-count)) * var(--carousel-items-current)));
+        transition: transform;
       }
     }
 
-    &.e-carousel-slide-animation:not(.e-partial) {
-      .e-carousel-item {
-        backface-visibility: hidden;
-        display: none;
-        float: left;
-        height: 100%;
-        margin-right: -100%;
-        position: relative;
-        transition: transform $carousel-animation-duration $carousel-animation-timing-function;
-        width: 100%;
-
-        &.e-prev,
-        &.e-next,
-        &.e-active {
-          display: block;
+    &.e-carousel-fade-animation {
+      .e-carousel-items {
+        &.e-fade-in-out {
+          transition-property: none;
+          animation: fade-in-out $carousel-animation-duration $carousel-animation-timing-function;
         }
 
-        &.e-next:not(.e-transition-start),
-        &.e-active.e-transition-end {
-          transform: translateX(100%);
-        }
+        @keyframes fade-in-out {
+          0% {
+            opacity: 0;
+          }
 
-        &.e-prev:not(.e-transition-end),
-        &.e-active.e-transition-start {
-          transform: translateX(-100%);
+          100% {
+            opacity: 1;
+          }
         }
       }
     }
 
-    &.e-carousel-fade-animation:not(.e-partial) {
-      .e-carousel-item {
-        backface-visibility: hidden;
-        display: block;
-        float: left;
-        height: 100%;
-        margin-right: -100%;
-        opacity: 0;
-        position: relative;
-        transition: opacity $carousel-animation-duration $carousel-animation-timing-function;
-        width: 100%;
-        z-index: 0;
-
-        &.e-active {
-          opacity: 1;
-          z-index: 1;
-        }
-      }
-    }
-
-    &.e-carousel-animation-none:not(.e-partial) {
-      .e-carousel-item {
-        display: none;
-        height: 100%;
-        width: 100%;
-
-        &.e-active {
-          display: block;
+    &.e-carousel-slide-animation {
+      .e-carousel-items {
+        &.e-slide {
+          transition-duration: $carousel-animation-duration;
         }
       }
     }
@@ -130,9 +100,7 @@
         left: 0;
         opacity: 0;
         pointer-events: none;
-        position: absolute;
         top: 0;
-        width: 100%;
 
         &.e-active {
           opacity: 1;
@@ -189,7 +157,7 @@
       width: 100%;
       z-index: 1;
 
-      .e-indicator-bars {
+      &.e-default .e-indicator-bars {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -217,6 +185,67 @@
 
           .e-indicator .e-ripple-element {
             display: none;
+          }
+        }
+      }
+
+      &.e-dynamic {
+        min-height: $carousel-indicator-dynamic-minheight;
+
+        .e-indicator-bars {
+          display: block;
+          overflow: hidden;
+          transition: opacity $carousel-animation-duration $carousel-animation-timing-function;
+          white-space: nowrap;
+          width: 80px;
+
+          .e-indicator-bar {
+            border-radius: 50%;
+            display: inline-block;
+            height: 8px;
+            left: calc(32px - calc(16px * var(--carousel-items-current)));
+            margin: 0 4px;
+            opacity: 1;
+            position: relative;
+            transform: scale(.33);
+            transition-duration: $carousel-animation-duration;
+            transition-property: transform, left;
+            transition-timing-function: $carousel-animation-timing-function;
+            white-space: nowrap;
+            width: 8px;
+
+            &.e-active {
+              transform: scale(1);
+            }
+
+            &.e-prev,
+            &.e-next {
+              transform: scale(.66);
+            }
+          }
+        }
+      }
+
+      &.e-fraction {
+        min-height: $carousel-indicator-fraction-minheight;
+      }
+
+      &.e-progress {
+        min-height: $carousel-indicator-progress-minheight;
+
+        .e-indicator-bars {
+          height: $carousel-indicator-progress-height;
+          width: 100%;
+
+          .e-indicator-bar {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            transform: translate3d(0, 0, 0) scaleX(calc(var(--carousel-items-current) / var(--carousel-items-count))) scaleY(1);
+            transition-duration: $carousel-animation-duration;
+            transform-origin: left top;
+            width: 100%;
           }
         }
       }

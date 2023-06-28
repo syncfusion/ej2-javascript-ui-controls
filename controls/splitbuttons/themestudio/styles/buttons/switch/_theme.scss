@@ -172,6 +172,14 @@
         @else {
           background-color: $switch-handle-hover-bg-color;
         }
+
+        & .e-ripple-container {
+          background-color: $switch-checked-ripple-bg-color;
+        }
+  
+        & .e-ripple-check.e-ripple-container {
+          background-color: $switch-ripple-bg-color;
+        }
       }
     }
 

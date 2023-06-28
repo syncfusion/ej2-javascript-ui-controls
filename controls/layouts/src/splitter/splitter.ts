@@ -458,7 +458,8 @@ export class Splitter extends Component<HTMLElement> {
                 if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
                     const paneCounts: Object[] = Object.keys(newProp.paneSettings);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if ((this as any).isReact) {
+                    const isPaneContentChanged = paneCounts.some((count) => !isNullOrUndefined(newProp.paneSettings[count as number].content));
+                    if ((this as any).isReact && isPaneContentChanged) {
                         let cPaneCount: number = 0;
                         for ( let k: number = 0; k < this.paneSettings.length; k++ ){
                             if (typeof(this.paneSettings[k as number].content) === 'function'){
@@ -650,7 +651,7 @@ export class Splitter extends Component<HTMLElement> {
         const prePaneSize: number = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
         const nextPaneSize: number = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
         const splitBarSize: number = isNullOrUndefined(this.separatorSize) ? BAR_SIZE_DEFAULT : this.separatorSize;
-        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
+        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.previousPane.style.flexBasis.indexOf('p') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
             const previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
             const nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
             this.totalPercent = previousFlexBasis + nextFlexBasis;
@@ -1301,7 +1302,7 @@ export class Splitter extends Component<HTMLElement> {
             /* istanbul ignore next */
             hoverTimeOut = setTimeout(() => {
                 addClass([separator], [SPLIT_BAR_HOVER]);
-            }, this.iconsDelay);
+            });
         });
     }
 
@@ -1430,8 +1431,10 @@ export class Splitter extends Component<HTMLElement> {
                         updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePaneOffset + sizeDiff) + '%'
                             : (updatePaneOffset + sizeDiff) + 'px';
                         const flexPaneOffset: number = this.orientation === 'Horizontal' ? flexPane.offsetWidth : flexPane.offsetHeight;
-                        flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
-                            this.convertPixelToPercentage(flexPaneOffset - sizeDiff) + '%' : (flexPaneOffset - sizeDiff) + 'px';
+                        if(flexPane.style.flexBasis !== ''){
+                            flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
+                                this.convertPixelToPercentage(flexPaneOffset - sizeDiff) + '%' : (flexPaneOffset - sizeDiff) + 'px';
+                        }
                     }
                 }
             }
@@ -2079,7 +2082,7 @@ export class Splitter extends Component<HTMLElement> {
 
     private checkCoordinates(pageX: number, pageY: number): boolean {
         let coordinatesChanged: boolean = true;
-        if ((pageX === this.previousCoordinates.x || pageY === this.previousCoordinates.y)) {
+        if ((pageX === this.previousCoordinates.x && pageY === this.previousCoordinates.y)) {
             coordinatesChanged = false;
         }
         return coordinatesChanged;
@@ -2158,6 +2161,8 @@ export class Splitter extends Component<HTMLElement> {
         for ( let i : number = 0; i < this.paneSettings.length ; i++){
             if ( this.paneSettings[i as number].size === '' ){
                 flexPaneCount = flexPaneCount + 1;
+            }else if(this.allPanes[i as number].style.flexBasis !== ''){
+                this.paneSettings[i as number].size = this.allPanes[i as number].style.flexBasis;
             }
         }
         const allFlexiblePanes : boolean = flexPaneCount === this.allPanes.length;
@@ -2386,7 +2391,7 @@ export class Splitter extends Component<HTMLElement> {
         this.paneOrder.push(index * 2);
     }
 
-    private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
+    private setTemplate(template: string | HTMLElement | Function, toElement: HTMLElement): void {
         toElement.innerHTML = '';
         template = typeof (template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
@@ -2409,7 +2414,7 @@ export class Splitter extends Component<HTMLElement> {
         }
     }
 
-    private compileElement(ele: HTMLElement, val: string | HTMLElement, prop: string): void {
+    private compileElement(ele: HTMLElement, val: string | HTMLElement | Function, prop: string): void {
         // eslint-disable-next-line
         const blazorContain: string[] = Object.keys(window) as string[];
         if (typeof (val) === 'string') {

@@ -16,28 +16,32 @@ export interface TooltipSettingsModel {
      * Defines tooltip template for taskbar elements.
      *
      * @default null
+     * @aspType string
      */
-    taskbar?: string;
+    taskbar?: string | Function;
 
     /**
      * Defines template for baseline tooltip element.
      *
      * @default null
+     * @aspType string
      */
-    baseline?: string;
+    baseline?: string | Function;
 
     /**
      * Defines template for dependency line tooltip.
      *
      * @default null
+     * @aspType string
      */
-    connectorLine?: string;
+    connectorLine?: string | Function;
 
     /**
      * Defines tooltip template for taskbar editing action.
      *
      * @default null
+     * @aspType string
      */
-    editing?: string;
+    editing?: string | Function;
 
 }

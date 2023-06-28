@@ -392,8 +392,9 @@ export interface DataLabelSettingsModel {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
 }
 
@@ -512,8 +513,9 @@ export interface PivotChartDataLabelModel {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Allows custom connector of the pie, funnel, pyramid and doughnut chart data label.
@@ -538,7 +540,7 @@ export interface MarkerSettingsModel {
     visible?: boolean;
 
     /**
-     * Allows to spcify the shape of a marker.They are
+     * Allows to specify the shape of a marker.They are
      * * Circle - Renders a circle.
      * * Rectangle - Renders a rectangle.
      * * Triangle - Renders a triangle.
@@ -2284,7 +2286,7 @@ export interface PivotChartSettingsLegendSettingsModel {
     /**
      * Allows to set the location of the legend, relative to the chart.
      * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
-     * 
+     *
      * ```typescript
      * ...
      *   legendSettings: {
@@ -3096,8 +3098,9 @@ export interface PivotTooltipSettingsModel {
      * Allows to set the custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Allows options to customize tooltip borders.
@@ -3155,7 +3158,7 @@ export interface PivotZoomSettingsModel {
 
     /**
      * If set to true, zooming will be performed on mouse up. It requires `enableSelectionZooming` to be true.
-     * 
+     *
      * ```typescript
      * ...
      *    zoomSettings: {
@@ -3191,7 +3194,7 @@ export interface PivotZoomSettingsModel {
      *    },
      * ...
      * ```
-     * 
+     *
      * @default 'XY'
      */
     mode?: ZoomMode;
@@ -3237,7 +3240,7 @@ export interface ChartSettingsModel {
     chartSeries?: PivotSeriesModel;
 
     /**
-     * Allow options to customize the horzontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
+     * Allow options to customize the horizontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
      * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
      * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
      */
@@ -3748,7 +3751,7 @@ export interface ChartSettingsModel {
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
 
     /**
-     * It triggers when change the scroll of the chart seires.
+     * It triggers when change the scroll of the chart series.
      *
      * @event scrollChanged
      * @deprecated

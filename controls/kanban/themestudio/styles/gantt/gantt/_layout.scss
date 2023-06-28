@@ -11,6 +11,10 @@
           }
         }
       }
+      @if ($skin-name== 'Material3-dark' or $skin-name == 'Material3'){
+        .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon{
+          font-size: 18px;
+        }}
       .e-gantt-chart {
         .e-timeline-header-container {
           height: $gantt-bigger-header-border-height;
@@ -107,6 +111,10 @@
         @else {
           .e-indicator {
             display: block;
+            @if ($skin-name == 'Material3') {
+              border-top-left-radius: 4px;
+              border-top-right-radius: 4px;
+            }
           }
         }
       }
@@ -131,6 +139,9 @@
 
         .e-btn .e-btn-icon.e-icon-dlg-close {
           font-size: $gantt-bigger-dialog-close-button-size;
+          @if ($skin-name == 'Material3') {
+            width: $gantt-bigger-dialog-close-button-size;
+          }
         }
 
         .e-footer-content {
@@ -145,10 +156,6 @@
         .e-dlg-header {
           line-height: 28px;
         }
-      }
-
-      .e-filter-popup.e-popup {
-        width: $gantt-bigger-filter-dialog-width;
       }
 
       .e-grid .e-flmenu-valuediv {
@@ -228,6 +235,13 @@
             border-radius: 50%;
             height: auto !important; /* stylelint-disable-line declaration-no-important */
             width: auto;
+            @if ($skin-name=='Material3') {
+              line-height: 0px;
+              padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @if ($skin-name == 'FluentUI') {
+              margin-right: 6px;
+            }
           }
         }
       }
@@ -389,6 +403,11 @@
       word-break: unset !important; /* stylelint-disable-line declaration-no-important */
     }
   }
+  @if ($skin-name == 'Material3-dark' or $skin-name == 'Material3'){
+    .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon{
+      font-size: 16px;
+    }}
+
   .e-gantt-tooltip{
     .e-tip-content{
       text-align: left !important; /* stylelint-disable-line declaration-no-important */
@@ -630,6 +649,10 @@
         line-height: 10px;
         vertical-align: middle;
       }
+      
+      .e-grid .e-gantt-resource-parent .e-rowdragdrop{
+        pointer-events: none;
+      }
     }
 
     .e-gantt-chart {
@@ -870,6 +893,13 @@
         width: 100%;
       }
 
+      .e-gantt-milestone{
+        @if $skin-name =='Material3'{
+          border: 1px;
+          border-style: solid;
+        }
+      }
+
       .e-manualparent-main-container {
         background-color: transparent;
         cursor: move;
@@ -886,10 +916,21 @@
           border-color: $gantt-active-background-color;
         }
         @else {
-          border-color: inherit;
+          @if $skin-name =='Material3'{
+            border-color: $gantt-split-container-line-border-color;
+          }
+          @else{
+            border-color: inherit;
+          }
         }
-        border-top-style: dotted;
-        border-top-width: 2px;
+        @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
+          border-top-style: dashed;
+          border-top-width: 2px;
+        }
+        @else{
+          border-top-style: dotted;
+          border-top-width: 2px;
+        }
         height: 0;
         left: 2px;
         pointer-events: none;
@@ -1113,6 +1154,11 @@
       .e-baseline-gantt-milestone-container {
         position: absolute;
         z-index: 2;
+        @if $skin-name =='Material3'{
+          border: 2px;
+          border-color: $gantt-baseline-color;
+          border-style: solid;
+        }
       }
 
       .e-task-label {
@@ -1318,14 +1364,6 @@
       .e-active-container {
         outline: 1px solid;
         outline-offset: 2px;
-      }
-    }
-    .e-dialog.e-filter-popup {
-      .e-footer-content {
-        
-        @if ($skin-name =='FluentUI') {
-          padding-top: 0;
-        }
       }
     }
   }

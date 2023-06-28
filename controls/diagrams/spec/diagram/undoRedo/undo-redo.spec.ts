@@ -3279,4 +3279,67 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Check undo and redo with group node and connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_Group_undo' });
+            document.body.appendChild(ele);
+            let diagram: Diagram;
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 300,
+                    offsetY: 300,
+                }, 
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: 'node3', width: 100, height: 100, offsetX: 100,
+                    offsetY: 100,
+                }, 
+                { id: 'group', children: ['node1', 'connector1']},
+            ];
+
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', sourceID:'node1', targetPoint: { x: 400, y: 400 }
+                },
+                {
+                    id: 'connector2', sourceID:'node2', targetPoint: { x: 200, y: 200 }
+                },
+            ];
+            diagram = new Diagram(
+                {
+                    width: '1050px', height: '500px', nodes: nodes,
+                    connectors: connectors,
+                });
+
+            diagram.appendTo('#diagram_Group_undo');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking undo and redo functionalities of group node with connector', (done: Function) => {
+            let group = diagram.nameTable['group'];
+            diagram.select([group]);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            const preRotate_angle = group.rotateAngle;
+            mouseEvents.mouseDownEvent(diagramCanvas, 330, 220);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 340, 240);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 350, 260);
+            mouseEvents.mouseUpEvent(diagramCanvas, 350, 260);
+            const postRotate_angle = group.rotateAngle;
+            diagram.undo();
+            const undoRotate_angle = group.rotateAngle;
+            diagram.redo();
+            const redoRotate_angle = group.rotateAngle;
+            expect(preRotate_angle === undoRotate_angle && postRotate_angle === redoRotate_angle).toBe(true);
+            done();
+        });
+    });
 });

@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility } from '../enum/enum';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility } from '../enum/enum';import { DiagramTooltip } from './tooltip';import { DiagramTooltipModel } from './tooltip-model';
 
 /**
  * Interface for a class Port
@@ -142,6 +142,13 @@ export interface PortModel {
      * @blazorDefaultValue new string[] { }
      */
     inEdges?: string[];
+
+    /**
+     * defines the tooltip for the Ports
+     *
+     * @default new DiagramToolTip();
+     */
+    tooltip?: DiagramTooltipModel;
 
 }
 

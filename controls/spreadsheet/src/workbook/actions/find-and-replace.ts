@@ -1,8 +1,9 @@
-import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol } from '../base/index';
-import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress, FindArgs } from '../common/index';
-import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel } from '../common/index';
+import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn } from '../base/index';
+import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
+import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
+import { isLocked } from '../common/index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -267,6 +268,10 @@ export class WorkbookFindAndReplace {
             return null;
         }
         const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        if (sheet.isProtected && !sheet.protectSettings.selectCells && sheet.protectSettings.selectUnLockedCells &&
+            isLocked(cell, getColumn(sheet, colIdx))) {
+            return null;
+        }
         let cellVal: string = this.parent.getDisplayText(cell);
         if (cellVal) {
             if (!args.isCSen) {
@@ -440,9 +445,10 @@ export class WorkbookFindAndReplace {
         let requiredCount: number = 0;
         let cellValue: string;
         const findValue: string = args.value.toLowerCase();
-        sheet.rows.filter((row: ExtendedRowModel, rowIdx: number) => row && row.cells && (!row.isFiltered || !row.hidden) &&
+        sheet.rows.filter((row: ExtendedRowModel, rowIdx: number) => row && row.cells && (!row.isFiltered && !row.hidden) &&
             row.cells.filter((cell: CellModel, colIdx: number) => {
-                if (cell && (cell.value || <unknown>cell.value === 0)) {
+                if (cell && (cell.value || <unknown>cell.value === 0) && !isHiddenCol(sheet, colIdx) && (!sheet.isProtected ||
+                    sheet.protectSettings.selectCells || !isLocked(cell, getColumn(sheet, colIdx)))) {
                     cellValue = (cell.format ? this.parent.getDisplayText(cell) : cell.value.toString()).toLowerCase();
                     if (cellValue.includes(findValue)) {
                         count++;
@@ -501,7 +507,9 @@ export class WorkbookFindAndReplace {
                         if (row) {
                             if (row.cells && row.cells[columnIndex as number]) {
                                 const cell: CellModel = sheet.rows[rowIndex as number].cells[columnIndex as number];
-                                if (cell) {
+                                if (cell && !isNullOrUndefined(cell.value) && cell.value !== '' && (!sheet.isProtected ||
+                                    sheet.protectSettings.selectCells || (sheet.protectSettings.selectUnLockedCells &&
+                                        !isLocked(cell, getColumn(sheet, columnIndex))))) {
                                     const cellFormat: string = cell.format;
                                     let cellvalue: string;
                                     if (cellFormat) {

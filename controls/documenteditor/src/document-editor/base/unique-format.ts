@@ -373,6 +373,12 @@ export class WUniqueFormat {
         if (property === 'localeIdFarEast') {
             return 23;
         }
+        if (property === 'characterSpacing') {
+            return 24;
+        }
+        if (property === 'scaling') {
+            return 25;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -611,6 +617,12 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('fontFamilyNonFarEast', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('characterSpacing', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('scaling', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;

@@ -8,6 +8,7 @@ $carousel-indicator-bar-bg: $neutral-white !default;
 $carousel-indicator-bar-border: 1px solid rgba($neutral-white, .4) !default;
 $carousel-indicator-bar-bg-active: $theme-primary !default;
 $carousel-indicator-border-color-focus: $neutral-black !default;
+$carousel-indicator-progress-bg: rgba($carousel-indicator-bar-bg-active, .4) !default;
 
 // ANIMATION VARIABLES
 $carousel-animation-duration: .6s !default;
@@ -20,3 +21,7 @@ $carousel-indicator-height: 48px !default;
 $carousel-indicator-bar-border-radius: 50% !default;
 $carousel-indicator-bar-height: 12px !default;
 $carousel-indicator-bar-width: 12px !default;
+$carousel-indicator-dynamic-minheight: 36px !default;
+$carousel-indicator-fraction-minheight: 36px !default;
+$carousel-indicator-progress-minheight: 4px !default;
+$carousel-indicator-progress-height: 4px !default;

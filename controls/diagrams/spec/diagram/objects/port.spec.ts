@@ -608,7 +608,6 @@ describe('Diagram Control', () => {
         });
     })
 
-
     describe('InEdge OutEdge not removed after deleting connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

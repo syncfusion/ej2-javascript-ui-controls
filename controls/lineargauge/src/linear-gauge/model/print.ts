@@ -1,5 +1,5 @@
-import { print as printFunction, createElement } from '@syncfusion/ej2-base';
-import { LinearGauge} from '../../index';
+import { print as printFunction, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { LinearGauge } from '../../index';
 import { getElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
 import { beforePrint } from '../model/constant';
@@ -48,7 +48,7 @@ export class Print {
      * @private
      */
 
-    private getHTMLContent(gauge : LinearGauge, elements?: string[] | string | Element): Element {
+    private getHTMLContent(gauge: LinearGauge, elements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
@@ -61,7 +61,20 @@ export class Print {
                 div.appendChild(getElement(elements).cloneNode(true) as Element);
             }
         } else {
-            div.appendChild(gauge.element.cloneNode(true) as Element);
+            const exportElement: HTMLElement = gauge.element.cloneNode(true) as HTMLElement;
+            let backgroundElement: HTMLElement = (exportElement.getElementsByTagName('svg')[0] as any) as HTMLElement;
+            if (!isNullOrUndefined(backgroundElement)) {
+                backgroundElement = backgroundElement.childNodes[0] as HTMLElement;
+                if (!isNullOrUndefined(backgroundElement)) {
+                    const backgroundColor: string = backgroundElement.getAttribute('fill');
+                    if ((gauge.theme === 'Tailwind' || gauge.theme === 'Bootstrap5' || gauge.theme === 'Fluent' || gauge.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                        backgroundElement.setAttribute('fill', 'rgba(255,255,255, 1)');
+                    } else if ((gauge.theme === 'TailwindDark' || gauge.theme === 'Bootstrap5Dark' || gauge.theme === 'FluentDark' || gauge.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                        backgroundElement.setAttribute('fill', 'rgba(0, 0, 0, 1)');
+                    }
+                }
+            }
+            div.appendChild(exportElement as Element);
         }
         return div;
     }

@@ -24,12 +24,13 @@ import { Keyboard } from '../actions/keyboard';
 import { KanbanTooltip } from '../actions/tooltip';
 import { KanbanTouch } from '../actions/touch';
 import { LayoutRender } from './layout-render';
+import { VirtualLayoutRender } from './virtual-layout-render';
 import * as events from '../base/constant';
 import * as cls from './css-constant';
 
 /**
- * The Kanban component is an efficient way to visually depict various stages of a process using cards with transparent workflows.
- * The component has rich set of APIs, methods, and events used to enable or disable its features and customize them.
+ * The Kanban board is an efficient way to visually depict various stages of a process using cards with transparent workflows.
+ * The Kanban board has rich set of APIs, methods, and events used to enable or disable its features and customize them.
  * ```html
  * <div id="kanban"></div>
  * ```
@@ -47,6 +48,7 @@ export class Kanban extends Component<HTMLElement> {
     public crudModule: Crud;
     public dataModule: Data;
     public layoutModule: LayoutRender;
+    public virtualLayoutModule: VirtualLayoutRender;
     public actionModule: Action;
     public dragAndDropModule: DragAndDrop;
     public dialogModule: KanbanDialog;
@@ -61,6 +63,7 @@ export class Kanban extends Component<HTMLElement> {
     public isInitialRender: boolean;
     public externalDropObj: Kanban;
     public isExternalKanbanDrop: boolean;
+    public columnDataCount: { [key: string]: number } = {};
 
     // Kanban Options
 
@@ -74,7 +77,7 @@ export class Kanban extends Component<HTMLElement> {
     public cssClass: string;
 
     /**
-     * Sets the `width` of the Kanban component, accepting both string and number values.
+     * Sets the `width` of the Kanban board, accepting both string and number values.
      * The string value can be either pixel or percentage format.
      * When set to `auto`, the Kanban width gets auto-adjusted and display its content related to the viewable screen size.
      *
@@ -84,7 +87,7 @@ export class Kanban extends Component<HTMLElement> {
     public width: string | number;
 
     /**
-     * Sets the `height` of the Kanban component, accepting both string and number values.
+     * Sets the `height` of the Kanban board, accepting both string and number values.
      * The string type includes either pixel or percentage values.
      * When `height` is set with specific pixel value, then the Kanban will be rendered to that specified space.
      * In case, if `auto` value is set, then the height of the Kanban gets auto-adjusted within the given container.
@@ -93,6 +96,29 @@ export class Kanban extends Component<HTMLElement> {
      */
     @Property('auto')
     public height: string | number;
+
+    /**
+     * Sets the `height` of the each card in the kanban.
+     * The string type includes pixel.
+     * When `height` is set with specific pixel value, then the card will be rendered to that specified height.
+     * In case, if `auto` value is set, then the height of the card gets auto-adjusted based on the content.
+     *
+     * @default 'auto'
+     */
+    @Property('auto')
+    public cardHeight: string;
+
+    /**
+     * When the enableVirtualization property is set to true in a Kanban,
+     * it will only render the cards that are currently visible within the viewport,
+     * and will load additional cards as the user scrolls vertically through the Kanban.
+     * This can be helpful for improving the performance of the Kanban when working with large datasets,
+     * as it reduces the number of elements that need to be rendered and managed by the browser at any given time.
+     *
+     * @default false
+     */
+    @Property()
+    public enableVirtualization: boolean;
 
     /**
      * With this property, the card data will be bound to Kanban.
@@ -136,7 +162,7 @@ export class Kanban extends Component<HTMLElement> {
     public constraintType: ConstraintType;
 
     /**
-     * Defines the ID of drop component on which drop should occur.
+     * Defines the ID of drop Kanban on which drop should occur.
      *
      * @default []
      */
@@ -235,7 +261,7 @@ export class Kanban extends Component<HTMLElement> {
     public showEmptyColumn: boolean;
 
     /**
-     * Enables or disables the persisting component's state between page reloads.
+     * Enables or disables the persisting Kanban board's state between page reloads.
      * If enabled, columns, dataSource properties will be persisted in kanban.
      *
      * @default false
@@ -247,9 +273,10 @@ export class Kanban extends Component<HTMLElement> {
      * Defines the template content to card’s tooltip. The property works by enabling the ‘enableTooltip’ property.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public tooltipTemplate: string;
+    public tooltipTemplate: string | Function;
 
     /**
      * Triggers on beginning of every Kanban action.
@@ -273,7 +300,7 @@ export class Kanban extends Component<HTMLElement> {
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
-     * Triggers after the kanban component is created.
+     * Triggers after the kanban board is created.
      *
      * @event 'created'
      */
@@ -380,8 +407,8 @@ export class Kanban extends Component<HTMLElement> {
     /**
      * Constructor for creating the Kanban widget
      *
-     * @param {KanbanModel} options Accepts the kanban properties to render the component.
-     * @param {string | HTMLElement} element Accepts the DOM element reference as either selector or element to render the component.
+     * @param {KanbanModel} options Accepts the kanban properties to render the Kanban board.
+     * @param {string | HTMLElement} element Accepts the DOM element reference as either selector or element to render the Kanban Board.
      */
     constructor(options?: KanbanModel, element?: string | HTMLElement) {
         super(options, element);
@@ -450,7 +477,7 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     /**
-     * Core method to return the component name.
+     * Core method to return the module name.
      *
      * @returns {string} Returns the module name.
      * @private
@@ -538,9 +565,17 @@ export class Kanban extends Component<HTMLElement> {
                 break;
             case 'allowDragAndDrop':
                 if (newProp.allowDragAndDrop) {
-                    this.layoutModule.wireDragEvent();
+                    if (this.enableVirtualization) {
+                        this.virtualLayoutModule.wireDragEvent();
+                    } else {
+                        this.layoutModule.wireDragEvent();
+                    }
                 } else {
-                    this.layoutModule.unWireDragEvent();
+                    if (this.enableVirtualization) {
+                        this.virtualLayoutModule.unWireDragEvent();
+                    } else {
+                        this.layoutModule.unWireDragEvent();
+                    }
                 }
                 break;
             case 'enableTooltip':
@@ -550,7 +585,11 @@ export class Kanban extends Component<HTMLElement> {
                 }
                 if (newProp.enableTooltip) {
                     this.tooltipModule = new KanbanTooltip(this);
-                    this.layoutModule.refreshCards();
+                    if (this.enableVirtualization) {
+                        this.virtualLayoutModule.refreshCards();
+                    } else {
+                        this.layoutModule.refreshCards();
+                    }
                 }
                 break;
             case 'dialogSettings':
@@ -568,7 +607,11 @@ export class Kanban extends Component<HTMLElement> {
                 }
                 break;
             case 'stackedHeaders':
-                this.layoutModule.refreshHeaders();
+                if (this.enableVirtualization) {
+                    this.virtualLayoutModule.refreshHeaders();
+                } else {
+                    this.layoutModule.refreshHeaders();
+                }
                 break;
             case 'sortSettings':
                 this.notify(events.dataReady, { processedData: this.kanbanData });
@@ -612,13 +655,21 @@ export class Kanban extends Component<HTMLElement> {
             case 'tagsField':
             case 'grabberField':
             case 'footerCssField':
-                this.layoutModule.refreshCards();
+                if (this.enableVirtualization) {
+                    this.virtualLayoutModule.refreshCards();
+                } else {
+                    this.layoutModule.refreshCards();
+                }
                 break;
             case 'selectionType':
                 cards = this.getSelectedCards();
                 if (cards.length > 0) {
                     removeClass(cards, cls.CARD_SELECTION_CLASS);
-                    this.layoutModule.disableAttributeSelection(cards);
+                    if (this.enableVirtualization) {
+                        this.virtualLayoutModule.disableAttributeSelection(cards);
+                    } else {
+                        this.layoutModule.disableAttributeSelection(cards);
+                    }
                 }
                 break;
             }
@@ -627,7 +678,11 @@ export class Kanban extends Component<HTMLElement> {
 
     private initializeModules(): void {
         this.dataModule = new Data(this);
-        this.layoutModule = new LayoutRender(this);
+        if (this.enableVirtualization) {
+            this.virtualLayoutModule = new VirtualLayoutRender(this);
+        } else {
+            this.layoutModule = new LayoutRender(this);
+        }
         if (this.allowKeyboard) {
             this.keyboardModule = new Keyboard(this);
         }
@@ -668,6 +723,14 @@ export class Kanban extends Component<HTMLElement> {
             this.touchModule.destroy();
             this.touchModule = null;
         }
+        if (this.tooltipModule) {
+            this.tooltipModule.destroy();
+            this.tooltipModule = null;
+        }
+        if (this.virtualLayoutModule) {
+            this.virtualLayoutModule.destroy();
+            this.virtualLayoutModule = null;
+        }
         this.dialogModule = null;
         this.actionModule = null;
         this.crudModule = null;
@@ -675,10 +738,12 @@ export class Kanban extends Component<HTMLElement> {
         this.dragAndDropModule = null;
     }
 
-    public templateParser(template: string): any {
+    public templateParser(template: string | Function): any {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template === 'function') {
+                    return compile(template);
+                } else if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -714,6 +779,9 @@ export class Kanban extends Component<HTMLElement> {
      * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
     public getColumnData(columnKey: string | number, dataSource?: Record<string, any>[]): Record<string, any>[] {
+        if (this.enableVirtualization) {
+            return this.virtualLayoutModule.getColumnCards(dataSource)[`${columnKey}`] as Record<string, any>[] || [];
+        }
         return this.layoutModule.getColumnCards(dataSource)[`${columnKey}`] as Record<string, any>[] || [];
     }
 

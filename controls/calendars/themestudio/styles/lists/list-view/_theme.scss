@@ -11,7 +11,7 @@
         font-size: $listview-header-font-size;
       }
 
-      & .e-icons:not(.e-primary .e-btn-icon) {
+      & .e-icons:not(.e-primary .e-btn-icon, .e-check) {
         color: $listview-icon-color;
 
         @if ($skin-name == 'tailwind') {
@@ -55,6 +55,12 @@
       & .e-list-item.e-active.e-checklist {
         background-color: $listview-background;
         color: $listview-text-color;
+
+        @if $skin-name == 'Material3' {
+          & .e-checkbox-wrapper .e-frame.e-check {
+            color: $checkmark-color;
+          }
+        }
       }
 
       & .e-list-item.e-focused,
@@ -113,7 +119,7 @@
             color: $listview-template-multiline-header-color;
             display: block;
             font-size: $listview-template-multiline-header-font-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               font-weight: $font-weight-normal;
               line-height: 22px;
             }
@@ -131,7 +137,7 @@
             color: $listview-template-multiline-content-color;
             display: block;
             font-size: $listview-template-multiline-content-font-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               font-weight: $font-weight-normal;
               @if ($skin-name == 'FluentUI') {
                 line-height: 18px;
@@ -159,8 +165,11 @@
             position: absolute;
             top: $listview-template-avatar-top;
             width: $listview-template-avatar-size;
-            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               margin: $listview-template-avatar-margin;
+            }
+            @if $skin-name == 'Material3' {
+              background: $listview-template-avatar-background;
             }
           }
         }
@@ -206,7 +215,7 @@
             top: 50%;
             transform: translateY(-50%);
             width: $listview-template-badge-width;
-            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5') {
+            @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               border-radius: 10px;
             }
           }

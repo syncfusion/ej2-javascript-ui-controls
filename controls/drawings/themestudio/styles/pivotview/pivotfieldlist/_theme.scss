@@ -10,7 +10,7 @@
     }
 
     .e-select-table {
-      background-color: $field-list-toggle-bg-color;
+      background: $field-list-toggle-bg-color;
       border: .5px $field-list-border-type $field-list-toggle-border-color;
       box-shadow: $field-list-toggle-shadow-color;
       color: $field-list-toggle-font-color;
@@ -24,6 +24,21 @@
       position: relative;
       width: $field-list-toggle-size;
       z-index: 1000;
+      @if ($skin-name == 'Material3') {
+        border: none;
+        border-radius: 4px;
+        top: 1px;
+      }
+      @if ($theme-name == 'Material3-dark') {
+        /* stylelint-disable */
+        background: $field-list-toggle-bg-color-dark !important;
+      }
+      &.e-fieldlist-left {
+        @if ($skin-name == 'Material3') {
+          left: 2px !important;
+          /* stylelint-enable */
+        }
+      }
 
       &.e-fieldlist-left {
         box-shadow: $field-list-toggle-left-shadow-color;
@@ -81,69 +96,77 @@
     min-width: 300px;
     
     &.sf-pivotfieldlist-container {    
-    .e-field-list-container .e-field-table .e-field-list
-    {
-      display: block;
-      overflow-y: auto;
-      &.e-olap-field-list-tree.e-treeview {
-         ul:first-child {
-           padding-right: 0;
-         }
-         li {
-          &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
-           display: none;
-         }
-         &.e-rtl {
-           ul:first-child {
-             padding-left: 0;
-             padding-right: 10px;
-           }
-        }
-      }
-    }
+      .e-field-list-container .e-field-table .e-field-list {
+        display: block;
+        overflow-y: auto;
 
-      li {
-        .e-drag {
+        &.e-olap-field-list-tree.e-treeview {
+          ul:first-child {
+            padding-right: 0;
+          }
+
+          li {
+            &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+              display: none;
+            }
+
+            &.e-rtl {
+              ul:first-child {
+                padding-left: 0;
+                padding-right: 10px;
+              }
+            }
+          } 
+        }
+
+        li {
+          .e-drag {
             padding: revert;
             margin: revert;
             width: auto;
             height: auto;
           }
-        .e-draggable {
-          display: contents;
-          }  
-        .e-text-content {
+
+          .e-draggable {
+            display: contents;
+          }
+
+          .e-text-content {
             display: flex;
             align-items: center;
+            @if ($skin-name == 'FluentUI') {
+             padding-right: revert;
+            }
           }
-        .e-list-text {
+
+          .e-list-text {
             text-overflow: ellipsis;    
             overflow-x: hidden;
             width: 100%;
             white-space: nowrap;
-        }        
-    }  
-}
-    .e-field-list-container .e-field-table .e-field-list.e-treeview:not(.e-rtl) {
-     .e-list-text {
-       padding-right: revert;
-     }
-   }
+          }        
+        }  
+      }
+      .e-field-list-container .e-field-table .e-field-list.e-treeview:not(.e-rtl) {
+        .e-list-text {
+          padding-right: revert;
+        }
+      }
 
-   .e-field-list-container .e-field-table .e-field-list.e-treeview.e-rtl {
-     .e-list-text {
-      padding-left: revert;
+      .e-field-list-container .e-field-table .e-field-list.e-treeview.e-rtl {
+        .e-list-text {
+          padding-left: revert;
+        }
+      }
+      .e-adaptive-field-list-dialog .e-member-editor-container {
+        li {
+          &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
+            display: none;
+          }
+        }
+      }
     }
-   }
-    .e-adaptive-field-list-dialog .e-member-editor-container
-    {
-      li {
-        &.e-no-checkbox > .e-text-content > .e-checkbox-wrapper, .e-measure-icon {
-          display: none;
-           }
-       }
-    }
-}
+
     .e-layout-footer {
       display: flex;
       padding: 10px 2px 2px;
@@ -218,9 +241,20 @@
       .e-button-layout {
         margin-right: 10px;
       }
-    }
 
-    /* stylelint-enable */
+      .e-dlg-content ul li .e-text-content .e-checkbox-wrapper {
+        @if ($skin-name == 'Material3') {
+          margin: 0 !important;
+          /* stylelint-enable */
+        }
+
+        .e-ripple-container {
+          @if ($skin-name == 'Material3') {
+            background: transparent;
+          }
+        }
+      }
+    }
 
     .e-dlg-header-content,
     .e-footer-content {
@@ -258,6 +292,10 @@
 
       .e-title-content {
         flex: auto;
+        @if ($skin-name == 'Material3') {
+          font-size: 22px;
+          font-weight: $field-list-button-font-weight;
+        }
       }
     }
 
@@ -286,33 +324,26 @@
         }
 
         .e-field-header {
-          background-color: $field-list-header-background-color;
+          background: $field-list-header-background-color;
           color: $field-list-default-header-font-color;
           font-size: $field-list-header-font-size;
-          font-weight: normal;
-          height: $field-list-header-height;
+          font-weight: $field-list-table-header-font-weight;
           overflow: hidden;
-          padding: $field-list-tree-header-padding 0 0 $field-list-header-padding;
+          padding: $field-list-table-header-padding;
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
           @if ($field-list-skin == 'tailwind') {
             text-transform: uppercase;
           }
-
-          @if ($field-list-skin == 'bootstrap4') {
-            padding-left: 12px;
-          }
-
-          @if ($skin-name == 'FluentUI') {
-            font-weight: 600;
-          }
         }
 
         .e-field-header-container {
-          background-color: $field-list-header-background-color;
+          align-items: center;
+          background: $field-list-header-background-color;
           color: $field-list-default-header-font-color;
           display: flex;
+          height: $field-list-header-height;
           padding-right: $field-list-header-padding;
 
           .e-field-header {
@@ -325,10 +356,7 @@
             color: $field-list-default-header-icon-font-color;
             cursor: pointer;
             font-size: $field-list-header-icon-size;
-            /* stylelint-disable */
-            height: 20px !important;
-            /* stylelint-enable */
-            padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
+            padding: 0 0 0 $field-list-icon-to-icon-padding;
             width: 20px;
 
             &.e-selected::before {
@@ -347,8 +375,8 @@
           /* stylelint-disable */
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
-              padding: 0 0 $field-list-icon-to-icon-padding $field-list-tree-header-padding !important;
-              transform: rotate(180deg);
+              padding-right: 2px !important;
+              transform: rotate(90deg);
             }
           }
           /* stylelint-enable */
@@ -356,7 +384,7 @@
 
         .e-field-list-tree-outer-div {
           display: inline-block;
-          height: 310px;
+          height: $field-list-tree-outer-div-height;
           overflow: auto;
           width: 100%;
         }
@@ -523,20 +551,21 @@
           width: 100%;
 
           .e-axis-container {
-            background-color: $field-list-header-background-color;
+            align-items: center;
+            background: $field-list-header-background-color;
             border-bottom: $field-list-border-size $field-list-border-type $field-list-default-border-color;
             color: $field-list-default-header-font-color;
             display: flex;
             height: $field-list-header-height;
-            padding: 2px $field-list-header-padding 5px;
+            padding: 0 $field-list-header-padding 0;
 
-            @if ($skin-name == 'tailwind') {
-              padding: 5px $field-list-header-padding;
+            @if ($skin-name == 'Material3') {
+              border-bottom: none;
             }
 
             .e-axis-icon-container {
-              height: 20px;
-              padding-top: $field-list-header-icon-wrapper-padding;
+              display: flex;
+              height: $field-list-header-icon-size;
               width: 20px;
 
               .e-axis-rows,
@@ -553,19 +582,13 @@
             flex: auto;
             font-size: $field-list-header-font-size;
             line-height: $field-list-header-content-line-height;
-            margin-top: 2px;
             overflow: hidden;
             padding: 0 8px;
             text-overflow: ellipsis;
             text-transform: $field-list-text-transform;
             width: 100%;
-
-            @if ($field-list-skin == 'bootstrap4') {
-              margin-top: 3px;
-            }
-
-            @if ($skin-name == 'bootstrap5') {
-              margin-top: 4px;
+            @if ($skin-name == 'Material3') {
+              font-weight: $field-list-table-header-font-weight;
             }
           }
 
@@ -588,11 +611,7 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
-                  @if ($skin-name == 'tailwind') {
-                    border-top: 2px solid $field-list-drop-hover-color;
-                  }
-
-                  @if ($skin-name == 'bootstrap5') {
+                  @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
                     border-top: 2px solid $field-list-drop-hover-color;
                   }
                 }
@@ -607,7 +626,7 @@
               }
 
               .e-pivot-button {
-                background-color: $field-list-button-color;
+                background: $field-list-button-color;
                 border-bottom: $field-list-border-size $field-list-border-type $field-list-button-border-color;
                 border-left: 0;
                 border-radius: 0;
@@ -639,7 +658,7 @@
                 &:hover {
                   background-color: $field-list-button-hover-color;
 
-                  .e-content {
+                  .e-pvt-btn-content {
                     background-color: transparent;
                   }
                 }
@@ -649,7 +668,7 @@
                   background-color: $field-list-button-focus-color;
                   color: $field-list-button-active-color;
 
-                  .e-content {
+                  .e-pvt-btn-content {
                     background-color: transparent;
                   }
 
@@ -668,8 +687,8 @@
                   }
                 }
 
-                .e-content {
-                  background-color: transparent;
+                .e-pvt-btn-content {
+                  background: transparent;
                   flex: auto;
                   font-size: $field-list-button-font-size;
                   height: 16px;
@@ -734,7 +753,7 @@
                 }
 
                 &.e-rtl {
-                  .e-content {
+                  .e-pvt-btn-content {
                     text-align: right;
                   }
 
@@ -800,12 +819,12 @@
         max-height: 750px;
 
         .e-field-list-container .e-field-table {
-          height: 261px;
+          height: $field-list-search-static-field-table-height;
         }
       }
 
       &.e-popup {
-        min-height: 540px;
+        min-height: $field-list-search-popup-min-height;
 
         .e-field-list-container {
           height: 369px;
@@ -813,9 +832,15 @@
           /* stylelint-disable */
           .e-field-table {
             height: $field-list-search-popup-table-height !important;
+            
+            .e-field-list-tree-outer-div {
+              @if ($skin-name == 'Material3') {
+                height: $field-list-search-popup-table-outer-div-height !important;
+              }
+            }
           }
 
-          .e-axis-table  {
+          .e-axis-table {
             height: 392px;
 
             .e-axis-content {
@@ -874,6 +899,10 @@
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
+      @if ($skin-name == 'Material3') {
+        border: $field-list-calculated-field-border;
+        box-shadow: none;
+      }
 
       &.e-disable {
         display: none;
@@ -960,17 +989,8 @@
           .e-sort-none,
           .e-sort-ascend,
           .e-sort-descend {
-            padding: $field-list-tree-header-padding $field-list-icon-to-icon-padding 0 0;
+            padding: 0 $field-list-icon-to-icon-padding 0 0;
           }
-
-          /* stylelint-disable */
-          @if ($skin-name == 'FluentUI') {
-            .e-sort-none {
-              padding: $field-list-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
-              transform: rotate(180deg);
-            }
-          }
-          /* stylelint-enable */
         }
       }
 
@@ -1010,11 +1030,11 @@
         width: 100%;
 
         .e-field-table {
-          height: 210px;
+          height: $field-list-static-field-table-height;
           width: 100%;
 
           .e-field-list-tree-outer-div {
-            height: 180px;
+            height: $field-list-static-field-table-outer-div-height;
           }
         }
 
@@ -1046,17 +1066,6 @@
           .e-left-axis-fields .e-field-list-rows,
           .e-right-axis-fields .e-field-list-values {
             margin-top: $field-list-default-padding-size;
-          }
-
-          .e-left-axis-fields .e-field-list-filters,
-          .e-left-axis-fields .e-field-list-rows,
-          .e-right-axis-fields .e-field-list-columns,
-          .e-right-axis-fields .e-field-list-values {
-            .e-axis-container {
-              .e-axis-icon-container {
-                padding-top: $field-list-static-header-icon-wrapper-padding;
-              }
-            }
           }
         }
       }
@@ -1091,6 +1100,7 @@
         background-color: $field-list-mobile-header-color;
         color: $field-list-mobile-header-font-color;
         font-size: 14px;
+
         @if ($skin-name == 'tailwind') {
           padding-left: 16px;
           padding-right: 16px;
@@ -1134,13 +1144,7 @@
         position: relative;
 
         .e-tab-header {
-          background-color: $field-list-header-background-color;
-
-          .e-toolbar-item {
-            .e-tab-wrap {
-              border: 0;
-            }
-          }
+          background: $field-list-header-background-color;
         }
 
         .e-content {
@@ -1169,6 +1173,7 @@
               }
 
               .e-pivot-button {
+                align-items: center;
                 border: $field-list-border-size $field-list-border-type $field-list-button-border-color;
                 border-left: 0;
                 border-radius: 0;
@@ -1194,11 +1199,9 @@
                   opacity: .5;
                 }
 
-                .e-content {
+                .e-pvt-btn-content {
                   flex: auto;
                   font-size: $field-list-bigger-button-font-size;
-                  height: 100%;
-                  margin-top: -2px;
                   overflow: hidden;
                   text-align: left;
                   text-overflow: ellipsis;
@@ -1220,7 +1223,6 @@
                   cursor: pointer;
                   display: inline-block;
                   font-size: $field-list-bigger-icon-size;
-                  height: 24px;
                   padding-left: 10px;
                   width: 24px;
                   font-size: 14px !important;
@@ -1260,7 +1262,7 @@
                 }
 
                 &.e-rtl {
-                  .e-content {
+                  .e-pvt-btn-content {
                     text-align: right;
                   }
 
@@ -1344,22 +1346,22 @@
               .e-acrdn-header {
                 align-items: center;
                 display: flex;
-              }
 
-              .e-acrdn-header-icon {
-                display: table;
-                font-size: 12px;
-                min-width: 28px;
-                padding: 0;
-                position: absolute;
-                right: 16px;
-
-                .e-list-icon {
-                  cursor: pointer;
-                  display: table-cell;
-                  padding-right: 6px;
-                  text-align: center;
-                  vertical-align: middle;
+                .e-acrdn-header-icon {
+                  display: table;
+                  font-size: 12px;
+                  min-width: 28px;
+                  padding: 0;
+                  position: absolute;
+                  right: 16px;
+  
+                  .e-list-icon {
+                    cursor: pointer;
+                    display: table-cell;
+                    padding-right: 6px;
+                    text-align: center;
+                    vertical-align: middle;
+                  }
                 }
               }
 
@@ -1517,6 +1519,11 @@
           width: $field-list-adaptive-btn-size;
           z-index: 1000;
 
+          @if ($skin-name == 'Material3') {
+            border-radius: $field-list-device-footer-button-border-radius;
+            box-shadow: $field-list-device-footer-button-box-shadow;
+          }
+
           .e-add-icon {
             font-size: $field-list-adaptive-btn-icon-size;
             line-height: $field-list-adaptive-icon-height;
@@ -1586,7 +1593,6 @@
             margin-left: 20px;
           }
         }
-
         /* stylelint-enable */
       }
     }
@@ -1603,18 +1609,14 @@
       }
 
       .e-field-header {
-        background-color: $field-list-header-background-color;
+        background: $field-list-header-background-color;
         color: $field-list-default-header-font-color;
         font-size: $field-list-bigger-header-font-size;
         font-weight: normal;
-        height: $field-list-bigger-header-height;
         overflow: hidden;
-        padding: $field-list-tree-header-padding 0 0 $field-list-bigger-header-padding;
 
         @if ($field-list-skin == 'bootstrap4') {
-          height: 40px;
           padding-left: 16px;
-          padding-top: $field-list-bigger-tree-header-padding;
         }
       }
 
@@ -1625,15 +1627,8 @@
         .e-sort-ascend,
         .e-sort-descend {
           font-size: $field-list-bigger-header-icon-size;
-          height: 24px !important;
-          padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
+          padding: 0 0 0 $field-list-bigger-icon-to-icon-padding;
           width: 24px;
-        }
-        
-        @if ($skin-name == 'FluentUI') {
-          .e-sort-none {
-            padding: 0 0 $field-list-bigger-icon-to-icon-padding $field-list-tree-header-padding !important;
-          }
         }
       }
 
@@ -1713,11 +1708,10 @@
       .e-right-axis-fields .e-field-list-values {
         .e-axis-container {
           height: $field-list-bigger-header-height;
-          padding: 0 $field-list-bigger-header-padding 5px;
+          padding: 0 $field-list-bigger-header-padding 0;
 
           .e-axis-icon-container {
-            height: 24px;
-            padding-top: $field-list-bigger-header-icon-wrapper-padding;
+            height: $field-list-bigger-header-icon-size;
             width: 24px;
 
             .e-axis-rows,
@@ -1731,29 +1725,22 @@
           .e-axis-header {
             font-size: $field-list-bigger-header-font-size;
             line-height: $field-list-bigger-header-content-line-height;
-            margin-top: 4px;
             padding: 0 12px;
-
-            @if ($field-list-skin == 'bootstrap4') {
-              margin-top: 7px;
-            }
           }
         }
 
         .e-axis-content {
-          @if ($field-list-skin == 'bootstrap4') {
-            height: 126px;
-          }
+          height: $field-list-popup-axis-content-bigger-height;
 
-          /* stylelint-disable */
           .e-pvt-btn-div {
             .e-pivot-button {
+              /* stylelint-disable */
               font-size: $field-list-bigger-button-font-size;
               height: $field-list-bigger-button-height !important;
               padding: $field-list-bigger-button-padding !important;
 
               /* stylelint-enable */
-              .e-content {
+              .e-pvt-btn-content {
                 font-size: $field-list-bigger-button-font-size;
                 line-height: $field-list-bigger-button-line-height;
                 padding: 0 10px;
@@ -1907,16 +1894,8 @@
           .e-sort-none,
           .e-sort-ascend,
           .e-sort-descend {
-            padding: $field-list-tree-header-padding $field-list-bigger-icon-to-icon-padding 0 0;
+            padding: 0 $field-list-bigger-icon-to-icon-padding 0 0;
           }
-
-          /* stylelint-disable */
-          @if ($skin-name == 'FluentUI') {
-            .e-sort-none {
-              padding: $field-list-bigger-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
-            }
-          }
-          /* stylelint-enable */
         }
       }
 

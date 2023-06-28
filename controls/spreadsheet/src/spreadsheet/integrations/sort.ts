@@ -4,7 +4,7 @@ import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookF
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction, NumberFormatArgs } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs, getRangeIndexes } from '../../workbook/common/index';
-import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
+import { L10n, getUniqueID, getComponent, enableRipple, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -130,6 +130,8 @@ export class Sort {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     openArgs.cancel = true;
+                } else {
+                    focus(this.parent.element);
                 }
                 dialogInst.dialogInstance.content = dlgArgs.content;
             }
@@ -387,12 +389,14 @@ export class Sort {
             dataSource: data,
             fields: { id: 'id' },
             height: '100%',
-            template: '<div class="e-sort-listwrapper">' +
-                '<span class="text">${text}</span>' +
-                '<div class="e-sort-row"><div class="e-sort-field"></div>' +
-                '<div class="e-sort-order">' +
-                '<span class="e-sort-ordertxt" style="display:none;">${order}</span></div>' +
-                '<span class="e-icons e-sort-delete"></span></div>',
+            template: initializeCSPTemplate( function(data: any): string {
+                return (`<div class="e-sort-listwrapper">` +
+                `<span class="text">${data.text}</span>` +
+                `<div class="e-sort-row"><div class="e-sort-field"></div>` +
+                `<div class="e-sort-order">` +
+                `<span class="e-sort-ordertxt" style="display:none;">${data.order}</span></div>` +
+                `<span class="e-icons e-sort-delete" tabindex="0"></span></div>`);
+            }) as any,
             cssClass: 'e-sort-template'
         });
         return listviewObj;
@@ -558,6 +562,9 @@ export class Sort {
             this.sortCompleteHandler(sortArgs);
             this.parent.trigger(sortComplete, sortArgs);
             this.parent.notify(completeAction, { eventArgs: sortArgs, action: 'sorting' });
+            if (document.activeElement.tagName === 'BODY') {
+                focus(this.parent.element);
+            }
             return Promise.resolve(sortArgs);
         }).catch((error: string) => {
             this.sortRangeAlertHandler({ error: error });

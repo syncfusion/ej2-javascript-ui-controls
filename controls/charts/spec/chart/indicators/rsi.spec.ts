@@ -185,12 +185,12 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 //define check condition
                 let svg: HTMLElement = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '760.5' ||
+                expect(svg.getAttribute('d').split(' ')[1] == '761.5' ||
                     svg.getAttribute('d').split(' ')[1] == '761.5' || svg.getAttribute('d').split(' ')[1] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '45.25' || svg.getAttribute('d').split(' ')[2] == '42.25').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '760.5' ||
+                expect(svg.getAttribute('d').split(' ')[2] == '43.25' || svg.getAttribute('d').split(' ')[2] == '42.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '761.5' ||
                     svg.getAttribute('d').split(' ')[4] == '761.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[5] == '355.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[5] == '360.5' || svg.getAttribute('d').split(' ')[5] == '360.5').toBe(true);
                 expect(chartObj.visibleSeries[1].yAxis.name).toBe('secondary');
                 done();
             };
@@ -256,11 +256,11 @@ describe('Chart', () => {
                 let signalLine: HTMLElement = document.getElementById('container_Indicator_0_RSI');
                 expect(signalLine.getAttribute('d')).not.toBeNull();
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
-                expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '95.75' || svg.getAttribute('d').split(' ')[2] == '88.75').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '760.5' ||
+                expect(svg.getAttribute('d').split(' ')[1] == '53.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '89.75' || svg.getAttribute('d').split(' ')[2] == '88.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '761.5' ||
                     svg.getAttribute('d').split(' ')[4] == '761.5' || svg.getAttribute('d').split(' ')[4] == '767.5').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[2] == '88.75' || svg.getAttribute('d').split(' ')[5] == '95.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '89.75' || svg.getAttribute('d').split(' ')[5] == '95.75').toBe(true);
                 done();
 
                 
@@ -393,7 +393,7 @@ describe('Chart', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
                 expect(element1.textContent == 'Feb' || element1.textContent == 'Mar').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '8.461' || element1.textContent == '8.484').toBe(true);
+                expect(element1.textContent == '8.461' || element1.textContent == '8.432').toBe(true);
                 done();
             };
             chartObj.tooltip = { enable: true };
@@ -424,7 +424,7 @@ describe('Chart', () => {
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == '#000816').toBe(true);
-                expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
+                expect((<Element>text1.childNodes[0]).getAttribute('fill') == 'rgba(249, 250, 251, 1)').toBe(true);
                 expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5LowerLine : 80UpperLine : 20').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
@@ -522,7 +522,7 @@ describe('Chart', () => {
         it('Checking series animationEvent', (done: Function) => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
-                expect(point.getAttribute('transform') === 'translate(57.5,312.925)' ||
+                expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
                        point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
                 done();
             };
@@ -533,7 +533,7 @@ describe('Chart', () => {
         it('Checking technicalindicators animationEvent', (done: Function) => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
-                expect(point.getAttribute('transform') === 'translate(57.5,312.925)' ||
+                expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
                        point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
                 done();
             };
@@ -544,7 +544,8 @@ describe('Chart', () => {
         it('Checking both series and technical indicators animationEvent', (done: Function) => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
-                expect(point.getAttribute('transform') === 'translate(57.5,312.925)' ||
+
+                expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
                        point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
                 done();
             };

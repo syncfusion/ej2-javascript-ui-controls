@@ -1218,4 +1218,68 @@ describe('Column virtualization', () => {
             gObj = null;
         });
     });
+
+    describe('EJ2-828707- Editing not working properly when virtual scroll is enabled and the primary key is a complex data => ', () => {
+        let gridObj: Grid;  
+        let data: Object[] =  [
+            {
+              customer: {
+                OrderID: 10248,
+                RoleID: 123,
+                CustomerID: 'VINET',
+                CustomerName: 'Maria ',
+              },
+              location: {
+                ShipCity: 'Reims',
+                ShipCountry: 'France',
+              },
+            },
+            {
+              customer: {
+                OrderID: 10249,
+                RoleID: 456,
+                CustomerID: 'TOMSP',
+                CustomerName: 'Ana Trujillo',
+              },
+              location: {
+                ShipCity: 'Münster',
+                ShipCountry: 'Germany',
+              },
+            },
+          ];
+        beforeAll((done: Function) => {    
+          gridObj = createGrid(    
+           {    
+             dataSource: data,    
+             enableVirtualization: true,        
+             editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },    
+             toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],    
+             height: 300,    
+             columns: [    
+              {field: 'customer.OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+              {field: 'customer.CustomerID', headerText:'CustomerID', width:120},        
+              {field: 'location.ShipCity', headerText:'ShipCity', width:130}    
+             ],    
+           }, done );    
+        });    
+       
+        it('Edit the row in grid', (done: Function) => {
+           let actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect((gridObj.currentViewData[1]['customer']['CustomerID'])).toBe('TOMSP');
+                    done();
+                }
+           };      
+           gridObj.actionComplete = actionComplete;
+           gridObj.selectRow(0, true);
+           (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+           (select('#' + gridObj.element.id + 'customer___CustomerID', gridObj.element) as any).value =  'BRAMP';
+           (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+       });
+
+       afterAll(() => {
+           destroy(gridObj);
+           gridObj = null;
+       });
+    });
 });

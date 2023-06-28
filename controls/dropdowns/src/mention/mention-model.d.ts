@@ -112,8 +112,9 @@ export interface MentionModel {
      * Specifies the template for the selected value from the suggestion list.
      *
      * @default null
+     * @aspType string
      */
-    displayTemplate?: string;
+    displayTemplate?: string | Function;
 
     /**
      * Specifies the template for the suggestion list.
@@ -133,8 +134,9 @@ export interface MentionModel {
      * Specifies the template for showing until data is loaded in the popup.
      *
      * @default null
+     * @aspType string
      */
-    spinnerTemplate?: string;
+    spinnerTemplate?: string | Function;
 
     /**
      * Specifies the target selector where the mention component needs to be displayed.

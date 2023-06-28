@@ -111,7 +111,7 @@ describe('Chart Trackball', () => {
                 let path: HTMLElement = group.childNodes[0] as HTMLElement;
                 let text: HTMLElement = group.childNodes[1] as HTMLElement;
                 let headerPath: HTMLElement = group.childNodes[2] as HTMLElement;
-                let Icons: HTMLElement = group.childNodes[4] as HTMLElement;
+                let Icons: HTMLElement = group.childNodes[3] as HTMLElement;
 
 
                 expect(path.localName == 'path').toBe(true);
@@ -157,7 +157,7 @@ describe('Chart Trackball', () => {
                 let path: HTMLElement = group.childNodes[0] as HTMLElement;
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
-                expect(group.childNodes.length == 5).toBe(true);
+                expect(group.childNodes.length == 4).toBe(true);
                 expect(group.childNodes[1].childNodes.length == 17).toBe(true);
 
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
@@ -220,7 +220,7 @@ describe('Chart Trackball', () => {
                 expect(parseFloat(translateX[0]) < x).toBe(true);
 
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
-                expect(group.childNodes[4].childNodes.length == 2).toBe(true);
+                expect(group.childNodes[3].childNodes.length == 2).toBe(true);
                 expect(group.childNodes[1].childNodes.length == 9).toBe(true);
 
                 targetElement = chartObj.element.querySelector('#container_Series_0_Point_11_Symbol') as HTMLElement;
@@ -240,7 +240,7 @@ describe('Chart Trackball', () => {
             }, {
                 dataSource: track2, xName: 'x', yName: 'y', animation: { enable: false },
                 name: 'Japan', fill: 'blue', width: 2,
-                type: 'Line', marker: { visible: true, height: 8, width: 8 },
+                type: 'Line', marker: { visible: true, height: 8, width: 8, shape:"Circle" },
             }];
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.labelPlacement = 'OnTicks';
@@ -569,11 +569,12 @@ describe('Chart Trackball', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 108);
                 let yValue: number = chartObj.visibleSeries[1].points[0].yValue;
-                expect(yValue == 60.24 || yValue == 59.65).toBe(true);
+                expect(yValue == 60.24 || yValue == 59.82).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
     });

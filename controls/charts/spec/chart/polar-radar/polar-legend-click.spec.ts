@@ -244,7 +244,7 @@ describe('Legend Checking Polar Radar Series ', () => {
             expect(symbolElement).toEqual(null);
             expect(shapeElement).toEqual(null);
             expect(textElement).toEqual(null);
-            expect(getElement('legendClick1_AxisLabel_3').innerHTML).toEqual('10.000');
+            expect(getElement('legendClick1_AxisLabel_3').innerHTML).toEqual('10');
             done();
         }, 301);
     });

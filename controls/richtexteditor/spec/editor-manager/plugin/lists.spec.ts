@@ -674,6 +674,27 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe('832588 - console error occurs when you apply the number format when start of the selection is a empty line', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p>rich text editor</p><p class="startFocus"><br></p><p>rich text editor</p><p class="endFocus">rich text editor</p></div>`
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it(' console error occurs when you apply the number format when start of the selection is a empty line', () => {
+                startNode = editNode.querySelector('.startFocus');
+                endNode = editNode.querySelector('.endFocus');
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode.childNodes[0], 0, 16);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect((editorObj.nodeSelection.range.startContainer as HTMLElement).classList.contains('startfocus')).toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
         
         describe('EJ2-60037 - Console error occurs when list applied in fire fox testing', () => {
             let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";

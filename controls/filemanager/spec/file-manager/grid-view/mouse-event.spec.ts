@@ -187,7 +187,7 @@ describe('FileManager control Grid view', () => {
                                 responseText: JSON.stringify(data1)
                             });
                             setTimeout(function () {
-                                this.request = jasmine.Ajax.requests.mostRecent();
+                               this.request = jasmine.Ajax.requests.mostRecent();
                                 this.request.respondWith({
                                     status: 200,
                                     responseText: JSON.stringify(data1)
@@ -472,7 +472,7 @@ describe('FileManager control Grid view', () => {
                 (rows[2].querySelector('.e-frame') as HTMLElement).click();
                 (rows[4].querySelector('.e-frame') as HTMLElement).click();
                 expect(obj.element.querySelectorAll('.e-check').length).toBe(3);
-                feObj.allowMultiSelection = false; feObj.dataBind();
+                feObj.allowMultiSelection = false; feObj.showItemCheckBoxes = false; feObj.dataBind();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,

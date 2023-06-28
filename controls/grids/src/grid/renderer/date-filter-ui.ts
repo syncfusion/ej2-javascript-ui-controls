@@ -42,7 +42,7 @@ export class DateFilterUI implements IFilterMUI {
         this.dialogObj = args.dialogObj;
         this.inputElem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'dateui-' + args.column.uid });
         args.target.appendChild(this.inputElem);
-        if (args.column.type === 'date') {
+        if (args.column.type === 'date' || args.column.type === 'dateonly') {
             this.datePickerObj = new DatePicker(extend(
                 {
                     format: format,

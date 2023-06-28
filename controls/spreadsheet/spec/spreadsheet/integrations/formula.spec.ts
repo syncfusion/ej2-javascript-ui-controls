@@ -124,22 +124,22 @@ describe('Spreadsheet formula module ->', () => {
 
         it('Slope formula', (done: Function) => {
             helper.edit('J7', '=slope(D2:D5,E2:E5)');
-            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.142105');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0.142105","formula":"=slope(D2:D5,E2:E5)"}');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.142105263');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"0.14210526315789473","formula":"=slope(D2:D5,E2:E5)"}');
             done();
         });
 
         it('Intercept formula', (done: Function) => {
             helper.edit('J8', '=INTERCEPT(D2:D5,E2:E5)');
-            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('13.60526');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{"value":"13.60526","formula":"=INTERCEPT(D2:D5,E2:E5)"}');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('13.60526316');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{"value":"13.605263157894736","formula":"=INTERCEPT(D2:D5,E2:E5)"}');
             done();
         });
 
         it('Ln formula', (done: Function) => {
             helper.edit('J9', '=ln(D2)');
-            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('2.442347');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[9])).toBe('{"value":"2.442347","formula":"=ln(D2)"}');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('2.442347035');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[9])).toBe('{"value":2.4423470353692043,"formula":"=ln(D2)"}');
             done();
         });
 
@@ -169,8 +169,8 @@ describe('Spreadsheet formula module ->', () => {
 
         it('Log formula', (done: Function) => {
             helper.edit('J13', '=log(D3,E3)');
-            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('0.880788');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[9])).toBe('{"value":"0.880788","formula":"=log(D3,E3)"}');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('0.88078754');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[9])).toBe('{"value":"0.8807875396193516","formula":"=log(D3,E3)"}');
             done();
         });
 
@@ -183,22 +183,22 @@ describe('Spreadsheet formula module ->', () => {
 
         it('Exp formula', (done: Function) => {
             helper.edit('J15', '=exp(D4)');
-            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('485165195');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[9])).toBe('{"value":"485165195","formula":"=exp(D4)"}');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('485165195.4');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[9])).toBe('{"value":"485165195.4097903","formula":"=exp(D4)"}');
             done();
         });
 
         it('Geomean formula', (done: Function) => {
             helper.edit('J16', '=geomean(D2:D6)');
-            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('18.33133');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"18.33133","formula":"=geomean(D2:D6)"}');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('18.33133394');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"18.331333944571234","formula":"=geomean(D2:D6)"}');
             done();
         });
 
         it('Dependent cell update', (done: Function) => {
             helper.edit('D6', '40');
-            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('19.41699');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"19.41699","formula":"=geomean(D2:D6)"}');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('19.41698595');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"19.41698595231722","formula":"=geomean(D2:D6)"}');
             done();
         });
 
@@ -352,6 +352,22 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J4', '=SUMPRODUCT(D1:D5);');
             expect(helper.invoke('getCell', [3, 9]).textContent).toBe('66.5');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":66.5,"formula":"=SUMPRODUCT(D1:D5);"}');
+            done();
+        });
+        it('SUMPRODUCT formula with row and column range is entered in reverse order', (done: Function) => {
+            const cellEle: HTMLElement = helper.invoke('getCell', [4, 9]);
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:D5,E5:E2)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E2:E5)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D5:D2,E5:E2)' }, 'J5']);
+            expect(cellEle.textContent).toBe('1430');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(D2:F2,F3:D3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,D3:F3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
+            helper.invoke('updateCell', [{ value: '=SUMPRODUCT(F2:D2,F3:D3)' }, 'J5']);
+            expect(cellEle.textContent).toBe('120830');
             done();
         });
         it('ROUNDUP formula with more than 2 inputs', (done: Function) => {
@@ -1040,7 +1056,7 @@ describe('Spreadsheet formula module ->', () => {
         it('MOD Formula with Deciaml values->', (done: Function) => {
             helper.edit('K5', '=MOD(0.75,0.1)');
             expect(helper.invoke('getCell', [4, 10]).textContent).toBe('0.05');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":"0.05","formula":"=MOD(0.75,0.1)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":0.04999999999999996,"formula":"=MOD(0.75,0.1)"}');
             done();
         });
         it('MOD Formula with cell Reference->', (done: Function) => {
@@ -1063,8 +1079,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MOD Formula with Time values->', (done: Function) => {
             helper.edit('K9', '=MOD(C2,F2)');
-            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('0.482315');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[10])).toBe('{"value":"0.482315","formula":"=MOD(C2,F2)"}');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('0.482314815');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[10])).toBe('{"value":0.4823148148148148,"formula":"=MOD(C2,F2)"}');
             done();
         });
         it('MOD Formula with Divisor as 0->', (done: Function) => {
@@ -1258,14 +1274,14 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('PI Formula ->', (done: Function) => {
             helper.edit('K1', '=PI()');
-            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('3.141593');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"3.141593","formula":"=PI()"}');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('3.141592654');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":3.141592653589793,"formula":"=PI()"}');
             done();
         });
         it('PI Formula with other operator->', (done: Function) => {
             helper.edit('K2', '=PI()*2');
-            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('6.283185');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"6.283185","formula":"=PI()*2"}');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('6.283185307');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"6.283185307179586","formula":"=PI()*2"}');
             done();
         });
         it('PI Formula with invalid input ->', (done: Function) => {
@@ -1276,8 +1292,8 @@ describe('Spreadsheet formula module ->', () => {
         });2
         it('PI Formula for area of circle formula->', (done: Function) => {
             helper.edit('K4', '=PI()*(D3^2)');
-            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('1256.637');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"1256.637","formula":"=PI()*(D3^2)"}');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('1256.637061');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"1256.6370614359173","formula":"=PI()*(D3^2)"}');
             done();
         });
         it('PI Formula with Degrees formula->', (done: Function) => {
@@ -1917,7 +1933,7 @@ describe('Spreadsheet formula module ->', () => {
         it('DOLLAR Formula->', (done: Function) => {
             helper.edit('J7', '=DOLLAR(2)');
             expect(helper.invoke('getCell', [6, 9]).textContent).toBe('$2.00');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"$2.00","format":"$#,##.00","formula":"=DOLLAR(2)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"$2.00","formula":"=DOLLAR(2)"}');
             done();
         });
         it('DOLLAR Formula for no inputs->', (done: Function) => {
@@ -1936,6 +1952,126 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J10', '=DOLLAR(10A)');
             expect(helper.invoke('getCell', [9, 9]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[9])).toBe('{"value":"#VALUE!","formula":"=DOLLAR(A10)"}');
+            done();
+        });
+        it('DOLLAR Formula having whole number and no decimal arguments->', (done: Function) => {
+            helper.edit('J11', '=DOLLAR(236)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('$236.00');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[9])).toBe('{"value":"$236.00","formula":"=DOLLAR(236)"}');
+            done();
+        });
+        it('DOLLAR Formula having floating number and no decimal arguments->', (done: Function) => {
+            helper.edit('J12', '=DOLLAR(145.322)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('$145.32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[9])).toBe('{"value":"$145.32","formula":"=DOLLAR(145.322)"}');
+            done();
+        });
+        it('DOLLAR Formula having whole number and decimal arguments->', (done: Function) => {
+            helper.edit('J13', '=DOLLAR(236,1)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('$236.0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[9])).toBe('{"value":"$236.0","formula":"=DOLLAR(236,1)"}');
+            done();
+        });
+        it('DOLLAR Formula having floating number and decimal arguments->', (done: Function) => {
+            helper.edit('J14', '=DOLLAR(145.322,1)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('$145.3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[9])).toBe('{"value":"$145.3","formula":"=DOLLAR(145.322,1)"}');
+            done();
+        });
+        it('DOLLAR Formula having floating number to be rounded off and decimal arguments->', (done: Function) => {
+            helper.edit('J15', '=DOLLAR(173.898,2)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('$173.90');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[9])).toBe('{"value":"$173.90","formula":"=DOLLAR(173.898,2)"}');
+            done();
+        });
+        it('DOLLAR Formula having floating number to be rounded off ->', (done: Function) => {
+            helper.edit('J16', '=DOLLAR(173.464,1)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('$173.5');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"$173.5","formula":"=DOLLAR(173.464,1)"}');
+            done();
+        });
+        it('DOLLAR Formula with second input having five as decimals value->', (done: Function) => {
+            helper.edit('J17', '=DOLLAR(123.123432,5)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('$123.12343');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[9])).toBe('{"value":"$123.12343","formula":"=DOLLAR(123.123432,5)"}');
+            done();
+        });
+        it('DOLLAR Formula with whole number and second input having five decimals value->', (done: Function) => {
+            helper.edit('J18', '=DOLLAR(457,5)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('$457.00000');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[9])).toBe('{"value":"$457.00000","formula":"=DOLLAR(457,5)"}');
+            done();
+        });
+        it('DOLLAR Formula with negative value as input->', (done: Function) => {
+            helper.edit('J19', '=DOLLAR(-123.122,0)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('($123)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[18].cells[9])).toBe('{"value":"($123)","formula":"=DOLLAR(-123.122,0)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative number and no decimal arguments->', (done: Function) => {
+            helper.edit('J20', '=DOLLAR(-236)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('($236.00)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[19].cells[9])).toBe('{"value":"($236.00)","formula":"=DOLLAR(-236)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative floating number and no decimal arguments->', (done: Function) => {
+            helper.edit('J21', '=DOLLAR(-145.322)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('($145.32)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[20].cells[9])).toBe('{"value":"($145.32)","formula":"=DOLLAR(-145.322)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative number and decimal arguments->', (done: Function) => {
+            helper.edit('J22', '=DOLLAR(-236,1)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('($236.0)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[21].cells[9])).toBe('{"value":"($236.0)","formula":"=DOLLAR(-236,1)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative floating number and decimal arguments->', (done: Function) => {
+            helper.edit('J23', '=DOLLAR(-145.322,1)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('($145.3)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[22].cells[9])).toBe('{"value":"($145.3)","formula":"=DOLLAR(-145.322,1)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative floating number to be rounded off and decimal arguments->', (done: Function) => {
+            helper.edit('J24', '=DOLLAR(-173.898,2)');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('($173.90)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[23].cells[9])).toBe('{"value":"($173.90)","formula":"=DOLLAR(-173.898,2)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative floating number to be rounded off ->', (done: Function) => {
+            helper.edit('J25', '=DOLLAR(-173.464,1)');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('($173.5)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[24].cells[9])).toBe('{"value":"($173.5)","formula":"=DOLLAR(-173.464,1)"}');
+            done();
+        });
+        it('DOLLAR Formula having negative floating number and five as decimal value->', (done: Function) => {
+            helper.edit('J26', '=DOLLAR(-123.123432,5)');
+            expect(helper.invoke('getCell', [25, 9]).textContent).toBe('($123.12343)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[25].cells[9])).toBe('{"value":"($123.12343)","formula":"=DOLLAR(-123.123432,5)"}');
+            done();
+        });
+        it('DOLLAR Formula with negative number and second input having five decimals value->', (done: Function) => {
+            helper.edit('J27', '=DOLLAR(-457,5)');
+            expect(helper.invoke('getCell', [26, 9]).textContent).toBe('($457.00000)');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[26].cells[9])).toBe('{"value":"($457.00000)","formula":"=DOLLAR(-457,5)"}');
+            done();
+        });
+        it('DOLLAR Formula with zero as number->', (done: Function) => {
+            helper.edit('J28', '=DOLLAR(0)');
+            expect(helper.invoke('getCell', [27, 9]).textContent).toBe('$0.00');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[27].cells[9])).toBe('{"value":"$0.00","formula":"=DOLLAR(0)"}');
+            done();
+        });
+        it('DOLLAR Formula with zero as number and zero as decimals->', (done: Function) => {
+            helper.edit('J29', '=DOLLAR(0,0)');
+            expect(helper.invoke('getCell', [28, 9]).textContent).toBe('$0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[28].cells[9])).toBe('{"value":"$0","formula":"=DOLLAR(0,0)"}');
+            done();
+        });
+        it('DOLLAR Formula with zero as number and decimal value as second arguments->', (done: Function) => {
+            helper.edit('J30', '=DOLLAR(0,4)');
+            expect(helper.invoke('getCell', [29, 9]).textContent).toBe('$0.0000');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[29].cells[9])).toBe('{"value":"$0.0000","formula":"=DOLLAR(0,4)"}');
             done();
         });
         it('SUMIF Formula->', (done: Function) => {
@@ -2136,8 +2272,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SUBTOTAL Formula Case X->', (done: Function) => {
             helper.edit('J9', '=SUBTOTAL(10,d1:d11)');
-            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('25.18182');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[9])).toBe('{"value":"25.18182","formula":"=SUBTOTAL(10,d1:d11)"}');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('25.18181818');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[9])).toBe('{"value":25.181818181818183,"formula":"=SUBTOTAL(10,d1:d11)"}');
             done();
         });
         it('SUBTOTAL Formula Case XI->', (done: Function) => {
@@ -2232,7 +2368,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J5', '=UNIQUE(2:2,1,TRUE)');
             expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Casual Shoes');
             expect(helper.invoke('getCell', [4, 10]).textContent).toBe('41684');
-            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('0.482315');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('0.482314815');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[9])).toBe('{"value":"Casual Shoes","formula":"=UNIQUE(2:2,1,TRUE)"}');
             done();
         });
@@ -2346,8 +2482,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SLOPE Formula ->', (done: Function) => {
             helper.edit('K1', '=SLOPE(D2:D11,E2:E11)');
-            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('-0.19111');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"-0.19111","formula":"=SLOPE(D2:D11,E2:E11)"}');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('-0.19111111');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"-0.19111111111111112","formula":"=SLOPE(D2:D11,E2:E11)"}');
             done();
         });
         it('SLOPE Formula with no inputs->', (done: Function) => {
@@ -2376,8 +2512,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('INTERCEPT Formula ->', (done: Function) => {
             helper.edit('K6', '=INTERCEPT(D2:D11,E2:E11)');
-            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('31.04444');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"31.04444","formula":"=INTERCEPT(D2:D11,E2:E11)"}');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('31.04444444');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"31.044444444444444","formula":"=INTERCEPT(D2:D11,E2:E11)"}');
             done();
         });
         it('INTERCEPT Formula with no inputs->', (done: Function) => {
@@ -2538,8 +2674,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EXP Formula ->', (done: Function) => {
             helper.edit('J1', '=EXP(1)');
-            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('2.718282');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":"2.718282","formula":"=EXP(1)"}');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('2.718281828');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":"2.718281828459045","formula":"=EXP(1)"}');
             done();
         });
         it('EXP Formula with no arguments ->', (done: Function) => {
@@ -2574,26 +2710,26 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('GEOMEAN Formula ->', (done: Function) => {
             helper.edit('K1', '=GEOMEAN(1,2)');
-            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('1.414214');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"1.414214","formula":"=GEOMEAN(1,2)"}');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('1.414213562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"1.4142135623730951","formula":"=GEOMEAN(1,2)"}');
             done();
         });
         it('GEOMEAN Formula with 3 arguments->', (done: Function) => {
             helper.edit('K2', '=GEOMEAN(1,2,3)');
-            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1.817121');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"1.817121","formula":"=GEOMEAN(1,2,3)"}');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1.817120593');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"1.8171205928321397","formula":"=GEOMEAN(1,2,3)"}');
             done();
         });
         it('GEOMEAN Formula with subtract operator->', (done: Function) => {
             helper.edit('K3', '=GEOMEAN(1,2)-1');
-            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414214');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.414214","formula":"=GEOMEAN(1,2)-1"}');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414213562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.41421356237309515","formula":"=GEOMEAN(1,2)-1"}');
             done();
         });
         it('GEOMEAN Formula with subtract operator->', (done: Function) => {
             helper.edit('K3', '=GEOMEAN(1,2)-1');
-            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414214');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.414214","formula":"=GEOMEAN(1,2)-1"}');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414213562');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.41421356237309515","formula":"=GEOMEAN(1,2)-1"}');
             done();
         });
         it('GEOMEAN Formula with negative value in argument 2->', (done: Function) => {
@@ -2616,8 +2752,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('GEOMEAN Formula with cell reference which contains string->', (done: Function) => {
             helper.edit('K7', '=GEOMEAN(D1:D5)');
-            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('15.65085');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"15.65085","formula":"=GEOMEAN(D1:D5)"}');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('15.6508458');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"15.650845800732872","formula":"=GEOMEAN(D1:D5)"}');
             done();
         });
         it('GEOMEAN Formula with cell reference which contains negative values->', (done: Function) => {
@@ -3489,6 +3625,35 @@ describe('Spreadsheet formula module ->', () => {
                     }, 100);
                 });
             });
+            it('IFERROR formula does not return the expected result that contains comma in the value.', (done: Function) => {
+                helper.edit('A1', 'Hello, World');
+                helper.edit('D1', '=IFERROR(INDEX(Sheet1!A1:A100,MATCH(Sheet1!A1,Sheet1!A1:A100,0))," ")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe('Hello, World');
+                helper.edit('A2', 'Hello World');
+                helper.edit('D2', '=IFERROR(INDEX(Sheet1!A1:A100,MATCH(Sheet1!A2,Sheet1!A1:A100,0))," ")');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe('Hello World');
+                helper.edit('A3', 'Hello, World 1');
+                helper.edit('D3', '=IFERROR(INDEX(Sheet1!A1:A100,MATCH(Sheet1!A3,Sheet1!A1:A100,0))," ")');
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toBe('Hello, World 1');
+                helper.edit('A4', 'Hello, World, Good, Bye');
+                helper.edit('D4', '=IFERROR(INDEX(Sheet1!A1:A100,MATCH(Sheet1!A4,Sheet1!A1:A100,0))," ")');
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toBe('Hello, World, Good, Bye');
+                helper.edit('A5', '');
+                helper.edit('D5', '=IFERROR(INDEX(Sheet1!A1:A100,MATCH(Sheet1!A5,Sheet1!A1:A100,0)),"cannot be found")');
+                expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toBe('cannot be found');
+                helper.edit('A6', 'Casual,Shoes');
+                helper.edit('D6', '=IF(2<5,INDEX(A1:A10,6),"sorry,bye")');
+                expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toBe('Casual,Shoes');
+                helper.edit('D7', '=IF(2>5,INDEX(A1:A10,6),"sorry,bye")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toBe('sorry,bye');
+                helper.edit('D8', '=CONCATENATE(INDEX(A1:A10,1),"Bye")');
+                expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toBe('Hello, WorldBye');
+                helper.edit('D9', '=LEN(INDEX(A1:A10,1))');
+                expect(helper.getInstance().sheets[0].rows[8].cells[3].value).toBe(12);
+                helper.edit('D10', '=EXACT(INDEX(A1:A10,1),"Hello, World")');
+                expect(helper.getInstance().sheets[0].rows[9].cells[3].value).toBeTruthy();
+                done();
+            });
         });
         describe('I261427 ->', () => {
             beforeEach((done: Function) => {
@@ -3560,9 +3725,9 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('B7', '=POWER((B2+B3),1/3)');
                 helper.edit('B8', '=(3^2)^(2)');
                 expect(helper.invoke('getCell', [3, 1]).textContent).toBe('1.1025');
-                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1.016396');
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1.016396357');
                 expect(helper.invoke('getCell', [5, 1]).textContent).toBe('1.1025');
-                expect(helper.invoke('getCell', [6, 1]).textContent).toBe('1.016396');
+                expect(helper.invoke('getCell', [6, 1]).textContent).toBe('1.016396357');
                 expect(helper.invoke('getCell', [7, 1]).textContent).toBe('81');
                 done();
             });
@@ -3869,8 +4034,8 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [8, 0]).textContent).toBe("Directors' Report and Audited Accounts");
                 expect(spreadsheet.sheets[0].rows[9].cells[0].value).toBe('September 1, 2019');
                 expect(helper.invoke('getCell', [9, 0]).textContent).toBe('September 1, 2019');
-                expect(spreadsheet.sheets[0].rows[9].cells[5].value).toBe('4.529225');
-                expect(helper.invoke('getCell', [9, 5]).textContent).toBe('4.529225');
+                expect(spreadsheet.sheets[0].rows[9].cells[5].value).toBe('4.529225147610059');
+                expect(helper.invoke('getCell', [9, 5]).textContent).toBe('4.529225148');
                 expect(spreadsheet.sheets[0].rows[10].cells[0].value).toBe('#DIV/0!');
                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('#DIV/0!');
                 expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('7');
@@ -4311,9 +4476,9 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
             it('EJ2-68201 - IF formula issue with cell referred with lowerCase value', (done: Function) => {
-                helper.edit('D6', 'true');
-                helper.edit('F6', 'ONE');
-                helper.edit('G6', 'TWO');
+                helper.edit('D6','true');
+                helper.edit('F6','ONE');
+                helper.edit('G6','TWO');
                 helper.invoke('updateCell', [{ formula: '=IF(D6,F6,G6)' }, 'D10']);
                 expect(helper.getInstance().sheets[0].rows[9].cells[3].value).toBe('ONE');
                 done();

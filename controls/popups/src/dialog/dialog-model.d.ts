@@ -101,8 +101,9 @@ export interface DialogModel extends ComponentModel{
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
-    content?: string | HTMLElement;
+    content?: string | HTMLElement | Function;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
@@ -141,8 +142,9 @@ export interface DialogModel extends ComponentModel{
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
-    header?: string | HTMLElement;
+    header?: string | HTMLElement | Function;
 
     /**
      * Specifies the value that represents whether the dialog component is visible.
@@ -224,8 +226,9 @@ export interface DialogModel extends ComponentModel{
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
-    footerTemplate?: HTMLElement | string;
+    footerTemplate?: HTMLElement | string | Function;
 
     /**
      * Specifies the value whether the dialog component can be dragged by the end-user.

@@ -67,7 +67,7 @@ describe('Sparkline Component Base Spec', () => {
                 ele = document.getElementById('container_sparkline_g');
                 expect(ele.childElementCount).toBe(10);
                 ele = document.getElementById('container_sparkline_column_0');
-                expect(ele.getAttribute('fill')).toBe("red");
+                expect(ele.getAttribute('fill')).toBe("#00bdae");
                 done();
             };
             sparkline.refresh();
@@ -170,7 +170,7 @@ describe('Sparkline Component Base Spec', () => {
                 ele = document.getElementById('container_sparkline_g');
                 expect(ele.childElementCount).toBe(10);
                 ele = document.getElementById('container_sparkline_column_1')
-                expect(ele.getAttribute('fill')).toBe("#3C78EF");
+                expect(ele.getAttribute('fill')).toBe("#00bdae");
                 expect(ele.getAttribute('stroke-width')).toBe("2");
                 done();
             };

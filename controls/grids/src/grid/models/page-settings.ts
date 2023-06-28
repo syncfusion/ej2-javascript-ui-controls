@@ -63,7 +63,8 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * It accepts either [template string](../../common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 }

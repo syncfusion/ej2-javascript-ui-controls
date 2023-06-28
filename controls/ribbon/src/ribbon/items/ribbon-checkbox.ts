@@ -59,6 +59,7 @@ export class RibbonCheckBox {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
+        inputEle.setAttribute('data-control', item.type.toString());
         const checkBoxObj: CheckBox = getComponent(inputEle, CheckBox);
         checkBoxObj.cssClass = checkBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         checkBoxObj.dataBind();

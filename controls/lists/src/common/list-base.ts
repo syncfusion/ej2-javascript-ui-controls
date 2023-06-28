@@ -654,7 +654,7 @@ export namespace ListBase {
      */
 
     export function renderContentTemplate(
-        createElement: createElementParams, template: string, dataSource: { [key: string]: Object }[] | string[] | number[],
+        createElement: createElementParams, template: string | Function, dataSource: { [key: string]: Object }[] | string[] | number[],
         // eslint-disable-next-line
         fields?: FieldsMapping, options?: ListBaseOptions, componentInstance?: any): HTMLElement {
         cssClass = getModuleClass(defaultListBaseOptions.moduleName);
@@ -773,7 +773,7 @@ export namespace ListBase {
 
     // tslint:disable-next-line
     export function renderGroupTemplate(
-        groupTemplate: string,
+        groupTemplate: string | Function,
         groupDataSource: { [key: string]: Object }[],
         fields: FieldsMapping,
         // eslint-disable-next-line
@@ -1189,16 +1189,22 @@ export interface ListBaseOptions {
     sortOrder?: SortOrder;
     /**
      * Specifies the item template
+     * 
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
     /**
      * Specifies the group header template
+     * 
+     * @aspType string
      */
-    groupTemplate?: string;
+    groupTemplate?: string | Function;
     /**
      * Specifies the ListView header template
+     * 
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
     /**
      * Specifies the callback function that triggered before each list creation
      */
@@ -1270,10 +1276,10 @@ export function getFieldValues(dataItem: { [key: string]: Object } | string | nu
     return fieldData;
 }
 
-function compileTemplate(template: string): Function {
+function compileTemplate(template: string | Function): Function {
     if (template) {
         try {
-            if (document.querySelector(template)) {
+            if (typeof template !== 'function' && document.querySelector(template)) {
                 return compile(document.querySelector(template).innerHTML.trim());
             } else {
                 return compile(template);

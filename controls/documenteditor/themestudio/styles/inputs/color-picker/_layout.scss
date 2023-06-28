@@ -17,6 +17,11 @@
       @if $skin-name == 'Material3' {
         background: $cpicker-split-btn-background-color;
         border-radius: $cpicker-split-btn-border-radius;
+        @if $skin-name == 'Material3' {
+          border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+        }
+        box-shadow: none;
       }
     }
 
@@ -32,6 +37,9 @@
     }
 
     & .e-split-btn-wrapper {
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+      }
       & .e-split-colorpicker.e-split-btn {
         font-family: initial;
         line-height: $cpicker-split-line-height;
@@ -42,6 +50,10 @@
         @else if $skin-name == 'Material3' {
           background: $cpicker-split-btn-background-color;
           border-radius: $cpicker-split-btn-border-radius;
+          border-bottom-right-radius: 0;
+          border-top-right-radius: 0;
+          border-right-color: transparent;
+          box-shadow: none;
         }
         @else if $skin-name == 'bootstrap5' {
           background-color: transparent;
@@ -77,6 +89,17 @@
       &.e-rtl {
         & .e-split-colorpicker.e-split-btn {
           padding: $cpicker-split-btn-padding;
+          @if $skin-name == 'Material3' {
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
+          }
+        }
+
+        & .e-dropdown-btn.e-icon-btn {
+          @if $skin-name == 'Material3' {
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
+          }
         }
 
         & .e-btn.e-icon-btn {
@@ -86,6 +109,7 @@
           @else if $skin-name == 'Material3' {
             background: $cpicker-split-btn-background-color;
             border-radius: $cpicker-split-btn-border-radius;
+            border-left-color: transparent;
           }
           @else if $skin-name == 'bootstrap5' {
             background-color: $cpicker-tile-active-border-color;
@@ -185,6 +209,9 @@
   .e-bigger .e-colorpicker-container,
   .e-bigger.e-colorpicker-container {
     & .e-split-btn-wrapper {
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+      }
       & .e-split-colorpicker.e-split-btn {
         line-height: $cpicker-bigger-split-line-height;
         padding: $cpicker-bigger-split-btn-padding;
@@ -441,6 +468,9 @@
         @if $skin-name == 'FluentUI' {
           height: 50px;
         }
+        @else if $skin-name == 'Material3' {
+          height: 42px;
+        }
         @else {
           height: 32px;
         }
@@ -468,6 +498,9 @@
             @if $skin-name == 'FluentUI' {
               top: 25px;
             }
+            @if $skin-name == 'Material3' {
+              top: 20px;
+            }
             @else {
               top: $cpicker-preview-height;
             }
@@ -487,7 +520,12 @@
         & .e-float-input {
           & input {
             padding-left: 0;
-            text-align: center;
+            @if $skin-name == 'Material3' {
+              text-align: left;
+            }
+            @else {
+              text-align: center;
+            }
           }
         }
 
@@ -551,7 +589,7 @@
 
         & .e-float-text {
           text-align: center;
-          @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
             text-align: left;
           }
         }
@@ -635,6 +673,10 @@
       @if $skin-name == 'bootstrap4' {
         height: 26px;
       }
+      @else if $skin-name == 'Material3' {
+        height: $cpicker-switch-btn-height;
+        padding: 0;
+      }
       @else {
         height: $cpicker-switch-btn-height;
       }
@@ -669,7 +711,7 @@
           @if $skin-name == 'tailwind' or $skin-name == 'Material3' {
             & .e-mode-switch-btn {
               @if $skin-name == 'Material3' {
-                height: 26px;
+                height: 32px;
               }
               width: $cpicker-palette-switch-btn-width;
             }
@@ -890,8 +932,9 @@
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             height: 38px;
           }
-          @else if $skin-name == 'Material3' {
+          @if $skin-name == 'Material3' {
             height: $cpicker-bigger-switch-btn-height;
+            width: $cpicker-bigger-switch-btn-width;
           }
         }
       }
@@ -1008,7 +1051,8 @@
 
             & .e-mode-switch-btn {
               @if $skin-name == 'Material3' {
-                height: $cpicker-switch-btn-height;
+                height: $cpicker-bigger-switch-btn-height;
+                width: $cpicker-bigger-switch-btn-width;
               }
             }
 

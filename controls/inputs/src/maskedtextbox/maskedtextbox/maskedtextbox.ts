@@ -504,8 +504,12 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             switch (prop) {
             case 'value':
                 setMaskValue.call(this, this.value);
-                if (this.placeholder) {
+                if (this.placeholder && !this.isFocus) {
                     this.setMaskPlaceholder(false, false);
+                }
+                if (this.value === "") {
+                    this.element.selectionStart = 0;
+                    this.element.selectionEnd = 0;
                 }
                 break;
             case 'placeholder':
@@ -599,6 +603,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public focusIn(): void {
         if (document.activeElement !== this.element && this.enabled) {
+            this.isFocus = true;
             this.element.focus();
             addClass([this.inputObj.container], [MASKINPUT_FOCUS]);
         }
@@ -611,6 +616,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public focusOut(): void {
         if (document.activeElement === this.element && this.enabled) {
+            this.isFocus = false;
             this.element.blur();
             removeClass([this.inputObj.container], [MASKINPUT_FOCUS]);
         }

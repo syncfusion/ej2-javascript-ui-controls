@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex } from '../base/index';
-import { setLinkModel, getRangeIndexes, updateCell, getSwapRange } from '../common/index';
+import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex, getColumn } from '../base/index';
+import { setLinkModel, getRangeIndexes, updateCell, getSwapRange, isLocked } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -53,6 +53,10 @@ export class WorkbookHyperlink {
             sheet = this.parent.getActiveSheet();
             cellAddr = cellAddr || sheet.selectedRange;
         }
+        const isProtected: boolean = !args.triggerEvt && sheet.isProtected;
+        if (isProtected && !sheet.protectSettings.insertLink) {
+            return;
+        }
         const cellIdx: number[] = getSwapRange(getRangeIndexes(cellAddr));
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.toLowerCase().indexOf('www.') === 0) {
@@ -67,6 +71,9 @@ export class WorkbookHyperlink {
         const activeCell: number[] = getRangeIndexes(sheet.activeCell);
         for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
             for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
+                if (isProtected && isLocked(getCell(rIdx, cIdx, sheet), getColumn(sheet, cIdx))) {
+                    continue;
+                }
                 cellModel = { hyperlink: hyperlink };
                 if (!isNullOrUndefined(args.displayText) && rIdx === activeCell[0] && cIdx === activeCell[1]) {
                     if (args.triggerEvt) {

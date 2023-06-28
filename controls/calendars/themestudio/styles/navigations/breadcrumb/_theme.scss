@@ -10,6 +10,7 @@
         &:focus {
           @if $skin-name == 'Material3' {
             background: $breadcrumb-item-hover-color;
+            border-radius: 4px;
           }
           @else {
             color: $breadcrumb-item-hover-color;
@@ -25,6 +26,7 @@
         &:active {
           @if $skin-name == 'Material3' {
             background: $breadcrumb-item-active-color;
+            border-radius: 4px;
           }
           @else {
             color: $breadcrumb-item-active-color;
@@ -35,11 +37,11 @@
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
         &:not([data-active-item]):not(.e-breadcrumb-separator) {
           &:hover {
-            background-color: $breadcrumb-item-hover-bgcolor;
+            background: $breadcrumb-item-hover-bgcolor;
           }
 
           &:active {
-            background-color: $breadcrumb-item-active-bgcolor;
+            background: $breadcrumb-item-active-bgcolor;
           }
         }
       }
@@ -47,18 +49,18 @@
       @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
         &.e-icon-item {
           &:hover {
-            background-color: $breadcrumb-collapsed-icon-hover-bgcolor;
+            background: $breadcrumb-collapsed-icon-hover-bgcolor;
             color: $breadcrumb-collapsed-icon-hover-color;
           }
 
           &:active {
-            background-color: $breadcrumb-collapsed-icon-active-bgcolor;
+            background: $breadcrumb-collapsed-icon-active-bgcolor;
             color: $breadcrumb-collapsed-icon-hover-color;
           }
 
           @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' {
             .e-breadcrumb-text:focus {
-              background-color: $breadcrumb-collapsed-icon-focus-bgcolor;
+              background: $breadcrumb-collapsed-icon-focus-bgcolor;
               color: $breadcrumb-collapsed-icon-hover-color;
             }
           }
@@ -119,12 +121,12 @@
       color: $breadcrumb-collapsed-icon-color;
 
       &:hover {
-        background-color: $breadcrumb-collapsed-icon-hover-bgcolor;
+        background: $breadcrumb-collapsed-icon-hover-bgcolor;
         color: $breadcrumb-collapsed-icon-hover-color;
       }
 
       &:active {
-        background-color: $breadcrumb-collapsed-icon-active-bgcolor;
+        background: $breadcrumb-collapsed-icon-active-bgcolor;
         @if $skin-name == 'FluentUI' {
           color: $breadcrumb-collapsed-icon-active-color;
         }
@@ -139,7 +141,7 @@
           color: $breadcrumb-collapsed-icon-focus-color;
         }
         @else {
-          background-color: $breadcrumb-collapsed-icon-focus-bgcolor;
+          background: $breadcrumb-collapsed-icon-focus-bgcolor;
           color: $breadcrumb-collapsed-icon-hover-color;
         }
       }
@@ -157,19 +159,19 @@
   }
 
   .e-breadcrumb-popup {
-    background-color: $breadcrumb-popup-bgcolor;
+    background: $breadcrumb-popup-bgcolor;
 
     .e-breadcrumb-text {
       color: $breadcrumb-popup-item-color;
 
       &:hover {
-        background-color: $breadcrumb-popup-item-hover-bgcolor;
+        background: $breadcrumb-popup-item-hover-bgcolor;
         color: $breadcrumb-popup-item-hover-color;
       }
     }
 
     .e-breadcrumb-item .e-breadcrumb-text:focus {
-      background-color: $breadcrumb-popup-item-hover-bgcolor;
+      background: $breadcrumb-popup-item-hover-bgcolor;
       color: $breadcrumb-popup-item-hover-color;
     }
   }

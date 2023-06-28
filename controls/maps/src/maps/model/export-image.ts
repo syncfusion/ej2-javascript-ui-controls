@@ -42,10 +42,17 @@ export class ImageExport {
             const svgParent: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
             let svgDataElement: string;
             let tileSvg: Element;
-            const svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
+            let svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
+            const backgroundElement: HTMLElement = svgObject.childNodes[0] as HTMLElement;
+            const backgroundColor: string = backgroundElement.getAttribute('fill');
+            if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                (svgObject.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+            } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                (svgObject.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
+            }
             if (!maps.isTileMap) {
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    maps.svgObject.outerHTML + '</svg>';
+                svgObject.outerHTML + '</svg>';
             } else {
                 tileSvg = getElementByID(maps.element.id + '_Tile_SVG').cloneNode(true) as Element;
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
@@ -89,6 +96,7 @@ export class ImageExport {
                     });
                     image.src = url;
                 } else {
+                    maps.isExportInitialTileMap = true;
                     const svgParentElement: HTMLElement = document.getElementById(maps.element.id + '_MapAreaBorder');
                     const top: number = parseFloat(svgParentElement.getAttribute('y'));
                     const left: number = parseFloat(svgParentElement.getAttribute('x'));
@@ -98,7 +106,9 @@ export class ImageExport {
                         const tile: HTMLElement = document.getElementById(maps.element.id + '_tile_' + (i - 1));
                         const exportTileImg: HTMLImageElement = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
-                        ctxt.fillStyle = maps.background ? maps.background : '#FFFFFF';
+                        let background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
+                            (maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent') ? '#000000' : '#ffffff';
+                        ctxt.fillStyle = background;
                         ctxt.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
                         ctxt.font = maps.titleSettings.textStyle.size + ' Arial';
                         const titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
@@ -129,7 +139,9 @@ export class ImageExport {
                                 if (allowDownload) {
                                     triggerDownload(fileName, type, localBase64, isDownload);
                                     localStorage.removeItem('local-canvasImage');
+                                    maps.isExportInitialTileMap = false;
                                 } else {
+                                    maps.isExportInitialTileMap = false;
                                     if (type === 'PNG') {
                                         resolve(localBase64);
                                     } else if (type === 'JPEG') {
@@ -137,6 +149,7 @@ export class ImageExport {
                                     }
                                 }
                             }
+                            
                         });
                         if (i === 0 || i === imgTileLength + 1) {
                             if (i === 0) {

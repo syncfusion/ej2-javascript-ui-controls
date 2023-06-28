@@ -7,7 +7,7 @@ import { AnimationSettings, AnimationSettingsModel, PositionData, PositionDataMo
 export class KanbanDialog extends ChildProperty<KanbanDialog> {
 
     /**
-     * Specifies the value whether the dialog component can be dragged by the end-user.
+     * Specifies the value whether the Kanban's dialog can be dragged by the end-user.
      * The dialog allows to drag by selecting the header and dragging it for re-position the dialog.
      *
      * @default false
@@ -16,7 +16,7 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public allowDragging: boolean;
 
     /**
-     * Specifies the animation settings of the dialog component.
+     * Specifies the animation settings of the Kanban'ss dialog.
      * The animation effect can be applied on open and close the dialog with duration and delay.
      *
      * @default { effect: 'Fade', duration: 400, delay:0 }
@@ -43,8 +43,8 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public cssClass: string;
 
     /**
-     * Specifies the value whether the dialog component can be resized by the end-user.
-     * If enableResize is true, the dialog component creates grip to resize it diagonal direction.
+     * Specifies the value whether the Kanban's dialog can be resized by the end-user.
+     * If enableResize is true, the Kanban's dialog creates grip to resize it diagonal direction.
      *
      * @default false
      */
@@ -52,7 +52,7 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public enableResize: boolean;
 
     /**
-     * Specifies the height of the dialog component.
+     * Specifies the height of the Kanban's dialog.
      *
      * @default 'auto'
      */
@@ -71,7 +71,7 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public isModal: boolean;
 
     /**
-     * Specify the min-height of the dialog component.
+     * Specify the min-height of the Kanban's dialog.
      *
      * @default ''
      */
@@ -90,7 +90,7 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public position: PositionDataModel;
 
     /**
-     * Specifies the value that represents whether the close icon is shown in the dialog component.
+     * Specifies the value that represents whether the close icon is shown in the Kanban's dialog.
      *
      * @default true
      */
@@ -115,7 +115,7 @@ export class KanbanDialog extends ChildProperty<KanbanDialog> {
     public width: string | number;
 
     /**
-     * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another Kanban's dialog.
      *
      * @default 1000
      */

@@ -27,7 +27,7 @@
   }
 
   .e-slider-tooltip.e-tooltip-wrap.e-popup {
-    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' or $skin-name == 'Material3-dark') {
       background-color: $slider-handle-bg-color;
       border: 0;
       border-radius: 8px;
@@ -45,9 +45,11 @@
       &.e-material-tooltip-start {
         background-color: $slider-handle-border-color;
 
-        .e-arrow-tip-inner {
-          color: $grey-black;
-          opacity: 0;
+        @if $skin-name != 'Material3' and $skin-name != 'Material3-dark' {
+          .e-arrow-tip-inner {
+            color: $grey-black;
+            opacity: 0;
+          }
         }
 
         .e-arrow-tip-outer.e-tip-bottom {
@@ -83,8 +85,18 @@
         height: 16px;
         overflow: hidden;
         padding: 0 8px;
-        text-align: center;
-        top: calc(50% - 8px);
+        @if $skin-name != 'Material3' and $skin-name != 'Material3-dark' {
+          text-align: center;
+        }
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
+          top: calc(50% - 8px);
+          position: relative;
+          line-height: 16px;
+        }
+        @else {
+          top: calc(50% - 10px);
+          left: calc(50% - 36px);
+        }
         width: 100%;
 
         &.e-material-tooltip-show {
@@ -174,7 +186,13 @@
           overflow: hidden;
           padding: 0;
           text-align: center;
-          top: calc(50% - 8px);
+          @if $skin-name == 'material' or $skin-name == 'material-dark' {
+            top: calc(50% - 8px);
+          }
+          @else {
+            top: calc(50% - 10px);
+            left: calc(50% - 16px);
+          }
           width: 100%;
 
           &.e-material-tooltip-show {
@@ -286,7 +304,7 @@
         }
       }
 
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
         .e-slider-button {
           height: 18px;
           width: 18px;
@@ -304,7 +322,7 @@
 
           .e-first-button,
           .e-second-button {
-            @if ($skin-name == 'bootstrap5') {
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               margin-right: -12px;
             }
             @else {
@@ -346,7 +364,7 @@
         }
       }
 
-      @if ($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3') {
 
         &.e-horizontal,
         &.e-vertical {
@@ -355,6 +373,9 @@
             border-radius: 12px;
             height: 24px;
             width: 24px;
+            @if $skin-name == 'Material3' {
+              padding: 0;
+            }
 
             .e-button-icon::before {
               font-size: 22px;
@@ -668,7 +689,7 @@
         }
 
         .e-slider {
-          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
             .e-slider-track {
               height: 8px;
               top: calc(50% - 4px);
@@ -681,7 +702,7 @@
           }
 
           .e-handle {
-            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
               margin-left: $slider-handle-mobile-margin-left;
               top: $slider-handle-mobile-handle-top;
             }
@@ -709,6 +730,9 @@
           .e-handle {
             @if ($skin-name == 'tailwind') {
               left: calc(50% - 5px);
+            }
+            @else if $skin-name == 'Material3' {
+              left: calc(50% - 14px);
             }
             @else {
               left: calc(50% - 9px);
@@ -1205,7 +1229,7 @@
             border-radius: 2px;
           }
         }
-        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'Material3-dark') {
           background: $slider-track-color;
           border-radius: 4px;
           overflow: hidden;
@@ -1438,6 +1462,10 @@
           margin-right: $slider-btn-center-align;
           right: 50%;
 
+          @if $skin-name == 'Material3' {
+            margin-right: $slider-btn-vertical-center-align;
+          }
+
           @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3') {
             .e-button-icon {
               background-image: $slider-button-vdown-bg-image;
@@ -1461,6 +1489,10 @@
               @if ($skin-name == 'bootstrap5') {
                 content: '\e734';
                 font-size: 18px;
+              }
+              @else if ($skin-name == 'Material3') {
+                content: '\e734';
+                font-size: 16px;
               }
               @else {
                 content: '\e734';
@@ -1487,6 +1519,10 @@
           right: 50%;
           top: 0;
 
+          @if $skin-name == 'Material3' {
+            margin-right: $slider-btn-vertical-center-align;
+          }
+
           @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI' and $skin-name != 'Material3') {
             .e-button-icon {
               background-image: $slider-button-vup-bg-image;
@@ -1510,6 +1546,10 @@
               @if ($skin-name == 'bootstrap5') {
                 content: '\e7dd';
                 font-size: 18px;
+              }
+              @else if ($skin-name == 'Material3') {
+                content: '\e7dd';
+                font-size: 16px;
               }
               @else {
                 content: '\e7dd';
@@ -1769,8 +1809,13 @@
             box-shadow: $slider-tab-active-box-shadow;
           }
           @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
-            background-color: $slider-tab-background;
-            border: $slider-tab-border;
+            @if $skin-name == 'Material3' {
+              background: $slider-tab-background;
+            }
+            @else {
+              background-color: $slider-tab-background;
+              border: $slider-tab-border;
+            }
             box-shadow: $slider-tab-active-box-shadow;
           }
           /* stylelint-enable */

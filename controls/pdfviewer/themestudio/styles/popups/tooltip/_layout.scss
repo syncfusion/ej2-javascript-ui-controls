@@ -55,7 +55,7 @@
       right: -9px;
       top: -9px;
       z-index: inherit;
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
         border-radius: 9px;
         border-width: 1px;
         box-shadow: $shadow-sm;

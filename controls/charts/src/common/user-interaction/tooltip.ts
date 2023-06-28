@@ -29,8 +29,11 @@ export class BaseTooltip extends ChartData {
     public inverted: boolean;
     public formattedText: string[];
     public header: string;
-    /** @private */
-    public template: string;
+    /** 
+     * @aspType string
+     * @private 
+     */
+    public template: string | Function;
 
     /** @private */
     public valueX: number;
@@ -71,7 +74,7 @@ export class BaseTooltip extends ChartData {
     public getTooltipElement(isTooltip: boolean): HTMLDivElement {
         this.inverted = this.chart.requireInvertedAxis;
         this.header = (this.control.tooltip.header === null) ?
-            ((this.control.tooltip.shared) ? '<b>${point.x}</b>' : '<b>${series.name}</b>')
+            ((this.control.tooltip.shared) ? '${point.x}' : '${series.name}')
             : (this.control.tooltip.header);
         this.formattedText = [];
         const tooltipDiv: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip');
@@ -170,7 +173,7 @@ export class BaseTooltip extends ChartData {
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {
-                    opacity: chart.tooltip.opacity,
+                    opacity: chart.tooltip.opacity ?  chart.tooltip.opacity : ((this.chart.theme === 'Material3' || this.chart.theme === 'Material3Dark') ? 1 : 0.75),
                     header: this.headerText,
                     content: this.text,
                     fill: chart.tooltip.fill,
@@ -183,7 +186,7 @@ export class BaseTooltip extends ChartData {
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
                     palette: this.findPalette(),
-                    template: customTemplate || this.template,
+                    template: customTemplate || this.template as any,
                     data: templatePoint,
                     theme: chart.theme,
                     offset: offset,
@@ -194,7 +197,7 @@ export class BaseTooltip extends ChartData {
                     availableSize: chart.availableSize,
                     duration: this.chart.tooltip.duration,
                     isCanvas: this.chart.enableCanvas,
-                    isTextWrap: chart.tooltip.enableTextWrap && (chart.getModuleName() === 'chart' || chart.getModuleName() === 'accumulationchart'),
+                    isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                     blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                     controlInstance: this.chart,
                     enableRTL: chart.enableRtl,
@@ -221,7 +224,7 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
                 this.svgTooltip.data = templatePoint;
-                this.svgTooltip.template = this.template;
+                this.svgTooltip.template = this.template as any;
                 this.svgTooltip.controlName = 'Chart';
                 this.svgTooltip.crosshair = crosshairEnabled;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;

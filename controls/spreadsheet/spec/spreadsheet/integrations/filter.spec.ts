@@ -35,6 +35,20 @@ describe('Filter ->', () => {
             done();
         });
 
+        it('Apply and remove filter using keyboard shortcuts', (done: Function) => {
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 0]);
+            expect(cellEle.childElementCount).toBe(0);
+            helper.triggerKeyNativeEvent(76, true, true);
+            expect(cellEle.children[0].classList).toContain('e-filter-btn');
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.filterModule.filterRange.size).toBe(1);
+            expect(spreadsheet.filterModule.filterRange.get(0).range).toEqual([0, 0, 10, 7]);
+            helper.triggerKeyNativeEvent(76, true, true);
+            expect(cellEle.childElementCount).toBe(0);
+            expect(spreadsheet.filterModule.filterRange.size).toBe(0);
+            done();
+        });
+
         it('Apply and remove filter using toolbar', (done: Function) => {
             const spreadsheet: any = helper.getInstance();
             const firstCell: HTMLElement = helper.invoke('getCell', [0, 0]);

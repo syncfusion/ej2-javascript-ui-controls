@@ -206,13 +206,21 @@ export interface IWorkTimelineRanges {
 }
 
 export interface IGanttColumn {
+    /** Defines column name */
     field?: string;
+    /** Defines header text of column */
     headerText?: string;
+    /** Defines edit type of column */
     editType?: string;
+    /** Defines mapping name of column */
     mappingName?: string;
+    /** Defines whether editing is enabled or not */
     allowEditing: boolean;
+    /** Defines width of column */
     width: number;
+    /** Defines format of column */
     format: string;
+    /** Defines whether column is visible or not */
     visible: boolean;
 }
 
@@ -228,10 +236,15 @@ export interface IIndicator {
 }
 
 export interface IWorkingTimeRange {
+    /** Defines the from date. */
     from?: number;
+    /** Defines the to date. */
     to?: number;
+    /** Defines whether it is working day or not. */
     isWorking?: boolean;
+    /** Defines the color to render. */
     color?: string;
+    /** Defines the interval between from and to dates. */
     interval?: number;
 }
 
@@ -300,9 +313,13 @@ export interface IKeyPressedEventArgs {
 }
 
 export interface ITaskDeletedEventArgs {
+    /** Defines the deleted records */
     deletedRecordCollection?: IGanttData[];
+    /** Defines the updated records */
     updatedRecordCollection?: IGanttData[];
+    /** Defines the event is cancel-able or not. */
     cancel?: boolean;
+    /** Defines the event action. */
     action?: string;
 }
 
@@ -328,11 +345,17 @@ export interface IPredecessor {
 }
 
 export interface IValidateArgs {
+    /** Defines the gantt data. */
     data?: IGanttData;
+    /** Defines the record index. */
     recordIndex?: number;
+    /** Defines the request type */
     requestType?: string;
+    /** Defines whether to cancel the action or not */
     cancel?: boolean;
+    /** Defines the validation mode. */
     validateMode?: IValidateMode;
+    /** Defines the edited arguments. */
     editEventArgs?: object;
 }
 
@@ -357,12 +380,19 @@ export interface IValidateMode {
     preserveLinkWithEditing?: boolean;
 }
 export interface IActionBeginEventArgs {
+    /** Defines the action type. */
     requestType?: string;
+    /** Defines the gantt record. */
     data?: IGanttData | IGanttData[];
+    /** Defines the modified records. */
     modifiedRecords?: IGanttData[];
+    /** Defines the modified task data. */
     modifiedTaskData?: object[] | object;
+    /** Defines the event is cancel-able or not. */
     cancel?: boolean;
+    /** Defines the taskbar edit action. */
     taskBarEditAction?: string;
+    /** Defines the event action. */
     action?: string;
     /** Defines the target element. */
     target?: Element;
@@ -391,6 +421,10 @@ export interface IConnectorLineObject {
     parentIndexInCurrentView?: number;
     childIndexInCurrentView?: number;
     isCritical?: boolean;
+    parentEndPoint?:number;
+    childEndPoint?:number;
+    isManualChild?: boolean;
+    isManualParent?: boolean;
 }
 
 export interface ISplitterResizedEventArgs {
@@ -437,7 +471,7 @@ export interface BeforeTooltipRenderEventArgs {
     /** Defines the original event arguments of tooltip control. */
     args?: TooltipEventArgs;
     /** Defines the content. */
-    content?: string | Element;
+    content?: string | Element | Function;
     /** Cancel the tooltip */
     cancel?: boolean;
 }
@@ -562,6 +596,7 @@ export interface ZoomTimelineSettings {
     bottomTier?: TimelineTierSettingsModel;
     /** Defines timeline unit size. */
     timelineUnitSize?: number;
+    /** Defines the week start day. */
     weekStartDay?: number;
     /** Defines weekend background color. */
     weekendBackground?: string;

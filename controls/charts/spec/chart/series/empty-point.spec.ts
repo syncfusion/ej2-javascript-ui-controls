@@ -91,7 +91,7 @@ describe('Empty Points checking with', () => {
                 markerElement = getElement('empty-container_Series_0_Point_2_Symbol');
                 expect(parseInt(markerElement.getAttribute('cx'), 10)).toBe(250);
                 temp = parseInt(markerElement.getAttribute('cy'), 10);
-                expect( temp === 372  || temp === 368 ).toBe(true);
+                expect( temp === 371  || temp === 368 ).toBe(true);
                 expect(markerElement.getAttribute('fill')).toBe('blue');
                 expect(markerElement.getAttribute('stroke')).toBe('purple');
                 expect(markerElement.getAttribute('stroke-width')).toBe('2');
@@ -99,7 +99,7 @@ describe('Empty Points checking with', () => {
                 markerElement = getElement('empty-container_Series_1_Point_3_Symbol');
                 expect(parseInt(markerElement.getAttribute('cx'), 10)).toBe(375);
                 temp = parseInt(markerElement.getAttribute('cy'), 10);
-                expect(temp === 372  || temp === 368).toBe(true);
+                expect(temp === 371  || temp === 368).toBe(true);
                 expect(markerElement.getAttribute('fill')).toBe('blue');
                 expect(markerElement.getAttribute('stroke')).toBe('purple');
                 expect(markerElement.getAttribute('stroke-width')).toBe('2');
@@ -107,6 +107,7 @@ describe('Empty Points checking with', () => {
             };
             chartObj.series[0].emptyPointSettings = { mode: 'Zero', fill: 'blue', border: { width: 2, color: 'purple'}};
             chartObj.series[1].emptyPointSettings = { mode: 'Zero', fill: 'blue', border: { width: 2, color: 'purple'}};
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
         it('Empty Point with Line Series Average Mode', (done: Function) => {
@@ -129,6 +130,7 @@ describe('Empty Points checking with', () => {
             };
             chartObj.series[0].emptyPointSettings = { mode: 'Average'};
             chartObj.series[1].emptyPointSettings = { mode: 'Average'};
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
         it('Empty Point with Line Series Drop Mode', (done: Function) => {
@@ -152,13 +154,13 @@ describe('Empty Points checking with', () => {
                 pathElement = getElement(id + '_Series_1_Point_4');
                 path = pathElement.getAttribute('d');
                 let pathXY: string[] = path.split(' ');
-                expect(pathXY[2] === '372.25' || pathXY[2] === '368.25' ).toBe(true);
-                expect(pathXY[2] === '372.25' || pathXY[5] === '368.25' ).toBe(true);
+                expect(pathXY[2] === '371.25' || pathXY[2] === '368.25' ).toBe(true);
+                expect(pathXY[2] === '371.25' || pathXY[5] === '368.25' ).toBe(true);
                 pathElement = getElement(id + '_Series_0_Point_5');
                 path = pathElement.getAttribute('d');
                 pathXY = path.split(' ');
                 temp = parseInt(pathXY[18], 10);
-                expect(temp === 372 || temp === 368).toBe(true);
+                expect(temp === 371 || temp === 368).toBe(true);
                 temp = parseInt(pathXY[5], 10);
                 expect(temp === 204 || temp === 202).toBe(true);
                 done();
@@ -260,6 +262,7 @@ describe('Empty Points checking with', () => {
             chartObj.series[1].type = 'Scatter';
             chartObj.series[0].emptyPointSettings = { mode: 'Average'};
             chartObj.series[1].emptyPointSettings = { mode: 'Average'};
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
         it('Empty Point with Bubble Series Average', (done: Function) => {
@@ -267,11 +270,11 @@ describe('Empty Points checking with', () => {
                 markerElement = getElement(id + '_Series_1_Point_3');
                 expect(parseInt(markerElement.getAttribute('cx'), 10)).toBe(375);
                 temp = parseInt(markerElement.getAttribute('cy'), 10);
-                expect(temp === 279 || temp === 276).toBe(true);
+                expect(temp === 278 || temp === 276).toBe(true);
                 markerElement = getElement(id + '_Series_0_Point_1');
                 expect(parseInt(markerElement.getAttribute('cx'), 10)).toBe(125);
                 temp = parseInt(markerElement.getAttribute('cy'), 10);
-                expect(temp === 223 || temp === 220).toBe(true);
+                expect(temp === 222 || temp === 220).toBe(true);
                 done();
             };
             chartObj.series[0].type = 'Bubble';
@@ -327,7 +330,7 @@ describe('Empty Points checking with', () => {
                 path = pathElement.getAttribute('d');
                 let pathXY: string[] = path.split(' ');
                 temp = parseInt(pathXY[18], 10);
-                expect(temp === 230 || temp === 227).toBe(true);
+                expect(temp === 229 || temp === 227).toBe(true);
                 temp = parseInt(pathXY[5], 10);
                 expect(temp === 87).toBe(true);
                 expect(pathElement.getAttribute('fill')).toBe('blue');
@@ -335,9 +338,9 @@ describe('Empty Points checking with', () => {
                 path = pathElement.getAttribute('d');
                 pathXY = path.split(' ');
                 temp = parseInt(pathXY[2], 10);
-                expect(temp === 372 || temp === 368).toBe(true);
+                expect(temp === 371 || temp === 368).toBe(true);
                 temp = parseInt(pathXY[5], 10);
-                expect(temp === 372 || temp === 368).toBe(true);
+                expect(temp === 371 || temp === 368).toBe(true);
                 done();
             };
             chartObj.series[0].dataSource = [

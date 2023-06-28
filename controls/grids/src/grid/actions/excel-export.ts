@@ -168,6 +168,13 @@ export class ExcelExport {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
+        if (gObj.allowGrouping && gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length) {
+            if (isNullOrUndefined(exportProperties)) {
+                exportProperties = { hierarchyExportMode: 'All' };
+            } else {
+                exportProperties.hierarchyExportMode = exportProperties.hierarchyExportMode || 'All';
+            }
+        }
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
             exportProperties.dataSource = exportProperties.dataSource instanceof DataManager ?
                 exportProperties.dataSource : new DataManager (exportProperties.dataSource);
@@ -826,9 +833,9 @@ export class ExcelExport {
                 excelRows.push({ index: customIndex, cells: cells });
             } else {
                 let row: Object = {};
-                if (this.groupedColLength < 8 && this.groupedColLength > 0) {
-                    const dummyOutlineLevel: string = 'outlineLevel';
-                    const dummyGrouping: string = 'grouping';
+                const dummyOutlineLevel: string = 'outlineLevel';
+                const dummyGrouping: string = 'grouping';
+                if (this.groupedColLength < 8 && this.groupedColLength > 0 && !(gObj.groupSettings.enableLazyLoading && isNullOrUndefined(excelRows[excelRows.length - 1][`${dummyGrouping}`]))) {
                     const level: number = excelRows[excelRows.length - 1][`${dummyGrouping}`][`${dummyOutlineLevel}`];
                     const grouping: Object = { outlineLevel: level, isCollapsed: true };
                     row = {index: this.rowLength++, cells: cells, grouping};
@@ -858,7 +865,7 @@ export class ExcelExport {
         }
     }
 
-    private getAggreateValue(gObj: IGrid, cellType: CellType, template: string,
+    private getAggreateValue(gObj: IGrid, cellType: CellType, template: string | Function,
                              cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): NodeList | string {
         const templateFn: { [x: string]: Function } = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);

@@ -94,6 +94,18 @@ export class UndoRedoManager {
             this.saveData(e);
         }
     }
+    private getTextContentFromFragment(fragment: DocumentFragment | HTMLElement): string {
+        let textContent: string = '';
+        for (let i: number = 0; i < fragment.childNodes.length; i++) {
+            const childNode: Node = fragment.childNodes[i as number];
+            if (childNode.nodeType === Node.TEXT_NODE) {
+                textContent += childNode.textContent;
+            } else if (childNode.nodeType === Node.ELEMENT_NODE) {
+                textContent += this.getTextContentFromFragment(childNode as HTMLElement);
+            }
+        }
+        return textContent;
+    }
     /**
      * RTE collection stored html format.
      *
@@ -116,8 +128,12 @@ export class UndoRedoManager {
         }
         range = new NodeSelection().getRange(this.parent.currentDocument);
         const save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
-        const htmlText: string = this.parent.editableElement.innerHTML;
-        const changEle: { [key: string]: string | Object} = { text: htmlText, range: save };
+        const clonedElement: HTMLElement = this.parent.editableElement.cloneNode(true) as HTMLElement;
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        while (clonedElement.firstChild) {
+            fragment.appendChild(clonedElement.firstChild);
+        }
+        const changEle: { [key: string]: DocumentFragment | Object } = { text: fragment, range: save };
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);
         }
@@ -125,7 +141,8 @@ export class UndoRedoManager {
             && (this.undoRedoStack[this.undoRedoStack.length - 1].range.startOffset === save.range.startOffset) &&
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.endOffset === save.range.endOffset) &&
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.range.startContainer === save.range.startContainer) &&
-            (this.undoRedoStack[this.undoRedoStack.length - 1].text.trim() === (changEle.text as string).trim())) {
+            (this.getTextContentFromFragment(this.undoRedoStack[this.undoRedoStack.length - 1].text).trim() ===
+            this.getTextContentFromFragment(changEle.text as DocumentFragment).trim())) {
             return;
         }
         this.undoRedoStack.push(changEle);
@@ -150,8 +167,9 @@ export class UndoRedoManager {
     public undo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.steps > 0) {
             const range: string | object = this.undoRedoStack[this.steps - 1].range;
-            const removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
-            this.parent.editableElement.innerHTML = removedContent;
+            const removedContent: DocumentFragment = this.undoRedoStack[this.steps - 1].text;
+            this.parent.editableElement.innerHTML = '';
+            this.parent.editableElement.appendChild(removedContent.cloneNode(true));
             (this.parent.editableElement as HTMLElement).focus();
             if (isIDevice()) {
                 setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);
@@ -181,7 +199,9 @@ export class UndoRedoManager {
     public redo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
             const range: string | object = this.undoRedoStack[this.steps + 1].range;
-            this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text as string;
+            const addedContent: DocumentFragment = this.undoRedoStack[this.steps + 1].text;
+            this.parent.editableElement.innerHTML = '';
+            this.parent.editableElement.appendChild(addedContent.cloneNode(true));
             (this.parent.editableElement as HTMLElement).focus();
             if (isIDevice()) {
                 setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);

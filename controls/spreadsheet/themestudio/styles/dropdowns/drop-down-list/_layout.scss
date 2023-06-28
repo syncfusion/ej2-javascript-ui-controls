@@ -107,6 +107,9 @@
     @if $skin-name != 'material' and $skin-name != 'Material3' {
       border: 1px solid $ddl-default-border-color;
     }
+    @if $skin-name == 'Material3' {
+      border-radius: 4px;
+    }
     position: absolute;
     @at-root {
       #{if(&, '&', '*')} .e-search-icon {

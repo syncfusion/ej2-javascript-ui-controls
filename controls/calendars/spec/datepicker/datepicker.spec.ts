@@ -3002,6 +3002,47 @@ describe('Datepicker', () => {
         });
     });
 
+    /**
+     * Model full screen dialog test case
+     */
+    describe('Model full screen layout dialog', function () {
+        let datepicker: any;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+
+            document.body.appendChild(ele);
+            datepicker = new DatePicker({
+                value: new Date('4/4/2017'),
+                fullScreenMode: true
+            });
+            datepicker.appendTo('#date');
+        });
+        afterAll(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+            let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        it(' mobile test case', function () {
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName(' e-datepicker e-popup-wrapper')[0].classList.contains('e-popup-expand')).toBe(true);
+
+        });
+        it(' mobile full-screen layout test case', function () {
+            datepicker.value = null;
+            datepicker.dataBind();
+            if (!datepicker.popupObj) {
+                (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            }
+            expect(document.getElementsByClassName(' e-datepicker e-popup-wrapper')[0].classList.contains('e-popup-expand')).toBe(true);
+        });
+    });
+
     describe('method', function () {
         let datePicker: any;
         let mouseEventArgs: any = {
@@ -4415,8 +4456,8 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
         });
         it('Selection navigation using keyboard action', () => { 
@@ -4427,15 +4468,9 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
-            expect(datepicker.value).toBe(null);
-            datepicker.keydownHandler(keyEventArgs);
-            expect(datepicker.element.selectionStart).toBe(4);
-            expect(datepicker.element.selectionEnd).toBe(9);
-            datepicker.keydownHandler(keyEventArgs);
             expect(datepicker.element.selectionStart).toBe(0);
             expect(datepicker.element.selectionEnd).toBe(3);
+            expect(datepicker.value).toBe(null);
             keyEventArgs.action = keyEventArgs.key = keyEventArgs.code =  'ArrowRight';
             datepicker.keydownHandler(keyEventArgs);
             expect(datepicker.element.selectionStart).toBe(4);
@@ -4542,8 +4577,8 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
@@ -4587,8 +4622,8 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
@@ -4663,7 +4698,7 @@ describe('Masked DatePicker', () => {
             datepicker.element.value = 'u';
             datepicker.element.selectionStart = 1;
             datepicker.inputHandler();
-            //expect(datepicker.element.value).toBe('Jun');
+            expect(datepicker.element.value).toBe('Jun');
             datepicker.element.value = 'f';
             datepicker.element.selectionStart = 1;
             datepicker.inputHandler();
@@ -4684,7 +4719,7 @@ describe('Masked DatePicker', () => {
             datepicker.element.value = 'u';
             datepicker.element.selectionStart = 1;
             datepicker.inputHandler();
-           // expect(datepicker.element.value).toBe('June');
+            expect(datepicker.element.value).toBe('June');
             datepicker.element.value = 'f';
             datepicker.element.selectionStart = 1;
             datepicker.inputHandler();
@@ -4702,8 +4737,8 @@ describe('Masked DatePicker', () => {
             datepicker.element.selectionStart = 14;
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
@@ -4720,8 +4755,8 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;
@@ -4808,8 +4843,8 @@ describe('Masked DatePicker', () => {
             datepicker.focusIn();
             datepicker.mouseUpHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe('day/month/year');
-            expect(datepicker.element.selectionStart).toBe(10);
-            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
             expect(datepicker.value).toBe(null);
             datepicker.element.value = '1/month/year';
             datepicker.element.selectionStart = 1;

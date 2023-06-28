@@ -318,7 +318,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '703.5' || xValue === '338').toBe(true);
+                expect(xValue === '703.5' || xValue === '336').toBe(true);
                 expect(yValue === '374' || yValue === '375').toBe(true);
                 done();
             };
@@ -331,7 +331,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '1406' || xValue === '675').toBe(true);
+                expect(xValue === '1406' || xValue === '671').toBe(true);
                 expect(yValue === '374' || yValue === '375').toBe(true);
                 done();
             };
@@ -357,7 +357,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '703.5' || xValue === '338').toBe(true);
+                expect(xValue === '703.5' || xValue === '336').toBe(true);
                 expect(yValue === '2.5').toBe(true);
                 done();
             };
@@ -370,7 +370,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '1406' || xValue === '675').toBe(true);
+                expect(xValue === '1406' || xValue === '671').toBe(true);
                 expect(yValue === '2.5').toBe(true);
                 done();
             };
@@ -422,7 +422,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '1406' || xValue === '675').toBe(true);
+                expect(xValue === '1406' || xValue === '671').toBe(true);
                 expect(yValue === '1.5').toBe(true);
                 done();
             };
@@ -435,7 +435,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '1406' || xValue === '675').toBe(true);
+                expect(xValue === '1406' || xValue === '671').toBe(true);
                 expect(yValue === '183.25' || yValue === '183.75').toBe(true);
                 done();
             };
@@ -448,7 +448,7 @@ describe('Stock Chart with Legend', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 xValue = legendElement.getAttribute('x');
                 yValue = legendElement.getAttribute('y');
-                expect(xValue === '1406' || xValue === '675').toBe(true);
+                expect(xValue === '1406' || xValue === '671').toBe(true);
                 expect(yValue === '365' || yValue === '366').toBe(true);
                 done();
             };
@@ -486,7 +486,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '764.5' || xValue === '398').toBe(true);
+                expect(xValue === '764.5' || xValue === '395.5').toBe(true);
                 expect(yValue === '394.75'|| yValue === '395').toBe(true);
                 done();
             };
@@ -499,7 +499,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '668.5' || xValue === '305').toBe(true);
+                expect(xValue === '668.5' || xValue === '298.5').toBe(true);
                 expect(yValue === '394.75'|| yValue === '395').toBe(true);
                 done();
             };
@@ -525,7 +525,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '668.5' || xValue === '305').toBe(true);
+                expect(xValue === '668.5' || xValue === '298.5').toBe(true);
                 expect(yValue === '22.25' || yValue === '23.25' || yValue === '22.5').toBe(true);
                 done();
             };
@@ -538,7 +538,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '764.5' || xValue === '398').toBe(true);
+                expect(xValue === '764.5' || xValue === '395.5').toBe(true);
                 expect(yValue === '22.25' || yValue === '23.25' || yValue === '22.5').toBe(true);
                 done();
             };
@@ -551,7 +551,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '1454' || xValue === '721.5').toBe(true);
+                expect(xValue === '1454' || xValue === '719.5').toBe(true);
                 expect(yValue === '189.25').toBe(true);
                 done();
             };
@@ -564,7 +564,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '1454' || xValue === '721.5').toBe(true);
+                expect(xValue === '1454' || xValue === '719.5').toBe(true);
                 expect(yValue === '189.25').toBe(true);
                 done();
             };
@@ -577,7 +577,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '1454' || xValue === '721.5').toBe(true);
+                expect(xValue === '1454' || xValue === '719.5').toBe(true);
                 expect(yValue === '189.25').toBe(true);
                 done();
             };
@@ -590,7 +590,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '49' || xValue === '47.5').toBe(true);
+                expect(xValue === '49.5' || xValue === '47.5').toBe(true);
                 expect(yValue === '188.75' || yValue === '189.25').toBe(true);
                 done();
             };
@@ -603,7 +603,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '49' || xValue === '47.5').toBe(true);
+                expect(xValue === '49.5' || xValue === '47.5').toBe(true);
                 expect(yValue === '188.75' || yValue === '189.25').toBe(true);
                 done();
             };
@@ -616,7 +616,7 @@ describe('Stock Chart with Legend', () => {
                 titleElement = document.getElementById('stock_chart_legend_title');
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '49' || xValue === '47.5').toBe(true);
+                expect(xValue === '49.5' || xValue === '47.5').toBe(true);
                 expect(yValue === '188.75' || yValue === '189.25').toBe(true);
                 done();
             };
@@ -629,7 +629,7 @@ describe('Stock Chart with Legend', () => {
                 let legendText : Element = document.getElementById('stock_chart_legend_text_0');
                 xValue = legendText.getAttribute('x');
                 yValue = legendText.getAttribute('y');
-                expect(xValue === '711.5' || xValue === '346').toBe(true);
+                expect(xValue === '711.5' || xValue === '344').toBe(true);
                 expect(yValue === '394.75' || yValue === '395').toBe(true);
                 done();
             };

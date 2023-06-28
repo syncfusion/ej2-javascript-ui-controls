@@ -1,7 +1,7 @@
 /**
  * Query Builder Source
  */
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
@@ -64,17 +64,19 @@ export class Columns extends ChildProperty<Columns> {
      * Specifies the rule template for the field with any other widgets.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public ruleTemplate: string;
+    public ruleTemplate: string | Function;
 
     /**
      * Specifies the template for value field such as slider or any other widgets.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: TemplateColumn | string;
+    public template: TemplateColumn | string | Function;
     /**
      * Specifies the validation for columns (text, number and date).
      *
@@ -256,7 +258,7 @@ export interface FormatObject {
 }
 /**
  * Defines the fieldMode of Dropdown control.
- * ```props 
+ * ```props
  * Default :- To Specifies the fieldMode as DropDownList.
  * DropdownTree :- To Specifies the fieldMode as DropdownTree.
  * ```
@@ -268,7 +270,7 @@ export type FieldMode =
     'DropdownTree';
 /**
  * Defines the display mode of the control.
- * ```props 
+ * ```props
  * Horizontal :- To display the control in a horizontal UI.
  * Vertical :- To display the control in a vertical UI.
  * ```
@@ -280,7 +282,7 @@ export type DisplayMode =
     'Vertical';
 /**
  * Defines the sorting direction of the field names in a control.
- * ```props 
+ * ```props
  * Default :- Specifies the field names in default sorting order.
  * Ascending :- Specifies the field names in ascending order.
  * Descending :- Specifies the field names in descending order.
@@ -450,9 +452,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Specifies the template for the header with any other widgets.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Defines class or multiple classes, which are separated by a space in the QueryBuilder element.
      * You can add custom styles to the QueryBuilder using the cssClass property.
@@ -906,18 +909,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 template = this.ruleTemplateFn(args, this, ruleElem.id, templateID)[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((this as any).isAngular) {
                 const templateColl: Element [] = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
                 template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isVue3) {
+                template = this.ruleTemplateFn(args, this, 'Template', templateID);
+                elem = template;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                append(elem as any, ruleElem);
+                ruleElem.children[ruleElem.children.length - 1].className += ' e-rule-field';
             } else {
                 template = this.ruleTemplateFn(args, this, 'Template', templateID)[0];
+                elem = template; elem.className += ' e-rule-field';
+                ruleElem.appendChild(elem);
             }
-            elem = template; elem.className += ' e-rule-field';
         } else {
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
+            ruleElem.appendChild(elem);
         }
-        ruleElem.appendChild(elem);
         if (column && column.ruleTemplate && rule) { this.renderReactTemplates(); }
         return ruleElem;
     }
@@ -1298,17 +1313,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         args: ChangeEventArgs, isGroup : boolean, eventTarget: Element, condition: string, isBtnClick: boolean, not?: boolean,
         isRoot?: boolean, rule?: RuleModel): void {
         if (!args.cancel && (this.element.querySelectorAll('.e-group-container').length <= this.maxGroupCount)) {
-            const target: Element = eventTarget; let dltGroupBtn: HTMLElement;
+            const target: Element = eventTarget; let dltGroupBtn: HTMLElement; let groupID: string =  '';
+            if (target.className.indexOf('e-group-container') < 0) {
+                groupID = target.querySelector('.e-group-container') && target.querySelector('.e-group-container').id;
+            } else {
+                groupID = target.id;
+            }
             const groupElem: Element = this.groupElem.cloneNode(true) as Element;
             groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
             if (this.headerTemplate ) {
                 if (isRoot) {
                     isGroup = false;
                     groupElem.setAttribute('id', this.element.id + '_group0');
-                    this.headerTemplateFn(groupElem, not, condition, rule);
+                    this.headerTemplateFn(groupElem, not, condition, rule, groupID);
                     this.groupIdCounter = 0;
                 } else {
-                    this.headerTemplateFn(groupElem, not, condition, rule);
+                    this.headerTemplateFn(groupElem, not, condition, rule, groupID);
                 }
             }
             this.groupIdCounter++;
@@ -1396,25 +1416,32 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
-    private headerTemplateFn(groupElem: Element, not: boolean, condition: string, rule: RuleModel): Element {
+    private headerTemplateFn(groupElem: Element, not: boolean, condition: string, rule: RuleModel, groupID: string): Element {
         let template: Element; const templateID: string = this.element.id + '_header'; let args: ActionEventArgs;
         const groupHdr: HTMLElement = groupElem.querySelector('.e-group-header');
         if (this.headerTemplate) {
             args = { requestType: 'header-template-initialize', ruleID: groupElem.id,
-                notCondition: this.enableNotCondition ? not : undefined, condition: condition, rule: this.getRuleCollection(rule, true) };
+                notCondition: this.enableNotCondition ? not : undefined, condition: condition, rule: this.getRuleCollection(rule, true), groupID: groupID };
             this.trigger('actionBegin', args);
             this.headerFn = this.templateParser(this.headerTemplate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 template = this.headerFn(args, this, groupElem.id, templateID)[0];
+                groupHdr.appendChild(template);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((this as any).isAngular) {
                 const templateColl: Element [] = this.headerFn(args, this, groupElem.id, templateID);
                 template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
+                groupHdr.appendChild(template);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isVue3) {
+                template = this.headerFn(args, this, groupElem.id, templateID);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                append(template as any, groupHdr);
             } else {
                 template = this.headerFn(args, this, 'Template', templateID)[0];
+                groupHdr.appendChild(template);
             }
-            groupHdr.appendChild(template);
             this.renderReactTemplates();
         }
         return groupElem;
@@ -2256,7 +2283,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (typeof template.write === 'string') {
                 getValue(template.write, window)({ elements: tempElements.length > 1 ? tempElements : tempElements[0], values: rule.value,
                     operator: tempRule.operator, field: column.field, dataSource: column.values });
-            } else {
+            } else if (typeof itemData.template !== 'function') {
                 (itemData.template.write as Function)({ elements: tempElements.length > 1 ? tempElements : tempElements[0],
                     values: rule.value, operator: tempRule.operator, field: column.field, dataSource: column.values });
             }
@@ -2693,7 +2720,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         : boolean {
         if (args.renderTemplate) {
             let valElem: Element | Element [];
-            this.columnTemplateFn = this.templateParser(itemData.template as string);
+            this.columnTemplateFn = this.templateParser(
+                typeof itemData.template === 'function' ? itemData.template : itemData.template as string
+            );
             const templateID: string = this.element.id + field;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
@@ -3493,10 +3522,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.renderComplete();
     }
 
-    private templateParser(template: string): Function {
+    private templateParser(template: string | Function): Function {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return templateCompiler(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -3810,7 +3839,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
+            if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
             rule.value !== undefined)) || (customObj && customObj.isQuestion)) {
                 const condition: string = rule.condition;
                 rule = {
@@ -4549,8 +4578,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
                 if (j !== jLen - 1) {
-                    if (condition === '') {
-                        condition = rules.rules[j as number].condition;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const rule: any = rules.rules[j as number];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (condition === '' || (rule && rule.condition !== '' && rule.custom && (rule.custom as any).isCustom)){
+                        condition = rule.condition;
                     }
                     condition = sqlLocale ? this.l10n.getConstant(condition.toUpperCase()).toUpperCase() : condition.toUpperCase();
                     queryStr += ' ' + condition + ' ';
@@ -4693,7 +4725,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         // eslint-disable-next-line
         if (/^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)) {
             // eslint-disable-next-line
-            matchValue = /^`?([a-z_][a-z0-9_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
+            matchValue = /^`?([a-zåäö_][a-z0-9åäö_.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)`?/i.exec(sqlString)[1];
             this.parser.push(['Literal', matchValue]);
             return matchValue.length;
         }
@@ -4872,7 +4904,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let operator: string; let isLeftOpened: boolean = false;
         for (let i: number = 0, iLen: number = parser.length; i < iLen; i++) {
             if (parser[i as number][0] === 'Literal') {
-                rule = { label: parser[i as number][1], field: parser[i as number][1] };
+                const column: ColumnsModel = this.getColumn(parser[i as number][1]);
+                rule = { label: (column && column.label) ? column.label : parser[i as number][1], field: parser[i as number][1] };
                 if (parser[i + 1][0] === 'SubOperators') {
                     if (parser[i + 1][1].indexOf('null') > -1 || parser[i + 1][1].indexOf('empty') > -1) {
                         rule.operator = this.getOperator(' ', parser[i + 1][1], sqlLocale);
@@ -5089,5 +5122,5 @@ export interface ActionEventArgs extends BaseEventArgs {
     condition?: string;
     notCondition?: boolean;
     renderTemplate?: boolean;
+    groupID?: string;
 }
-

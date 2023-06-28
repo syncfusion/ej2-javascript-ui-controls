@@ -168,7 +168,7 @@ export class SparklineTooltip {
                 opacity: spark.sparkTheme.tooltipTextOpacity || tooltip.textStyle.opacity,
                 fontWeight: tooltip.textStyle.fontWeight,
                 fontStyle: tooltip.textStyle.fontStyle,
-                fontFamily: spark.sparkTheme.fontFamily || tooltip.textStyle.fontFamily,
+                fontFamily: tooltip.textStyle.fontFamily || spark.sparkTheme.tooltipFontFamily,
                 color: textColor
             }
         };
@@ -198,7 +198,7 @@ export class SparklineTooltip {
         const element: Tooltip = new Tooltip({
             content: tootipArgs.text,
             border: tooltip.border,
-            template: tooltip.template,
+            template: tooltip.template as any,
             data: spark.dataSource[this.pointIndex],
             fill: backgroundColor,
             textStyle: tootipArgs.textStyle,

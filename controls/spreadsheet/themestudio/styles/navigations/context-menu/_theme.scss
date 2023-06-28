@@ -6,7 +6,12 @@
   .e-contextmenu-container {
     @at-root {
       & ul {
-        background-color: $cmenu-ul-bgcolor;
+        @if $skin-name == 'Material3' {
+          background: $cmenu-ul-bgcolor;
+        }
+        @else {
+          background-color: $cmenu-ul-bgcolor;
+        }
         color: $cmenu-color;
 
         & .e-menu-item  {

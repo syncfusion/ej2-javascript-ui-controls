@@ -94,7 +94,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let indents: string[] = this.getIndentByLevel();
         const isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
         const indentLength: number = !start ? this.parent.getIndentCount() : 0;
-        if (this.parent.isRowDragable() && !start) {
+        if (this.parent.groupSettings.columns.length && this.parent.allowRowDragAndDrop) {
+            indents.push('e-indentcelltop');
+        }
+        else if (this.parent.isRowDragable() && !start) {
             indents = ['e-indentcelltop'];
         }
 
@@ -206,6 +209,9 @@ export class GroupSummaryModelGenerator extends SummaryModelGenerator implements
     }
 
     protected getIndentByLevel(level: number = this.parent.groupSettings.columns.length): string[] {
+        if (this.parent.allowRowDragAndDrop && this.parent.groupSettings.columns.length) {
+            level -= 1;
+        }
         return this.parent.groupSettings.columns.map((v: string, indx: number) => indx <= level - 1 ? '' : 'e-indentcelltop');
     }
 

@@ -80,8 +80,9 @@ export interface EditSettingsModel {
      * Defines the custom edit elements for the dialog template.
      *
      * @default ''
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the dialog params to edit.

@@ -217,10 +217,9 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                console.log(value);
                 expect(value == 439.5 || value === 439 || value == 187 || value === 219).toBe(true);
                 value = parseInt(legendElement.getAttribute('y'), 10);
-                expect(value === 42 || value === 50).toBe(true);
+                expect(value === 41 || value === 50).toBe(true);
                 done();
             };
             bullet.title = 'Chart Legend Spec Title';
@@ -236,7 +235,7 @@ describe('Bullet Chart Scale', () => {
                 legendElement = document.getElementById(legendId + '_element');
                 expect(parseInt(legendElement.getAttribute('x'), 10)).toBe(15);
                 let y: number = parseInt(legendElement.getAttribute('y'), 10);
-                expect(y === 166 || y === 48).toBe(true);
+                expect(y === 166 || y === 47).toBe(true);
                 done();
             };
             bullet.legendSettings = {
@@ -310,7 +309,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 expect(parseInt(legendElement.getAttribute('x'), 10)).toBe(15);
-                expect(parseInt(legendElement.getAttribute('y'), 10)).toBe(59);
+                expect(parseInt(legendElement.getAttribute('y'), 10)).toBe(58);
                 done();
             };
             bullet.legendSettings = { position: 'Left', alignment: 'Far' };
@@ -324,7 +323,7 @@ describe('Bullet Chart Scale', () => {
                 value = parseInt(legendElement.getAttribute('x'), 10);
                 expect(value === 44 || value === 15).toBe(true);
                 value = parseInt(legendElement.getAttribute('y'), 10);
-                expect(value === 178.5 || value === 178 || value === 171).toBe(true);
+                expect(value === 178.5 || value === 178 || value === 170).toBe(true);
                 done();
             };
             bullet.legendSettings = { position: 'Left', alignment: 'Center' };

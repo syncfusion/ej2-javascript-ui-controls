@@ -2297,14 +2297,14 @@ describe('Node shape change at runtime not makes node disappear', () => {
                 offsetY: 100, annotations: [{
                     content: 'rectangle1'
                 }],shape:{shape:'Terminator',type:'Flow'}
-
+               
             },
             {
                 id: 'node2', width: 100, height: 100, offsetX: 100,
                 offsetY: 200, annotations: [{
                     content: 'rectangle2'
                 }],shape:{shape:'Process',type:'Flow'}
-
+               
             }, {
                 id: 'node3', width: 100, height: 100, offsetX: 200,
                 offsetY: 200,shape:{shape:'Rectangle',type:'Basic'}

@@ -195,10 +195,20 @@ export class WStyles {
         for (const style of styles) {
             const returnStyle: any = {};
             const returnStyleObject: any = {};
+            if(type == "Paragraph") {
+                returnStyleObject.paragraphFormat = {};
+                HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat, true, (style as any).paragraphFormat);
+            }
             returnStyleObject.characterFormat = {};
             HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
             returnStyle.name = style.name;
             returnStyle.style = JSON.stringify(returnStyleObject);
+            if (!isNullOrUndefined(type)) {
+                returnStyle.type = type;
+                if (returnStyle.type == "Paragraph" && !isNullOrUndefined(style.link)){
+                    returnStyle.type = "Linked";
+                }
+            }
             styleObjects.push(returnStyle);
         }
         return styleObjects;

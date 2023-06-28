@@ -412,9 +412,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const handler: Function = (this.enableTapHold && Browser.isDevice && Browser.isTouch) ? this.mobileInitialize : this.initialize;
         if (isUnWire) {
-            EventHandler.remove(ele || this.element,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler);
+            EventHandler.remove(ele || this.element, Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler);
         } else {
-            EventHandler.add(ele || this.element,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler, this);
+            EventHandler.add(ele || this.element, Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, handler, this);
         }
     }
     /* istanbul ignore next */
@@ -524,7 +524,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             document.body.classList.add('e-prevent-select');
         }
         this.externalInitialize = false;
-        EventHandler.trigger(document.documentElement,  Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, evt);
+        EventHandler.trigger(document.documentElement, Browser.isSafari() ? 'touchstart' : Browser.touchStartEvent, evt);
     }
     private intDragStart(evt: MouseEvent & TouchEvent): void {
         this.removeTapholdTimer();
@@ -725,6 +725,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         const dTop: number = this.position.top - this.diffY;
         const styles: CSSStyleDeclaration = getComputedStyle(helperElement);
         if (this.dragArea) {
+            if (this.enableAutoScroll) {
+                this.setDragArea();
+            }
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 const helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));

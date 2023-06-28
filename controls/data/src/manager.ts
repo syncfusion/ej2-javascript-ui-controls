@@ -3,7 +3,7 @@
 import { Ajax } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil, Aggregates, Group } from './util';
-import { Query } from './query';
+import { Predicate, Query, QueryOptions } from './query';
 import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, CustomDataAdaptor } from './adaptors';
 /**
  * DataManager is used to manage and manipulate relational data.
@@ -22,6 +22,8 @@ export class DataManager {
     /** @hidden */
     public ready: Promise<Ajax>;
     private isDataAvailable: boolean;
+    private persistQuery: object = {};
+    private isInitialLoad: boolean = false;
     private requests: Ajax[] = [];
     private ajaxDeffered: Deferred;
     private ajaxReqOption: Ajax;
@@ -38,6 +40,7 @@ export class DataManager {
      * @hidden
      */
     constructor(dataSource?: DataOptions | JSON[] | Object[], query?: Query, adaptor?: AdaptorOptions | string) {
+        this.isInitialLoad = true;
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
@@ -54,6 +57,15 @@ export class DataManager {
         } else if (typeof dataSource === 'object') {
             if (!dataSource.json) {
                 dataSource.json = [];
+            }
+            if (!dataSource.enablePersistence) {
+                dataSource.enablePersistence = false;
+            }
+            if (!dataSource.id) {
+                dataSource.id = '';
+            }
+            if (!dataSource.ignoreOnPersist) {
+                dataSource.ignoreOnPersist = [];
             }
             data = {
                 url: dataSource.url,
@@ -77,7 +89,10 @@ export class DataManager {
                 offline: dataSource.offline !== undefined ? dataSource.offline
                     : dataSource.adaptor instanceof RemoteSaveAdaptor || dataSource.adaptor instanceof CustomDataAdaptor ?
                         false : dataSource.url ? false : true,
-                requiresFormat: dataSource.requiresFormat
+                requiresFormat: dataSource.requiresFormat,
+                enablePersistence: dataSource.enablePersistence,
+                id: dataSource.id,
+                ignoreOnPersist: dataSource.ignoreOnPersist
             };
         } else {
             DataUtil.throwError('DataManager: Invalid arguments');
@@ -91,6 +106,9 @@ export class DataManager {
 
         this.dataSource = data;
         this.defaultQuery = query;
+        if (this.dataSource.enablePersistence && this.dataSource.id) {
+            window.addEventListener('unload', this.setPersistData.bind(this));
+        }
 
         if (data.url && data.offline && !data.json.length) {
             this.isDataAvailable = false;
@@ -117,6 +135,61 @@ export class DataManager {
     }
 
     /**
+     * Get the queries maintained in the persisted state.
+     * @param {string} id - The identifier of the persisted query to retrieve.
+     * @returns {object} The persisted data object.
+     */
+    public getPersistedData(id?: string): object {
+        const persistedData: string = localStorage.getItem(id || this.dataSource.id);
+        return JSON.parse(persistedData);
+    }
+
+     /**
+     * Set the queries to be maintained in the persisted state.
+     * @param {Event} e - The event parameter that triggers the setPersistData method.
+     * @param {string} id - The identifier of the persisted query to set.
+     * @param {object} persistData - The data to be persisted.
+     * @returns {void} .
+     */
+    public setPersistData(e: Event, id?: string, persistData?:object): void {
+        localStorage.setItem(id || this.dataSource.id, JSON.stringify(persistData || this.persistQuery));
+    }
+
+    private setPersistQuery(query: Query): Query {
+        const persistedQuery: object = this.getPersistedData();
+        if (this.isInitialLoad && persistedQuery && Object.keys(persistedQuery).length) {
+            this.persistQuery = persistedQuery;
+            (this.persistQuery as Query).queries = (this.persistQuery as Query).queries.filter((query: QueryOptions) => {
+                if (this.dataSource.ignoreOnPersist && this.dataSource.ignoreOnPersist.length) {
+                    if (query.fn && this.dataSource.ignoreOnPersist.some((keyword: string) => query.fn === keyword)) {
+                        return false; // Exclude the matching query
+                    }
+                }
+
+                if (query.fn === 'onWhere') {
+                    const { e } = query;
+                    if (e && e.isComplex && e.predicates instanceof Array) {
+                        const predicates: Predicate[] = e.predicates.map((predicateObj: Predicate) => {
+                            const { field, operator, value, ignoreCase, ignoreAccent, matchCase } = predicateObj;
+                            return new Predicate(field, operator, value, ignoreCase, ignoreAccent, matchCase);
+                        });
+                        query.e = new Predicate(predicates[0], e.condition, predicates.slice(1));
+                    }
+                }
+                return true; // Keep all other queries
+            });
+            const newQuery: Query = extend(new Query(), this.persistQuery) as Query;
+            this.isInitialLoad = false;
+            return (newQuery);
+        }
+        else {
+            this.persistQuery = query;
+            this.isInitialLoad = false;
+            return query;
+        }
+    }
+
+    /**
      * Overrides DataManager's default query with given query.
      *
      * @param  {Query} query - Defines the new default query.
@@ -138,6 +211,10 @@ export class DataManager {
 
         if (!this.dataSource.json) {
             DataUtil.throwError('DataManager - executeLocal() : Json data is required to execute');
+        }
+
+        if (this.dataSource.enablePersistence && this.dataSource.id) {
+            query = this.setPersistQuery(query);
         }
 
         query = query || this.defaultQuery;
@@ -177,6 +254,9 @@ export class DataManager {
      */
     public executeQuery(query: Query | Function, done?: Function, fail?: Function, always?: Function): Promise<Ajax> {
         const makeRequest: string = 'makeRequest';
+        if (this.dataSource.enablePersistence && this.dataSource.id) {
+            query = this.setPersistQuery(query as Query);
+        }
         if (typeof query === 'function') {
             always = fail;
             fail = done;
@@ -609,6 +689,13 @@ export class DataManager {
         }
         return this.ajaxDeffered.promise as Promise<Ajax>;
     }
+
+    public clearPersistence(): void {
+        window.removeEventListener('unload', this.setPersistData.bind(this));
+        this.dataSource.enablePersistence = false;
+        this.persistQuery = {};
+        window.localStorage.setItem(this.dataSource.id, '[]');
+    }
 }
 
 /**
@@ -666,6 +753,9 @@ export interface DataOptions {
     offline?: boolean;
     requiresFormat?: boolean;
     timeZoneHandling?: boolean;
+    id?: string;
+    enablePersistence?: boolean;
+    ignoreOnPersist?: string[];
 }
 
 /**

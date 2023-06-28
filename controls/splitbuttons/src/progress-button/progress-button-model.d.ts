@@ -10,8 +10,9 @@ export interface SpinSettingsModel {
      * Specifies the template content to be displayed in a spinner.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Sets the width of a spinner.

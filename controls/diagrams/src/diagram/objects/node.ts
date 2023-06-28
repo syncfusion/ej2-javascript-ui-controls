@@ -10,7 +10,7 @@
 /// <reference path='./node-base-model.d.ts'/>
 import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor, extend, cloneNode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';
-import { ShapeStyleModel, TextStyleModel, ShadowModel} from '../core/appearance-model';
+import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
@@ -82,30 +82,30 @@ const getShapeType: Function = (obj: Shape): Object => {
             return DiagramShape;
         } else {
             switch (obj.type) {
-            case 'Basic':
-                return BasicShape;
-            case 'Flow':
-                return FlowShape;
-            case 'Path':
-                return Path;
-            case 'Image':
-                return Image;
-            case 'Text':
-                return Text;
-            case 'Bpmn':
-                return BpmnShape;
-            case 'Native':
-                return Native;
-            case 'HTML':
-                return Html;
-            case 'UmlActivity':
-                return UmlActivityShape;
-            case 'UmlClassifier':
-                return UmlClassifierShape;
-            case 'SwimLane':
-                return SwimLane;
-            default:
-                return BasicShape;
+                case 'Basic':
+                    return BasicShape;
+                case 'Flow':
+                    return FlowShape;
+                case 'Path':
+                    return Path;
+                case 'Image':
+                    return Image;
+                case 'Text':
+                    return Text;
+                case 'Bpmn':
+                    return BpmnShape;
+                case 'Native':
+                    return Native;
+                case 'HTML':
+                    return Html;
+                case 'UmlActivity':
+                    return UmlActivityShape;
+                case 'UmlClassifier':
+                    return UmlClassifierShape;
+                case 'SwimLane':
+                    return SwimLane;
+                default:
+                    return BasicShape;
             }
         }
     }
@@ -2363,14 +2363,14 @@ export class Node extends NodeBase implements IElement {
     @Property()
     public children: string[];
 
-     /**
+    /**
      * Defines the space between the group node edges and its children
      *
      * @aspDefaultValueIgnore
      * @default 0
      */
-      @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
-      public padding: MarginModel;
+    @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+    public padding: MarginModel;
 
     /**
      * Defines the type of the container
@@ -2544,109 +2544,109 @@ export class Node extends NodeBase implements IElement {
         this.shape[`${oldProperties}`] = {};
 
         switch (this.shape.type) {
-        case 'Path':
-            if ((!isBlazor() && ((this as unknown as ConnectorModel).type === 'Freehand'))) {
-                const path: PathElement = new PathElement();
-                path.data = getFreeHandPath((this.shape as BasicShape).points) as string; 
-                content = path;
-            }else{
-            const pathContent: PathElement = new PathElement();
-            pathContent.data = (this.shape as Path).data;
-            content = pathContent;
-            }
-            break;
-        case 'Image':
-            const imageContent: ImageElement = new ImageElement();
-            imageContent.source = (this.shape as Image).source;
-            imageContent.imageAlign = (this.shape as Image).align;
-            imageContent.imageScale = (this.shape as Image).scale; content = imageContent; break;
-        case 'Text':
-            const textContent: TextElement = new TextElement();
-            textContent.content = (isBlazor() ? (this.shape as DiagramShape).textContent : (this.shape as Text).content);
-            content = textContent; textStyle = this.style as TextStyle;
-            content.style = textStyle; break;
-        case 'Basic':
-            if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Rectangle')) {
-                const basicshape: DiagramElement = new DiagramElement();
-                content = basicshape;
-                content.cornerRadius = (this.shape as BasicShape).cornerRadius;
-            } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Polygon')) {
-                const path: PathElement = new PathElement();
-                path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
-            }
-            else {
-                const basicshape: PathElement = new PathElement();
-                const basicshapedata: string = getBasicShape((isBlazor()) ? (this.shape as DiagramShape).basicShape : (this.shape as BasicShape).shape);
-                basicshape.data = basicshapedata; content = basicshape;
-            } break;
-        case 'Flow':
-            const flowshape: PathElement = new PathElement();
-            const flowshapedata: string = getFlowShape((isBlazor() ? (this.shape as DiagramShape).flowShape : (this.shape as FlowShape).shape));
-            flowshape.data = flowshapedata; content = flowshape;
-            break;
-        case 'UmlActivity':
-            const umlactivityshape: PathElement = new PathElement();
-            content = getUMLActivityShapes(umlactivityshape, content, this);
-            break;
-        case 'Bpmn':
-            if (diagram.bpmnModule) {
-                content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
-                this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
-                const subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
-                if (subProcess.processes && subProcess.processes.length) {
-                    const children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
-                    for (const i of children) {
-                        if (diagram.nameTable[`${i}`] && (!diagram.nameTable[`${i}`].processId || diagram.nameTable[`${i}`].processId === this.id)) {
-                            diagram.nameTable[`${i}`].processId = this.id;
-                            if (subProcess.collapsed) {
-                                diagram.updateElementVisibility(
-                                    diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
+            case 'Path':
+                if ((!isBlazor() && ((this as unknown as ConnectorModel).type === 'Freehand'))) {
+                    const path: PathElement = new PathElement();
+                    path.data = getFreeHandPath((this.shape as BasicShape).points) as string;
+                    content = path;
+                } else {
+                    const pathContent: PathElement = new PathElement();
+                    pathContent.data = (this.shape as Path).data;
+                    content = pathContent;
+                }
+                break;
+            case 'Image':
+                const imageContent: ImageElement = new ImageElement();
+                imageContent.source = (this.shape as Image).source;
+                imageContent.imageAlign = (this.shape as Image).align;
+                imageContent.imageScale = (this.shape as Image).scale; content = imageContent; break;
+            case 'Text':
+                const textContent: TextElement = new TextElement();
+                textContent.content = (isBlazor() ? (this.shape as DiagramShape).textContent : (this.shape as Text).content);
+                content = textContent; textStyle = this.style as TextStyle;
+                content.style = textStyle; break;
+            case 'Basic':
+                if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Rectangle')) {
+                    const basicshape: DiagramElement = new DiagramElement();
+                    content = basicshape;
+                    content.cornerRadius = (this.shape as BasicShape).cornerRadius;
+                } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Polygon')) {
+                    const path: PathElement = new PathElement();
+                    path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
+                }
+                else {
+                    const basicshape: PathElement = new PathElement();
+                    const basicshapedata: string = getBasicShape((isBlazor()) ? (this.shape as DiagramShape).basicShape : (this.shape as BasicShape).shape);
+                    basicshape.data = basicshapedata; content = basicshape;
+                } break;
+            case 'Flow':
+                const flowshape: PathElement = new PathElement();
+                const flowshapedata: string = getFlowShape((isBlazor() ? (this.shape as DiagramShape).flowShape : (this.shape as FlowShape).shape));
+                flowshape.data = flowshapedata; content = flowshape;
+                break;
+            case 'UmlActivity':
+                const umlactivityshape: PathElement = new PathElement();
+                content = getUMLActivityShapes(umlactivityshape, content, this);
+                break;
+            case 'Bpmn':
+                if (diagram.bpmnModule) {
+                    content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
+                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
+                    const subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
+                    if (subProcess.processes && subProcess.processes.length) {
+                        const children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
+                        for (const i of children) {
+                            if (diagram.nameTable[`${i}`] && (!diagram.nameTable[`${i}`].processId || diagram.nameTable[`${i}`].processId === this.id)) {
+                                diagram.nameTable[`${i}`].processId = this.id;
+                                if (subProcess.collapsed) {
+                                    diagram.updateElementVisibility(
+                                        diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
+                                }
+                                (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
                             }
-                            (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
                         }
                     }
                 }
-            }
-            break;
-        case 'Native':
-            const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id);
-            nativeContent.content = (this.shape as Native).content;
-            nativeContent.scale = (this.shape as Native).scale;
-            content = nativeContent;
-            break;
-        case 'HTML':
-            const htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
-            if ((this.shape as Html).content) {
-                htmlContent.content = (this.shape as Html).content;
-            } else if (diagram.nodeTemplate) {
-                htmlContent.isTemplate = true;
-                htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
-            }
-            content = htmlContent;
-            break;
-        case 'UmlClassifier':
-            //   let umlClassifierShape: StackPanel = new StackPanel();
-            content = getULMClassifierShapes(content, this, diagram);
-            break;
-        case 'SwimLane':
-            this.annotations = [];
-            this.ports = [];
-            (content as GridPanel).cellStyle.fill = 'none';
-            (content as GridPanel).cellStyle.strokeColor = 'none';
-            this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
-            content.id = this.id;
-            this.container.orientation = (this.shape as SwimLaneModel).orientation;
-            this.constraints |= NodeConstraints.HideThumbs;
-            initSwimLane(content as GridPanel, diagram, this);
-            break;
+                break;
+            case 'Native':
+                const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id);
+                nativeContent.content = (this.shape as Native).content;
+                nativeContent.scale = (this.shape as Native).scale;
+                content = nativeContent;
+                break;
+            case 'HTML':
+                const htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
+                if ((this.shape as Html).content) {
+                    htmlContent.content = (this.shape as Html).content;
+                } else if (diagram.nodeTemplate) {
+                    htmlContent.isTemplate = true;
+                    htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
+                }
+                content = htmlContent;
+                break;
+            case 'UmlClassifier':
+                //   let umlClassifierShape: StackPanel = new StackPanel();
+                content = getULMClassifierShapes(content, this, diagram);
+                break;
+            case 'SwimLane':
+                this.annotations = [];
+                this.ports = [];
+                (content as GridPanel).cellStyle.fill = 'none';
+                (content as GridPanel).cellStyle.strokeColor = 'none';
+                this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
+                content.id = this.id;
+                this.container.orientation = (this.shape as SwimLaneModel).orientation;
+                this.constraints |= NodeConstraints.HideThumbs;
+                initSwimLane(content as GridPanel, diagram, this);
+                break;
         }
         content.id = this.id + '_content'; content.relativeMode = 'Object';
-            // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
+        // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
         // This code added due to while render radial gradient in canvas mode we want to check this type and pass args according to that
-        if(this.shape.type === "Basic" && (this.shape as BasicShape).shape === 'Rectangle') {
-            content.shapeType = "Rectangle";
+        if (this.shape.type === 'Basic' && (this.shape as BasicShape).shape === 'Rectangle') {
+            content.shapeType = 'Rectangle';
         } else {
-            content.shapeType = "Others";
+            content.shapeType = 'Others';
         }
         if (this.width !== undefined) {
             content.width = this.width;
@@ -2683,7 +2683,7 @@ export class Node extends NodeBase implements IElement {
         }
         if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && (this.shape as BpmnShape).shape === 'Message') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'Message')) ||
             ((!isBlazor() && (this.shape as BpmnShape).shape === 'DataSource') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'DataSource'))) && (
-            (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') ||
+                (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') ||
                     (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
@@ -2707,16 +2707,16 @@ export class Node extends NodeBase implements IElement {
             canvas = this.children ? new Container() : new Canvas();
         } else {
             switch (this.container.type) {
-            case 'Canvas':
-                canvas = new Canvas();
-                break;
-            case 'Stack':
-                canvas = new StackPanel();
-                break;
-            case 'Grid':
-                canvas = new GridPanel();
-                (canvas as GridPanel).setDefinitions(this.rows, this.columns);
-                break;
+                case 'Canvas':
+                    canvas = new Canvas();
+                    break;
+                case 'Stack':
+                    canvas = new StackPanel();
+                    break;
+                case 'Grid':
+                    canvas = new GridPanel();
+                    (canvas as GridPanel).setDefinitions(this.rows, this.columns);
+                    break;
             }
         }
 
@@ -2756,7 +2756,7 @@ export class Node extends NodeBase implements IElement {
     }
 
     /** @private */
-    public initPort(accessibilityContent: Function | string, container: Container, port: Port) : void {
+    public initPort(accessibilityContent: Function | string, container: Container, port: Port): void {
         const canvas: Container = this.wrapper;
         let portWrapper: DiagramElement;
         // eslint-disable-next-line prefer-const
@@ -2809,6 +2809,7 @@ export class Node extends NodeBase implements IElement {
             iconContainer.horizontalAlignment = 'Center';
             iconContainer.verticalAlignment = 'Center';
             iconContainer.visible = this.visible;
+            iconContainer.cornerRadius = icon.cornerRadius;
             offset = this.getIconOffet(layout, icon as IconShape);
             iconContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
             iconContainer.relativeMode = 'Point';
@@ -2864,7 +2865,7 @@ export class Node extends NodeBase implements IElement {
 
     /** @private */
     public initAnnotations(
-        accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean, annotationTemplate?: string)
+        accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean, annotationTemplate?: string | Function)
         :
         void {
         let annotation: DiagramElement;
@@ -2892,6 +2893,13 @@ export class Node extends NodeBase implements IElement {
         portContent.id = this.id + '_' + (ports.id);
         portContent.margin = ports.margin as Margin;
         portContent.data = pathdata;
+        //EJ2-826617 - For BPMN node port flip is to be defined.
+        //EJ2-830012 - Complex-hierarchical tree breaks due to Node undefined
+        if(Node){
+            if(Node.shape.type==='Bpmn'){
+                portContent.flip = this.flip;
+            }
+        }
         const style: ShapeStyleModel = ports.style;
         portContent.style = {
             fill: style.fill, strokeColor: style.strokeColor, gradient: null,
@@ -3007,9 +3015,9 @@ export class Node extends NodeBase implements IElement {
             iconContent.data = getIconShape(options);
             const iconContentBounds: Rect = measurePath(iconContent.data);
             iconContent.height =
-                iconContentBounds.height < 10 ? iconContentBounds.height : 10 - (options.padding.bottom + options.padding.top);
+            iconContentBounds.height < 10 ? iconContentBounds.height : 10 - (options.padding.bottom + options.padding.top);
             iconContent.width =
-                iconContentBounds.width < 10 ? iconContentBounds.width : 10 - (options.padding.left + options.padding.right);
+            iconContentBounds.width < 10 ? iconContentBounds.width : 10 - (options.padding.left + options.padding.right);
         }
         iconContent.id = iconContainer.id + '_shape';
         iconContent.horizontalAlignment = 'Center';
@@ -3017,8 +3025,9 @@ export class Node extends NodeBase implements IElement {
         iconContent.visible = iconContainer.visible;
         iconContent.visible = iconContainer.visible;
         iconContent.style = {
-            fill: 'black', strokeColor: options.borderColor,
-            strokeWidth: options.borderWidth
+            fill: 'black', 
+            strokeColor: options.iconColor,
+            strokeWidth: options.borderWidth,
         };
         iconContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
         iconContent.relativeMode = 'Object';
@@ -3151,7 +3160,7 @@ export class Lane extends ChildProperty<Shape> {
      * @default undefined
      */
     @Property()
-    public addInfo: Object 
+    public addInfo: Object
 
     /**
      * Returns the name of class Lane
@@ -3541,8 +3550,8 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Defines the collection of selected nodes and connectors
      * @default []
      */
-      @Collection<NodeModel | ConnectorModel>([], Node)
-      public selectedObjects: (NodeModel | ConnectorModel)[];
+    @Collection<NodeModel | ConnectorModel>([], Node)
+    public selectedObjects: (NodeModel | ConnectorModel)[];
 
     /**
      * Initializes the UI of the container
@@ -3587,4 +3596,3 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         return container;
     }
 }
-

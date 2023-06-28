@@ -490,7 +490,7 @@ describe('ListView', () => {
             listObj.dataSource = arrayData;
             listObj.dataBind();
             let contentdiv: HTMLElement = listele.childNodes[0] as HTMLElement;
-            expect(contentdiv.classList.contains('e-content')).toBe(true);
+            expect(contentdiv.classList.contains('e-list-container')).toBe(true);
         });
 
         afterAll(() => {
@@ -584,7 +584,7 @@ describe('ListView', () => {
             listObj.dataSource = arrayData;
             listObj.dataBind();
             let contentdiv: HTMLElement = listele.childNodes[0] as HTMLElement;
-            expect(contentdiv.classList.contains('e-content')).toBe(true);
+            expect(contentdiv.classList.contains('e-list-container')).toBe(true);
         });
 
         afterAll(() => {

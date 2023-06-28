@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType, detach } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, KeyboardEventArgs, SanitizeHtmlHelper, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
@@ -197,6 +197,7 @@ export class EventWindow {
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
+        const endTime: number = this.eventData[this.fields.endTime].getTime();
         const eventProp: PopupOpenEventArgs = {
             type: 'Editor',
             data: this.eventData,
@@ -221,6 +222,12 @@ export class EventWindow {
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             args.cancel = popupArgs.cancel;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
+            if (this.eventData[this.fields.endTime].getTime() === endTime && !this.cellClickAction &&
+                (<Date>this.eventData[this.fields.endTime]).getHours() === 0 &&
+                (<Date>this.eventData[this.fields.endTime]).getMinutes() === 0) {
+                this.eventData = <Record<string, any>>extend({}, this.eventData, null, true);
+                this.trimAllDay(this.eventData);
+            }
             this.refreshDateTimePicker(this.duration);
             if (this.cellClickAction && popupArgs.duration !== this.getSlotDuration() && isNullOrUndefined(this.parent.editorTemplate)) {
                 const startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as unknown as DateTimePicker;
@@ -461,8 +468,12 @@ export class EventWindow {
         const resourceDiv: HTMLElement = this.createDivElement(value + '-container' + ' ' + 'e-resources');
         const resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         resourceDiv.appendChild(resourceInput);
-        const resourceTemplate: string = '<div class="e-resource-template"><div class="e-resource-color" style="background-color:${' +
-            resourceData.colorField + '}"></div><div class="e-resource-text">${' + resourceData.textField + '}</div></div>';
+        function resourceTemplate(data: any): string {
+            return  `<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
+                data[resourceData.colorField]}"></div><div class="e-resource-text">${
+                data[resourceData.textField]}</div></div>`;
+        }
+        initializeCSPTemplate(resourceTemplate, resourceData);
         if (resourceData.allowMultiple) {
             const listObj: MultiSelect = new MultiSelect({
                 enableRtl: this.parent.enableRtl,
@@ -470,7 +481,7 @@ export class EventWindow {
                 cssClass: this.parent.cssClass || '',
                 dataSource: resourceData.dataSource as Record<string, any>[],
                 change: this.onMultiselectResourceChange.bind(this),
-                itemTemplate: resourceTemplate,
+                itemTemplate: resourceTemplate as any,
                 fields: {
                     text: resourceData.textField,
                     value: resourceData.idField
@@ -498,7 +509,7 @@ export class EventWindow {
                 placeholder: labelValue,
                 popupHeight: '230px',
                 popupWidth: '447px',
-                itemTemplate: resourceTemplate
+                itemTemplate: resourceTemplate as any
             });
             dropDownList.appendTo(resourceInput);
         }
@@ -716,14 +727,16 @@ export class EventWindow {
     }
 
     private onChange(args: ChangeEventArgs): void {
-        const targetSelector: string = `.${cls.EVENT_WINDOW_ALL_DAY_CLASS},.${cls.TIME_ZONE_CLASS},.${cls.EVENT_WINDOW_REPEAT_CLASS}`;
-        const target: Element = closest(args.event.target as Element, targetSelector);
-        if (target.classList.contains(cls.EVENT_WINDOW_ALL_DAY_CLASS)) {
-            this.onAllDayChange(args.checked);
-        } else if (target.classList.contains(cls.TIME_ZONE_CLASS)) {
-            this.timezoneChangeStyle(args.checked);
-        } else if (target.classList.contains(cls.EVENT_WINDOW_REPEAT_CLASS)) {
-            this.onRepeatChange(args.checked);
+        if (args.event && args.event.target) {
+            const targetSelector: string = `.${cls.EVENT_WINDOW_ALL_DAY_CLASS},.${cls.TIME_ZONE_CLASS},.${cls.EVENT_WINDOW_REPEAT_CLASS}`;
+            const target: Element = closest(args.event.target as Element, targetSelector);
+            if (target.classList.contains(cls.EVENT_WINDOW_ALL_DAY_CLASS)) {
+                this.onAllDayChange(args.checked);
+            } else if (target.classList.contains(cls.TIME_ZONE_CLASS)) {
+                this.timezoneChangeStyle(args.checked);
+            } else if (target.classList.contains(cls.EVENT_WINDOW_REPEAT_CLASS)) {
+                this.onRepeatChange(args.checked);
+            }
         }
     }
 
@@ -916,12 +929,12 @@ export class EventWindow {
     }
 
     private showDetails(eventData: Record<string, any>): void {
+        this.eventData = eventData;
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
         if ((!this.cellClickAction || this.cellClickAction && !isNullOrUndefined(this.parent.editorTemplate)) &&
             (<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);
         }
-        this.eventData = eventObj;
         const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         const keyNames: string[] = Object.keys(eventObj);
         for (const curElement of formElements) {
@@ -1556,7 +1569,7 @@ export class EventWindow {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return true;
             }
-            else if (!(previousEndTime.getTime() <= currentStartTime.getTime() && nextStartTime.getTime() >
+            else if (!(previousEndTime.getTime() <= currentStartTime.getTime() && nextStartTime.getTime() >=
                 currentEndTime.getTime()) || (util.resetTime(nextEndTime).getTime() <
                     util.resetTime(currentStartTime).getTime()) ||
                 (util.resetTime(previousStartTime).getTime() > util.resetTime(currentEndTime).getTime()) ||

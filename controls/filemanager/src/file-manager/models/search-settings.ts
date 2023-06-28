@@ -1,20 +1,13 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 /**
  * Specifies the filter type for Search settings of the File Manager.
+ * ```props
+ * contains :- It will only show files and folders whose names contain the entered word.
+ * startsWith :- It will only show files and folders whose names start with entered word.
+ * endsWith :- It will only show files and folders whose names end with entered word.
+ * ```
  */
-export type FilterType = 
-/**
- * It will only show files and folders whose names contain the entered word.
- */
-'contains' | 
-/**
- * It will only show files and folders whose names start with entered word.
- */
-'startsWith' | 
-/**
- * It will only show files and folders whose names end with entered word.
- */
-'endsWith';
+export type FilterType = 'contains' | 'startsWith' | 'endsWith';
 
 /**
  * Specifies the Search settings of the File Manager.

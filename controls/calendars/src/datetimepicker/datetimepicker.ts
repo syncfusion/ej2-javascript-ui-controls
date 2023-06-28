@@ -4,7 +4,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, extend, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';
@@ -88,6 +88,8 @@ export class DateTimePicker extends DatePicker {
     protected scrollInvoked: boolean = false;
     protected maskedDateValue: string;
     protected moduleName: string = this.getModuleName();
+    protected touchDTModule: Touch;
+    protected touchDTStart: boolean;
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
@@ -337,6 +339,13 @@ export class DateTimePicker extends DatePicker {
      */
     @Property(false)
     public strictMode: boolean;
+    /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    @Property(false)
+    public fullScreenMode : boolean;
     /**
      * By default, the date value will be processed based on system time zone.
      * If you want to process the initial date value using server time zone
@@ -696,7 +705,9 @@ export class DateTimePicker extends DatePicker {
                 this.inputElement.tabIndex = -1;
             }
         }
-        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (this.floatLabelType === 'Auto') {
+            Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-date-time-icon');
         }
@@ -1007,7 +1018,12 @@ export class DateTimePicker extends DatePicker {
                 this.renderPopup();
                 this.setTimeScrollPosition();
                 this.openPopup(e);
-                this.popupObject.refreshPosition(this.inputElement);
+                if (!Browser.isDevice || (Browser.isDevice && !this.fullScreenMode)) {
+                    this.popupObject.refreshPosition(this.inputElement);
+                }
+                if(Browser.isDevice && this.fullScreenMode){
+                    this.dateTimeWrapper.style.left = '0px';
+                }
             }
         }
     }
@@ -1110,8 +1126,34 @@ export class DateTimePicker extends DatePicker {
                 }
             }
         });
-        this.popupObject.element.style.maxHeight = POPUPDIMENSION;
+        if(Browser.isDevice && this.fullScreenMode){
+            this.popupObject.element.style.display = "flex";
+            this.popupObject.element.style.maxHeight = "100%";
+            this.popupObject.element.style.width = "100%";
+        } else {
+            this.popupObject.element.style.maxHeight = POPUPDIMENSION;
+        }
+
+        if (Browser.isDevice && this.fullScreenMode) {
+            const modelWrapper: HTMLElement = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
+            const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
+            const modelTitleSpan = this.createElement("span", { className: "e-model-title" });
+            modelTitleSpan.textContent = "Select time";
+            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.dateTimeCloseHandler, this);
+            const timeContent: HTMLElement = this.dateTimeWrapper.querySelector(".e-content");
+            modelHeader.appendChild(modelCloseIcon);
+            modelHeader.appendChild(modelTitleSpan);
+            modelWrapper.appendChild(modelHeader);
+            modelWrapper.appendChild(timeContent);
+            this.dateTimeWrapper.insertBefore(modelWrapper, this.dateTimeWrapper.firstElementChild);
+        }
     }
+
+    private dateTimeCloseHandler(e: MouseEvent| TouchEvent): void {
+        this.hide();
+    }
+
     private setDimension(width: number | string): string {
         if (typeof width === 'number') {
             width = formatUnit(width);
@@ -1164,7 +1206,11 @@ export class DateTimePicker extends DatePicker {
     protected getPopupHeight(): number {
         const height: number = parseInt(<string>POPUPDIMENSION, 10);
         const popupHeight: number = this.dateTimeWrapper.getBoundingClientRect().height;
-        return popupHeight > height ? height : popupHeight;
+        if( Browser.isDevice && this.fullScreenMode){
+            return popupHeight;
+        } else {
+            return popupHeight > height ? height : popupHeight;
+        }
     }
     protected changeEvent(e: Event): void {
         super.changeEvent(e);
@@ -1201,7 +1247,12 @@ export class DateTimePicker extends DatePicker {
         const height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
         const lineHeight: number = element.getBoundingClientRect().height;
         if ((height + element.offsetTop) > listHeight) {
-            this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
+            if(Browser.isDevice && this.fullScreenMode){
+                const listContent = this.dateTimeWrapper.querySelector('.e-content');
+                listContent.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
+            } else {
+                this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
+            }
         } else {
             this.dateTimeWrapper.scrollTop = 0;
         }

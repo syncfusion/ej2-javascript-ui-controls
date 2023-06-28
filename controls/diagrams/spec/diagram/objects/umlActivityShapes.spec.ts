@@ -538,4 +538,63 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
+    //831806 - UML Class Connector Multiplicity - Many To Many not Working
+    describe('Testing UmlConnector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        
+        let umlActivityFlowSymbols: ConnectorModel[] = [
+            {
+                id: "umlConn2",
+                sourcePoint: { x: 210, y: 100 },
+                targetPoint: { x: 304, y: 166 },
+                type: "Straight",
+                shape: {
+                    type: "UmlClassifier",
+                    relationship: "Association",
+                    multiplicity: {
+                        type: "ManyToMany",
+                        source: {
+                            optional: true,
+                            lowerBounds: '50',
+                            upperBounds: '67'
+                        },
+                        target: {
+                            optional: true,
+                            lowerBounds: '50',
+                            upperBounds: '90'
+                        }
+                    }
+                }
+            }
+        ];
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'umlActivityDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                connectors:umlActivityFlowSymbols,
+            });
+            diagram.appendTo('#umlActivityDiagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('831806-Umlclass connector Mulitiplicity - Many to Many', (done: Function) => {
+            expect(diagram.connectors[0].annotations[0].content == '50...67').toBe(true);
+            expect(diagram.connectors[0].annotations[0].content == '50...90').toBe(true);
+            done();
+        });
+    });
 });

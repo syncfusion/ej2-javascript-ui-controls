@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base';
-import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart } from '../common/index';
+import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart, addDPRValue } from '../common/index';
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize } from '../common/index';
 import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes } from '../../workbook/index';
 import { getColumnsWidth, ChartModel } from '../../workbook/index';
@@ -52,7 +52,7 @@ export class Overlay {
      * @returns {HTMLElement} - Returns div element
      * @hidden
      */
-    public insertOverlayElement(id: string, range: string, sheetIndex: number): HTMLElement {
+    public insertOverlayElement(id: string, range: string, sheetIndex: number): { element: HTMLElement, top: number, left: number } {
         const div: HTMLElement = this.parent.createElement('div', {
             id: id,
             attrs: { 'class': 'e-ss-overlay e-ss-overlay-active' },
@@ -64,7 +64,7 @@ export class Overlay {
         const frozenCol: number = this.parent.frozenColCount(sheet);
         const pos: { top: number, left: number } = getCellPosition(
             sheet, indexes, frozenRow, frozenCol, this.parent.viewport.beforeFreezeHeight, this.parent.viewport.beforeFreezeWidth,
-            this.parent.sheetModule.colGroupWidth);
+            this.parent.sheetModule.colGroupWidth, true);
         if (indexes[0] >= frozenRow && indexes[1] < frozenCol) {
             const mainPanel: HTMLElement = this.parent.sheetModule.contentPanel;
             if (mainPanel.scrollTop) {
@@ -98,7 +98,8 @@ export class Overlay {
         } else {
             parent = this.parent.getMainContent();
         }
-        div.style.top = pos.top + 'px'; div.style.left = pos.left + 'px';
+        div.style.top = Number(addDPRValue(pos.top).toFixed(2)) + 'px';
+        div.style.left = Number(addDPRValue(pos.left).toFixed(2)) + 'px';
         if (sheetIndex === this.parent.activeSheetIndex) {
             parent.appendChild(div);
             this.renderResizeHandles(div);
@@ -106,7 +107,7 @@ export class Overlay {
         }
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
-        return div;
+        return { element: div, top: pos.top, left: pos.left }
     }
 
     /**
@@ -256,8 +257,8 @@ export class Overlay {
         const eventArgs: BeforeImageRefreshData = {
             prevTop: sheet.frozenRows || sheet.frozenColumns ? this.prevY : this.originalReorderTop,
             prevLeft: sheet.frozenRows || sheet.frozenColumns ? this.prevX : this.originalReorderLeft,
-            currentTop: this.resizedReorderTop >= 0 ? this.resizedReorderTop : this.originalReorderTop,
-            currentLeft: this.resizedReorderLeft >= 0 ? this.resizedReorderLeft : this.originalReorderLeft,
+            currentTop: this.resizedReorderTop >= 0 ? parseInt(this.resizedReorderTop.toString(), 10) : this.originalReorderTop,
+            currentLeft: this.resizedReorderLeft >= 0 ? parseInt(this.resizedReorderLeft.toString(), 10) : this.originalReorderLeft,
             id: elem.id, currentHeight: this.currenHeight, currentWidth: this.currentWidth,
             requestType: 'imageRefresh', prevHeight: this.originalHeight, prevWidth: this.originalWidth
         };
@@ -365,10 +366,10 @@ export class Overlay {
         }
         this.originalWidth = this.currentWidth = parseFloat(overlayElem.style.width);
         this.originalHeight = this.currenHeight = parseFloat(overlayElem.style.height);
-        this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
-        this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
-        this.resizedReorderLeft = parseInt(overlayElem.style.left, 10); //resized divLeft
-        this.resizedReorderTop = parseInt(overlayElem.style.top, 10); // resized divTop
+        this.originalReorderLeft = parseFloat(overlayElem.style.left); //divLeft
+        this.originalReorderTop = parseFloat(overlayElem.style.top); // divTop
+        this.resizedReorderLeft = parseFloat(overlayElem.style.left); //resized divLeft
+        this.resizedReorderTop = parseFloat(overlayElem.style.top); // resized divTop
         this.originalResizeTop = this.originalReorderTop;
         this.originalResizeLeft = this.originalReorderLeft;
         this.originalMouseX = e.clientX; // posX

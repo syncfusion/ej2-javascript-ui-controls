@@ -1,4 +1,4 @@
-import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { Browser, Complex, getUniqueID, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';import { MenuBase, FieldSettings } from '../common/menu-base';import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
+import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';import { Browser, Complex, getUniqueID, SanitizeHtmlHelper, compile  } from '@syncfusion/ej2-base';import { MenuBase, FieldSettings } from '../common/menu-base';import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
 import {Orientation} from "./menu";
 import {MenuBaseModel} from "../common/menu-base-model";
 
@@ -25,8 +25,9 @@ export interface MenuModel extends MenuBaseModel{
      * Specifies the template for Menu item.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.

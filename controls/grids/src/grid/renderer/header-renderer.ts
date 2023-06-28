@@ -74,7 +74,7 @@ export class HeaderRender implements IRenderer {
                 const result: Element[] = col.getHeaderTemplate()(extend({ 'index': colIndex }, col), gObj, 'headerTemplate');
                 appendChildren(visualElement, result);
             } else {
-                visualElement.innerHTML = col.headerTemplate;
+                visualElement.innerHTML = col.headerTemplate as string;
             }
         } else {
             visualElement.innerHTML = headercelldiv ?

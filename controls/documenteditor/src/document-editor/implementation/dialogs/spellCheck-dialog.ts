@@ -5,7 +5,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { ElementBox, TextElementBox, ErrorTextElementBox } from '../viewer/page';
 import { DocumentEditor } from '../../document-editor';
-import { HelperMethods, MatchResults } from '../editor/editor-helper';
+import { MatchResults } from '../editor/editor-helper';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { DocumentHelper } from '../viewer';
 /**
@@ -196,7 +196,7 @@ export class SpellCheckDialog {
                 this.handleRetrievedSuggestion(error, suggestions);
             });
         } else {
-            error = HelperMethods.manageSpecialCharacters(error, undefined, true);
+            error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
             suggestions = this.parent.spellChecker.errorSuggestions.containsKey(error) ?
                 this.parent.spellChecker.errorSuggestions.get(error) : [];
             this.handleRetrievedSuggestion(error, suggestions);
@@ -205,7 +205,7 @@ export class SpellCheckDialog {
 
 
     private handleRetrievedSuggestion(error: string, suggestions: string[]): void {
-        error = HelperMethods.manageSpecialCharacters(error, undefined, true);
+        error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
         this.initSpellCheckDialog(this.localValue, error, suggestions);
         if (this.documentHelper.selection.caret.style.display !== 'none') {
             this.documentHelper.selection.caret.style.display = 'none';

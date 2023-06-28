@@ -260,6 +260,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         if (row.lazyLoadCssClass) {
             tr.classList.add(row.lazyLoadCssClass);
         }
+        if (this.parent.rowRenderingMode === 'Vertical' && this.parent.allowTextWrap && (this.parent.textWrapSettings.wrapMode === 'Header'
+            || this.parent.textWrapSettings.wrapMode === 'Both')) {
+            tr.classList.add('e-verticalwrap');
+        }
         const vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
         if (!vFTable && this.parent.aggregates.length && this.parent.element.scrollHeight > this.parent.height) {
             for (let i: number = 0; i < this.parent.aggregates.length; i++) {

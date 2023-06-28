@@ -863,3 +863,82 @@ export function generateKanbanData(count: number = 100): Record<string, any>[] {
     }
     return kanbanData;
 }
+
+/**
+ * Generates the dynamic data for kanban virtual scroll datasource.
+ *
+ * @param {number} count Accepts the number of count
+ * @returns {Object[]} Returns the collection of data.
+ */
+export function generateKanbanDataVirtualScroll(count: number = 1000): Record<string, any>[] {
+    const kanbanData: Record<string, any>[] = [];
+    const names: string[] = [
+        'Analyze the new requirements gathered from the customer', 'Improve application performance',
+        'Arrange a web meeting with the customer to get new requirements', 'Fix the issues reported in the IE browser',
+        'Fix the issues reported by the customer', 'Validate new requirements', 'API improvements',
+        'Arrange a web meeting with the customer to get the login page requirements', 'Test the application in the IE browser',
+        'Add responsive support to application'
+    ];
+    const assignee: string[] = ['Alice', 'Janet', 'Laura', 'Micheal', 'Milan', 'Nancy', 'Paul', 'Robert', 'Robson', 'Steven'];
+    const keys: string[] = ['Open', 'InProgress', 'Review', 'Testing', 'Close'];
+    const priority: string[] = ['Release Breaker', 'Ultra-Critical', 'Critical', 'High', 'Normal', 'Low'];
+    const types: string[] = ['EPIC', 'Story', 'Bug', 'Improvement'];
+    for (let a: number = 0, id: number = 0; a < count; a++) {
+        if (a < 200) {
+            kanbanData.push({
+                Id: ++id,
+                Summary: names[Math.floor(Math.random() * names.length)],
+                Status: keys[0],
+                Priority: priority[Math.floor(Math.random() * priority.length)],
+                Type: types[Math.floor(Math.random() * types.length)],
+                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
+                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            });
+        }
+        if (a >= 200 && a < 400) {
+            kanbanData.push({
+                Id: ++id,
+                Summary: names[Math.floor(Math.random() * names.length)],
+                Status: keys[1],
+                Priority: priority[Math.floor(Math.random() * priority.length)],
+                Type: types[Math.floor(Math.random() * types.length)],
+                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
+                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            });
+        }
+        if (a >= 400 && a < 600) {
+            kanbanData.push({
+                Id: ++id,
+                Summary: names[Math.floor(Math.random() * names.length)],
+                Status: keys[2],
+                Priority: priority[Math.floor(Math.random() * priority.length)],
+                Type: types[Math.floor(Math.random() * types.length)],
+                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
+                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            });
+        }
+        if (a >= 600 && a < 800) {
+            kanbanData.push({
+                Id: ++id,
+                Summary: names[Math.floor(Math.random() * names.length)],
+                Status: keys[3],
+                Priority: priority[Math.floor(Math.random() * priority.length)],
+                Type: types[Math.floor(Math.random() * types.length)],
+                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
+                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            });
+        }
+        if (a >= 800 && a < 1000) {
+            kanbanData.push({
+                Id: ++id,
+                Summary: names[Math.floor(Math.random() * names.length)],
+                Status: keys[4],
+                Priority: priority[Math.floor(Math.random() * priority.length)],
+                Type: types[Math.floor(Math.random() * types.length)],
+                Assignee: assignee[Math.floor(Math.random() * assignee.length)],
+                Estimate: parseFloat((Math.random() * (9 - 0)).toFixed(3).slice(0, -1))
+            });
+        }
+    }
+    return kanbanData;
+}

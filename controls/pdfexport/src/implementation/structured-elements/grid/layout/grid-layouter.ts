@@ -8,11 +8,9 @@ import { SizeF, RectangleF, PointF } from './../../../drawing/pdf-drawing';
 import { PdfBorders } from '../styles/pdf-borders';
 import { PdfLayoutType, PdfLayoutBreakType } from './../../../graphics/figures/enum';
 import { PdfLayoutResult, PdfLayoutParams, PdfLayoutFormat, ElementLayouter } from './../../../graphics/figures/base/element-layouter';
-import { PdfLayoutElement } from './../../../graphics/figures/layout-element';
 import { PdfGraphics } from './../../../graphics/pdf-graphics';
 import { PdfPage } from './../../../pages/pdf-page';
-import { PdfPageBase } from './../../../pages/pdf-page-base';
-import { PdfGridColumnCollection } from '../pdf-grid-column';
+import { PdfGridColumnCollection, PdfGridColumn } from '../pdf-grid-column';
 import { PdfGridCell } from '../pdf-grid-cell';
 import { PdfGridRow } from '../pdf-grid-row';
 import { PdfGridStyle, PdfGridCellStyle } from '../styles/style';
@@ -1527,26 +1525,27 @@ export class PdfGridLayouter extends ElementLayouter {
                 } else {
                     font = PdfDocument.defaultFont;
                 }
-                this.remainderText = gridRow.cells.getCell(i).value as string;
-                let width: number = gridRow.cells.getCell(i).width;
-                if (grid.columns.getColumn(i).isCustomWidth && gridRow.cells.getCell(i).width > grid.columns.getColumn(i).width) {
-                    width = grid.columns.getColumn(i).width;
+                this.remainderText = cell.value as string;
+                let width: number = cell.width;
+                const column: PdfGridColumn = grid.columns.getColumn(i);
+                if (column.isCustomWidth && cell.width > column.width) {
+                    width = column.width;
                 }
-                this.slr = layouter.layout(gridRow.cells.getCell(i).value as string, font, gridRow.cells.getCell(i).stringFormat, new SizeF(width, currentHeight), false, this.currentPageBounds);
+                this.slr = layouter.layout(cell.value as string, font, cell.stringFormat, new SizeF(width, currentHeight), false, this.currentPageBounds);
                 let height: number = this.slr.actualSize.height;
-                if (height == 0) {
+                if (cell.value !== '' && height === 0) {
                     isFit = false;
                     break;
                 }
-                if (gridRow.cells.getCell(i).style != null && gridRow.cells.getCell(i).style.borders != null && gridRow.cells.getCell(i).style.borders.top != null && gridRow.cells.getCell(i).style.borders.bottom != null)
-                    height += (gridRow.cells.getCell(i).style.borders.top.width + gridRow.cells.getCell(i).style.borders.bottom.width) * 2;
-                if (this.slr.lineCount > 1 && gridRow.cells.getCell(i).stringFormat != null && gridRow.cells.getCell(i).stringFormat.lineSpacing != 0)
-                    height += (this.slr.lineCount - 1) * (gridRow.cells.getCell(i).style.stringFormat.lineSpacing);
-
-                if (gridRow.cells.getCell(i).style.cellPadding == null) {
-                    height += (grid.style.cellPadding.top + grid.style.cellPadding.bottom);
+                if (cell.style !== null && cell.style.borders !== null && cell.style.borders.top !== null && cell.style.borders.bottom !== null) {
+                    height += (cell.style.borders.top.width + cell.style.borders.bottom.width) * 2;
                 }
-                else {
+                if (this.slr.lineCount > 1 && cell.stringFormat != null && cell.stringFormat.lineSpacing != 0) {
+                    height += (this.slr.lineCount - 1) * (cell.style.stringFormat.lineSpacing);
+                }
+                if (cell.style.cellPadding === null) {
+                    height += (grid.style.cellPadding.top + grid.style.cellPadding.bottom);
+                } else {
                     height += (grid.style.cellPadding.top + grid.style.cellPadding.bottom);
                 }
                 height += grid.style.cellSpacing;
@@ -1612,6 +1611,7 @@ export class PdfGridLayouter extends ElementLayouter {
             let skipcell : boolean = false;
             let stringResult  : PdfStringLayoutResult = null;
             if (!skipcell) {
+                row.cells.getCell(i)._rowHeight = row.height;
                 stringResult = row.cells.getCell(i).draw(this.currentGraphics, new RectangleF(location, size), cancelSpans);
             }
             //If still row is to be drawn, set cell finished drawing cell as false and update the text to be drawn.

@@ -1,6 +1,6 @@
 import { AnnotationDataFormat, PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
@@ -468,7 +468,8 @@ export class NavigationPane {
                             let annotationData: any =  atob(importFile);
                             if (annotationData) {
                                 // eslint-disable-next-line
-                                let jsonData: any = JSON.parse(annotationData);
+                                annotationData = this.pdfViewerBase.getSanitizedString(annotationData);
+                                let jsonData = JSON.parse(annotationData);
                                 let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
                                 if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation || firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation || firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation || (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {
                                     this.pdfViewerBase.isPDFViewerJson = true;
@@ -807,7 +808,9 @@ export class NavigationPane {
             const thumbnailButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_thumbnail-view' + '_icon', className: 'e-pv-thumbnail-view-disable-icon e-pv-icon' });
             this.thumbnailButton.appendChild(thumbnailButtonSpan);
             // eslint-disable-next-line max-len
-            const thumbnailTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Page Thumbnails'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
+            const thumbnailTooltip: Tooltip = new Tooltip({ content:  initializeCSPTemplate(
+                function (): string { return this.pdfViewer.localeObj.getConstant('Page Thumbnails'); }, this
+            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             thumbnailTooltip.appendTo(this.thumbnailButton);
             // eslint-disable-next-line max-len
             this.bookmarkButton = createElement('button', { id: this.pdfViewer.element.id + '_bookmark', attrs: { 'disabled': 'disabled', 'aria-label': 'Bookmarks', 'tabindex': '-1' } });
@@ -817,7 +820,9 @@ export class NavigationPane {
             const buttonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_bookmark' + '_icon', className: 'e-pv-bookmark-disable-icon e-pv-icon' });
             this.bookmarkButton.appendChild(buttonSpan);
             // eslint-disable-next-line max-len
-            const bookMarkTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Bookmarks'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
+            const bookMarkTooltip: Tooltip = new Tooltip({ content:  initializeCSPTemplate(
+                function (): string { return this.pdfViewer.localeObj.getConstant('Bookmarks'); }, this
+            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             bookMarkTooltip.appendTo(this.bookmarkButton);
             this.sideBarToolbar.appendChild(this.thumbnailButton);
             this.sideBarToolbar.appendChild(this.bookmarkButton);

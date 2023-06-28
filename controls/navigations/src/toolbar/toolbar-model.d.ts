@@ -91,8 +91,9 @@ export interface ItemModel {
      * ```
      *
      * @default ""
+     * @aspType string
      */
-    template?: string | Object;
+    template?: string | Object | Function;
 
     /**
      * Specifies the types of command to be rendered in the Toolbar.
@@ -154,6 +155,7 @@ export interface ItemModel {
      * ```
      *
      * @default "Left"
+     * @aspPopulateDefaultValue
      */
     align?: ItemAlign;
 

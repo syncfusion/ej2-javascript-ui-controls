@@ -371,4 +371,50 @@ describe('Numericcontainer module testing', () => {
 
     });
 
+    describe('numericcontainer method and actions testing when pager has been resized', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        let pagerElements: NodeListOf<HTMLElement>;
+
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, pageCount: 30, pageSize: 2,
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+            pagerObj.element.style.borderStyle = 'solid'; //code to trigger pager resizing.
+        });
+
+        it('Navigate page testing', function () {
+            pagerElements = pagerObj.element.querySelectorAll('.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-icon-next, .e-icon-last, .e-parentmsgbar, e-mnext, e-mlast, .e-pagerdropdown, .e-pagerconstant');
+            pagerObj.element.querySelector('.e-np').classList.remove('e-disable');
+            for (var i = 0; i < pagerElements.length; i++) {
+                pagerElements[i].style.width = '80px';
+            }
+            (pagerObj as any).resizePager();
+            (pagerObj.element.querySelectorAll('.e-numericcontainer')[0].childNodes[1] as HTMLElement).click();
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('2');
+        });
+        it('click event call', function () {
+            var spyFn = jasmine.createSpy('click');
+            pagerObj.click = spyFn;
+            pagerObj.goToPage(3);
+            expect(spyFn).toHaveBeenCalled();
+        });
+        it('Navigate unavailable page testing', function () {
+            pagerObj.goToPage(83);
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('3');
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+
+    });
+
 });

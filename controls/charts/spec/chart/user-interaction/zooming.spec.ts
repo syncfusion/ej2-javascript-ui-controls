@@ -390,7 +390,7 @@ describe('Chart Control', () => {
                 targetElement = document.getElementById('container_Zooming_KitCollection');
                 expect(targetElement != null).toBe(true);
                 path = targetElement.getAttribute('transform');
-                expect(path == 'translate(759,47.25)' || path == 'translate(759,50.25)').toBe(true);
+                expect(path == 'translate(744,53.25)' || path == 'translate(759,50.25)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.toolbarItems = ['Reset'];
@@ -407,7 +407,7 @@ describe('Chart Control', () => {
                 targetElement = document.getElementById('container_Zooming_KitCollection');
                 expect(targetElement != null).toBe(true);
                 path = resetElement.getAttribute('transform');                
-                expect(path == 'translate(31,8)' || path == 'translate(31,5)').toBe(true);
+                expect(path == 'translate(46,13)' || path == 'translate(31,5)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.toolbarItems = ['Reset', 'Zoom'];
@@ -426,7 +426,7 @@ describe('Chart Control', () => {
                 expect(targetElement != null).toBe(true);
                 path = resetElement.getAttribute('transform');
                     
-                expect(path == 'translate(31,8)' || path == 'translate(31,5)').toBe(true);
+                expect(path == 'translate(46,13)' || path == 'translate(31,5)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.toolbarItems = ['Reset', 'Pan'];
@@ -581,6 +581,22 @@ describe('Chart Control', () => {
             expect(firstElement == null).toBe(true);
             done();
         });
+
+        it('checking default zooming toolbar', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                targetElement = document.getElementById('container_Zooming_KitCollection');
+                expect(targetElement != null).toBe(true);
+                let position: string = document.getElementById('chartmeasuretext').style.position;
+                expect(position === 'fixed').toBe(true);
+                expect(targetElement.getAttribute('opacity') != '0.1').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.zoomSettings.showToolbar = true;
+            chartObj.dataBind();
+        });
+        
     });
 
     describe('Checking Panning', () => {
@@ -1674,7 +1690,7 @@ describe('Chart Control', () => {
                 expect(zoomInFill == '#737373').toBe(true);
                 expect(zoomOutFill == '#737373').toBe(true);
                 expect(zoomResetFill == '#737373').toBe(true);
-                expect(seriesTransform == 'translate(57.5,45.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
+                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1699,14 +1715,13 @@ describe('Chart Control', () => {
                 let zoomOutFill : string = document.getElementById('container_Zooming_ZoomOut_2').getAttribute('fill');
                 let zoomResetFill : string = document.getElementById('container_Zooming_Reset_2').getAttribute('fill');
                 let seriesTransform : string = document.getElementById('containerSeriesGroup0').getAttribute('transform');
-                
                 expect(chartObj.zoomModule.isPanning).toBe(true);
                 expect(panElementFill == '#ff4081').toBe(true);
                 expect(zoomIconFill == '#737373').toBe(true);
                 expect(zoomInFill == '#737373').toBe(true);
                 expect(zoomOutFill == '#737373').toBe(true);
                 expect(zoomResetFill == '#737373').toBe(true);
-                expect(seriesTransform == 'translate(57.5,45.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
+                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableSelectionZooming = false;
@@ -1735,7 +1750,7 @@ describe('Chart Control', () => {
                 expect(zoomIn).not.toBe(null);
                 expect(zoomOut).not.toBe(null);
                 expect(zoomReset).not.toBe(null);
-                expect(seriesTransform == 'translate(57.5,45.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
+                expect(seriesTransform == 'translate(53.5,43.25)' || seriesTransform == 'translate(53.5,42.25)').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableSelectionZooming = true;
@@ -1795,7 +1810,7 @@ describe('Chart Control', () => {
         });
         it('checking the toolbar initial loading', (done: Function) => {
             let zoomInElement: string = document.getElementById('container_Zooming_ZoomIn').getAttribute('opacity');
-            expect(zoomInElement == "0.2").toBe(true);
+            expect(zoomInElement == "1").toBe(true);
             let panElement: string = document.getElementById('container_Zooming_Pan').getAttribute('opacity');
             expect(panElement == "0.2").toBe(true);
             let resetElement: string = document.getElementById('container_Zooming_Reset').getAttribute('opacity');

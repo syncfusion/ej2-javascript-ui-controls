@@ -1942,7 +1942,8 @@ describe('Checking performance for dragging the group node', () => {
         done();
     });
 });
-describe('UnGroup',()=>{
+
+describe('UnGroup Issue - EJ2-66928',()=>{
     describe('checks Ungrouping Performing Correctly and Grouping Ports are Removed ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

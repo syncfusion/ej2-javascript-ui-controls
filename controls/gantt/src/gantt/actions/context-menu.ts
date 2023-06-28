@@ -293,7 +293,7 @@ export class ContextMenu {
 
         const contextMenuClickDate: Date =
             this.parent.dataOperation.getEndDate(
-                startDate, splitTaskDuration, (this.parent.timelineSettings.bottomTier.unit !== "None") ? this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase() : this.parent.timelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false
+                startDate, splitTaskDuration, (this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== "None") ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit.toLocaleLowerCase() : this.parent.timelineModule.customTimelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false
             );
         return contextMenuClickDate;
     }

@@ -76,7 +76,7 @@ export class Resize {
         } else {
             const eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
-            this.parent.element.style.width = (!this.parent.enableRtl) ? (<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right - (<MouseEvent>e).clientX + 'px';
+            this.parent.element.style.width = (!this.parent.enableRtl) ? eventType.clientX - boundRect.left + 'px' : boundRect.right - eventType.clientX + 'px';
         }
         if (!this.parent.toolbarSettings.enable) {
             this.parent.setContentHeight('', false);

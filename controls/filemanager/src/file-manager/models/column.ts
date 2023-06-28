@@ -134,17 +134,19 @@ export class Column extends ChildProperty<Column> {
      * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the column template as string or HTML element ID which is used to add customized element in the column header.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * If `allowSorting` set to false, then it disables sorting option of a particular column.

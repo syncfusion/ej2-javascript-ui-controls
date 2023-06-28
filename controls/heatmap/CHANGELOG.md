@@ -2,7 +2,32 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 21.1.36 (2023-06-28)
+
+### Heatmap
+
+#### New Features
+
+- `#I437878` - The `cellDoubleClick` event is now available for use to initiate an event when a double click action is done over the HeatMap cells.
+- `#I438083` - When the axis label exceeds the available region, it can be wrapped or trimmed using the `textOverflow` property in the x-axis and y-axis.
+
+## 21.2.8 (2023-05-30)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#F182203` - The data points in the JSON data will now be properly mapped in the HeatMap using the cell adapter with `maximum` and `minimum` properties set in the x-axis.
+
+## 21.2.4 (2023-05-09)
+
+### Heatmap
+
+#### Bug fixes
+
+- `#I456795` - The extra text element in the HeatMap component's DOM has now been properly removed.
+
+## 21.1.41 (2023-04-18)
 
 ### Heatmap
 

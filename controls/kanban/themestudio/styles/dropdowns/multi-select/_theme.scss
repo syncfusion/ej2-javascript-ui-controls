@@ -250,6 +250,12 @@
   }
 }
 
+#{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-item-focus {
+  @if $ddl-multiselect-skin-name == 'Material3' {
+    background: $ddl-popup-focus-bg-color;
+  }
+}
+
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item {
   border: $ddl-popup-normal-border-width solid transparent;
 }

@@ -5151,6 +5151,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public retryStatusCodes: number[];
 
     /**
+     * Gets or sets the timeout for retries in seconds.
+     * 
+     * {% codeBlock src='pdfviewer/retryTimeout/index.md' %}{% endcodeBlock %}
+     *
+     * @default 0
+     */
+    @Property(0)
+    public retryTimeout: number;
+
+    /**
      * Initially renders the first N pages of the PDF document when the document is loaded.
      * 
      * {% codeBlock src='pdfviewer/initialRenderPages/index.md' %}{% endcodeBlock %}
@@ -7299,6 +7309,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             }
                             this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                         }
+                        else {
+                            if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.formDesignerModule) && this.toolbarModule.formDesignerToolbarModule && !this.isFormDesignerToolbarVisible) {
+                                this.isFormDesignerToolbarVisible = false;
+                                this.formDesignerModule.setMode('edit');
+                                this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
+                            }
+                        }
                     }
                     break;
                 case 'isAnnotationToolbarVisible':
@@ -7876,10 +7893,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         fieldName = currentData.FieldName;
                     }
                     //map the signature field and its data object to find the signature field name.
-                    if (FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "SignatureField" ||
-                        FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0]; })[0].Name === "InitialField") {
-                        fieldName = currentData.FieldName.split('_')[0];
-                        currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
+                    let fieldData: any = FormFieldsData.filter(function (item: any) { return item.FieldName === currentData.FieldName.split('_')[0];});
+                    if (!isNullOrUndefined(fieldData) && !isNullOrUndefined(fieldData[0])) {
+                        if (fieldData[0].Name === "SignatureField" || fieldData[0].Name === "InitialField") {
+                            fieldName = currentData.FieldName.split('_')[0];
+                            currentData.LineBounds = FormFieldsData.filter(function (item: any) { return item.FieldName === fieldName; })[0].LineBounds;
+                        }
                     }
                     if (fieldName === fieldValue.name) {
                         if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
@@ -8061,7 +8080,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
-        this.magnificationModule.zoomTo(100);
+        this.magnificationModule.zoomTo(100);    
     }
 
     /**
@@ -8104,6 +8123,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (annotationDataFormat == 'Json') {
                             if (importData.includes('pdfAnnotation')) {
                                 this.importAnnotationsAsJson(importData);
+                            } else if (importData.split('.')[1] === 'json') {
+                                this.viewerBase.isPDFViewerJson = true;
+                                this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
                             } else {
                                 let newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
                                 importData = decodeURIComponent(escape(atob(newImportData)));
@@ -8127,9 +8149,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
-                importData = JSON.stringify(importData);
-                this.viewerBase.isPDFViewerJson = false;
-                this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                let imporedAnnotation: any = importData.pdfAnnotation;
+                if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
+                    this.viewerBase.importAnnotations(importData);
+                } else {
+                    importData = JSON.stringify(importData);
+                    this.viewerBase.isPDFViewerJson = false;
+                    this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
+                }
             }
         }
     }
@@ -8165,16 +8192,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Perform export annotations action in the PDF Viewer
-     *
+     * 
+     *@param {AnnotationDataFormat} annotationDataFormat - Export the annotation based on the format.
+     
      * @returns Promise<object>
      */
-    public exportAnnotationsAsObject(): Promise<object> {
+    public exportAnnotationsAsObject(annotationDataFormat: AnnotationDataFormat = AnnotationDataFormat.Json): Promise<object> {
         if (this.annotationModule) {
             return new Promise((resolve: Function, reject: Function) => {
-                this.viewerBase.exportAnnotationsAsObject().then((value: any) => {
-                    let jsonData = JSON.parse(value);
-                    let jsonstring=JSON.stringify(jsonData);
-                    resolve(jsonstring);
+                this.viewerBase.exportAnnotationsAsObject(annotationDataFormat).then((value: object) => {
+                    resolve(value);
                 });
             });
         } else {
@@ -8251,7 +8278,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param {FormFieldDataFormat} formFieldDataFormat
      * @returns Promise<object>
      */
-     public exportFormFieldsAsObject(formFieldDataFormat?: FormFieldDataFormat): Promise<object> {
+     public exportFormFieldsAsObject(formFieldDataFormat: FormFieldDataFormat = FormFieldDataFormat.Json): Promise<object> {
         if (this.formFieldsModule) {
             return new Promise((resolve: Function, reject: Function) => {
                 this.viewerBase.exportFormFieldsAsObject(formFieldDataFormat).then((value: object) => {
@@ -9287,9 +9314,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // eslint-disable-next-line
-    public fireExportStart(exportData: any): void {
-        const eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null};
+    public fireExportStart(exportData: any): any {
+        const eventArgs: ExportStartEventArgs = { name: 'exportAnnotationsStart', exportData: exportData, formFieldData: null, cancel: false };
         this.trigger('exportStart', eventArgs);
+        if (eventArgs.cancel) {
+            return false;
+        } else {
+            return true;
+        }
     }
     /**
      * @param importData
@@ -9346,9 +9378,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // eslint-disable-next-line
-    public fireFormExportStarted(data: any): void {
-        const eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data };
+    public fireFormExportStarted(data: any): any {
+        const eventArgs: ExportStartEventArgs = { name: 'exportFormFieldsStart', exportData: null, formFieldData: data, cancel: false };
         this.trigger('exportStart', eventArgs);
+        if (eventArgs.cancel) {
+            return false;
+        } else {
+            return true;
+        }
     }
     /**
      * @param data
